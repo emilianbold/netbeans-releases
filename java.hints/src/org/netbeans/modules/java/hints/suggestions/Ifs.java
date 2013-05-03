@@ -174,6 +174,9 @@ public class Ifs {
                     break;
                 default:
                     newTree = make.Unary(Kind.LOGICAL_COMPLEMENT, original);
+                    if (JavaFixUtilities.requiresParenthesis(original, original, newTree)) {
+                        newTree = make.Unary(Kind.LOGICAL_COMPLEMENT, make.Parenthesized(original));
+                    }
                     break;
             }
          

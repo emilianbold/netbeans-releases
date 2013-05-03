@@ -53,8 +53,7 @@ import java.util.LinkedList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.modules.java.source.usages.Pair;
-import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  *

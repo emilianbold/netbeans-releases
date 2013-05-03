@@ -364,6 +364,7 @@ public class JFXSigningPanel extends javax.swing.JPanel implements DocumentListe
         if(!radioButtonSpecKey.isSelected()) {
             warningSigning.setText(NbBundle.getMessage(JFXSigningPanel.class, "JFXSigningPanel.warningSigning.message")); //NOI18N
             warningSigning.setVisible(true);
+            desc.setValid(true);
         } else {
             if(textFieldPath.getDocument().getLength()>0 && passwordField.getDocument().getLength()>5 && 
                     textFieldKeyAlias.getDocument().getLength()>0 && passwordFieldKey.getDocument().getLength()>5 ) {

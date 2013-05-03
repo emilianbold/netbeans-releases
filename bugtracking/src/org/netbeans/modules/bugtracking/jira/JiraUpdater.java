@@ -62,13 +62,13 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 /**
@@ -77,7 +77,11 @@ import org.openide.util.NbBundle;
  */
 public class JiraUpdater {
 
+    private static final String JIRA_CNB = "org.netbeans.modules.jira";         // NOI18N
+    
     private static JiraUpdater instance;
+
+    
     private DelegatingConnector connector;
 
     private JiraUpdater() {
@@ -90,14 +94,19 @@ public class JiraUpdater {
         return instance;
     }
 
+    public static boolean supportsDownload() {
+        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        return ideServices != null && ideServices.providesPluginUpdate();
+    }
+    
     /**
      * Returns a fake {@link BugtrackingConnector} to be shown in the create
-     * repository dialog. The repository controler panel notifies a the missing
-     * JIRA plugin and comes with a button to donload it from the Update Center.
+     * repository dialog. The repository controller panel notifies a the missing
+     * JIRA plugin and comes with a button to download it from the Update Center.
      *
      * @return
      */
-    public DelegatingConnector getConnector() {
+    public synchronized DelegatingConnector getConnector() {
         if(connector == null) {
             JiraProxyConector jpc = new JiraProxyConector();
             return new DelegatingConnector(
@@ -106,7 +115,6 @@ public class JiraUpdater {
                     NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraName"),         // NOI18N
                     NbBundle.getMessage(JiraUpdater.class, "LBL_FakeJiraNameTooltip"),  // NOI18N
                     null);
-            
         }
         return connector;
     }
@@ -114,10 +122,15 @@ public class JiraUpdater {
     /**
      * Download and install the JIRA plugin from the Update Center
      */
+    @NbBundle.Messages({"MSG_JiraPluginName=JIRA"})
     public void downloadAndInstall() {
-        final DownloadPlugin dp = new DownloadPlugin();
-        dp.startDownload();
-        
+        IDEServices ideServices = BugtrackingManager.getInstance().getIDEServices();
+        if(ideServices != null) {
+            IDEServices.Plugin plugin = ideServices.getPluginUpdates(JIRA_CNB, Bundle.MSG_JiraPluginName());
+            if(plugin != null) {
+                plugin.openInstallWizard();
+            }
+        }
     }
 
     /**
@@ -129,8 +142,8 @@ public class JiraUpdater {
      * @return true if the user pushes the Download button, otherwise false
      */
     public static boolean notifyJiraDownload(String url) {
-        final JButton download = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Download"));     // NOI18N
-        JButton cancel = new JButton(NbBundle.getMessage(DownloadPlugin.class, "CTL_Action_Cancel"));   // NOI18N
+        final JButton download = new JButton(NbBundle.getMessage(JiraUpdater.class, "CTL_Action_Download"));     // NOI18N
+        JButton cancel = new JButton(NbBundle.getMessage(JiraUpdater.class, "CTL_Action_Cancel"));   // NOI18N
 
         URL openURL = null;
         if (url != null) {
@@ -298,7 +311,7 @@ public class JiraUpdater {
                 }
             });
             
-            org.openide.awt.Mnemonics.setLocalizedText(downloadButton, org.openide.util.NbBundle.getMessage(MissingJiraSupportPanel.class, "MissingJiraSupportPanel.downloadButton.text")); // NOI18N
+            org.openide.awt.Mnemonics.setLocalizedText(downloadButton, org.openide.util.NbBundle.getMessage(JiraUpdater.class, "MissingJiraSupportPanel.downloadButton.text")); // NOI18N
 
             GroupLayout layout = new GroupLayout(controllerPanel);
             controllerPanel.setLayout(layout);

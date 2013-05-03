@@ -73,6 +73,8 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
 
     private static Map<MenuType, Class[]> supportedMenus;
 
+    static final String CUSTOM_WINDOW_CONTAINER = "netbeans.form-design-window"; // NOI18N
+
     @Override
     protected void setBeanInstance(Object beanInstance) {
         containerDelegateGetter = null;
@@ -232,10 +234,18 @@ public class RADVisualContainer extends RADVisualComponent implements ComponentC
      */
     public Container getContainerDelegate(Object container) {
         if (container instanceof RootPaneContainer
-                && container.getClass().getName().startsWith("javax.swing.")) // NOI18N
+                && container.getClass().getName().startsWith("javax.swing.")) { // NOI18N
             return ((RootPaneContainer)container).getContentPane();
-        if (container.getClass().equals(JRootPane.class))
-            return ((JRootPane)container).getContentPane();
+        }
+
+        if (container.getClass().equals(JRootPane.class)) {
+            Object w = ((JRootPane)container).getClientProperty(CUSTOM_WINDOW_CONTAINER); // NOI18N
+            if (w instanceof RootPaneContainer) {
+                container = w;
+            } else {
+                return ((JRootPane)container).getContentPane();
+            }
+        }
 
         Container containerDelegate = (Container) container;
         // Do not attempt to find container delegate if the classes

@@ -47,6 +47,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.modules.java.hints.legacy.spi.RulesManager;
 import org.netbeans.modules.java.hints.legacy.spi.RulesManager.APIAccessor;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.Hint;
@@ -84,8 +85,12 @@ public abstract class AbstractHint implements TreeRule {
      * @return Preferences node for given hint.
      */
     public Preferences getPreferences( String profile ) {
-        //TODO: better?
-        return RulesManager.currentHintPreferences.get();
+        Preferences prefs = RulesManager.currentHintPreferences.get();
+        
+        if (prefs != null) return prefs;
+        
+        //TODO: better fallback?
+        return HintsSettings.getGlobalSettings().getHintPreferences(HintMetadata.Builder.create(getId()).build());
     }
         
     /** Gets the UI description for this rule. It is fine to return null

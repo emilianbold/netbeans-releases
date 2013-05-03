@@ -82,6 +82,8 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.CodeStyleUtils;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
@@ -530,11 +532,44 @@ public final class Utilities {
         return refs;
     }
     
-    public static List<String> varNamesSuggestions(TypeMirror type, String suggestedName, String prefix, Types types, Elements elements, Iterable<? extends Element> locals, boolean isConst) {
+    public static List<String> varNamesSuggestions(TypeMirror type, ElementKind kind, Set<Modifier> modifiers, String suggestedName, String prefix, Types types, Elements elements, Iterable<? extends Element> locals, CodeStyle codeStyle) {
         List<String> result = new ArrayList<String>();
         if (type == null && suggestedName == null)
             return result;
         List<String> vnct = suggestedName != null ? Collections.singletonList(suggestedName) : varNamesForType(type, types, elements, prefix);
+        boolean isConst = false;
+        String namePrefix = null;
+        String nameSuffix = null;
+        switch (kind) {
+            case FIELD:
+                if (modifiers.contains(Modifier.STATIC)) {
+                    if (codeStyle != null) {
+                        namePrefix = codeStyle.getStaticFieldNamePrefix();
+                        nameSuffix = codeStyle.getStaticFieldNameSuffix();
+                    }
+                    isConst = modifiers.contains(Modifier.FINAL);
+                } else {
+                    if (codeStyle != null) {
+                        namePrefix = codeStyle.getFieldNamePrefix();
+                        nameSuffix = codeStyle.getFieldNameSuffix();
+                    }
+                }
+                break;
+            case LOCAL_VARIABLE:
+            case EXCEPTION_PARAMETER:
+            case RESOURCE_VARIABLE:
+                if (codeStyle != null) {
+                    namePrefix = codeStyle.getLocalVarNamePrefix();
+                    nameSuffix = codeStyle.getLocalVarNameSuffix();
+                }
+                break;
+            case PARAMETER:
+                if (codeStyle != null) {
+                    namePrefix = codeStyle.getParameterNamePrefix();
+                    nameSuffix = codeStyle.getParameterNameSuffix();
+                }
+                break;
+        }
         if (isConst) {
             List<String> ls = new ArrayList<String>(vnct.size());
             for (String s : vnct)
@@ -566,14 +601,15 @@ public final class Utilities {
             }
             int cnt = 1;
             String baseName = name;
+            name = CodeStyleUtils.addPrefixSuffix(name, namePrefix, nameSuffix);
             while (isClashing(name, type, locals)) {
                 if (isPrimitive) {
-                    char c = name.charAt(0);
-                    name = Character.toString(++c);
-                    if (c == 'z') //NOI18N
+                    char c = name.charAt(namePrefix != null ? namePrefix.length() : 0);
+                    name = CodeStyleUtils.addPrefixSuffix(Character.toString(++c), namePrefix, nameSuffix);
+                    if (c == 'z' || c == 'Z') //NOI18N
                         isPrimitive = false;
                 } else {
-                    name = baseName + cnt++;
+                    name = CodeStyleUtils.addPrefixSuffix(baseName + cnt++, namePrefix, nameSuffix);
                 }
             }
             result.add(name);
@@ -1002,9 +1038,6 @@ public final class Utilities {
         return found;
     }
 
-
     private Utilities() {
     }
-    
-    
 }

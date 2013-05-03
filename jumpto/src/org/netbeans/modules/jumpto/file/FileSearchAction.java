@@ -105,12 +105,12 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.search.provider.SearchFilter;
 import org.netbeans.api.search.provider.SearchInfoUtils;
+import org.netbeans.editor.JumpList;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
 import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
 import org.netbeans.modules.jumpto.common.Factory;
 import org.netbeans.modules.jumpto.type.GoToTypeAction;
 import org.netbeans.modules.jumpto.common.Models;
-import org.netbeans.modules.jumpto.common.Pair;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.spi.jumpto.file.FileDescriptor;
@@ -133,6 +133,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -173,6 +174,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
     public void actionPerformed(ActionEvent arg0) {
         FileDescriptor[] typeDescriptors = getSelectedFiles();
         if (typeDescriptors != null) {
+            JumpList.checkAddEntry();
             for(FileDescriptor td: typeDescriptors){
                 td.open();
             }
@@ -491,7 +493,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
                     new Factory<FileDescriptor, Pair<FileDescriptor,Runnable>>() {
                         @Override
                         public FileDescriptor create(@NonNull final Pair<FileDescriptor,Runnable> param) {
-                            return new AsyncFileDescriptor(param.first, param.second);
+                            return new AsyncFileDescriptor(param.first(), param.second());
                         }
                     });
 

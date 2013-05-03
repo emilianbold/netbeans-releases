@@ -63,12 +63,12 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.clientproject.api.network.ui.NetworkErrorPanel;
-import org.netbeans.modules.web.common.api.Pair;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -276,9 +276,9 @@ public final class NetworkSupport {
         if (progressHandle != null) {
             progressHandle.progress(Bundle.NetworkSupport_progress_download(url));
         }
-        InputStream is = downloadSetup.getA();
+        InputStream is = downloadSetup.first();
         try {
-            copyToFile(is, target, progressHandle, downloadSetup.getB());
+            copyToFile(is, target, progressHandle, downloadSetup.second());
         } catch (IOException ex) {
             // error => ensure file is deleted
             if (!target.delete()) {

@@ -101,7 +101,7 @@ public class PartialReparser {
             final Map<? super JCTree,? super LazyDocCommentTable.Entry> docComments) {
         NBParserFactory parserFactory = (NBParserFactory) NBParserFactory.instance(context);
         CharBuffer buf = CharBuffer.wrap((newBodyText+"\u0000").toCharArray(), 0, newBodyText.length());
-        JavacParser parser = (JavacParser) parserFactory.newParser(buf, ((JCBlock)methodToReparse.getBody()).pos, ((JCCompilationUnit)topLevel).endPositions);
+        JavacParser parser = parserFactory.newParser(buf, ((JCBlock)methodToReparse.getBody()).pos, ((JCCompilationUnit)topLevel).endPositions);
         final JCStatement statement = parser.parseStatement();
         NBParserFactory.assignAnonymousClassIndices(Names.instance(context), statement, Names.instance(context).empty, annonIndex);
         if (statement.getKind() == Tree.Kind.BLOCK) {

@@ -57,6 +57,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Enumeration;
@@ -90,6 +91,7 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
+import org.netbeans.modules.java.api.common.ui.PlatformFilter;
 import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListCellRenderer;
 import org.netbeans.modules.java.api.common.project.ui.customizer.SourceRootsUi;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
@@ -341,7 +343,9 @@ public class J2SEProjectProperties {
         RUN_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_CLASSPATH)));
         RUN_TEST_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.RUN_TEST_CLASSPATH)));
         ENDORSED_CLASSPATH_MODEL = ClassPathUiSupport.createListModel(cs.itemsIterator(projectProperties.get(ProjectProperties.ENDORSED_CLASSPATH)));
-        PLATFORM_MODEL = PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM));
+        final Collection<? extends PlatformFilter> filters = project.getLookup().lookupAll(PlatformFilter.class);
+        PLATFORM_MODEL = filters == null ? PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM)) :
+                PlatformUiSupport.createPlatformComboBoxModel (evaluator.getProperty(JAVA_PLATFORM), filters);
         PLATFORM_LIST_RENDERER = PlatformUiSupport.createPlatformListCellRenderer();
         JAVAC_SOURCE_MODEL = PlatformUiSupport.createSourceLevelComboBoxModel (PLATFORM_MODEL, evaluator.getProperty(JAVAC_SOURCE), evaluator.getProperty(JAVAC_TARGET));
         JAVAC_SOURCE_RENDERER = PlatformUiSupport.createSourceLevelListCellRenderer ();

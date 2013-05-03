@@ -58,6 +58,7 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.Problem;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring;
 import org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring.Equality;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
@@ -74,6 +75,7 @@ import org.openide.util.Utilities;
 public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
 
     private static final Logger LOG = Logger.getLogger(IntroduceLocalExtensionTransformer.class.getName());
+    private static final String DELEGATE = "delegate"; //NOI18N
     private final IntroduceLocalExtensionRefactoring refactoring;
     private Problem problem;
     private String fqn;
@@ -96,6 +98,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             fqn = packageName + '.' + name;
 
             GeneratorUtilities genUtils = GeneratorUtilities.get(workingCopy);
+            CodeStyle cs = RefactoringUtils.getCodeStyle(workingCopy);
 
             TypeElement source = (TypeElement) refactoring.getRefactoringSource().lookup(TreePathHandle.class).getElementHandle().resolve(workingCopy);
 
@@ -112,9 +115,9 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
 
             if (wrap && noInterface) {
                 Tree type = make.Type(source.asType());
-                VariableTree field = make.Variable(make.Modifiers(EnumSet.of(Modifier.PRIVATE)), "delegate", type, null); //NOI18N
+                VariableTree field = make.Variable(make.Modifiers(EnumSet.of(Modifier.PRIVATE)), DELEGATE, type, null); //NOI18N
                 members.add(0, field);
-                addFields(source, genUtils, members);
+                addFields(source, cs, members);
             }
 
             if (wrap && noInterface) {
@@ -159,7 +162,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         return super.scan(tree, p);
     }
 
-    private void addFields(TypeElement source, GeneratorUtilities genUtils, List<Tree> members) throws IllegalStateException {
+    private void addFields(TypeElement source, CodeStyle cs, List<Tree> members) throws IllegalStateException {
         for (VariableElement field : ElementFilter.fieldsIn(workingCopy.getElements().getAllMembers(source))) {
             if (!field.getModifiers().contains(Modifier.NATIVE)
                     && field.getModifiers().contains(Modifier.PUBLIC)
@@ -168,23 +171,25 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                     VariableTree variable = make.Variable(field, make.QualIdent(field));
                     members.add(0, variable);
                 } else {
-                    String getterName = EncapsulateFieldRefactoringPlugin.computeGetterName(field);
-                    String setterName = EncapsulateFieldRefactoringPlugin.computeSetterName(field);
-                    MethodTree[] createdGetterAndSetter = createGetterAndSetter(field, getterName, setterName, field.getModifiers());
+                    MethodTree[] createdGetterAndSetter = createGetterAndSetter(field, field.getModifiers(), cs);
                     ElementHandle<Element> fieldHandle = ElementHandle.create((Element) field);
-                    getterSetterMap.put(fieldHandle, new String[]{getterName, setterName});
+                    getterSetterMap.put(fieldHandle, new String[]{
+                        createdGetterAndSetter[0].getName().toString(),
+                        createdGetterAndSetter[1].getName().toString()});
                     members.addAll(Arrays.asList(createdGetterAndSetter));
                 }
             }
         }
     }
 
-    private MethodTree[] createGetterAndSetter(VariableElement field, String getterName, String setterName, Set<Modifier> useModifiers) {
-        String fieldName = field.getSimpleName().toString();
+    private MethodTree[] createGetterAndSetter(VariableElement field, Set<Modifier> useModifiers, CodeStyle cs) {
         boolean staticMod = field.getModifiers().contains(Modifier.STATIC);
-        String longName = staticMod ? "delegate." : "this.delegate." + fieldName;//NOI18N
+        String getterName = CodeStyleUtils.computeGetterName(field.getSimpleName(), field.asType().getKind() == TypeKind.BOOLEAN, staticMod, cs);
+        String setterName = CodeStyleUtils.computeSetterName(field.getSimpleName(), staticMod, cs);
+        String fieldName = field.getSimpleName().toString();
+        String longName = (staticMod ? "" : "this.") + DELEGATE + "." + fieldName;//NOI18N
         String parName = staticMod ? "a" + getCapitalizedName(field) : Utilities.isJavaIdentifier(stripPrefix(fieldName)) ? stripPrefix(fieldName) : fieldName; //NOI18N
-        String getterBody = "{return delegate." + fieldName + ";}"; //NOI18N
+        String getterBody = "{return " + DELEGATE + "." + fieldName + ";}"; //NOI18N
         StringBuilder setterBody = new StringBuilder();
         setterBody.append("{");//NOI18N
         setterBody.append(longName).append(" = ").append(parName).append(";"); //NOI18N
@@ -301,7 +306,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                  *     return this.delegate.hashCode();
                  * }
                  */
-                BlockTree body = make.Block(Collections.singletonList(make.Return(make.MethodInvocation(Collections.EMPTY_LIST, make.MemberSelect(make.Identifier("this.delegate"), "equals"), Collections.singletonList(make.MemberSelect(make.Identifier("o"), "delegate"))))), false); //NOI18N
+                BlockTree body = make.Block(Collections.singletonList(make.Return(make.MethodInvocation(Collections.EMPTY_LIST, make.MemberSelect(make.Identifier("this.delegate"), "equals"), Collections.singletonList(make.MemberSelect(make.Identifier("o"), DELEGATE))))), false); //NOI18N
                 MethodTree method = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)),
                         "equals" + refactoring.getNewName(), //NOI18N
                         make.PrimitiveType(TypeKind.BOOLEAN),
@@ -332,7 +337,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                 statements.add(
                         make.If(make.InstanceOf(make.Identifier("o"), newSimpleTypeTree), make.Block(Collections.singletonList(make.ExpressionStatement(
                         make.Assignment(make.Identifier("target"),
-                        make.MemberSelect(make.Parenthesized(make.TypeCast(newSimpleTypeTree, make.Identifier("o"))), "delegate")))), false), null));
+                        make.MemberSelect(make.Parenthesized(make.TypeCast(newSimpleTypeTree, make.Identifier("o"))), DELEGATE)))), false), null));
                 statements.add(make.Return(make.MethodInvocation(Collections.EMPTY_LIST, make.Identifier("this.delegate.equals"), Collections.singletonList(make.Identifier("target")))));
                 BlockTree body = make.Block(statements, false);
                 MethodTree method = make.Method(make.Modifiers(EnumSet.of(Modifier.PUBLIC)),

@@ -114,9 +114,15 @@ public class JsCompletionItem implements CompletionProposal {
     @Override
     public String getRhsHtml(HtmlFormatter formatter) {
         String location = null;
-        if (element instanceof JsElement && ((JsElement) element).isPlatform()) {
-            location = Bundle.JsCompletionItem_lbl_js_platform();
-        } else {
+        if (element instanceof JsElement) {
+            JsElement jsElement = (JsElement) element;
+            if (jsElement.isPlatform()) {
+                location = Bundle.JsCompletionItem_lbl_js_platform();
+            } else if (jsElement.getSourceLabel() != null) {
+                location = jsElement.getSourceLabel();
+            }
+        }
+        if (location == null) {
             location = getFileNameURL();
         }
         if (location == null) {

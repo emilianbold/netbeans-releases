@@ -826,7 +826,6 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                 if (decl != null) {
                     final Scope s = tu.attributeTreeTo(stmt, scope, decl.getLeaf());
                     TypeMirror type = cInfo.getTrees().getTypeMirror(decl);
-                    boolean isConst = ((VariableTree)decl.getLeaf()).getModifiers().getFlags().containsAll(EnumSet.of(Modifier.FINAL, Modifier.STATIC));
                     final Element element = cInfo.getTrees().getElement(decl);
                     final ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
                         public boolean accept(Element e, TypeMirror t) {
@@ -868,7 +867,7 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             };
                         }
                     };
-                    Iterator<String> names = Utilities.varNamesSuggestions(type, suggestedName, null, cInfo.getTypes(), cInfo.getElements(), loc, isConst).iterator();
+                    Iterator<String> names = Utilities.varNamesSuggestions(type, element.getKind(), ((VariableTree)decl.getLeaf()).getModifiers().getFlags(), suggestedName, null, cInfo.getTypes(), cInfo.getElements(), loc, CodeStyle.getDefault(request.getComponent().getDocument())).iterator();
                     if (names.hasNext())
                         return names.next();
                 }

@@ -39,30 +39,26 @@ package org.netbeans.modules.javafx2.platform;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery.Result;
-import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
-import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
+import org.netbeans.modules.javafx2.platform.api.JavaFxRuntimeInclusion;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
@@ -74,281 +70,205 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Tomas Zezula
  */
 @ServiceProvider(service=JavadocForBinaryQueryImplementation.class, position=11000)
-public class JavaFXPlatformJavadoc implements JavadocForBinaryQueryImplementation, PropertyChangeListener {
+public class JavaFXPlatformJavadoc implements JavadocForBinaryQueryImplementation {
 
-    private static final Logger LOG = Logger.getLogger(JavaFXPlatformJavadoc.class.getName());
-    //@GuardedBy("this")
-    private List<JavaFXSDK> sdks;
-    //@GuaredBy("this")
-    private volatile boolean sdksValid;
-    //@GuaredBy("this")
-    private PropertyEvaluator evaluator;
+    private static final Logger LOG = Logger.getLogger(JavaFXPlatformJavadoc.class.getName());    
+    private final ResultCache cache;
 
     public JavaFXPlatformJavadoc() {
-        final JavaPlatformManager jpm = JavaPlatformManager.getDefault();
-        jpm.addPropertyChangeListener(WeakListeners.propertyChange(this, jpm));
+        cache = new ResultCache();
     }
 
 
 
     @Override
     public Result findJavadoc(@NonNull final URL binaryRoot) {
-        Parameters.notNull("binaryRoot", binaryRoot);   //NOI18N
-        for (JavaFXSDK sdk : getSdks()) {
-            if (sdk.getRuntime().contains(binaryRoot)) {
-                return sdk.createJavadocResult();
+        final long st = System.currentTimeMillis();
+        try {
+            Parameters.notNull("binaryRoot", binaryRoot);   //NOI18N
+            final URL archiveURL = FileUtil.getArchiveFile(binaryRoot);
+            if (archiveURL == null) {
+                LOG.log(
+                    Level.FINE,
+                    "Ignoring {0}, not an archvive.",   //NOI18N
+                    binaryRoot);
+                return null;
             }
-        }
-        return null;
-    }
-
-    @Override
-    public void propertyChange(@NonNull final PropertyChangeEvent event) {
-        if (JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(event.getPropertyName())) {
-            sdksValid = false;
-        }
-    }
-
-    private Iterable<? extends JavaFXSDK> getSdks() {
-        synchronized (this) {
-            if (sdksValid) {
-                assert sdks != null;
-                return sdks;
+            if (!"file".equals(archiveURL.getProtocol())) {    //NOI18N
+                LOG.log(
+                    Level.FINE,
+                    "Ignoring {0}, not a local file.",   //NOI18N
+                    binaryRoot);
+                return null;
             }
+            try {
+                final File archiveFile = new File (archiveURL.toURI());
+                if (!Utils.getJavaFxRuntimeArchiveName().equals(archiveFile.getName())) {
+                    LOG.log(
+                        Level.FINE,
+                        "Ignoring {0}, not an JavaFX runtime.",   //NOI18N
+                        binaryRoot);
+                    return  null;
+                }
+                return cache.getResult(archiveFile);
+            } catch (URISyntaxException e) {
+                Exceptions.printStackTrace(e);
+                return null;
+            }
+        } finally {
+            final long et = System.currentTimeMillis();
+            LOG.log(
+                Level.FINER,
+                "findJavadoc({0}) took {1}ms.", //NOI18N
+                new Object[]{
+                    binaryRoot,
+                    et-st
+                });
         }
-        final PropertyEvaluator eval = getEvaluator();
-        final JavaPlatform[] platforms = JavaPlatformManager.getDefault().getPlatforms(
-                null,
-                new Specification(
-                    "j2se", //NOI18N
-                    null));
-        synchronized (this) {
-            if (!sdksValid) {
-                if (sdks == null) {
-                    sdks = new ArrayList<JavaFXSDK>(platforms.length);
-                    for (JavaPlatform jp : platforms) {
-                        sdks.add(JavaFXSDK.forJavaPlatform(eval, jp));
-                    }
+    }    
+    
+    //@ThreadSafe
+    private static final class ResultCache implements PropertyChangeListener {
+
+        private static final Result UNKNOWN = new Result() {
+            @Override
+            public URL[] getRoots() {
+                return new URL[0];
+            }
+            @Override
+            public void addChangeListener(ChangeListener l) {
+            }
+            @Override
+            public void removeChangeListener(ChangeListener l) {
+            }
+        };
+
+        //@GuaredBy("results")
+        private final Map<File, Result> results =
+                Collections.synchronizedMap(new HashMap<File, Result>());
+
+
+
+        ResultCache() {
+            final JavaPlatformManager jpm = JavaPlatformManager.getDefault();
+            jpm.addPropertyChangeListener(WeakListeners.propertyChange(this, jpm));
+        }
+
+        @CheckForNull
+        Result getResult(@NonNull final File file) {
+            Parameters.notNull("file", file);   //NOI18N
+            Result res = results.get(file);
+            if (res == null) {
+                final Collection<? extends JavaPlatform> jps = findJavaPlatforms(file);
+                if (!jps.isEmpty() &&
+                    !JavaFxRuntimeInclusion.forPlatform(jps.iterator().next()).isIncludedOnClassPath()) {
+                    res = new ResultImpl(jps);
                 } else {
-                    final HashMap<String,JavaPlatform> n2p = new HashMap<String,JavaPlatform>();
-                    for (JavaPlatform jp : platforms) {
-                        n2p.put(jp.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME), jp);
-                    }
-                    final HashMap<String,JavaFXSDK> n2s = new HashMap<String, JavaFXSDK>();
-                    for (JavaFXSDK sdk : sdks) {
-                        n2s.put(sdk.getAntName(), sdk);
-                    }
-                    final HashMap<String,JavaPlatform> toAdd = new HashMap<String, JavaPlatform>(n2p);
-                    toAdd.keySet().removeAll(n2s.keySet());
-                    n2s.keySet().removeAll(n2p.keySet());
-                    sdks.removeAll(n2s.values());
-                    for (JavaPlatform jp : toAdd.values()) {
-                        sdks.add(JavaFXSDK.forJavaPlatform(eval, jp));
-                    }
+                    res = UNKNOWN;
                 }
-                sdksValid = true;
-            }
-            return sdks;
-        }
-    }
-
-    private synchronized PropertyEvaluator getEvaluator() {
-        if (evaluator == null) {
-            evaluator = PropertyUtils.sequentialPropertyEvaluator(
-                PropertyUtils.globalPropertyProvider());
-        }
-        return evaluator;
-    }
-
-    private static final class JavaFXSDK implements PropertyChangeListener {
-
-        public static final String PROP_RUNTIME = "runtime";    //NOI18N
-        public static final String PROP_JAVADOC = "javadoc";    //NOI18N
-        public static final String ONLINE_PREFIX = "http://";    //NOI18N
-
-        private final PropertyEvaluator eval;
-        private final PropertyChangeSupport support;
-        private final String rtPropName;
-        private final String jdocPropName;
-        private final String antName;
-        private final AtomicReference<Collection<URL>> rt;
-        private final AtomicReference<Collection<URL>> jdoc;
-        //@GuaredBy("this")
-        private ResultImpl jdocResult;
-
-        private JavaFXSDK(
-            @NonNull final PropertyEvaluator eval,
-            @NonNull final String antName,
-            @NonNull final String rtPropName,
-            @NonNull final String jdocPropName) {
-            Parameters.notNull("eval", eval);   //NOI18N
-            Parameters.notNull("antName", antName); //NOI18N
-            Parameters.notNull("rtPropName", rtPropName);   //NOI18N
-            Parameters.notNull("jdocPropName", jdocPropName);   //NOI18N
-            this.eval = eval;
-            this.antName = antName;
-            this.rtPropName = rtPropName;
-            this.jdocPropName = jdocPropName;
-            this.rt = new AtomicReference<Collection<URL>>();
-            this.jdoc = new AtomicReference<Collection<URL>>();
-            this.support = new PropertyChangeSupport(this);
-            this.eval.addPropertyChangeListener(WeakListeners.propertyChange(this, this.eval));
-        }
-
-        @NonNull
-        Collection<? extends URL> getRuntime() {
-            Collection<URL> res = rt.get();
-            if (res == null) {
-                res = new HashSet<URL>();
-                //xxx: Don't use JavaFXPlatformUtils.getJavaFXClassPath() as it's an nonsense.
-                final String val = eval.getProperty(rtPropName);
-                if (val != null) {
-                    File f = new File(val);
-                    if(f.exists()) {
-                        res.addAll(Utils.getRuntimeClassPath(new File(val)));
-                    }
-                }
-                rt.set(res);
-            }
-            return res;
-        }
-
-        @NonNull
-        Collection<? extends URL> getJavadoc() {
-            Collection<URL> res = jdoc.get();
-            if (res == null) {
-                res = new ArrayList<URL>();
-                final String val = eval.getProperty(jdocPropName);
-                if (val != null) {
-                    if(val.startsWith(ONLINE_PREFIX)) { //NOI18N
-                        try {
-                            URL remote = new URL(adjustOnlineJavaDocURL(val));
-                            res.add(remote);
-                        } catch (MalformedURLException ex) {
-                            LOG.log(Level.WARNING, "JavaFX JavaDoc URL \"{0}\" is invalid.", val); // NOI18N
-                        }
+                synchronized (results) {
+                    final Result tmp = results.get(file);
+                    if (tmp == null) {
+                        results.put(file, res);
                     } else {
-                        for (final String path : PropertyUtils.tokenizePath(val)) {
-                            File f = new File(path);
-                            if(f.exists()) {
-                                final URL root = FileUtil.urlForArchiveOrDir(f);
-                                if (root != null) {
-                                    final FileObject rootFo = JavadocAndSourceRootDetection.findJavadocRoot(
-                                            URLMapper.findFileObject(root));
-                                    if (rootFo != null) {
-                                        res.add(rootFo.toURL());
-                                    }
-                                }
-                            }
-                        }
+                        res = tmp;
                     }
                 }
-                jdoc.set(res);
             }
-            return res;
-        }
-        
-        @NonNull
-        private String adjustOnlineJavaDocURL(@NonNull String u) {
-            String r = u.trim();
-            if(!r.startsWith(ONLINE_PREFIX)) { //NOI18N
-                r = ONLINE_PREFIX + r; //NOI18N
-            }
-            if(r.endsWith("/")) { //NOI18N
-                return r;
-            } else {
-                if(r.endsWith("htm") || r.endsWith("html")) { //NOI18N
-                    return r.substring(0, r.lastIndexOf("/") + 1); //NOI18N
-                } else {
-                    return r + "/"; //NOI18N
-                }
-            }
-        }
-
-        @NonNull
-        String getAntName() {
-            return antName;
-        }
-
-        @NonNull
-        synchronized JavadocForBinaryQuery.Result createJavadocResult() {
-            if (jdocResult == null) {
-                jdocResult = new ResultImpl(this);
-            }
-            return jdocResult;
-        }
-
-        public void addPropertyChangeListener(@NonNull final PropertyChangeListener listener) {
-            Parameters.notNull("listener", listener);   //NOI18N
-            this.support.addPropertyChangeListener(listener);
-        }
-
-        public void removePropertyChangeListener(@NonNull final PropertyChangeListener listener) {
-            Parameters.notNull("listener", listener);   //NOI18N
-            this.support.removePropertyChangeListener(listener);
+            return res == UNKNOWN ? null : res;
         }
 
         @Override
-        public void propertyChange(final PropertyChangeEvent event) {
-            final String propName = event.getPropertyName();
-            if (propName == null) {
-                rt.set(null);
-                jdoc.set(null);
-                support.firePropertyChange(PROP_RUNTIME, null, null);
-                support.firePropertyChange(PROP_JAVADOC, null, null);
-            } else if (rtPropName.equals(propName)) {
-                rt.set(null);
-                support.firePropertyChange(PROP_RUNTIME, null, null);
-            } else if (jdocPropName.equals(propName)) {
-                jdoc.set(null);
-                support.firePropertyChange(PROP_JAVADOC, null, null);
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(evt.getPropertyName())) {
+                results.clear();
             }
         }
 
         @NonNull
-        static JavaFXSDK forJavaPlatform(
-            @NonNull final PropertyEvaluator eval,
-            @NonNull final JavaPlatform platform) {
-            Parameters.notNull("platform", platform);   //NOI18N
-            final String antName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
-            final String rtPropName = Utils.getRuntimePropertyKey(platform);
-            final String jdocPropName = Utils.getJavadocPropertyKey(platform);
-            return new JavaFXSDK(eval, antName, rtPropName, jdocPropName);
+        private Collection<? extends JavaPlatform> findJavaPlatforms(@NonNull final File jfxrt) {
+            final JavaPlatform[] jps = JavaPlatformManager.getDefault().getPlatforms(
+                    null,
+                    new Specification(
+                        "j2se", //NOI18N
+                        null));
+            final Collection<JavaPlatform> res = new ArrayList<JavaPlatform>(jps.length);
+            final FileObject jfxrfFo = FileUtil.toFileObject(jfxrt);
+            if (jfxrfFo != null) {
+                for (JavaPlatform jp : jps) {
+                    for (FileObject installFolder : jp.getInstallFolders()) {
+                        if (FileUtil.isParentOf(installFolder, jfxrfFo)) {
+                            res.add(jp);
+                        }
+                    }
+                }
+            }
+            return res;
         }
+
     }
 
     private static final class ResultImpl implements JavadocForBinaryQuery.Result, PropertyChangeListener {
 
-        private final JavaFXSDK sdk;
+        private final Collection<? extends JavaPlatform> plaforms;
         private final ChangeSupport support;
 
-        private ResultImpl(@NonNull final JavaFXSDK sdk) {
-            Parameters.notNull("sdk", sdk); //NOI18N
-            this.sdk = sdk;
+        ResultImpl(@NonNull final Collection<? extends JavaPlatform> platforms) {
+            Parameters.notNull("platforms", platforms); //NOI18N
+            this.plaforms = platforms;
+            for (JavaPlatform jp : this.plaforms) {
+                jp.addPropertyChangeListener(WeakListeners.propertyChange(this, jp));
+            }
             this.support = new ChangeSupport(this);
-            this.sdk.addPropertyChangeListener(WeakListeners.propertyChange(this, sdk));
         }
 
         @Override
         public URL[] getRoots() {
-            return sdk.getJavadoc().toArray(new URL[0]);
+            try {
+                final long st = System.currentTimeMillis();
+                final Set<URI> collector = new LinkedHashSet<URI>();
+                for (JavaPlatform jp : plaforms) {
+                    for (URL jdoc : jp.getJavadocFolders()) {
+                        collector.add(jdoc.toURI());
+                    }
+                }
+                final URL[] res = new URL[collector.size()];
+                int i = 0;
+                for (URI uri : collector) {
+                    res[i++] = uri.toURL();
+                }
+                final long et = System.currentTimeMillis();
+                LOG.log(
+                    Level.FINER,
+                    "getRoots() -> {0} took: {1}ms",    //NOI18N
+                    new Object[]{
+                        collector,
+                        et-st
+                    });
+                return res;
+            } catch (URISyntaxException e) {
+                Exceptions.printStackTrace(e);
+            } catch (MalformedURLException e) {
+                Exceptions.printStackTrace(e);
+            }
+            return new URL[0];
         }
 
         @Override
         public void addChangeListener(@NonNull final ChangeListener l) {
-            Parameters.notNull("l", l);
+            Parameters.notNull("l", l); //NOI18N
             support.addChangeListener(l);
         }
 
         @Override
         public void removeChangeListener(@NonNull final ChangeListener l) {
-            Parameters.notNull("l", l);
+            Parameters.notNull("l", l);     //NOI18N
             support.removeChangeListener(l);
         }
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (JavaFXSDK.PROP_JAVADOC.equals(evt.getPropertyName())) {
+            if (JavaPlatform.PROP_JAVADOC_FOLDER.equals(evt.getPropertyName())) {
                 support.fireChange();
             }
         }

@@ -48,9 +48,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
-import org.netbeans.modules.web.common.api.Pair;
+
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 
 /**
  *
@@ -152,7 +153,7 @@ public class PropertiesReader {
             }
             String key = loadConvert(lr.lineBuf, 0, keyLen, convtBuf);
             String value = loadConvert(lr.lineBuf, valueStart, limit - valueStart, convtBuf);
-            col.add(new Pair<String, String>(key, value));
+            col.add(Pair.<String, String>of(key, value));
         }
     }
 

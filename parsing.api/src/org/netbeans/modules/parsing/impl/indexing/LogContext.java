@@ -49,6 +49,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
@@ -1038,11 +1039,11 @@ import org.openide.util.Utilities;
                 return;
             }
             
-            LOG.log(Level.WARNING, "Excessive indexing rate detected: " + dataSize(found.first, found.second) + " in " + minutes + "mins, treshold is " + treshold + 
+            LOG.log(Level.WARNING, "Excessive indexing rate detected: " + dataSize(found.first(), found.second()) + " in " + minutes + "mins, treshold is " + treshold +
                     ". Dumping suspicious contexts");
             int index;
             
-             for (index = found.first; index != found.second; index = (index + 1) % times.length) {
+             for (index = found.first(); index != found.second(); index = (index + 1) % times.length) {
                 contexts[index].log(false, false);
             }
             LOG.log(Level.WARNING, "=== End excessive indexing");

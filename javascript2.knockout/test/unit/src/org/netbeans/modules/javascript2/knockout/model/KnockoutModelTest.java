@@ -65,7 +65,6 @@ import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionReference;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelTestBase;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
-import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -153,6 +152,18 @@ public class KnockoutModelTest extends ModelTestBase {
 
     public void testExtend2() throws Exception {
         checkModel("testfiles/model/extend2.js");
+    }
+
+    public void testBindings1() throws Exception {
+        checkModel("testfiles/model/bindings1.js");
+    }
+
+    public void testBindings2() throws Exception {
+        checkModel("testfiles/model/bindings2.js");
+    }
+
+    public void testBindings3() throws Exception {
+        checkModel("testfiles/model/bindings3.js");
     }
 
     @Override

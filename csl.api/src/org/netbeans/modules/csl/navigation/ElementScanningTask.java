@@ -100,7 +100,7 @@ public abstract class ElementScanningTask extends IndexingAwareParserResultTask<
     /**
      * Reference to the last result of parsing processed into structure.
      */
-    private final Map<Snapshot, Reference<ResultStructure>> lastResults = 
+    private static final Map<Snapshot, Reference<ResultStructure>> lastResults = 
             new WeakHashMap<Snapshot, Reference<ResultStructure>>();
 
     /**
@@ -123,7 +123,7 @@ public abstract class ElementScanningTask extends IndexingAwareParserResultTask<
     }
     
     // not synchronized as the Task invocation itself is synced by parsing API
-    private List<? extends StructureItem> findCachedStructure(Snapshot s, Parser.Result r) {
+    public static List<? extends StructureItem> findCachedStructure(Snapshot s, Parser.Result r) {
         if (!(r instanceof ParserResult)) {
             return null;
         }
@@ -142,7 +142,7 @@ public abstract class ElementScanningTask extends IndexingAwareParserResultTask<
     }
     
     // not synchronized as the Task invocation itself is synced by parsing API
-    private void markProcessed(Parser.Result r, List<? extends StructureItem> structure) {
+    public static void markProcessed(Parser.Result r, List<? extends StructureItem> structure) {
         lastResults.put(r.getSnapshot(), new WeakReference(new ResultStructure(r, structure)));
     }
 

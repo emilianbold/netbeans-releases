@@ -52,6 +52,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.openide.filesystems.FileObject;
@@ -71,14 +72,16 @@ public class AddPropertyPanel extends javax.swing.JPanel {
     private DocumentListener propNameTextFieldDocumentListener;
     private FileObject file;
     private String className;
+    private final CodeStyle cs;
     private List<String> existingFields;
     private String[] pcsName;
     private String[] vcsName;
     private JButton okButton;
     
-    public AddPropertyPanel(FileObject file, String className, List<String> existingFields, String[] pcsName, String[] vcsName, JButton okButton) {
+    public AddPropertyPanel(FileObject file, String className, CodeStyle cs, List<String> existingFields, String[] pcsName, String[] vcsName, JButton okButton) {
         this.file = file;
         this.className = className;
+        this.cs = cs;
         this.existingFields = existingFields;
         this.pcsName = pcsName;
         this.vcsName = vcsName;
@@ -162,7 +165,7 @@ public class AddPropertyPanel extends javax.swing.JPanel {
             }
         }
         
-        final String previewTemplate = new AddPropertyGenerator().generate(getAddPropertyConfig());
+        final String previewTemplate = new AddPropertyGenerator().generate(getAddPropertyConfig(), cs);
         previewEditorPane.setText(previewTemplate);
         
         String error = resolveError();

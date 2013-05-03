@@ -75,7 +75,8 @@ import org.openide.filesystems.URLMapper;
  * @author  Marian Petras
  */
 public final class PropertiesEncoding extends FileEncodingQueryImplementation {
-    
+
+    static final String PROP_CHARSET_NAME = "ISO-8859-1";
     /*
      * TO DO:
      * 
@@ -87,6 +88,13 @@ public final class PropertiesEncoding extends FileEncodingQueryImplementation {
     @Override
     public Charset getEncoding(FileObject file) {
         assert !file.isValid() || file.isData();
+        Object attribute = file.getAttribute(PropertiesDataNode.PROPERTY_ENCODING);
+        if (attribute != null) {
+            boolean useProjectEncoding = (Boolean) attribute;
+            if (useProjectEncoding) {
+                return null;
+            }
+        }
         try {
             return new PropCharset(file);
         } catch (FileStateInvalidException ex) {
@@ -103,14 +111,14 @@ public final class PropertiesEncoding extends FileEncodingQueryImplementation {
         private URL fileURL;
         
         PropCharset(FileObject file) throws FileStateInvalidException {
-            super("ISO-8859-1", null);                     //NOI18N
+            super(PROP_CHARSET_NAME, null);                     //NOI18N
             fileRef = new WeakReference<FileObject>(file);
             file.addFileChangeListener(this);
             updateURL(file);
         }
 
         PropCharset() {
-            super("ISO-8859-1", null);                     //NOI18N
+            super(PROP_CHARSET_NAME, null);                     //NOI18N
             fileRef = null;
         }
 

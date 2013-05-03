@@ -105,6 +105,44 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="platform-filter">
+            <api name="java-api-common"/>
+            <summary>Added PlatformFilter interface.</summary>
+            <version major="1" minor="49"/>
+            <date day="30" month="4" year="2013"/>
+            <author login="psomol"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added interface <code>PlatformFilter</code> to enable filtering out
+                    Java Platforms from UI lists. The primary usecase is to enable
+                    projects that are extensions of SE project to hook into project
+                    UI provided by SE project. More specifically, FX projects need
+                    to hide non-FX platforms in Project Properties panels belonging to SE.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.ui" name="PlatformFilter"/>
+            <issue number="212238"/>
+        </change>
+        <change id="api-package-modification">
+            <api name="java-api-common"/>
+            <summary>New API <code>PackageModificationImplementation</code></summary>
+            <version major="1" minor="47"/>
+            <date day="10" month="4" year="2013"/>
+            <author login="mkozeny"/>
+            <compatibility semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added new API <code>PackageModificationImplementation</code>, which provides methods
+                    for getting all available packages (<code>getPackagesToExport</code>)
+                    and all public packages (<code>getPublicPackages</code>),
+                    (un)exporting them (<code>exportPackageAction</code>).
+                    This API is used by <code>ExportPackageAction</code> located in non-public package <code>org.netbeans.modules.java.api.common.impl</code>
+                    which is action implemented for exporting package(s) from NetBeans Module Project.
+                </p>
+            </description>
+            <issue number="202329"/>
+        </change>
         <change id="jre-profiles">
             <api name="java-api-common"/>
             <summary>Added UI support for JRE profiles.</summary>

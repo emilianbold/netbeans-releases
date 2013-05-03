@@ -66,6 +66,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
@@ -459,10 +460,13 @@ public class CommentsPanel extends JPanel {
                 if (l != null && l instanceof AttachmentLink) {
                     BugzillaIssue.Attachment attachment = ((AttachmentLink) l).attachment;
                     if (attachment != null) {
-                        add(new JMenuItem(attachment.new DefaultAttachmentAction()));
-                        add(new JMenuItem(attachment.new SaveAttachmentAction()));
-                        if ("1".equals(attachment.getIsPatch())) { // NOI18N
-                            add(attachment.new ApplyPatchAction());
+                        add(new JMenuItem(attachment.getOpenAction()));
+                        add(new JMenuItem(attachment.getSaveAction()));
+                        if (attachment.isPatch()) { 
+                            Action a = attachment.getApplyPatchAction();
+                            if(a != null) {
+                                add(attachment.getApplyPatchAction());
+                            }
                         }
                         super.setVisible(true);
                     }

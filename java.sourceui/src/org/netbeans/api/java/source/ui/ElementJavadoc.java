@@ -79,13 +79,13 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.java.preprocessorbridge.api.JavaSourceUtil;
 import org.netbeans.modules.java.source.JavadocHelper;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
 
@@ -344,7 +344,7 @@ public class ElementJavadoc {
         this.cpInfo = compilationInfo.getClasspathInfo();
         this.handle = element == null ? null : ElementHandle.create(element);
         this.cancel = cancel;
-        Doc doc = context.second.javaDocFor(element);
+        Doc doc = context.second().javaDocFor(element);
         boolean localized = false;
         StringBuilder content = new StringBuilder();
         JavadocHelper.TextStream page = null;
@@ -397,7 +397,7 @@ public class ElementJavadoc {
                     c.toPhase(Phase.RESOLVED);
                     final Element element = handle.resolve(c);
                     Pair<Trees,ElementUtilities> context = Pair.of(c.getTrees(), c.getElementUtilities());
-                    Doc doc = context.second.javaDocFor(element);
+                    Doc doc = context.second().javaDocFor(element);
                     JavadocHelper.TextStream page = JavadocHelper.getJavadoc(element, cancel);
                     return prepareContent(contentFin, doc,localizedFin, page, cancel, false, context).get();
                 }
@@ -787,7 +787,7 @@ public class ElementJavadoc {
         StringBuilder sb = new StringBuilder();
         ClassDoc cls = peDoc.containingClass();
         if (cls != null) {
-            Element e = ctx.second.elementFor(cls);
+            Element e = ctx.second().elementFor(cls);
             if (e != null) {
                 switch(e.getEnclosingElement().getKind()) {
                     case ANNOTATION_TYPE:
@@ -806,7 +806,7 @@ public class ElementJavadoc {
             PackageDoc pkg = peDoc.containingPackage();
             if (pkg != null) {
                 sb.append("<font size='+0'><b>"); //NOI18N
-                createLink(sb, ctx.second.elementFor(pkg), makeNameLineBreakable(pkg.name()));
+                createLink(sb, ctx.second().elementFor(pkg), makeNameLineBreakable(pkg.name()));
                 sb.append("</b></font>"); //NOI18N)
             }
         }
@@ -973,7 +973,7 @@ public class ElementJavadoc {
                     sb.append('('); //NOI18N
                     for (int i = 0; i < pairs.length; i++) {
                         AnnotationTypeElementDoc ated = pairs[i].element();
-                        createLink(sb, ctx.second.elementFor(ated), ated.name());
+                        createLink(sb, ctx.second().elementFor(ated), ated.name());
                         sb.append('='); //NOI18N
                         appendAnnotationValue(sb, pairs[i].value(), ctx);
                         if (i < pairs.length - 1)
@@ -1009,7 +1009,7 @@ public class ElementJavadoc {
             if (length > 1)
                 sb.append('}'); //NOI18N
         } else if (value instanceof Doc) {
-            createLink(sb, ctx.second.elementFor((Doc)value), ((Doc)value).name());
+            createLink(sb, ctx.second().elementFor((Doc)value), ((Doc)value).name());
         } else {
             sb.append(value.toString());
         }
@@ -1061,7 +1061,7 @@ public class ElementJavadoc {
                 thr.append("<code>"); //NOI18N
                 Type exType = throwsTag.exceptionType();
                 if (exType != null) {
-                    createLink(thr, ctx.second.elementFor(exType.asClassDoc()), exType.simpleTypeName());
+                    createLink(thr, ctx.second().elementFor(exType.asClassDoc()), exType.simpleTypeName());
                 } else {
                     thr.append(throwsTag.exceptionName());
                 }
@@ -1090,7 +1090,7 @@ public class ElementJavadoc {
                 String label = stag.label();
                 if (memberName != null) {
                     if (refClass != null) {
-                        createLink(see, ctx.second.elementFor(stag.referencedMember()), "<code>" + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + "</code>"); //NOI18N
+                        createLink(see, ctx.second().elementFor(stag.referencedMember()), "<code>" + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + "</code>"); //NOI18N
                     } else {
                         see.append(className);
                         see.append('.'); //NOI18N
@@ -1099,9 +1099,9 @@ public class ElementJavadoc {
                     see.append(", "); //NOI18N
                 } else if (className != null) {
                     if (refClass != null) {
-                        createLink(see, ctx.second.elementFor(refClass), "<code>" + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + "</code>"); //NOI18N
+                        createLink(see, ctx.second().elementFor(refClass), "<code>" + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + "</code>"); //NOI18N
                     } else if (refPackage != null) {
-                        createLink(see, ctx.second.elementFor(refPackage), "<code>" + (label != null && label.length() > 0 ? label : refPackage.name()) + "</code>"); //NOI18N
+                        createLink(see, ctx.second().elementFor(refPackage), "<code>" + (label != null && label.length() > 0 ? label : refPackage.name()) + "</code>"); //NOI18N
                     } else {
                         see.append(className);
                     }
@@ -1159,7 +1159,7 @@ public class ElementJavadoc {
                 thr.append("<code>"); //NOI18N
                 Type exType = ((ThrowsTag)tag).exceptionType();
                 if (exType != null)
-                    createLink(thr, ctx.second.elementFor(exType.asClassDoc()), exType.simpleTypeName());
+                    createLink(thr, ctx.second().elementFor(exType.asClassDoc()), exType.simpleTypeName());
                 else
                     thr.append(((ThrowsTag)tag).exceptionName());
                 thr.append("</code>"); //NOI18N
@@ -1181,7 +1181,7 @@ public class ElementJavadoc {
                 String label = stag.label();
                 if (memberName != null) {
                     if (refClass != null) {
-                        createLink(see, ctx.second.elementFor(stag.referencedMember()), "<code>" + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + "</code>"); //NOI18N
+                        createLink(see, ctx.second().elementFor(stag.referencedMember()), "<code>" + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + "</code>"); //NOI18N
                     } else {
                         see.append(className);
                         see.append('.'); //NOI18N
@@ -1190,9 +1190,9 @@ public class ElementJavadoc {
                     see.append(", "); //NOI18N
                 } else if (className != null) {
                     if (refClass != null) {
-                        createLink(see, ctx.second.elementFor(refClass), "<code>" + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + "</code>"); //NOI18N
+                        createLink(see, ctx.second().elementFor(refClass), "<code>" + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + "</code>"); //NOI18N
                     } else if (refPackage != null) {
-                        createLink(see, ctx.second.elementFor(refPackage), "<code>" + (label != null && label.length() > 0 ? label : refPackage.name()) + "</code>"); //NOI18N
+                        createLink(see, ctx.second().elementFor(refPackage), "<code>" + (label != null && label.length() > 0 ? label : refPackage.name()) + "</code>"); //NOI18N
                     } else {
                         see.append(className);
                     }
@@ -1262,7 +1262,7 @@ public class ElementJavadoc {
                     boolean plain = LINKPLAIN_TAG.equals(stag.name());
                     if (memberName != null) {
                         if (refClass != null) {
-                            createLink(sb, ctx.second.elementFor(stag.referencedMember()), (plain ? "" : "<code>") + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + (plain ? "" : "</code>")); //NOI18N
+                            createLink(sb, ctx.second().elementFor(stag.referencedMember()), (plain ? "" : "<code>") + (label != null && label.length() > 0 ? label : (refClass.simpleTypeName() + "." + memberName)) + (plain ? "" : "</code>")); //NOI18N
                         } else {
                             sb.append(stag.referencedClassName());
                             sb.append('.'); //NOI18N
@@ -1270,9 +1270,9 @@ public class ElementJavadoc {
                         }
                     } else {
                         if (refClass != null) {
-                            createLink(sb, ctx.second.elementFor(refClass), (plain ? "" : "<code>") + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + (plain ? "" : "</code>")); //NOI18N
+                            createLink(sb, ctx.second().elementFor(refClass), (plain ? "" : "<code>") + (label != null && label.length() > 0 ? label : refClass.simpleTypeName()) + (plain ? "" : "</code>")); //NOI18N
                         } else if (refPackage != null) {
-                            createLink(sb, ctx.second.elementFor(refPackage), (plain ? "" : "<code>") + (label != null && label.length() > 0 ? label : refPackage.name()) + (plain ? "" : "</code>")); //NOI18N
+                            createLink(sb, ctx.second().elementFor(refPackage), (plain ? "" : "<code>") + (label != null && label.length() > 0 ? label : refPackage.name()) + (plain ? "" : "</code>")); //NOI18N
                         } else {
                             String className = stag.referencedClassName();
                             sb.append(className != null ? className : stag.text());
@@ -1383,7 +1383,7 @@ public class ElementJavadoc {
                 String tName = cd != null ? cd.name() : type.simpleTypeName();
                 if (cd != null && cd.isAnnotationType() && annotation)
                     tName = "@" + tName; //NOI18N
-                len += createLink(sb, ctx.second.elementFor(type.asClassDoc()), tName);
+                len += createLink(sb, ctx.second().elementFor(type.asClassDoc()), tName);
                 ParameterizedType pt = type.asParameterizedType();
                 if (pt != null) {
                     Type[] targs = pt.typeArguments();
@@ -1433,7 +1433,7 @@ public class ElementJavadoc {
             for (ClassDoc ifaceDoc : cdoc.interfaces()) {
                 for (MethodDoc methodDoc : ifaceDoc.methods(false)) {
                     if (mdoc.overrides(methodDoc)) {
-                        Element e = ctx.second.elementFor(methodDoc);
+                        Element e = ctx.second().elementFor(methodDoc);
                         boolean isLocalized = false;
                         if (e != null) {
                             inheritedPage = JavadocHelper.getJavadoc(e, cancel);
@@ -1441,7 +1441,7 @@ public class ElementJavadoc {
                                 docURL = inheritedPage.getLocation();
                             }
                             if (!(isLocalized = isLocalized(docURL, e)))
-                                ctx.first.getTree(e);
+                                ctx.first().getTree(e);
                         }
                         if (!isLocalized) {
                             List<Tag> inheritedInlineTags = null;
@@ -1606,7 +1606,7 @@ public class ElementJavadoc {
             if (superclass != null) { //NOI18N
                 for (MethodDoc methodDoc : superclass.methods(false)) {
                     if (mdoc.overrides(methodDoc)) {
-                        Element e = ctx.second.elementFor(methodDoc);
+                        Element e = ctx.second().elementFor(methodDoc);
                         boolean isLocalized = false;
                         if (e != null) {
                             inheritedPage = JavadocHelper.getJavadoc(e, cancel);
@@ -1614,7 +1614,7 @@ public class ElementJavadoc {
                                 docURL = inheritedPage.getLocation();
                             }
                             if (!(isLocalized = isLocalized(docURL, e)))
-                                ctx.first.getTree(e);
+                                ctx.first().getTree(e);
                         }
                         if (!isLocalized) {
                             List<Tag> inheritedInlineTags = null;

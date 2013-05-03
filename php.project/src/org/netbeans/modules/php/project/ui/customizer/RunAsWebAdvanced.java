@@ -73,7 +73,6 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -90,6 +89,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * @author Tomas Mysik
@@ -318,8 +318,8 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
                 local = locals.get(i);
             }
             Pair<String, String> pathMapping = getPathMapping(remotes.get(i), local);
-            paths[i][COLUMN_REMOTE_PATH] = pathMapping.first;
-            paths[i][COLUMN_LOCAL_PATH] = new LocalPathCell(pathMapping.second);
+            paths[i][COLUMN_REMOTE_PATH] = pathMapping.first();
+            paths[i][COLUMN_LOCAL_PATH] = new LocalPathCell(pathMapping.second());
         }
         paths[remotesSize][COLUMN_REMOTE_PATH] = null;
         paths[remotesSize][COLUMN_LOCAL_PATH] = new LocalPathCell(DEFAULT_LOCAL_PATH);

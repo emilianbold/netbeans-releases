@@ -57,8 +57,8 @@ import javax.swing.plaf.UIResource;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
-import org.netbeans.modules.refactoring.java.Pair;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
+import org.openide.util.Pair;
 
 /**
  *
@@ -238,13 +238,13 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
     @SuppressWarnings("unchecked")
     String getMethodDeclaringClass() {
         Pair<Pair<String, Icon>, TreePathHandle> selectedItem = (Pair<Pair<String, Icon>, TreePathHandle>) jComboBox1.getSelectedItem();
-        return selectedItem.first.first;
+        return selectedItem.first().first();
     }
 
     @SuppressWarnings("unchecked")
     public TreePathHandle getMethodHandle() {
         Pair<Pair<String, Icon>, TreePathHandle> selectedItem = (Pair<Pair<String, Icon>, TreePathHandle>) jComboBox1.getSelectedItem();
-        return selectedItem == null ? tph : selectedItem.second;
+        return selectedItem == null ? tph : selectedItem.second();
     }
 
     public boolean isMethodFromBaseClass() {
@@ -291,8 +291,8 @@ public class WhereUsedPanelMethod extends WhereUsedPanel.WhereUsedInnerPanel {
                     setIcon(getEmptyIcon());
                 } else {
                     Pair<Pair<String, Icon>, TreePathHandle> selectedPair = (Pair<Pair<String, Icon>, TreePathHandle>) value;
-                    setText(selectedPair.first.first);
-                    setIcon(selectedPair.first.second);
+                    setText(selectedPair.first().first());
+                    setIcon(selectedPair.first().second());
                 }
             } else {
                 setText(null);

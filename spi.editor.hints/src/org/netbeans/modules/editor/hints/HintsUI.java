@@ -50,6 +50,9 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
 import java.awt.HeadlessException;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -307,12 +310,12 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
 
 //        SwingUtilities.convertPointToScreen(p, comp);
 
-        Dimension maxSize = Toolkit.getDefaultToolkit().getScreenSize();
+        Rectangle maxSize = getScreenBounds();
         maxSize.width -= p.x;
         maxSize.height -= p.y;
 
         subhintListComponent =
-                new ScrollCompletionPane(comp, new FixData(ErrorDescriptionFactory.lazyListForFixes(ff), ErrorDescriptionFactory.lazyListForFixes(Arrays.<Fix>asList())), null, null, maxSize);
+                new ScrollCompletionPane(comp, new FixData(ErrorDescriptionFactory.lazyListForFixes(ff), ErrorDescriptionFactory.lazyListForFixes(Arrays.<Fix>asList())), null, null, new Dimension(maxSize.width, maxSize.height));
 
         subhintListComponent.getView().addMouseListener (this);
         subhintListComponent.getView().addMouseMotionListener(this);
@@ -355,11 +358,11 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
             Point p = new Point (r.x + 5, r.y + 20);
             SwingUtilities.convertPointToScreen(p, comp);
             
-            Dimension maxSize = Toolkit.getDefaultToolkit().getScreenSize();
+            Rectangle maxSize = getScreenBounds();
             maxSize.width -= p.x;
             maxSize.height -= p.y;
             hintListComponent = 
-                    new ScrollCompletionPane(comp, hints, null, null, maxSize);
+                    new ScrollCompletionPane(comp, hints, null, null, new Dimension(maxSize.width, maxSize.height));
 
             hintListComponent.getView().addMouseListener (this);
             hintListComponent.getView().addMouseMotionListener(this);
@@ -502,14 +505,21 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
     }
 
     private Rectangle getScreenBounds() throws HeadlessException {
-        JTextComponent comp = getComponent();
-        Rectangle screenBounds = null;
-        if (null != comp && null != comp.getGraphicsConfiguration()) {
-            screenBounds = comp.getGraphicsConfiguration().getBounds();
-        } else {
-            screenBounds = new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
-        }
-        return screenBounds;
+      Rectangle virtualBounds = new Rectangle();
+      GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
+      GraphicsDevice[] gs = ge.getScreenDevices();
+
+      if (gs.length == 0) return new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+
+      for (int j = 0; j < gs.length; j++) {
+          GraphicsDevice gd = gs[j];
+          GraphicsConfiguration[] gc = gd.getConfigurations();
+          for (int i=0; i < gc.length; i++) {
+              virtualBounds = virtualBounds.union(gc[i].getBounds());
+          }
+      }
+
+      return virtualBounds;
     }
 
     private int getUsableWidth(JTextComponent component) {

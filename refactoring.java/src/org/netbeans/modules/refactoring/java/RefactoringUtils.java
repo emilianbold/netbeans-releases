@@ -56,9 +56,11 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.*;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
+import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.ClassPath.Entry;
@@ -90,7 +92,6 @@ public class RefactoringUtils {
 
     private static final String JAVA_MIME_TYPE = "text/x-java"; // NOI18N
     private static final Logger LOG = Logger.getLogger(RefactoringUtils.class.getName());
-    private static final RequestProcessor RP = new RequestProcessor(RefactoringUtils.class.getName(), 1, false, false);
 
     /**
      * Get all overriding methods for given ExecutableElement
@@ -194,6 +195,27 @@ public class RefactoringUtils {
             }
         }
         return result;
+    }
+    
+    public static CodeStyle getCodeStyle(CompilationInfo info) {
+        if (info != null) {
+            try {
+                Document doc = info.getDocument();
+                if (doc != null) {
+                    CodeStyle cs = (CodeStyle)doc.getProperty(CodeStyle.class);
+                    return cs != null ? cs : CodeStyle.getDefault(doc);
+                }
+            } catch (IOException ioe) {
+                // ignore
+            }
+
+            FileObject file = info.getFileObject();
+            if (file != null) {
+                return CodeStyle.getDefault(file);
+            }
+        }
+
+        return CodeStyle.getDefault((Document)null);
     }
 
     /**
@@ -879,7 +901,11 @@ public class RefactoringUtils {
     }
 
     public static boolean isSetter(CompilationInfo info, ExecutableElement el, Element propertyElement) {
-        String setterName = getSetterName(propertyElement.getSimpleName().toString());
+        CodeStyle codeStyle = getCodeStyle(info);
+        String setterName = CodeStyleUtils.computeSetterName(
+                propertyElement.getSimpleName(),
+                propertyElement.getModifiers().contains(Modifier.STATIC),
+                codeStyle);
 
         return el.getSimpleName().contentEquals(setterName)
                 && el.getReturnType().getKind() == TypeKind.VOID
@@ -888,39 +914,32 @@ public class RefactoringUtils {
     }
 
     public static boolean isGetter(CompilationInfo info, ExecutableElement el, Element propertyElement) {
-        String getterName = getGetterName(propertyElement.getSimpleName().toString());
+        CodeStyle codeStyle = getCodeStyle(info);
+        String getterName = CodeStyleUtils.computeGetterName(
+                propertyElement.getSimpleName(),
+                propertyElement.asType().getKind() == TypeKind.BOOLEAN,
+                propertyElement.getModifiers().contains(Modifier.STATIC),
+                codeStyle);
         return el.getSimpleName().contentEquals(getterName)
                 && info.getTypes().isSameType(el.getReturnType(),propertyElement.asType())
                 && el.getParameters().isEmpty();
     }
+    
+    public static String removeFieldPrefixSuffix(Element var, CodeStyle cs) {
+        boolean isStatic = var.getModifiers().contains(Modifier.STATIC);
+        return CodeStyleUtils.removePrefixSuffix(var.getSimpleName(),
+                isStatic ? cs.getStaticFieldNamePrefix() : cs.getFieldNamePrefix(),
+                isStatic ? cs.getStaticFieldNameSuffix() : cs.getFieldNameSuffix());
+    }
+    
+    public static String addParamPrefixSuffix(CharSequence name, CodeStyle cs) {
+        return CodeStyleUtils.addPrefixSuffix(name,
+                cs.getParameterNamePrefix(),
+                cs.getParameterNameSuffix());
+    }
 
     public static String getTestMethodName(String propertyName) {
-	return "test" + capitalizeFirstLetter(propertyName); //NOI18N
-    }
-
-    public static String getGetterName(String propertyName) {
-        return "get" + capitalizeFirstLetter(propertyName); //NOI18N
-    }
-
-    public static String getSetterName(String propertyName) {
-        return "set" + capitalizeFirstLetter(propertyName); //NOI18N
-    }
-
-    /**
-     * Utility method capitalizes the first letter of string, used to generate
-     * method names for patterns
-     *
-     * @param str The string for capitalization.
-     * @return String with the first letter capitalized.
-     */
-    private static String capitalizeFirstLetter(String str) {
-        if (str == null || str.length() <= 0) {
-            return str;
-        }
-
-        char chars[] = str.toCharArray();
-        chars[0] = Character.toUpperCase(chars[0]);
-        return new String(chars);
+	return "test" + CodeStyleUtils.getCapitalizedName(propertyName); //NOI18N
     }
 
     public static boolean isWeakerAccess(Set<Modifier> modifiers, Set<Modifier> modifiers0) {

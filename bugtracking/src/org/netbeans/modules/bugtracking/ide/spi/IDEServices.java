@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.bugtracking.ide.spi;
 
+import java.io.File;
+import java.io.IOException;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -51,14 +53,71 @@ import org.openide.filesystems.FileObject;
 public interface IDEServices {
     
     public boolean providesOpenDocument();
-    public void openDocument(String path, int offset);
+    public void openDocument(String resourcePath, int offset);
     
-    public boolean providesSearchResource();
-    public FileObject searchResource(String path);
+    public boolean providesFindFile();
+    // XXX to be clarified if FileObject or if URL would be eventually better.
+    // used when opening search history for a file given by a stacktrace.
+    // Note, that io.File wouldn't work for VCS on remote filesystems 
+    public FileObject findFile(String resourcePath);
         
     public boolean providesJumpTo();
     public void jumpTo(String label, String resource);
+
+    public boolean providesPluginUpdate();
     
+    public Plugin getPluginUpdates(String cnb, String pluginName);
+
+    public boolean providesPatchUtils();
+
+    /**
+     * Applies the given patch file.
+     * 
+     * @param patchFile the patch files
+     * @param context the context on which the patch should be applied
+     * @throws PatchException
+     * @throws IOException - the patch is invalid or cannot be applied
+     */
+    public void applyPatch(File patchFile, File context) throws IOException;
+
+    /**
+     * Determines whether the given file is in a recognized patch format.
+     * 
+     * @param file
+     * @return true in case the file is a patch, otherwise false
+     * @throws IOException in case something is wrong with the file
+     */
+    public boolean isPatch(File file) throws IOException;
+
+    /**
+     * Open a chooser providing a way to select a file somehow related to the IDE 
+     * e.g. an expandable list of projects relevant to the what is currently 
+     * opened in the IDE, so that the context for a patch action might be determined.
+     * 
+     * @return 
+     */
+    public File selectFileContext();
+
+    public boolean providesSearchHistory(File file);
     
+    /**
+     * Meant to open a VCS history view where:
+     * - it is possible to traverse the given files history entries 
+     * - a diff view is provided, showing the selected revision compared against 
+     * it's parent and positioned on the given line.
+     *
+     * @param file Must be a versioned file (not a folder), otherwise false is returned 
+     * and the panel won't be opened
+     * @param lineNumber requested line number to lock on
+     * @return true if parameters are valid and the search history panel is opened, otherwise false
+     */
+    public boolean searchHistory(File file, int line);
     
+    /**
+     * Provides access to a downloadable plugin - e.g. from the NetBeans UC
+     */
+    public interface Plugin {
+        String getDescription();
+        boolean openInstallWizard();
+    }
 }

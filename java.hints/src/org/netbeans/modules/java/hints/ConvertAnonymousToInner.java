@@ -83,7 +83,6 @@ import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.api.java.source.support.SelectionAwareJavaSourceTaskFactory;
 import org.netbeans.modules.java.editor.rename.InstantRenamePerformer;
 import org.netbeans.modules.java.hints.errors.Utilities;
-import org.netbeans.modules.java.hints.infrastructure.Pair;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -96,6 +95,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
@@ -491,8 +491,8 @@ public class ConvertAnonymousToInner extends AbstractHint {
 	    if (resolvedArguments != null) {
 		nueSuperConstructorCallRealArguments = new LinkedList<ExpressionTree>();
 
-		Iterator<? extends TypeMirror> typeIt   = resolvedArguments.getA().iterator();
-		Iterator<String>               nameIt   = resolvedArguments.getB().iterator();
+		Iterator<? extends TypeMirror> typeIt   = resolvedArguments.first().iterator();
+		Iterator<String>               nameIt   = resolvedArguments.second().iterator();
 
 		while (typeIt.hasNext() && nameIt.hasNext()) {
 		    TypeMirror tm = typeIt.next();

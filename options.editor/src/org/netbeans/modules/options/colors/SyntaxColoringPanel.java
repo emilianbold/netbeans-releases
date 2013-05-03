@@ -202,7 +202,6 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     private void initComponents() {
 
         lLanguage = new javax.swing.JLabel();
-        cbLanguage = new javax.swing.JComboBox<String>();
         lCategory = new javax.swing.JLabel();
         spCategories = new javax.swing.JScrollPane();
         lCategories = new javax.swing.JList<AttributeSet>();
@@ -340,7 +339,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     private javax.swing.JComboBox cbEffectColor;
     private javax.swing.JComboBox<String> cbEffects;
     private javax.swing.JComboBox cbForeground;
-    private javax.swing.JComboBox<String> cbLanguage;
+    private final javax.swing.JComboBox<String> cbLanguage = new javax.swing.JComboBox<String>();
     private javax.swing.JLabel lBackground;
     private javax.swing.JList<AttributeSet> lCategories;
     private javax.swing.JLabel lCategory;
@@ -367,7 +366,9 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
             updateData ();
 	} else
 	if (evt.getSource () == cbLanguage) {
-	    setCurrentLanguage ((String) cbLanguage.getSelectedItem ());
+            synchronized(cbLanguage) {
+                setCurrentLanguage ((String) cbLanguage.getSelectedItem ());
+            }
 	} else
         if (evt.getSource () == bFont) {
             PropertyEditor pe = PropertyEditorManager.findEditor (Font.class);
@@ -446,6 +447,35 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
             }
         }
     }
+    private final Task updatecbLanguage = new RequestProcessor("SyntaxColoringPanel2").create(new Runnable() {
+
+        @Override
+        public void run() {
+            final List<String> languages = new ArrayList<String>(colorModel.getLanguages());
+            EventQueue.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    languages.remove("text/x-all-languages");
+                    Collections.sort(languages, new LanguagesComparator());
+                    Iterator<String> it = languages.iterator();
+                    synchronized (cbLanguage) {
+                        Object lastLanguage = cbLanguage.getSelectedItem();
+                        cbLanguage.removeAllItems();
+                        while (it.hasNext()) {
+                            cbLanguage.addItem(it.next());
+                        }
+                        listen = true;
+                        if (lastLanguage != null) {
+                            cbLanguage.setSelectedItem(lastLanguage);
+                        } else {
+                            cbLanguage.setSelectedIndex(0);
+                        }
+                    }
+                }
+            });
+        }
+    });
     
     @Override
     public void update (final ColorModel colorModel) {
@@ -463,35 +493,7 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
         preview.addPropertyChangeListener 
             (Preview.PROP_CURRENT_ELEMENT, this);
         listen = false;
-        Task update = new RequestProcessor("SyntaxColoringPanel2").create(new Runnable() {
-            
-            @Override
-            public void run() {
-                final List<String> languages = new ArrayList<String>(colorModel.getLanguages());
-                EventQueue.invokeLater(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        languages.remove("text/x-all-languages");
-                        Collections.sort(languages, new LanguagesComparator());
-                        Iterator<String> it = languages.iterator();
-                        Object lastLanguage = cbLanguage.getSelectedItem();
-                        cbLanguage.removeAllItems();
-                        while (it.hasNext()) {
-                            cbLanguage.addItem(it.next());
-                        }
-                        listen = true;
-                        if (lastLanguage != null) {
-                            cbLanguage.setSelectedItem(lastLanguage);
-                        } else {
-                            cbLanguage.setSelectedIndex(0);
-                        }
-                    }
-                });
-            }
-        });
-
-        update.schedule(20);
+        updatecbLanguage.schedule(20);
     }
     
     @Override
@@ -589,6 +591,9 @@ public class SyntaxColoringPanel extends JPanel implements ActionListener,
     }
     
     private void setCurrentLanguage (String language) {
+        if (language == null) {
+            return;
+        }
 	currentLanguage = language;
         
         // setup categories list

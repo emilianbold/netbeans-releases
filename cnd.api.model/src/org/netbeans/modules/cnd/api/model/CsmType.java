@@ -84,6 +84,9 @@ public interface CsmType extends CsmOffsetable {
     
     boolean isReference();
     
+    /** support A&& rvalue reference types */
+    boolean isRValueReference();
+    
     boolean isConst();
     
     // TODO: [] and * are the same? 

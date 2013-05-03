@@ -56,6 +56,7 @@ import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -667,7 +668,7 @@ public class IntroduceHintTest extends NbTestCase {
                 .<Modifier>of(Modifier.PRIVATE), false, true),
                        5, 2);
     }
-
+    
     public void testFix21() throws Exception {
         performFixTest("package test; import java.util.List; public class Test {public void test1() {List<? extends CharSequence> l = |test()|;} public List<? extends CharSequence> test() {return null;}}",
                        "package test; import java.util.List; public class Test { private List<? extends CharSequence> name; public void test1() {name = test(); List<? extends CharSequence> l = name;} public List<? extends CharSequence> test() {return null;}}",

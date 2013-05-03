@@ -63,7 +63,6 @@ import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
-import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
@@ -76,6 +75,7 @@ import org.netbeans.modules.parsing.spi.TaskFactory;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 
 
 /**

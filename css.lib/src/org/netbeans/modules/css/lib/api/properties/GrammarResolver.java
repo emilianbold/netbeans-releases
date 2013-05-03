@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import static org.netbeans.modules.css.lib.api.properties.GrammarResolver.Log.*;
 import org.netbeans.modules.css.lib.properties.GrammarParseTreeBuilder;
-import org.netbeans.modules.web.common.api.Pair;
+import org.openide.util.Pair;
 
 /**
  * Resolves a css property value against its grammar.
@@ -328,7 +328,7 @@ public class GrammarResolver {
         }
 
         Pair<InputState, Collection<ValueGrammarElement>> pair = resolvedSomething.get(lastResolved);
-        pair.getB().add(valueGrammarElement);
+        pair.second().add(valueGrammarElement);
     }
 
     private void groupMemberResolved(GrammarElement member, GroupGrammarElement group, InputState state, boolean root) {
@@ -340,14 +340,14 @@ public class GrammarResolver {
         if (LOG) {
             log(ALTERNATIVES, String.format("input matched %s, %s", member.path(), state));
         }
-        resolvedSomething.put(group, new Pair<InputState, Collection<ValueGrammarElement>>(state, new LinkedList<ValueGrammarElement>()));
+        resolvedSomething.put(group, Pair.<InputState, Collection<ValueGrammarElement>>of(state, new LinkedList<ValueGrammarElement>()));
         lastResolved = group;
     }
 
     private Set<ValueGrammarElement> getAlternatives() {
         HashSet<ValueGrammarElement> alternatives = new HashSet<>();
         for (Pair<InputState, Collection<ValueGrammarElement>> tri : resolvedSomething.values()) {
-            for (ValueGrammarElement value : tri.getB()) {
+            for (ValueGrammarElement value : tri.second()) {
                 alternatives.add(value);
             }
         }

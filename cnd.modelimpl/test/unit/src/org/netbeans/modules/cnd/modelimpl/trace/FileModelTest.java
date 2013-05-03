@@ -548,6 +548,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("const.cc"); // NOI18N        
     }    
     
+    // Bug#217470
+    public void testElaboratedTypeForwards() throws Exception {
+        performTest("elaboratedTypeForwards.cpp");
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     

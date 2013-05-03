@@ -80,13 +80,9 @@ import com.sun.tools.javac.jvm.ClassReader;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCompilationUnit;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.io.Reader;
-import java.io.Writer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -470,13 +466,15 @@ public final class GeneratorUtilities {
     public MethodTree createConstructor(ClassTree clazz, Iterable<? extends VariableTree> fields) {
         assert clazz != null && fields != null;
         TreeMaker make = copy.getTreeMaker();
+        CodeStyle cs = DiffContext.getCodeStyle(copy);
         Set<Modifier> mods = EnumSet.of(copy.getTreeUtilities().isEnum(clazz) ? Modifier.PRIVATE : Modifier.PUBLIC);
         List<VariableTree> parameters = new ArrayList<VariableTree>();
         List<StatementTree> statements = new ArrayList<StatementTree>();
         ModifiersTree parameterModifiers = make.Modifiers(EnumSet.noneOf(Modifier.class));
         for (VariableTree vt : fields) {
-            parameters.add(make.Variable(parameterModifiers, vt.getName(), vt.getType(), null));
-            statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), vt.getName()), make.Identifier(vt.getName())))); //NOI18N
+            String paramName = addParamPrefixSuffix(removeFieldPrefixSuffix(vt, cs), cs);
+            parameters.add(make.Variable(parameterModifiers, paramName, vt.getType(), null));
+            statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), vt.getName()), make.Identifier(paramName)))); //NOI18N
         }
         BlockTree body = make.Block(statements, false);
         return make.Method(make.Modifiers(mods), "<init>", null, Collections.<TypeParameterTree> emptyList(), parameters, Collections.<ExpressionTree>emptyList(), body, null); //NOI18N
@@ -493,16 +491,16 @@ public final class GeneratorUtilities {
     public MethodTree createGetter(TypeElement clazz, VariableElement field) {
         assert clazz != null && field != null;
         TreeMaker make = copy.getTreeMaker();
+        CodeStyle cs = DiffContext.getCodeStyle(copy);
         Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC);
-        if (field.getModifiers().contains(Modifier.STATIC))
+        boolean isStatic = field.getModifiers().contains(Modifier.STATIC);
+        if (isStatic) {
             mods.add(Modifier.STATIC);
-        CharSequence name = field.getSimpleName();
-        assert name.length() > 0;
+        }
         TypeMirror type = copy.getTypes().asMemberOf((DeclaredType)clazz.asType(), field);
-        StringBuilder sb = getCapitalizedName(name);
-        sb.insert(0, type.getKind() == TypeKind.BOOLEAN ? "is" : "get"); //NOI18N
-        BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(name))), false);
-        return make.Method(make.Modifiers(mods), sb, make.Type(type), Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);
+        String getterName = CodeStyleUtils.computeGetterName(field.getSimpleName(), type.getKind() == TypeKind.BOOLEAN, isStatic, cs);
+        BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(field.getSimpleName()))), false);
+        return make.Method(make.Modifiers(mods), getterName, make.Type(type), Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);
     }
 
     /**
@@ -515,16 +513,17 @@ public final class GeneratorUtilities {
     public MethodTree createGetter(VariableTree field) {
         assert field != null;
         TreeMaker make = copy.getTreeMaker();
+        CodeStyle cs = DiffContext.getCodeStyle(copy);
         Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC);
-        if (field.getModifiers().getFlags().contains(Modifier.STATIC))
+        boolean isStatic = field.getModifiers().getFlags().contains(Modifier.STATIC);
+        if (isStatic) {
             mods.add(Modifier.STATIC);
-        CharSequence name = field.getName();
-        assert name.length() > 0;
+        }
         Tree type = field.getType();
-        StringBuilder sb = getCapitalizedName(name);
-        sb.insert(0, type.getKind() == Tree.Kind.PRIMITIVE_TYPE && ((PrimitiveTypeTree)type).getPrimitiveTypeKind() == TypeKind.BOOLEAN ? "is" : "get"); //NOI18N
-        BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(name))), false);
-        return make.Method(make.Modifiers(mods), sb, type, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);
+        boolean isBoolean = type.getKind() == Tree.Kind.PRIMITIVE_TYPE && ((PrimitiveTypeTree) type).getPrimitiveTypeKind() == TypeKind.BOOLEAN;
+        String getterName = CodeStyleUtils.computeGetterName(field.getName(), isBoolean, isStatic, cs);
+        BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(field.getName()))), false);
+        return make.Method(make.Modifiers(mods), getterName, type, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);
     }
 
     /**
@@ -538,18 +537,20 @@ public final class GeneratorUtilities {
     public MethodTree createSetter(TypeElement clazz, VariableElement field) {
         assert clazz != null && field != null;
         TreeMaker make = copy.getTreeMaker();
+        CodeStyle cs = DiffContext.getCodeStyle(copy);
         Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC);
         boolean isStatic = field.getModifiers().contains(Modifier.STATIC);
-        if (isStatic)
+        if (isStatic) {
             mods.add(Modifier.STATIC);
+        }
         CharSequence name = field.getSimpleName();
         assert name.length() > 0;
         TypeMirror type = copy.getTypes().asMemberOf((DeclaredType)clazz.asType(), field);
-        StringBuilder sb = getCapitalizedName(name);
-        sb.insert(0, "set"); //NOI18N
-        List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, make.Type(type), null));
-        BlockTree body = make.Block(Collections.singletonList(make.ExpressionStatement(make.Assignment(make.MemberSelect(isStatic? make.Identifier(field.getEnclosingElement().getSimpleName()) : make.Identifier("this"), name), make.Identifier(name)))), false); //NOI18N
-        return make.Method(make.Modifiers(mods), sb, make.Type(copy.getTypes().getNoType(TypeKind.VOID)), Collections.<TypeParameterTree>emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null);
+        String setterName = CodeStyleUtils.computeSetterName(field.getSimpleName(), isStatic, cs);
+        String paramName = addParamPrefixSuffix(removeFieldPrefixSuffix(field, cs), cs);
+        List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), paramName, make.Type(type), null));
+        BlockTree body = make.Block(Collections.singletonList(make.ExpressionStatement(make.Assignment(make.MemberSelect(isStatic? make.Identifier(field.getEnclosingElement().getSimpleName()) : make.Identifier("this"), name), make.Identifier(paramName)))), false); //NOI18N
+        return make.Method(make.Modifiers(mods), setterName, make.Type(copy.getTypes().getNoType(TypeKind.VOID)), Collections.<TypeParameterTree>emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null);
     }
 
     /**
@@ -569,11 +570,13 @@ public final class GeneratorUtilities {
             mods.add(Modifier.STATIC);
         CharSequence name = field.getName();
         assert name.length() > 0;
-        StringBuilder sb = getCapitalizedName(name);
-        sb.insert(0, "set"); //NOI18N
-        List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), name, field.getType(), null));
-        BlockTree body = make.Block(Collections.singletonList(make.ExpressionStatement(make.Assignment(make.MemberSelect(isStatic? make.Identifier(clazz.getSimpleName()) : make.Identifier("this"), name), make.Identifier(name)))), false); //NOI18N
-        return make.Method(make.Modifiers(mods), sb, make.Type(copy.getTypes().getNoType(TypeKind.VOID)), Collections.<TypeParameterTree>emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null);
+        CodeStyle cs = DiffContext.getCodeStyle(copy);
+        String propName = removeFieldPrefixSuffix(field, cs);
+        String setterName = CodeStyleUtils.computeSetterName(field.getName(), isStatic, cs);
+        String paramName = addParamPrefixSuffix(propName, cs);
+        List<VariableTree> params = Collections.singletonList(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), paramName, field.getType(), null));
+        BlockTree body = make.Block(Collections.singletonList(make.ExpressionStatement(make.Assignment(make.MemberSelect(isStatic? make.Identifier(clazz.getSimpleName()) : make.Identifier("this"), name), make.Identifier(paramName)))), false); //NOI18N
+        return make.Method(make.Modifiers(mods), setterName, make.Type(copy.getTypes().getNoType(TypeKind.VOID)), Collections.<TypeParameterTree>emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null);
     }
     
     /**
@@ -1157,23 +1160,6 @@ public final class GeneratorUtilities {
         return info.getElements().getTypeElement("java.lang.Override") != null;
     }
 
-    private static StringBuilder getCapitalizedName(CharSequence cs) {
-        StringBuilder sb = new StringBuilder(cs);
-        while (sb.length() > 1 && sb.charAt(0) == '_') { //NOI18N
-            sb.deleteCharAt(0);
-        }
-
-        //Beans naming convention, #165241
-        if (sb.length() > 1 && Character.isUpperCase(sb.charAt(1))) {
-            return sb;
-        }
-
-        if (sb.length() > 0) {
-            sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
-        }
-        return sb;
-    }
-
     private Tree resolveWildcard(TypeMirror type) {
         TreeMaker make = copy.getTreeMaker();
         Tree result;
@@ -1358,6 +1344,26 @@ public final class GeneratorUtilities {
         sb.append(')'); //NOI18N
         bindings.put(SUPER_METHOD_CALL, sb);
         return bindings;
+    }
+
+    private static String removeFieldPrefixSuffix(VariableElement var, CodeStyle cs) {
+        boolean isStatic = var.getModifiers().contains(Modifier.STATIC);
+        return CodeStyleUtils.removePrefixSuffix(var.getSimpleName(),
+                isStatic ? cs.getStaticFieldNamePrefix() : cs.getFieldNamePrefix(),
+                isStatic ? cs.getStaticFieldNameSuffix() : cs.getFieldNameSuffix());
+    }
+
+    private static String removeFieldPrefixSuffix(VariableTree var, CodeStyle cs) {
+        boolean isStatic = var.getModifiers().getFlags().contains(Modifier.STATIC);
+        return CodeStyleUtils.removePrefixSuffix(var.getName(),
+                isStatic ? cs.getStaticFieldNamePrefix() : cs.getFieldNamePrefix(),
+                isStatic ? cs.getStaticFieldNameSuffix() : cs.getFieldNameSuffix());
+    }
+
+    private static String addParamPrefixSuffix(CharSequence name, CodeStyle cs) {
+        return CodeStyleUtils.addPrefixSuffix(name,
+                cs.getParameterNamePrefix(),
+                cs.getParameterNameSuffix());
     }
 
     private static class ClassMemberComparator implements Comparator<Tree> {

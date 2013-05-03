@@ -48,13 +48,11 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
 import org.openide.DialogDescriptor;
@@ -92,54 +90,10 @@ public abstract class BugtrackingOwnerSupport {
 
     public enum ContextType {
         MAIN_PROJECT_ONLY,
-        MAIN_OR_SINGLE_PROJECT,
-        ALL_PROJECTS,
         SELECTED_FILE_AND_ALL_PROJECTS,
     }
 
     //--------------------------------------------------------------------------
-
-    public static Project getMainOrSingleProject() {
-        final OpenProjects projects = OpenProjects.getDefault();
-
-        Project[] openProjects = projects.getOpenProjects();
-        if (openProjects.length == 1) {
-            return openProjects[0];
-        } else {
-            return projects.getMainProject();
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
-    public RepositoryImpl getRepository(ContextType context) {
-        switch (context) {
-            case MAIN_PROJECT_ONLY:
-                Project mainProject = OpenProjects.getDefault().getMainProject();
-                if (mainProject != null) {
-                    return getRepository(mainProject, false);
-                }
-                break;
-            case MAIN_OR_SINGLE_PROJECT:
-                Project mainOrSingleProject = getMainOrSingleProject();
-                if (mainOrSingleProject != null) {
-                    return getRepository(mainOrSingleProject, false);
-                }
-                break;
-            case ALL_PROJECTS:
-                return getRepository(OpenProjects.getDefault().getOpenProjects());
-            case SELECTED_FILE_AND_ALL_PROJECTS:
-                File contextFile = getLargerContext();
-                if (contextFile != null) {
-                    return getRepositoryForContext(contextFile, false);
-                }
-                break;
-            default:
-                assert false;
-                break;
-        }
-        return null;
-    }
 
     public RepositoryImpl getRepository(Node... nodes) {
         if (nodes == null) {
@@ -169,10 +123,10 @@ public abstract class BugtrackingOwnerSupport {
 
     protected RepositoryImpl getRepository(Node node) {
         final Lookup nodeLookup = node.getLookup();
-
-        Project project = nodeLookup.lookup(Project.class);
-        if (project != null) {
-            return getRepository(project, false);
+        
+        FileObject[] fos = BugtrackingUtil.getProjectDirectories(nodeLookup);
+        if (fos != null && fos.length > 0) {
+            return getRepository(fos[0], false);
         }
 
         DataObject dataObj = nodeLookup.lookup(DataObject.class);
@@ -185,41 +139,13 @@ public abstract class BugtrackingOwnerSupport {
 
     protected abstract RepositoryImpl getRepository(DataObject dataObj);
 
-    public RepositoryImpl getRepository(Project... projects) {
-        if (projects.length == 0) {
-            return null;
-        }
-        if (projects.length == 1) {
-            return getRepository(projects[0], false);
-        }
-
-        RepositoryImpl chosenRepo = null;
-        for (Project project : projects) {
-            RepositoryImpl repo = getRepository(project, false);
-            if (repo == null) {
-                continue;
-            }
-            if (chosenRepo == null) {
-                chosenRepo = repo;
-            } else if (repo != chosenRepo) {
-                return null;   //the projects have various repositories assigned
-            }
-        }
-        return chosenRepo;
-    }
-
-    public abstract RepositoryImpl getRepository(Project project, boolean askIfUnknown);
+    public abstract RepositoryImpl getRepository(FileObject fileObject, boolean askIfUnknown);
 
     public RepositoryImpl getRepository(File file, boolean askIfUnknown) {
         return getRepository(file, null, askIfUnknown);
     }
 
     public abstract RepositoryImpl getRepository(File file, String issueId, boolean askIfUnknown);
-
-    protected RepositoryImpl getRepositoryForContext(File context,
-                                                 boolean askIfUnknown) {
-        return getRepositoryForContext(context, null, askIfUnknown);
-    }
 
     protected abstract RepositoryImpl getRepositoryForContext(File context,
                                                           String issueId,
@@ -245,25 +171,14 @@ public abstract class BugtrackingOwnerSupport {
     }
 
     public void setLooseAssociation(ContextType contextType, RepositoryImpl repository) {
-        final OpenProjects projects = OpenProjects.getDefault();
-
         File context = null;
 
         switch (contextType) {
             case MAIN_PROJECT_ONLY:
-                Project mainProject = projects.getMainProject();
-                if (mainProject != null) {
-                    context = getLargerContext(mainProject);
+                FileObject fo = getMainProjectDirectory();
+                if (fo != null) {
+                    context = getLargerContext(fo);
                 }
-                break;
-            case MAIN_OR_SINGLE_PROJECT:
-                Project mainOrSingleProject = getMainOrSingleProject();
-                if (mainOrSingleProject != null) {
-                    context = getLargerContext(mainOrSingleProject);
-                }
-                break;
-            case ALL_PROJECTS:
-                context = getContextFromProjects();
                 break;
             case SELECTED_FILE_AND_ALL_PROJECTS:
                 context = getLargerContext();
@@ -278,12 +193,6 @@ public abstract class BugtrackingOwnerSupport {
                     context,
                     repository);
         }
-    }
-
-    public void setLooseAssociation(File file, RepositoryImpl repository) {
-        FileToRepoMappingStorage.getInstance().setLooseAssociation(
-                getLargerContext(file),
-                repository);
     }
 
     /**
@@ -307,16 +216,14 @@ public abstract class BugtrackingOwnerSupport {
     }
 
     private static File getContextFromProjects() {
-        final OpenProjects projects = OpenProjects.getDefault();
-
-        Project mainProject = projects.getMainProject();
-        if (mainProject != null) {
-            return getLargerContext(mainProject);       //null or non-null
+        FileObject fo = getMainProjectDirectory();
+        if (fo != null) {
+            return FileUtil.toFile(fo);
         }
 
-        Project[] openProjects = projects.getOpenProjects();
-        if ((openProjects != null) && (openProjects.length == 1)) {
-            return getLargerContext(openProjects[0]);
+        FileObject[] fos = getOpenProjectsDirectories();
+        if ((fos != null) && (fos.length == 1)) {
+            return getLargerContext(fos[0]);
         }
 
         return null;
@@ -353,9 +260,8 @@ public abstract class BugtrackingOwnerSupport {
             return null;
         }
 
-        Project parentProject = FileOwnerQuery.getOwner(fileObj);
-        if (parentProject != null) {
-            FileObject parentProjectFolder = parentProject.getProjectDirectory();
+        FileObject parentProjectFolder = BugtrackingUtil.getFileOwnerDirectory(fileObj);
+        if (parentProjectFolder != null) {
             if (parentProjectFolder.equals(fileObj) && (file != null)) {
                 return file;
             }
@@ -393,13 +299,6 @@ public abstract class BugtrackingOwnerSupport {
         return null;
     }
 
-    private static File getLargerContext(Project project) {
-        FileObject projectFolder = project.getProjectDirectory();
-        assert projectFolder != null;
-
-        return FileUtil.toFile(projectFolder);
-    }
-
     private static FileObject getOpenFileObj() {
         TopComponent activatedTopComponent = TopComponent.getRegistry()
                                              .getActivated();
@@ -428,10 +327,10 @@ public abstract class BugtrackingOwnerSupport {
             if (fileObj == null) {
                 return null;
             }
-
-            Project project = FileOwnerQuery.getOwner(fileObj);
-            if (project != null) {
-                return getRepository(project, false);
+            
+            FileObject ownerDirectory = BugtrackingUtil.getFileOwnerDirectory(fileObj);
+            if (ownerDirectory != null) {
+                return getRepository(ownerDirectory, false);
             }
 
             RepositoryImpl repo;
@@ -447,10 +346,9 @@ public abstract class BugtrackingOwnerSupport {
         }
 
         @Override
-        public RepositoryImpl getRepository(Project project, boolean askIfUnknown) {
+        public RepositoryImpl getRepository(FileObject fileObject, boolean askIfUnknown) {
             RepositoryImpl repo;
 
-            FileObject fileObject = project.getProjectDirectory();
             try {
                 repo = getKenaiBugtrackingRepository(fileObject);
                 if (repo != null) {
@@ -460,7 +358,7 @@ public abstract class BugtrackingOwnerSupport {
                 return null;
             }
 
-            File context = getLargerContext(project);
+            File context = getLargerContext(fileObject);
             if (context != null) {
                 return getRepositoryForContext(context, null, askIfUnknown);
             } else {
@@ -584,24 +482,6 @@ public abstract class BugtrackingOwnerSupport {
             return null;
         }
 
-        /**
-         * Find a Kenai bug-tracking repository for the given URL.
-         *
-         * @param  string containing information about bug-tracking repository
-         *         or versioning repository
-         * @return  instance of an existing Kenai bug-tracking repository, if the
-         *          given string denotes such a repository;
-         *          {@code null} if the string format does not denote a Kenai
-         *          bug-tracking repository (in other cases, an exception is thrown)
-         * @throws  org.netbeans.modules.kenai.api.KenaiException
-         *          if the URI denotes a Kenai project's repository but there was
-         *          some problem getting the project's repository, e.g. because
-         *          the given project does not exist on Kenai
-         */
-        private static RepositoryImpl getKenaiBugtrackingRepository(String remoteLocation) throws IOException {
-            return APIAccessor.IMPL.getImpl(KenaiUtil.getRepository(remoteLocation));
-        }
-
         private RepositoryImpl askUserToSpecifyRepository(RepositoryImpl suggestedRepo) {
             Collection<RepositoryImpl> repos = BugtrackingUtil.getKnownRepositories(true);
             DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
@@ -636,7 +516,16 @@ public abstract class BugtrackingOwnerSupport {
         private String getMessage(String msgKey) {
             return NbBundle.getMessage(BugtrackingOwnerSupport.class, msgKey);
         }
-
     }
 
+    private static FileObject getMainProjectDirectory() {
+        ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
+        return projectServices != null ? projectServices.getMainProjectDirectory() : null;
+    }
+    
+    private static FileObject[] getOpenProjectsDirectories() {
+        ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
+        return projectServices != null ? projectServices.getOpenProjectsDirectories(): null;
+    }
+    
 }

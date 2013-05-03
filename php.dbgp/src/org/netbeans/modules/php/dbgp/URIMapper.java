@@ -55,10 +55,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.php.api.util.Pair;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Utilities;
 
 /**
@@ -86,8 +86,8 @@ abstract class URIMapper {
         for (Pair<String, String> pair : pathMapping) {
             //1. mapper provided by user via project UI if any
             pair = encodedPathMappingPair(pair);
-            String uriPath = pair.first;
-            String filePath = pair.second;
+            String uriPath = pair.first();
+            String filePath = pair.second();
             if (uriPath.length() > 0 && filePath.length() > 0) {
                 if (!uriPath.startsWith("file:")) {//NOI18N
                     if (!uriPath.startsWith("/")) {
@@ -368,7 +368,7 @@ abstract class URIMapper {
     }
 
     private static Pair<String, String> encodedPathMappingPair(Pair<String, String> pathMapping)  {
-        String resName = pathMapping.first;
+        String resName = pathMapping.first();
         resName = resName.replace('\\', '/');//NOI18N
         final String[] elements = resName.split("/"); // NOI18N
         final StringBuilder sb = new StringBuilder(200);
@@ -391,7 +391,7 @@ abstract class URIMapper {
                 sb.append('/');
             }
         }
-        return Pair.of(sb.toString(), pathMapping.second);//NOI18N
+        return Pair.of(sb.toString(), pathMapping.second());//NOI18N
     }
 
 }

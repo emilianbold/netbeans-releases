@@ -103,6 +103,10 @@ public final class TestSessionVo {
 
     @NbBundle.Messages("TestSessionVo.msg.output=Full output can be found in Output window.")
     public String getFinishMessage() {
+        if (testSuites.isEmpty()) {
+            // no message if we have no testsuites
+            return null;
+        }
         return Bundle.TestSessionVo_msg_output();
     }
 

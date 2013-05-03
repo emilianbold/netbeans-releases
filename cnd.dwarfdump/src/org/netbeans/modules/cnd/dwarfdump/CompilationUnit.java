@@ -506,6 +506,9 @@ public class CompilationUnit implements CompilationUnitInterface{
                 reader.readAttrValue(attr);
                 String s = ((StringTableSection)reader.getSection(SECTIONS.DEBUG_STR)).getString(replace.longValue());
                 entry.addValue(s);
+            } else if (replace != null && attr.valueForm == FORM.DW_FORM_sec_offset) {
+                reader.readAttrValue(attr);
+                entry.addValue(replace);
             } else {
                 Object readAttrValue = reader.readAttrValue(attr);
                 //if (replace != null) {
@@ -548,13 +551,14 @@ public class CompilationUnit implements CompilationUnitInterface{
     private void initMacrosTable() throws IOException {
         Integer macroInfoOffset;
         DwarfMacroInfoSection macroInfoSection = (DwarfMacroInfoSection)reader.getSection(SECTIONS.DEBUG_MACINFO);
-        
+        boolean isMacro =false;
         if (macroInfoSection == null) {
             macroInfoSection = (DwarfMacroInfoSection)reader.getSection(SECTIONS.DEBUG_MACRO);
             if (macroInfoSection == null) {
                 return;
             } else {
                 macroInfoOffset = (Integer)root.getAttributeValue(ATTR.DW_AT_GNU_macros);
+                isMacro = true;
             }
         } else {
             macroInfoOffset = (Integer)root.getAttributeValue(ATTR.DW_AT_macro_info);

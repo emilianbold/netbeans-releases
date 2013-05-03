@@ -70,7 +70,6 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -86,6 +85,7 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.Uploa
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * @author Tomas Mysik
@@ -620,10 +620,10 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             Pair<String, String> pathMapping = advanced.getPathMapping();
             Pair<String, String> debugProxy = advanced.getDebugProxy();
             RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_URL, advanced.getDebugUrl().name());
-            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, pathMapping.first);
-            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, pathMapping.second);
-            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_HOST, debugProxy.first);
-            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_PORT, debugProxy.second);
+            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, pathMapping.first());
+            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, pathMapping.second());
+            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_HOST, debugProxy.first());
+            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_PORT, debugProxy.second());
         }
     }//GEN-LAST:event_advancedButtonActionPerformed
 

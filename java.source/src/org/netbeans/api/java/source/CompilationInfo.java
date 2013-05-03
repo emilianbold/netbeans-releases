@@ -76,13 +76,13 @@ import org.netbeans.modules.java.source.parsing.DocPositionRegion;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.parsing.JavacParserResult;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /** Assorted information about the JavaSource.
@@ -172,7 +172,7 @@ public class CompilationInfo {
         if (cu == null) {
             return null;
         }
-        return TreePath.getPath(cu, changedTree.second);
+        return TreePath.getPath(cu, changedTree.second());
     }       
     
     /**

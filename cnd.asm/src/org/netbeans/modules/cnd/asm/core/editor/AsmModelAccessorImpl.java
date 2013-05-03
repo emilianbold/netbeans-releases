@@ -72,7 +72,7 @@ import org.netbeans.modules.cnd.asm.model.lang.BranchElement;
 import org.netbeans.modules.cnd.asm.model.lang.syntax.AsmParser;
 import org.netbeans.modules.cnd.asm.model.util.AsmModelUtilities;
 import org.netbeans.modules.cnd.asm.model.util.EmptyAsmState;
-import org.netbeans.modules.cnd.asm.model.util.Pair;
+import org.openide.util.Pair;
 
 public class AsmModelAccessorImpl implements AsmModelAccessor {            
     
@@ -215,7 +215,7 @@ public class AsmModelAccessorImpl implements AsmModelAccessor {
                 AsmElement result = resolver.getResult();
                 
                 if (result != null) {
-                    return Pair.getPair(inital, result);
+                    return Pair.<AsmElement, AsmElement>of(inital, result);
                 }
             }
                 

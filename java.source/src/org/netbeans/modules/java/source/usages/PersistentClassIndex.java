@@ -79,6 +79,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -213,9 +214,9 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                                 QueryUtil.createPackageUsagesQuery(binaryName,usageType,Occur.SHOULD),
                                 scope);
                         if (q!=null) {
-                            index.query(result, ctu.first, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), q);
-                            if (ctu.second != null) {
-                                ctu.second.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), q);
+                            index.query(result, ctu.first(), DocumentUtil.declaredTypesFieldSelector(), cancel.get(), q);
+                            if (ctu.second() != null) {
+                                ctu.second().query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), q);
                             }
                         }
                         return null;
@@ -239,9 +240,9 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                                     QueryUtil.createUsagesQuery(binaryName, usageType, Occur.SHOULD),
                                     scope);
                             if (usagesQuery != null) {
-                                index.query(result, ctu.first, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), usagesQuery);
-                                if (ctu.second != null) {
-                                    ctu.second.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), usagesQuery);
+                                index.query(result, ctu.first(), DocumentUtil.declaredTypesFieldSelector(), cancel.get(), usagesQuery);
+                                if (ctu.second() != null) {
+                                    ctu.second().query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), usagesQuery);
                                 }
                             }
                             return null;
@@ -277,9 +278,9 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                             DocumentUtil.translateQueryKind(kind)),
                         scope);
                     if (query != null) {
-                        index.query(result, ctu.first, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), query);
-                        if (ctu.second != null) {
-                            ctu.second.query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), query);
+                        index.query(result, ctu.first(), DocumentUtil.declaredTypesFieldSelector(), cancel.get(), query);
+                        if (ctu.second() != null) {
+                            ctu.second().query(result, convertor, DocumentUtil.declaredTypesFieldSelector(), cancel.get(), query);
                         }
                     }
                     return null;
@@ -315,13 +316,13 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                         };
                     index.queryDocTerms(
                             result,
-                            ctu.first,
+                            ctu.first(),
                             t2s,
                             DocumentUtil.declaredTypesFieldSelector(),
                             cancel.get(),
                             query);
-                    if (ctu.second != null) {
-                        ctu.second.queryDocTerms(
+                    if (ctu.second() != null) {
+                        ctu.second().queryDocTerms(
                             result,
                             convertor,
                             t2s,
@@ -360,7 +361,7 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                         collectInto = result;
                     }
                     final Pair<StoppableConvertor<Term,String>,Term> filter = QueryUtil.createPackageFilter(prefix,directOnly);
-                    index.queryTerms(collectInto, filter.second, filter.first, cancel.get());
+                    index.queryTerms(collectInto, filter.second(), filter.first(), cancel.get());
                     if (cacheOp) {
                         synchronized (PersistentClassIndex.this) {
                             if (rootPkgCache == null) {
@@ -543,8 +544,8 @@ public final class PersistentClassIndex extends ClassIndexImpl {
                 final Pair<Index,Set<String>> data = updateDirty();
                 if (data != null) {
                     return Pair.<Convertor<? super Document, T>,Index>of(
-                            new FilterConvertor<T>(data.second, delegate),
-                            data.first);
+                            new FilterConvertor<T>(data.second(), delegate),
+                            data.first());
                 }
             } catch (IOException ioe) {
                 Exceptions.printStackTrace(ioe);

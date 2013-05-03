@@ -66,6 +66,7 @@ import javax.swing.text.DefaultEditorKit;
 
 import org.netbeans.modules.java.stackanalyzer.StackLineAnalyser.Link;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -324,6 +325,12 @@ final class AnalyzeStackTopComponent extends TopComponent {
         return PREFERRED_ID;
     }
 
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.java.stackanalyzer.AnalyzeStackTopComponent"); //NOI18N
+    }
+
+    
     final static class ResolvableHelper implements Serializable {
 
         private static final long serialVersionUID = 1L;

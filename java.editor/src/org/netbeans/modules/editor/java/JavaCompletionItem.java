@@ -53,6 +53,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.io.IOException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -211,11 +212,11 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
 
-    public static JavaCompletionItem createGetterSetterMethodItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean setter) {
+    public static JavaCompletionItem createGetterSetterMethodItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, String name, boolean setter) {
         switch (elem.getKind()) {
             case ENUM_CONSTANT:
             case FIELD:
-                return new GetterSetterMethodItem(info, elem, type, substitutionOffset, setter);
+                return new GetterSetterMethodItem(info, elem, type, substitutionOffset, name, setter);
             default:
                 throw new IllegalArgumentException("kind=" + elem.getKind());
         }
@@ -592,7 +593,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         
         private boolean checkIsAllowed() {
             for (ElementHandle<? extends Element> handle : handles) {
-                if (handle != null && whiteList.check(handle, WhiteListQuery.Operation.USAGE).isAllowed())
+                if (handle != null && !whiteList.check(handle, WhiteListQuery.Operation.USAGE).isAllowed())
                     return false;                
             }
             return true;
@@ -1703,6 +1704,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 int idx = toAddText.indexOf(')');
                 if (idx > 0) {
                     if (!params.isEmpty() || text.length() == length) {
+                        sb.append(text);
                         if (CodeStyle.getDefault(doc).spaceBeforeMethodCallParen()) {
                             sb.append(' '); //NOI18N
                         }
@@ -1735,7 +1737,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if (sb.length() == 0) {
                 return super.substituteText(c, offset, length, text, toAdd);
             }
-            super.substituteText(c, offset, length, text, null);
+            super.substituteText(c, offset, length, null, null);
             if (autoImportEnclosingType) {
                 final AtomicBoolean cancel = new AtomicBoolean();
                 ProgressUtils.runOffEventDispatchThread(new Runnable() {
@@ -1910,23 +1912,34 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         protected ElementHandle<VariableElement> elementHandle;
         private boolean setter;
-        private String simpleName;
+        private String paramName;
         private String name;
         private String typeName;
         private String sortText;
         private String leftText;
         private String rightText;
 
-        private GetterSetterMethodItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, boolean setter) {
+        private GetterSetterMethodItem(CompilationInfo info, VariableElement elem, TypeMirror type, int substitutionOffset, String name, boolean setter) {
             super(substitutionOffset);
             this.elementHandle = ElementHandle.create(elem);
             this.setter = setter;
-            this.simpleName = elem.getSimpleName().toString();
-            if (setter) {
-                this.name = "set" + GeneratorUtils.getCapitalizedName(simpleName); //NOI18N
-            } else {
-                this.name = (elem.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + GeneratorUtils.getCapitalizedName(simpleName); //NOI18N
+            CodeStyle cs = null;
+            try {
+                cs = CodeStyle.getDefault(info.getDocument());
+            } catch (IOException ex) {
             }
+            if (cs == null) {
+                cs = CodeStyle.getDefault(info.getFileObject());
+            }
+            boolean isStatic = elem.getModifiers().contains(Modifier.STATIC);
+            String simpleName = CodeStyleUtils.removePrefixSuffix(elem.getSimpleName(),
+                isStatic ? cs.getStaticFieldNamePrefix() : cs.getFieldNamePrefix(),
+                isStatic ? cs.getStaticFieldNameSuffix() : cs.getFieldNameSuffix());
+            this.paramName = CodeStyleUtils.addPrefixSuffix(
+                    simpleName,
+                    cs.getParameterNamePrefix(),
+                    cs.getParameterNameSuffix());
+            this.name = name;
             this.typeName = Utilities.getTypeName(info, type, false).toString();
         }
 
@@ -1968,7 +1981,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     lText.append(escape(typeName));
                     lText.append(' ');
                     lText.append(PARAMETER_NAME_COLOR);
-                    lText.append(simpleName);
+                    lText.append(paramName);
                     lText.append(COLOR_END);
                 }
                 lText.append(") - "); //NOI18N
@@ -2059,7 +2072,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             if (setter) {
                 sb.append(typeName);
                 sb.append(' ');
-                sb.append(simpleName);
+                sb.append(paramName);
             }
             sb.append(") - "); //NOI18N
             sb.append(GENERATE_TEXT);
@@ -3460,7 +3473,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         @Override
         protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
-            final BaseDocument doc = (BaseDocument)c.getDocument();
             StringBuilder sb = new StringBuilder();
             boolean asTemplate = false;
             for (Iterator<MemberDesc> membersIt = members.iterator(); membersIt.hasNext();) {

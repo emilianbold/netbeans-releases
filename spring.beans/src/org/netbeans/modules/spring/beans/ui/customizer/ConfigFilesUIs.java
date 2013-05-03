@@ -49,6 +49,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
@@ -57,6 +58,7 @@ import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.ListModel;
 import javax.swing.event.ListDataListener;
+import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
@@ -111,6 +113,10 @@ public class ConfigFilesUIs {
 
     public static List<File> getSelectedFiles(JTable table) {
         return ((ConfigFileSelectionTableModel)table.getModel()).getSelectedFiles();
+    }
+    
+    public static List<File> getSelectableFiles(JTable table) {
+        return ((ConfigFileSelectionTableModel)table.getModel()).getSelectableFiles();
     }
 
     private static final class ConfigFileGroupListModel implements ListModel {
@@ -187,10 +193,11 @@ public class ConfigFilesUIs {
         }
     }
 
-    private static final class ConfigFileSelectionTableModel implements TableModel {
+    /*package*/ static final class ConfigFileSelectionTableModel implements TableModel {
 
         private final List<File> availableFiles;
         private final Set<File> alreadySelectedFiles;
+        private final List<TableModelListener> listeners = new CopyOnWriteArrayList<TableModelListener>();
         private boolean[] selected;
 
         public ConfigFileSelectionTableModel(List<File> availableFiles, Set<File> alreadySelectedFiles) {
@@ -199,39 +206,51 @@ public class ConfigFilesUIs {
             selected = new boolean[availableFiles.size()];
         }
 
+        @Override
         public void addTableModelListener(TableModelListener l) {
+            listeners.add(l);
         }
 
+        @Override
         public Class<?> getColumnClass(int columnIndex) {
             return (columnIndex == 0) ? Boolean.class : File.class;
         }
 
+        @Override
         public int getColumnCount() {
             return 2;
         }
 
+        @Override
         public String getColumnName(int columnIndex) {
             return (columnIndex == 0) ? "" : "File Name";
         }
 
+        @Override
         public int getRowCount() {
             return availableFiles.size();
         }
 
+        @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             return (columnIndex == 0) ? selected[rowIndex] : availableFiles.get(rowIndex);
         }
 
+        @Override
         public boolean isCellEditable(int rowIndex, int columnIndex) {
             return columnIndex == 0;
         }
 
+        @Override
         public void removeTableModelListener(TableModelListener l) {
+            listeners.remove(l);
         }
 
+        @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             if (isEnabled(rowIndex)) {
                 selected[rowIndex] = (Boolean)aValue;
+                informListeners();
             }
         }
 
@@ -247,6 +266,45 @@ public class ConfigFilesUIs {
                 }
             }
             return result;
+        }
+        
+        public List<File> getSelectableFiles() {
+            List<File> result = new ArrayList<File>(availableFiles.size());
+            for (int i = 0; i < availableFiles.size(); i++) {
+                if (isEnabled(i)) {
+                    result.add(availableFiles.get(i));
+                }
+            }
+            return result;
+        }
+
+        /**
+         * Select all enabled files.
+         */
+        public void selectAll() {
+            select(Boolean.TRUE);
+        }
+        
+        /**
+         * Deselect all enabled selected files.
+         */
+        public void selectNone() {
+            select(Boolean.FALSE);
+        }
+        
+        private void select(Boolean state) {
+            for (int rowIndex = 0; rowIndex < selected.length; rowIndex++) {
+                if (isEnabled(rowIndex)) {
+                    selected[rowIndex] = state;
+                }
+            }
+            informListeners();
+        }
+
+        private void informListeners() {
+            for (TableModelListener l : listeners) {
+                l.tableChanged(new TableModelEvent(this));
+            }
         }
     }
 

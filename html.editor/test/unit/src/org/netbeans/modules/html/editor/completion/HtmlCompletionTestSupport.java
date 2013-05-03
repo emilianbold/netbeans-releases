@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.JEditorPane;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -81,7 +82,7 @@ public class HtmlCompletionTestSupport {
         //remove the pipe
         doc.remove(pipeOffset, 1);
 
-        HtmlCompletionQuery query = new HtmlCompletionQuery(doc, pipeOffset, false);
+        final HtmlCompletionQuery query = new HtmlCompletionQuery(doc, pipeOffset, false);
         JEditorPane component = new JEditorPane();
         component.setDocument(doc);
 
@@ -107,7 +108,16 @@ public class HtmlCompletionTestSupport {
 
 //        assertSame(getExpectedVersion(), result[0].getSyntaxAnalyzerResult().getHtmlVersion());
 
-        HtmlCompletionQuery.CompletionResult completionResult = query.query(result[0]);
+        final AtomicReference<HtmlCompletionQuery.CompletionResult> result_ref = new AtomicReference<>();
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                result_ref.set(query.query(result[0]));
+            }
+            
+        });
+         HtmlCompletionQuery.CompletionResult completionResult = result_ref.get();
 
         if (type != Match.EMPTY) {
             Assert.assertNotNull("null completion query result", completionResult);

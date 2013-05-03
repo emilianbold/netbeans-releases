@@ -50,7 +50,6 @@ import java.util.Iterator;
 import java.util.Set;
 import org.apache.lucene.analysis.KeywordAnalyzer;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.Index.Status;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
@@ -58,6 +57,7 @@ import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
 import org.openide.util.Exceptions;
 import static org.netbeans.modules.parsing.impl.indexing.TransientUpdateSupport.isTransientUpdate;
+import org.openide.util.Pair;
 /**
  *
  * @author Tomas Zezula
@@ -118,8 +118,8 @@ public final class LayeredDocumentIndex implements DocumentIndex.Transactional {
     public void store(boolean optimize) throws IOException {
         if (isTransientUpdate()) {
             final Pair<DocumentIndex,Set<String>> ovl = getOverlayIfExists();
-            if (ovl.first != null) {
-                ovl.first.store(false);
+            if (ovl.first() != null) {
+                ovl.first().store(false);
             }
         } else {
             base.store(optimize);
@@ -167,12 +167,12 @@ public final class LayeredDocumentIndex implements DocumentIndex.Transactional {
     public Collection<? extends IndexDocument> query(String fieldName, String value, QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {
         final Collection<? extends IndexDocument> br = base.query(fieldName, value, kind, fieldsToLoad);
         final Pair<DocumentIndex,Set<String>> ovl = getOverlayIfExists();
-        if (ovl.first == null) {
-            return ovl.second == null ? br : filter(br,ovl.second);
+        if (ovl.first() == null) {
+            return ovl.second() == null ? br : filter(br,ovl.second());
         } else {
             return new ProxyCollection<IndexDocument>(
-                ovl.second == null ? br : filter(br,ovl.second),
-                ovl.first.query(fieldName, value, kind, fieldsToLoad));
+                ovl.second() == null ? br : filter(br,ovl.second()),
+                ovl.first().query(fieldName, value, kind, fieldsToLoad));
         }
     }
 
@@ -180,12 +180,12 @@ public final class LayeredDocumentIndex implements DocumentIndex.Transactional {
     public Collection<? extends IndexDocument> findByPrimaryKey(String primaryKeyValue, QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {
         final Collection<? extends IndexDocument> br = base.findByPrimaryKey(primaryKeyValue, kind, fieldsToLoad);
         final Pair<DocumentIndex,Set<String>> ovl = getOverlayIfExists();
-        if (ovl.first == null) {
-            return ovl.second == null ? br : filter(br, ovl.second);
+        if (ovl.first() == null) {
+            return ovl.second() == null ? br : filter(br, ovl.second());
         } else {
             return new ProxyCollection<IndexDocument>(
-                ovl.second == null ? br : filter(br,ovl.second),
-                ovl.first.findByPrimaryKey(primaryKeyValue, kind, fieldsToLoad));
+                ovl.second() == null ? br : filter(br,ovl.second()),
+                ovl.first().findByPrimaryKey(primaryKeyValue, kind, fieldsToLoad));
         }
     }
 

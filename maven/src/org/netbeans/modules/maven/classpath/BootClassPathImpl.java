@@ -46,24 +46,11 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.apache.maven.artifact.versioning.ArtifactVersion;
-import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
-import org.apache.maven.artifact.versioning.Restriction;
-import org.apache.maven.artifact.versioning.VersionRange;
-import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
-import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -74,9 +61,7 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.Specification;
-import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
-import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 
 /**
@@ -86,9 +71,9 @@ import org.openide.util.WeakListeners;
 public final class BootClassPathImpl implements ClassPathImplementation, PropertyChangeListener {
 
     private List<? extends PathResourceImplementation> resourcesCache;
-    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private PropertyChangeSupport support = new PropertyChangeSupport(this);
     private final @NonNull NbMavenProjectImpl project;
-    private PlatformSources lastValue = new PlatformSources(null, null);
+    private String lastHintValue = null;
     private boolean activePlatformValid = true;
     private JavaPlatformManager platformManager;
     private final EndorsedClassPathImpl ecpImpl;
@@ -111,7 +96,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
                 ArrayList<PathResourceImplementation> result = new ArrayList<PathResourceImplementation> ();
                 boolean[] includeJDK = { true };
                 result.addAll(ecpImpl.getResources(includeJDK));
-                lastValue = createJavaPlatformOrigin(project);
+                lastHintValue = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
                 if (includeJDK[0]) {
                     for (ClassPath.Entry entry : findActivePlatform().getBootstrapLibraries().entries()) {
                         result.add(ClassPathSupport.createResource(entry.getURL()));
@@ -144,7 +129,7 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
             //TODO ideally we would handle this by toolchains in future.
 
             //only use the default auximpl otherwise we get recursive calls problems.
-            PlatformSources val = createJavaPlatformOrigin(project);
+            String val = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
 
             JavaPlatform plat = getActivePlatform(val);
             if (plat == null) {
@@ -166,251 +151,48 @@ public final class BootClassPathImpl implements ClassPathImplementation, Propert
      * @return active {@link JavaPlatform} or null if the project's platform
      * is broken
      */
-    public static JavaPlatform getActivePlatform (@NonNull final PlatformSources activePlatform) {
+    public static JavaPlatform getActivePlatform (final String activePlatformId) {
         final JavaPlatformManager pm = JavaPlatformManager.getDefault();
-      
+        if (activePlatformId == null) {
+            return pm.getDefaultPlatform();
+        }
+        else {
             JavaPlatform[] installedPlatforms = pm.getPlatforms(null, new Specification ("j2se",null));   //NOI18N
-            if (activePlatform.hintProperty != null) {
-                for (JavaPlatform platform : installedPlatforms) {
-                    String antName = platform.getProperties().get("platform.ant.name");        //NOI18N
-                    if (antName != null && antName.equals(activePlatform.hintProperty)) {
-                        return platform;
-                    }
+            for (int i=0; i<installedPlatforms.length; i++) {
+                String antName = installedPlatforms[i].getProperties().get("platform.ant.name");        //NOI18N
+                if (antName != null && antName.equals(activePlatformId)) {
+                    return installedPlatforms[i];
                 }
-            }
-            if (activePlatform.enforcerRange != null) {
-                try {
-                    Map<ArtifactVersion, JavaPlatform> found = new TreeMap<ArtifactVersion, JavaPlatform>();
-                    VersionRange range = VersionRange.createFromVersionSpec(activePlatform.enforcerRange);
-                    for (JavaPlatform platform : installedPlatforms) {
-                        String enfVersion = enforcerNormalizedJDKVersion(platform);
-                        ArtifactVersion ver = new DefaultArtifactVersion(enfVersion);
-                        if (containsVersion(range, ver)) {
-                            found.put(ver, platform);
-                        }
-                    }
-                    if (!found.isEmpty()) {
-                        return found.values().iterator().next();
-                    }
-                } catch (InvalidVersionSpecificationException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-            if (activePlatform.hintProperty == null && activePlatform.enforcerRange == null) {
-                return pm.getDefaultPlatform();
             }
             return null;
-  
-    }
-    
-    private static final ThreadLocal<Boolean> semaphore = new ThreadLocal<Boolean>() {
-
-        @Override
-        protected Boolean initialValue() {
-            return Boolean.FALSE;
         }
-        
-    };
-    
-    public @NonNull static PlatformSources createJavaPlatformOrigin(NbMavenProjectImpl project) {
-        String val = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
-        Boolean recursiveCall = semaphore.get();
-        if (recursiveCall) {
-            //this ugly piece is necessary to avoid stackoverflow due to PluginPropertyUtils.createEvaluator caling back to BootClassPathImpl to get active platform's properties.
-            return new PlatformSources(val, null);
-        }
-        try {
-            semaphore.set(Boolean.TRUE);
-            //String source = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS, Constants.PLUGIN_COMPILER, Constants.SOURCE_PARAM, null, "maven.compiler.source");
-            String enforcerRange = PluginPropertyUtils.getPluginPropertyBuildable(project, Constants.GROUP_APACHE_PLUGINS, "maven-enforcer-plugin", "enforce", new PluginPropertyUtils.ConfigurationBuilder<String>() {
-                @Override
-                public String build(Xpp3Dom configRoot, ExpressionEvaluator eval) {
-                    if (configRoot != null) {
-                        Xpp3Dom rules = configRoot.getChild("rules");
-                        if (rules != null) {
-                            Xpp3Dom java = rules.getChild("requireJavaVersion");
-                            if (java != null) {
-                                Xpp3Dom version = java.getChild("version");
-                                if (version != null) {
-                                    String value = version.getValue();
-                                    if (value == null) {
-                                        return null;
-                                    }
-                                    String valueT = value.trim();
-                                    try {
-                                        Object evaluated = eval.evaluate(valueT);
-                                        return evaluated != null ? evaluated.toString() : valueT;
-                                    } catch (ExpressionEvaluationException ex) {
-                                        //TODO log?
-                                        return valueT;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    return null;
-                }
-            });
-            return new PlatformSources(val, enforcerRange);
-        } finally {
-            semaphore.set(Boolean.FALSE);
-        }
-
-    }
-    
-    public static final class PlatformSources {
-    
-        public final String hintProperty;
-        public final String enforcerRange;
-
-        public PlatformSources(@NullAllowed String hintProperty, @NullAllowed String enforcerRange) {
-            this.hintProperty = hintProperty;
-            this.enforcerRange = enforcerRange;
-        }
-        
-        public boolean valuesDefined() {
-            return hintProperty != null || enforcerRange != null;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 3;
-            hash = 89 * hash + (this.hintProperty != null ? this.hintProperty.hashCode() : 0);
-            hash = 89 * hash + (this.enforcerRange != null ? this.enforcerRange.hashCode() : 0);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final PlatformSources other = (PlatformSources) obj;
-            if ((this.hintProperty == null) ? (other.hintProperty != null) : !this.hintProperty.equals(other.hintProperty)) {
-                return false;
-            }
-            if ((this.enforcerRange == null) ? (other.enforcerRange != null) : !this.enforcerRange.equals(other.enforcerRange)) {
-                return false;
-            }
-            return true;
-        }
-
-        @Override
-        public String toString() {
-            return "jdk{" + "hintProperty=" + hintProperty + ", enforcerRange=" + enforcerRange + '}';
-        }
-        
-        
-    }
-    
-    /**
-     * Converts a jdk string from platform's java.version sys property, like 1.5.0-11b12 to a maven/enforcer format
-     *
-     * @param jdkVersion to be converted.
-     * @return the converted string.
-     */
-    public static String enforcerNormalizedJDKVersion( JavaPlatform platform ) {
-        String jdkVersion = null;
-        String ver = platform.getSystemProperties().get("java.version");
-        for (int i = 0; i < ver.length(); i++) {
-            char ch = ver.charAt(i);
-            if (ch >= '0' && ch <= '9') {
-                jdkVersion = ver.substring(i);
-                break;
-            }
-        }
-        assert jdkVersion != null;
-        jdkVersion = jdkVersion.replaceAll("_|-", ".").trim();
-        List<String> tokens = Arrays.asList( jdkVersion.split("\\.") );
-        StringBuilder buffer = new StringBuilder();
-
-        Iterator<String> iter = tokens.iterator();
-        for ( int i = 0; i < tokens.size() && i < 4; i++ ) {
-            //4 is a magic constant in enforcer, only 4 numbers are consider interesting.
-            String section = iter.next();
-            section = section.replaceAll( "[^0-9]", "" );
-
-            if ( !section.trim().isEmpty() )
-            {
-                buffer.append( Integer.parseInt( section.trim() ) );
-
-                if ( i != 2 )
-                {
-                    buffer.append( '.' );
-                }
-                else
-                {
-                    buffer.append( '-' );
-                }
-            }
-        }
-        String version =  buffer.toString();
-        if (version.endsWith(".")) {
-            version = version.substring(0, version.length() - 1);
-        }
-        if (version.endsWith("-")) {
-            version = version.substring(0, version.length() - 1);
-        }
-        return version;
-    }
-    
-    /**
-     * this is how enforcer compares ranges to versions. differs slightly from the default VersionRange approach.
-     *
-     * @param allowedRange range of allowed versions.
-     * @param theVersion the version to be checked.
-     * @return true if the version is contained by the range.
-     */
-    public static boolean containsVersion( VersionRange allowedRange, ArtifactVersion theVersion )
-    {
-        boolean matched = false;
-        ArtifactVersion recommendedVersion = allowedRange.getRecommendedVersion();
-        if (recommendedVersion == null) {
-            @SuppressWarnings("unchecked")
-            List<Restriction> restrictions = allowedRange.getRestrictions();
-            for (Restriction restriction : restrictions) {
-                if (restriction.containsVersion(theVersion)) {
-                    matched = true;
-                    break;
-                }
-            }
-        } else {
-            // only singular versions ever have a recommendedVersion
-            @SuppressWarnings("unchecked")
-            int compareTo = recommendedVersion.compareTo(theVersion);
-            matched = (compareTo <= 0);
-        }
-        return matched;
     }
 
     public @Override void propertyChange(PropertyChangeEvent evt) {
-        PlatformSources newVal = createJavaPlatformOrigin(project);
+        String newVal = project.getAuxProps().get(Constants.HINT_JDK_PLATFORM, true);
         if (evt.getSource() == project && evt.getPropertyName().equals(NbMavenProjectImpl.PROP_PROJECT)) {
             if (ecpImpl.resetCache()) {
                 resetCache();
             } else {
                 //Active platform was changed
-                if ( !newVal.equals(lastValue)) {
+                if ( (newVal == null && lastHintValue != null) || (newVal != null && !newVal.equals(lastHintValue))) {
                     resetCache ();
                 }
             }
         }
         else if (evt.getSource() == platformManager && 
                 JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(evt.getPropertyName()) 
-                && lastValue.valuesDefined()) {
-            lastValue = newVal;
+                && lastHintValue != null) {
+            lastHintValue = newVal;
             //Platform definitions were changed, check if the platform was not resolved or deleted
             if (activePlatformValid) {
-                if (getActivePlatform (lastValue) == null) {
+                if (getActivePlatform (lastHintValue) == null) {
                     //the platform was removed
                     resetCache();
                 }
             }
             else {
-                if (getActivePlatform (lastValue) != null) {
+                if (getActivePlatform (lastHintValue) != null) {
                     //platform was added
                     resetCache();
                 }

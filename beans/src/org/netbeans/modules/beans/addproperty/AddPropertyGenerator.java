@@ -50,6 +50,8 @@ import javax.script.ScriptContext;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
+import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.CodeStyleUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -60,15 +62,28 @@ import org.openide.util.Exceptions;
  */
 public class AddPropertyGenerator {
 
-    public String generate(AddPropertyConfig addPropertyConfig) {
+    public String generate(AddPropertyConfig addPropertyConfig, CodeStyle cs) {
         ScriptEngine scriptEngine = getScriptEngine();
         if (scriptEngine != null) {
             FileObject template = getTemplateFileObject(addPropertyConfig.getTEMPLATE_PATH());
             if (template != null && template.isValid()) {
                 final String type = addPropertyConfig.getType().trim();
                 final String name = addPropertyConfig.getName().trim();
+                final String fieldName = CodeStyleUtils.addPrefixSuffix(name,
+                        addPropertyConfig.isStatic() ? cs.getStaticFieldNamePrefix() : cs.getFieldNamePrefix(),
+                        addPropertyConfig.isStatic() ? cs.getStaticFieldNameSuffix() : cs.getFieldNameSuffix());
+                final String paramName = CodeStyleUtils.addPrefixSuffix(name,
+                        cs.getParameterNamePrefix(),
+                        cs.getParameterNameSuffix());
+                final String paramIndex = CodeStyleUtils.addPrefixSuffix("index", //NOI18N
+                        cs.getParameterNamePrefix(),
+                        cs.getParameterNameSuffix());
+                final String propName = CodeStyleUtils.addPrefixSuffix(
+                        addPropertyConfig.getPopName().trim(),
+                        cs.getStaticFieldNamePrefix(),
+                        cs.getStaticFieldNameSuffix());
                 final String initializer = addPropertyConfig.getInitializer().trim();
-                String access = "";
+                String access;
                 switch (addPropertyConfig.getAccess()) {
                     case PRIVATE:
                         access = "private "; // NOI18N
@@ -93,8 +108,13 @@ public class AddPropertyGenerator {
                 scriptContext.setAttribute("type", type, ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("className", addPropertyConfig.getClassName(), ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("name", name, ScriptContext.ENGINE_SCOPE); // NOI18N
+                scriptContext.setAttribute("fieldName", fieldName, ScriptContext.ENGINE_SCOPE); // NOI18N
+                scriptContext.setAttribute("paramName", paramName, ScriptContext.ENGINE_SCOPE); // NOI18N
+                scriptContext.setAttribute("paramIndex", paramIndex, ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("initializer", initializer, ScriptContext.ENGINE_SCOPE); // NOI18N
-                scriptContext.setAttribute("capitalizedName", capitalize(name).toString(), ScriptContext.ENGINE_SCOPE); // NOI18N
+                scriptContext.setAttribute("capitalizedName", CodeStyleUtils.getCapitalizedName(name), ScriptContext.ENGINE_SCOPE); // NOI18N
+                scriptContext.setAttribute("getterName", CodeStyleUtils.computeGetterName(fieldName, type.equalsIgnoreCase("boolean"), addPropertyConfig.isStatic(), cs), ScriptContext.ENGINE_SCOPE); // NOI18N
+                scriptContext.setAttribute("setterName", CodeStyleUtils.computeSetterName(fieldName, addPropertyConfig.isStatic(), cs), ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("static", Boolean.valueOf(addPropertyConfig.isStatic()), ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("final", Boolean.valueOf(addPropertyConfig.isFinale()), ScriptContext.ENGINE_SCOPE); // NOI18N
                 AddPropertyConfig.GENERATE generateGetterSetter = addPropertyConfig.getGenerateGetterSetter();
@@ -106,7 +126,7 @@ public class AddPropertyGenerator {
                         ScriptContext.ENGINE_SCOPE);
                 scriptContext.setAttribute("generateJavadoc", Boolean.valueOf(addPropertyConfig.isGenerateJavadoc()), ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("bound", Boolean.valueOf(addPropertyConfig.isBound()), ScriptContext.ENGINE_SCOPE); // NOI18N
-                scriptContext.setAttribute("PROP_NAME", addPropertyConfig.getPopName().trim(), ScriptContext.ENGINE_SCOPE); // NOI18N
+                scriptContext.setAttribute("PROP_NAME", propName, ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("vetoable", Boolean.valueOf(addPropertyConfig.isVetoable()), ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("indexed", Boolean.valueOf(addPropertyConfig.isIndexed()), ScriptContext.ENGINE_SCOPE); // NOI18N
                 scriptContext.setAttribute("propertyChangeSupport", addPropertyConfig.getPropertyChangeSupportName(), ScriptContext.ENGINE_SCOPE); // NOI18N
@@ -152,22 +172,5 @@ public class AddPropertyGenerator {
 
     private static ScriptEngine getScriptEngine() {
         return new ScriptEngineManager().getEngineByName("freemarker"); // NOI18N
-    }
-
-    private static StringBuilder capitalize(String string) {
-        StringBuilder sb = new StringBuilder(string);
-        while (sb.length() > 1 && sb.charAt(0) == '_') { //NOI18N
-            sb.deleteCharAt(0);
-        }
-
-        //Beans naming convention, #165241
-        if (sb.length() > 1 && Character.isUpperCase(sb.charAt(1))) {
-            return sb;
-        }
-
-        if (sb.length() > 0) {
-            sb.setCharAt(0, Character.toUpperCase(sb.charAt(0)));
-        }
-        return sb;
     }
 }

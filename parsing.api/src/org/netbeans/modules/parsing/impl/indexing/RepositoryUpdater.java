@@ -126,6 +126,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex.ExceptionAction;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.TopologicalSortException;
@@ -626,20 +627,20 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         if (fo != null && fo.isValid()) {
             if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot(fo);
-                if (root != null && visibilitySupport.isVisible(fo, root.second)) {
-                    if (root.second == null) {
+                if (root != null && visibilitySupport.isVisible(fo, root.second())) {
+                    if (root.second() == null) {
                         LOGGER.log(
                             Level.INFO,
                             "Ignoring event from non existing FileObject {0}",  //NOI18N
-                            root.first);
+                            root.first());
                         return;
                     }
-                    boolean sourcForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
-                    ClassPath.Entry entry = sourcForBinaryRoot ? null : getClassPathEntry(root.second);
+                    boolean sourcForBinaryRoot = sourcesForBinaryRoots.contains(root.first());
+                    ClassPath.Entry entry = sourcForBinaryRoot ? null : getClassPathEntry(root.second());
                     if (entry == null || entry.includes(fo)) {
                         Work wrk;
-                        if (fo.equals(root.second)) {
-                            if (scannedRoots2Dependencies.get(root.first) == EMPTY_DEPS) {
+                        if (fo.equals(root.second())) {
+                            if (scannedRoots2Dependencies.get(root.first()) == EMPTY_DEPS) {
                                 //For first time seeing valid root do roots work to recalculate dependencies
                                 wrk = new RootsWork(
                                     scannedRoots2Dependencies,
@@ -649,7 +650,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                     false,
                                     scannedRoots2DependenciesLamport,
                                     suspendSupport.getSuspendStatus(),
-                                    LogContext.create(LogContext.EventType.FILE, null).addRoots(Collections.singleton(root.first)));
+                                    LogContext.create(LogContext.EventType.FILE, null).addRoots(Collections.singleton(root.first())));
                             } else {
                                 //Already seen files work is enough
                                 final FileObject[] children = fo.getChildren();
@@ -657,7 +658,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 if (children.length > 0) {
                                     wrk = new FileListWork(
                                         scannedRoots2Dependencies,
-                                        root.first,
+                                        root.first(),
                                         c,
                                         false,
                                         false,
@@ -666,7 +667,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                         true,
                                         suspendSupport.getSuspendStatus(),
                                         LogContext.create(LogContext.EventType.FILE, null).
-                                            withRoot(root.first).
+                                            withRoot(root.first()).
                                             addFileObjects(c));
                                 } else {
                                     //If no children nothing needs to be done - save some CPU time
@@ -677,7 +678,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             Collection<FileObject> c = Collections.singleton(fo);
                             wrk = new FileListWork(
                                 scannedRoots2Dependencies,
-                                root.first,
+                                root.first(),
                                 c,
                                 false,
                                 false,
@@ -686,11 +687,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 true,
                                 suspendSupport.getSuspendStatus(),
                                 LogContext.create(LogContext.EventType.FILE, null).
-                                    withRoot(root.first).
+                                    withRoot(root.first()).
                                     addFileObjects(c));
                         }
                         if (wrk != null) {
-                            eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(root.second, fo), fe, wrk);
+                            eventQueue.record(FileEventLog.FileOp.CREATE, root.first(), FileUtil.getRelativePath(root.second(), fo), fe, wrk);
                         }
                         processed = true;
                     }
@@ -699,14 +700,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
             if (!processed && (source == null || !source.booleanValue())) {
                 root = getOwningBinaryRoot(fo);
-                if (root != null && visibilitySupport.isVisible(fo, root.second)) {
+                if (root != null && visibilitySupport.isVisible(fo, root.second())) {
                     final Work wrk = new BinaryWork(
-                        root.first,
+                        root.first(),
                         suspendSupport.getSuspendStatus(),
                         LogContext.create(LogContext.EventType.FILE, null).
-                            withRoot(root.first).
+                            withRoot(root.first()).
                             addFileObjects(Collections.singleton(fo)));
-                    eventQueue.record(FileEventLog.FileOp.CREATE, root.first, null, fe, wrk);
+                    eventQueue.record(FileEventLog.FileOp.CREATE, root.first(), null, fe, wrk);
                     processed = true;
                 }
             }
@@ -734,20 +735,20 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         if (fo != null && fo.isValid()) {
             if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot (fo);
-                if (root != null && visibilitySupport.isVisible(fo,root.second)) {
-                    if (root.second == null) {
+                if (root != null && visibilitySupport.isVisible(fo,root.second())) {
+                    if (root.second() == null) {
                         LOGGER.log(
                             Level.INFO,
                             "Ignoring event from non existing FileObject {0}",  //NOI18N
-                            root.first);
+                            root.first());
                         return;
                     }
-                    boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
-                    ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(root.second);
+                    boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first());
+                    ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(root.second());
                     if (entry == null || entry.includes(fo)) {
                         final Work wrk = new FileListWork(
                             scannedRoots2Dependencies,
-                            root.first,
+                            root.first(),
                             Collections.singleton(fo),
                             false,
                             false,
@@ -756,9 +757,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             true,
                             suspendSupport.getSuspendStatus(),
                             LogContext.create(LogContext.EventType.FILE, null).
-                                withRoot(root.first).
+                                withRoot(root.first()).
                                 addFiles(Collections.singleton(fo.toURL())));
-                        eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(root.second, fo), fe, wrk);
+                        eventQueue.record(FileEventLog.FileOp.CREATE, root.first(), FileUtil.getRelativePath(root.second(), fo), fe, wrk);
                         processed = true;
                     }
                 }
@@ -766,14 +767,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
             if (!processed && (source == null || !source.booleanValue())) {
                 root = getOwningBinaryRoot(fo);
-                if (root != null && visibilitySupport.isVisible(fo,root.second)) {
+                if (root != null && visibilitySupport.isVisible(fo,root.second())) {
                     final Work wrk = new BinaryWork(
-                        root.first,
+                        root.first(),
                         suspendSupport.getSuspendStatus(),
                         LogContext.create(LogContext.EventType.FILE, null).
-                            withRoot(root.first).
+                            withRoot(root.first()).
                             addFiles(Collections.singleton(fo.toURL())));
-                    eventQueue.record(FileEventLog.FileOp.CREATE, root.first, null, fe, wrk);
+                    eventQueue.record(FileEventLog.FileOp.CREATE, root.first(), null, fe, wrk);
                     processed = true;
                 }
             }
@@ -807,24 +808,24 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         if (fo != null) {
             if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot (fo);
-                if (root != null && fo.isData() && visibilitySupport.isVisible(fo, root.second)) {
+                if (root != null && fo.isData() && visibilitySupport.isVisible(fo, root.second())) {
                     String relativePath = null;
                     try {
                     //Root may be deleted -> no root.second available
-                        if (root.second != null) {
-                            relativePath = FileUtil.getRelativePath(root.second, fo);
+                        if (root.second() != null) {
+                            relativePath = FileUtil.getRelativePath(root.second(), fo);
                         } else {
-                            relativePath = root.first.toURI().relativize(fo.getURL().toURI()).getPath();
+                            relativePath = root.first().toURI().relativize(fo.getURL().toURI()).getPath();
                         }
                         assert relativePath != null : "FileObject not under root: f=" + fo + ", root=" + root; //NOI18N
                         final Work wrk = new DeleteWork(
-                            root.first,
+                            root.first(),
                             Collections.singleton(relativePath),
                             suspendSupport.getSuspendStatus(),
                             LogContext.create(LogContext.EventType.FILE, null).
-                                withRoot(root.first).
+                                withRoot(root.first()).
                                 addFiles(Collections.singleton(fo.toURL())));
-                        eventQueue.record(FileEventLog.FileOp.DELETE, root.first, relativePath, fe, wrk);
+                        eventQueue.record(FileEventLog.FileOp.DELETE, root.first(), relativePath, fe, wrk);
                         processed = true;
                     } catch (FileStateInvalidException fse) {
                         Exceptions.printStackTrace(fse);
@@ -836,14 +837,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
             if (!processed && (source == null || !source.booleanValue())) {
                 root = getOwningBinaryRoot(fo);
-                if (root != null && visibilitySupport.isVisible(fo, root.second)) {
+                if (root != null && visibilitySupport.isVisible(fo, root.second())) {
                     final Work wrk = new BinaryWork(
-                        root.first,
+                        root.first(),
                         suspendSupport.getSuspendStatus(),
                         LogContext.create(LogContext.EventType.FILE, null).
-                            withRoot(root.first).
+                            withRoot(root.first()).
                             addFiles(Collections.singleton(fo.toURL())));
-                    eventQueue.record(FileEventLog.FileOp.DELETE, root.first, null, fe, wrk);
+                    eventQueue.record(FileEventLog.FileOp.DELETE, root.first(), null, fe, wrk);
                     processed = true;
                 }
             }
@@ -879,14 +880,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             if (source == null || source.booleanValue()) {
                 root = getOwningSourceRoot(newFile);
                 if (root != null) {
-                    if (root.second == null) {
+                    if (root.second() == null) {
                         LOGGER.log(
                             Level.INFO,
                             "Ignoring event from non existing FileObject {0}",  //NOI18N
-                            root.first);
+                            root.first());
                         return;
                     }
-                    FileObject rootFo = root.second;
+                    FileObject rootFo = root.second();
                     if (rootFo.equals(newFile)) {
                         //Root renamed do nothing, will be fired as ClassPath change.
                         return;
@@ -895,35 +896,35 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     String oldFilePath =  ownerPath.length() == 0 ? oldNameExt : ownerPath + "/" + oldNameExt; //NOI18N
                     if (newFile.isData()) {
                         final Work work = new DeleteWork(
-                            root.first,
+                            root.first(),
                             Collections.singleton(oldFilePath),
                             suspendSupport.getSuspendStatus(),
                             LogContext.create(LogContext.EventType.FILE, null).
-                                withRoot(root.first).
+                                withRoot(root.first()).
                                 addFilePaths(Collections.singleton(oldFilePath)));
-                        eventQueue.record(FileEventLog.FileOp.DELETE, root.first, oldFilePath, fe, work);
+                        eventQueue.record(FileEventLog.FileOp.DELETE, root.first(), oldFilePath, fe, work);
                     } else {
                         Set<String> oldFilePaths = new HashSet<String>();
                         collectFilePaths(newFile, oldFilePath, oldFilePaths);
                         for (String path : oldFilePaths) {
                             final Work work = new DeleteWork(
-                                root.first,
+                                root.first(),
                                 oldFilePaths,
                                 suspendSupport.getSuspendStatus(),
                                 LogContext.create(LogContext.EventType.FILE, null).
-                                    withRoot(root.first).
+                                    withRoot(root.first()).
                                     addFilePaths(oldFilePaths));
-                            eventQueue.record(FileEventLog.FileOp.DELETE, root.first, path, fe, work);
+                            eventQueue.record(FileEventLog.FileOp.DELETE, root.first(), path, fe, work);
                         }
                     }
 
-                    if (visibilitySupport.isVisible(newFile,root.second)) {
-                        final boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first);
+                    if (visibilitySupport.isVisible(newFile,root.second())) {
+                        final boolean sourceForBinaryRoot = sourcesForBinaryRoots.contains(root.first());
                         ClassPath.Entry entry = sourceForBinaryRoot ? null : getClassPathEntry(rootFo);
                         if (entry == null || entry.includes(newFile)) {
                             final FileListWork flw = new FileListWork(
                                 scannedRoots2Dependencies,
-                                root.first,
+                                root.first(),
                                 Collections.singleton(newFile),
                                 false,
                                 false,
@@ -932,9 +933,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 true,
                                 suspendSupport.getSuspendStatus(),
                                 LogContext.create(LogContext.EventType.FILE, null).
-                                    withRoot(root.first).
+                                    withRoot(root.first()).
                                     addFileObjects(Collections.singleton(newFile)));
-                            eventQueue.record(FileEventLog.FileOp.CREATE, root.first, FileUtil.getRelativePath(rootFo, newFile), fe,flw);
+                            eventQueue.record(FileEventLog.FileOp.CREATE, root.first(), FileUtil.getRelativePath(rootFo, newFile), fe,flw);
                         }
                     }
                     processed = true;
@@ -964,14 +965,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                     eventQueue.record(
                             FileEventLog.FileOp.CREATE,
-                            root.first,
+                            root.first(),
                             null,
                             fe,
-                            new BinaryWork(root.first,
+                            new BinaryWork(root.first(),
                                 suspendSupport.getSuspendStatus(),
                                 LogContext.create(LogContext.EventType.FILE, null).
-                                    withRoot(root.first).
-                                    addRoots(Collections.singleton(root.first))));
+                                    withRoot(root.first()).
+                                    addRoots(Collections.singleton(root.first()))));
                     processed = true;
                 }
             }
@@ -1076,9 +1077,9 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 Document doc = jtc.getDocument();
                 Pair<URL, FileObject> root = getOwningSourceRoot(doc);
                 if (root != null) {
-                    if (root.second == null) {
+                    if (root.second() == null) {
                         final FileObject file = Util.getFileObject(doc);
-                        assert file == null || !file.isValid() : "Expecting both owningSourceRootUrl=" + root.first + " and owningSourceRoot=" + root.second; //NOI18N
+                        assert file == null || !file.isValid() : "Expecting both owningSourceRootUrl=" + root.first() + " and owningSourceRoot=" + root.second(); //NOI18N
                         return;
                     }                    
                     long version = DocumentUtilities.getDocumentVersion(doc);
@@ -1109,26 +1110,26 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     if (reindex) {
                         // we have already seen the document and it's been modified since the last time
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine("Document modified (reindexing): " + FileUtil.getFileDisplayName(docFile) + " Owner: " + root.first); //NOI18N
+                            LOGGER.fine("Document modified (reindexing): " + FileUtil.getFileDisplayName(docFile) + " Owner: " + root.first()); //NOI18N
                         }
 
-                        FileListWork job = jobs.get(root.first);
+                        FileListWork job = jobs.get(root.first());
                         if (job == null) {
                             Collection<FileObject> c = Collections.singleton(docFile);
                             job = new FileListWork(
                                     scannedRoots2Dependencies,
-                                    root.first,
+                                    root.first(),
                                     c,
                                     false,
                                     openedInEditor,
                                     true,
-                                    sourcesForBinaryRoots.contains(root.first),
+                                    sourcesForBinaryRoots.contains(root.first()),
                                     true,
                                     suspendSupport.getSuspendStatus(),
                                     LogContext.create(LogContext.EventType.FILE, null).
-                                        withRoot(root.first).
+                                        withRoot(root.first()).
                                         addFileObjects(c));
-                            jobs.put(root.first, job);
+                            jobs.put(root.first(), job);
                         } else {
                             // XXX: strictly speaking we should set 'checkEditor' for each file separately
                             // and not for each job; in reality we normally do not end up here
@@ -1301,11 +1302,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         final Pair<URL, FileObject> root = getOwningSourceRoot(document);
         if (root != null) {
-            if (root.second == null) {
+            if (root.second() == null) {
                 LOGGER.log(
                     Level.INFO,
                     "Ignoring event from non existing FileObject {0}",  //NOI18N
-                    root.first);
+                    root.first());
                 return;
             }
             if (activeDocument == document) {
@@ -1326,10 +1327,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     // An active document was modified, we've indexed that document berfore,
                     // so mark it dirty
                     if (LOGGER.isLoggable(Level.FINE)) {
-                        LOGGER.fine("Active document modified (marking dirty): " + FileUtil.getFileDisplayName(docFile) + " Owner: " + root.first); //NOI18N
+                        LOGGER.fine("Active document modified (marking dirty): " + FileUtil.getFileDisplayName(docFile) + " Owner: " + root.first()); //NOI18N
                     }
 
-                    Collection<? extends Indexable> dirty = Collections.singleton(SPIAccessor.getInstance().create(new FileObjectIndexable(root.second, docFile)));
+                    Collection<? extends Indexable> dirty = Collections.singleton(SPIAccessor.getInstance().create(new FileObjectIndexable(root.second(), docFile)));
                     String mimeType = DocumentUtilities.getMimeType(document);
 
                     TransientUpdateSupport.setTransientUpdate(true);
@@ -1340,7 +1341,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 @Override
                                 public FileObject call() throws Exception {
                                     if (cache == null) {
-                                        cache = CacheFolder.getDataFolder(root.first);
+                                        cache = CacheFolder.getDataFolder(root.first());
                                     }
                                     return cache;
                                 }
@@ -1351,7 +1352,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 final CustomIndexerFactory factory = info.getIndexerFactory();
                                 final Context ctx = SPIAccessor.getInstance().createContext(
                                         indexFolderFactory,
-                                        root.first,
+                                        root.first(),
                                         factory.getIndexerName(),
                                         factory.getIndexVersion(),
                                         null,
@@ -1373,7 +1374,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 final EmbeddingIndexerFactory factory = info.getIndexerFactory();
                                 final Context ctx = SPIAccessor.getInstance().createContext(
                                         indexFolderFactory,
-                                        root.first,
+                                        root.first(),
                                         factory.getIndexerName(),
                                         factory.getIndexVersion(),
                                         null,
@@ -1398,7 +1399,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     FileObject f = Util.getFileObject(document);
                     Collection<URL> c = Collections.singleton(f.getURL());
                     addIndexingJob(
-                        root.first,
+                        root.first(),
                         c,
                         false,
                         true,
@@ -1406,7 +1407,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         true,
                         true,
                         LogContext.create(LogContext.EventType.FILE, null).
-                            withRoot(root.first).
+                            withRoot(root.first()).
                             addFiles(c));
                 } catch (FileStateInvalidException ex) {
                     LOGGER.log(Level.WARNING, null, ex);
@@ -2200,7 +2201,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }
                 logStartIndexer(factory.getIndexerName());
                 try {
-                    boolean vote = factory.scanStarted(value.second);
+                    boolean vote = factory.scanStarted(value.second());
                     votes.put(factory,vote);
                 } catch (Throwable t) {
                     if (t instanceof ThreadDeath) {
@@ -2246,7 +2247,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                     logStartIndexer(eif.getIndexerName());
                     try {
-                        boolean vote = eif.scanStarted(value.second);
+                        boolean vote = eif.scanStarted(value.second());
                         votes.put(eif, vote);
                     } catch (Throwable t) {
                         if (t instanceof ThreadDeath) {
@@ -2270,14 +2271,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     parkWhileSuspended();
                     if (TEST_LOGGER.isLoggable(Level.FINEST)) {
                         TEST_LOGGER.log(Level.FINEST, "scanFinishing:{0}:{1}", 
-                                new Object[] { entry.first.getIndexerName(), entry.second.getRootURI().toExternalForm() });
+                                new Object[] { entry.first().getIndexerName(), entry.second().getRootURI().toExternalForm() });
                     }
-                    logStartIndexer(entry.first.getIndexerName());
-                    SPIAccessor.getInstance().putProperty(entry.second, ClusteredIndexables.DELETE, null);
-                    SPIAccessor.getInstance().putProperty(entry.second, ClusteredIndexables.INDEX, null);
+                    logStartIndexer(entry.first().getIndexerName());
+                    SPIAccessor.getInstance().putProperty(entry.second(), ClusteredIndexables.DELETE, null);
+                    SPIAccessor.getInstance().putProperty(entry.second(), ClusteredIndexables.INDEX, null);
                     cancelRequest.setResult(finished);
                     try {
-                        entry.first.scanFinished(entry.second);
+                        entry.first().scanFinished(entry.second());
                     }  catch (Throwable t) {
                         if (t instanceof ThreadDeath) {
                             throw (ThreadDeath) t;
@@ -2287,10 +2288,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     } finally {
                         cancelRequest.setResult(null);
                     }
-                    logFinishIndexer(entry.first.getIndexerName());
+                    logFinishIndexer(entry.first().getIndexerName());
                     if (TEST_LOGGER.isLoggable(Level.FINEST)) {
                         TEST_LOGGER.log(Level.FINEST, "scanFinished:{0}:{1}", 
-                                new Object[] { entry.first.getIndexerName(), entry.second.getRootURI().toExternalForm() });
+                                new Object[] { entry.first().getIndexerName(), entry.second().getRootURI().toExternalForm() });
                     }
                 }
             } finally {
@@ -2298,14 +2299,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     boolean indexOk = true;
                     for(Pair<SourceIndexerFactory,Context> entry : ctxToFinish) {
                         indexOk &= storeChanges(
-                                entry.first.getIndexerName(),
-                                entry.second,
+                                entry.first().getIndexerName(),
+                                entry.second(),
                                 isSteady(),
                                 usedIterables.get(),
                                 finished);
                     }
                     if (!indexOk) {
-                        final Context ctx = ctxToFinish.iterator().next().second;
+                        final Context ctx = ctxToFinish.iterator().next().second();
                         RepositoryUpdater.getDefault().addIndexingJob(
                             ctx.getRootURI(),
                             null,
@@ -2336,12 +2337,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             try {
                 for (Pair<SourceIndexerFactory,Context> pair : contexts.values()) {
                     parkWhileSuspended();
-                    SPIAccessor.getInstance().putProperty(pair.second, ClusteredIndexables.DELETE, ci);
-                    pair.first.filesDeleted(ci.getIndexablesFor(null), pair.second);
+                    SPIAccessor.getInstance().putProperty(pair.second(), ClusteredIndexables.DELETE, ci);
+                    pair.first().filesDeleted(ci.getIndexablesFor(null), pair.second());
                 }
             } finally {
                 for(Pair<SourceIndexerFactory,Context> pair : contexts.values()) {
-                    DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(pair.second).getIndex(pair.second.getIndexFolder());
+                    DocumentIndex index = SPIAccessor.getInstance().getIndexFactory(pair.second()).getIndex(pair.second().getIndexFolder());
                     if (index != null) {
                         usedIterables.offer(ci.getIndexablesFor(null));
                     }
@@ -2435,7 +2436,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                         factory
                                     });
                         }
-                        SPIAccessor.getInstance().setAllFilesJob(value.second, allFiles);
+                        SPIAccessor.getInstance().setAllFilesJob(value.second(), allFiles);
                         List<Iterable<Indexable>> indexerIndexablesList = new LinkedList<Iterable<Indexable>>();
                         ClusteredIndexables usedCi = null;
                         for(String mimeType : cifInfo.getMimeTypes()) {
@@ -2466,10 +2467,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         final CustomIndexer indexer = factory.createIndexer();
                         long tm1 = -1, tm2 = -1;
                         logStartIndexer(factory.getIndexerName());
-                        SPIAccessor.getInstance().putProperty(value.second, ClusteredIndexables.INDEX, usedCi);
+                        SPIAccessor.getInstance().putProperty(value.second(), ClusteredIndexables.INDEX, usedCi);
                         try {
                             tm1 = System.currentTimeMillis();
-                            SPIAccessor.getInstance().index(indexer, indexables, value.second);
+                            SPIAccessor.getInstance().index(indexer, indexables, value.second());
                         } catch (ThreadDeath td) {
                             throw td;
                         } catch (Throwable t) {
@@ -2551,7 +2552,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                         value = Pair.<SourceIndexerFactory,Context>of(factory,ctx);
                                         contexts.put(key,value);
                                     }
-                                    SPIAccessor.getInstance().setAllFilesJob(value.second, allFiles);
+                                    SPIAccessor.getInstance().setAllFilesJob(value.second(), allFiles);
                                 }
                             }
                         }
@@ -2705,15 +2706,15 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         protected final  boolean checkBinaryIndexers(
                 @NullAllowed Pair<Long,Map<Pair<String,Integer>,Integer>> lastState,
                 @NonNull Map<BinaryIndexerFactory, Context> contexts) throws IOException {
-            if (lastState == null || lastState.first == 0L) {
+            if (lastState == null || lastState.first() == 0L) {
                 //Nothing known about the last state
                 return false;
             }
-            if (contexts.size() != lastState.second.size()) {
+            if (contexts.size() != lastState.second().size()) {
                 //Factories changed
                 return false;
             }
-            final Map<Pair<String,Integer>,Integer> copy = new HashMap<Pair<String,Integer>,Integer>(lastState.second);
+            final Map<Pair<String,Integer>,Integer> copy = new HashMap<Pair<String,Integer>,Integer>(lastState.second());
             for (Map.Entry<BinaryIndexerFactory,Context> e : contexts.entrySet()) {
                 final BinaryIndexerFactory bif = e.getKey();
                 final Integer state = copy.remove(Pair.<String,Integer>of(bif.getIndexerName(),bif.getIndexVersion()));
@@ -2866,11 +2867,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                                             final EmbeddingIndexer indexer = indexerFactory.createIndexer(dirty, pr.getSnapshot());
                                             if (indexer != null) {
-                                                SPIAccessor.getInstance().putProperty(value.second, ClusteredIndexables.INDEX, usedCi);
+                                                SPIAccessor.getInstance().putProperty(value.second(), ClusteredIndexables.INDEX, usedCi);
                                                 long st = System.currentTimeMillis();
                                                 logStartIndexer(indexerName);
                                                 try {
-                                                    SPIAccessor.getInstance().index(indexer, dirty, pr, value.second);
+                                                    SPIAccessor.getInstance().index(indexer, dirty, pr, value.second());
                                                 } catch (ThreadDeath td) {
                                                     throw td;
                                                 } catch (Throwable t) {
@@ -3672,7 +3673,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                         final Pair<String,Integer> indexerKey = Pair.<String,Integer>of(factory.getIndexerName(),factory.getIndexVersion());
                                         final Pair<SourceIndexerFactory, Context> ctx = transactionContexts.get(indexerKey);
                                         if (ctx != null) {
-                                            SPIAccessor.getInstance().setAllFilesJob(ctx.second, true);
+                                            SPIAccessor.getInstance().setAllFilesJob(ctx.second(), true);
                                             final CustomIndexer indexer = factory.createIndexer();
                                             if (LOGGER.isLoggable(Level.FINE)) {
                                                 StringBuilder sb = printMimeTypes(cifInfo.getMimeTypes(), new StringBuilder());
@@ -3685,11 +3686,11 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                                         sb
                                                     });
                                             }
-                                            SPIAccessor.getInstance().putProperty(ctx.second, ClusteredIndexables.INDEX, ci);
+                                            SPIAccessor.getInstance().putProperty(ctx.second(), ClusteredIndexables.INDEX, ci);
                                             long st = System.currentTimeMillis();
                                             logStartIndexer(factory.getIndexerName());
                                             try {
-                                                SPIAccessor.getInstance().index(indexer, indexables, ctx.second);
+                                                SPIAccessor.getInstance().index(indexer, indexables, ctx.second());
                                             } catch (ThreadDeath td) {
                                                 throw td;
                                             } catch (Throwable t) {
@@ -3969,13 +3970,13 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     for(Pair<Object, Boolean> fileOrFileObject : suspectFilesOrFileObjects) {
                         Pair<FileObject, Boolean> fileObject = null;
 
-                        if (fileOrFileObject.first instanceof File) {
-                            FileObject f = FileUtil.toFileObject((File) fileOrFileObject.first);
+                        if (fileOrFileObject.first() instanceof File) {
+                            FileObject f = FileUtil.toFileObject((File) fileOrFileObject.first());
                             if (f != null) {
-                                fileObject = Pair.<FileObject, Boolean>of(f, fileOrFileObject.second);
+                                fileObject = Pair.<FileObject, Boolean>of(f, fileOrFileObject.second());
                             }
-                        } else if (fileOrFileObject.first instanceof FileObject) {
-                            fileObject = Pair.<FileObject, Boolean>of((FileObject) fileOrFileObject.first, fileOrFileObject.second);
+                        } else if (fileOrFileObject.first() instanceof FileObject) {
+                            fileObject = Pair.<FileObject, Boolean>of((FileObject) fileOrFileObject.first(), fileOrFileObject.second());
                         } else {
                             LOGGER.fine("Not File or FileObject, ignoring: " + fileOrFileObject); //NOI18N
                         }
@@ -3993,7 +3994,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 if (rootFile != null) {
                                     FileObject rootFo = FileUtil.toFileObject(rootFile);
                                     if (rootFo != null) {
-                                        if (f.first == rootFo || FileUtil.isParentOf(f.first, rootFo)) {
+                                        if (f.first() == rootFo || FileUtil.isParentOf(f.first(), rootFo)) {
                                             depCtx.newBinariesToScan.add(root);
                                             break;
                                         }
@@ -4003,7 +4004,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                                 // check roots that own a suspect
                                 FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
                                 if (rootFo != null) {
-                                    if (f.first == rootFo || FileUtil.isParentOf(rootFo, f.first)) {
+                                    if (f.first() == rootFo || FileUtil.isParentOf(rootFo, f.first())) {
                                         depCtx.newBinariesToScan.add(root);
                                         break;
                                     }
@@ -4020,12 +4021,12 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
                             if (rootFo != null) {
                                 for(Pair<FileObject, Boolean> f : suspects) {
-                                    if (f.first == rootFo || FileUtil.isParentOf(f.first, rootFo)) {
+                                    if (f.first() == rootFo || FileUtil.isParentOf(f.first(), rootFo)) {
                                         Pair<FileObject, Boolean> pair = sourceRootsToScan.get(root);
                                         if (pair == null) {
-                                            pair = Pair.<FileObject, Boolean>of(rootFo, f.second);
+                                            pair = Pair.<FileObject, Boolean>of(rootFo, f.second());
                                         } else {
-                                            pair = Pair.<FileObject, Boolean>of(rootFo, pair.second || f.second);
+                                            pair = Pair.<FileObject, Boolean>of(rootFo, pair.second() || f.second());
                                         }
                                         sourceRootsToScan.put(root, pair);
                                         containers.add(f);
@@ -4039,7 +4040,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                             for(Iterator<Pair<FileObject, Boolean>> it = suspects.iterator(); it.hasNext(); ) {
                                 Pair<FileObject, Boolean> f = it.next();
                                 Pair<FileObject, Boolean> root = entry.getValue();
-                                if (FileUtil.isParentOf(root.first, f.first) && (root.second || !f.second)) { // second means fullRescan
+                                if (FileUtil.isParentOf(root.first(), f.first()) && (root.second() || !f.second())) { // second means fullRescan
                                     it.remove();
                                 }
                             }
@@ -4047,7 +4048,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
                         for(Map.Entry<URL, Pair<FileObject, Boolean>> entry : sourceRootsToScan.entrySet()) {
                             depCtx.newRootsToScan.add(entry.getKey());
-                            if (entry.getValue().second) {
+                            if (entry.getValue().second()) {
                                 depCtx.fullRescanSourceRoots.add(entry.getKey());
                             }
                         }
@@ -4060,14 +4061,14 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         for(Pair<FileObject, Boolean> f : suspects) {
                             for(URL root : scannedRoots2Dependencies.keySet()) {
                                 FileObject rootFo = URLCache.getInstance().findFileObject(root, true);
-                                if (rootFo != null && (f.first == rootFo || FileUtil.isParentOf(rootFo, f.first))) {
-                                    Map<URL, Set<FileObject>> map = f.second ? fullRescanFiles : checkTimestampFiles;
+                                if (rootFo != null && (f.first() == rootFo || FileUtil.isParentOf(rootFo, f.first()))) {
+                                    Map<URL, Set<FileObject>> map = f.second() ? fullRescanFiles : checkTimestampFiles;
                                     Set<FileObject> files = map.get(root);
                                     if (files == null) {
                                         files = new HashSet<FileObject>();
                                         map.put(root, files);
                                     }
-                                    files.add(f.first);
+                                    files.add(f.first());
                                     break;
                                 }
                             }
@@ -4631,7 +4632,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             final long binaryScanStart = System.currentTimeMillis();
             final Pair<Boolean,Collection<? extends URL>> res = pool.execute();
             final long binaryScanEnd = System.currentTimeMillis();
-            ctx.scannedBinaries.addAll(res.second);
+            ctx.scannedBinaries.addAll(res.second());
             if (LOGGER.isLoggable(Level.INFO)) {
                 LOGGER.log(
                     Level.INFO,
@@ -4642,7 +4643,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     });
             }
             TEST_LOGGER.log(Level.FINEST, "scanBinary", ctx.newBinariesToScan);       //NOI18N
-            return res.first;
+            return res.first();
         }
 
         protected final boolean scanBinary(URL root, BinaryIndexers binaryIndexers, AtomicInteger scannedRootsCnt) {
@@ -4664,7 +4665,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     final Pair<Long,Map<Pair<String,Integer>,Integer>> lastState = ArchiveTimeStamps.getLastModified(file.getURL());
                     final boolean indexersUpToDate = checkBinaryIndexers(lastState, contexts);
                     currentLastModified = file.lastModified().getTime();
-                    upToDate = indexersUpToDate && lastState.first ==  currentLastModified;
+                    upToDate = indexersUpToDate && lastState.first() ==  currentLastModified;
                 } else {
                     currentLastModified = -1L;
                     upToDate = false;
@@ -4926,7 +4927,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         final Pair<String,Integer> indexerKey = Pair.<String,Integer>of(factory.getIndexerName(),factory.getIndexVersion());
                         final Pair<SourceIndexerFactory,Context> ctx = transactionContexts.get(indexerKey);
                         if (ctx != null) {
-                            SPIAccessor.getInstance().index(indexer, Collections.<Indexable>emptySet(), ctx.second);
+                            SPIAccessor.getInstance().index(indexer, Collections.<Indexable>emptySet(), ctx.second());
                         } else {
                             LOGGER.log(
                                 Level.WARNING, "RefreshCifIndices ignored recently added factory: {0}", //NOI18N
@@ -5870,10 +5871,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     }
                     sourceRoots.clear();
                     for(Map.Entry<URL, Pair<File, Boolean>> entry : binaryRoots.entrySet()) {
-                        if (entry.getValue().second) {
-                            safeRemoveFileChangeListener(this.binariesListener, entry.getValue().first);
+                        if (entry.getValue().second()) {
+                            safeRemoveFileChangeListener(this.binariesListener, entry.getValue().first());
                         } else {
-                            safeRemoveRecursiveListener(this.binariesListener, entry.getValue().first);
+                            safeRemoveRecursiveListener(this.binariesListener, entry.getValue().first());
                         }
                     }
                     binaryRoots.clear();
@@ -5949,10 +5950,10 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     if (binariesListener != null) {
                         Pair<File, Boolean> pair = binaryRoots.remove(root);
                         if (pair != null) {
-                            if (pair.second) {
-                                safeRemoveFileChangeListener(binariesListener, pair.first);
+                            if (pair.second()) {
+                                safeRemoveFileChangeListener(binariesListener, pair.first());
                             } else {
-                                safeRemoveRecursiveListener(binariesListener, pair.first);
+                                safeRemoveRecursiveListener(binariesListener, pair.first());
                             }
                         }
                     }

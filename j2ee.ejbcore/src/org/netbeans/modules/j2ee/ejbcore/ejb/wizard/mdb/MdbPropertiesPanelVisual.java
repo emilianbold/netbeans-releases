@@ -42,7 +42,6 @@
 package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb;
 
 import java.awt.Component;
-import java.awt.Dimension;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
 import java.util.HashMap;
@@ -227,7 +226,7 @@ public class MdbPropertiesPanelVisual extends javax.swing.JPanel {
                 setProperty(ActivationConfigProperties.CLIENT_ID, destination.getName());
                 setProperty(ActivationConfigProperties.DESTINATION_TYPE, DestinationType.TOPIC);
                 setProperty(ActivationConfigProperties.SUBSCRIPTION_DURABILITY, SubscriptionDurability.DURABLE);
-                    setProperty(ActivationConfigProperties.SUBSCRIPTION_NAME, destination.getName());
+                setProperty(ActivationConfigProperties.SUBSCRIPTION_NAME, destination.getName());
                 if (eeProjectCapabilities.isEjb32Supported()) {
                     setProperty(ActivationConfigProperties.DESTINATION_LOOKUP, destination.getName());
                 }
