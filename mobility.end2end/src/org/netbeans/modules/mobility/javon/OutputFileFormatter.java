@@ -116,7 +116,11 @@ public class OutputFileFormatter {
             writer.flush();
             writer.close();
             
-            styledDocument.insertString( 0, stringWriter.getBuffer().toString(), null );
+            //fix for bug when same code is generated twice in one file
+            String toInsert = stringWriter.getBuffer()
+                    .delete(0, stringWriter.toString()
+                    .lastIndexOf("//GEN-BEGIN:Client")).toString(); // NOI18N
+            styledDocument.insertString(0, toInsert.toString(), null);
             
             SaveCookie save = dataObject.getCookie( SaveCookie.class );
             if( save != null ) {
