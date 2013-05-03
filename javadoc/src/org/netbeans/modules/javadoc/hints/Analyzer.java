@@ -897,7 +897,8 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     public Void visitThrows(ThrowsTree tree, List<ErrorDescription> errors) {
         ReferenceTree exName = tree.getExceptionName();
         try {
-            Element ex = javac.getDocTrees().getElement(getCurrentPath());
+            DocTreePath refPath = new DocTreePath(getCurrentPath(), tree.getExceptionName());
+            Element ex = javac.getDocTrees().getElement(refPath);
             Types types = javac.getTypes();
             Elements elements = javac.getElements();
             TypeMirror throwable = elements.getTypeElement("java.lang.Throwable").asType();
