@@ -98,7 +98,8 @@ public class DebuggerProcessor extends LayerGeneratingProcessor {
             DebuggerEngineProvider.Registration.class.getCanonicalName(),
             SessionProvider.Registration.class.getCanonicalName(),
             LazyActionsManagerListener.Registration.class.getCanonicalName(),
-            DebuggerServiceRegistration.class.getCanonicalName()
+            DebuggerServiceRegistration.class.getCanonicalName(),
+            DebuggerServiceRegistrations.class.getCanonicalName()
         ));
     }
 
