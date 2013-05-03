@@ -736,15 +736,6 @@ public class BugzillaRepository {
         });
     }
 
-//    public void ensureConfigurationUptodate(BugzillaIssue issue) {
-//        BugzillaConfiguration conf = getConfiguration();
-//
-//        if (issue.needsConfigurationRefresh(conf)) {
-//            refreshConfiguration();
-//        }
-//        assert false;
-//    }
-
     private RequestProcessor getRefreshProcessor() {
         if(refreshProcessor == null) {
             refreshProcessor = new RequestProcessor("Bugzilla refresh - " + getDisplayName()); // NOI18N
@@ -759,16 +750,6 @@ public class BugzillaRepository {
 
     protected QueryParameter[] getSimpleSearchParameters () {
         return new QueryParameter[] {};
-    }
-
-    private BugzillaIssue findTaskInTaskList (String taskId) {
-        BugzillaIssue issue = null;
-        try {
-            issue = findIssueForTask(MylynSupport.getInstance().getTask(taskRepository.getUrl(), taskId));
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.INFO, null, ex);
-        }
-        return issue;
     }
 
     private BugzillaIssue findIssueForTask (ITask task) {
