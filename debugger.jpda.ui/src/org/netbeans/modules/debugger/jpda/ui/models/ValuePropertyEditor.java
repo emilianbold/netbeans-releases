@@ -49,7 +49,10 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.io.InvalidObjectException;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -59,6 +62,7 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.ContextProvider;
+import org.netbeans.spi.viewmodel.TableModel;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
@@ -73,13 +77,16 @@ import org.openide.util.RequestProcessor;
  */
 class ValuePropertyEditor implements ExPropertyEditor {
     
+    private static final Logger logger = Logger.getLogger(ValuePropertyEditor.class.getName());
+    
     private ContextProvider contextProvider;
     private PropertyEditor delegatePropertyEditor;
     private Class mirrorClass;
     private Object currentValue;
     private Object delegateValue;
     private PropertyEnv env;
-    //private final List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
+    private final List<PropertyChangeListener> listeners = new ArrayList<PropertyChangeListener>();
+    private VariablesTableModel vtm;
     
     ValuePropertyEditor(ContextProvider contextProvider) {
         this.contextProvider = contextProvider;
@@ -134,7 +141,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
 
     @Override
     public void setValue(Object value) {
-        //System.out.println("ValuePropertyEditor.setValue("+value+")");
+        logger.log(Level.FINE, "ValuePropertyEditor.setValue({0})", value);
         /*
         if (delegatePropertyEditor != null) {
             for (PropertyChangeListener l : listeners) {
@@ -164,6 +171,11 @@ class ValuePropertyEditor implements ExPropertyEditor {
         }
         boolean doAttach = false;
         if (delegatePropertyEditor == null || clazz != mirrorClass) {
+            if (delegatePropertyEditor != null) {
+                for (PropertyChangeListener l : listeners) {
+                    delegatePropertyEditor.removePropertyChangeListener(l);
+                }
+            }
             PropertyEditor propertyEditor = findPropertyEditor(clazz);
             if (propertyEditor == null) {
                 clazz = String.class;
@@ -175,45 +187,16 @@ class ValuePropertyEditor implements ExPropertyEditor {
             if (env != null && propertyEditor instanceof ExPropertyEditor) {
                 doAttach = true;
             }
+            for (PropertyChangeListener l : listeners) {
+                delegatePropertyEditor.addPropertyChangeListener(l);
+            }
         }
         delegateValue = valueMirror;
         delegatePropertyEditor.setValue(valueMirror);
         if (doAttach) {
             ((ExPropertyEditor) delegatePropertyEditor).attachEnv(env);
         }
-        /*
-        if (value instanceof String) {
-            //this.currentValue = value;
-            if (delegatePropertyEditor == null) {
-                delegatePropertyEditor = PropertyEditorManager.findEditor(String.class);
-            }
-            delegatePropertyEditor.setValue(value);
-        } else if (value instanceof Variable) {
-            Variable var = (Variable) value;
-            Object valueMirror = VariablesTableModel.getMirrorFor(var);
-            if (valueMirror != null) {
-                if (delegatePropertyEditor == null) {
-                    
-                }
-                PropertyEditor propertyEditor = PropertyEditorManager.findEditor(valueMirror.getClass());
-                if (propertyEditor != null) {
-                    //this.currentValue = valueMirror;
-                    delegatePropertyEditor = propertyEditor;
-                    delegatePropertyEditor.setValue(valueMirror);
-                } else {
-                    valueMirror = null;
-                }
-            }
-            if (valueMirror == null) {
-                //this.currentValue = var.getValue();
-                delegatePropertyEditor = PropertyEditorManager.findEditor(String.class);
-                String displayValue = var.getValue();
-                //String displayValue = VariablesDisplayValueCache.getDefault().getDisplayValue(var);
-                delegatePropertyEditor.setValue(displayValue);
-            }
-        }
-        */
-        //System.out.println("  delegatePropertyEditor = "+delegatePropertyEditor);
+        logger.log(Level.FINE, "  delegatePropertyEditor = {0}", delegatePropertyEditor);
         /*for (PropertyChangeListener l : listeners) {
             delegatePropertyEditor.addPropertyChangeListener(l);
         }*/
@@ -222,16 +205,17 @@ class ValuePropertyEditor implements ExPropertyEditor {
     @Override
     public Object getValue() {
         if (delegatePropertyEditor == null) {
-            //System.out.println("ValuePropertyEditor.getValue() = (null) "+currentValue);
+            logger.log(Level.FINE, "ValuePropertyEditor.getValue() = (null) {0}", currentValue);
             return currentValue;
         }
         Object dpeValue = delegatePropertyEditor.getValue();
         if (dpeValue instanceof String) {//!(currentValue instanceof Variable)) {
-            //System.out.println("ValuePropertyEditor.getValue() = (delegate's) "+dpeValue);
+            logger.log(Level.FINE, "ValuePropertyEditor.getValue() = (delegate''s) {0}", dpeValue);
             return dpeValue;
         } else {
             if (dpeValue != delegateValue && currentValue instanceof MutableVariable) {
                 if (!(currentValue instanceof VariableWithMirror)) {
+                    setOrigValue(currentValue);
                     currentValue = new VariableWithMirror(dpeValue);
                 } else {
                     ((VariableWithMirror) currentValue).setFromMirrorObject(dpeValue);
@@ -245,8 +229,27 @@ class ValuePropertyEditor implements ExPropertyEditor {
                 }
                 */
             }
-            //System.out.println("ValuePropertyEditor.getValue() = (current) "+currentValue);
+            logger.log(Level.FINE, "ValuePropertyEditor.getValue() = (current) {0}", currentValue);
             return currentValue;
+        }
+    }
+    
+    private void setOrigValue(Object obj) {
+        if (obj instanceof Variable) {
+            Variable var = (Variable) obj;
+            if (vtm == null) {
+                List<? extends TableModel> models = contextProvider.lookup("LocalsView", TableModel.class);
+                for (TableModel tm : models) {
+                    if (tm instanceof VariablesTableModel) {
+                        vtm = (VariablesTableModel) tm;
+                        break;
+                    }
+                }
+                if (vtm == null) {
+                    return ;
+                }
+            }
+            vtm.setOrigValue(var);
         }
     }
     
@@ -293,7 +296,8 @@ class ValuePropertyEditor implements ExPropertyEditor {
 
     @Override
     public void setAsText(String text) throws IllegalArgumentException {
-        //System.out.println("ValuePropertyEditor.setAsText("+text+") calling "+delegatePropertyEditor);
+        logger.log(Level.FINE, "ValuePropertyEditor.setAsText({0}) calling {1}",
+                   new Object[]{text, delegatePropertyEditor});
         delegatePropertyEditor.setAsText(text);
     }
 
@@ -309,7 +313,8 @@ class ValuePropertyEditor implements ExPropertyEditor {
 
     @Override
     public boolean supportsCustomEditor() {
-        //System.out.println("ValuePropertyEditor.supportsCustomEditor("+delegatePropertyEditor+")");
+        logger.log(Level.FINE, "ValuePropertyEditor.supportsCustomEditor({0})",
+                   delegatePropertyEditor);
         return delegatePropertyEditor.supportsCustomEditor();
     }
 
@@ -331,162 +336,18 @@ class ValuePropertyEditor implements ExPropertyEditor {
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        //listeners.add(listener);
-        //System.out.println("ValuePropertyEditor.addPropertyChangeListener("+listener+")");
+        listeners.add(listener);
+        logger.log(Level.FINE, "ValuePropertyEditor.addPropertyChangeListener({0})", listener);
         delegatePropertyEditor.addPropertyChangeListener(listener);
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        //listeners.remove(listener);
-        //System.out.println("ValuePropertyEditor.removePropertyChangeListener("+listener+")");
+        listeners.remove(listener);
+        logger.log(Level.FINE, "ValuePropertyEditor.removePropertyChangeListener({0})", listener);
         delegatePropertyEditor.removePropertyChangeListener(listener);
     }
     
-    /*
-    public String getHTMLDisplayName() {
-        if (delegatePropertyEditor == null) {
-            return null;
-        }
-        Object val = delegatePropertyEditor.getValue();
-        if (!(val instanceof String)) {
-            return null;
-        }
-        String str = (String) val;
-        if (str.toUpperCase().startsWith("<HTML>")) {
-            return str;
-        } else {
-            return null;
-        }
-    }
-    */
-    /*
-    private static Class getMirrorClass(Variable var) {
-        Class clazz = null;
-        if (var instanceof ObjectVariable) {
-            ObjectVariable ov = (ObjectVariable) var;
-            String type = ov.getType();
-            try {
-                clazz = Class.forName(type);
-            } catch (ClassNotFoundException ex) {
-            }
-        } else {
-            String type = var.getType();
-            if ("boolean".equals(type)) {
-                clazz = Boolean.TYPE;
-            } else if ("char".equals(type)) {
-                clazz = Character.TYPE;
-            } else if ("short".equals(type)) {
-                clazz = Short.TYPE;
-            } else if ("int".equals(type)) {
-                clazz = Integer.TYPE;
-            } else if ("long".equals(type)) {
-                clazz = Long.TYPE;
-            } else if ("float".equals(type)) {
-                clazz = Float.TYPE;
-            } else if ("double".equals(type)) {
-                clazz = Double.TYPE;
-            }
-        }
-        return clazz;
-    }
-    
-    private static Object createMirrorObject(Variable var) {
-        Class clazz = getMirrorClass(var);
-        if (clazz == null) {
-            return null;
-        } else {
-            return createMirrorObject(var, clazz);
-        }
-    }
-    
-    private static Object createMirrorObject(Variable var, Class clazz) {
-        // TODO: Handle arrays, String length
-        try {
-            Method getJDIValueMethod = var.getClass().getMethod("getJDIValue");
-            Value value = (Value) getJDIValueMethod.invoke(var);
-            if (Boolean.TYPE.equals(clazz)) {
-                return Boolean.valueOf(((BooleanValue) value).booleanValue());
-            }
-            if (Character.TYPE.equals(clazz)) {
-                return new Character(((CharValue) value).charValue());
-            }
-            if (Short.TYPE.equals(clazz)) {
-                return new Short(((ShortValue) value).shortValue());
-            }
-            if (Integer.TYPE.equals(clazz)) {
-                return new Integer(((IntegerValue) value).intValue());
-            }
-            if (Long.TYPE.equals(clazz)) {
-                return new Long(((LongValue) value).longValue());
-            }
-            if (Float.TYPE.equals(clazz)) {
-                return new Float(((FloatValue) value).floatValue());
-            }
-            if (Double.TYPE.equals(clazz)) {
-                return new Double(((DoubleValue) value).doubleValue());
-            }
-            if (String.class.equals(clazz)) {
-                // TODO: Check size
-                return ((StringReference) value).value();
-            }
-            Constructor constructor;
-            try {
-                constructor = clazz.getConstructor();
-            } catch (NoSuchMethodException nsmex) {
-                ReflectionFactory rf = ReflectionFactory.getReflectionFactory();
-                constructor = rf.newConstructorForSerialization(clazz, Object.class.getDeclaredConstructor());
-            }
-            Object newInstance = constructor.newInstance();
-            ObjectVariable ov = (ObjectVariable) var;
-            Field[] fields = ov.getFields(0, Integer.MAX_VALUE);
-            for (Field f : fields) {
-                if (!f.isStatic()) {
-                    getJDIValueMethod = f.getClass().getMethod("getJDIValue");
-                    Value v = (Value) getJDIValueMethod.invoke(f);
-                    try {
-                        java.lang.reflect.Field field = newInstance.getClass().getDeclaredField(f.getName());
-                        field.setAccessible(true);
-                        if (v == null) {
-                            field.set(newInstance, null);
-                        } else {
-                            Object mv = createMirrorObject(f);
-                            if (mv != null) {
-                                field.set(newInstance, mv);
-                            } else {
-                                System.err.println("Unable to translate field "+f.getName()+" of class "+clazz);
-                                return null;
-                            }
-                        }
-                    } catch (NoSuchFieldException ex) {
-                        System.err.println("NoSuchFieldException("+ex.getLocalizedMessage()+" of class "+clazz);
-                        return null;
-                    }
-                }
-            }
-            return newInstance;
-            /*
-            if (Color.class.equals(clazz)) {
-            
-                
-            }*//*
-        } catch (NoSuchMethodException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (SecurityException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InstantiationException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalAccessException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IllegalArgumentException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return null;
-    }
-    */
-
     /**
      * An artificial variable that holds the newly set mirror object.
      */

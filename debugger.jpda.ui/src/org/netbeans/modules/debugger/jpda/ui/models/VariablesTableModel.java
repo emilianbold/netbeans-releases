@@ -44,16 +44,15 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import com.sun.jdi.Value;
 import java.awt.Color;
-import java.beans.PropertyEditorManager;
 import java.io.InvalidObjectException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.prefs.Preferences;
 import javax.security.auth.Refreshable;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -66,6 +65,7 @@ import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.ui.views.VariablesViewButtons;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -80,7 +80,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.WeakSet;
 
 
@@ -105,6 +104,7 @@ import org.openide.util.WeakSet;
 public class VariablesTableModel implements TableModel, Constants {
     
     private static final Map<Variable, Object> mirrors = new WeakHashMap<Variable, Object>();
+    private final Map<Variable, Value> origValues = new WeakHashMap<Variable, Value>();
     private static final Set<Variable> checkReadOnlyMutables = new WeakSet<Variable>();
     
     private JPDADebugger debugger;
@@ -177,8 +177,10 @@ public class VariablesTableModel implements TableModel, Constants {
                     synchronized (mirrors) {
                         if (mirror == null) {
                             mirrors.remove(var);
+                            origValues.remove(var);
                         } else {
                             mirrors.put(var, mirror);
+                            //origValues.put(var, ((JDIVariable) var).getJDIValue());
                         }
                     }
                 }
@@ -211,6 +213,12 @@ public class VariablesTableModel implements TableModel, Constants {
             return "";
         }
         throw new UnknownTypeException (row);
+    }
+    
+    void setOrigValue(Variable var) {
+        synchronized (mirrors) {
+            origValues.put(var, ((JDIVariable) var).getJDIValue());
+        }
     }
     
     static Object getMirrorFor(Variable var) {
@@ -315,6 +323,24 @@ public class VariablesTableModel implements TableModel, Constants {
             if ( LOCALS_VALUE_COLUMN_ID.equals (columnID) ||
                  WATCH_VALUE_COLUMN_ID.equals (columnID)
             ) {
+                if (row == value) {
+                    // set of the original value (Cancel)
+                    boolean doSet = false;
+                    Variable var;
+                    Value origValue = null;
+                    synchronized (mirrors) {
+                        var = (Variable) row;
+                        if (origValues.containsKey(var)) {
+                            origValue = origValues.get(var);
+                            doSet = true;
+                        }
+                    }
+                    if (doSet) {
+                        setValueToVar(var, origValue);
+                        fireModelChange(new ModelEvent.TableValueChanged(this, row, columnID));
+                        return ;
+                    }
+                }
                 try {
                     if (value instanceof String) {
                         ((MutableVariable) row).setValue((String) value);
@@ -396,6 +422,23 @@ public class VariablesTableModel implements TableModel, Constants {
         }
         */
         throw new UnknownTypeException (row);
+    }
+    
+    private static void setValueToVar(Variable var, Value value) {
+        synchronized (mirrors) {
+            mirrors.remove(var);
+        }
+        try {
+            Method setValueMethod = var.getClass().getDeclaredMethod("setValue", Value.class);
+            setValueMethod.setAccessible(true);
+            setValueMethod.invoke(var, value);
+            ValuePropertyEditor pe = VariablesPropertyEditorsModel.getExistingValuePropertyEditor(var);
+            if (pe != null) {
+                pe.setValue(var);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
     
     /** 
