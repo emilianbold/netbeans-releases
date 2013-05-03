@@ -71,11 +71,6 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
     }
 
     @Override
-    public boolean hasNetBeansIntegration() {
-        return false;
-    }
-
-    @Override
     public boolean canCreateHtmlBrowserImpl() {
         return true;
     }
@@ -98,6 +93,10 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
             return IOSBrowser.Kind.IOS_SIMULATOR_DEFAULT.toString(); // NOI18N
         }
 
+        @Override
+        public boolean hasNetBeansIntegration() {
+            return true;
+        }
     }
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
@@ -117,5 +116,11 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
         public String getId() {
             return IOSBrowser.Kind.IOS_DEVICE_DEFAULT.toString(); // NOI18N
         }
+
+        @Override
+        public boolean hasNetBeansIntegration() {
+            return true;
+        }
+        
     }
 }
