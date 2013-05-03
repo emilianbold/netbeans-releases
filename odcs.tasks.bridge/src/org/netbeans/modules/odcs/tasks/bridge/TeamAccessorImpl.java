@@ -56,9 +56,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.JLabel;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
-import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSManager;
 import org.netbeans.modules.odcs.api.ODCSProject;
@@ -78,12 +78,12 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProviders({@ServiceProvider(service=KenaiAccessor.class),
-                                           @ServiceProvider(service=KenaiAccessorImpl.class)})
-public class KenaiAccessorImpl extends KenaiAccessor {
+@org.openide.util.lookup.ServiceProviders({@ServiceProvider(service=TeamAccessor.class),
+                                           @ServiceProvider(service=TeamAccessorImpl.class)})
+public class TeamAccessorImpl extends TeamAccessor {
 
-    private final List<PropertyChangeListener> allKenaiListeners = new ArrayList<PropertyChangeListener>(1);
-    public KenaiAccessorImpl() {
+    private final List<PropertyChangeListener> allTeamListeners = new ArrayList<PropertyChangeListener>(1);
+    public TeamAccessorImpl() {
         super();
         ODCSManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
@@ -91,15 +91,15 @@ public class KenaiAccessorImpl extends KenaiAccessor {
                 if(ODCSManager.PROP_INSTANCES.equals(evt.getPropertyName())) {
                     if(evt.getNewValue() != null) {
                         ODCSServer s = (ODCSServer) evt.getNewValue();
-                        synchronized(allKenaiListeners) {
-                            for (PropertyChangeListener l : allKenaiListeners) {
+                        synchronized(allTeamListeners) {
+                            for (PropertyChangeListener l : allTeamListeners) {
                                 addPropertyChangeListener(l, s);
                             }
                         }
                     } else {
                         ODCSServer s = (ODCSServer) evt.getOldValue();
-                        synchronized(allKenaiListeners) {
-                            for (PropertyChangeListener l : allKenaiListeners) {
+                        synchronized(allTeamListeners) {
+                            for (PropertyChangeListener l : allTeamListeners) {
                                 removePropertyChangeListener(l, s);
                             }
                         }
@@ -109,12 +109,12 @@ public class KenaiAccessorImpl extends KenaiAccessor {
         });
     }
     
-    static KenaiAccessorImpl getInstance() {
-        return Lookup.getDefault().lookup(KenaiAccessorImpl.class);
+    static TeamAccessorImpl getInstance() {
+        return Lookup.getDefault().lookup(TeamAccessorImpl.class);
     }
 
     @Override
-    public void logKenaiUsage (Object... parameters) {
+    public void logTeamUsage (Object... parameters) {
         OdcsUIUtil.logODCSUsage(parameters); 
     }
 
@@ -145,7 +145,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     }
 
     @Override
-    public Collection<RepositoryUser> getProjectMembers(KenaiProject kp) throws IOException {
+    public Collection<RepositoryUser> getProjectMembers(TeamProject kp) throws IOException {
         // unknown
         return Collections.EMPTY_LIST;
     }
@@ -162,7 +162,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     }
 
     @Override
-    public boolean isNetbeansKenaiRegistered () {
+    public boolean isNBTeamServerRegistered () {
         return false;
     }
 
@@ -172,29 +172,29 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo getOwnerInfo(Node node) {
+    public org.netbeans.modules.bugtracking.team.spi.OwnerInfo getOwnerInfo(Node node) {
         OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(node);
         return ownerInfo != null ? new OwnerInfoImpl(ownerInfo) : null;
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo getOwnerInfo(File file) {
+    public org.netbeans.modules.bugtracking.team.spi.OwnerInfo getOwnerInfo(File file) {
         OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(NbModuleOwnerSupport.NB_BUGZILLA_CONFIG, file);
         return ownerInfo != null ? new OwnerInfoImpl(ownerInfo) : null;
     }
 
     @Override
-    public KenaiProject[] getDashboardProjects(boolean onlyOpened) {
+    public TeamProject[] getDashboardProjects(boolean onlyOpened) {
         ProjectHandle<ODCSProject>[] handles = ODCSUiServer.getOpenProjects();
         if ((handles == null) || (handles.length == 0)) {
-            return new KenaiProjectImpl[0];
+            return new TeamProjectImpl[0];
         }
 
-        List<KenaiProjectImpl> kenaiProjects = new LinkedList<KenaiProjectImpl>();
+        List<TeamProjectImpl> kenaiProjects = new LinkedList<TeamProjectImpl>();
         for (ProjectHandle<ODCSProject> handle : handles) {
             ODCSProject project = handle.getTeamProject();
             if (project != null) {
-                kenaiProjects.add(KenaiProjectImpl.getInstance(project));
+                kenaiProjects.add(TeamProjectImpl.getInstance(project));
             } else {
                 Support.LOG.log(
                         Level.WARNING,
@@ -202,17 +202,17 @@ public class KenaiAccessorImpl extends KenaiAccessor {
                         new Object[]{handle.getId(), handle.getDisplayName()}); 
             }
         }
-        return kenaiProjects.toArray(new KenaiProjectImpl[kenaiProjects.size()]);
+        return kenaiProjects.toArray(new TeamProjectImpl[kenaiProjects.size()]);
     }
 
     @Override
-    public KenaiProject getKenaiProjectForRepository(String url) throws IOException {
+    public TeamProject getTeamProjectForRepository(String url) throws IOException {
         ODCSProject odcsp = ODCSProject.findProjectForRepository(url);
-        return odcsp != null ? KenaiProjectImpl.getInstance(odcsp) : null;
+        return odcsp != null ? TeamProjectImpl.getInstance(odcsp) : null;
     }
 
     @Override
-    public KenaiProject getKenaiProject(String url, String projectName) throws IOException {
+    public TeamProject getTeamProject(String url, String projectName) throws IOException {
         ODCSServer server = getServer(url);
         if (server == null) {
             Support.LOG.log(Level.FINEST, "no server for url : [{0}]", url);
@@ -224,7 +224,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
         } catch (ODCSException ex) {
             throw new IOException(ex);
         }
-        return odcsProj != null ? KenaiProjectImpl.getInstance(odcsProj) : null;
+        return odcsProj != null ? TeamProjectImpl.getInstance(odcsProj) : null;
     }
 
     @Override
@@ -322,8 +322,8 @@ public class KenaiAccessorImpl extends KenaiAccessor {
 
     @Override
     public void addPropertyChangeListener(PropertyChangeListener listener) {
-        synchronized(allKenaiListeners) {
-            allKenaiListeners.add(listener);
+        synchronized(allTeamListeners) {
+            allTeamListeners.add(listener);
         }
         for (ODCSServer server : ODCSManager.getDefault().getServers()) {
             addPropertyChangeListener(listener, server);
@@ -332,15 +332,15 @@ public class KenaiAccessorImpl extends KenaiAccessor {
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        synchronized(allKenaiListeners) {
-            allKenaiListeners.remove(listener);
+        synchronized(allTeamListeners) {
+            allTeamListeners.remove(listener);
         }
         for (ODCSServer server : ODCSManager.getDefault().getServers()) {
             removePropertyChangeListener(listener, server);
         }
     }
     
-    private class OwnerInfoImpl extends org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo {
+    private class OwnerInfoImpl extends org.netbeans.modules.bugtracking.team.spi.OwnerInfo {
         private final OwnerInfo delegate;
 
         public OwnerInfoImpl(OwnerInfo delegate) {

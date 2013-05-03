@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.kenai;
+package org.netbeans.modules.bugtracking.team;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -60,12 +60,12 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector.BugtrackingType;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
+import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector;
+import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector.BugtrackingType;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
@@ -78,24 +78,24 @@ import org.openide.util.Lookup;
  * @author Tomas Stupka
  * @author Marian Petras
  */
-public abstract class KenaiRepositories implements PropertyChangeListener {
+public abstract class TeamRepositories implements PropertyChangeListener {
 
-    private static KenaiRepositories instance;
+    private static TeamRepositories instance;
 
-    private final Map<String, Object> kenaiLocks = new HashMap<String, Object>(1);
+    private final Map<String, Object> teamLocks = new HashMap<String, Object>(1);
 
     /**
-     * Holds already created kenai repositories
+     * Holds already created team repositories
      */
-    private Map<String, RepositoryImpl> repositoriesCache = Collections.synchronizedMap(new HashMap<String, RepositoryImpl>());
+    private final Map<String, RepositoryImpl> repositoriesCache = Collections.synchronizedMap(new HashMap<String, RepositoryImpl>());
 
-    protected KenaiRepositories() { }
+    protected TeamRepositories() { }
 
-    private PropertyChangeSupport support = new PropertyChangeSupport(this);
+    private final PropertyChangeSupport support = new PropertyChangeSupport(this);
     
-    public synchronized static KenaiRepositories getInstance() {
+    public synchronized static TeamRepositories getInstance() {
         if(instance == null) {
-            instance = Lookup.getDefault().lookup(KenaiRepositories.class);
+            instance = Lookup.getDefault().lookup(TeamRepositories.class);
             if (instance == null) {
                 instance = new DefaultImpl();
             }
@@ -107,17 +107,17 @@ public abstract class KenaiRepositories implements PropertyChangeListener {
 
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
-        KenaiAccessor[] kenaiAccessors = KenaiUtil.getKenaiAccessors();
-        for (KenaiAccessor kenaiAccessor : kenaiAccessors) {
-            kenaiAccessor.addPropertyChangeListener(this);
+        TeamAccessor[] teamAccessors = TeamUtil.getTeamAccessors();
+        for (TeamAccessor teamAccessor : teamAccessors) {
+            teamAccessor.addPropertyChangeListener(this);
         }        
     }
 
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
-        KenaiAccessor[] kenaiAccessors = KenaiUtil.getKenaiAccessors();
-        for (KenaiAccessor kenaiAccessor : kenaiAccessors) {
-            kenaiAccessor.removePropertyChangeListener(this);
+        TeamAccessor[] teamAccessors = TeamUtil.getTeamAccessors();
+        for (TeamAccessor teamAccessor : teamAccessors) {
+            teamAccessor.removePropertyChangeListener(this);
         }        
     }
 
@@ -126,29 +126,29 @@ public abstract class KenaiRepositories implements PropertyChangeListener {
     }
     
     /**
-     * Returns a {@link Repository} representing the given {@link KenaiProject}
+     * Returns a {@link Repository} representing the given {@link TeamProject}
      *
      * @param kp
      * @return
      */
-    public RepositoryImpl getRepository(KenaiProject kp) {
+    public RepositoryImpl getRepository(TeamProject kp) {
         return getRepository(kp, true);
     }
 
     /**
-     * Returns a {@link Repository} representing the given {@link KenaiProject}.
+     * Returns a {@link Repository} representing the given {@link TeamProject}.
      *
-     * @param kp KenaiProject
+     * @param kp TeamProject
      * @param forceCreate determines if a Repository instance should be created if it doesn't already exist
      * @return
      */
-    public RepositoryImpl getRepository(KenaiProject kp, boolean forceCreate) {
+    public RepositoryImpl getRepository(TeamProject kp, boolean forceCreate) {
 
         String repositoryKey = kp.getWebLocation().toString();
         BugtrackingManager.LOG.log(Level.FINER, "requesting repository for {0}", repositoryKey);  // NOI18N
 
-        Object lock = getKenaiLock(kp);
-        synchronized(lock) { // synchronize for a kenai instance and bugtracking type
+        Object lock = getTeamLock(kp);
+        synchronized(lock) { // synchronize for a team instance and bugtracking type
             RepositoryImpl repository = repositoriesCache.get(repositoryKey);
             if(repository == null && forceCreate) {
                 repository = createRepository(kp);
@@ -169,17 +169,17 @@ public abstract class KenaiRepositories implements PropertyChangeListener {
     }
     
     /**
-     * Creates a {@link Repository} for the given {@link KenaiProject}
+     * Creates a {@link Repository} for the given {@link TeamProject}
      *
      * @param project
      * @return
      */
-    private static RepositoryImpl createRepository(KenaiProject project) {
+    private static RepositoryImpl createRepository(TeamProject project) {
         BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
         for (BugtrackingConnector c : connectors) {
             if (isType(c, project.getType())) {
                 BugtrackingManager.LOG.log(Level.FINER, "found suport for {0}", project.getWebLocation().toString()); // NOI18N
-                Repository repo = ((KenaiBugtrackingConnector) c).createRepository(project);
+                Repository repo = ((TeamBugtrackingConnector) c).createRepository(project);
                 return APIAccessor.IMPL.getImpl(repo);
             }
         }
@@ -187,7 +187,7 @@ public abstract class KenaiRepositories implements PropertyChangeListener {
     }    
 
 
-    private static boolean isSupported(KenaiProject project) {
+    private static boolean isSupported(TeamProject project) {
         BugtrackingConnector[] connectors = BugtrackingUtil.getBugtrackingConnectors();
         for (BugtrackingConnector c : connectors) {
             if (isType(c, project.getType())) {
@@ -199,18 +199,18 @@ public abstract class KenaiRepositories implements PropertyChangeListener {
     }
     
     private static boolean isType(BugtrackingConnector connector, BugtrackingType type) {
-        return connector instanceof KenaiBugtrackingConnector && ((KenaiBugtrackingConnector) connector).getType() == type;
+        return connector instanceof TeamBugtrackingConnector && ((TeamBugtrackingConnector) connector).getType() == type;
     }
     
-    private Object getKenaiLock(KenaiProject kp) {
+    private Object getTeamLock(TeamProject kp) {
         BugtrackingType type = kp.getType();
-        synchronized(kenaiLocks) {
+        synchronized(teamLocks) {
             final String key = kp.getWebLocation().getHost() + ":" + type;  // NOI18N
             BugtrackingManager.LOG.log(Level.FINER, "requesting lock for {0}", key); // NOI18N
-            Object lock = kenaiLocks.get(key);
+            Object lock = teamLocks.get(key);
             if(lock == null) {
                 lock = new Object();
-                kenaiLocks.put(key, lock);
+                teamLocks.put(key, lock);
             }
             BugtrackingManager.LOG.log(Level.FINER, "returning lock {0} for {1}", new Object[]{lock, key}); // NOI18N
             return lock;
@@ -219,19 +219,19 @@ public abstract class KenaiRepositories implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(KenaiAccessor.PROP_PROJETCS_CHANGED) || 
-           evt.getPropertyName().equals(KenaiAccessor.PROP_LOGIN)) 
+        if(evt.getPropertyName().equals(TeamAccessor.PROP_PROJETCS_CHANGED) || 
+           evt.getPropertyName().equals(TeamAccessor.PROP_LOGIN)) 
         {
             fireProjectsChanged(null, null);
         }
     }
     
     /**
-     * Returns bugtracking repositories of all Kenai projects.
+     * Returns bugtracking repositories of all Team projects.
      *
-     * @param  includeIDEProjects  if {@code false}, search only Kenai projects
-     *                          that are currently open in the Kenai dashboard;
-     *                          if {@code true}, search also all Kenai projects
+     * @param  includeIDEProjects  if {@code false}, search only Team projects
+     *                          that are currently open in the Team dashboard;
+     *                          if {@code true}, search also all Team projects
      *                          currently opened in the IDE
      * @return  array of repositories collected from the projects
      *          (never {@code null})
@@ -239,13 +239,13 @@ public abstract class KenaiRepositories implements PropertyChangeListener {
     public abstract Collection<RepositoryImpl> getRepositories(boolean includeIDEProjects);
 
     /**
-     * Returns bugtracking repositories of all Kenai projects.
+     * Returns bugtracking repositories of all Team projects.
      *
-     * @param  includeIDEProjects  if {@code false}, search only Kenai projects
-     *                          that are currently open in the Kenai dashboard;
-     *                          if {@code true}, search also all Kenai projects
+     * @param  includeIDEProjects  if {@code false}, search only Team projects
+     *                          that are currently open in the Team dashboard;
+     *                          if {@code true}, search also all Team projects
      *                          currently opened in the IDE
-     * @param onlyDashboardOpenProjects if {@code true}, return only projcts from dashboard which
+     * @param onlyDashboardOpenProjects if {@code true}, return only projects from dashboard which
      *                                  are opened, otherwise return all projects from dashboard - 
      *                                  opened and member projects
      * @return  array of repositories collected from the projects
@@ -256,11 +256,11 @@ public abstract class KenaiRepositories implements PropertyChangeListener {
     //--------------------------------------------------------------------------
 
     /**
-     * The default implementation of {@code KenaiRepositories}.
+     * The default implementation of {@code TeamRepositories}.
      * This implementation is used if no other implementation is found
      * in the default lookup.
      */
-    private static class DefaultImpl extends KenaiRepositories {
+    private static class DefaultImpl extends TeamRepositories {
 
         @Override
         public Collection<RepositoryImpl> getRepositories(boolean includeIDEProjects) {
@@ -272,16 +272,16 @@ public abstract class KenaiRepositories implements PropertyChangeListener {
             if("true".equals(System.getProperty("netbeans.bugtracking.noOpenProjects", "false"))) {
                 includeIDEProjects = false; 
             }
-            KenaiProject[] kenaiProjects = includeIDEProjects
+            TeamProject[] teamProjects = includeIDEProjects
                                            ? union(getDashboardProjects(onlyDashboardOpenProjects),
                                                    getProjectsViewProjects())
                                            : getDashboardProjects(onlyDashboardOpenProjects);
 
-            List<RepositoryImpl> result = new ArrayList<RepositoryImpl>(kenaiProjects.length);
+            List<RepositoryImpl> result = new ArrayList<RepositoryImpl>(teamProjects.length);
 
             EnumSet<BugtrackingType> reluctantSupports = EnumSet.noneOf(BugtrackingType.class);
-            for (KenaiProject kp : kenaiProjects) {
-                if(onlyDashboardOpenProjects && !KenaiUtil.isLoggedIn(kp.getWebLocation())) {
+            for (TeamProject kp : teamProjects) {
+                if(onlyDashboardOpenProjects && !TeamUtil.isLoggedIn(kp.getWebLocation())) {
                     continue;
                 }
                 if(kp.getType() == null) {
@@ -316,31 +316,31 @@ public abstract class KenaiRepositories implements PropertyChangeListener {
             return result;
         }
 
-        private KenaiProject[] getDashboardProjects(boolean onlyOpenProjects) {
-            return KenaiUtil.getDashboardProjects(onlyOpenProjects);
+        private TeamProject[] getDashboardProjects(boolean onlyOpenProjects) {
+            return TeamUtil.getDashboardProjects(onlyOpenProjects);
         }
 
-        private KenaiProject[] getProjectsViewProjects() {
+        private TeamProject[] getProjectsViewProjects() {
             ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
             FileObject[] openProjectFiles = projectServices != null ? projectServices.getOpenProjectsDirectories() : null;
             
             if (openProjectFiles == null || openProjectFiles.length == 0) {
-                return new KenaiProject[0];
+                return new TeamProject[0];
             }
 
             int count = 0;
-            KenaiProject[] kenaiProjects = new KenaiProject[openProjectFiles.length];
+            TeamProject[] teamProjects = new TeamProject[openProjectFiles.length];
             for (FileObject rootDir : openProjectFiles) {
-                KenaiProject kenaiProject = getKenaiProject(rootDir);
-                if (kenaiProject != null) {
-                    kenaiProjects[count++] = kenaiProject;
+                TeamProject teamProject = getTeamProject(rootDir);
+                if (teamProject != null) {
+                    teamProjects[count++] = teamProject;
                 }
             }
 
-            return stripTrailingNulls(kenaiProjects);
+            return stripTrailingNulls(teamProjects);
         }
 
-        private static KenaiProject getKenaiProject(FileObject rootDir) {
+        private static TeamProject getTeamProject(FileObject rootDir) {
             Object attValue = rootDir.getAttribute(
                                        "ProvidedExtensions.RemoteLocation");//NOI18N
             if (!(attValue instanceof String)) {
@@ -348,47 +348,47 @@ public abstract class KenaiRepositories implements PropertyChangeListener {
             }
 
             String url = (String) attValue;
-            KenaiProject kenaiProject = null;
+            TeamProject teamProject = null;
             try {
                 if(NBBugzillaUtils.isNbRepository(url)) {
                     OwnerInfo owner = null;
-                    for (KenaiAccessor kenaiAccessor : KenaiUtil.getKenaiAccessors()) {
-                        owner = kenaiAccessor.getOwnerInfo(FileUtil.toFile(rootDir));
+                    for (TeamAccessor teamAccessor : TeamUtil.getTeamAccessors()) {
+                        owner = teamAccessor.getOwnerInfo(FileUtil.toFile(rootDir));
                         if (owner != null) {
                             break;
                         }
                     }
                     if(owner != null) {
-                        kenaiProject = KenaiUtil.getKenaiProject(url, owner.getOwner());
+                        teamProject = TeamUtil.getTeamProject(url, owner.getOwner());
                     } else {
                         // might be deactivated
-                        BugtrackingManager.LOG.fine("kenai accessor not available");
+                        BugtrackingManager.LOG.fine("team accessor not available");
                     }
                 } else {
-                    kenaiProject = KenaiUtil.getKenaiProjectForRepository(url);
+                    teamProject = TeamUtil.getTeamProjectForRepository(url);
                 }
 
             } catch (IOException ex) {
-                kenaiProject = null;
+                teamProject = null;
                 BugtrackingManager.LOG.log(Level.WARNING,
-                        "No Kenai project is available for bugtracking repository " //NOI18N
+                        "No Team project is available for bugtracking repository " //NOI18N
                         + " [" + url + "]"); //NOI18N
                 BugtrackingManager.LOG.log(Level.FINE, null, ex);
             }
-            return kenaiProject;
+            return teamProject;
         }
 
-        private static KenaiProject[] union(KenaiProject[]... projectArrays) {
-            Map<String, KenaiProject> union = new HashMap<String, KenaiProject>();
-            for (KenaiProject[] projectArray : projectArrays) {
-                for (KenaiProject p : projectArray) {
+        private static TeamProject[] union(TeamProject[]... projectArrays) {
+            Map<String, TeamProject> union = new HashMap<String, TeamProject>();
+            for (TeamProject[] projectArray : projectArrays) {
+                for (TeamProject p : projectArray) {
                     String name = p.getName();
                     if (!union.keySet().contains(name)) {
                         union.put(name, p);
                     }
                 }
             }
-            return union.values().toArray(new KenaiProject[union.values().size()]);
+            return union.values().toArray(new TeamProject[union.values().size()]);
         }
 
         private static <T> T[] stripTrailingNulls(T[] array) {

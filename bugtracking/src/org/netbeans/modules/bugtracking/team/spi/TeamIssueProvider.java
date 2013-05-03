@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,29 +37,24 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bugtracking.team.spi;
 
-package org.netbeans.modules.bugtracking.kenai.spi;
-
-import java.util.List;
+import org.netbeans.modules.bugtracking.spi.IssueProvider;
 
 /**
- * Wrapper for a OwnerInfo instance returned by kenai
- * 
+ *
  * @author Tomas Stupka
- * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport
  */
-public abstract class OwnerInfo {
-
-    /**
-     * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo
+public abstract class TeamIssueProvider<I> extends IssueProvider<I> {
+   
+    /** 
+     * Provides owner (project/component/...) info to prefill the respective fields.
+     * Note that currently meant only for a NB issue
+     * 
+     * @param data
+     * @param info 
      */
-    public abstract String getOwner();
-
-    /**
-     * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo
-     */
-    public abstract List<String> getExtraData();
-
+    public abstract void setOwnerInfo(I data, OwnerInfo info);   
 }

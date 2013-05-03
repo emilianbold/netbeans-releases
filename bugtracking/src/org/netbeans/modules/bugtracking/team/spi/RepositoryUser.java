@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.kenai.spi;
 
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+package org.netbeans.modules.bugtracking.team.spi;
 
 /**
- * Provides Kenai specific functionality to a {@link BugtrackingConnector}
- * 
- * @author tomas
+ * Repository user.
+ *
+ * @author Jan Stola
  */
-public abstract class KenaiBugtrackingConnector extends BugtrackingConnector {
-    
-    public enum BugtrackingType {
-        BUGZILLA,
-        JIRA,
-        ODCS
+public class RepositoryUser {
+    /** User name (login) of the user. */
+    private String userName;
+    /** Full name of the user. */
+    private String fullName;
+
+    /**
+     * Creates new <code>RepositoryUser</code>.
+     *
+     * @param userName user name.
+     * @param fullName full name.
+     */
+    public RepositoryUser(String userName, String fullName) {
+        this.userName = userName;
+        this.fullName = fullName;
     }
-        
+
     /**
-     * Creates a {@link Repository} for the given {@link KenaiProject}
+     * Returns user name.
      *
-     * @param project
-     * @return
+     * @return user name.
      */
-    public abstract Repository createRepository(KenaiProject project);
-    
-    /**
-     * Creates a {@link RepositoryProvider} for the given {@link KenaiProject}
-     *
-     * @param project
-     * @return
-     */
-    public Repository findNBRepository() {
-        return null;
+    public String getUserName() {
+        return userName;
     }
-    
+
     /**
-     * Determines the bugtracking type
+     * Returns full name.
      *
-     * @return
+     * @return full name.
      */
-    public abstract BugtrackingType getType();
+    public String getFullName() {
+        return fullName;
+    }
+
 }

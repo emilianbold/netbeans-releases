@@ -47,7 +47,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.versioning.util.VCSBugtrackingAccessor;
 
@@ -64,7 +64,7 @@ public class VCSBugtrackingSupportImpl extends VCSBugtrackingAccessor {
     public void setFirmAssociations(File[] files, String url) {
         Repository repo;
         try {
-            repo = KenaiUtil.getRepository(url);
+            repo = TeamUtil.getRepository(url);
         } catch (IOException ex) {
             LOG.log(Level.WARNING, "No issue tracker available for the given vcs url " + url, ex);         // NOI18N
             return;

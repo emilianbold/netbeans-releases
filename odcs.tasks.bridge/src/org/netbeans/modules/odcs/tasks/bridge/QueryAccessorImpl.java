@@ -51,7 +51,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
@@ -77,14 +77,14 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
 
     @Override
     public QueryHandle getAllIssuesQuery (ProjectHandle<ODCSProject> projectHandle) {
-        Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
-        if (repo == null || !KenaiUtil.isKenai(repo)) {
+        Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(projectHandle.getTeamProject()));
+        if (repo == null || !TeamUtil.isFromTeamServer(repo)) {
             return null;
         }
 
         ODCSHandler handler = Support.getInstance().getODCSHandler(projectHandle, this);
         handler.registerRepository(repo, projectHandle);
-        Query allIssuesQuery = KenaiUtil.getAllIssuesQuery(repo);
+        Query allIssuesQuery = TeamUtil.getAllIssuesQuery(repo);
         if (allIssuesQuery == null) {
             return null;
         }
@@ -112,7 +112,7 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
             }
             return Collections.unmodifiableList(Arrays.asList(naQueryHandle));
         }
-        Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
+        Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(projectHandle.getTeamProject()));
         assert repo != null;
 
         ODCSHandler handler = Support.getInstance().getODCSHandler(projectHandle, this);
@@ -141,7 +141,7 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
         if (!projectHandle.getTeamProject().hasTasks()) {
             return null;
         }        
-        final Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
+        final Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(projectHandle.getTeamProject()));
         return Support.getInstance().getODCSHandler(projectHandle, this).getFindIssuesAction(repo);
     }
 
@@ -150,13 +150,13 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
         if (!projectHandle.getTeamProject().hasTasks()) {
             return null;
         }
-        final Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
+        final Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(projectHandle.getTeamProject()));
         return Support.getInstance().getODCSHandler(projectHandle, this).getCreateIssueAction(repo);
     }
 
     @Override
     public Action getOpenTaskAction (ProjectHandle<ODCSProject> projectHandle, String taskId) {
-        final Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
+        final Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(projectHandle.getTeamProject()));
         return Support.getInstance().getODCSHandler(projectHandle, this).getOpenTaskAction(repo, taskId);
     }
 

@@ -40,36 +40,54 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.kenai.spi;
+package org.netbeans.modules.bugtracking.team.spi;
 
-import org.netbeans.modules.bugtracking.api.Issue;
+import java.net.URL;
+import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector.BugtrackingType;
 
 /**
- * Container for a recently opened IssueProvider and it's last open time
- *
+ * Wrapper for a TeamProject instance returned by team
  * @author Tomas Stupka
+ * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport
  */
-public class RecentIssue {
-    private Issue issue;
-    private long ts;
-    public RecentIssue(Issue issue, long ts) {
-        this.issue = issue;
-        this.ts = ts;
-    }
+// XXX rename to team project
+public abstract class TeamProject {
 
     /**
-     * Returns a issue
+     * Return a URL representing the project location on web
      * @return
      */
-    public Issue getIssue() {
-        return issue;
-    }
+    public abstract URL getWebLocation();
 
     /**
-     * Returns the timestamp this issue was the last time opened
+     * Returns a url representing the projects issuetracking feature location
      * @return
      */
-    public long getTimestamp() {
-        return ts;
-    }
+    public abstract String getFeatureLocation();
+
+    /**
+     * Determines what type of bugtracking system the project has
+     * @return
+     */
+    public abstract BugtrackingType getType();
+
+    /**
+     * Returns the projects name
+     * @return
+     */
+    public abstract String getName();
+
+    /**
+     * Returns the projects display name
+     * @return
+     */
+    public abstract String getDisplayName();
+
+    /**
+     * Notifies team that a query was activated
+     * @param query
+     */
+    public abstract void fireQueryActivated(Query query);
+
 }

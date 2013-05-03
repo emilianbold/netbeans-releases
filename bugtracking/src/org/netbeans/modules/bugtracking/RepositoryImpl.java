@@ -51,8 +51,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.*;
 
 
@@ -313,22 +313,22 @@ public final class RepositoryImpl<R, Q, I> {
     }
 
     public Query getAllIssuesQuery() {
-        assert KenaiRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
-        Q q = ((KenaiRepositoryProvider<R, Q, I>) repositoryProvider).getAllIssuesQuery(r);
+        assert TeamRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
+        Q q = ((TeamRepositoryProvider<R, Q, I>) repositoryProvider).getAllIssuesQuery(r);
         QueryImpl queryImpl = getQuery(q);
         return queryImpl != null ? queryImpl.getQuery() : null;
     }
 
     public Query getMyIssuesQuery() {
-        assert KenaiRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
-        Q q = ((KenaiRepositoryProvider<R, Q, I>) repositoryProvider).getMyIssuesQuery(r);
+        assert TeamRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
+        Q q = ((TeamRepositoryProvider<R, Q, I>) repositoryProvider).getMyIssuesQuery(r);
         QueryImpl queryImpl = getQuery(q);
         return queryImpl != null ? queryImpl.getQuery() : null;
     }
 
-    public KenaiProject getKenaiProject() {
-        return repositoryProvider instanceof KenaiRepositoryProvider ?
-                    ((KenaiRepositoryProvider<R, Q, I>)repositoryProvider).getKenaiProject(r) :
+    public TeamProject getTeamProject() {
+        return repositoryProvider instanceof TeamRepositoryProvider ?
+                    ((TeamRepositoryProvider<R, Q, I>)repositoryProvider).getTeamProject(r) :
                     null;
     }
     

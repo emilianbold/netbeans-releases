@@ -46,8 +46,8 @@ import java.io.File;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import static java.lang.Character.isSpaceChar;
 import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiIssueProvider;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.team.spi.TeamIssueProvider;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
@@ -184,9 +184,9 @@ public final class IssueImpl<I> {
     }
 
     public void setContext(OwnerInfo info) {
-        assert issueProvider instanceof KenaiIssueProvider;
-        if(issueProvider instanceof KenaiIssueProvider) {
-            ((KenaiIssueProvider<I>)issueProvider).setOwnerInfo(data, info);
+        assert issueProvider instanceof TeamIssueProvider;
+        if(issueProvider instanceof TeamIssueProvider) {
+            ((TeamIssueProvider<I>)issueProvider).setOwnerInfo(data, info);
         }
     }
 

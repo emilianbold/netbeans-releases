@@ -43,7 +43,7 @@
 package org.netbeans.modules.jira.repository;
 
 import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
-import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
 import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.User;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter;

@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugtracking.util;
 
-import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
+import org.netbeans.modules.bugtracking.team.spi.RecentIssue;
 import java.awt.Dimension;
 import java.io.File;
 import java.util.ArrayList;

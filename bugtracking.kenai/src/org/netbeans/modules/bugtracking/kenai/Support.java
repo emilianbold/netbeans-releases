@@ -63,7 +63,7 @@ class Support {
     private static Support instance;
     private Map<String, KenaiHandler> handlers = new HashMap<String, KenaiHandler>();
 
-    final HashMap<String, WeakReference<KenaiProjectImpl>> projectsCache = new HashMap<String, WeakReference<KenaiProjectImpl>>();
+    final HashMap<String, WeakReference<TeamProjectImpl>> projectsCache = new HashMap<String, WeakReference<TeamProjectImpl>>();
 
     private Support() {
     }

@@ -66,8 +66,8 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
@@ -513,7 +513,7 @@ public abstract class ODCSQuery {
         }
 
         private ProjectAndClient getProjectAndClient() {
-            KenaiProject kp = getRepository().getLookup().lookup(KenaiProject.class);
+            TeamProject kp = getRepository().getLookup().lookup(TeamProject.class);
             assert kp != null; // all odcs repositories should come from team support
             if (kp == null) {
                 ODCS.LOG.log(Level.WARNING, "  no project available for query"); // NOI18N

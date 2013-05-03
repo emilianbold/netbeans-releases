@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugtracking.util;
 
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import java.awt.Component;
@@ -680,7 +680,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         if (attValue instanceof String) {
             String url = (String) attValue;
             if(NBBugzillaUtils.isNbRepository(url)) {
-                KenaiUtil.findNBRepository(); // ensure repository exists 
+                TeamUtil.findNBRepository(); // ensure repository exists 
             }
         }
     }

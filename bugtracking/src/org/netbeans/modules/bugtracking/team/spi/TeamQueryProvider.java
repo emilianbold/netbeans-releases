@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,57 +37,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bugtracking.team.spi;
 
-package org.netbeans.modules.bugtracking.kenai.spi;
-
-import java.net.URL;
-import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector.BugtrackingType;
+import org.netbeans.modules.bugtracking.spi.QueryProvider;
 
 /**
- * Wrapper for a KenaiProject instance returned by kenai
+ *
  * @author Tomas Stupka
- * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport
  */
-// XXX rename to team project
-public abstract class KenaiProject {
-
+public abstract class TeamQueryProvider<Q, I> extends QueryProvider<Q, I> {
+    
     /**
-     * Return a URL representing the project location on web
-     * @return
-     */
-    public abstract URL getWebLocation();
-
-    /**
-     * Returns a url representing the projects issuetracking feature location
-     * @return
-     */
-    public abstract String getFeatureLocation();
-
-    /**
-     * Determines what type of bugtracking system the projact has
-     * @return
-     */
-    public abstract BugtrackingType getType();
-
-    /**
-     * Returns the projects name
-     * @return
-     */
-    public abstract String getName();
-
-    /**
-     * Returns the projects display name
-     * @return
-     */
-    public abstract String getDisplayName();
-
-    /**
-     * Notifies kenai that a query was activated
+     * Determines if the query needs the user to be logged in to show some
+     * results - e.g. MyIssues queries have no results in case the user is
+     * not logged in
+     *
      * @param query
+     * @return true if login needed, otherwise false
      */
-    public abstract void fireQueryActivated(Query query);
-
+    public abstract boolean needsLogin(Q q);
+    
+    /** 
+     * Provides owner (project/component/...) info to prefill the respective fields.
+     * Note that currently meant only for a NB query.
+     * 
+     * @param q
+     * @param info 
+     */
+    public abstract void setOwnerInfo(Q q, OwnerInfo info);
+    
 }

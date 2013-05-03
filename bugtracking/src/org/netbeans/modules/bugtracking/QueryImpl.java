@@ -43,8 +43,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.team.spi.TeamQueryProvider;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
@@ -164,16 +164,16 @@ public final class QueryImpl<Q, I>  {
     }
 
     public void setContext(OwnerInfo info) {
-        assert (queryProvider instanceof KenaiQueryProvider);
-        if((queryProvider instanceof KenaiQueryProvider)) {
-            ((KenaiQueryProvider<Q, I>)queryProvider).setOwnerInfo(data, info);
+        assert (queryProvider instanceof TeamQueryProvider);
+        if((queryProvider instanceof TeamQueryProvider)) {
+            ((TeamQueryProvider<Q, I>)queryProvider).setOwnerInfo(data, info);
         }
     }
 
     public boolean needsLogin() {
-        assert (queryProvider instanceof KenaiQueryProvider);
-        if((queryProvider instanceof KenaiQueryProvider)) {
-            return ((KenaiQueryProvider<Q, I>)queryProvider).needsLogin(data);
+        assert (queryProvider instanceof TeamQueryProvider);
+        if((queryProvider instanceof TeamQueryProvider)) {
+            return ((TeamQueryProvider<Q, I>)queryProvider).needsLogin(data);
         } 
         return false;
     }
