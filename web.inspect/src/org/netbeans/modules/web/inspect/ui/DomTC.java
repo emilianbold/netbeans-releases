@@ -78,9 +78,9 @@ import org.openide.windows.TopComponent;
         displayName = "#CTL_DomAction", // NOI18N
         preferredID = DomTC.ID)
 @NbBundle.Messages({
-    "CTL_DomAction=DOM Tree", // NOI18N
-    "CTL_DomTC=DOM Tree", // NOI18N
-    "HINT_DomTC=This window shows a DOM Tree" // NOI18N
+    "CTL_DomAction=Browser DOM", // NOI18N
+    "CTL_DomTC=Browser DOM", // NOI18N
+    "HINT_DomTC=This window shows the DOM tree from the browser." // NOI18N
 })
 public final class DomTC extends TopComponent {
     /** TopComponent ID. */
