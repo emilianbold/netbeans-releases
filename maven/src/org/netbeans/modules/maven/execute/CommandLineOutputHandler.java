@@ -63,6 +63,7 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.output.OutputUtils;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.modules.maven.execute.AbstractMavenExecutor.ResumeFromFinder;
 import static org.netbeans.modules.maven.execute.AbstractOutputHandler.PRJ_EXECUTE;
@@ -96,8 +97,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     private static final Pattern somethingMavenPlugin = Pattern.compile("(.+)-maven-plugin"); // NOI18N
     /** @see org.apache.maven.cli.ExecutionEventLogger#logReactorSummary */
     static final Pattern reactorFailure = Pattern.compile("\\[INFO\\] (.+) [.]* FAILURE \\[.+\\]"); // NOI18N
-    private static final Pattern exceptionStart = Pattern.compile("^\\w*(Exception|Error)"); //NOI18N
-    private static final Pattern stackTraceElement = Pattern.compile("^\\s+at.*:.*"); //NOI18N
+    private static final Pattern stackTraceElement = OutputUtils.linePattern;
     
     public static final Pattern reactorSummaryLine = Pattern.compile("(.+) [.]* (FAILURE|SUCCESS) (\\[.+\\])?"); // NOI18N
     private OutputWriter stdOut;
@@ -305,6 +305,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                         String levelS = match.group(1);
                         Level level = Level.valueOf(levelS);
                         String text = match.group(2);
+                        updateFoldForException(text);
                         processLine(text, stdOut, level);
                         if (level == Level.INFO && contextImpl == null) { //only perform for maven 2.x now
                             checkProgress(text);
@@ -461,15 +462,12 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
          * or is another text, and update folds accordingly.
          */
         private void updateFoldForException(String line) {
-            if (exceptionStart.matcher(line).find()) {
-                currentTreeNode.finishInnerOutputFold();
+            if (stackTraceElement.matcher(line).find()) {
                 inStackTrace = true;
-            } else if (inStackTrace
-                    && stackTraceElement.matcher(line).find()) {
                 if (!currentTreeNode.hasInnerOutputFold()) {
-                    currentTreeNode.startInnerOutputFold();
+                    currentTreeNode.startInnerOutputFold(inputOutput);
                 }
-            } else {
+            } else  if (inStackTrace) {
                 currentTreeNode.finishInnerOutputFold();
                 inStackTrace = false;
             }

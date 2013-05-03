@@ -212,12 +212,14 @@ public class ExecutionEventObject {
          * stacktrace folds in the exec tree. If a nested fold already exists,
          * it will be finished before starting new fold.
          */
-        public void startInnerOutputFold() {
+        public void startInnerOutputFold(InputOutput io) {
+            if (innerOutputFoldHandle != null) {
+                innerOutputFoldHandle.finish();
+            }
             if (foldHandle != null) {
-                if (innerOutputFoldHandle != null) {
-                    innerOutputFoldHandle.finish();
-                }
                 innerOutputFoldHandle = foldHandle.startFold(true);
+            } else {
+                innerOutputFoldHandle = IOFolding.startFold(io, true);
             }
         }
 
