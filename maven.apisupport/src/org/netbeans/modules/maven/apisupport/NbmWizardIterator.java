@@ -89,7 +89,7 @@ public class NbmWizardIterator implements WizardDescriptor.BackgroundInstantiati
 
         NB_APP_ARCH = new Archetype();
         NB_APP_ARCH.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
-        NB_APP_ARCH.setVersion("1.12"); //NOI18N
+        NB_APP_ARCH.setVersion("1.13"); //NOI18N
         NB_APP_ARCH.setArtifactId("netbeans-platform-app-archetype"); //NOI18N
 
     }
