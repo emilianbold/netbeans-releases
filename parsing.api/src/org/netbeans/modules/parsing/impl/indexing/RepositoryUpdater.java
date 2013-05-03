@@ -3475,6 +3475,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 
         protected @Override boolean getDone() {
             boolean result = scanBinary(root, BinaryIndexers.load(), null);
+            TEST_LOGGER.log(Level.FINEST, "binary", Collections.<URL>singleton(root));       //NOI18N
             refreshActiveDocument();
             return result;
         }
