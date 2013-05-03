@@ -627,6 +627,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
         handler.reset();
         
         final long timeStamp = jar2Delete[0].lastModified().getTime();
+        File jar2DeleteFile = FileUtil.toFile(jar2Delete[0]);
         
         IndexingManager.getDefault().runProtected(new Callable<Void>() {
             @Override public Void call() throws Exception {
@@ -635,11 +636,7 @@ public class RepositoryUpdaterTest extends NbTestCase {
             }
         });
         
-        ParserManager.parseWhenScanFinished(Collections.<Source>emptyList(), new UserTask() {
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-            }
-        });
+        IndexingManager.getDefault().refreshAllIndices(false, true, jar2DeleteFile);
         
         binIndexerFactory.indexer.indexedAllFilesIndexing.clear();
         handler.reset();
