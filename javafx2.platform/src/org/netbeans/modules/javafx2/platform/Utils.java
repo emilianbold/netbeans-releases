@@ -82,19 +82,17 @@ public final class Utils {
 
     private static final String PLATFORM_PREFIX = "platforms"; // NOI18N
     private static final String JAVAFX_SDK_PREFIX = "javafx.sdk.home"; // NOI18N
-    private static final String JAVAFX_RUNTIME_PREFIX = "javafx.runtime.home"; // NOI18N
-    private static final String JAVAFX_SOURCES_PREFIX = "javafx.src"; // NOI18N
-    private static final String JAVAFX_JAVADOC_PREFIX = "javafx.javadoc"; // NOI18N
-
+    private static final String JAVAFX_RUNTIME_PREFIX = "javafx.runtime.home"; // NOI18N    
     private static final String JFXRT_JAR_NAME = "jfxrt.jar"; //NOI18N
-    private static final String[] JFXRT_JAR_PATHS = {"jre/lib/", "jre/lib/ext/"}; //NOI18N
+    private static final String[] JFXRT_JAR_JDK_PATHS = {"jre/lib/", "jre/lib/ext/"}; //NOI18N
+    private static final String[] JFXRT_JAR_JRE_PATHS = {"lib/", "lib/ext/"}; //NOI18N
     private static final String[] JFXRT_OPTIONAL_JARS = {"javaws.jar", "deploy.jar", "plugin.jar"}; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.javafx2.platform.Utils"); // NOI18N
     
     private Utils() {
     }
-
+    
     /**
      * Indicates whether running inside a test.
      * Used to bypass J2SE platform creation
@@ -123,15 +121,19 @@ public final class Utils {
     /**
      * Return paths relative to platform installation dir where
      * FX RT artifacts may be found
+     * @param jp the {@link JavaPlatform} to relativize to
      * @return relative paths
      */
     @NonNull
-    public static String[] getJavaFxRuntimeLocations() {
-        return JFXRT_JAR_PATHS;
+    public static String[] getJavaFxRuntimeLocations(@NonNull final JavaPlatform jp) {
+        Parameters.notNull("jp", jp);   //NOI18N
+        return JavaPlatform.getDefault().equals(jp) ?
+                JFXRT_JAR_JRE_PATHS :
+                JFXRT_JAR_JDK_PATHS;
     }
 
     /**
-     * Return file name of FX RT jar
+    * Return file name of FX RT jar
      * @return file name
      */
     @NonNull

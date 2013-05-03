@@ -133,7 +133,7 @@ public class JavaFxRuntimeInclusion {
         List<String> paths = new ArrayList<String>();
         Support runtimeSupport = Support.MISSING;
         String runtimePath = null;
-        for(String runtimeLocation : Utils.getJavaFxRuntimeLocations()) {
+        for(String runtimeLocation : Utils.getJavaFxRuntimeLocations(javaPlatform)) {
             runtimePath = runtimeLocation + Utils.getJavaFxRuntimeArchiveName();
             runtimeSupport = forRuntime(javaPlatform, runtimePath);
             if(runtimeSupport != Support.MISSING) {
@@ -147,7 +147,7 @@ public class JavaFxRuntimeInclusion {
             for(String optionalName : Utils.getJavaFxRuntimeOptionalNames()) {
                 Support optionalSupport = Support.MISSING;
                 String optionalPath = null;
-                for(String optionalLocation : Utils.getJavaFxRuntimeLocations()) {
+                for(String optionalLocation : Utils.getJavaFxRuntimeLocations(javaPlatform)) {
                     optionalPath = optionalLocation + optionalName;
                     optionalSupport = forRuntime(javaPlatform, optionalPath);
                     if(optionalSupport == Support.PRESENT) {
