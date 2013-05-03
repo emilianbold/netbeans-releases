@@ -95,9 +95,11 @@ public final class Branding extends Task {
             throw new BuildException("Must specify a valid branding token: " + token, getLocation());
         }
         try {
-            StringTokenizer tokenizer = new StringTokenizer(locales, ",");
-            while (tokenizer.hasMoreElements()) {
-                lookForBrandingJars(overrides, cluster, overrides.getAbsolutePath() + File.separatorChar, tokenizer.nextToken());
+            if(locales != null) {
+                StringTokenizer tokenizer = new StringTokenizer(locales, ",");
+                while (tokenizer.hasMoreElements()) {
+                    lookForBrandingJars(overrides, cluster, overrides.getAbsolutePath() + File.separatorChar, tokenizer.nextToken());
+                }
             }
             lookForBrandingJars(overrides, cluster, overrides.getAbsolutePath() + File.separatorChar, null);
         } catch (IOException e) {

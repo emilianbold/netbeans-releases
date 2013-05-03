@@ -47,9 +47,11 @@ package org.netbeans.core.output2;
 import java.awt.Color;
 import java.io.IOException;
 import java.io.Reader;
+import static junit.framework.Assert.assertEquals;
 import junit.framework.TestCase;
 import org.openide.util.Exceptions;
 import org.openide.windows.IOColorLines;
+import org.openide.windows.IOColors;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
 import org.openide.windows.OutputWriter;
@@ -231,5 +233,52 @@ public class NbIOTest extends TestCase {
         synchronized (nullOuts) {
             assertEquals(0, nullOuts[0]);
         }
+    }
+
+    public void testIOColorsImpl() {
+        NbIO io = new NbIO("test");
+        io.getOptions().setColorStandard(Color.RED);
+        io.getOptions().setColorError(Color.WHITE);
+        io.getOptions().setColorInput(Color.YELLOW);
+        io.getOptions().setColorLink(Color.PINK);
+        io.getOptions().setColorLinkImportant(Color.LIGHT_GRAY);
+        io.getOptions().setColorDebug(Color.CYAN);
+        io.getOptions().setColorWarning(Color.BLACK);
+        io.getOptions().setColorFailure(Color.MAGENTA);
+        io.getOptions().setColorSuccess(Color.BLUE);
+        assertEquals(Color.RED,
+                IOColors.getColor(io, IOColors.OutputType.OUTPUT));
+        assertEquals(Color.WHITE,
+                IOColors.getColor(io, IOColors.OutputType.ERROR));
+        assertEquals(Color.YELLOW,
+                IOColors.getColor(io, IOColors.OutputType.INPUT));
+        assertEquals(Color.PINK,
+                IOColors.getColor(io, IOColors.OutputType.HYPERLINK));
+        assertEquals(Color.LIGHT_GRAY,
+                IOColors.getColor(io, IOColors.OutputType.HYPERLINK_IMPORTANT));
+        assertEquals(Color.CYAN,
+                IOColors.getColor(io, IOColors.OutputType.LOG_DEBUG));
+        assertEquals(Color.BLACK,
+                IOColors.getColor(io, IOColors.OutputType.LOG_WARNING));
+        assertEquals(Color.MAGENTA,
+                IOColors.getColor(io, IOColors.OutputType.LOG_FAILURE));
+        assertEquals(Color.BLUE,
+                IOColors.getColor(io, IOColors.OutputType.LOG_SUCCESS));
+    }
+
+    public void testIOColorsImplSetting() {
+        NbIO io = new NbIO("test");
+        io.getOptions().setColorStandard(Color.ORANGE);
+        io.getOptions().setColorDebug(Color.WHITE);
+        assertEquals(Color.ORANGE,
+                IOColors.getColor(io, IOColors.OutputType.OUTPUT));
+        assertEquals(Color.WHITE,
+                IOColors.getColor(io, IOColors.OutputType.LOG_DEBUG));
+        IOColors.setColor(io, IOColors.OutputType.OUTPUT, Color.BLUE);
+        IOColors.setColor(io, IOColors.OutputType.LOG_DEBUG, Color.GREEN);
+        assertEquals(Color.BLUE,
+                IOColors.getColor(io, IOColors.OutputType.OUTPUT));
+        assertEquals(Color.GREEN,
+                IOColors.getColor(io, IOColors.OutputType.LOG_DEBUG));
     }
 }

@@ -791,6 +791,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                         </union>
                         <taskdef name="testng" classname="org.testng.TestNGAntTask" classpath="${{run.test.classpath}}"/>
                         <testng>
+                            <xsl:attribute name="listeners">org.testng.reporters.VerboseReporter</xsl:attribute>
                             <xsl:attribute name="mode">${testng.mode}</xsl:attribute>
                             <xsl:attribute name="classfilesetref">test.set</xsl:attribute>
                             <xsl:attribute name="workingDir">${work.dir}</xsl:attribute> <!-- #47474: match <java> --> 
