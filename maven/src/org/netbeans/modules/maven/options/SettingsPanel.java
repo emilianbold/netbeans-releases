@@ -397,25 +397,23 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(pnlExecutionLayout.createSequentialGroup()
-                        .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbSkipTests)
-                            .addComponent(btnGoals)
-                            .addGroup(pnlExecutionLayout.createSequentialGroup()
-                                .addComponent(lblOptions)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)))
-                        .addGap(18, 18, 18)
-                        .addComponent(btnOptions))
-                    .addGroup(pnlExecutionLayout.createSequentialGroup()
-                        .addComponent(lblCommandLine, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(lblCommandLine)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblExternalVersion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(comMavenHome, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(pnlExecutionLayout.createSequentialGroup()
+                        .addComponent(lblOptions)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtOptions)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnOptions))
+                    .addGroup(pnlExecutionLayout.createSequentialGroup()
                         .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnGoals)
                             .addComponent(cbAlwaysShow)
-                            .addComponent(cbReuse))
+                            .addComponent(cbReuse)
+                            .addComponent(cbSkipTests))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -479,7 +477,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(pnlAppearanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtProjectNodeNameCustomPattern)
-                            .addComponent(cbProjectNodeNameMode, 0, 305, Short.MAX_VALUE))))
+                            .addComponent(cbProjectNodeNameMode, 0, 290, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         pnlAppearanceLayout.setVerticalGroup(
@@ -493,7 +491,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(cbProjectNodeNameMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txtProjectNodeNameCustomPattern, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(182, Short.MAX_VALUE))
+                .addContainerGap(196, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlAppearance, "appearance");
@@ -534,7 +532,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                         .addComponent(lblSource)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(comSource, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE))
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -559,7 +557,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(comSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(106, Short.MAX_VALUE))
+                .addContainerGap(114, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlDependencies, "dependencies");
@@ -584,7 +582,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(lblIndex)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(comIndex, 0, 210, Short.MAX_VALUE)
+                .addComponent(comIndex, 0, 164, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnIndex)
                 .addContainerGap())
@@ -597,7 +595,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(lblIndex)
                     .addComponent(comIndex, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnIndex))
-                .addContainerGap(225, Short.MAX_VALUE))
+                .addContainerGap(250, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlIndex, "index");
@@ -629,8 +627,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(pnlCards, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(lblCategory))
-                .addContainerGap())
+                    .addComponent(lblCategory)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
