@@ -148,32 +148,7 @@ public final class Utils {
     public static String[] getJavaFxRuntimeOptionalNames() {
         return JFXRT_OPTIONAL_JARS;
     }
-    
-    /**
-     * Returns key for <b>JavaFX SDK location</b> IDE global property value for given java platform
-     * 
-     * @param IDE java platform instance
-     * @return key for JavaFX SDK location
-     */
-    @NonNull
-    public static String getSDKPropertyKey(@NonNull JavaPlatform platform) {
-        Parameters.notNull("platform", platform); // NOI18N
-        String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
-        return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_SDK_PREFIX; // NOI18N
-    }
-    
-    /**
-     * Returns key for <b>JavaFX Runtime location</b> IDE global property value for given java platform
-     * 
-     * @param IDE java platform instance
-     * @return key for JavaFX Runtime location
-     */
-    @NonNull
-    public static String getRuntimePropertyKey(@NonNull JavaPlatform platform) {
-        Parameters.notNull("platform", platform); // NOI18N
-        String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
-        return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_RUNTIME_PREFIX; // NOI18N
-    }
+            
 
     /**
      * Returns key for <b>JavaFX SDK location</b> IDE global property value for given java platform
@@ -195,32 +170,6 @@ public final class Utils {
     @NonNull
     public static String getRuntimePropertyKey(@NonNull String platformName) {
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_RUNTIME_PREFIX; // NOI18N
-    }
-
-    /**
-     * Returns key for <b>JavaFX Javadoc location</b> IDE global property value for given java platform
-     * 
-     * @param IDE java platform instance
-     * @return key for JavaFX Javadoc location
-     */
-    @NonNull
-    public static String getJavadocPropertyKey(@NonNull JavaPlatform platform) {
-        Parameters.notNull("platform", platform); // NOI18N
-        String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
-        return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_JAVADOC_PREFIX; // NOI18N
-    }
-
-    /**
-     * Returns key for <b>JavaFX Sources location</b> IDE global property value for given java platform
-     * 
-     * @param IDE java platform instance
-     * @return key for JavaFX Sources location
-     */
-    @NonNull
-    public static String getSourcesPropertyKey(@NonNull JavaPlatform platform) {
-        Parameters.notNull("platform", platform); // NOI18N
-        String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
-        return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_SOURCES_PREFIX; // NOI18N
     }
     
     /**
@@ -274,23 +223,6 @@ public final class Utils {
                 }
             }
         }
-        
-        if (platform != null) {
-            Map<String, String> map = new HashMap<String, String>(2);
-            map.put(Utils.getSDKPropertyKey(platform), sdkPath);
-            map.put(Utils.getRuntimePropertyKey(platform), runtimePath);
-            if (javadocPath != null) {
-                map.put(Utils.getJavadocPropertyKey(platform), javadocPath);
-            }
-            if (srcPath != null) {
-                map.put(Utils.getSourcesPropertyKey(platform), srcPath);
-            }
-            PlatformPropertiesHandler.saveGlobalProperties(map);
-            LOGGER.log(Level.INFO, "Java FX extension for \"{0}\" has been registered successfully", platformName); // NOI18N
-        } else {
-            LOGGER.log(Level.WARNING, "Java FX extension for \"{0}\" has not been registered!", platformName); // NOI18N
-        }
-        
         return platform;
     }
     
