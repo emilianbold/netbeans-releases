@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,59 +40,25 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.mylyn.util;
 
-package org.netbeans.modules.bugzilla;
-
-import java.util.ArrayList;
-import java.util.EnumSet;
-import java.util.List;
-import org.netbeans.modules.bugtracking.cache.IssueCache.Status;
-import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
-import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.bugzilla.query.QueryNotifyListener;
+import org.openide.modules.ModuleInstall;
 
 /**
  *
- * @author tomas
+ * @author Tomas Stupka
  */
-public class TestQueryNotifyListener implements QueryNotifyListener {
-    public boolean started = false;
-    public boolean finished = false;
-    public List<BugzillaIssue> issues = new ArrayList<BugzillaIssue>();
-    private BugzillaQuery q;
-    public TestQueryNotifyListener(BugzillaQuery q) {
-        this.q = q;
-        q.addNotifyListener(this);
-    }
-    public void started() {
-        started = true;
-    }
-    public void notifyDataAdded (BugzillaIssue issue) {
-        issues.add(issue);
-    }
-    public void notifyDataRemoved (BugzillaIssue issue) {
-        issues.remove(issue);
-    }
-    public void finished() {
-        finished = true;
-    }
-    public void reset() {
-        started = false;
-        finished = false;
-        issues = new ArrayList<BugzillaIssue>();
-    }
-    public List<BugzillaIssue> getIssues(EnumSet<Status> includeStatus) {
-        List<BugzillaIssue> ret = new ArrayList<BugzillaIssue>();
-        for (BugzillaIssue issue : issues) {
-            if (q == null || includeStatus.contains(q.getIssueStatus(issue.getID()))) {
-                ret.add(issue);
-            }
+public class ModuleLifecycleManager extends ModuleInstall {        
+
+    @Override
+    public boolean closing() {
+        try {
+            MylynSupport.getInstance().persist();
+        } catch (Exception ex) {
+            
         }
-        return ret;
+        return true;
     }
+    
 }

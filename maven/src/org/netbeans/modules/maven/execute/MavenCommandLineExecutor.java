@@ -88,6 +88,7 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.IOColorLines;
+import org.openide.windows.IOColors;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -491,7 +492,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     private static void printGray(InputOutput io, String text) {
         if (IOColorLines.isSupported(io)) {
             try {
-                IOColorLines.println(io, text, Color.GRAY);
+                IOColorLines.println(io, text, IOColors.getColor(io, IOColors.OutputType.LOG_DEBUG));
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

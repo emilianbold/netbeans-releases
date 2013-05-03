@@ -71,6 +71,8 @@ import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOColorPrint;
+import org.openide.windows.IOColors;
+import org.openide.windows.IOColors;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 
@@ -252,7 +254,7 @@ public final class StandardLogger extends AntLogger {
             InputOutput io = session.getIO();
             if (IOColorLines.isSupported(io)) {
                 try {
-                    IOColorLines.println(io, msg, Color.GRAY);
+                    IOColorLines.println(io, msg, IOColors.getColor(io, IOColors.OutputType.LOG_DEBUG));
                 } catch (IOException x) {
                     ERR.log(Level.INFO, null, x);
                 }
@@ -350,7 +352,9 @@ public final class StandardLogger extends AntLogger {
         InputOutput io = session.getIO();
         if (IOColorLines.isSupported(io)) {
             try {
-                IOColorLines.println(io, msg, error ? Color.RED : Color.GREEN.darker().darker());
+                IOColorLines.println(io, msg, IOColors.getColor(io, error
+                        ? IOColors.OutputType.LOG_FAILURE
+                        : IOColors.OutputType.LOG_SUCCESS));
                 return;
             } catch (IOException x) {
                 ERR.log(Level.INFO, null, x);
@@ -382,7 +386,7 @@ public final class StandardLogger extends AntLogger {
                 InputOutput io = session.getIO();
                 if (IOColorLines.isSupported(io)) {
                     try {
-                        IOColorLines.println(io, msg, Color.GRAY);
+                        IOColorLines.println(io, msg, IOColors.getColor(io, IOColors.OutputType.LOG_DEBUG));
                     } catch (IOException x) {
                         ERR.log(Level.INFO, null, x);
                     }
