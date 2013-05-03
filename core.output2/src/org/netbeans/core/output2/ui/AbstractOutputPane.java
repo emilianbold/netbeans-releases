@@ -53,6 +53,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.*;
 import java.awt.*;
 import java.awt.event.*;
+import org.netbeans.core.output2.FoldingSideBar;
 import org.netbeans.core.output2.Lines;
 import org.netbeans.core.output2.OutputDocument;
 import org.netbeans.core.output2.options.OutputOptions;
@@ -76,6 +77,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     private int fontHeight = -1;
     private int fontWidth = -1;
     protected JEditorPane textView;
+    private FoldingSideBar foldingSideBar;
     int lastCaretLine = 0;
     int caretBlinkRate = 500;
     boolean hadSelection = false;
@@ -231,6 +233,7 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
     }
 
     protected void init() {
+        setRowHeaderView(foldingSideBar = new FoldingSideBar(textView, this));
         setViewportView(textView);
         textView.setEditable(false);
 
@@ -277,6 +280,10 @@ public abstract class AbstractOutputPane extends JScrollPane implements Document
      */
     public final JTextComponent getTextView() {
         return textView;
+    }
+
+    public final FoldingSideBar getFoldingSideBar() {
+        return foldingSideBar;
     }
 
     public final void copy() {

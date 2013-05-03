@@ -43,22 +43,17 @@
 package org.netbeans.modules.bugzilla.query;
 
 import java.text.MessageFormat;
-import java.util.Collection;
 import java.util.logging.Level;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.bugtracking.TestKit;
 import org.netbeans.modules.bugtracking.dummies.DummyBugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
-import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.LogHandler;
 import org.netbeans.modules.bugzilla.TestConstants;
 import org.netbeans.modules.bugzilla.TestUtil;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
-import org.netbeans.modules.bugzilla.issue.BugzillaTaskListProvider;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.test.MockLookup;
@@ -129,7 +124,6 @@ public class QueryRefreshTest extends NbTestCase implements TestConstants, Query
         private TestLookup(InstanceContent ic) {
             super(ic);
             ic.add(new DummyBugtrackingOwnerSupport());
-            ic.add(BugzillaTaskListProvider.getInstance());
         }
     }
 

@@ -47,6 +47,7 @@ package org.netbeans.core.multiview;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.*;
+import java.util.ArrayList;
 import java.util.Map;
 import javax.swing.Action;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
@@ -290,22 +291,29 @@ public final class MultiViewTopComponent
     static SubComponent[] getSubComponents( final MultiViewPeer peer ) {
         MultiViewModel model = peer.getModel();
         MultiViewPerspective[] perspectives = model.getPerspectives();
-        SubComponent[] res = new SubComponent[perspectives.length];
+        ArrayList<SubComponent> res = new ArrayList<SubComponent>(perspectives.length);
         for( int i=0; i<perspectives.length; i++ ) {
             final MultiViewPerspective mvp = perspectives[i];
 	    MultiViewDescription descr = Accessor.DEFAULT.extractDescription(mvp);
+            if( descr instanceof ContextAwareDescription ) {
+                //don't show split elements unless they're really showing on the screen
+                ContextAwareDescription contextDescr = ( ContextAwareDescription ) descr;
+                if( contextDescr.isSplitDescription() && !peer.tabs.isShowing( descr ) ) {
+                    continue;
+                }
+            }
 	    Lookup lookup = descr == null ? peer.getLookup() :
 		    model.getElementForDescription(descr, false) == null ? peer.getLookup() : model.getElementForDescription(descr, false).getLookup();
 	    boolean showing = peer.tabs.isShowing(descr);
-            res[i] = new SubComponent( Actions.cutAmpersand(mvp.getDisplayName()), null, new ActionListener() {
+            res.add( new SubComponent( Actions.cutAmpersand(mvp.getDisplayName()), null, new ActionListener() {
 
                 @Override
                 public void actionPerformed( ActionEvent e ) {
                     peer.getMultiViewHandlerDelegate().requestActive( mvp );
                 }
-            }, mvp == model.getSelectedPerspective(), lookup, showing );
+            }, mvp == model.getSelectedPerspective(), lookup, showing ) );
         }
-        return res;
+        return res.toArray( new SubComponent[res.size()] );
     }
 
     public TopComponent splitComponent(int orientation) {

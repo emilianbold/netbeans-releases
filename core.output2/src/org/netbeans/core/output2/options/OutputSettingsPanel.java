@@ -49,8 +49,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.io.IOException;
+import java.io.Reader;
 import javax.swing.Action;
 import javax.swing.JComboBox;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.output2.Controller;
 import org.netbeans.core.output2.NbIOProvider;
@@ -119,6 +121,8 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
         cmbImportantLinkColor = new ColorComboBox();
         jLabel1 = new javax.swing.JLabel();
         lblUnwrappedOnly = new javax.swing.JLabel();
+        lblInputColor = new javax.swing.JLabel();
+        cmbInputColor = new ColorComboBox();
         previewPanel = new javax.swing.JPanel();
         btnRestore = new javax.swing.JButton();
 
@@ -212,6 +216,15 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(lblUnwrappedOnly, org.openide.util.NbBundle.getMessage(OutputSettingsPanel.class, "OutputSettingsPanel.lblUnwrappedOnly.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(lblInputColor, org.openide.util.NbBundle.getMessage(OutputSettingsPanel.class, "OutputSettingsPanel.lblInputColor.text")); // NOI18N
+
+        cmbInputColor.setToolTipText(org.openide.util.NbBundle.getMessage(OutputSettingsPanel.class, "OutputSettingsPanel.cmbInputColor.toolTipText")); // NOI18N
+        cmbInputColor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbInputColorActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -226,21 +239,25 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
                     .addComponent(lblBackgroundColor)
                     .addComponent(lblFontSize)
                     .addComponent(jLabel1)
-                    .addComponent(lblLinkStyle))
+                    .addComponent(lblLinkStyle)
+                    .addComponent(lblInputColor))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(fldFontFamily)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnSelectFont))
-                    .addComponent(lblUnwrappedOnly)
-                    .addComponent(spnFontSize, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblUnwrappedOnly, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addComponent(spnFontSize, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(cmbBackgroundColor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(cmbStandardColor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(cmbErrorColor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(cmbLinkColor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(cmbImportantLinkColor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(cmbLinkStyle, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(cmbLinkStyle, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(cmbInputColor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addGap(1, 1, 1))
         );
         jPanel2Layout.setVerticalGroup(
@@ -269,6 +286,10 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cmbErrorColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(lblErrorColor))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblInputColor)
+                    .addComponent(cmbInputColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblLinkColor)
@@ -308,7 +329,7 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
                             .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                                 .addComponent(lblTitle)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 103, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(btnRestore)))
                         .addContainerGap())))
         );
@@ -322,7 +343,7 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(previewPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)
+                .addComponent(previewPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 51, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -401,6 +422,13 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
         outputOptions.setLinkStyle(linkStyleModel.getLinkStyle());
     }//GEN-LAST:event_cmbLinkStyleActionPerformed
 
+    private void cmbInputColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbInputColorActionPerformed
+        Color input = ((ColorComboBox) cmbInputColor).getSelectedColor();
+        if (input != null) {
+            outputOptions.setColorInput(input);
+        }
+    }//GEN-LAST:event_cmbInputColorActionPerformed
+
     void load() {
         if (previewInputOutput == null) {
             initPreview();
@@ -439,6 +467,7 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox cmbBackgroundColor;
     private javax.swing.JComboBox cmbErrorColor;
     private javax.swing.JComboBox cmbImportantLinkColor;
+    private javax.swing.JComboBox cmbInputColor;
     private javax.swing.JComboBox cmbLinkColor;
     private javax.swing.JComboBox cmbLinkStyle;
     private javax.swing.JComboBox cmbStandardColor;
@@ -449,6 +478,7 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel lblErrorColor;
     private javax.swing.JLabel lblFontFamily;
     private javax.swing.JLabel lblFontSize;
+    private javax.swing.JLabel lblInputColor;
     private javax.swing.JLabel lblLinkColor;
     private javax.swing.JLabel lblLinkStyle;
     private javax.swing.JLabel lblStandardColor;
@@ -462,6 +492,8 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
         previewInputOutput = initPreviewInputOutput();
         outputOptions = ((Lookup.Provider) previewInputOutput).
                 getLookup().lookup(OutputOptions.class);
+        final Reader in = previewInputOutput.getIn();
+        previewInputOutput.setInputVisible(true); // Instead of reading from in.
         previewInputOutput.getOut().println("Standard Output");         //NOI18N
         previewInputOutput.getErr().println("Error Output");            //NOI18N
         OutputListener ol = new OutputListenerImpl();
@@ -471,7 +503,7 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
             previewInputOutput.getOut().println();
             IOColorPrint.print(previewInputOutput, "Important Link", //NOI18N
                     ol, true, null);
-            previewInputOutput.getOut().print(" ");                     //NOI18N
+            previewInputOutput.getOut().println();
         } catch (IOException ex) {
             ex.printStackTrace(previewInputOutput.getErr());
         }
@@ -482,6 +514,18 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
             public void propertyChange(PropertyChangeEvent evt) {
                 controller.changed();
                 updateControlsByModel();
+            }
+        });
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Component component = previewPanel.getComponent(0);
+                if (component instanceof AbstractOutputTab) {
+                    ((AbstractOutputTab) component).inputSent("Input from keyboard");
+                }
+                try {
+                    in.close();
+                } catch (IOException ex) {}
             }
         });
     }
@@ -503,6 +547,7 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
         spnFontSize.setValue(outputOptions.getFont().getSize());
         selectColor(cmbStandardColor, outputOptions.getColorStandard());
         selectColor(cmbErrorColor, outputOptions.getColorError());
+        selectColor(cmbInputColor, outputOptions.getColorInput());
         selectColor(cmbBackgroundColor, outputOptions.getColorBackground());
         selectColor(cmbLinkColor, outputOptions.getColorLink());
         selectColor(cmbImportantLinkColor,
