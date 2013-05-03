@@ -91,6 +91,7 @@ import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.util.NoContentPanel;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.openide.awt.Mnemonics;
@@ -489,7 +490,7 @@ public final class QueryTopComponent extends TopComponent
                         return;
                     }
 
-                    if(context != null && BugtrackingUtil.isNbRepository(repo.getUrl())) {
+                    if(context != null && NBBugzillaUtils.isNbRepository(repo.getUrl())) {
                         OwnerInfo ownerInfo = KenaiUtil.getOwnerInfo(context);
                         if(ownerInfo != null) {
                             query.setContext(ownerInfo);

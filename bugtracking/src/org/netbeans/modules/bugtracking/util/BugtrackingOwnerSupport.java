@@ -52,6 +52,7 @@ import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
@@ -413,7 +414,7 @@ public class BugtrackingOwnerSupport {
         if (attValue instanceof String) {
             RepositoryImpl repository = null;
             String url = (String) attValue;
-            if(BugtrackingUtil.isNbRepository(url)) {
+            if(NBBugzillaUtils.isNbRepository(url)) {
                 File file = FileUtil.toFile(fileObject);
                 if(file != null) {
                     OwnerInfo ownerInfo = KenaiUtil.getOwnerInfo(file);
@@ -453,7 +454,7 @@ public class BugtrackingOwnerSupport {
     }
 
     private RepositoryImpl askUserToSpecifyRepository(RepositoryImpl suggestedRepo) {
-        Collection<RepositoryImpl> repos = BugtrackingUtil.getKnownRepositories(true);
+        Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getKnownRepositories(true);
         DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
 
         final RepositorySelectorBuilder selectorBuilder = new RepositorySelectorBuilder();

@@ -62,6 +62,7 @@ import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.openide.util.NbPreferences;
 
 /**
@@ -148,7 +149,7 @@ public class RepositoryRegistry {
      */
     public void addRepository(RepositoryImpl repository) {
         assert repository != null;
-        if(KenaiUtil.isKenai(repository.getRepository()) && !BugtrackingUtil.isNbRepository(repository.getUrl())) {
+        if(KenaiUtil.isKenai(repository.getRepository()) && !NBBugzillaUtils.isNbRepository(repository.getUrl())) {
             // we don't store kenai repositories - XXX  shouldn't be even called
             return;        
         }
@@ -406,7 +407,7 @@ public class RepositoryRegistry {
         
         String user;
         char[] password;
-        if(BugtrackingUtil.isNbRepository(url)) {
+        if(NBBugzillaUtils.isNbRepository(url)) {
             user = getBugzillaNBUsername();
             char[] psswdArray = getNBPassword();
             password = psswdArray != null ? psswdArray : new char[0];

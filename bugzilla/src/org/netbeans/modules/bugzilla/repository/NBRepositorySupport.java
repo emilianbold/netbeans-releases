@@ -45,12 +45,10 @@ package org.netbeans.modules.bugzilla.repository;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.bugtracking.api.Util;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
-import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.NbBundle;
 
@@ -97,7 +95,7 @@ public class NBRepositorySupport extends BugzillaRepository {
                 repos = RepositoryManager.getInstance().getRepositories(BugzillaConnector.ID);
                 boolean registered = false;
                 for (Repository repo : repos) {
-                    if(BugtrackingUtil.isNbRepository(repo.getUrl())) {
+                    if(NBBugzillaUtils.isNbRepository(repo.getUrl())) {
                         registered = true;
                         break;
                     }
@@ -110,7 +108,7 @@ public class NBRepositorySupport extends BugzillaRepository {
         }
         repos = RepositoryManager.getInstance().getRepositories(BugzillaConnector.ID);
         for (Repository repo : repos) {
-            if(BugtrackingUtil.isNbRepository(repo.getUrl())) {
+            if(NBBugzillaUtils.isNbRepository(repo.getUrl())) {
                 nbRepository = repo;
                 return repo;
             }

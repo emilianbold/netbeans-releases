@@ -52,7 +52,6 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -71,7 +70,6 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
@@ -237,14 +235,6 @@ public class BugtrackingUtil {
         return editRepository(APIAccessor.IMPL.getImpl(repository), null);
     }
 
-    public static Collection<RepositoryImpl> getKnownRepositories(boolean pingOpenProjects) {
-        return RepositoryRegistry.getInstance().getKnownRepositories(pingOpenProjects);
-    }
-
-    public static Collection<RepositoryImpl> getRepositories(String id) {
-        return RepositoryRegistry.getInstance().getRepositories(id);
-    }    
-    
     public static BugtrackingConnector[] getBugtrackingConnectors() {
         DelegatingConnector[] dcs = BugtrackingManager.getInstance().getConnectors();
         BugtrackingConnector[] cons = new BugtrackingConnector[dcs.length];
@@ -324,26 +314,6 @@ public class BugtrackingUtil {
             }
         }
         file.delete();
-    }
-
-    private static Pattern netbeansUrlPattern = Pattern.compile("(https|http)://(([a-z]|\\d)+\\.)*([a-z]|\\d)*netbeans([a-z]|\\d)*(([a-z]|\\d)*\\.)+org(.*)"); // NOI18N
-    /**
-     * Determines wheter the given {@link RepositoryProvider} is the
-     * repository hosting netbeans or not
-     *
-     * @param repo
-     * @return true if the given repository is the netbenas bugzilla, otherwise false
-     */
-    public static boolean isNbRepository(String url) {
-        boolean ret = netbeansUrlPattern.matcher(url).matches();
-        if(ret) {
-            return true;
-        }
-        String nbUrl = System.getProperty("netbeans.bugzilla.url");  // NOI18N
-        if(nbUrl == null || nbUrl.equals("")) {                      // NOI18N
-            return false;
-        }
-        return url.startsWith(nbUrl);
     }
 
     /**
@@ -439,62 +409,6 @@ public class BugtrackingUtil {
         return "******"; // NOI18N
     }
 
-    private static final String NB_BUGZILLA_PASSWORD = "nbbugzilla.password";                // NOI18N
-    private static final String NB_BUGZILLA_USERNAME = "nbbugzilla.username";                // NOI18N
-    
-    /**
-     * Returns the netbeans.org username
-     * Shouldn't be called in awt
-     *
-     * @return username
-     */
-    public static String getNBUsername() {
-        String user = BugtrackingConfig.getInstance().getPreferences().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
-        if("".equals(user)) {
-            user = RepositoryRegistry.getBugzillaNBUsername();
-        }
-        return user.equals("") ? null : user;                         // NOI18N
-    }
-
-    /**
-     * Returns the netbeans.org password
-     * Shouldn't be called in awt
-     *
-     * @return password
-     */
-    public static char[] getNBPassword() {
-        return Keyring.read(NB_BUGZILLA_PASSWORD);
-    }
-
-    /**
-     * Save the given username as a netbeans.org username.
-     * Shouldn't be called in awt
-     */
-    public static void saveNBUsername(String username) {
-        if(username == null) {
-            return;
-        }
-        BugtrackingConfig.getInstance().getPreferences().put(NB_BUGZILLA_USERNAME, username);
-    }
-
-    /**
-     * Saves the given value as a netbeans.org password
-     * Shouldn't be called in awt
-     */
-    public static void saveNBPassword(char[] password) {
-        if(password == null) {
-            Keyring.delete(NB_BUGZILLA_PASSWORD);
-        } else {
-            Keyring.save(
-                NB_BUGZILLA_PASSWORD,
-                password,
-                NbBundle.getMessage(
-                    BugtrackingUtil.class,
-                    "NBRepositorySupport.password_keyring_description"));       // NOI18N
-
-        }
-    }
-    
     public static File getFile(Node[] nodes) {
         if(nodes == null || nodes.length == 0) {
             return null;

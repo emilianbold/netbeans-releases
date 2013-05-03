@@ -360,7 +360,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         reloadForm(true);
 
         if (issue.isNew()) {
-            if(BugtrackingUtil.isNbRepository(issue.getRepository().getUrl())) {
+            if(NBBugzillaUtils.isNbRepository(issue.getRepository().getUrl())) {
                 ownerInfo = issue.getOwnerInfo();
                 if(ownerInfo == null) {
                     // XXX not sure why we need this - i'm going to keep it for now,
@@ -437,7 +437,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
         reloading = true;
         boolean isNew = issue.getTaskData().isNew();
-        boolean showProductCombo = isNew || !(issue.getRepository() instanceof KenaiRepository) || BugzillaUtil.isNbRepository(issue.getRepository());
+        boolean showProductCombo = isNew || !(issue.getRepository() instanceof KenaiRepository) || NBBugzillaUtils.isNbRepository(issue.getRepository().getUrl());
         boolean hasTimeTracking = !isNew && issue.hasTimeTracking();
         GroupLayout layout = (GroupLayout)getLayout();
         if (showProductCombo) {
@@ -450,7 +450,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         productLabel.setLabelFor(isNew ? productCombo : productField);
-        boolean isNetbeans = BugtrackingUtil.isNbRepository(issue.getRepository().getUrl());
+        boolean isNetbeans = NBBugzillaUtils.isNbRepository(issue.getRepository().getUrl());
         if(isNew && isNetbeans) {
             attachLogCheckBox.setVisible(true);
             viewLogButton.setVisible(true);

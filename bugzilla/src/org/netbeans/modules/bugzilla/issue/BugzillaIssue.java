@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -63,7 +62,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
-import javax.swing.AbstractAction;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
@@ -87,7 +85,7 @@ import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.util.PatchUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.commands.AddAttachmentCommand;
@@ -269,7 +267,7 @@ public class BugzillaIssue {
             ret.add(new ColumnDescriptor<String>(IssueNode.LABEL_NAME_SUMMARY, String.class,
                                               loc.getString("CTL_Issue_Summary_Title"),           // NOI18N
                                               loc.getString("CTL_Issue_Summary_Desc")));          // NOI18N
-            ret.add(BugzillaUtil.isNbRepository(repository)
+            ret.add(NBBugzillaUtils.isNbRepository(repository.getUrl())
                                         ?
                                               new ColumnDescriptor<String>(LABEL_NAME_ISSUE_TYPE, String.class,
                                               loc.getString("CTL_Issue_Issue_Type_Title"),        // NOI18N

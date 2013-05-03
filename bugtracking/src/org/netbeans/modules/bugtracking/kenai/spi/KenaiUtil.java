@@ -395,7 +395,7 @@ public class KenaiUtil {
     }
 
     public static Collection<Repository> getKnownRepositories(boolean b) {
-        Collection<RepositoryImpl> c = BugtrackingUtil.getKnownRepositories(b);
+        Collection<RepositoryImpl> c = RepositoryRegistry.getInstance().getKnownRepositories(b);
         List<Repository> ret = new ArrayList<Repository>(c.size());
         for (RepositoryImpl impl : c) {
             ret.add(impl.getRepository());

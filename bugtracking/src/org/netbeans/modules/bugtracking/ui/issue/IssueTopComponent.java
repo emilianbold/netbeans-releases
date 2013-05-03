@@ -367,7 +367,7 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     }
                     ((DelegatingUndoRedoManager)getUndoRedo()).init();
                     
-                    if(context != null && BugtrackingUtil.isNbRepository(repo.getUrl())) {
+                    if(context != null && NBBugzillaUtils.isNbRepository(repo.getUrl())) {
                         OwnerInfo ownerInfo = KenaiUtil.getOwnerInfo(context);
                         if(ownerInfo != null) {
                             issue.setContext(ownerInfo);

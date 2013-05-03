@@ -43,15 +43,13 @@
 package org.netbeans.modules.bugzilla.util;
 
 import org.netbeans.modules.bugtracking.util.ListValuePicker;
-import java.util.List;
-import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -155,19 +153,19 @@ public class BugzillaUtil {
      * @return true if the given repository is the netbenas bugzilla, otherwise false
      */
     public static boolean isNbRepository(BugzillaRepository repo) {
-        return BugtrackingUtil.isNbRepository(repo.getUrl());
+        return NBBugzillaUtils.isNbRepository(repo.getUrl());
     }
 
     public static boolean showQAContact(BugzillaRepository repo) {
-        return isNbRepository(repo) || !(repo instanceof KenaiRepository);
+        return NBBugzillaUtils.isNbRepository(repo.getUrl()) || !(repo instanceof KenaiRepository);
     }
 
     public static boolean showStatusWhiteboard(BugzillaRepository repo) {
-        return isNbRepository(repo) || !(repo instanceof KenaiRepository);
+        return NBBugzillaUtils.isNbRepository(repo.getUrl()) || !(repo instanceof KenaiRepository);
     }
 
     public static boolean showIssueType(BugzillaRepository repo) {
-        return isNbRepository(repo);
+        return NBBugzillaUtils.isNbRepository(repo.getUrl());
     }
 
     public static Repository getRepository(BugzillaRepository bugzillaRepository) {

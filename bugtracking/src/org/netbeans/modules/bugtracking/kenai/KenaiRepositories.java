@@ -68,6 +68,7 @@ import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
@@ -349,7 +350,7 @@ public abstract class KenaiRepositories implements PropertyChangeListener {
             String url = (String) attValue;
             KenaiProject kenaiProject = null;
             try {
-                if(BugtrackingUtil.isNbRepository(url)) {
+                if(NBBugzillaUtils.isNbRepository(url)) {
                     OwnerInfo owner = null;
                     for (KenaiAccessor kenaiAccessor : KenaiUtil.getKenaiAccessors()) {
                         owner = kenaiAccessor.getOwnerInfo(FileUtil.toFile(rootDir));

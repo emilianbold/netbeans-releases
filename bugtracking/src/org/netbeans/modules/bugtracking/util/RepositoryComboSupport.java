@@ -72,6 +72,7 @@ import java.util.Collection;
 import java.util.List;
 import static java.util.logging.Level.FINEST;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.api.Repository;
 
 /**
@@ -616,7 +617,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         if(refFile != null) {
             pingNBRepository(refFile);
         }
-        Collection<RepositoryImpl> repoImpls = BugtrackingUtil.getKnownRepositories(true);
+        Collection<RepositoryImpl> repoImpls = RepositoryRegistry.getInstance().getKnownRepositories(true);
         List<Repository> repos = new ArrayList(repoImpls.size());
         for (RepositoryImpl impl : repoImpls) {
             repos.add(impl.getRepository());
@@ -678,7 +679,7 @@ public final class RepositoryComboSupport implements ItemListener, Runnable {
         Object attValue = fileObject.getAttribute("ProvidedExtensions.RemoteLocation");//NOI18N
         if (attValue instanceof String) {
             String url = (String) attValue;
-            if(BugtrackingUtil.isNbRepository(url)) {
+            if(NBBugzillaUtils.isNbRepository(url)) {
                 KenaiUtil.findNBRepository(); // ensure repository exists 
             }
         }

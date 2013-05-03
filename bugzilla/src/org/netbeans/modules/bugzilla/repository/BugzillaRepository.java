@@ -74,7 +74,6 @@ import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.*;
@@ -515,7 +514,7 @@ public class BugzillaRepository {
     }
 
     public boolean authenticate(String errroMsg) {
-        return BugtrackingUtil.editRepository(BugzillaUtil.getRepository(this), errroMsg);
+        return Bugzilla.getInstance().getBugtrackingFactory().editRepository(BugzillaUtil.getRepository(this), errroMsg);
     }
 
     /**

@@ -59,7 +59,7 @@ import java.util.logging.Level;
 import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
 import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
@@ -182,7 +182,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
         Collection<Kenai> kenais = KenaiManager.getDefault().getKenais();
         for (Kenai kenai : kenais) {
             URL url = kenai.getUrl();
-            if(BugtrackingUtil.isNbRepository(url.toString())) {
+            if(NBBugzillaUtils.isNbRepository(url.toString())) {
                 return true;
             }        
         }
