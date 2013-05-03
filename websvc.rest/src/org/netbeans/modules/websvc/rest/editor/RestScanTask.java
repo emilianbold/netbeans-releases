@@ -120,16 +120,8 @@ class RestScanTask {
        boolean needConfiguration = true;
        try {
             if (support.isRestSupportOn()) {
-                RestApplicationModel applicationModel = support.getRestApplicationsModel();
-                List<RestApplication> l = applicationModel.runReadAction(new MetadataModelAction<RestApplications, List<RestApplication>>() {
-
-                    @Override
-                    public List<RestApplication> run(RestApplications metadata) throws Exception {
-                        return metadata.getRestApplications();
-                    }
-                });
                 if (MiscUtilities.getApplicationPathFromDD(support.getWebApp()) != null
-                        || !l.isEmpty())
+                        || !support.getRestApplications().isEmpty())
                 {
                     needConfiguration = false;
                 }
