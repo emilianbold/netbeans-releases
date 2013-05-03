@@ -730,7 +730,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         } else {
             //Ant projects
             oto.waitText("(total time: "); //NOI18N
-            if (actionName.contains("clean") && oto.getText().contains("Unable to delete")) {
+            if (actionName.toLowerCase().contains("clean") && oto.getText().contains("Unable to delete")) {
                 // repeat clean if file is locked
                 new EventTool().waitNoEvent(2000);
                 performProjectAction(projectName, actionName);
