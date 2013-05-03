@@ -49,18 +49,16 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
-import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Query.QueryMode;
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
 import org.netbeans.modules.bugtracking.tasks.dashboard.CategoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.tasks.dashboard.QueryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.RepositoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
-import org.netbeans.modules.bugtracking.tasks.Utils;
+import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
+import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -206,7 +204,7 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (RepositoryNode repositoryNode : getRepositoryNodes()) {
-                Util.createNewIssue(repositoryNode.getRepository());
+                IssueAction.createIssue(repositoryNode.getRepository());
             }
         }
     }
@@ -232,7 +230,7 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (TaskNode taskNode : getTaskNodes()) {
-                Util.openIssue(taskNode.getTask().getRepository(), taskNode.getTask().getID());
+                IssueAction.openIssue(taskNode.getTask().getRepositoryImpl(), taskNode.getTask().getID());
             }
         }
     }
@@ -422,8 +420,7 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            Repository repository = getRepositoryNodes()[0].getRepository();
-            repository.edit();
+            BugtrackingUtil.editRepository(getRepositoryNodes()[0].getRepository(), null);
         }
 
         @Override
@@ -460,7 +457,7 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            RepositoryManager.getInstance().createRepository();
+            BugtrackingUtil.createRepository(false);
         }
     }
 
@@ -488,7 +485,7 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (RepositoryNode repositoryNode : getRepositoryNodes()) {
-                Util.createNewQuery(repositoryNode.getRepository());
+                org.netbeans.modules.bugtracking.ui.query.QueryAction.openQuery(null, repositoryNode.getRepository());
             }
         }
     }
@@ -502,7 +499,7 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (RepositoryNode repositoryNode : getRepositoryNodes()) {
-                Utils.quickSearchTask(repositoryNode.getRepository());
+                DashboardUtils.quickSearchTask(repositoryNode.getRepository());
             }
         }
 
@@ -581,13 +578,13 @@ public class Actions {
 
     public static class OpenQueryAction extends QueryAction {
 
-        private QueryMode mode;
+        private QueryController.QueryMode mode;
 
         public OpenQueryAction(QueryNode... queryNodes) {
-            this(Query.QueryMode.SHOW_ALL, queryNodes);
+            this(QueryController.QueryMode.SHOW_ALL, queryNodes);
         }
 
-        public OpenQueryAction(QueryMode mode, QueryNode... queryNodes) {
+        public OpenQueryAction(QueryController.QueryMode mode, QueryNode... queryNodes) {
             super(NbBundle.getMessage(OpenQueryAction.class, "CTL_Open"), queryNodes); //NOI18N
             this.mode = mode;
         }
@@ -595,7 +592,7 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (QueryNode queryNode : getQueryNodes()) {
-                queryNode.getQuery().open(mode);
+                queryNode.getQuery().open(false, mode);
             }
         }
     }

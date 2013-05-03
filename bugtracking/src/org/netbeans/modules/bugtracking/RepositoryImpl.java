@@ -66,6 +66,18 @@ public final class RepositoryImpl<R, Q, I> {
 
     private final static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.Repository"); // NOI18N
     
+    public final static String EVENT_QUERY_LIST_CHANGED = RepositoryProvider.EVENT_QUERY_LIST_CHANGED;
+    
+    /**
+     * RepositoryProvider's attributes have changed, e.g. name, url, etc.
+     * Old and new value are maps of changed doubles: attribute-name / attribute-value.
+     * Old value can be null in case the repository is created.
+     */
+    public final static String EVENT_ATTRIBUTES_CHANGED = "bugtracking.repository.attributes.changed"; //NOI18N
+
+    public static final String ATTRIBUTE_URL = "repository.attribute.url"; //NOI18N
+    public static final String ATTRIBUTE_DISPLAY_NAME = "repository.attribute.displayName"; //NOI18N
+    
     private final PropertyChangeSupport support;
         
     private final RepositoryProvider<R, Q, I> repositoryProvider;
@@ -251,7 +263,7 @@ public final class RepositoryImpl<R, Q, I> {
             newAttributes.remove(equalAttribute);
         }
         if (!newAttributes.isEmpty()) {
-            support.firePropertyChange(new java.beans.PropertyChangeEvent(this, Repository.EVENT_ATTRIBUTES_CHANGED, oldAttributes, newAttributes));
+            support.firePropertyChange(new java.beans.PropertyChangeEvent(this, EVENT_ATTRIBUTES_CHANGED, oldAttributes, newAttributes));
         }        
     }
     
@@ -266,8 +278,8 @@ public final class RepositoryImpl<R, Q, I> {
         HashMap<String, Object> attributes = new HashMap<String, Object>(2);
         // XXX add more if requested
         if(getInfo() != null) {
-            attributes.put(Repository.ATTRIBUTE_DISPLAY_NAME, getDisplayName());
-            attributes.put(Repository.ATTRIBUTE_URL, getUrl());
+            attributes.put(ATTRIBUTE_DISPLAY_NAME, getDisplayName());
+            attributes.put(ATTRIBUTE_URL, getUrl());
         }
         return attributes;
     }

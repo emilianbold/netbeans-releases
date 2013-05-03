@@ -81,7 +81,6 @@ public final class RepositoryManager {
         registry = RepositoryRegistry.getInstance();
         RepositoryListener l = new RepositoryListener();
         registry.addPropertyChangeListener(l);
-        KenaiRepositories.getInstance().addPropertyChangeListener(l);
     }
     
     /**
@@ -121,8 +120,7 @@ public final class RepositoryManager {
      */
     public Collection<Repository> getRepositories() {
         LinkedList<Repository> ret = new LinkedList<Repository>();
-        ret.addAll(KenaiUtil.getRepositories(false, true));
-        ret.addAll(toRepositories(registry.getRepositories()));
+        ret.addAll(toRepositories(registry.getKnownRepositories(false, true)));
         return Collections.unmodifiableCollection(ret);
     }
     

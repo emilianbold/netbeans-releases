@@ -58,6 +58,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
@@ -186,14 +187,26 @@ public class RepositoryRegistry {
      * @return repositories
      */
     public Collection<RepositoryImpl> getKnownRepositories(boolean pingOpenProjects) {
+        return getKnownRepositories(pingOpenProjects, false);
+    }
+    
+    /**
+     * Returns all known repositories incl. the Kenai ones
+     *
+     * @param pingOpenProjects if {@code false}, search only Kenai projects
+     *                          that are currently open in the Kenai dashboard;
+     *                          if {@code true}, search also all Kenai projects
+     *                          currently opened in the IDE
+     * @param onlyDashboardOpenProjects
+     * @return repositories
+     */
+    public Collection<RepositoryImpl> getKnownRepositories(boolean pingOpenProjects, boolean onlyDashboardOpenProjects) {
         Collection<RepositoryImpl> otherRepos = getRepositories();
-        Collection<Repository> kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
+        Collection<RepositoryImpl> kenaiRepos = KenaiRepositories.getInstance().getRepositories(pingOpenProjects, onlyDashboardOpenProjects);
+        
         List<RepositoryImpl> ret = new ArrayList<RepositoryImpl>(kenaiRepos.size() + otherRepos.size());
         
         ret.addAll(otherRepos);
-        for (Repository r : kenaiRepos) {
-            ret.add(APIAccessor.IMPL.getImpl(r));
-        }
         
         return ret;
     }
@@ -204,6 +217,7 @@ public class RepositoryRegistry {
      */
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.removePropertyChangeListener(listener);
+        KenaiRepositories.getInstance().removePropertyChangeListener(listener);
     }
 
     /**
@@ -212,6 +226,7 @@ public class RepositoryRegistry {
      */
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.addPropertyChangeListener(listener);
+        KenaiRepositories.getInstance().addPropertyChangeListener(listener);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////

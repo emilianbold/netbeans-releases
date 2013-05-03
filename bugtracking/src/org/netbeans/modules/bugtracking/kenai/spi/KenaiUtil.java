@@ -60,10 +60,13 @@ import javax.swing.JLabel;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
+import static org.netbeans.modules.bugtracking.api.Query.QueryMode.SHOW_ALL;
+import static org.netbeans.modules.bugtracking.api.Query.QueryMode.SHOW_NEW_OR_CHANGED;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.jira.JiraUpdater;
 import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector.BugtrackingType;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
@@ -178,25 +181,6 @@ public class KenaiUtil {
     public static Repository getRepository(KenaiProject project, boolean forceCreate) {
         RepositoryImpl impl = KenaiRepositories.getInstance().getRepository(project, forceCreate);
         return impl != null ? impl.getRepository() : null;
-    }
-
-    /**
-     * @see KenaiRepositories#getRepositories()
-     */
-    public static Collection<Repository> getRepositories(boolean pingOpenProjects) {
-        return getRepositories(pingOpenProjects, false);
-    }
-    
-    /**
-     * @see KenaiRepositories#getRepositories()
-     */
-    public static Collection<Repository> getRepositories(boolean pingOpenProjects, boolean onlyDashboardOpenProjects) {
-        Collection<RepositoryImpl> impls = KenaiRepositories.getInstance().getRepositories(pingOpenProjects, onlyDashboardOpenProjects);
-        List<Repository> ret = new ArrayList<Repository>(impls.size());
-        for (RepositoryImpl impl : impls) {
-            ret.add(impl.getRepository());
-        }
-        return ret;
     }
     
     /**
@@ -390,7 +374,15 @@ public class KenaiUtil {
     
     public static void openQuery(final Query query, Query.QueryMode mode, final boolean suggestedSelectionOnly) {
         QueryImpl queryImpl = APIAccessor.IMPL.getImpl(query);
-        queryImpl.open(suggestedSelectionOnly, mode);
+        switch(mode) {
+            case SHOW_NEW_OR_CHANGED:
+                queryImpl.open(false, QueryController.QueryMode.SHOW_NEW_OR_CHANGED);
+                break;
+            case SHOW_ALL:
+                queryImpl.open(false, QueryController.QueryMode.SHOW_ALL);
+                break;
+                
+        }        
     }
 
     public static Collection<Issue> getRecentIssues(Repository repo) {

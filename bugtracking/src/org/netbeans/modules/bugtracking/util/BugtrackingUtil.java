@@ -228,13 +228,13 @@ public class BugtrackingUtil {
         return repo;
     }
 
-    public static boolean editRepository(Repository repository, String errorMessage) {
+    public static boolean editRepository(RepositoryImpl repository, String errorMessage) {
         RepositorySelector rs = new RepositorySelector();
-        return rs.edit(APIAccessor.IMPL.getImpl(repository), errorMessage);
+        return rs.edit(repository, errorMessage);
     }
 
     public static boolean editRepository(Repository repository) {
-        return editRepository(repository, null);
+        return editRepository(APIAccessor.IMPL.getImpl(repository), null);
     }
 
     public static Collection<RepositoryImpl> getKnownRepositories(boolean pingOpenProjects) {

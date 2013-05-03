@@ -56,6 +56,11 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
  * @author Tomas Stupka
  */
 public final class QueryImpl<Q, I>  {
+    
+    public final static String EVENT_QUERY_ISSUES_CHANGED = QueryProvider.EVENT_QUERY_ISSUES_CHANGED;
+    public final static String EVENT_QUERY_REMOVED = QueryProvider.EVENT_QUERY_REMOVED;
+    public final static String EVENT_QUERY_SAVED = QueryProvider.EVENT_QUERY_SAVED;
+    
     private final RepositoryImpl repository;
     private final QueryProvider<Q, I> queryProvider;
     private final IssueProvider<I> issueProvider;
@@ -114,20 +119,11 @@ public final class QueryImpl<Q, I>  {
     }
     
     public void openShowAll(final boolean suggestedSelectionOnly) {
-        open(suggestedSelectionOnly, Query.QueryMode.SHOW_ALL);
+        open(suggestedSelectionOnly, QueryController.QueryMode.SHOW_ALL);
     }
     
-    public void open(final boolean suggestedSelectionOnly, Query.QueryMode mode) {
-        switch(mode) {
-            case SHOW_ALL:
-                queryProvider.getController(data).setMode(QueryController.QueryMode.SHOW_ALL);
-                break;
-            case SHOW_NEW_OR_CHANGED:
-                queryProvider.getController(data).setMode(QueryController.QueryMode.SHOW_NEW_OR_CHANGED);
-                break;
-            default:
-                throw new IllegalStateException("Unsupported mode " + mode);
-        }
+    public void open(final boolean suggestedSelectionOnly, QueryController.QueryMode mode) {
+        queryProvider.getController(data).setMode(mode);
         QueryAction.openQuery(this, repository, suggestedSelectionOnly);
     }
     

@@ -54,9 +54,9 @@ import javax.accessibility.AccessibleContext;
 import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
 import org.netbeans.modules.team.ui.util.treelist.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
@@ -70,7 +70,7 @@ import org.netbeans.modules.bugtracking.tasks.filter.AppliedFilters;
 import org.netbeans.modules.bugtracking.tasks.filter.DashboardFilter;
 import org.netbeans.modules.bugtracking.tasks.Category;
 import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
-import org.netbeans.modules.bugtracking.tasks.Utils;
+import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
 import org.netbeans.modules.team.ui.util.treelist.ColorManager;
 import org.netbeans.modules.team.ui.util.treelist.TreeList;
 import org.netbeans.modules.team.ui.util.treelist.TreeListModel;
@@ -78,7 +78,6 @@ import org.netbeans.modules.team.ui.util.treelist.TreeListModelListener;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -120,7 +119,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private Map<Category, CategoryNode> mapCategoryToNode;
     private List<CategoryNode> categoryNodes;
     private List<RepositoryNode> repositoryNodes;
-    private AppliedFilters<Issue> appliedTaskFilters;
+    private AppliedFilters<IssueImpl> appliedTaskFilters;
     private AppliedFilters<CategoryNode> appliedCategoryFilters;
     private AppliedFilters<RepositoryNode> appliedRepositoryFilters;
     private int taskHits;
@@ -185,7 +184,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         String a11y = NbBundle.getMessage(DashboardViewer.class, "A11Y_TeamProjects"); //NOI18N
         accessibleContext.setAccessibleName(a11y);
         accessibleContext.setAccessibleDescription(a11y);
-        appliedTaskFilters = new AppliedFilters<Issue>();
+        appliedTaskFilters = new AppliedFilters<IssueImpl>();
         appliedCategoryFilters = new AppliedFilters<CategoryNode>();
         appliedRepositoryFilters = new AppliedFilters<RepositoryNode>();
         taskHits = 0;
@@ -211,15 +210,15 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     @Override
     public void propertyChange(final PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(RepositoryManager.EVENT_REPOSITORIES_CHANGED)) {
+        if (evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
             requestProcessor.post(new Runnable() {
                 @Override
                 public void run() {
                     titleRepositoryNode.setProgressVisible(true);
-                    Collection<Repository> addedRepositories = (Collection<Repository>) evt.getNewValue();
-                    Collection<Repository> removedRepositories = (Collection<Repository>) evt.getOldValue();
+                    Collection<RepositoryImpl> addedRepositories = (Collection<RepositoryImpl>) evt.getNewValue();
+                    Collection<RepositoryImpl> removedRepositories = (Collection<RepositoryImpl>) evt.getOldValue();
                     if (addedRepositories == null && removedRepositories == null) {
-                        updateRepositories(RepositoryManager.getInstance().getRepositories());
+                        updateRepositories(DashboardUtils.getRepositories());
                     } else {
                         updateRepositories(addedRepositories, removedRepositories);
                     }
@@ -501,8 +500,8 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     private void storeCategory(final Category category) {
         final List<TaskEntry> taskEntries = new ArrayList<TaskEntry>(category.getTasks().size());
-        for (Issue issue : category.getTasks()) {
-            taskEntries.add(new TaskEntry(issue.getID(), issue.getRepository().getId()));
+        for (IssueImpl issue : category.getTasks()) {
+            taskEntries.add(new TaskEntry(issue.getID(), issue.getRepositoryImpl().getId()));
         }
         requestProcessor.post(new Runnable() {
             @Override
@@ -563,7 +562,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    public void addRepository(Repository repository) {
+    public void addRepository(RepositoryImpl repository) {
         synchronized (LOCK_REPOSITORIES) {
             //add repository to the model - sorted
             RepositoryNode repositoryNode = new RepositoryNode(repository);
@@ -605,7 +604,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             if (isRepositoryInFilter(repositoryNode)) {
                 model.removeRoot(repositoryNode);
             }
-            Repository repository = repositoryNode.getRepository();
+            RepositoryImpl repository = repositoryNode.getRepository();
             final RepositoryNode newNode;
             if (opened) {
                 newNode = new RepositoryNode(repository);
@@ -695,19 +694,19 @@ public final class DashboardViewer implements PropertyChangeListener {
         return appliedTaskFilters;
     }
 
-    public int updateTaskFilter(DashboardFilter<Issue> oldFilter, DashboardFilter<Issue> newFilter) {
+    public int updateTaskFilter(DashboardFilter<IssueImpl> oldFilter, DashboardFilter<IssueImpl> newFilter) {
         if (oldFilter != null) {
             appliedTaskFilters.removeFilter(oldFilter);
         }
         return applyTaskFilter(newFilter, true);
     }
 
-    public int applyTaskFilter(DashboardFilter<Issue> taskFilter, boolean refresh) {
+    public int applyTaskFilter(DashboardFilter<IssueImpl> taskFilter, boolean refresh) {
         appliedTaskFilters.addFilter(taskFilter);
         return manageApplyFilter(refresh);
     }
 
-    public int removeTaskFilter(DashboardFilter<Issue> taskFilter, boolean refresh) {
+    public int removeTaskFilter(DashboardFilter<IssueImpl> taskFilter, boolean refresh) {
         appliedTaskFilters.removeFilter(taskFilter);
         return manageRemoveFilter(refresh, !taskFilter.expandNodes());
     }
@@ -860,7 +859,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    private void updateRepositories(Collection<Repository> addedRepositories, Collection<Repository> removedRepositories) {
+    private void updateRepositories(Collection<RepositoryImpl> addedRepositories, Collection<RepositoryImpl> removedRepositories) {
         synchronized (LOCK_REPOSITORIES) {
             List<RepositoryNode> toAdd = new ArrayList<RepositoryNode>();
             List<RepositoryNode> toRemove = new ArrayList<RepositoryNode>();
@@ -873,8 +872,8 @@ public final class DashboardViewer implements PropertyChangeListener {
                 }
             }
             if (addedRepositories != null) {
-                List<Repository> oldValue = getRepositories(false);
-                for (Repository addedRepository : addedRepositories) {
+                List<RepositoryImpl> oldValue = getRepositories(false);
+                for (RepositoryImpl addedRepository : addedRepositories) {
                     if (!oldValue.contains(addedRepository)) {
                         toAdd.add(createRepositoryNode(addedRepository));
                     }
@@ -884,7 +883,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    private void updateRepositories(Collection<Repository> repositories) {
+    private void updateRepositories(Collection<RepositoryImpl> repositories) {
         synchronized (LOCK_REPOSITORIES) {
             List<RepositoryNode> toAdd = new ArrayList<RepositoryNode>();
             List<RepositoryNode> toRemove = new ArrayList<RepositoryNode>();
@@ -895,8 +894,8 @@ public final class DashboardViewer implements PropertyChangeListener {
                 }
             }
 
-            List<Repository> oldValue = getRepositories(false);
-            for (Repository newRepository : repositories) {
+            List<RepositoryImpl> oldValue = getRepositories(false);
+            for (RepositoryImpl newRepository : repositories) {
                 if (!oldValue.contains(newRepository)) {
                     toAdd.add(createRepositoryNode(newRepository));
                 }
@@ -922,8 +921,8 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    private RepositoryNode createRepositoryNode(Repository repository) {
-        boolean open = Utils.isRepositoryOpened(repository.getId());
+    private RepositoryNode createRepositoryNode(RepositoryImpl repository) {
+        boolean open = DashboardUtils.isRepositoryOpened(repository.getId());
         if (open) {
             return new RepositoryNode(repository);
         } else {
@@ -931,9 +930,9 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    public List<Repository> getRepositories(boolean openedOnly) {
+    public List<RepositoryImpl> getRepositories(boolean openedOnly) {
         synchronized (LOCK_REPOSITORIES) {
-            List<Repository> repositories = new ArrayList<Repository>();
+            List<RepositoryImpl> repositories = new ArrayList<RepositoryImpl>();
             for (RepositoryNode repositoryNode : repositoryNodes) {
                 if (!(openedOnly && !repositoryNode.isOpened())) {
                     repositories.add(repositoryNode.getRepository());
@@ -945,11 +944,11 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     private void loadRepositories() {
         try {
-            List<Repository> allRepositories = new ArrayList<Repository>(RepositoryManager.getInstance().getRepositories());
+            Collection<RepositoryImpl> allRepositories = DashboardUtils.getRepositories();
             final List<RepositoryNode> repoNodes = new ArrayList<RepositoryNode>(allRepositories.size());
 
-            for (Repository repository : allRepositories) {
-                boolean open = Utils.isRepositoryOpened(repository.getId());
+            for (RepositoryImpl repository : allRepositories) {
+                boolean open = DashboardUtils.isRepositoryOpened(repository.getId());
                 if (open) {
                     repoNodes.add(new RepositoryNode(repository));
                 } else {

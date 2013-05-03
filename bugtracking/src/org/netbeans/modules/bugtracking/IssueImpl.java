@@ -62,6 +62,8 @@ public final class IssueImpl<I> {
      */
     public static final int SHORT_DISP_NAME_LENGTH = 15;
     
+    public static final String EVENT_ISSUE_REFRESHED = IssueProvider.EVENT_ISSUE_REFRESHED;
+    
     private Issue issue;
     private final RepositoryImpl repo;
     private final IssueProvider<I> issueProvider;

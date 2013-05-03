@@ -45,7 +45,7 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.io.CharConversionException;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -55,17 +55,17 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Issue.Status;
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.tasks.cache.DashboardStorage;
 import org.netbeans.modules.bugtracking.tasks.cache.TaskEntry;
 import org.netbeans.modules.bugtracking.tasks.dashboard.CategoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.tasks.dashboard.RepositoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
+import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
@@ -77,7 +77,7 @@ import org.openide.xml.XMLUtil;
  *
  * @author jpeska
  */
-public class Utils {
+public class DashboardUtils {
 
     private final static int VISIBLE_START_CHARS = 5;
     private final static String BOLD_START_SUBSTITUTE = "$$$BOLD_START$$$"; //NOI18
@@ -110,11 +110,11 @@ public class Utils {
         return displayName;
     }
 
-    public static String getTaskPlainDisplayText(Issue task, JComponent component, int maxWidth) {
-        return computeFitText(component, maxWidth, task.getID() + " - " + task.getSummary(), false);
+    public static String getTaskPlainDisplayText(IssueImpl issueImpl, JComponent component, int maxWidth) {
+        return computeFitText(component, maxWidth, issueImpl.getID() + " - " + issueImpl.getSummary(), false);
     }
 
-    public static String getTaskDisplayString(Issue task, JComponent component, int maxWidth, boolean active, boolean hasFocus) {
+    public static String getTaskDisplayString(IssueImpl task, JComponent component, int maxWidth, boolean active, boolean hasFocus) {
         String displayName;
         String fitText = computeFitText(component, maxWidth, task.getID() + " - " + task.getSummary(), active); //NOI18N
 
@@ -128,10 +128,10 @@ public class Utils {
         if (task.isFinished()) {
             activeText = "<strike>" + activeText + "</strike>"; //NOI18N
         }
-        Status status = task.getStatus();
-        if (status == Status.NEW && !hasFocus) {
+        IssueStatusProvider.Status status = task.getStatus();
+        if (status == IssueStatusProvider.Status.NEW && !hasFocus) {
             displayName = "<html><font color=\"green\">" + activeText + "</font></html>"; //NOI18N
-        } else if (status == Status.MODIFIED && !hasFocus) {
+        } else if (status == IssueStatusProvider.Status.MODIFIED && !hasFocus) {
             displayName = "<html><font color=\"blue\">" + activeText + "</font></html>"; //NOI18N
         } else {
             displayName = "<html>" + activeText + "</html>"; //NOI18N
@@ -203,15 +203,15 @@ public class Utils {
         return text.replace(BOLD_END_SUBSTITUTE, "</b>"); //NOI18N
     }
 
-    public static void quickSearchTask(Repository repository) {
+    public static void quickSearchTask(RepositoryImpl repositoryImpl) {
         JButton open = new JButton(NbBundle.getMessage(DashboardTopComponent.class, "OPTION_Open"));
         open.setEnabled(false);
         JButton cancel = new JButton(NbBundle.getMessage(DashboardTopComponent.class, "OPTION_Cancel"));
 
-        QuickSearchPanel quickSearchPanel = new QuickSearchPanel(repository);
+        QuickSearchPanel quickSearchPanel = new QuickSearchPanel(repositoryImpl);
         NotifyDescriptor quickSearchDialog = new NotifyDescriptor(
                 quickSearchPanel,
-                NbBundle.getMessage(DashboardTopComponent.class, "LBL_QuickTitle", repository.getDisplayName()), //NOI18N
+                NbBundle.getMessage(DashboardTopComponent.class, "LBL_QuickTitle", repositoryImpl.getDisplayName()), //NOI18N
                 NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.PLAIN_MESSAGE,
                 new Object[]{open, cancel},
@@ -221,11 +221,11 @@ public class Utils {
         quickSearchPanel.addQuickSearchListener(quickSearchListener);
         Object result = DialogDisplayer.getDefault().notify(quickSearchDialog);
         if (result == open) {
-            Issue task = quickSearchPanel.getSelectedTask();
-            Util.openIssue(task.getRepository(), task.getID());
+            IssueImpl issueImpl = quickSearchPanel.getSelectedTask();
+            IssueAction.openIssue(issueImpl.getRepositoryImpl(), issueImpl.getID());
             Category selectedCategory = quickSearchPanel.getSelectedCategory();
             if (selectedCategory != null) {
-                DashboardViewer.getInstance().addTaskToCategory(selectedCategory, new TaskNode(task, null));
+                DashboardViewer.getInstance().addTaskToCategory(selectedCategory, new TaskNode(issueImpl, null));
             }
         }
         quickSearchPanel.removeQuickSearchListener(quickSearchListener);
@@ -243,7 +243,7 @@ public class Utils {
 
         @Override
         public void stateChanged(ChangeEvent e) {
-            Issue selectedTask = quickSearchPanel.getSelectedTask();
+            IssueImpl selectedTask = quickSearchPanel.getSelectedTask();
             open.setEnabled(selectedTask != null);
         }
     }
@@ -259,8 +259,12 @@ public class Utils {
         category.setTasks(loadTasks(taskEntries));
     }
 
-    private static List<Issue> loadTasks(List<TaskEntry> taskEntries) {
-        List<Issue> tasks = new ArrayList<Issue>(taskEntries.size());
+    public static Collection<RepositoryImpl> getRepositories() {
+        return RepositoryRegistry.getInstance().getKnownRepositories(false, true);
+    }
+    
+    private static List<IssueImpl> loadTasks(List<TaskEntry> taskEntries) {
+        List<IssueImpl> tasks = new ArrayList<IssueImpl>(taskEntries.size());
         Map<String, List<String>> repository2Ids = new HashMap<String, List<String>>();
 
         for (TaskEntry taskEntry : taskEntries) {
@@ -272,21 +276,21 @@ public class Utils {
             idList.add(taskEntry.getIssueId());
         }
         for (Entry<String, List<String>> e : repository2Ids.entrySet()) {
-            Repository repository = getRepository(e.getKey());
+            RepositoryImpl repository = getRepository(e.getKey());
             if (repository != null) {
                 List<String> l = e.getValue();
-                Issue[] issues = repository.getIssues(l.toArray(new String[l.size()]));
+                Collection<IssueImpl> issues = repository.getIssueImpls(l.toArray(new String[l.size()]));
                 if (issues != null) {
-                    tasks.addAll(Arrays.asList(issues));
+                    tasks.addAll(issues);
                 }
             }
         }
         return tasks;
     }
 
-    private static Repository getRepository(String repositoryId) {
-        List<Repository> repositories = new ArrayList<Repository>(RepositoryManager.getInstance().getRepositories());
-        for (Repository repository : repositories) {
+    private static RepositoryImpl getRepository(String repositoryId) {
+        Collection<RepositoryImpl> repositories = getRepositories();
+        for (RepositoryImpl repository : repositories) {
             if (repository.getId().equals(repositoryId)) {
                 return repository;
             }
