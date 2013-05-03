@@ -291,8 +291,16 @@ class GeneralOptionsModel {
                 if (isNonProxy(testingUrl.getHost(), nonProxyHosts)) {
                     testingProxy = Proxy.NO_PROXY;
                 } else {
-                    int proxyPort = Integer.valueOf(proxyPortString);
-                    testingProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+                    try {
+                        int proxyPort = Integer.valueOf(proxyPortString);
+                        testingProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+                    } catch (NumberFormatException ex) {
+                        LOGGER.log(Level.INFO, "Cannot parse port number", ex);
+                        status = TestingStatus.FAILED;
+                        message = "Port is not number!";
+                        panel.updateTestConnectionStatus(status, message);
+                        return;
+                    }                    
                 }
                 break;
             case ProxySettings.MANUAL_SET_PAC:

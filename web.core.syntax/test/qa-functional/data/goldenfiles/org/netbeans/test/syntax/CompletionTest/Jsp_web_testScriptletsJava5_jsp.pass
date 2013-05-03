@@ -61,9 +61,20 @@ void wait (long timeout )
 void wait (long timeout , int 
 new
 End cursor position = 1068
-[<% for (Boolean b : list)  b.F|, Boolean FALSE, <% for (Boolean b : list)  b.FALSE, 1168]
-End cursor position = 1203
-[<% for (String str : a) a.|, int length, <% for (String str : a) a.length, 1253]
+[<% for (Boolean b : list)  b.|, boolean booleanValue (), <% for (Boolean b : list)  b.booleanValue();, 1187]
+boolean booleanValue ()
+int compareTo (Boolean b )
+boolean equals (Object obj )
+Class  getClass ()
+int hashCode ()
+void notify ()
+void notifyAll ()
+String toString ()
+void wait ()
+void wait (long timeout )
+void wait (long timeout , int 
+End cursor position = 1231
+[<% for (String str : a) a.|, int length, <% for (String str : a) a.length, 1272]
 int length
 Object clone ()
 boolean equals (Object obj )
@@ -75,8 +86,8 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
-End cursor position = 1286
-[<% suit.|, Suit DIAMONDS, <% suit.DIAMONDS, 1323]
+End cursor position = 1305
+[<% suit.|, Suit DIAMONDS, <% suit.DIAMONDS, 1342]
 Suit CLUBS
 Suit DIAMONDS
 Suit HEARTS
@@ -94,27 +105,18 @@ String toString ()
 void wait ()
 void wait (long timeout )
 void wait (long timeout , int 
-End cursor position = 1340
-[<% @Card.|, RequestForEnhancement, <% @Card.RequestForEnhancement, 1436]
+End cursor position = 1359
+[<% @Card.|, RequestForEnhancement, <% @Card.RequestForEnhancement, 1455]
 RequestForEnhancement
 Second
-End cursor position = 1467
-[<% @Card.RequestForEnhancement(|)%>, String date = "[unimplemented]", <% @Card.RequestForEnhancement(date=)%>, 1557]
+End cursor position = 1486
+[<% @Card.RequestForEnhancement(|)%>, String date = "[unimplemented]", <% @Card.RequestForEnhancement(date = )%>, 1576]
 String date = "[unimplemented]
 String engineer = "[unassigned
 int id
 String synopsis
-End cursor position = 1594
-[<%@ page import="|" %>, static, <%@ page import="static " %>, 1653]
-static
-com
-java
-javax
-org
-sun
-sunw
-End cursor position = 1678
-[<% D| %>, int DECEMBER, <% DECEMBER %>, 1703]
+End cursor position = 1617
+[<% D| %>, int DECEMBER, <% DECEMBER %>, 1628]
 int DATE
 int DAY_OF_MONTH
 int DAY_OF_WEEK
@@ -135,8 +137,8 @@ double
 Deprecated
 DispatcherType
 Double
-End cursor position = 1715
-[<% get| %>, Calendar getInstance, <% getInstance() %>, 1768]
+End cursor position = 1640
+[<% get| %>, Calendar getInstance, <% getInstance() %>, 1693]
 Locale[] getAvailableLocales (
 Class  getClass ()
 String getInitParameter (Strin
@@ -150,93 +152,11 @@ ServletConfig getServletConfig
 ServletContext getServletConte
 String getServletInfo ()
 String getServletName ()
-End cursor position = 1785
-[<jsp:useBean id="bean" scope="application" class="|", Boolean, <jsp:useBean id="bean" scope="application" class="Boolean", 1984]
-AbstractMethodError
-ArithmeticException
-ArrayIndexOutOfBoundsException
-ArrayStoreException
-AssertionError
+End cursor position = 1710
+[<jsp:useBean id="bean" scope="application" class="B|", Boolean, <jsp:useBean id="bean" scope="application" class="Boolean", 1910]
+boolean
+byte
 Boolean
+BootstrapMethodError
 Byte
-Character
-Class <T>
-ClassCastException
-ClassCircularityError
-ClassFormatError
-ClassLoader
-ClassNotFoundException
-CloneNotSupportedException
-Compiler
-Double
-Enum <E>
-EnumConstantNotPresentException
-Error
-Exception
-ExceptionInInitializerError
-Float
-IllegalAccessError
-IllegalAccessException
-IllegalArgumentException
-IllegalMonitorStateException
-IllegalStateException
-IllegalThreadStateException
-IncompatibleClassChangeError
-IndexOutOfBoundsException
-InheritableThreadLocal <T>
-InstantiationError
-InstantiationException
-Integer
-InternalError
-InterruptedException
-LinkageError
-Long
-Math
-NegativeArraySizeException
-NoClassDefFoundError
-NoSuchFieldError
-NoSuchFieldException
-NoSuchMethodError
-NoSuchMethodException
-NullPointerException
-Number
-NumberFormatException
-Object
-OutOfMemoryError
-Package
-Process
-ProcessBuilder
-Runtime
-RuntimeException
-RuntimePermission
-SecurityException
-SecurityManager
-Short
-StackOverflowError
-StackTraceElement
-StrictMath
-String
-StringBuffer
-StringBuilder
-StringIndexOutOfBoundsException
-System
-Thread
-ThreadDeath
-ThreadGroup
-ThreadLocal <T>
-Throwable
-TypeNotPresentException
-UnknownError
-UnsatisfiedLinkError
-UnsupportedClassVersionError
-UnsupportedOperationException
-VerifyError
-VirtualMachineError
-Void
-com
-java
-javax
-org
-sun
-sunw
-End cursor position = 2045
+End cursor position = 1968

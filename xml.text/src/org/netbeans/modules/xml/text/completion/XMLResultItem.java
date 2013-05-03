@@ -520,6 +520,7 @@ class XMLResultItem implements CompletionItem {
     public Component getPaintComponent(boolean isSelected) {
         XMLCompletionResultItemPaintComponent paintComponent =
             new XMLCompletionResultItemPaintComponent.StringPaintComponent(getPaintColor());
+        paintComponent.setIcon(icon);
         paintComponent.setSelected(isSelected);
         paintComponent.setString(getItemText());
         return paintComponent;
@@ -557,6 +558,7 @@ class XMLResultItem implements CompletionItem {
         renderComponent.setBackground(backgroundColor);
         renderComponent.setBounds(0, 0, width, height);
         XMLCompletionResultItemPaintComponent xmlComp = (XMLCompletionResultItemPaintComponent)renderComponent;
+        // already set in getPaintComponent, but someone might override the getter, without an  icon.
         xmlComp.setIcon(icon);
         xmlComp.paintComponent(g);
     }

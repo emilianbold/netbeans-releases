@@ -42,6 +42,7 @@ package org.netbeans.jellytools.modules.debugger.actions;
 import junit.framework.Test;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.modules.debugger.BreakpointsWindowOperator;
+import org.netbeans.jemmy.EventTool;
 
 /**
  * Test DeleteAllBreakpointsAction.
@@ -67,7 +68,8 @@ public class DeleteAllBreakpointsActionTest extends JellyTestCase {
     /** Test performMenu() method. */
     public void testPerformPopup() {
         BreakpointsWindowOperator window = BreakpointsWindowOperator.invoke();
-        new DeleteAllBreakpointsAction().performPopup(window);
+        new EventTool().waitNoEvent(1000);
+        assertFalse("Delete All not disabled.", new DeleteAllBreakpointsAction().isEnabled(window));
         window.close();
     }
 }

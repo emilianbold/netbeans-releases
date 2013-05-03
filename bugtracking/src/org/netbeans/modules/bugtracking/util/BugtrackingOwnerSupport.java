@@ -48,13 +48,11 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
 import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
 import org.openide.DialogDescriptor;
@@ -74,8 +72,10 @@ import org.openide.windows.TopComponent;
  * @author Tomas Stupka
  * @author Marian Petras
  */
-public abstract class BugtrackingOwnerSupport {
+public class BugtrackingOwnerSupport {
 
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport");   // NOI18N
+    
     private static BugtrackingOwnerSupport instance;
 
     protected BugtrackingOwnerSupport() { }
@@ -84,7 +84,7 @@ public abstract class BugtrackingOwnerSupport {
         if(instance == null) {
             instance = Lookup.getDefault().lookup(BugtrackingOwnerSupport.class);
             if (instance == null) {
-                instance = new DefaultImpl();
+                instance = new BugtrackingOwnerSupport();
             }
         }
         return instance;
@@ -92,53 +92,7 @@ public abstract class BugtrackingOwnerSupport {
 
     public enum ContextType {
         MAIN_PROJECT_ONLY,
-        MAIN_OR_SINGLE_PROJECT,
-        ALL_PROJECTS,
         SELECTED_FILE_AND_ALL_PROJECTS,
-    }
-
-    //--------------------------------------------------------------------------
-
-    public static Project getMainOrSingleProject() {
-        final OpenProjects projects = OpenProjects.getDefault();
-
-        Project[] openProjects = projects.getOpenProjects();
-        if (openProjects.length == 1) {
-            return openProjects[0];
-        } else {
-            return projects.getMainProject();
-        }
-    }
-
-    //--------------------------------------------------------------------------
-
-    public RepositoryImpl getRepository(ContextType context) {
-        switch (context) {
-            case MAIN_PROJECT_ONLY:
-                Project mainProject = OpenProjects.getDefault().getMainProject();
-                if (mainProject != null) {
-                    return getRepository(mainProject, false);
-                }
-                break;
-            case MAIN_OR_SINGLE_PROJECT:
-                Project mainOrSingleProject = getMainOrSingleProject();
-                if (mainOrSingleProject != null) {
-                    return getRepository(mainOrSingleProject, false);
-                }
-                break;
-            case ALL_PROJECTS:
-                return getRepository(OpenProjects.getDefault().getOpenProjects());
-            case SELECTED_FILE_AND_ALL_PROJECTS:
-                File contextFile = getLargerContext();
-                if (contextFile != null) {
-                    return getRepositoryForContext(contextFile, false);
-                }
-                break;
-            default:
-                assert false;
-                break;
-        }
-        return null;
     }
 
     public RepositoryImpl getRepository(Node... nodes) {
@@ -148,13 +102,11 @@ public abstract class BugtrackingOwnerSupport {
         if (nodes.length == 0) {
             return null;
         }
-        if (nodes.length == 1) {
-            return getRepository(nodes[0]);
-        }
 
         RepositoryImpl chosenRepo = null;
         for (Node node : nodes) {
             RepositoryImpl repo = getRepository(node);
+            
             if (repo == null) {
                 continue;
             }
@@ -169,10 +121,10 @@ public abstract class BugtrackingOwnerSupport {
 
     protected RepositoryImpl getRepository(Node node) {
         final Lookup nodeLookup = node.getLookup();
-
-        Project project = nodeLookup.lookup(Project.class);
-        if (project != null) {
-            return getRepository(project, false);
+        
+        FileObject[] fos = BugtrackingUtil.getProjectDirectories(nodeLookup);
+        if (fos != null && fos.length > 0) {
+            return getRepository(fos[0]);
         }
 
         DataObject dataObj = nodeLookup.lookup(DataObject.class);
@@ -182,48 +134,84 @@ public abstract class BugtrackingOwnerSupport {
 
         return null;
     }
-
-    protected abstract RepositoryImpl getRepository(DataObject dataObj);
-
-    public RepositoryImpl getRepository(Project... projects) {
-        if (projects.length == 0) {
+        
+    private RepositoryImpl getRepository(DataObject dataObj) {
+        FileObject fileObj = dataObj.getPrimaryFile();
+        if (fileObj == null) {
             return null;
         }
-        if (projects.length == 1) {
-            return getRepository(projects[0], false);
+
+        FileObject ownerDirectory = BugtrackingUtil.getFileOwnerDirectory(fileObj);
+        if (ownerDirectory != null) {
+            return getRepository(ownerDirectory);
         }
 
-        RepositoryImpl chosenRepo = null;
-        for (Project project : projects) {
-            RepositoryImpl repo = getRepository(project, false);
-            if (repo == null) {
-                continue;
-            }
-            if (chosenRepo == null) {
-                chosenRepo = repo;
-            } else if (repo != chosenRepo) {
-                return null;   //the projects have various repositories assigned
-            }
+        RepositoryImpl repo;
+
+        try {
+            repo = getRepositoryIntern(fileObj);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            repo = null;
         }
-        return chosenRepo;
+
+        return repo;
     }
 
-    public abstract RepositoryImpl getRepository(Project project, boolean askIfUnknown);
+    public RepositoryImpl getRepository(FileObject fileObject) {
+        RepositoryImpl repo;
+
+        try {
+            repo = getRepositoryIntern(fileObject);
+            if (repo != null) {
+                return repo;
+            }
+        } catch (IOException ex) {
+            return null;
+        }
+
+        File context = getLargerContext(fileObject);
+        if (context != null) {
+            return getRepositoryForContext(context, false);
+        } else {
+            return askUserToSpecifyRepository(null);
+        }
+    }
 
     public RepositoryImpl getRepository(File file, boolean askIfUnknown) {
-        return getRepository(file, null, askIfUnknown);
+        if(file == null) {
+            if(askIfUnknown) {
+                return askUserToSpecifyRepository(null);
+            } else {
+                return null;
+            }
+        }
+        //TODO - synchronization/threading
+        FileObject fileObject = FileUtil.toFileObject(file);
+        if (fileObject == null) {
+            LOG.log(Level.WARNING, " did not find a FileObject for file {0}", new Object[] {file}); //NOI18N
+        } else {
+            try {
+                RepositoryImpl repo = getRepositoryIntern(fileObject);
+                if (repo != null) {
+                    return repo;
+                }
+            } catch (IOException ex) {
+                LOG.log(Level.INFO,
+                      " communication with Kenai failed while loading " //NOI18N
+                          + "information about bugtracking repository", //NOI18N
+                      ex);
+                return null;
+            }
+        }
+
+        File context = getLargerContext(file, fileObject);
+        if (context == null) {
+            context = file;
+        }
+
+        return getRepositoryForContext(context, askIfUnknown);
     }
-
-    public abstract RepositoryImpl getRepository(File file, String issueId, boolean askIfUnknown);
-
-    protected RepositoryImpl getRepositoryForContext(File context,
-                                                 boolean askIfUnknown) {
-        return getRepositoryForContext(context, null, askIfUnknown);
-    }
-
-    protected abstract RepositoryImpl getRepositoryForContext(File context,
-                                                          String issueId,
-                                                          boolean askIfUnknown);
 
     public void setFirmAssociations(File[] files, RepositoryImpl repository) {
         if (files == null) {
@@ -245,25 +233,14 @@ public abstract class BugtrackingOwnerSupport {
     }
 
     public void setLooseAssociation(ContextType contextType, RepositoryImpl repository) {
-        final OpenProjects projects = OpenProjects.getDefault();
-
         File context = null;
 
         switch (contextType) {
             case MAIN_PROJECT_ONLY:
-                Project mainProject = projects.getMainProject();
-                if (mainProject != null) {
-                    context = getLargerContext(mainProject);
+                FileObject fo = getMainProjectDirectory();
+                if (fo != null) {
+                    context = getLargerContext(fo);
                 }
-                break;
-            case MAIN_OR_SINGLE_PROJECT:
-                Project mainOrSingleProject = getMainOrSingleProject();
-                if (mainOrSingleProject != null) {
-                    context = getLargerContext(mainOrSingleProject);
-                }
-                break;
-            case ALL_PROJECTS:
-                context = getContextFromProjects();
                 break;
             case SELECTED_FILE_AND_ALL_PROJECTS:
                 context = getLargerContext();
@@ -280,12 +257,6 @@ public abstract class BugtrackingOwnerSupport {
         }
     }
 
-    public void setLooseAssociation(File file, RepositoryImpl repository) {
-        FileToRepoMappingStorage.getInstance().setLooseAssociation(
-                getLargerContext(file),
-                repository);
-    }
-
     /**
      * Returns all repository urls that appear in a <strong>firm</strong> association.
      * @return
@@ -294,6 +265,30 @@ public abstract class BugtrackingOwnerSupport {
         return FileToRepoMappingStorage.getInstance().getAllFirmlyAssociatedUrls();
     }
 
+    protected RepositoryImpl getRepositoryForContext(File context, boolean askIfUnknown) {
+        RepositoryImpl repo = FileToRepoMappingStorage.getInstance()
+                          .getFirmlyAssociatedRepository(context);
+        if (repo != null) {
+            LOG.log(Level.FINER, 
+                    " found stored repository [{0}] for directory {1}",     //NOI18N
+                    new Object[]{repo, context});
+            return repo;
+        }
+
+        RepositoryImpl suggestedRepository = FileToRepoMappingStorage.getInstance()
+                                         .getLooselyAssociatedRepository(context);
+        if (!askIfUnknown) {
+            return suggestedRepository;
+        }
+
+        repo = askUserToSpecifyRepository(suggestedRepository);
+        if (repo != null) {
+            return repo;
+        }
+
+        return null;
+    }
+    
     private static File getLargerContext() {
         FileObject openFile = getOpenFileObj();
         if (openFile != null) {
@@ -307,16 +302,14 @@ public abstract class BugtrackingOwnerSupport {
     }
 
     private static File getContextFromProjects() {
-        final OpenProjects projects = OpenProjects.getDefault();
-
-        Project mainProject = projects.getMainProject();
-        if (mainProject != null) {
-            return getLargerContext(mainProject);       //null or non-null
+        FileObject fo = getMainProjectDirectory();
+        if (fo != null) {
+            return FileUtil.toFile(fo);
         }
 
-        Project[] openProjects = projects.getOpenProjects();
-        if ((openProjects != null) && (openProjects.length == 1)) {
-            return getLargerContext(openProjects[0]);
+        FileObject[] fos = getOpenProjectsDirectories();
+        if ((fos != null) && (fos.length == 1)) {
+            return getLargerContext(fos[0]);
         }
 
         return null;
@@ -353,9 +346,8 @@ public abstract class BugtrackingOwnerSupport {
             return null;
         }
 
-        Project parentProject = FileOwnerQuery.getOwner(fileObj);
-        if (parentProject != null) {
-            FileObject parentProjectFolder = parentProject.getProjectDirectory();
+        FileObject parentProjectFolder = BugtrackingUtil.getFileOwnerDirectory(fileObj);
+        if (parentProjectFolder != null) {
             if (parentProjectFolder.equals(fileObj) && (file != null)) {
                 return file;
             }
@@ -393,13 +385,6 @@ public abstract class BugtrackingOwnerSupport {
         return null;
     }
 
-    private static File getLargerContext(Project project) {
-        FileObject projectFolder = project.getProjectDirectory();
-        assert projectFolder != null;
-
-        return FileUtil.toFile(projectFolder);
-    }
-
     private static FileObject getOpenFileObj() {
         TopComponent activatedTopComponent = TopComponent.getRegistry()
                                              .getActivated();
@@ -416,227 +401,100 @@ public abstract class BugtrackingOwnerSupport {
         return dataObj.getPrimaryFile();
     }
 
-    //--------------------------------------------------------------------------
-
-    private static class DefaultImpl extends BugtrackingOwnerSupport {
-
-        private static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.bridge.BugtrackingOwnerSupport");   // NOI18N
-
-        @Override
-        protected RepositoryImpl getRepository(DataObject dataObj) {
-            FileObject fileObj = dataObj.getPrimaryFile();
-            if (fileObj == null) {
-                return null;
-            }
-
-            Project project = FileOwnerQuery.getOwner(fileObj);
-            if (project != null) {
-                return getRepository(project, false);
-            }
-
-            RepositoryImpl repo;
-
-            try {
-                repo = getKenaiBugtrackingRepository(fileObj);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-                repo = null;
-            }
-
-            return repo;
-        }
-
-        @Override
-        public RepositoryImpl getRepository(Project project, boolean askIfUnknown) {
-            RepositoryImpl repo;
-
-            FileObject fileObject = project.getProjectDirectory();
-            try {
-                repo = getKenaiBugtrackingRepository(fileObject);
-                if (repo != null) {
-                    return repo;
-                }
-            } catch (IOException ex) {
-                return null;
-            }
-
-            File context = getLargerContext(project);
-            if (context != null) {
-                return getRepositoryForContext(context, null, askIfUnknown);
-            } else {
-                return askUserToSpecifyRepository(null);
-            }
-        }
-
-        @Override
-        public RepositoryImpl getRepository(File file, String issueId, boolean askIfUnknown) {
-            if(file == null) {
-                if(askIfUnknown) {
-                    return askUserToSpecifyRepository(null);
-                } else {
-                    return null;
-                }
-            }
-            //TODO - synchronization/threading
-            FileObject fileObject = FileUtil.toFileObject(file);
-            if (fileObject == null) {
-                LOG.log(Level.WARNING, " did not find a FileObject for file {0}", new Object[] {file}); //NOI18N
-            } else {
-                try {
-                    RepositoryImpl repo = getKenaiBugtrackingRepository(fileObject);
-                    if (repo != null) {
-                        return repo;
+    /**
+     *
+     * @param fileObject
+     * @return
+     * @throws IOException
+     */
+    private static RepositoryImpl getRepositoryIntern(FileObject fileObject) throws IOException {
+        Object attValue = fileObject.getAttribute(
+                                       "ProvidedExtensions.RemoteLocation");//NOI18N
+        if (attValue instanceof String) {
+            RepositoryImpl repository = null;
+            String url = (String) attValue;
+            if(BugtrackingUtil.isNbRepository(url)) {
+                File file = FileUtil.toFile(fileObject);
+                if(file != null) {
+                    OwnerInfo ownerInfo = KenaiUtil.getOwnerInfo(file);
+                    if(ownerInfo != null) {
+                        repository = APIAccessor.IMPL.getImpl(KenaiUtil.getRepository(url, ownerInfo.getOwner()));
                     }
-                } catch (IOException ex) {
-                    LOG.log(Level.INFO,
-                          " communication with Kenai failed while loading " //NOI18N
-                              + "information about bugtracking repository", //NOI18N
-                          ex);
-                    return null;
-                }
-            }
-
-            File context = getLargerContext(file, fileObject);
-            if (context == null) {
-                context = file;
-            }
-
-            return getRepositoryForContext(context, issueId, askIfUnknown);
-        }
-
-        protected RepositoryImpl getRepositoryForContext(File context, String issueId,
-                                                     boolean askIfUnknown) {
-            RepositoryImpl repo = FileToRepoMappingStorage.getInstance()
-                              .getFirmlyAssociatedRepository(context);
-            if (repo != null) {
-                LOG.log(Level.FINER, 
-                        " found stored repository [{0}] for directory {1}",     //NOI18N
-                        new Object[]{repo, context});
-                return repo;
-            }
-
-            RepositoryImpl suggestedRepository = FileToRepoMappingStorage.getInstance()
-                                             .getLooselyAssociatedRepository(context);
-            if (!askIfUnknown) {
-                return suggestedRepository;
-            }
-
-            repo = askUserToSpecifyRepository(suggestedRepository);
-            if (repo != null) {
-                return repo;
-            }
-
-            return null;
-        }
-
-        private static RepositoryImpl getKenaiBugtrackingRepository(FileObject fileObject) throws IOException {
-            return getRepository(fileObject);
-        }
-
-        /**
-         *
-         * @param fileObject
-         * @return
-         * @throws IOException
-         */
-        private static RepositoryImpl getRepository(FileObject fileObject) throws IOException {
-            Object attValue = fileObject.getAttribute(
-                                           "ProvidedExtensions.RemoteLocation");//NOI18N
-            if (attValue instanceof String) {
-                RepositoryImpl repository = null;
-                String url = (String) attValue;
-                if(BugtrackingUtil.isNbRepository(url)) {
-                    File file = FileUtil.toFile(fileObject);
-                    if(file != null) {
-                        OwnerInfo ownerInfo = KenaiUtil.getOwnerInfo(file);
-                        if(ownerInfo != null) {
-                            repository = APIAccessor.IMPL.getImpl(KenaiUtil.getRepository(url, ownerInfo.getOwner()));
-                        }
-                        if(repository == null) {
-                            repository = APIAccessor.IMPL.getImpl(KenaiUtil.findNBRepository());
-                        }
+                    if(repository == null) {
+                        repository = APIAccessor.IMPL.getImpl(KenaiUtil.findNBRepository());
                     }
                 }
-                if(repository != null) {
+            }
+            if(repository != null) {
+                return repository;
+            }
+            try {
+                repository = APIAccessor.IMPL.getImpl(KenaiUtil.getRepository(url));
+                if (repository != null) {
                     return repository;
                 }
-                try {
-                    repository = APIAccessor.IMPL.getImpl(KenaiUtil.getRepository(url));
-                    if (repository != null) {
-                        return repository;
-                    }
-                } catch (IOException ex) {
-                    /* the remote location (URL) denotes a Kenai project */
-                    if ("Not Found".equals(ex.getMessage())) {              // NOI18N
-                        BugtrackingManager.LOG.log(
-                                Level.INFO,
-                                "Kenai project corresponding to URL {0} does not exist.",  // NOI18N
-                                attValue);
-                    } else {
-                        BugtrackingManager.LOG.throwing(
-                                BugtrackingOwnerSupport.class.getName(),    //class name
-                                "getRepository(String)",    //method name       // NOI18N
-                                ex);
-                    }
-                    throw ex;
+            } catch (IOException ex) {
+                /* the remote location (URL) denotes a Kenai project */
+                if ("Not Found".equals(ex.getMessage())) {              // NOI18N
+                    BugtrackingManager.LOG.log(
+                            Level.INFO,
+                            "Kenai project corresponding to URL {0} does not exist.",  // NOI18N
+                            attValue);
+                } else {
+                    BugtrackingManager.LOG.throwing(
+                            BugtrackingOwnerSupport.class.getName(),    //class name
+                            "getRepository(String)",    //method name       // NOI18N
+                            ex);
                 }
-            }
-            return null;
-        }
-
-        /**
-         * Find a Kenai bug-tracking repository for the given URL.
-         *
-         * @param  string containing information about bug-tracking repository
-         *         or versioning repository
-         * @return  instance of an existing Kenai bug-tracking repository, if the
-         *          given string denotes such a repository;
-         *          {@code null} if the string format does not denote a Kenai
-         *          bug-tracking repository (in other cases, an exception is thrown)
-         * @throws  org.netbeans.modules.kenai.api.KenaiException
-         *          if the URI denotes a Kenai project's repository but there was
-         *          some problem getting the project's repository, e.g. because
-         *          the given project does not exist on Kenai
-         */
-        private static RepositoryImpl getKenaiBugtrackingRepository(String remoteLocation) throws IOException {
-            return APIAccessor.IMPL.getImpl(KenaiUtil.getRepository(remoteLocation));
-        }
-
-        private RepositoryImpl askUserToSpecifyRepository(RepositoryImpl suggestedRepo) {
-            Collection<RepositoryImpl> repos = BugtrackingUtil.getKnownRepositories(true);
-            DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
-
-            final RepositorySelectorBuilder selectorBuilder = new RepositorySelectorBuilder();
-            selectorBuilder.setDisplayFormForExistingRepositories(true);
-            selectorBuilder.setExistingRepositories(repos.toArray(new RepositoryImpl[repos.size()]));
-            selectorBuilder.setBugtrackingConnectors(connectors);
-            selectorBuilder.setPreselectedRepository(suggestedRepo);
-            selectorBuilder.setLabelAboveComboBox();
-
-            final String dialogTitle = getMessage("LBL_BugtrackerSelectorTitle"); //NOI18N
-
-            DialogDescriptor dialogDescriptor
-                    = selectorBuilder.createDialogDescriptor(dialogTitle);
-
-            Object selectedOption = DialogDisplayer.getDefault().notify(dialogDescriptor);
-            if (selectedOption == NotifyDescriptor.OK_OPTION) {
-                RepositoryImpl repository = selectorBuilder.getSelectedRepository();
-                try {
-                    repository.applyChanges();
-                } catch (IOException ex) {
-                    LOG.log(Level.SEVERE, null, ex);
-                    repository = null;
-                }
-                return repository;
-            } else {
-                return null;
+                throw ex;
             }
         }
-
-        private String getMessage(String msgKey) {
-            return NbBundle.getMessage(BugtrackingOwnerSupport.class, msgKey);
-        }
-
+        return null;
     }
 
+    private RepositoryImpl askUserToSpecifyRepository(RepositoryImpl suggestedRepo) {
+        Collection<RepositoryImpl> repos = BugtrackingUtil.getKnownRepositories(true);
+        DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
+
+        final RepositorySelectorBuilder selectorBuilder = new RepositorySelectorBuilder();
+        selectorBuilder.setDisplayFormForExistingRepositories(true);
+        selectorBuilder.setExistingRepositories(repos.toArray(new RepositoryImpl[repos.size()]));
+        selectorBuilder.setBugtrackingConnectors(connectors);
+        selectorBuilder.setPreselectedRepository(suggestedRepo);
+        selectorBuilder.setLabelAboveComboBox();
+
+        final String dialogTitle = getMessage("LBL_BugtrackerSelectorTitle"); //NOI18N
+
+        DialogDescriptor dialogDescriptor
+                = selectorBuilder.createDialogDescriptor(dialogTitle);
+
+        Object selectedOption = DialogDisplayer.getDefault().notify(dialogDescriptor);
+        if (selectedOption == NotifyDescriptor.OK_OPTION) {
+            RepositoryImpl repository = selectorBuilder.getSelectedRepository();
+            try {
+                repository.applyChanges();
+            } catch (IOException ex) {
+                LOG.log(Level.SEVERE, null, ex);
+                repository = null;
+            }
+            return repository;
+        } else {
+            return null;
+        }
+    }
+
+    private String getMessage(String msgKey) {
+        return NbBundle.getMessage(BugtrackingOwnerSupport.class, msgKey);
+    }
+
+    private static FileObject getMainProjectDirectory() {
+        ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
+        return projectServices != null ? projectServices.getMainProjectDirectory() : null;
+    }
+    
+    private static FileObject[] getOpenProjectsDirectories() {
+        ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
+        return projectServices != null ? projectServices.getOpenProjectsDirectories(): null;
+    }
+    
 }

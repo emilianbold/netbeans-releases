@@ -44,8 +44,13 @@ package org.netbeans.modules.refactoring.java.plugins;
 import java.io.IOException;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.CodeStyleUtils;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -68,6 +73,9 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
 
     private RenameRefactoring refactoring;
     private TreePathHandle property;
+    private CodeStyle codeStyle;
+    private boolean isStatic;
+    private boolean isBoolean;
     private RenameRefactoring getterDelegate;
     private RenameRefactoring setterDelegate;
     private RenameRefactoring parameterDelegate;
@@ -122,21 +130,30 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
 
         Problem p = null;
         if (getterDelegate != null) {
-            getterDelegate.setNewName(RefactoringUtils.getGetterName(refactoring.getNewName()));
+            String gettername = CodeStyleUtils.computeGetterName(
+                                    refactoring.getNewName(), isBoolean, isStatic, codeStyle);
+            getterDelegate.setNewName(gettername);
             p = JavaPluginUtils.chainProblems(p, getterDelegate.fastCheckParameters());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
         if (setterDelegate != null) {
-            setterDelegate.setNewName(RefactoringUtils.getSetterName(refactoring.getNewName()));
+            String settername = CodeStyleUtils.computeSetterName(
+                                    refactoring.getNewName(), isStatic, codeStyle);
+            setterDelegate.setNewName(settername);
             p = JavaPluginUtils.chainProblems(p, setterDelegate.fastCheckParameters());
             if (p != null && p.isFatal()) {
                 return p;
             }
         }
         if (parameterDelegate != null) {
-            parameterDelegate.setNewName(refactoring.getNewName());
+            String newParam = RefactoringUtils.addParamPrefixSuffix(
+                            CodeStyleUtils.removePrefixSuffix(
+                            refactoring.getNewName(),
+                            isStatic ? codeStyle.getStaticFieldNamePrefix() : codeStyle.getFieldNamePrefix(),
+                            isStatic ? codeStyle.getStaticFieldNameSuffix() : codeStyle.getFieldNameSuffix()), codeStyle);
+            parameterDelegate.setNewName(newParam);
             p = JavaPluginUtils.chainProblems(p, parameterDelegate.fastCheckParameters());
             if (p != null && p.isFatal()) {
                 return p;
@@ -224,22 +241,37 @@ public class RenamePropertyRefactoringPlugin extends JavaRefactoringPlugin {
         }
         try {
             getJavaSource(Phase.PREPARE).runUserActionTask(new Task<CompilationController>() {
+                private String propName;
 
                 @Override
                 public void run(CompilationController p) throws Exception {
                     p.toPhase(JavaSource.Phase.RESOLVED);
+                    codeStyle = RefactoringUtils.getCodeStyle(p);
                     Element propertyElement = property.resolveElement(p);
+                    isStatic = propertyElement.getModifiers().contains(Modifier.STATIC);
+                    isBoolean = propertyElement.asType().getKind() == TypeKind.BOOLEAN;
+                    propName = RefactoringUtils.removeFieldPrefixSuffix(propertyElement, codeStyle);
+                    String paramName = RefactoringUtils.addParamPrefixSuffix(propName, codeStyle);
+                    String newParam = RefactoringUtils.addParamPrefixSuffix(
+                            CodeStyleUtils.removePrefixSuffix(
+                            refactoring.getNewName(),
+                            isStatic ? codeStyle.getStaticFieldNamePrefix() : codeStyle.getFieldNamePrefix(),
+                            isStatic ? codeStyle.getStaticFieldNameSuffix() : codeStyle.getFieldNameSuffix()), codeStyle);
                     for (ExecutableElement el : ElementFilter.methodsIn(propertyElement.getEnclosingElement().getEnclosedElements())) {
                         if (RefactoringUtils.isGetter(p, el, propertyElement)) {
                             getterDelegate = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(el, p)));
-                            getterDelegate.setNewName(RefactoringUtils.getGetterName(refactoring.getNewName()));
+                            String gettername = CodeStyleUtils.computeGetterName(
+                                    refactoring.getNewName(), isBoolean, isStatic, codeStyle);
+                            getterDelegate.setNewName(gettername);
                         } else if (RefactoringUtils.isSetter(p, el, propertyElement)) {
                             setterDelegate = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(el, p)));
-                            setterDelegate.setNewName(RefactoringUtils.getSetterName(refactoring.getNewName()));
+                            String settername = CodeStyleUtils.computeSetterName(
+                                    refactoring.getNewName(), isStatic, codeStyle);
+                            setterDelegate.setNewName(settername);
                             VariableElement par = el.getParameters().iterator().next();
-                            if (par.getSimpleName().contentEquals(propertyElement.getSimpleName())) {
+                            if (par.getSimpleName().contentEquals(paramName)) {
                                 parameterDelegate = new RenameRefactoring(Lookups.singleton(TreePathHandle.create(p.getTrees().getPath(par), p)));
-                                parameterDelegate.setNewName(refactoring.getNewName());
+                                parameterDelegate.setNewName(newParam);
                             }
                         }
                     }

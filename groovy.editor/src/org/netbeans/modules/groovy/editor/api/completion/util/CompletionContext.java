@@ -65,7 +65,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
-import org.netbeans.modules.groovy.editor.completion.interference.GroovyTypeAnalyzer;
+import org.netbeans.modules.groovy.editor.completion.inference.GroovyTypeAnalyzer;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.groovy.editor.completion.AccessLevel;
@@ -91,7 +91,6 @@ public final class CompletionContext {
     public final BaseDocument doc;
     
     public boolean scriptMode;
-    public boolean behindImport;
     public CaretLocation location;
     public CompletionSurrounding context;
     public AstPath path;
@@ -128,9 +127,6 @@ public final class CompletionContext {
         this.nameOnly = dotContext != null && dotContext.isMethodsOnly();
 
         this.declaringClass = getBeforeDotDeclaringClass();
-
-        // are we're right behind an import statement?
-        this.behindImport = checkForRequestBehindImportStatement();
     }
     
     // TODO: Move this to the constructor and change ContextHelper.getSurroundingClassNode()
@@ -778,10 +774,17 @@ public final class CompletionContext {
 
     /**
      * Check whether this completion request was issued behind an import statement.
+     * In such cases we are typically in context of completing packages/types within
+     * an import statement. Few examples:
+     * <br/><br/>
+     * 
+     * {@code import java.^}<br/>
+     * {@code import java.lan^}<br/>
+     * {@code import java.lang.In^}<br/>
      *
-     * @return true if it's right behind and import statement, false otherwise
+     * @return true if we are on the line that starts with an import keyword, false otherwise
      */
-    private boolean checkForRequestBehindImportStatement() {
+    public boolean isBehindImportStatement() {
         int rowStart = 0;
         int nonWhite = 0;
 

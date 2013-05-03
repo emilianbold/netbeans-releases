@@ -57,6 +57,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.type.TypeKind;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
@@ -83,15 +84,17 @@ public class ChangeParametersUI implements RefactoringUI, JavaRefactoringUIFacto
     private boolean isMethod;
     private ChangeParametersRefactoring.ParameterInfo[] preConfiguration;
     private Lookup lookup;
+    private CodeStyle cs;
     
     /** Creates a new instance of ChangeMethodSignatureRefactoring */
-    private ChangeParametersUI(TreePathHandle refactoredObj, CompilationInfo info, ChangeParametersRefactoring.ParameterInfo[] preConfiguration) {
+    private ChangeParametersUI(TreePathHandle refactoredObj, CompilationInfo info, ParameterInfo[] preConfiguration, CodeStyle cs) {
         this.refactoring = new ChangeParametersRefactoring(refactoredObj);
         this.method = refactoredObj;
         this.preConfiguration = preConfiguration;
         Element element = method.resolveElement(info);
         this.name = element.getSimpleName().toString();
         this.isMethod = element.getKind() == ElementKind.METHOD;
+        this.cs = cs;
     }
 
     private ChangeParametersUI(Lookup lookup) {
@@ -126,7 +129,7 @@ public class ChangeParametersUI implements RefactoringUI, JavaRefactoringUIFacto
         }
         
         return path != null
-                ? new ChangeParametersUI(TreePathHandle.create(path, info), info, configuration)
+                ? new ChangeParametersUI(TreePathHandle.create(path, info), info, configuration, CodeStyle.getDefault(info.getFileObject()))
                 : null;
     }
     
@@ -148,7 +151,7 @@ public class ChangeParametersUI implements RefactoringUI, JavaRefactoringUIFacto
     @Override
     public CustomRefactoringPanel getPanel(ChangeListener parent) {
         if (panel == null) {
-            panel = new ChangeParametersPanel(method, parent, preConfiguration);
+            panel = new ChangeParametersPanel(method, parent, preConfiguration, cs);
         }
         return panel;
     }

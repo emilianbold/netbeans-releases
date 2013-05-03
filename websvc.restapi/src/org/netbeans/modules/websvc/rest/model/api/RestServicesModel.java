@@ -52,12 +52,12 @@ import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation;
  * @author nam
  */
 public interface RestServicesModel extends MetadataModelImplementation<RestServicesMetadata> {
-    public void addPropertyChangeListener(PropertyChangeListener pcl);
+    void addPropertyChangeListener(PropertyChangeListener pcl);
     
-    public void removePropertyChangeListener(PropertyChangeListener pcl);
+    void removePropertyChangeListener(PropertyChangeListener pcl);
     
-    public void disablePropertyChangeListener();
+    void disablePropertyChangeListener();
     
-    public void enablePropertyChangeListener();
+    void enablePropertyChangeListener();
 
 }

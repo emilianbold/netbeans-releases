@@ -42,7 +42,6 @@
 package org.netbeans.modules.html.editor.api.gsf;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -64,13 +63,14 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.html.editor.HtmlErrorFilter;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationContext;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidationResult;
 import org.netbeans.modules.html.editor.lib.api.validation.ValidatorService;
 import org.netbeans.modules.html.editor.gsf.HtmlParserResultAccessor;
+import org.netbeans.modules.html.editor.lib.api.MaskedAreas;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.foreign.MaskingChSReader;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -167,7 +167,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
     /** returns a map of all namespaces to astnode roots.*/
     @Override
     public Map<String, Node> roots() {
-        Map<String, Node> roots = new HashMap<String, Node>();
+        Map<String, Node> roots = new HashMap<>();
         for (String uri : getNamespaces().keySet()) {
             roots.put(uri, root(uri));
         }
@@ -247,7 +247,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
     }
 
     public List<Error> getDiagnostics(Set<Severity> severities) {
-        List<Error> filtered = new ArrayList<Error>();
+        List<Error> filtered = new ArrayList<>();
         for(Error e : getValidationResults()) {
             if(severities.contains(e.getSeverity())) {
                 filtered.add(e);
@@ -258,7 +258,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
     
     private synchronized List<Error> getValidationResults() {
         if(errors == null) {
-            errors = new ArrayList<Error>();
+            errors = new ArrayList<>();
             errors.addAll(getErrorsFromValidatorService());
         }
         return errors;
@@ -272,14 +272,18 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
             if(validator == null) {
                 return Collections.emptyList();
             }
-            ValidationContext context = new ValidationContext(getSnapshot().getText().toString(), getHtmlVersion(), file, result);
+            MaskedAreas maskedAreas = result.getMaskedAreas(SyntaxAnalyzerResult.FilteredContent.CUSTOM_TAGS);
+            CharSequence original = getSnapshot().getText().toString();
+            MaskingChSReader masker = new MaskingChSReader(original, maskedAreas.positions(), maskedAreas.lens());
+            
+            ValidationContext context = new ValidationContext(masker, getHtmlVersion(), file, result);
 
             //XXX possibly make it configurable via hints
             context.enableFeature("filter.foreign.namespaces", true); //NOI18N
             
             ValidationResult res = validator.validate(context);
 
-            List<Error> errs = new ArrayList<Error>();
+            List<Error> errs = new ArrayList<>();
             for (ProblemDescription pd : res.getProblems()) {
                 DefaultError error = new DefaultError(pd.getKey(),
                         pd.getText(), //NOI18N
@@ -327,7 +331,8 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
 
     public static Node getBoundNode(Error e) {
         if (e instanceof DefaultError) {
-            if (e.getParameters() != null && e.getParameters().length > 0 && e.getParameters()[0] instanceof Node) {
+            Object[] parameters = e.getParameters();
+            if (parameters != null && parameters.length > 0 && parameters[0] instanceof Node) {
                 return (Node) e.getParameters()[0];
             }
         }

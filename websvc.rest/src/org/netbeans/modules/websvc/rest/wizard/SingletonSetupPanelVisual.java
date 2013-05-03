@@ -54,6 +54,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
@@ -99,6 +101,24 @@ public class SingletonSetupPanelVisual extends javax.swing.JPanel
             }
         });
         medaTypeComboBox.setModel(new DefaultComboBoxModel(GenericResourceBean.getSupportedMimeTypes()));
+        ((JTextComponent) packageComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(
+                new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                fireChange();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                fireChange();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                fireChange();
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -537,6 +557,11 @@ private void uriTextFieldKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:e
     @Override
     public SourceGroup getSourceGroup() {
         return (SourceGroup) locationComboBox.getSelectedItem();
+    }
+
+    @Override
+    public String getPackageName() {
+        return ((JTextComponent) packageComboBox.getEditor().getEditorComponent()).getText();
     }
     
     public double getRenderedHeight(){

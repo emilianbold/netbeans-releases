@@ -80,12 +80,9 @@ public class ElementsParser implements Iterator<Element> {
     private static final int S_TEXT = 11;
     private static final int S_TAG_AFTER_NAME = 12;
     //eof parser state constants
-    
     public static final String UNEXPECTED_SYMBOL_IN_OPEN_TAG = "unexpected_symbol_in_open_tag"; //NOI18N
-
     private CharSequence sourceCode;
     private TokenSequence<HTMLTokenId> ts;
-    
     //inner parsing states
     private Token<HTMLTokenId> token;
     private int start;
@@ -100,18 +97,18 @@ public class ElementsParser implements Iterator<Element> {
     private String root_element, doctype_public_id, doctype_file, doctype_name;
 
     public ElementsParser(CharSequence sourceCode, TokenSequence<HTMLTokenId> tokenSequence, int position) {
-        if(position < 0) {
+        if (position < 0) {
             throw new IllegalArgumentException(String.format("Position (%s) must be positive", position));
         }
         this.sourceCode = sourceCode;
         this.ts = tokenSequence;
         int diff = ts.move(position);
-        if(diff != 0) {
+        if (diff != 0) {
             throw new IllegalArgumentException(String.format("Parser must be started "
-                    + "at a token beginning, not in the middle (position=%s, token diff=%s, token=%s)", 
+                    + "at a token beginning, not in the middle (position=%s, token diff=%s, token=%s)",
                     position, diff, (ts.moveNext() ? ts.token() : null))); //NOI18N
-        } 
-        
+        }
+
         state = S_INIT;
         start = -1;
         attr_keys = new ArrayList<TokenInfo>();
@@ -232,20 +229,17 @@ public class ElementsParser implements Iterator<Element> {
         }
 
         //Bug 220775 - AssertionError: element length must be positive! debug>>>
-        if(start == -1) {
+        if (start == -1) {
             throw new IllegalStateException(getCodeSnippet());
         }
         int len = ts.offset() + ts.token().length() - start;
-        if(len > Short.MAX_VALUE) {
-            throw new IllegalStateException();
-        }
-        if(len <= 0) {
+        if (len <= 0) {
             throw new IllegalStateException(getCodeSnippet());
         }
         //<<<
-        
+
         if (openTag) {
-            
+
             if (attributes.isEmpty()) {
                 //no attributes
                 if (problem == null) {
@@ -268,14 +262,28 @@ public class ElementsParser implements Iterator<Element> {
             } else {
                 //attributes
                 if (problem == null) {
-                    current = new OpenTagElement(
-                            sourceCode,
-                            start,
-                            (short) len,
-                            (byte) tagName.length(),
-                            attributes,
-                            emptyTag);
+                    //open tag w/o error
+                    if (len > Short.MAX_VALUE) {
+                        //unusually long element
+                        current = new LongOpenTagElement(
+                                sourceCode,
+                                start,
+                                len,
+                                (byte) tagName.length(),
+                                attributes,
+                                emptyTag);
+                    } else {
+                        current = new OpenTagElement(
+                                sourceCode,
+                                start,
+                                (short) len,
+                                (byte) tagName.length(),
+                                attributes,
+                                emptyTag);
+                    }
                 } else {
+                    //open tag w/ error
+                    //note: the ProblematicOpenTagElement also extends LongOpenTagElement 
                     current = new ProblematicOpenTagElement(
                             sourceCode,
                             start,
@@ -287,7 +295,6 @@ public class ElementsParser implements Iterator<Element> {
 
                 }
             }
-
         } else {
             current = new EndTagElement(
                     sourceCode,
@@ -301,15 +308,15 @@ public class ElementsParser implements Iterator<Element> {
         attr_keys = new ArrayList<TokenInfo>();
         attr_values = new ArrayList<List<TokenInfo>>();
     }
+    private static final int SNIPPET_LEN = 50;
 
-    private static final int SNIPPET_LEN = 50; 
     private String getCodeSnippet() {
         int offset = ts.offset();
-        int from = Math.max(0, offset - (SNIPPET_LEN / 2) );
+        int from = Math.max(0, offset - (SNIPPET_LEN / 2));
         int to = Math.min(sourceCode.length(), offset - (SNIPPET_LEN / 2));
         return sourceCode.subSequence(from, to).toString();
     }
-    
+
     //an error inside a tag, at least the tag name is known
     private void tag_with_error(ProblemDescription problem) {
         //lets put back the errorneous symbol first
@@ -497,6 +504,9 @@ public class ElementsParser implements Iterator<Element> {
                     case VALUE:
                     case VALUE_JAVASCRIPT:
                     case VALUE_CSS:
+                    case EL_OPEN_DELIMITER:
+                    case EL_CONTENT:
+                    case EL_CLOSE_DELIMITER:
                         int index = attr_keys.indexOf(attrib);
                         if (index == -1) {
                             List<TokenInfo> values = new ArrayList<TokenInfo>();
@@ -698,6 +708,8 @@ public class ElementsParser implements Iterator<Element> {
 
     private TokenInfo tokenInfo() {
         return new TokenInfo(ts.offset(), token);
+
+
     }
 
     static final class TokenInfo {
@@ -736,5 +748,4 @@ public class ElementsParser implements Iterator<Element> {
             return hash;
         }
     }
-    
 }

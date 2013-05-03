@@ -650,15 +650,21 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
     public static class TypeItem extends CompletionItem {
 
+        private final String fqn;
         private final String name;
         private final javax.lang.model.element.ElementKind ek;
 
-        public TypeItem(String name, int anchorOffset, javax.lang.model.element.ElementKind ek) {
+        public TypeItem(String fqn, String name, int anchorOffset, javax.lang.model.element.ElementKind ek) {
             super(null, anchorOffset);
+            this.fqn = fqn;
             this.name = name;
             this.ek = ek;
         }
 
+        public String getFqn() {
+            return fqn;
+        }
+        
         @Override
         public String getName() {
             return name;

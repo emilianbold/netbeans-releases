@@ -63,6 +63,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -215,20 +216,12 @@ public class Utils {
         }
     }
     
-    public static ClasspathInfo getClassPathInfo(RestSupport restSupport) {
-        FileObject root = restSupport.findSourceRoot();
-        if (root != null) {
-            return ClasspathInfo.create(root);
-        }
-        return null;
-    }
-    
     static boolean isRest(TypeElement type, AnnotationModelHelper helper) {
         boolean isRest = false;
         if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
 
-            if (helper.hasAnyAnnotation(type.getAnnotationMirrors(),
-                    new HashSet<String>(Arrays.asList(RestConstants.PATH, RestConstants.PROVIDER_ANNOTATION)))) { // NOI18N
+            if (helper.hasAnnotation(type.getAnnotationMirrors(),
+                    RestConstants.PATH)) { // NOI18N
                 isRest = true;
             } else {
                 for (Element element : type.getEnclosedElements()) {
@@ -242,6 +235,16 @@ public class Utils {
         return isRest;
     }
     
+    static boolean isProvider(TypeElement type, AnnotationModelHelper helper) {
+        if (type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces
+            if (helper.hasAnnotation(type.getAnnotationMirrors(),
+                    RestConstants.PROVIDER_ANNOTATION)) { // NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
+
     static boolean isRestApplication(TypeElement type, AnnotationModelHelper helper) {
         boolean isRest = false;
         if (type != null && type.getKind() != ElementKind.INTERFACE) { // don't consider interfaces

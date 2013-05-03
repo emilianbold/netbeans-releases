@@ -49,7 +49,7 @@ import org.codehaus.groovy.ast.Variable;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
-import org.netbeans.modules.groovy.editor.completion.interference.VariableFinderVisitor;
+import org.netbeans.modules.groovy.editor.completion.inference.VariableFinderVisitor;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
 
 /**

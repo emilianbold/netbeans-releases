@@ -186,7 +186,6 @@ public class RemoteFileSystemTestCase extends RemoteFileTestBase {
             writeFile(fo, content);
             CharSequence readContent = readFile(fo);
             assertEquals("File content differ", content.toString(), readContent.toString());
-            WritingQueue.getInstance(execEnv).waitFinished(null);
             readContent = ProcessUtils.execute(execEnv, "cat", tempFile).output;
             assertEquals("File content differ", content.toString(), readContent.toString());
         } finally {

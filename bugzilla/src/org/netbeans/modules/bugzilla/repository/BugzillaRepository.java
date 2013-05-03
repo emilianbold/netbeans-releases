@@ -81,7 +81,6 @@ import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.mylyn.util.GetMultiTaskDataCommand;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
-import org.netbeans.modules.bugzilla.issue.BugzillaTaskListProvider;
 import org.netbeans.modules.bugzilla.query.QueryController;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
@@ -152,8 +151,6 @@ public class BugzillaRepository {
         String url = info.getUrl();
         boolean shortLoginEnabled = Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN));
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
-        
-        BugzillaTaskListProvider.getInstance().notifyRepositoryCreated(this);
     }
 
     public RepositoryInfo getInfo() {
@@ -205,7 +202,6 @@ public class BugzillaRepository {
             removeQuery(q);
         }
         resetRepository(true);
-        BugzillaTaskListProvider.getInstance().notifyRepositoryRemoved(this);
     }
 
     public Lookup getLookup() {

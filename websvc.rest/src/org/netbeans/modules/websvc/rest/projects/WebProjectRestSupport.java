@@ -49,29 +49,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.apache.tools.ant.module.api.support.ActionUtils;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.jaxws.project.LogUtils;
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
 import org.netbeans.modules.websvc.rest.support.Utils;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.DialogDescriptor;
@@ -79,16 +68,15 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Nam Nguyen
  */
-@ProjectServiceProvider(service={RestSupport.class, WebRestSupport.class}, 
+@ProjectServiceProvider(service={RestSupport.class},
     projectType="org-netbeans-modules-web-project")
-public class WebProjectRestSupport extends WebRestSupport {
+public class WebProjectRestSupport extends RestSupport {
 
     public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance";   //NOI18N
 
@@ -104,167 +92,12 @@ public class WebProjectRestSupport extends WebRestSupport {
     }
 
     @Override
-    public void ensureRestDevelopmentReady() throws IOException {
-        boolean needsRefresh = false;
-        
-        WebRestSupport.RestConfig restConfig = null;
-        // Fix for BZ#217557 : do not show REST config dialog in JEE6 case
-        boolean hasJaxRs = hasJaxRsApi();
-        
-        /*
-         *  do not show config dialog in JEE6 case. Manually created REST service 
-         *  should be configured via editor hint  
-         */
-        if ( !hasJaxRs && !isRestSupportOn()) {
-            needsRefresh = true;
-            restConfig = setApplicationConfigProperty(
-                    RestUtils.isAnnotationConfigAvailable(project));
-        }
-        
-        extendBuildScripts();
-
-        String restConfigType = getProjectProperty(PROP_REST_CONFIG_TYPE);
-        
-        if (!RestUtils.isJSR_311OnClasspath(project)) {
-            boolean jsr311Added = false;
-            if ( restConfig!= null && restConfig.isServerJerseyLibSelected() ){
-                JaxRsStackSupport support = getJaxRsStackSupport(); 
-                if ( support != null ){
-                        jsr311Added = support.addJsr311Api(project);
-                    }
-            }
-            if ( !jsr311Added ){
-                JaxRsStackSupport.getDefault().addJsr311Api(project);
-            }
-        }
-
-        if (!hasJaxRs) {
-            if (restConfigType == null || CONFIG_TYPE_DD.equals(restConfigType))
-            {
-
-                String resourceUrl = null;
-                if (restConfig != null) {
-                    resourceUrl = restConfig.getResourcePath();
-                }
-                else {
-                    resourceUrl = getApplicationPathFromDD();
-                }
-                if (resourceUrl == null) {
-                    resourceUrl = REST_SERVLET_ADAPTOR_MAPPING;
-                }
-                addResourceConfigToWebApp(resourceUrl);
-            }
-            if (needsRefresh && CONFIG_TYPE_IDE.equals(restConfigType)) {
-                FileObject buildFo = Utils.findBuildXml(project);
-                if (buildFo != null) {
-                    ActionUtils.runTarget(buildFo,
-                            new String[] { WebRestSupport.REST_CONFIG_TARGET },
-                            null);
-                }
-            }
-        }
-
-        boolean added = false;
-        if (restConfig != null) {
-            if ( restConfig.isServerJerseyLibSelected()){
-                JaxRsStackSupport support = getJaxRsStackSupport();
-                if ( support != null ){
-                    added = support.extendsJerseyProjectClasspath(project);
-                }
-            }
-            if ( !added && restConfig.isJerseyLibSelected()){
-                JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
-            }
-        }
-
+    protected void handleSpring() throws IOException {
         if (hasSpringSupport()) {
             addJerseySpringJar();
         }
-        ProjectManager.getDefault().saveProject(getProject());
-        if (needsRefresh) {
-            refreshRestServicesMetadataModel();
-        }
     }
 
-    @Override
-    public void removeRestDevelopmentReadiness() throws IOException {
-        removeResourceConfigFromWebApp();
-        removeSwdpLibrary(new String[]{
-                    ClassPath.COMPILE,
-                    ClassPath.EXECUTE
-                });
-        removeProjectProperties(new String[]{PROP_REST_CONFIG_TYPE, PROP_REST_RESOURCES_PATH});
-        ProjectManager.getDefault().saveProject(getProject());
-    }
-
-    public boolean isReady() {
-        return isRestSupportOn() && hasSwdpLibrary() && hasRestServletAdaptor();
-    }
-
-    public J2eePlatform getPlatform() {
-        J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-        if (j2eeModuleProvider == null) {
-            return null;
-        }
-        try {
-            // Fix for BZ#192058 -  NullPointerException: The serverInstanceId parameter cannot be null
-            String id = j2eeModuleProvider.getServerInstanceID();
-            if ( id == null ){
-                return null;
-            }
-            return Deployment.getDefault().getServerInstance(id).getJ2eePlatform();
-        } catch (InstanceRemovedException ex) {
-            return null;
-        }
-    }
-
-    private J2eePlatform getJ2eePlatform(J2eeModuleProvider j2eeModuleProvider){
-        String serverInstanceID = j2eeModuleProvider.getServerInstanceID();
-        if(serverInstanceID != null && serverInstanceID.length() > 0) {
-            try {
-                return Deployment.getDefault().getServerInstance(serverInstanceID).getJ2eePlatform();
-            } catch (InstanceRemovedException ex) {
-                Logger.getLogger(WebProjectRestSupport.class.getName()).log(Level.INFO, "Failed to find J2eePlatform");
-            }
-        }
-        return null;
-    }
-
-    @Override
-    public FileObject getPersistenceXml() {
-        PersistenceScope ps = PersistenceScope.getPersistenceScope(getProject().getProjectDirectory());
-        if (ps != null) {
-            return ps.getPersistenceXml();
-        }
-        return null;
-    }
-
-    public Datasource getDatasource(String jndiName) {
-        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
-
-        try {
-            return provider.getConfigSupport().findDatasource(jndiName);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-
-        return null;
-    }
-
-    public void setDirectoryDeploymentProperty(Properties p) {
-        String instance = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(J2EE_SERVER_INSTANCE);
-        if (instance != null) {
-            J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
-            String sdi = jmp.getServerInstanceID();
-            J2eeModule mod = jmp.getJ2eeModule();
-            if (sdi != null && mod != null) {
-                boolean cFD = Deployment.getDefault().canFileDeploy(instance, mod);
-                p.setProperty(DIRECTORY_DEPLOYMENT_SUPPORTED, String.valueOf(cFD)); // NOI18N
-
-            }
-        }
-    }
-    
     @Override
     public File getLocalTargetTestRest(){
         String path = RESTBEANS_TEST_DIR;
@@ -279,25 +112,15 @@ public class WebProjectRestSupport extends WebRestSupport {
         return helper.resolveFile(path);
     }
     
+    @Override
     public FileObject generateTestClient(File testdir, String url) 
         throws IOException 
    {
-        FileObject fileObject = generateTestClient(testdir);
+        FileObject fileObject = MiscUtilities.generateTestClient(testdir);
         Map<String,String> map = new HashMap<String, String>();
         map.put(BASE_URL_TOKEN, url );
-        modifyFile( fileObject , map );
+        MiscUtilities.modifyFile( fileObject , map );
         return fileObject;
-    }
-    
-    @Override
-    public String getBaseURL() throws IOException {
-        String applicationPath = getApplicationPath();
-        if (applicationPath != null) {
-            if (!applicationPath.startsWith("/")) {
-                applicationPath = "/"+applicationPath;
-            }
-        }
-        return getContextRootURL()+"||"+applicationPath;            //NOI18N
     }
     
     @Override
@@ -312,51 +135,16 @@ public class WebProjectRestSupport extends WebRestSupport {
     }
 
     @Override
-    protected void logResourceCreation(Project prj) {
+    public void logResourceCreation() {
         Object[] params = new Object[3];
         params[0] = LogUtils.WS_STACK_JAXRS;
-        params[1] = project.getClass().getName();
+        params[1] = getProject().getClass().getName();
         params[2] = "REST RESOURCE"; // NOI18N
         LogUtils.logWsDetect(params);
     }
 
     @Override
-    protected String getApplicationPathFromAnnotations(final String applPathFromDD) {
-        List<RestApplication> restApplications = getRestApplications();
-        if (applPathFromDD == null) {
-            if (restApplications.size() == 0) {
-                return null;
-            } else {
-                return getApplicationPathFromDialog(restApplications);
-            }
-        } else {
-            if (restApplications.size() == 0) {
-                return applPathFromDD;
-            } else {
-                boolean found = false;
-                for (RestApplication appl: restApplications) {
-                    if (applPathFromDD.equals(appl.getApplicationPath())) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    restApplications.add(new RestApplication() {
-                        public String getApplicationPath() {
-                            return applPathFromDD;
-                        }
-
-                        public String getApplicationClass() {
-                            return "web.xml"; //NOI18N
-                        }
-                    });
-                }
-                return getApplicationPathFromDialog(restApplications);
-            }
-        }
-    }
-
-    public static String getApplicationPathFromDialog(List<RestApplication> restApplications) {
+    public String getApplicationPathFromDialog(List<RestApplication> restApplications) {
         if (restApplications.size() == 1) {
             return restApplications.get(0).getApplicationPath();
         } 
@@ -372,7 +160,8 @@ public class WebProjectRestSupport extends WebRestSupport {
         return null;
     }
     
-    private void extendBuildScripts() throws IOException {
+    @Override
+    protected void extendBuildScripts() throws IOException {
         new AntFilesHelper(this).initRestBuildExtension();
     }
 

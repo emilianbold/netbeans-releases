@@ -43,70 +43,54 @@
  */
 package org.netbeans.modules.websvc.rest.spi;
 
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileFilter;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
-import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
-import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
-import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
+import org.netbeans.modules.j2ee.persistence.api.PersistenceScope;
 import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.modules.websvc.jaxws.spi.JAXWSSupportProvider;
+import org.netbeans.modules.websvc.rest.ApplicationSubclassGenerator;
+import org.netbeans.modules.websvc.rest.MiscPrivateUtilities;
+import org.netbeans.modules.websvc.rest.WebXmlUpdater;
+import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.model.api.RestApplicationModel;
-import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
+import org.netbeans.modules.websvc.rest.model.api.RestApplications;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.netbeans.modules.websvc.rest.model.spi.RestServicesMetadataModelFactory;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
-import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.NbBundle;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * All development project type supporting REST framework should provide
@@ -144,7 +128,7 @@ public abstract class RestSupport {
     public static final String WEB_RESOURCE_CLASS = "webresources.WebResources";//NOI18N
     public static final String REST_API_JAR = "jsr311-api.jar";//NOI18N
     public static final String REST_RI_JAR = "jersey";//NOI18N
-    public static final String IGNORE_PLATFORM_RESTLIB = "restlib.ignore.platform";//NOI18N
+    //public static final String IGNORE_PLATFORM_RESTLIB = "restlib.ignore.platform";//NOI18N
     public static final String JSR311_JAR_PATTERN = "jsr311-api.*\\.jar";//NOI18N
     public static final String JERSEY_API_LOCATION = "modules/ext/rest";//NOI18N
     public static final String JTA_USER_TRANSACTION_CLASS = "javax/transaction/UserTransaction.class";  //NOI18
@@ -156,12 +140,36 @@ public abstract class RestSupport {
     public static final int PROJECT_TYPE_DESKTOP = 0; //NOI18N
     public static final int PROJECT_TYPE_WEB = 1; //NOI18N
     public static final int PROJECT_TYPE_NB_MODULE = 2; //NOI18N
+
+    public static final String PROP_REST_RESOURCES_PATH = "rest.resources.path";//NOI18N
+    public static final String PROP_REST_CONFIG_TYPE = "rest.config.type"; //NOI18N
+    public static final String PROP_REST_JERSEY = "rest.jersey.type";      //NOI18N
+
+    // IDE generates Application subclass
+    public static final String CONFIG_TYPE_IDE = "ide"; //NOI18N
+    // user does everything manually
+    public static final String CONFIG_TYPE_USER= "user"; //NOI18N
+    // Jersey servlet is registered in deployment descriptor
+    public static final String CONFIG_TYPE_DD= "dd"; //NOI18N
+
+    public static final String JERSEY_CONFIG_IDE="ide";         //NOI18N
+    public static final String JERSEY_CONFIG_SERVER="server";   //NOI18N
+
+    public static final String CONTAINER_RESPONSE_FILTER = "com.sun.jersey.spi.container.ContainerResponseFilters";//NOI18N
+
+    protected static final String JERSEY_SPRING_JAR_PATTERN = "jersey-spring.*\\.jar";//NOI18N
+
+    private volatile PropertyChangeListener restModelListener;
+
+    private RequestProcessor RP = new RequestProcessor(RestSupport.class);
     
     private AntProjectHelper helper;
-    private AtomicReference<RestServicesModel> restServicesModel;
-    private AtomicReference<RestApplicationModel> restApplicationModel;
-    private List<PropertyChangeListener> modelListeners = new ArrayList<PropertyChangeListener>();
-    protected final Project project;
+    private RestServicesModel restServicesModel;
+    private RestApplicationModel restApplicationModel;
+    private final Project project;
+
+    private ApplicationSubclassGenerator applicationSubclassGenerator;
+    private WebXmlUpdater webXmlUpdater;
 
     /** Creates a new instance of RestSupport */
     public RestSupport(Project project) {
@@ -169,16 +177,31 @@ public abstract class RestSupport {
             throw new IllegalArgumentException("Null project");
         }
         this.project = project;
-        restServicesModel = new AtomicReference<RestServicesModel>();
-        restApplicationModel = new AtomicReference<RestApplicationModel>();
+        applicationSubclassGenerator = new ApplicationSubclassGenerator(this);
+        webXmlUpdater = new WebXmlUpdater(this);
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
+                if (CONFIG_TYPE_IDE.equals(configType)) {
+                    initListener();
+                }
+            }
+        });
     }
    
-    /** 
-     * Handles upgrades between different jersey releases.
-     * 
-     */
-    public abstract void upgrade();
+    private void initListener() {
+        if ( restModelListener == null ){
+            restModelListener = new PropertyChangeListener() {
 
+                @Override
+                public void propertyChange( PropertyChangeEvent evt ) {
+                    applicationSubclassGenerator.refreshApplicationSubclass();
+                }
+            };
+            getRestServicesModel().addPropertyChangeListener(restModelListener);
+        }
+    }
 
     /**
      * Ensure the project is ready for REST development.
@@ -186,90 +209,104 @@ public abstract class RestSupport {
      * REST development with servlet container would need to add servlet adaptor
      * to web.xml.
      */
-    public abstract void ensureRestDevelopmentReady() throws IOException;
+    public final void ensureRestDevelopmentReady() throws IOException {
+        // check whether project EE level or project/server classpath provide
+        // JAX-RS APIs. The value should be false only in case of EE5 specification
+        // and server without any Jersey on its classpath, eg. Tomcat or some
+        // very very old GF (v2? or older)
+        final boolean hasJaxRs = isEESpecWithJaxRS() || hasJaxRsOnClasspath(false) ||
+                hasJersey1(true) || hasJersey2(true);
 
-    /**
-     * Cleanup the project from previously added REST development support artifacts.
-     * This should not remove any user source code.
-     */
-    public abstract void removeRestDevelopmentReadiness() throws IOException;
+        // if JAR-RS APIs are missing and REST support is not ON then ask
+        // user in GUI how to configure the REST:
+        RestSupport.RestConfig restConfig = null;
+        if ( !hasJaxRs && !isRestSupportOn() && isEE5()) {
+            // this is old way to ask for REST configuration; it should be
+            // kept alive as long as we support EE5; for EE6 the REST configuration
+            // options are shown directly in wizards using
+            // org.netbeans.modules.websvc.rest.wizard.JaxRsConfigurationPanel
+            restConfig = setApplicationConfigProperty();
+        }
+        final RestSupport.RestConfig restConfig2 = restConfig;
+        
+        RP.post(new Runnable() {
 
-    /**
-     * Is the REST development setup ready: SWDP library added, REST adaptors configured, 
-     * generic test client created ?
-     */
-    public abstract boolean isReady();
-    
-    /**
-     * Get persistence.xml file.
-     */
-    public abstract FileObject getPersistenceXml();
-
-    /** Get Data Source for JNDI name
-     *
-     * @param jndiName JNDI name
-     * @return
-     */
-    public abstract Datasource getDatasource(String jndiName);
-  
-    public FileObject findSourceRoot() {
-        return findSourceRoot(getProject());
-    }
-    
-    public static FileObject findSourceRoot(Project project) {
-        SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sourceGroups != null && sourceGroups.length > 0) {
-            return sourceGroups[0].getRootFolder();
-        }
-        return null;
-    }
-    
-    private static ClassPath getClassPath( Project project, String type ) {
-        ClassPathProvider provider = project.getLookup().lookup(
-                ClassPathProvider.class);
-        if ( provider == null ){
-            return null;
-        }
-        Sources sources = project.getLookup().lookup(Sources.class);
-        if ( sources == null ){
-            return null;
-        }
-        SourceGroup[] sourceGroups = sources.getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA );
-        List<ClassPath> classPaths = new ArrayList<ClassPath>( sourceGroups.length); 
-        for (SourceGroup sourceGroup : sourceGroups) {
-            String sourceGroupId = sourceGroup.getName();
-            if ( sourceGroupId!= null && sourceGroupId.contains("test")) {  // NOI18N
-                continue;
+            @Override
+            public void run() {
+                try {
+                    ensureRestDevelopmentReadyImpl(restConfig2, hasJaxRs);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
-            FileObject rootFolder = sourceGroup.getRootFolder();
-            ClassPath path = provider.findClassPath( rootFolder, type);
-            classPaths.add( path );
-        }
-        return ClassPathSupport.createProxyClassPath( classPaths.toArray( 
-                new ClassPath[ classPaths.size()] ));
+        });
     }
 
-    public void addModelListener(PropertyChangeListener listener) {
-        modelListeners.add(listener);
-        RestServicesModel model = restServicesModel.get();
-        if (model != null) {
-            model.addPropertyChangeListener(listener);
+    private void ensureRestDevelopmentReadyImpl(RestSupport.RestConfig restConfig,
+            boolean hasJaxRs) throws IOException {
+
+        // extend build script if necessary
+        extendBuildScripts();
+
+        // retrieve how REST is configured in this project:
+        String restConfigType = getProjectProperty(PROP_REST_CONFIG_TYPE);
+        if (restConfigType == null) {
+            // use Annotation subclass type of configuration if none specified:
+            restConfigType = CONFIG_TYPE_IDE;
         }
+
+        boolean hasJaxRsOnCompilationClasspath = hasJaxRsOnClasspath(false);
+
+        // add latest JAX-RS APIs to project's classpath:
+        if (!hasJaxRs || !hasJaxRsOnCompilationClasspath) {
+            boolean jsr311Added = false;
+            if (restConfig != null && restConfig.isServerJerseyLibSelected()) {
+                JaxRsStackSupport support = getJaxRsStackSupport();
+                if (support != null) {
+                    // in this case server is enhancing project's classpath:
+                    jsr311Added = support.addJsr311Api(getProject());
+                }
+            }
+            if (!jsr311Added) {
+                // fallback on IDE's default impl if server does not have its own
+                // jax-rs impl:
+                JaxRsStackSupport.getDefault().addJsr311Api(getProject());
+            }
+
+            if (restConfig != null && CONFIG_TYPE_DD.equals(restConfigType)) {
+                webXmlUpdater.addResourceConfigToWebApp(restConfig.getResourcePath());
+            }
+        }
+
+        // if user selected "Use Jersey" option then make sure the project classpath
+        // contains Jersey JARs:
+        if (restConfig != null) {
+            boolean added = false;
+            if ( restConfig.isServerJerseyLibSelected()){
+                JaxRsStackSupport support = getJaxRsStackSupport();
+                if (support != null) {
+                    added = support.extendsJerseyProjectClasspath(getProject());
+                }
+            }
+            if (!added && restConfig.isJerseyLibSelected()){
+                JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(getProject());
+            }
+        }
+
+        handleSpring();
+
+        ProjectManager.getDefault().saveProject(getProject());
     }
 
-    public void removeModelListener(PropertyChangeListener listener) {
-        modelListeners.remove(listener);
-        RestServicesModel model = restServicesModel.get();
-        if (model != null) {
-            model.removePropertyChangeListener(listener);
-        }
-    }
+    protected abstract void extendBuildScripts() throws IOException;
+
+    protected abstract void handleSpring() throws IOException;
     
-    public RestServicesModel getRestServicesModel() {
-        FileObject sourceRoot = findSourceRoot();
-        if (restServicesModel.get() == null && sourceRoot != null) {
+    public abstract String getApplicationPathFromDialog(List<RestApplication> restApplications);
+
+    public synchronized RestServicesModel getRestServicesModel() {
+        if (restServicesModel == null) {
+            FileObject sourceRoot = MiscUtilities.findSourceRoot(getProject());
             ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
             if (cpProvider != null) {
                 ClassPath compileCP = cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE);
@@ -278,341 +315,65 @@ public abstract class RestSupport {
                 if (compileCP != null && bootCP != null) {
                     MetadataUnit metadataUnit = MetadataUnit.create(
                             bootCP,
-                            extendWithJsr311Api(compileCP),
+                            extendClassPathWithJaxRsApisIfNecessary(compileCP),
                             sourceCP,
                             null);
-                    RestServicesModel model = RestServicesMetadataModelFactory.
+                    restServicesModel = RestServicesMetadataModelFactory.
                             createMetadataModel(metadataUnit, project);
-                    if (restServicesModel.compareAndSet(null, model)) {
-                        for (PropertyChangeListener pcl : modelListeners) {
-                            model.addPropertyChangeListener(pcl);
-                        }
-                    }
                 }
             }
         }
-        return restServicesModel.get();
+        return restServicesModel;
     }
 
-    public RestApplicationModel getRestApplicationsModel() {
-        FileObject sourceRoot = findSourceRoot();
-        if (restApplicationModel.get() == null && sourceRoot != null) {
-            //ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
-            /*
-             * Fix for BZ#158250 -  NullPointerException: The classPath parameter cannot be null 
-             * 
-             MetadataUnit metadataUnit = MetadataUnit.create(
-                    cpProvider.findClassPath(sourceRoot, ClassPath.BOOT),
-                    cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE),
-                    cpProvider.findClassPath(sourceRoot, ClassPath.SOURCE),
-                    null);*/
+    public synchronized RestApplicationModel getRestApplicationsModel() {
+        if (restApplicationModel == null) {
             MetadataUnit metadataUnit = MetadataUnit.create(
-                    getClassPath(getProject(), ClassPath.BOOT),
-                    getClassPath(getProject(), ClassPath.COMPILE),
-                    getClassPath(getProject(), ClassPath.SOURCE),
+                    MiscPrivateUtilities.getClassPath(getProject(), ClassPath.BOOT),
+                    MiscPrivateUtilities.getClassPath(getProject(), ClassPath.COMPILE),
+                    MiscPrivateUtilities.getClassPath(getProject(), ClassPath.SOURCE),
                     null
                     );
-            RestApplicationModel model =
-                    RestServicesMetadataModelFactory.
+            restApplicationModel = RestServicesMetadataModelFactory.
                     createApplicationMetadataModel(metadataUnit, project);
-            restApplicationModel.compareAndSet(null, model);
         }
-        return restApplicationModel.get();
+        return restApplicationModel;
     }
 
-    protected void refreshRestServicesMetadataModel() {
-        RestServicesModel model = restServicesModel.get();
-        if (model != null) {
-            for (PropertyChangeListener pcl : modelListeners) {
-                model.removePropertyChangeListener(pcl);
-            }
-            restServicesModel.compareAndSet( model, null);
+    private static ClassPath extendClassPathWithJaxRsApisIfNecessary(ClassPath classPath) {
+        if (classPath.findResource("javax/ws/rs/core/Application.class") != null) {
+            return classPath;
         }
-
-        try {
-            model = getRestServicesModel();
-            if (model != null) {
-                model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
-
-                    @Override
-                    public Void run(RestServicesMetadata metadata) throws IOException {
-                        metadata.getRoot().sizeRestServiceDescription();
-                        return null;
-                    }
-                });
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
-        }
-    }
-    
-    public static ClassPath extendWithJsr311Api(ClassPath classPath) {
         File jerseyRoot = InstalledFileLocator.getDefault().locate(JERSEY_API_LOCATION, "org.netbeans.modules.websvc.restlib", false);
         if (jerseyRoot != null && jerseyRoot.isDirectory()) {
-            File[] jsr311Jars = jerseyRoot.listFiles(new JerseyFilter(JSR311_JAR_PATTERN));
+            File[] jsr311Jars = jerseyRoot.listFiles(new MiscPrivateUtilities.JerseyFilter(JSR311_JAR_PATTERN));
             if (jsr311Jars != null && jsr311Jars.length>0) {
-                return extendClassPath(classPath, jsr311Jars[0]);
+                FileObject fo = FileUtil.toFileObject(jsr311Jars[0]);
+                if (fo != null) {
+                    fo = FileUtil.getArchiveRoot(fo);
+                    if (fo != null) {
+                        return ClassPathSupport.createProxyClassPath(classPath,
+                                ClassPathSupport.createClassPath(fo));
+                    }
+                }
             }
         }
         return classPath;
     }
     
-    public static ClassPath extendClassPath(ClassPath classPath, File path) {
-        if (path == null) {
-            return classPath;
-        }
-        try {
-            PathResourceImplementation jsr311Path = getPathResource(path);
-            List<PathResourceImplementation> roots = new ArrayList<PathResourceImplementation>();
-            roots.add(jsr311Path);
-            for (FileObject fo : classPath.getRoots()) {
-                roots.add(ClassPathSupport.createResource(fo.getURL()));
-            }
-            return ClassPathSupport.createClassPath(roots);
-        } catch (Exception ex) {
-            return classPath;
-        }
-    }
-
-    private static PathResourceImplementation getPathResource(File path) throws MalformedURLException {
-        URL url = path.toURI().toURL();
-        if (FileUtil.isArchiveFile(url)) {
-            url = FileUtil.getArchiveRoot(url);
-        } else {
-            url = path.toURI().toURL();
-            String surl = url.toExternalForm();
-            if (!surl.endsWith("/")) {
-                url = new URL(surl + "/");
-            }
-        }
-        return ClassPathSupport.createResource(url);
-    }
-    
     public abstract FileObject generateTestClient(File testdir, String url) 
         throws IOException; 
-    
-    /**
-     * Generates test client.  Typically RunTestClientAction would need to call 
-     * this before invoke the build script target.
-     * 
-     * @param destDir directory to write test client files in.
-     * @param url base url of rest service
-     * @return test file object, containing token BASE_URL_TOKEN whether used or not.
-     */
-    public FileObject generateTestClient(File testdir) throws IOException {        
-        
-        if (! testdir.isDirectory()) {
-            FileUtil.createFolder(testdir);
-        }
-        String[] replaceKeys1 = {
-            "TTL_TEST_RESBEANS", "MSG_TEST_RESBEANS_INFO"
-        };
-        String[] replaceKeys2 = {
-            "MSG_TEST_RESBEANS_wadlErr", "MSG_TEST_RESBEANS_No_AJAX", "MSG_TEST_RESBEANS_Resource",
-            "MSG_TEST_RESBEANS_See", "MSG_TEST_RESBEANS_No_Container", "MSG_TEST_RESBEANS_Content", 
-            "MSG_TEST_RESBEANS_TabularView", "MSG_TEST_RESBEANS_RawView", "MSG_TEST_RESBEANS_ResponseHeaders", 
-            "MSG_TEST_RESBEANS_Help", "MSG_TEST_RESBEANS_TestButton", "MSG_TEST_RESBEANS_Loading", 
-            "MSG_TEST_RESBEANS_Status", "MSG_TEST_RESBEANS_Headers", "MSG_TEST_RESBEANS_HeaderName",
-            "MSG_TEST_RESBEANS_HeaderValue", "MSG_TEST_RESBEANS_Insert", "MSG_TEST_RESBEANS_NoContents", 
-            "MSG_TEST_RESBEANS_AddParamButton", "MSG_TEST_RESBEANS_Monitor", "MSG_TEST_RESBEANS_No_SubResources", 
-            "MSG_TEST_RESBEANS_SubResources", "MSG_TEST_RESBEANS_ChooseMethod", "MSG_TEST_RESBEANS_ChooseMime", 
-            "MSG_TEST_RESBEANS_Continue", "MSG_TEST_RESBEANS_AdditionalParams", "MSG_TEST_RESBEANS_INFO", 
-            "MSG_TEST_RESBEANS_Request", "MSG_TEST_RESBEANS_Sent", "MSG_TEST_RESBEANS_Received", 
-            "MSG_TEST_RESBEANS_TimeStamp", "MSG_TEST_RESBEANS_Response", "MSG_TEST_RESBEANS_CurrentSelection",
-            "MSG_TEST_RESBEANS_DebugWindow", "MSG_TEST_RESBEANS_Wadl", "MSG_TEST_RESBEANS_RequestFailed",
-            "MSG_TEST_RESBEANS_NoContent"       // NOI18N
-            
-        };
-        FileObject testFO = copyFile(testdir, TEST_RESBEANS_HTML, replaceKeys1, true);
-        copyFile(testdir, TEST_RESBEANS_JS, replaceKeys2, false);
-        copyFile(testdir, TEST_RESBEANS_CSS);
-        copyFile(testdir, TEST_RESBEANS_CSS2);
-        copyFile(testdir, "expand.gif");
-        copyFile(testdir, "collapse.gif");
-        copyFile(testdir, "item.gif");
-        copyFile(testdir, "cc.gif");
-        copyFile(testdir, "og.gif");
-        copyFile(testdir, "cg.gif");
-        copyFile(testdir, "app.gif");
-
-        File testdir2 = new File(testdir, "images");
-        testdir2.mkdir();
-        copyFile(testdir, "images/background_border_bottom.gif");
-        copyFile(testdir, "images/pbsel.png");
-        copyFile(testdir, "images/bg_gradient.gif");
-        copyFile(testdir, "images/pname.png");
-        copyFile(testdir, "images/level1_deselect.jpg");
-        copyFile(testdir, "images/level1_selected-1lvl.jpg");
-        copyFile(testdir, "images/primary-enabled.gif");
-        copyFile(testdir, "images/masthead.png");
-        copyFile(testdir, "images/masthead_link_enabled.gif");
-        copyFile(testdir, "images/masthead_link_roll.gif");
-        copyFile(testdir, "images/primary-roll.gif");
-        copyFile(testdir, "images/pbdis.png");
-        copyFile(testdir, "images/secondary-enabled.gif");
-        copyFile(testdir, "images/pbena.png");
-        copyFile(testdir, "images/tbsel.png");
-        copyFile(testdir, "images/pbmou.png");
-        copyFile(testdir, "images/tbuns.png");
-        return testFO;
-    }
-
-    /*
-     * Copy File, as well as replace tokens, overwrite if specified
-     */
-    public static FileObject copyFile(File testdir, String name, String[] replaceKeys, boolean overwrite) throws IOException {
-        FileObject dir = FileUtil.toFileObject(testdir);
-        FileObject fo = dir.getFileObject(name);
-        if (fo == null) {
-            fo = dir.createData(name);
-        } else {
-            if(!overwrite)
-                return fo;
-        }
-        FileLock lock = null;
-        BufferedWriter writer = null;
-        BufferedReader reader = null;
-        try {
-            lock = fo.lock();
-            OutputStream os = fo.getOutputStream(lock);
-            writer = new BufferedWriter(new OutputStreamWriter(os,
-                    Charset.forName("UTF-8")));
-            InputStream is = RestSupport.class.getResourceAsStream("resources/"+name);
-            reader = new BufferedReader(new InputStreamReader(is, 
-                    Charset.forName("UTF-8")));
-            String line;
-            String lineSep = "\n";//Unix
-            if(File.separatorChar == '\\')//Windows
-                lineSep = "\r\n";
-            String[] replaceValues = null;
-            if(replaceKeys != null) {
-                replaceValues = new String[replaceKeys.length];
-                for(int i=0;i<replaceKeys.length;i++)
-                    replaceValues[i] = NbBundle.getMessage(RestSupport.class, replaceKeys[i]);
-            }
-            while((line = reader.readLine()) != null) {
-                for(int i=0;i<replaceKeys.length;i++)
-                    line = line.replaceAll(replaceKeys[i], replaceValues[i]);
-                writer.write(line);
-                writer.write(lineSep);
-            }
-        } finally {
-            if (writer != null) {
-                writer.close();
-            }
-            if (lock != null) lock.releaseLock();
-            if (reader != null) {
-                reader.close();
-            }
-        }      
-        return fo;
-    }
-    
-    public static FileObject modifyFile(FileObject fo, Map<String,String> replace) 
-        throws IOException 
-    {
-        StringWriter content = new StringWriter();
-        FileLock lock = null;
-        BufferedWriter writer = null;
-        BufferedReader reader = null;
-        try {
-            writer = new BufferedWriter(content);
-            InputStream is = fo.getInputStream();
-            reader = new BufferedReader(new InputStreamReader(is, 
-                    Charset.forName("UTF-8")));
-            String line;
-            String lineSep = "\n";//Unix
-            if(File.separatorChar == '\\')//Windows
-                lineSep = "\r\n";
-            while((line = reader.readLine()) != null) {
-                for(Entry<String,String> entry : replace.entrySet()){
-                    line = line.replaceAll(entry.getKey(), entry.getValue());
-                }
-                writer.write(line);
-                writer.write(lineSep);
-            }
-        } finally {
-            if ( reader!= null ){
-                reader.close();
-            }
-            if (writer!= null){
-                writer.close();
-            }
-            StringBuffer buffer = content.getBuffer();
-            lock = fo.lock();
-            try {
-                OutputStream outputStream = fo.getOutputStream( lock );
-                writer = new BufferedWriter( new OutputStreamWriter( outputStream ,
-                        Charset.forName("UTF-8")) );
-                writer.write( buffer.toString() );
-            }
-            finally {
-                if (lock != null) {
-                    lock.releaseLock();
-                }
-                if (writer != null) {
-                    writer.close();
-                }
-            }
-        }      
-        return fo;
-    }
-    
-    /*
-     * Copy File only
-     */    
-    public static void copyFile(File testdir, String name) throws IOException {
-        String path = "resources/"+name;
-        File df = new File(testdir, name);
-        if(!df.exists()) {
-            InputStream is = null;
-            OutputStream os = null;
-            try {
-                is = RestSupport.class.getResourceAsStream(path);
-                os = new FileOutputStream(df);
-                int c;
-                while ((c = is.read()) != -1) {
-                    os.write(c);
-                }
-            } finally {
-                if(os != null) {
-                    os.flush();
-                    os.close();
-                }
-                if(is != null)
-                    is.close();            
-            }
-        }
-    }
-    
-    public void removeSwdpLibrary(String[] classPathTypes) throws IOException {
-        JaxRsStackSupport support = JaxRsStackSupport.getDefault();
-        if ( support != null ){
-            support.removeJaxRsLibraries( project );
-        }
-        JaxRsStackSupport.getDefault().removeJaxRsLibraries( project );
-    }
     
     public Project getProject() {
         return project;
     }
 
-    /**
-     * Should be overridden by sub-classes
-     */
-    public boolean hasSwdpLibrary() {
-        return hasResource(REST_SERVLET_ADAPTOR_CLASS.replace('.', '/')+".class") ||
-                hasResource(REST_SERVLET_ADAPTOR_CLASS_2_0.replace('.', '/')+".class");  // NOI18N
-    }
-
-    public abstract boolean isRestSupportOn();
-
     public void setProjectProperty(String name, String value) {
-        setProjectProperty(name, value, AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        MiscPrivateUtilities.setProjectProperty(getProject(), getAntProjectHelper(), name, value, AntProjectHelper.PROJECT_PROPERTIES_PATH);
     }
     
     public void setPrivateProjectProperty(String name, String value) {
-        setProjectProperty(name, value, AntProjectHelper.PRIVATE_PROPERTIES_PATH );
+        MiscPrivateUtilities.setProjectProperty(getProject(), getAntProjectHelper(), name, value, AntProjectHelper.PRIVATE_PROPERTIES_PATH );
     }
 
     public String getProjectProperty(String name) {
@@ -632,9 +393,9 @@ public abstract class RestSupport {
             public Object run() throws IOException {
                 // and save the project
                 try {
-                    removeProperty(propertyNames, 
+                    MiscPrivateUtilities.removeProperty(getAntProjectHelper(), propertyNames,
                             AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    removeProperty(propertyNames,
+                    MiscPrivateUtilities.removeProperty(getAntProjectHelper(), propertyNames,
                             AntProjectHelper.PRIVATE_PROPERTIES_PATH );
                     ProjectManager.getDefault().saveProject(getProject());
                 } 
@@ -651,12 +412,6 @@ public abstract class RestSupport {
         
     }
 
-    protected boolean ignorePlatformRestLibrary() {
-        String v = getProjectProperty(IGNORE_PLATFORM_RESTLIB);
-        Boolean ignore = v != null ? Boolean.valueOf(v) : true;
-        return !ignore;
-    }
-    
     public AntProjectHelper getAntProjectHelper() {
         if (helper == null) {
             JAXWSSupportProvider provider = project.getLookup().lookup(JAXWSSupportProvider.class);
@@ -670,38 +425,11 @@ public abstract class RestSupport {
         return helper;
     }
 
-    /*public class RestServicesChangeListener implements PropertyChangeListener {
-        RestServicesChangeListener() {
-        }
-        
-        public void propertyChange(PropertyChangeEvent evt) {
-            //System.out.println("updating rest services");
-            try {
-                final int[] serviceCount = new int[1];
-                restServicesMetadataModel.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
-                    public Void run(RestServicesMetadata metadata) throws IOException {
-                        serviceCount[0] = metadata.getRoot().sizeRestServiceDescription();
-                        return null;
-                    }
-                });
-
-                if (serviceCount[0] > 0) {
-                    ensureRestDevelopmentReady();
-                } else {
-                    removeRestDevelopmentReadiness();
-                }
-            } catch (IOException ex) {
-                Logger.getLogger(this.getClass().getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
-            }
-            //System.out.println("done updating rest services");
-        }
-    }*/
-    
     /**
      * Check to see if there is JTA support.
      */
     public boolean hasJTASupport() {
-        return hasResource("javax/transaction/UserTransaction.class");  // NOI18N
+        return MiscPrivateUtilities.hasResource(getProject(), "javax/transaction/UserTransaction.class");  // NOI18N
     }
     
     /**
@@ -709,7 +437,7 @@ public abstract class RestSupport {
      * 
      */
     public boolean hasSpringSupport() {
-        return hasResource("org/springframework/transaction/annotation/Transactional.class"); // NOI18N
+        return MiscPrivateUtilities.hasResource(getProject(), "org/springframework/transaction/annotation/Transactional.class"); // NOI18N
     }
     
     public String getServerType() {
@@ -737,190 +465,480 @@ public abstract class RestSupport {
         return GFV2_SERVER_TYPE.equals(getServerType());
     }
 
-    public String getApplicationPath() throws IOException {
-        return "webresources"; // default application path
-    }
-    
-    public FileObject getApplicationContextXml() {
-        J2eeModuleProvider provider = (J2eeModuleProvider) project.getLookup().
-            lookup(J2eeModuleProvider.class);
-        FileObject[] fobjs = provider.getSourceRoots();
-
-        if (fobjs.length > 0) {
-            FileObject configRoot = fobjs[0];
-            FileObject webInf = configRoot.getFileObject("WEB-INF");        //NOI18N
-
-            if (webInf != null) {
-                return webInf.getFileObject("applicationContext", "xml");      //NOI18N
-            }
-        }
-
-        return null;
-    }
-    
     public abstract File getLocalTargetTestRest();
     
-    public abstract String getBaseURL() throws IOException;
+    public String getBaseURL() {
+        String applicationPath = getApplicationPath();
+        if (applicationPath != null) {
+            if (!applicationPath.startsWith("/")) {
+                applicationPath = "/"+applicationPath;
+            }
+        }
+        return MiscUtilities.getContextRootURL(getProject())+"||"+applicationPath;            //NOI18N
+    }
+
     
     public abstract void deploy() throws IOException;
     
-    public String getContextRootURL() {
-        String portNumber = "8080"; //NOI18N
-        String host = "localhost"; //NOI18N
-        String contextRoot = "";
-        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        Deployment.getDefault().getServerInstance(provider.getServerInstanceID());
-        String serverInstanceID = provider.getServerInstanceID();
-        if (serverInstanceID == null ) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(RestSupport.class, "MSG_MissingServer"), 
-                    NotifyDescriptor.ERROR_MESSAGE));
-        } else {
-            // getting port and host name
-            ServerInstance serverInstance = Deployment.getDefault().
-                getServerInstance(serverInstanceID);
-            try {
-                ServerInstance.Descriptor instanceDescriptor = 
-                    serverInstance.getDescriptor();
-                if (instanceDescriptor != null) {
-                    int port = instanceDescriptor.getHttpPort();
-                    if (port>0) {
-                        portNumber = String.valueOf(port);
-                    }
-                    String hostName = instanceDescriptor.getHostname();
-                    if (hostName != null) {
-                        host = hostName;
-                    }
-                }
-            } 
-            catch (InstanceRemovedException ex) {
-                
-            }
-        }
-        J2eeModuleProvider.ConfigSupport configSupport = provider.getConfigSupport();
-        try {
-            contextRoot = configSupport.getWebContextRoot();
-        } catch (ConfigurationException e) {
-            // TODO the context root value could not be read, let the user know about it
-        }
-        if (contextRoot.length() > 0 && contextRoot.startsWith("/")) { //NOI18N
-            contextRoot = contextRoot.substring(1);
-        }
-        return "http://"+host+":"+portNumber+"/"+ //NOI18N
-                (contextRoot.length()>0 ? contextRoot+"/" : ""); //NOI18N
-    }
-
-    protected boolean hasResource(String resource ){
-        return hasResource(project, resource);
-    }
-
-    static boolean hasResource(Project project, String resource ){
-        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(
-                JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (sgs.length < 1) {
-            return false;
-        }
-        FileObject sourceRoot = sgs[0].getRootFolder();
-        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
-        if ( classPath == null ){
-            return false;
-        }
-        FileObject resourceFile = classPath.findResource(resource); 
-        if (resourceFile != null) {
-            return true;
-        }
-        return false;
-    }
-
-    public abstract void configure(String... packages) throws IOException;
-
-    protected static class JerseyFilter implements FileFilter {
-        private Pattern pattern;
-
-        JerseyFilter(String regexp) {
-            pattern = Pattern.compile(regexp);
-        }
-
-        public boolean accept(File pathname) {
-            return pattern.matcher(pathname.getName()).matches();
-        }
-    }
-
-    public abstract int getProjectType();
-    
-    private ClassPath getCompileClassPath(SourceGroup[] groups ){
-        ClassPathProvider provider = project.getLookup().lookup( 
-                ClassPathProvider.class);
-        if ( provider == null ){
-            return null;
-        }
-        ClassPath[] paths = new ClassPath[ groups.length];
-        int i=0;
-        for (SourceGroup sourceGroup : groups) {
-            FileObject rootFolder = sourceGroup.getRootFolder();
-            paths[ i ] = provider.findClassPath( rootFolder, ClassPath.COMPILE);
-            i++;
-        }
-        return ClassPathSupport.createProxyClassPath( paths );
-    }
-    
-    private boolean contains( ClassPath classPath , URL url ){
-        URI uri = null;
-        try {
-            uri = url.toURI();
-        }
-        catch(URISyntaxException e ){
-            return false;
-        }
-        List<ClassPath.Entry> entries = classPath.entries();
-        for (ClassPath.Entry entry : entries) {
-            try {
-                if ( entry.getURL().toURI().equals(uri)){
-                    return true;
-                }
-            }
-            catch(URISyntaxException ignore ){
-                continue;
-            }
-        }
-        return false;
-    }
-    
-    private void setProjectProperty(final String name, final String value, 
-            final String propertyPath) 
-    {
+    public boolean isRestSupportOn() {
         if (getAntProjectHelper() == null) {
+            return false;
+        }
+        return getProjectProperty(PROP_REST_CONFIG_TYPE) != null;
+    }
+
+    public void enableRestSupport( RestConfig config ){
+        String type =null;
+        if ( config== null){
             return;
         }
-        try {
-        ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction() {
-            @Override
-            public Object run() throws IOException {
-                // and save the project
-                try {
-                    EditableProperties ep = helper.getProperties(propertyPath);
-                    ep.setProperty(name, value);
-                    helper.putProperties(propertyPath, ep);
-                    ProjectManager.getDefault().saveProject(getProject());  
-                } 
-                catch(IOException ioe) {
-                    Logger.getLogger(this.getClass().getName()).log(Level.INFO, ioe.getLocalizedMessage(), ioe);
-                }
-                return null;
-            }
-        });
+        switch( config){
+            case IDE:
+                type= CONFIG_TYPE_IDE;
+                break;
+            case DD:
+                type = CONFIG_TYPE_DD;
+                RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            enableRestSupportImpl();
+                        }
+                    });
+                break;
+            default:
         }
-        catch (MutexException e) {
-            Logger.getLogger(this.getClass().getName()).log(Level.INFO, null, e);
-        }        
+        if ( type!= null ){
+            setProjectProperty(PROP_REST_CONFIG_TYPE, type);
+        }
     }
-    
-    private void removeProperty( String[] propertyNames , String propertiesPath ) {
-        EditableProperties ep = helper.getProperties(propertiesPath);
-        for (String name : propertyNames) {
-            ep.remove(name);
+
+    private void enableRestSupportImpl() {
+        JaxRsStackSupport support = getJaxRsStackSupport();
+        boolean added = false;
+        if ( support != null ){
+            added = support.extendsJerseyProjectClasspath(project);
         }
-        helper.putProperties(propertiesPath, ep);
+        if ( !added ){
+            JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(project);
+        }
+
+    }
+
+    /**
+     * Get persistence.xml file.
+     */
+    public FileObject getPersistenceXml() {
+        PersistenceScope ps = PersistenceScope.getPersistenceScope(getProject().getProjectDirectory());
+        if (ps != null) {
+            return ps.getPersistenceXml();
+        }
+        return null;
+    }
+    /** Get deployment descriptor (DD API root bean)
+     *
+     * @return WebApp bean
+     * @throws java.io.IOException
+     */
+    public WebApp getWebApp() throws IOException {
+        return webXmlUpdater.getWebApp();
+    }
+
+    WebXmlUpdater getWebXmlUpdater() {
+        return webXmlUpdater;
+    }
+
+    public boolean hasServerJerseyLibrary(){
+        return JaxRsStackSupport.getInstance(project) != null;
+    }
+
+    public JaxRsStackSupport getJaxRsStackSupport(){
+        return JaxRsStackSupport.getInstance(project);
+    }
+
+    /**
+     * Do not call this method. It does some specific magic for pre-EE6 projects
+     * and I did not have time to refactor it completely. It was originally in
+     * org.netbeans.modules.websvc.rest.nodes.RestConfigurationAction.performAction()
+     * and that's the only place which is allowed to call it. In theory this method
+     * should be replaceable with ensureRestDevelopmentReady().
+     */
+    public final void performRestConfigurationOldWay() throws IOException {
+        String oldConfigType = getProjectProperty(PROP_REST_CONFIG_TYPE);
+        if (oldConfigType == null) {
+            // this method is called only for old EE5 projects and so CONFIG_TYPE_DD
+            // is right default:
+            oldConfigType = CONFIG_TYPE_DD;
+        }
+        String oldApplicationPath = "/webresources"; //NOI18N
+        if (oldConfigType.equals(CONFIG_TYPE_DD)) {
+            String oldPathFromDD = MiscUtilities.getApplicationPathFromDD(getWebApp());
+            if (oldPathFromDD != null) {
+                oldApplicationPath = oldPathFromDD;
+            }
+        } else if (oldConfigType.equals(CONFIG_TYPE_IDE)) {
+            String resourcesPath =
+                    getApplicationPathFromDialog(getRestApplications());
+            if (resourcesPath != null && resourcesPath.length() > 0) {
+                oldApplicationPath = resourcesPath;
+            }
+        }
+        if (!oldApplicationPath.startsWith(("/"))) { //NOI18N
+            oldApplicationPath = "/" + oldApplicationPath;
+        }
+        String oldJerseyConfig = getProjectProperty(PROP_REST_JERSEY);
+        // needs detect if Jersey Lib is present
+        boolean isJerseyLib = oldJerseyConfig != null;/*isOnClasspath(project,
+         "com/sun/jersey/spi/container/servlet/ServletContainer.class")  //NOI18N
+         */
+        ApplicationConfigPanel configPanel = new ApplicationConfigPanel(
+                oldConfigType,
+                oldApplicationPath,
+                isJerseyLib,
+                getAntProjectHelper() != null
+                && isEESpecWithJaxRS(),
+                hasServerJerseyLibrary(), oldJerseyConfig);
+
+        DialogDescriptor desc = new DialogDescriptor(configPanel,
+                NbBundle.getMessage(RestSupport.class, "TTL_ApplicationConfigPanel")); // NOI18N
+        DialogDisplayer.getDefault().notify(desc);
+        if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
+            String newConfigType = configPanel.getConfigType();
+            String newApplicationPath = configPanel.getApplicationPath();
+            boolean addJersey = configPanel.isJerseyLibSelected();
+            if (!oldConfigType.equals(newConfigType)
+                    || !oldApplicationPath.equals(newApplicationPath)) {
+                if (!oldConfigType.equals(newConfigType)) {
+                    // set up rest.config.type property
+                    setProjectProperty(PROP_REST_CONFIG_TYPE, newConfigType);
+
+                    if (!CONFIG_TYPE_IDE.equals(newConfigType)) {
+                        //remove properties related to rest.config.type=ide
+                        removeProjectProperties(new String[]{
+                            PROP_REST_RESOURCES_PATH,});
+                    }
+                }
+
+                if (CONFIG_TYPE_IDE.equals(newConfigType)) {
+                    if (newApplicationPath.startsWith("/")) { //NOI18N
+                        newApplicationPath = newApplicationPath.substring(1);
+                    }
+                    setProjectProperty(PROP_REST_RESOURCES_PATH, newApplicationPath);
+                    if (!hasJaxRsOnClasspath(false)) {
+                        // add jsr311 library
+                        Library restApiLibrary = LibraryManager.getDefault().getLibrary(RESTAPI_LIBRARY);
+                        if (restApiLibrary != null) {
+                            FileObject srcRoot = MiscUtilities.findSourceRoot(project);
+                            if (srcRoot != null) {
+                                try {
+                                    ProjectClassPathModifier.addLibraries(new Library[]{restApiLibrary}, srcRoot, ClassPath.COMPILE);
+                                } catch (UnsupportedOperationException ex) {
+                                    Logger.getLogger(getClass().getName()).info("Can not add JSR311 Library.");
+                                }
+                            }
+                        }
+                    }
+                    applicationSubclassGenerator.refreshApplicationSubclass();
+                } else if (CONFIG_TYPE_DD.equals(newConfigType)) { // Deployment Descriptor
+                    webXmlUpdater.addResourceConfigToWebApp(newApplicationPath);
+                }
+            }
+            boolean added = false;
+            JaxRsStackSupport support = getJaxRsStackSupport();
+            if (configPanel.isServerJerseyLibSelected()) {
+                setProjectProperty(PROP_REST_JERSEY,
+                        JERSEY_CONFIG_SERVER);
+                if (support != null) {
+                    if (JERSEY_CONFIG_IDE.
+                            equals(oldJerseyConfig)) {
+                        JaxRsStackSupport.getDefault().
+                                removeJaxRsLibraries(project);
+                    }
+                    added = support
+                            .extendsJerseyProjectClasspath(project);
+                }
+            }
+            if (!added && addJersey) {
+                setProjectProperty(PROP_REST_JERSEY,
+                        JERSEY_CONFIG_IDE);
+                if (JERSEY_CONFIG_SERVER.
+                        equals(oldJerseyConfig) && support != null) {
+                    support.removeJaxRsLibraries(project);
+                }
+                added = JaxRsStackSupport.getDefault()
+                        .extendsJerseyProjectClasspath(project);
+            }
+            if (!added) {
+                if (JERSEY_CONFIG_SERVER.
+                        equals(oldJerseyConfig) && support != null) {
+                    support.removeJaxRsLibraries(project);
+                }
+                if (JERSEY_CONFIG_IDE.
+                        equals(oldJerseyConfig)) {
+                    JaxRsStackSupport.getDefault().
+                            removeJaxRsLibraries(project);
+                }
+                removeProjectProperties(new String[]{
+                    PROP_REST_JERSEY});
+            }
+        }
+    }
+
+
+    /**
+     * Returns true if JAX-RS APIs are available for the project. That means if
+     * project's profile is EE7 (web profile or full) or EE6 (full).
+     */
+    public boolean isEESpecWithJaxRS(){
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if ( webModule == null ){
+            return false;
+        }
+        Profile profile = webModule.getJ2eeProfile();
+        boolean isJee6 = Profile.JAVA_EE_6_WEB.equals(profile) ||
+                Profile.JAVA_EE_6_FULL.equals(profile);
+        boolean isJee7 = Profile.JAVA_EE_7_WEB.equals(profile) ||
+                        Profile.JAVA_EE_7_FULL.equals(profile);
+        // Fix for BZ#216345: JAVA_EE_6_WEB profile doesn't contain JAX-RS API
+        return (isJee6 && MiscPrivateUtilities.supportsTargetProfile(project, Profile.JAVA_EE_6_FULL)) || isJee7;
+    }
+
+    /**
+     * Is this EE7 profile project?
+     */
+    public boolean isEE7(){
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if ( webModule == null ){
+            return false;
+        }
+        Profile profile = webModule.getJ2eeProfile();
+        return Profile.JAVA_EE_7_WEB.equals(profile) ||
+                        Profile.JAVA_EE_7_FULL.equals(profile);
+    }
+
+    public boolean isEE5(){
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if ( webModule == null ){
+            return false;
+        }
+        Profile profile = webModule.getJ2eeProfile();
+        return Profile.JAVA_EE_5.equals(profile);
+    }
+
+    /**
+     * Is Jersey 2.x jar available on project's classpath or on classpath of
+     * server used by this project?
+     */
+    public boolean hasJersey2(boolean checkServerClasspath) {
+        if (MiscPrivateUtilities.hasResource(getProject(), "org/glassfish/jersey/servlet/ServletContainer.class")) {
+            return true;
+        }
+        if (checkServerClasspath) {
+            JaxRsStackSupport support = getJaxRsStackSupport();
+            if (support != null){
+                return support.isBundled(REST_SERVLET_ADAPTOR_CLASS_2_0);
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Is Jersey 12.x jar available on project's classpath or on classpath of
+     * server used by this project?
+     */
+    public boolean hasJersey1(boolean checkServerClasspath) {
+        if (MiscPrivateUtilities.hasResource(getProject(), "com/sun/jersey/spi/container/servlet/ServletContainer.class")) {
+            return true;
+        }
+        if (checkServerClasspath) {
+            JaxRsStackSupport support = getJaxRsStackSupport();
+            if (support != null){
+                return support.isBundled(REST_SERVLET_ADAPTOR_CLASS);
+            }
+        }
+        return false;
+    }
+
+    public boolean hasJaxRsOnClasspath(boolean checkServerClasspath) {
+        if (MiscPrivateUtilities.hasResource(getProject(), "javax/ws/rs/core/Application.class")) {
+            return true;
+        }
+        if (checkServerClasspath) {
+            JaxRsStackSupport support = getJaxRsStackSupport();
+            if (support != null){
+                return support.isBundled("javax.ws.rs.core.Application");
+            }
+        }
+        return false;
+    }
+
+    /*
+     * Make REST support configuration for current porject state:
+     * - Modify Application config class getClasses() method
+     * or
+     * - Update deployment descriptor with Jersey specific options
+     */
+    public void configure(String... packages) throws IOException {
+        String configType = getProjectProperty(PROP_REST_CONFIG_TYPE);
+        if ( CONFIG_TYPE_DD.equals( configType)){
+            webXmlUpdater.configRestPackages(packages);
+        }
+        else if (CONFIG_TYPE_IDE.equals(configType)) {
+            initListener();
+            applicationSubclassGenerator.refreshApplicationSubclass();
+        }
+    }
+
+    public String getApplicationPath() {
+        String pathFromDD = MiscUtilities.getApplicationPathFromDD(webXmlUpdater.findWebApp());
+        String applPath = ApplicationSubclassGenerator.getApplicationPathFromAnnotations(this, pathFromDD);
+        return (applPath == null ? "webresources" : applPath);
+    }
+
+    /** log rest resource detection
+     *
+     * @param prj project instance
+     */
+    public abstract void logResourceCreation();
+
+    public List<RestApplication> getRestApplications() {
+        RestApplicationModel applicationModel = getRestApplicationsModel();
+        if (applicationModel != null) {
+            try {
+                Future<List<RestApplication>> future = applicationModel.
+                    runReadActionWhenReady(
+                        new MetadataModelAction<RestApplications, List<RestApplication>>()
+                    {
+                            public List<RestApplication> run(RestApplications metadata)
+                                throws IOException
+                            {
+                                return metadata.getRestApplications();
+                            }
+                    });
+                return future.get();
+            }
+            catch (IOException ex) {
+                return Collections.emptyList();
+            }
+            catch (InterruptedException ex) {
+                return Collections.emptyList();
+            }
+            catch (ExecutionException ex) {
+                return Collections.emptyList();
+            }
+        }
+        return Collections.emptyList();
+    }
+
+    protected RestConfig setApplicationConfigProperty() {
+        boolean annotationConfigAvailable = isEESpecWithJaxRS();
+        ApplicationConfigPanel configPanel = new ApplicationConfigPanel(
+                annotationConfigAvailable, hasServerJerseyLibrary());
+        DialogDescriptor desc = new DialogDescriptor(configPanel,
+                NbBundle.getMessage(RestSupport.class, "TTL_ApplicationConfigPanel"));
+        DialogDisplayer.getDefault().notify(desc);
+        if (NotifyDescriptor.OK_OPTION.equals(desc.getValue())) {
+            String configType = configPanel.getConfigType();
+            setProjectProperty(RestSupport.PROP_REST_CONFIG_TYPE, configType);
+            RestConfig rc = null;
+            if (RestSupport.CONFIG_TYPE_IDE.equals(configType)) {
+                String applicationPath = configPanel.getApplicationPath();
+                if (applicationPath.startsWith("/")) {
+                    applicationPath = applicationPath.substring(1);
+                }
+                setProjectProperty(RestSupport.PROP_REST_RESOURCES_PATH, applicationPath);
+                rc = RestConfig.IDE;
+                rc.setResourcePath(applicationPath);
+
+            } else if (RestSupport.CONFIG_TYPE_DD.equals(configType)) {
+                rc = RestConfig.DD;
+                rc.setResourcePath(configPanel.getApplicationPath());
+            }
+            if ( rc!= null ){
+                rc.setJerseyLibSelected(configPanel.isJerseyLibSelected());
+                rc.setServerJerseyLibSelected(configPanel.isServerJerseyLibSelected());
+                if ( configPanel.isServerJerseyLibSelected() ){
+                    setProjectProperty(PROP_REST_JERSEY, JERSEY_CONFIG_SERVER );
+                }
+                else if ( configPanel.isJerseyLibSelected()){
+                    setProjectProperty(PROP_REST_JERSEY, JERSEY_CONFIG_IDE);
+                }
+                return rc;
+            }
+
+        } else {
+            setProjectProperty(RestSupport.PROP_REST_CONFIG_TYPE, RestSupport.CONFIG_TYPE_USER);
+            RestConfig rc = RestConfig.USER;
+            rc.setJerseyLibSelected(false);
+            rc.setServerJerseyLibSelected(false);
+            /*if ( configPanel.isServerJerseyLibSelected() ){
+                setProjectProperty(PROP_REST_JERSEY, JERSEY_CONFIG_SERVER );
+            }
+            else if ( configPanel.isJerseyLibSelected()){
+                setProjectProperty(PROP_REST_JERSEY, JERSEY_CONFIG_IDE);
+            }*/
+            return rc;
+        }
+        return RestConfig.USER;
+    }
+
+    protected void addJerseySpringJar() throws IOException {
+        FileObject srcRoot = MiscUtilities.findSourceRoot(getProject());
+        if (srcRoot != null) {
+            ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.COMPILE);
+            if (cp ==null ||cp.findResource(
+                    "com/sun/jersey/api/spring/Autowire.class") == null)        //NOI18N
+            {
+                File jerseyRoot = InstalledFileLocator.getDefault().locate(JERSEY_API_LOCATION, null, false);
+                if (jerseyRoot != null && jerseyRoot.isDirectory()) {
+                    File[] jerseyJars = jerseyRoot.listFiles(new MiscPrivateUtilities.JerseyFilter(JERSEY_SPRING_JAR_PATTERN));
+                    if (jerseyJars != null && jerseyJars.length>0) {
+                        URL url = FileUtil.getArchiveRoot(jerseyJars[0].toURI().toURL());
+                        ProjectClassPathModifier.addRoots(new URL[] {url}, srcRoot, ClassPath.COMPILE);
+                    }
+                }
+            }
+        }
+    }
+
+    public int getProjectType() {
+        return PROJECT_TYPE_WEB;
+    }
+
+    public static enum RestConfig {
+        // Application subclass registration:
+        IDE,
+        USER,
+        // web.xml deployment descriptor registration
+        DD;
+
+        private String resourcePath;
+        private boolean jerseyLibSelected;
+        private boolean serverJerseyLibSelected;
+
+        public boolean isJerseyLibSelected() {
+            return jerseyLibSelected;
+        }
+
+        public void setJerseyLibSelected(boolean jerseyLibSelected) {
+            this.jerseyLibSelected = jerseyLibSelected;
+        }
+
+        public String getResourcePath() {
+            return resourcePath;
+        }
+
+        public void setResourcePath(String reseourcePath) {
+            this.resourcePath = reseourcePath;
+        }
+
+        public void setServerJerseyLibSelected(boolean isSelected){
+            serverJerseyLibSelected = isSelected;
+        }
+
+        public boolean isServerJerseyLibSelected(){
+            return serverJerseyLibSelected;
+        }
+
     }
 
 }

@@ -118,7 +118,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private boolean methodNameChanged;
     private boolean returnTypeChanged;
     private boolean isConstructor;
-    
+    private final String paramname;
     
     @Override
     public Component getComponent() {
@@ -142,7 +142,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private static final String ACTION_INLINE_EDITOR = "invokeInlineEditor";  //NOI18N
 
     /** Creates new form ChangeMethodSignature */
-    public ChangeParametersPanel(TreePathHandle refactoredObj, ChangeListener parent, ParameterInfo[] preConfiguration) {
+    public ChangeParametersPanel(TreePathHandle refactoredObj, ChangeListener parent, ParameterInfo[] preConfiguration, CodeStyle cs) {
         returnTypeDocListener = new ReturnTypeDocListener();
         methodNameDocListener = new MethodNameDocListener();
         this.refactoredObj = refactoredObj;
@@ -151,7 +151,8 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         model = new ParamTableModel(columnNames, 0);
         this.returnTypeAction = new ReturnTypeAction();
         singleLineEditor = Utilities.createSingleLineEditor(MIME_JAVA);
-        
+        paramname = CodeStyleUtils.addPrefixSuffix("par", cs.getParameterNamePrefix(), cs.getParameterNameSuffix());
+
         initComponents();
 
         InputMap im = paramTable.getInputMap(JTable.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -616,7 +617,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         acceptEditedValue(); 
         int rowCount = model.getRowCount();
-        model.addRow(new Object[] { "Object", "par" + rowCount, "null", new Integer(-1), Boolean.TRUE }); // NOI18N
+        model.addRow(new Object[] { "Object", paramname + rowCount, "null", new Integer(-1), Boolean.TRUE }); // NOI18N
         paramTable.scrollRectToVisible(paramTable.getCellRect(rowCount, 0, false));
         paramTable.changeSelection(rowCount, 0, false, false);
         autoEdit(paramTable);

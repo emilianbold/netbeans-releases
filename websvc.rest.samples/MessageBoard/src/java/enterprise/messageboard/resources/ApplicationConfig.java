@@ -40,16 +40,9 @@ Other names may be trademarks of their respective owners.
 
 package enterprise.messageboard.resources;
 
-import com.sun.jersey.api.core.PackagesResourceConfig;
+import javax.ws.rs.core.Application;
 
-/**
- *
- * @author __USER__
- */
 @javax.ws.rs.ApplicationPath("app")
-public class ApplicationConfig extends PackagesResourceConfig {
+public class ApplicationConfig extends Application {
 
-   public ApplicationConfig() {
-       super ("enterprise.messageboard");
-   }
 }

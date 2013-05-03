@@ -113,7 +113,7 @@ public class JavaScriptDebugger extends GeneralHTMLProject {
     public void setXHRBreakpoint(String urlFilter) {
         new Action("Window|Debugging|Breakpoints", null).perform();
         BreakpointsWindowOperator window = BreakpointsWindowOperator.invoke();
-        new ActionNoBlock(null, "New Breakpoint").performPopup(window);
+        new ActionNoBlock("Debug|New Breakpoint", null).perform();
         JDialogOperator nb = new JDialogOperator("New Breakpoint");
         JComboBoxOperator box = new JComboBoxOperator(nb, 0);
         box.selectItem("JavaScript");

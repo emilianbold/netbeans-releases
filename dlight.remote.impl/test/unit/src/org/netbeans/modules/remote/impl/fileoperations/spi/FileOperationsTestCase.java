@@ -118,7 +118,6 @@ public class FileOperationsTestCase extends RemoteFileTestBase {
         prepareDirectory();
         copyAgent();
         // To make sure that agent is delivered
-        WritingQueue.getInstance(execEnv).waitFinished(null);
         fileOperations = FileOperationsProvider.getDefault().getFileOperations(fs);
     }
 

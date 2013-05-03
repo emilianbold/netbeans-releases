@@ -87,11 +87,11 @@ public class ConvertToDiamondBulkHint {
 
     //XXX: hack:
     public static boolean isHintEnabled() {
-        for (HintMetadata hm : RulesManager.getInstance().readHints(null, null, null).keySet()) {
-            if (ID.equals(hm.id)) {
-                return HintsSettings.isEnabled(hm);
-            }
-        }
+//        for (HintMetadata hm : RulesManager.getInstance().readHints(null, null, null).keySet()) {
+//            if (ID.equals(hm.id)) {
+//                return HintsSettings.isEnabled(hm);
+//            }
+//        }
 
         return true;
     }

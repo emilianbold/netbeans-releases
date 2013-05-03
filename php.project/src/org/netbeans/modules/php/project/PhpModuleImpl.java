@@ -176,6 +176,11 @@ public class PhpModuleImpl extends PhpModule {
 
     @Override
     public void propertyChanged(PropertyChangeEvent propertyChangeEvent) {
+        notifyPropertyChanged(propertyChangeEvent);
+    }
+
+    @Override
+    public void notifyPropertyChanged(PropertyChangeEvent propertyChangeEvent) {
         if (PROPERTY_FRAMEWORKS.equals(propertyChangeEvent.getPropertyName())) {
             phpProject.resetFrameworks();
         }

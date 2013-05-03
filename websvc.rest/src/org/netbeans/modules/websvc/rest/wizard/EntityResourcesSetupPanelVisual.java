@@ -43,23 +43,23 @@
  */
 package org.netbeans.modules.websvc.rest.wizard;
 
-import org.netbeans.modules.websvc.rest.wizard.fromdb.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPHelper;
+import org.netbeans.modules.j2ee.persistence.wizard.fromdb.RelatedCMPWizard;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
-import org.netbeans.modules.websvc.rest.wizard.AbstractPanel;
-import org.netbeans.modules.websvc.rest.wizard.SourceGroupUISupport;
-import org.netbeans.modules.websvc.rest.wizard.Util;
-import org.netbeans.modules.websvc.rest.wizard.WizardProperties;
+import org.netbeans.modules.websvc.rest.wizard.fromdb.DatabaseResourceWizardIterator;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -104,10 +104,33 @@ public class EntityResourcesSetupPanelVisual extends JPanel
                 }
             });
         }
+        ((JTextComponent) resourcePackageComboBox.getEditor().getEditorComponent()).getDocument().addDocumentListener(
+                new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                changeSupport.fireChange();
+            }
+        });
     }
     
     public SourceGroup getSourceGroup() {
         return (SourceGroup) locationComboBox.getSelectedItem();
+    }
+
+    @Override
+    public String getPackageName() {
+        return ((JTextComponent) resourcePackageComboBox.getEditor().getEditorComponent()).getText();
     }
 
     /** This method is called from within the constructor to
@@ -317,7 +340,15 @@ public class EntityResourcesSetupPanelVisual extends JPanel
         FileObject targetFolder = Templates.getTargetFolder(settings);
         SourceGroup targetSourceGroup = null;
         String targetPackage = "";
-        if (targetFolder != null) {
+
+        // use package name for entities as a base package name for services:
+        RelatedCMPHelper helper = (RelatedCMPHelper)wizard.getProperty(
+                DatabaseResourceWizardIterator.PROP_HELPER);
+        if (helper != null) {
+            targetPackage = helper.getPackageName();
+        }
+
+        if (targetFolder != null && targetPackage.isEmpty()) {
             // set default source group and package cf. targetFolder
             targetSourceGroup = SourceGroupSupport.findSourceGroupForFile(sourceGroups, targetFolder);
             if (targetSourceGroup != null) {

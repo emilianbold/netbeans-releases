@@ -131,7 +131,7 @@ public class RefactoringTestBase extends NbTestCase {
             assertNotNull(f);
             assertNotNull(f.content);
             assertNotNull("Cannot find " + f.filename + " in map " + content, fileContent);
-            assertEquals(getName() ,f.content.replaceAll("[ \t\n]+", " "), fileContent.replaceAll("[ \t\n]+", " "));
+            assertEquals(getName() ,f.content.replaceAll("[ \t\r\n\n]+", " "), fileContent.replaceAll("[ \t\r\n\n]+", " "));
         }
 
         assertTrue(content.toString(), content.isEmpty());

@@ -47,6 +47,7 @@ import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.modules.java.hints.legacy.spi.RulesManager;
 import org.netbeans.modules.java.hints.legacy.spi.RulesManager.APIAccessor;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.Hint;
@@ -84,7 +85,12 @@ public abstract class AbstractHint implements TreeRule {
      * @return Preferences node for given hint.
      */
     public Preferences getPreferences( String profile ) {
-        return HintsSettings.getPreferences(getId(), profile);
+        Preferences prefs = RulesManager.currentHintPreferences.get();
+        
+        if (prefs != null) return prefs;
+        
+        //TODO: better fallback?
+        return HintsSettings.getGlobalSettings().getHintPreferences(HintMetadata.Builder.create(getId()).build());
     }
         
     /** Gets the UI description for this rule. It is fine to return null
@@ -106,14 +112,16 @@ public abstract class AbstractHint implements TreeRule {
      * @return true if enabled false otherwise.
      */
     public final boolean isEnabled() {
-        return HintsSettings.isEnabled(getPreferences(HintsSettings.getCurrentProfileId()), enableDefault);
+        //XXX: read current settings
+        return enableDefault;
     }
     
     /** Gets current severity of the hint.
      * @return Hints severity in current profile.
      */
     public final HintSeverity getSeverity() {
-        return HintSeverity.fromOfficialHintSeverity(HintsSettings.getSeverity(null, getPreferences(HintsSettings.getCurrentProfileId())), severityDefault);
+        //XXX: read current settings
+        return severityDefault;
     }
     
     /** Severity of hint

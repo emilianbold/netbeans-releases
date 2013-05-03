@@ -53,10 +53,8 @@ import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
-import org.netbeans.modules.bugtracking.spi.TaskListIssueProvider;
 import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.util.SimpleIssueFinder;
-import org.netbeans.modules.bugzilla.issue.BugzillaTaskListProvider;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
@@ -112,12 +110,6 @@ public class BugzillaConnector extends KenaiBugtrackingConnector {
         return SimpleIssueFinder.getInstance();
     }
 
-    @Override
-    public TaskListIssueProvider getTasklistProvider() {
-        return BugzillaTaskListProvider.getInstance();
-    }
-
-    
     /******************************************************************************
      * Kenai
      ******************************************************************************/

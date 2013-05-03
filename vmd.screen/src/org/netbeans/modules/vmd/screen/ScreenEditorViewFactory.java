@@ -59,8 +59,9 @@ public class ScreenEditorViewFactory implements DataEditorViewFactory {
 
     public DataEditorView createEditorView (DataObjectContext context) {
         ProjectTypeInfo info = ProjectTypeInfo.getProjectTypeInfoFor (context.getProjectType ());
-        if (info.getTags ().contains (ScreenSupport.PROJECT_TYPE_TAG_SCREEN))
-            return new ScreenEditorView (context);
+        if (info != null && info.getTags().contains(ScreenSupport.PROJECT_TYPE_TAG_SCREEN)) {
+            return new ScreenEditorView(context);
+        }
         return null;
     }
 

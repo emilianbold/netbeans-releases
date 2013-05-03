@@ -66,6 +66,7 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.queries.SourceLevelQuery.Profile;
 import org.openide.util.NbBundle;
 
 /**
@@ -76,14 +77,14 @@ class FixProfile extends javax.swing.JPanel {
  
     private final JButton okOption;
     private final LibsModel libsModel;
-    private ProfileProblemsProviderImpl.Profile reqProfile;
+    private Profile reqProfile;
 
     /**
      * Creates new form FixProfile
      */
     FixProfile(
             @NonNull final JButton okOption,
-            @NonNull final ProfileProblemsProviderImpl.Profile currentProfile,
+            @NonNull final Profile currentProfile,
             @NonNull final Collection<? extends ProfileProblemsProviderImpl.Reference> state) {
         assert okOption != null;
         assert currentProfile != null;
@@ -136,10 +137,10 @@ class FixProfile extends javax.swing.JPanel {
     }
 
     @CheckForNull
-    ProfileProblemsProviderImpl.Profile getProfile() {
+    Profile getProfile() {
         final Object selObj = profiles.getSelectedItem();
-        if (selObj instanceof ProfileProblemsProviderImpl.Profile) {
-            return (ProfileProblemsProviderImpl.Profile) selObj;
+        if (selObj instanceof Profile) {
+            return (Profile) selObj;
         } else {
             return null;
         }
@@ -152,8 +153,8 @@ class FixProfile extends javax.swing.JPanel {
 
     private void updateProfiles() {
         profiles.removeAllItems();
-        for (ProfileProblemsProviderImpl.Profile profile : ProfileProblemsProviderImpl.StandardProfile.values()) {
-            if (profile.getRank() >= reqProfile.getRank()) {
+        for (Profile profile : Profile.values()) {
+            if (profile.compareTo(reqProfile) >= 0) {
                 profiles.addItem(profile);
             }
         }
@@ -172,8 +173,8 @@ class FixProfile extends javax.swing.JPanel {
                 final int i,
                 final boolean bln,
                 final boolean bln1) {
-            if (o instanceof ProfileProblemsProviderImpl.Profile) {
-                o = ((ProfileProblemsProviderImpl.Profile)o).getDisplayName();
+            if (o instanceof Profile) {
+                o = ((Profile)o).getDisplayName();
             }
             return super.getListCellRendererComponent(jlist, o, i, bln, bln1);
         }
@@ -218,7 +219,8 @@ class FixProfile extends javax.swing.JPanel {
         }
 
         @NbBundle.Messages({
-        "FMT_RootWithProfile={0} ({1})"
+        "FMT_RootWithProfile={0} ({1})",
+        "MSG_InvalidProfile=<Invalid>"
         })
         @Override
         public Component getListCellRendererComponent(
@@ -242,7 +244,14 @@ class FixProfile extends javax.swing.JPanel {
                 final ProfileProblemsProviderImpl.Reference e = (ProfileProblemsProviderImpl.Reference) o;
                 root.setText(e.getDisplayName());
                 root.setIcon(e.getIcon());
-                profile.setText(e.getRequiredProfile().getDisplayName());
+                final Profile requiredProfile = e.getRequiredProfile();
+                if (requiredProfile == null) {
+                    profile.setText(String.format(
+                        "<html><font color=\"#A40000\">%s", //NOI18N
+                        Bundle.MSG_InvalidProfile()));
+                } else {
+                    profile.setText(requiredProfile.getDisplayName());
+                }
                 container.setToolTipText(e.getToolTipText());
             } else {
                 root.setText("");   //NOI18N
@@ -256,14 +265,14 @@ class FixProfile extends javax.swing.JPanel {
 
     private static final class LibsModel extends AbstractListModel {
 
-        private final ProfileProblemsProviderImpl.Profile currentProfile;
+        private final Profile currentProfile;
         private final Collection<? extends ProfileProblemsProviderImpl.Reference> state;
         private final Set<ProfileProblemsProviderImpl.Reference> toRemove;
         private final List<ProfileProblemsProviderImpl.Reference> data;
         private boolean updated;
 
         LibsModel(
-                @NonNull final ProfileProblemsProviderImpl.Profile currentProfile,
+                @NonNull final Profile currentProfile,
                 @NonNull Collection<? extends ProfileProblemsProviderImpl.Reference> state) {
             this.currentProfile = currentProfile;
             this.state = state;
@@ -298,7 +307,7 @@ class FixProfile extends javax.swing.JPanel {
         };
 
         @NonNull
-        ProfileProblemsProviderImpl.Profile requiredProfile() {
+        Profile requiredProfile() {
             return ProfileProblemsProviderImpl.requiredProfile(data, currentProfile);
         }
 
@@ -319,7 +328,7 @@ class FixProfile extends javax.swing.JPanel {
             data.clear();
             for (ProfileProblemsProviderImpl.Reference ref : state) {
                 if (!toRemove.contains(ref) &&
-                    !(updated && ref.getRequiredProfile().isValid())) {
+                    !(updated && ref.getRequiredProfile() != null)) {
                     data.add(ref);
                 }
             }
@@ -358,42 +367,42 @@ class FixProfile extends javax.swing.JPanel {
         jScrollPane1.setViewportView(brokenLibs);
         brokenLibs.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FixProfile.class, "AD_FixProfile_BrokenLibs")); // NOI18N
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(jLabel1)
-                        .add(0, 202, Short.MAX_VALUE))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                            .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                                .add(changeProfile)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(profiles, 0, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .add(jScrollPane1))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(remove)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(0, 202, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(changeProfile)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(profiles, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(jScrollPane1))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(remove)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(jLabel1)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(remove)
-                        .add(0, 0, Short.MAX_VALUE))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 212, Short.MAX_VALUE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(changeProfile)
-                    .add(profiles, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(remove)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 212, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(changeProfile)
+                    .addComponent(profiles, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
 

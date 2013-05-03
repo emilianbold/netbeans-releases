@@ -82,6 +82,7 @@ public class OutputOptions {
     private static final String PROP_FONT_STYLE = "font.style";         //NOI18N
     public static final String PROP_COLOR_STANDARD = "color.standard";  //NOI18N
     public static final String PROP_COLOR_ERROR = "color.error";        //NOI18N
+    public static final String PROP_COLOR_INPUT = "color.input";        //NOI18N
     public static final String PROP_COLOR_LINK = "color.link";          //NOI18N
     public static final String PROP_COLOR_LINK_IMPORTANT =
             "color.link.important";                                     //NOI18N
@@ -97,6 +98,7 @@ public class OutputOptions {
     private Font fontWrapped = null; // font for wrapped mode
     private Color colorStandard;
     private Color colorError;
+    private Color colorInput;
     private Color colorLink;
     private Color colorLinkImportant;
     private Color colorBackground;
@@ -143,6 +145,9 @@ public class OutputOptions {
         int rgbError = preferences.getInt(PREFIX + PROP_COLOR_ERROR,
                 getDefaultColorError().getRGB());
         diskData.setColorError(new Color(rgbError));
+        int rgbInput = preferences.getInt(PREFIX + PROP_COLOR_INPUT,
+                getDefaultColorInput().getRGB());
+        diskData.setColorInput(new Color(rgbInput));
         int rgbBackground = preferences.getInt(PREFIX + PROP_COLOR_BACKGROUND,
                 getDefaultColorBackground().getRGB());
         diskData.setColorBackground(new Color(rgbBackground));
@@ -178,6 +183,8 @@ public class OutputOptions {
                 getColorStandard().getRGB());
         preferences.putInt(PREFIX + PROP_COLOR_ERROR,
                 getColorError().getRGB());
+        preferences.putInt(PREFIX + PROP_COLOR_INPUT,
+                getColorInput().getRGB());
         preferences.putInt(PREFIX + PROP_COLOR_BACKGROUND,
                 getColorBackground().getRGB());
         preferences.putInt(PREFIX + PROP_COLOR_LINK,
@@ -200,6 +207,7 @@ public class OutputOptions {
     private void setDefaultColors() {
         setColorStandard(getDefaultColorStandard());
         setColorError(getDefaultColorError());
+        setColorInput(getDefaultColorInput());
         setColorLink(getDefaultColorLink());
         setColorLinkImportant(getDefaultColorLinkImportant());
         setColorBackground(getDefaultColorBackground());
@@ -248,6 +256,10 @@ public class OutputOptions {
 
     public Color getColorError() {
         return colorError;
+    }
+
+    public Color getColorInput() {
+        return colorInput;
     }
 
     public Color getColorLink() {
@@ -358,6 +370,15 @@ public class OutputOptions {
         }
     }
 
+    public void setColorInput(Color colorInput) {
+        Parameters.notNull("colorError", colorInput);                   //NOI18N
+        if (!colorInput.equals(this.colorInput)) {
+            Color oldColorInput = this.colorInput;
+            this.colorInput = colorInput;
+            pcs.firePropertyChange(PROP_COLOR_INPUT, oldColorInput, colorInput);
+        }
+    }
+
     public void setColorLink(Color colorLink) {
         Parameters.notNull("colorLink", colorLink);                     //NOI18N
         if (!colorLink.equals(this.colorLink)) {
@@ -423,6 +444,7 @@ public class OutputOptions {
         copy.fontWrapped = fontWrapped;
         copy.colorStandard = this.colorStandard;
         copy.colorError = this.colorError;
+        copy.colorInput = this.colorInput;
         copy.colorBackground = this.colorBackground;
         copy.colorLink = this.colorLink;
         copy.colorLinkImportant = this.colorLinkImportant;
@@ -454,6 +476,7 @@ public class OutputOptions {
         this.setFontForWrappedMode(outputOptions.getFontForWrappedMode());
         this.setColorStandard(outputOptions.getColorStandard());
         this.setColorError(outputOptions.getColorError());
+        this.setColorInput(outputOptions.getColorInput());
         this.setColorLink(outputOptions.getColorLink());
         this.setColorLinkImportant(outputOptions.getColorLinkImportant());
         this.setColorBackground(outputOptions.getColorBackground());
@@ -493,6 +516,14 @@ public class OutputOptions {
         return err;
     }
 
+    static Color getDefaultColorInput() {
+        Color input = UIManager.getColor("nb.output.input");            //NOI18N
+        if (input == null) {
+            input = getDefaultColorStandard();
+        }
+        return input;
+    }
+
     static Color getDefaultColorLink() {
         Color hyperlink = UIManager.getColor(
                 "nb.output.link.foreground");                           //NOI18N
@@ -518,6 +549,8 @@ public class OutputOptions {
                 return getColorStandard();
             case ERROR:
                 return getColorError();
+            case INPUT:
+                return getColorInput();
             case HYPERLINK:
                 return getColorLink();
             case HYPERLINK_IMPORTANT:

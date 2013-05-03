@@ -48,6 +48,13 @@ import java.util.Map;
 import javax.swing.*;
 import javax.swing.text.*;
 import java.awt.*;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import static javax.swing.SwingConstants.EAST;
+import static javax.swing.SwingConstants.NORTH;
+import static javax.swing.SwingConstants.SOUTH;
+import static javax.swing.SwingConstants.WEST;
+import javax.swing.text.Position.Bias;
 import org.openide.util.Exceptions;
 
 /**
@@ -123,6 +130,8 @@ public class WrappedTextView extends View implements TabExpander {
     int tabBase;
     private int tabOffsetX = 0;
     
+    private final PropertyChangeListener propertyChangeListener;
+
     @SuppressWarnings("unchecked")
     static Map<RenderingHints.Key, Object> getHints() {
         if (hintsMap == null) {
@@ -139,9 +148,11 @@ public class WrappedTextView extends View implements TabExpander {
         return hintsMap;
     }
 
-    public WrappedTextView(Element elem, JTextComponent comp) {
+    public WrappedTextView(Element elem, JTextComponent comp,
+            PropertyChangeListener propertyChangeListener1) {
         super(elem);
         this.comp = comp;
+        this.propertyChangeListener = propertyChangeListener1;
     }
 
 
@@ -232,6 +243,7 @@ public class WrappedTextView extends View implements TabExpander {
     }
 
     private void updateWidth() {
+        int oldCharPerWidth = charsPerLine;
         if (comp.getParent() instanceof JViewport) {
             JViewport jv = (JViewport) comp.getParent();
             width = jv.getExtentSize().width - (aa ? 18 : 17);
@@ -242,6 +254,10 @@ public class WrappedTextView extends View implements TabExpander {
             width = 0;
         }
         charsPerLine = width / charWidth;
+        if (charsPerLine != oldCharPerWidth) {
+            propertyChangeListener.propertyChange(new PropertyChangeEvent(this,
+                    "charsPerLine", oldCharPerWidth, charsPerLine));    //NOI18N
+        }
     }
 
     /**
@@ -289,6 +305,10 @@ public class WrappedTextView extends View implements TabExpander {
                 for (int i = firstline; i < lines.getLineCount(); i++) {
                     if (y > clip.y + clip.height) {
                         return;
+                    }
+                    int visibleLine = lines.realToVisibleLine(i);
+                    if (visibleLine < 0) {
+                        continue;
                     }
                     int lineStart = doc.getLineStart(i);
                     int lineEnd = doc.getLineEnd (i);
@@ -539,7 +559,7 @@ public class WrappedTextView extends View implements TabExpander {
         result.setBounds (0, 0, charWidth, charHeight);
         OutputDocument od = odoc();
         if (od != null) {
-            int line = Math.max(0, od.getElementIndex(pos));
+            int line = Math.max(0, od.getLines().getLineAt(pos));
             int start = od.getLineStart(line);
 
             int column = pos - start;
@@ -547,10 +567,17 @@ public class WrappedTextView extends View implements TabExpander {
             column = od.getLines().getNumLogicalChars(start, column);
 
             int row = od.getLines().getLogicalLineCountAbove(line, charsPerLine);
+            int end = getLineEnd(line, od.getLines());
+            int len = od.getLines().getNumLogicalChars(start, end - start);
             //#104307
-            if (column > charsPerLine && charsPerLine != 0) {
-                row += (column / charsPerLine);
-                column %= charsPerLine;
+            if ((column >= charsPerLine)
+                    && charsPerLine != 0) {
+                row += (column % charsPerLine == 0 && column == len)
+                        ? column / charsPerLine - 1
+                        : column / charsPerLine;
+                column = (column % charsPerLine == 0 && column == len)
+                        ? charsPerLine
+                        : column % charsPerLine;
             }
             result.y = (row * charHeight) + fontDescent;
             result.x = margin() + (column * charWidth);
@@ -571,7 +598,7 @@ public class WrappedTextView extends View implements TabExpander {
             int logicalLine = ln[0];
             int wraps = ln[2] - 1;
 
-            int totalLines = od.getElementCount();
+            int totalLines = od.getLines().getLineCount();
             if (totalLines == 0) {
                 return 0;
             }
@@ -636,5 +663,278 @@ public class WrappedTextView extends View implements TabExpander {
             i--;
         }
         return i - charpos;
+    }
+
+    /**
+     * Replaces usage of slow
+     * Utilities.getPositionAbove()/Utilities.getPositionBelow(), skips hidden
+     * lines.
+     */
+    @Override
+    public int getNextVisualPositionFrom(int pos, Bias b, Shape a,
+            int direction, Bias[] biasRet) throws BadLocationException {
+        Element elem = getElement();
+        if (pos == -1) {
+            pos = (direction == SOUTH || direction == EAST)
+                    ? getStartOffset()
+                    : (getEndOffset() - 1);
+        }
+
+        int lineIndex;
+        int visibleLineIndex;
+        int origLineIndex;
+        PositionInfo pi;
+        Lines lines = odoc().getLines();
+        switch (direction) {
+            case NORTH:
+                pi = getPositionInfo(pos);
+                if (pi.lineIndex > 0 || pi.innerRowIndex > 0) {
+                    if (pi.innerRowIndex > 0) {
+                        return jumpInLine(lines, pi, direction);
+                    }
+                    return jumpToLine(lines, pi, direction);
+                }
+                break;
+            case SOUTH:
+                pi = getPositionInfo(pos);
+                if (pi.innerRowIndex < pi.innerRowsCount - 1) {
+                    return jumpInLine(lines, pi, direction);
+                }
+                visibleLineIndex = lines.realToVisibleLine(pi.lineIndex);
+                if (visibleLineIndex < elem.getElementCount() - 1) {
+                    return jumpToLine(lines, pi, direction);
+                }
+                break;
+            case WEST:
+                origLineIndex = lines.getLineAt(pos);
+                pos = Math.max(0, pos - 1);
+                lineIndex = lines.getLineAt(pos);
+                if (origLineIndex != lineIndex) {
+                    int origVisibleLine = lines.realToVisibleLine(origLineIndex);
+                    pos = elem.getElement(origVisibleLine - 1).getEndOffset() - 1;
+                }
+                break;
+            case EAST:
+                origLineIndex = lines.getLineAt(pos);
+                pos = Math.min(pos + 1, elem.getEndOffset() - 1);
+                lineIndex = lines.getLineAt(pos);
+                if (origLineIndex != lineIndex) {
+                    int origVisibleLine = lines.realToVisibleLine(origLineIndex);
+                    pos = elem.getElement(origVisibleLine + 1).getStartOffset();
+                }
+                break;
+            default:
+                throw new IllegalArgumentException("Bad direction");    //NOI18N
+        }
+        return pos;
+    }
+
+    /**
+     * Get info about a line. The offset of the returned position info will be
+     * set to the first character of that line.
+     */
+    private PositionInfo getLineInfo(int lineIndex) {
+        Lines lines = odoc().getLines();
+        int lineStart = lines.getLineStart(lineIndex);
+        return getPositionInfo(lines, lineIndex, lineStart, lineStart);
+    }
+
+    /**
+     * Get info about a position and containing line.
+     */
+    private PositionInfo getPositionInfo(int offset) {
+        Lines lines = odoc().getLines();
+        int lineIndex = lines.getLineAt(offset);
+        int lineStart = lines.getLineStart(lineIndex);
+        return getPositionInfo(lines, lineIndex, lineStart, offset);
+    }
+
+    /**
+     * Get info about a position. Should not be called directly.
+     */
+    private PositionInfo getPositionInfo(Lines lines, int lineIndex,
+            int lineStart, int offset) {
+        PositionInfo pi = new PositionInfo();
+
+        pi.offset = offset;
+        pi.lineIndex = lineIndex;
+        pi.lineStart = lineStart;
+        pi.lineEnd = getLineEnd(pi.lineIndex, lines);
+        int lineLen = pi.lineEnd - pi.lineStart;
+        int column = offset - pi.lineStart;
+        int logicalColumn = lines.getNumLogicalChars(pi.lineStart, column);
+        pi.logicalLineLength = lines.getNumLogicalChars(pi.lineStart, lineLen);
+        int innerRowsCount = (pi.logicalLineLength / charsPerLine)
+                + (pi.logicalLineLength % charsPerLine > 0 ? 1 : 0);
+        pi.innerRowsCount = Math.max(1, innerRowsCount);
+        pi.innerRowIndex = logicalColumn / charsPerLine
+                - (pi.logicalLineLength > 0 && logicalColumn == pi.logicalLineLength
+                && logicalColumn % charsPerLine == 0
+                ? 1 : 0);
+        if (lineLen > 0 && pi.lineEnd == offset
+                && pi.logicalLineLength % charsPerLine == 0) {
+            // handle last char in line
+            pi.innerColumn = charsPerLine - (pi.innerRowsCount > 1 ? 1 : 0);
+        } else {
+            pi.innerColumn = lines.getNumLogicalChars(
+                    pi.lineStart, offset - pi.lineStart) % charsPerLine;
+        }
+        return pi;
+    }
+
+    /**
+     * Jump to appropriate position from a position in a neighboring line. The
+     * line above/below is assumed to exist.
+     *
+     * @param pi Source position.
+     * @param direction SwingConstants.NORTH for jumping to line above,
+     * SwingConstants.SOUTH for line below.
+     * @param lines The lines object.
+     */
+    private int jumpToLine(Lines lines, PositionInfo pi, int direction) {
+        assert direction == NORTH || direction == SOUTH;
+
+        int newRealLine = findNearestVisibleLine(lines, pi.lineIndex, direction);
+        if (newRealLine < 0) {
+            return pi.offset;
+        }
+        PositionInfo targetLine = getLineInfo(newRealLine);
+        int newInnerRow = direction == NORTH
+                ? targetLine.innerRowsCount - 1
+                : 0;
+
+        int logicalLineStart = targetLine.lineStart + lines.getNumPhysicalChars(
+                targetLine.lineStart, newInnerRow * charsPerLine, null);
+
+        int physicalColumn = lines.getNumPhysicalChars(logicalLineStart,
+                pi.innerColumn, null);
+        int physicalPos = fixPhysicalPosition(lines, logicalLineStart
+                + physicalColumn, newInnerRow, targetLine.lineStart);
+        return Math.min(physicalPos, targetLine.lineEnd);
+    }
+
+    /**
+     * Find the nearest visible from {@code realLineIndex}.
+     *
+     * @param lines Info about lines.
+     * @param realLineIndex Real index of line above/below which the first
+     * visible line should be found.
+     * @param direction SwingConstants.SOUTH or SwingConstants.NORTH.
+     * @return Real line index of the nearest visible line, or -1 if no such
+     * line exists.
+     */
+    private int findNearestVisibleLine(Lines lines, int realLineIndex,
+            int direction) {
+        assert direction == SOUTH || direction == NORTH;
+        int inc = direction == SOUTH ? 1 : -1;
+        int visibleLine = lines.realToVisibleLine(realLineIndex);
+        if (visibleLine < 0) {
+            // the source line is not visible, let's search
+            for (int i = realLineIndex + inc; i >= 0
+                    && i < lines.getLineCount(); i += inc) {
+                if (lines.realToVisibleLine(i) >= 0) {
+                    return i;
+                }
+            }
+            return -1;
+        } else {
+            return lines.visibleToRealLine(visibleLine + inc);
+        }
+    }
+
+    /**
+     * Jump to a logical line in a physical line.
+     *
+     * @param pi Source position.
+     * @param lines Lines object.
+     * @param direction Direction, SwingConstants.NORTH or SwingConstants.SOUTH.
+     */
+    private int jumpInLine(Lines lines, PositionInfo pi, int direction) {
+        assert direction == NORTH || direction == SOUTH;
+        assert pi.innerRowIndex > 0 || direction == SOUTH;
+        assert pi.innerRowIndex + 1 < pi.innerRowsCount || direction == NORTH;
+
+        int newRow = pi.innerRowIndex + ((direction == SOUTH) ? 1 : -1);
+        int newLogicalColumn = newRow * charsPerLine + pi.innerColumn;
+        int newPos = pi.lineStart + lines.getNumPhysicalChars(pi.lineStart,
+                newLogicalColumn, null);
+
+        newPos = fixPhysicalPosition(lines, newPos, newRow, pi.lineStart);
+        return Math.min(pi.lineEnd, Math.max(pi.lineStart, newPos));
+    }
+
+    /**
+     * When computing physical position from logical position (including tabs),
+     * and the position is inside a tab, the tab offset is returned. It is a
+     * problem if start of the tab is in another line than the position inside
+     * the tab. This method checks it and corrects the physical position.
+     *
+     * @param lines Lines object.
+     * @param pos Physical position.
+     * @param dir Direction, SOUTH or NORTH.
+     * @param newRow Index or inner row in which the position should be placed.
+     * @param lineStart Start offset of the physical line.
+     *
+     * @return Position that is sure to be in the correct inner line.
+     */
+    private int fixPhysicalPosition(Lines lines, int pos, int newRow,
+            int lineStart) {
+        //check that new pos is really in the next logical inner line
+        int newLogicalLineStart = newRow * charsPerLine;
+        int computedLogicalColumn = lines.getNumLogicalChars(lineStart,
+                pos - lineStart);
+        if (computedLogicalColumn < newLogicalLineStart) {
+            return pos + 1;
+        }
+        return pos;
+    }
+
+    /**
+     * Find position of the last char in line.
+     */
+    private int getLineEnd(int realLineIndex, Lines lines) {
+        return realLineIndex + 1 < lines.getLineCount()
+                ? lines.getLineStart(realLineIndex + 1) - 1
+                : lines.getCharCount();
+    }
+
+    /**
+     * Simple data structure for short-term storing of information about a
+     * position in a wrapped line.
+     */
+    private static final class PositionInfo {
+
+        /**
+         * Physical character offset. Not counting tabs.
+         */
+        public int offset;
+        /**
+         * Real line index. Counting invisible lines.
+         */
+        public int lineIndex;
+        /**
+         * Start offset of the line.
+         */
+        public int lineStart;
+        /**
+         * End offset of the line.
+         */
+        public int lineEnd;
+        /**
+         * Logical length (expanded tabs) of the line.
+         */
+        public int logicalLineLength;
+        /**
+         * Number of inner wrapped rows for the real row.
+         */
+        public int innerRowsCount;
+        /**
+         * Index of inner row that contains the position.
+         */
+        public int innerRowIndex;
+        /**
+         * Column in the inner row at which the position is displayed.
+         */
+        public int innerColumn;
     }
 }

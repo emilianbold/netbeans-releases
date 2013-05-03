@@ -42,14 +42,17 @@
 package org.netbeans.modules.html.editor.lib;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.Collection;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.html.lexer.HtmlLexerPlugin;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -67,119 +70,159 @@ public class ElementsParserTest extends CslTestBase {
         //             012345678901
         TokenHierarchy th = TokenHierarchy.create(code, HTMLTokenId.language());
         TokenSequence ts = th.tokenSequence(HTMLTokenId.language());
-        
+
         ElementsParser parser = new ElementsParser(code, ts, 0);
         assertTrue(parser.hasNext());
-        
+
         Element e = parser.next();
         assertNotNull(e);
-        
+
         assertEquals(ElementType.OPEN_TAG, e.type());
         assertEquals(0, e.from());
         assertEquals(5, e.to());
-        
+
         assertTrue(parser.hasNext());
-        
+
         e = parser.next();
         assertNotNull(e);
-        
+
         assertEquals(ElementType.CLOSE_TAG, e.type());
         assertEquals(5, e.from());
         assertEquals(11, e.to());
-        
+
     }
-    
+
     public void testParseFromMiddleOfTheSource() {
         String code = "<div></div>";
         //             012345678901
         TokenHierarchy th = TokenHierarchy.create(code, HTMLTokenId.language());
         TokenSequence ts = th.tokenSequence(HTMLTokenId.language());
-        
+
         ElementsParser parser = new ElementsParser(code, ts, 5);
         assertTrue(parser.hasNext());
-        
+
         Element e = parser.next();
         assertNotNull(e);
-        
+
         assertEquals(ElementType.CLOSE_TAG, e.type());
         assertEquals(5, e.from());
         assertEquals(11, e.to());
-        
+
     }
-    
+
     public void testParseFromIncorrectPosition() {
         String code = "<div></div>";
         //             012345678901
         TokenHierarchy th = TokenHierarchy.create(code, HTMLTokenId.language());
         TokenSequence ts = th.tokenSequence(HTMLTokenId.language());
-        
+
         //the parser must be always started at token beginning!
         try {
             new ElementsParser(code, ts, 6);
             assertTrue(false);
-        }catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             //correct, the exception should be thrown
         }
     }
-    
+
     public void testParseNegativePosition() {
         String code = "<div></div>";
         //             012345678901
         TokenHierarchy th = TokenHierarchy.create(code, HTMLTokenId.language());
         TokenSequence ts = th.tokenSequence(HTMLTokenId.language());
-        
+
         try {
             new ElementsParser(code, ts, -1);
             assertTrue(false);
-        }catch(IllegalArgumentException e) {
+        } catch (IllegalArgumentException e) {
             //correct, the exception should be thrown
         }
     }
-    
+
     public void testParseFromTheEnd() {
         String code = "<div></div>";
         //             012345678901
         TokenHierarchy th = TokenHierarchy.create(code, HTMLTokenId.language());
         TokenSequence ts = th.tokenSequence(HTMLTokenId.language());
-        
+
         ElementsParser parser = new ElementsParser(code, ts, 11);
         assertFalse(parser.hasNext());
-        
+
     }
-    
-      public void testPerformance() throws IOException {
+
+    public void testPerformance() throws IOException {
         FileObject file = getTestFile("testfiles/huge.html");
         String content = file.asText();
-        
+
         TokenHierarchy hi = TokenHierarchy.create(content, HTMLTokenId.language());
         ElementsParser parser = new ElementsParser(content, hi.tokenSequence(HTMLTokenId.language()), 0);
-        
+
         long start = System.currentTimeMillis();
-        while(parser.hasNext()) {
+        while (parser.hasNext()) {
             parser.next();
         }
         long end = System.currentTimeMillis();
-        
+
         float diff1 = end - start;
         System.out.println("first iteration took " + diff1 + "ms.");
-        
+
         //~2500ms
-        
+
         //second attempt
-        
+
         parser = new ElementsParser(content, hi.tokenSequence(HTMLTokenId.language()), 0);
         start = System.currentTimeMillis();
-        while(parser.hasNext()) {
+        while (parser.hasNext()) {
             parser.next();
         }
         end = System.currentTimeMillis();
-        
+
         float diff2 = end - start;
         System.out.println("second iteration took " + diff2 + "ms.");
-        
+
         //~600ms
-        
+
         float ratio = diff1 / diff2;
         System.out.println("first / second ratio = " + ratio);
     }
+
+    public void testParseELInAttributeValue() {
+        String code = "<div ng-click=\"pre{{call()}}post\"></div>";
+        //             01234567890123 456789012345678901 234567890
+        //             0         1          2         3  
+        TokenHierarchy th = TokenHierarchy.create(code, HTMLTokenId.language());
+        TokenSequence ts = th.tokenSequence(HTMLTokenId.language());
+
+        ElementsParser parser = new ElementsParser(code, ts, 0);
+        assertTrue(parser.hasNext());
+        Element element = parser.next();
+        assertEquals(ElementType.OPEN_TAG, element.type());
+        OpenTag ot = (OpenTag) element;
+        assertEquals(0, ot.from());
+        assertEquals(34, ot.to());
+        
+        Collection<Attribute> attributes = ot.attributes();
+        assertNotNull(attributes);
+        assertEquals(1, attributes.size());
+        Attribute a = attributes.iterator().next();
+        assertEquals(14, a.valueOffset());
+        assertEquals(33, a.valueOffset() + a.value().length());
+
+    }
+    
+    @MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
+    public static class TestHtmlLexerPlugin extends HtmlLexerPlugin {
+
+        @Override
+        public String getOpenDelimiter() {
+            return "{{";
+        }
+
+        @Override
+        public String getCloseDelimiter() {
+            return "}}";
+        }
+        
+    }
+    
 }

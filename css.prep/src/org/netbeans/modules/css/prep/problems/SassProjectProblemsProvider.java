@@ -45,18 +45,24 @@ import java.util.Collection;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CPFileType;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
+import org.netbeans.modules.css.prep.preferences.SassPreferencesValidator;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
+import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
-import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.util.NbBundle;
 
 public final class SassProjectProblemsProvider extends BaseProjectProblemsProvider {
 
-    public SassProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support, CssPreprocessorImplementation.Customizer customizer) {
-        super(support, customizer);
+    public SassProjectProblemsProvider(CssPreprocessor.ProjectProblemsProviderSupport support) {
+        super(support);
     }
 
+    @NbBundle.Messages("SassProjectProblemsProvider.displayName=Sass")
+    @Override
+    String getDisplayName() {
+        return Bundle.SassProjectProblemsProvider_displayName();
+    }
     @Override
     boolean isEnabled(Project project) {
         return SassPreferences.isEnabled(project);
@@ -82,6 +88,13 @@ public final class SassProjectProblemsProvider extends BaseProjectProblemsProvid
                     OPTIONS_PROBLEM_RESOLVER);
             currentProblems.add(problem);
         }
+    }
+
+    @Override
+    ValidationResult validatePreferences(Project project) {
+        return new SassPreferencesValidator()
+                .validate(project)
+                .getResult();
     }
 
 }

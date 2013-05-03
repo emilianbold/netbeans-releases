@@ -68,7 +68,7 @@ import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
-import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -78,7 +78,6 @@ import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.editor.GuardedException;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
@@ -126,12 +125,16 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
 
     public void perform(FileObject file, JTextComponent pane) {
         JButton ok = new JButton(NbBundle.getMessage(AddPropertyCodeGenerator.class, "LBL_ButtonOK"));
-        final AddPropertyPanel addPropertyPanel = new AddPropertyPanel(file, className, existingFields, pcsName, vcsName, ok);
+        CodeStyle cs = CodeStyle.getDefault(pane.getDocument());
+        if(cs == null) {
+            cs = CodeStyle.getDefault(file);
+        }
+        final AddPropertyPanel addPropertyPanel = new AddPropertyPanel(file, className, cs, existingFields, pcsName, vcsName, ok);
         String caption = NbBundle.getMessage(AddPropertyCodeGenerator.class, "CAP_AddProperty");
         String cancel = NbBundle.getMessage(AddPropertyCodeGenerator.class, "LBL_ButtonCancel");
         DialogDescriptor dd = new DialogDescriptor(addPropertyPanel,caption, true, new Object[] {ok,cancel}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
         if (DialogDisplayer.getDefault().notify(dd) == ok) {
-            insertCode2(file, pane, addPropertyPanel.getAddPropertyConfig());
+            insertCode2(file, pane, addPropertyPanel.getAddPropertyConfig(), cs);
         }
     }
 
@@ -140,10 +143,10 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
      * @see <a href=http://www.netbeans.org/issues/show_bug.cgi?id=162853>162853</a>
      * @see <a href=http://www.netbeans.org/issues/show_bug.cgi?id=162630>162630</a>
      */
-    static void insertCode2(final FileObject file, final JTextComponent pane, final AddPropertyConfig config) {
+    static void insertCode2(final FileObject file, final JTextComponent pane, final AddPropertyConfig config, CodeStyle cs) {
             final Document doc = pane.getDocument();
             final Reformat r = Reformat.get(pane.getDocument());
-            final String code = new AddPropertyGenerator().generate(config);
+            final String code = new AddPropertyGenerator().generate(config, cs);
             final Position[] bounds = new Position[2];
             
             final int offset[] = new int[1];

@@ -187,6 +187,8 @@ public final class CssPreprocessors {
 
     /**
      * Process given file (can be a folder as well) by {@link #getPreprocessors() all CSS preprocessors}.
+     * <b>The project must have {@link org.netbeans.modules.web.common.spi.ProjectWebRootProvider}
+     * in its lookup.</b>
      * <p>
      * For detailed information see {@link CssPreprocessorImplementation#process(Project, FileObject)}.
      * @param project project where the file belongs, can be {@code null} for file without a project
@@ -248,7 +250,7 @@ public final class CssPreprocessors {
 
     @CheckForNull
     CssPreprocessor findCssPreprocessor(CssPreprocessorImplementation cssPreprocessorImplementation) {
-        Parameters.notNull("cssPreprocessorImplementation", cssPreprocessorImplementation); // NOI18N
+        assert cssPreprocessorImplementation != null;
         for (CssPreprocessor cssPreprocessor : preprocessors) {
             if (cssPreprocessor.getDelegate() == cssPreprocessorImplementation) {
                 return cssPreprocessor;
@@ -274,6 +276,7 @@ public final class CssPreprocessors {
 
         @Override
         public void optionsChanged(CssPreprocessorImplementation cssPreprocessor) {
+            Parameters.notNull("cssPreprocessor", cssPreprocessor); // NOI18N
             CssPreprocessor preprocessor = findCssPreprocessor(cssPreprocessor);
             if (preprocessor != null) {
                 listenersSupport.fireOptionsChanged(preprocessor);
@@ -283,9 +286,21 @@ public final class CssPreprocessors {
         @Override
         public void customizerChanged(Project project, CssPreprocessorImplementation cssPreprocessor) {
             Parameters.notNull("project", project); // NOI18N
+            Parameters.notNull("cssPreprocessor", cssPreprocessor); // NOI18N
             CssPreprocessor preprocessor = findCssPreprocessor(cssPreprocessor);
             if (preprocessor != null) {
                 listenersSupport.fireCustomizerChanged(project, preprocessor);
+            }
+        }
+
+        @Override
+        public void processingErrorOccured(Project project, CssPreprocessorImplementation cssPreprocessor, String error) {
+            Parameters.notNull("project", project); // NOI18N
+            Parameters.notNull("cssPreprocessor", cssPreprocessor); // NOI18N
+            Parameters.notNull("error", error); // NOI18N
+            CssPreprocessor preprocessor = findCssPreprocessor(cssPreprocessor);
+            if (preprocessor != null) {
+                listenersSupport.fireProcessingErrorOccured(project, preprocessor, error);
             }
         }
 

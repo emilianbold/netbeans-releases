@@ -51,10 +51,10 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.team.ui.treelist.LeafNode;
-import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
 import static org.netbeans.modules.team.ui.common.Bundle.*;
+import org.netbeans.modules.team.ui.util.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -79,7 +79,7 @@ public class ErrorNode extends LeafNode {
     }
 
     @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
         if( null == panel ) {
             panel = new JPanel( new GridBagLayout() );
             panel.setOpaque(false);

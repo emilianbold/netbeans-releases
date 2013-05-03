@@ -41,11 +41,13 @@
  */
 package org.netbeans.modules.html.editor.api.gsf;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
@@ -55,8 +57,11 @@ import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.html.editor.lib.api.UndeclaredContentResolver;
+import org.netbeans.modules.html.editor.lib.api.HtmlSource;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.foreign.UndeclaredContentResolver;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.Named;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.spi.editor.completion.CompletionItem;
 
@@ -163,17 +168,47 @@ public class HtmlExtension {
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> hints, int start, int end) {
         //no-op
     }
-
-    /**
-     * This method allows the extension to bind some prefixed html source 
-     * elements and attributes to an physically undeclared namespace.
+ 
+     /**
+     * This method allows to bind some prefixed html source 
+     * elements and attributes to a physically undeclared namespace.
      * 
-     * @return an instance of undeclared content resolver
+     * @param the html source which is being processed
+     * @return a map of namespace to prefix collection
      */
-    public UndeclaredContentResolver getUndeclaredContentResolver() {
-        return null;
+    public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
+        return Collections.emptyMap();
     }
-
+    
+    @NonNull
+    public Collection<CustomTag> getCustomTags() {
+        return Collections.emptyList();
+    }
+    
+    @NonNull
+    public Collection<CustomAttribute> getCustomAttributes(String elementName) {
+        return Collections.emptyList();
+    }
+  
+    /**
+     * Returns true if the given element is a custom tag known to this resolver.
+     * @param element
+     * @return 
+     */
+    public boolean isCustomTag(Named element) {
+        return false;
+    }
+   
+    /**
+     * Returns true if the given element's attribute is a custom attribute known to this resolver.
+     * 
+     * @param attribute
+     * @return 
+     */
+    public boolean isCustomAttribute(Attribute attribute) {
+        return false;
+    }
+    
     /**
      * Context object for code completion related stuff.
      */

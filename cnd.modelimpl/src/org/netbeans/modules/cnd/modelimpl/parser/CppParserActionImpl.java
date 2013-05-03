@@ -48,6 +48,7 @@ import org.netbeans.modules.cnd.antlr.Token;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration.Kind;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunctionParameterList;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmVisibility;
@@ -138,6 +139,7 @@ import org.openide.util.CharSequences;
  * @author Nikolay Krasilnikov (nnnnnk@netbeans.org)
  */
 public class CppParserActionImpl implements CppParserActionEx {
+    private final ParserErrorDelegateImpl parserErrorDelegateImpl;
 
     private enum CppAttributes implements SymTabEntryKey {
         SYM_TAB, DEFINITION, TYPE, TEMPLATE
@@ -175,24 +177,23 @@ public class CppParserActionImpl implements CppParserActionEx {
 //        this.contexts.push(currentContext);
         this.globalSymTab = createGlobal();
         this.builderContext = new CppParserBuilderContext();
+        this.parserErrorDelegateImpl = new ParserErrorDelegateImpl();
     }
 
     public void setParser(CXXParserEx parser) {
         this.parser = parser;
-        parser.setErrorDelegate(new CsmParserProvider.ParserErrorDelegate() {
-
-            @Override
-            public void onError(ParserError e) {
-                currentContext.file.getParsingFileContent().addParsingError(e);
-            }
-        });
+        parser.setErrorDelegate(parserErrorDelegateImpl);
     }
     
-    private void regesterException(Exception ex) {
+    private void registerException(Exception ex, Token token) {
         if (ex instanceof MyRecognitionException) {
             MyRecognitionException re = (MyRecognitionException) ex;
             parser.displayRecognitionError(new String[0], re);
         } else {
+            if (token != null) {
+                MyRecognitionException re = new MyRecognitionException(ex.getMessage()+" at '"+token.getText()+"'", token); // NOI18N
+                parser.displayRecognitionError(new String[0], re);
+            }
             ex.printStackTrace(System.err);
         }
     }
@@ -202,7 +203,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             return type_specifier_already_present_impl(input);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, null);
         }
         return false;
     }
@@ -326,7 +327,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             return identifier_is_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
         return false;
     }
@@ -378,7 +379,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             return top_level_of_template_arguments_impl();
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, null);
         }
         return false;
     }
@@ -406,7 +407,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             decl_specifiers_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -422,7 +423,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_decl_specifiers_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -438,7 +439,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             enum_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -467,7 +468,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             enum_strongly_typed_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -486,7 +487,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             enum_name_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
 
@@ -513,7 +514,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             enum_body_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -526,7 +527,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             enumerator_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
 
@@ -560,7 +561,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_enum_body_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -582,7 +583,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_enum_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -593,7 +594,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             CsmObjectBuilder parent = builderContext.top(3);
             CsmObjectBuilder directParent = builderContext.top(1);
             if(parent == null || parent instanceof NamespaceBuilder) {
-                EnumImpl e = enumBuilder.create();
+                EnumImpl e = enumBuilder.create(parserErrorDelegateImpl);
                 if(e != null) {
                     currentContext.objects.put(e.getStartOffset(), e);
                     SymTabEntry enumEntry = globalSymTab.lookupLocal(e.getName());
@@ -620,7 +621,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             class_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -649,7 +650,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             class_kind_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -683,7 +684,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_class_name_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -714,7 +715,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             class_body_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -730,6 +731,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         SymTab st;
         if(name != null) {
             st = globalSymTab.push(name);
+            enterNestedScopes(((SimpleDeclarationBuilder) top).getScopeNames());
         } else {
             st = globalSymTab.push();
         }
@@ -748,7 +750,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_class_body_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -771,6 +773,18 @@ public class CppParserActionImpl implements CppParserActionEx {
                     }
                 }
             }
+            for (SimpleDeclarationBuilder freiendBuilder : classBuilder.getFriendBuilders()) {
+                if(freiendBuilder instanceof FriendFunctionDDBuilder) {
+                    org.netbeans.modules.cnd.antlr.TokenStream bodyTokenStream = ((FriendFunctionDDBuilder)freiendBuilder).getBodyTokenStream();
+                    if(bodyTokenStream != null) {
+                        builderContext.push((FriendFunctionDDBuilder)freiendBuilder);
+                        ParserProviderImpl.Antlr3CXXParser aParser = new ParserProviderImpl.Antlr3CXXParser(params);
+                        aParser.init(null, bodyTokenStream, wrapper);
+                        aParser.parse(CsmParserProvider.CsmParser.ConstructionKind.FUNCTION_DEFINITION_AFTER_DECLARATOR);
+                        builderContext.pop();
+                    }
+                }
+            }
         }
         globalSymTab.pop();
     }
@@ -780,7 +794,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_class_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -791,7 +805,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             CsmObjectBuilder parent = builderContext.top(3);
             CsmObjectBuilder directParent = builderContext.top(1);
             if(parent == null || parent instanceof NamespaceBuilder) {
-                ClassImpl cls = classBuilder.create();
+                ClassImpl cls = classBuilder.create(parserErrorDelegateImpl);
                 if(cls != null) {
                     currentContext.objects.put(cls.getStartOffset(), cls);
                     SymTabEntry classEntry = globalSymTab.lookupLocal(cls.getName());
@@ -804,6 +818,8 @@ public class CppParserActionImpl implements CppParserActionEx {
                     if (directParent instanceof TypeBuilder) {
                         ((TypeBuilder) directParent).setClassifier(cls);
                     }
+                } else {
+                    registerException(new MyRecognitionException("failed to create class!", token), token); //NOI18N
                 }
             }
             builderContext.pop();
@@ -815,7 +831,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             namespace_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -834,7 +850,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             namespace_name_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -858,7 +874,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             namespace_body_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -891,7 +907,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_namespace_body_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -904,7 +920,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_namespace_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -922,7 +938,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             simple_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -950,7 +966,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             simple_declaration_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -997,11 +1013,21 @@ public class CppParserActionImpl implements CppParserActionEx {
                     } else {
                         builder.create();
                     }
+                    
+                    // todo: decide what builders could be here
+                    if (builder instanceof VariableBuilder) {
+                        if (builder.getName() != null) {
+                            declareSymbol(true, builder.getName(), builder);
+                        } else {
+                            registerException(new MyRecognitionException("Missing name for variable", token), token); // NOI18N
+                        }
+                    }
+                    
                 } else if (declBuilder.getTypeBuilder() != null) {
                     // Here we will register forward declarations
 
                     // If declaration's type is not a definition of type, then it is forward declaration
-                    if (declBuilder.getTypeBuilder().getClassifier() == null) {
+                    if (declBuilder.getTypeBuilder().getClassifier() == null && declBuilder.getTypeBuilder().getNameBuilder() != null) {
                         builder = new ClassForwardDeclarationBuilder(declBuilder);
 
                         builder.setParent(parent);
@@ -1016,12 +1042,10 @@ public class CppParserActionImpl implements CppParserActionEx {
                         
                         builder.create();
 
-                        CharSequence name = builder.getName();
-                        SymTabEntry classEntry = globalSymTab.lookup(name);
-                        if (classEntry == null) {
-                            classEntry = globalSymTab.enterLocal(name);
-                            classEntry.setAttribute(CppAttributes.TYPE, true);
-                        }                
+                        declareSymbol(false, builder.getName(), builder);
+                        
+                    } else if (declBuilder.getTypeBuilder().getClassifier() == null && declBuilder.getTypeBuilder().getNameBuilder() == null) {
+                        registerException(new MyRecognitionException("Unexpected missing namebuilder!", token), token); // NOI18N
                     }
                 }
             }
@@ -1033,7 +1057,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_simple_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1056,12 +1080,21 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             compound_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
     private void compound_statement_impl(Token token) {
         globalSymTab.push();
+        
+        CsmObjectBuilder parent = builderContext.top();
+        
+        if (parent instanceof FunctionBuilder) { 
+            // Note that ConstructorBuilder is also a FunctionBuilder
+            enterNestedScopes(((SimpleDeclarationBuilder) parent).getScopeNames());
+            
+            populateScopeWithParameters((FunctionBuilder) parent);
+        }
         
         CompoundStatementBuilder builder = new CompoundStatementBuilder();
         builder.setFile(currentContext.file);
@@ -1074,7 +1107,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_compound_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1098,7 +1131,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             decl_specifier_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1131,7 +1164,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             simple_type_specifier_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1159,7 +1192,8 @@ public class CppParserActionImpl implements CppParserActionEx {
                 || kind == SIMPLE_TYPE_SPECIFIER__UNSIGNED
                 || kind == SIMPLE_TYPE_SPECIFIER__FLOAT
                 || kind == SIMPLE_TYPE_SPECIFIER__DOUBLE
-                || kind == SIMPLE_TYPE_SPECIFIER__VOID) {
+                || kind == SIMPLE_TYPE_SPECIFIER__VOID
+                || kind == SIMPLE_TYPE_SPECIFIER__BI_VA_LIST) {
             CsmObjectBuilder top = builderContext.top();
             if(top instanceof TypeBuilder) {
                 ((TypeBuilder)top).setSimpleTypeSpecifier(((APTToken)token).getTextID());
@@ -1173,7 +1207,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_simple_type_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1234,7 +1268,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             simple_template_id_or_ident_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1290,7 +1324,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             template_declaration_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1325,7 +1359,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             using_declaration_impl(usingToken);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, usingToken);
         }
     }
     
@@ -1347,7 +1381,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             using_declaration_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1366,7 +1400,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_using_declaration_impl(semicolonToken);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, semicolonToken);
         }
     }
     
@@ -1390,7 +1424,7 @@ public class CppParserActionImpl implements CppParserActionEx {
                 if(top instanceof ClassBuilder) {
                     ((ClassBuilder)top).addMemberBuilder(usingBuilder);                    
                 } else {
-                    usingBuilder.create();
+                    usingBuilder.create(parserErrorDelegateImpl);
                 }
             }
             
@@ -1410,7 +1444,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             namespace_alias_definition_impl(namespaceToken, identToken, assignequalToken);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, namespaceToken);
         }
     }
     
@@ -1436,7 +1470,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_namespace_alias_definition_impl(semicolonToken);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, semicolonToken);
         }
     }
     
@@ -1457,7 +1491,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             qualified_namespace_specifier_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1494,7 +1528,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             type_parameter_impl(kind, token, token2, token3);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1503,10 +1537,9 @@ public class CppParserActionImpl implements CppParserActionEx {
                 kind == TYPE_PARAMETER__TYPENAME) {
             TemplateParameterBuilder builder = (TemplateParameterBuilder) builderContext.top();            
             if(token3 != null) {
-                builder.setName(((APTToken) token3).getText());
-                
                 APTToken aToken = (APTToken) token3;
                 final CharSequence name = aToken.getTextID();
+                builder.setName(name);
                 SymTabEntry classEntry = globalSymTab.lookupLocal(name);
                 if (classEntry == null) {
                     classEntry = globalSymTab.enterLocal(name);
@@ -1517,10 +1550,9 @@ public class CppParserActionImpl implements CppParserActionEx {
                 kind == TYPE_PARAMETER__TYPENAME_ASSIGNEQUAL) {
             TemplateParameterBuilder builder = (TemplateParameterBuilder) builderContext.top();            
             if(token2 != null) {
-                builder.setName(((APTToken) token2).getText());                
-                
                 APTToken aToken = (APTToken) token2;
                 final CharSequence name = aToken.getTextID();
+                builder.setName(name);                
                 SymTabEntry classEntry = globalSymTab.lookupLocal(name);
                 if (classEntry == null) {
                     classEntry = globalSymTab.enterLocal(name);
@@ -1528,16 +1560,42 @@ public class CppParserActionImpl implements CppParserActionEx {
                 }
             }
         }
-
     }
     
+    @Override
+    public void type_parameter(int kind, Token token, Token token2, Token token3, Token token4) {
+        try {
+            type_parameter_impl(kind, token, token2, token3, token4);
+        } catch (Exception ex) {
+            registerException(ex, token);
+        }
+    }
+    
+    private void type_parameter_impl(int kind, Token token, Token token2, Token token3, Token token4) {
+        if(kind == TYPE_PARAMETER__TEMPLATE_CLASS_ASSIGNEQUAL) {
+            TemplateDescriptorBuilder nested = (TemplateDescriptorBuilder) builderContext.top();
+            builderContext.pop();
+            TemplateParameterBuilder parameter = (TemplateParameterBuilder) builderContext.top();            
+            if(token3 != null) {
+                APTToken aToken = (APTToken) token3;
+                final CharSequence name = aToken.getTextID();
+                parameter.setName(name);
+                parameter.setTemplateDescriptorBuilder(nested);
+                SymTabEntry classEntry = globalSymTab.lookupLocal(name);
+                if (classEntry == null) {
+                    classEntry = globalSymTab.enterLocal(name);
+                    classEntry.setAttribute(CppAttributes.TYPE, true);
+                }
+            }
+        }
+    }
     
     @Override
     public void using_directive(Token usingToken, Token namespaceToken) {
         try {
             using_directive_impl(usingToken, namespaceToken);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, usingToken);
         }
     }
     
@@ -1558,7 +1616,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             using_directive_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1579,7 +1637,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_using_directive_impl(semicolonToken);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, semicolonToken);
         }
     }
     
@@ -1629,7 +1687,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             declarator_id_impl();
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, null);
         }
     }
     
@@ -1642,7 +1700,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_declarator_id_impl();
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, null);
         }
     }
     
@@ -1661,7 +1719,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             return isType_impl(name);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, null);
         }
         return false;
     }
@@ -1679,7 +1737,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             pushFile_impl(file);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, null);
         }
     }
     
@@ -1695,7 +1753,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             return popFile_impl();
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, null);
         }
         return null;
     }
@@ -1727,10 +1785,21 @@ public class CppParserActionImpl implements CppParserActionEx {
 
     private SymTabStack createGlobal() {
         SymTabStack out = SymTabStack.create();
-        // TODO: need to push symtab for predefined types
+        // TODO: need to push symtab for predefined types                      
         
         // create global level 
-        out.push();
+        out.push();               
+        
+        // 1. Add namespace std to global level
+        CharSequence stdName = CharSequences.create("std");  // NOI18N
+        SymTabEntry entry = out.enterLocal(stdName); 
+        
+        out.push(stdName);
+        SymTab st = out.pop();
+        
+        entry.setAttribute(CppAttributes.SYM_TAB, st);        
+        entry.setAttribute(CppAttributes.TYPE, true);        
+        
         return out;
     }
 
@@ -1746,7 +1815,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             labeled_statement_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1771,7 +1840,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             labeled_statement_impl(kind, token1, token2);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token1);
         }
     }
     
@@ -1802,7 +1871,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_labeled_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1822,7 +1891,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             expression_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1838,7 +1907,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_expression_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1858,7 +1927,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             selection_statement_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1881,7 +1950,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_selection_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1903,7 +1972,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             condition_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1919,7 +1988,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_condition_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1947,7 +2016,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             condition_expression_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1963,7 +2032,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_condition_expression_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -1993,7 +2062,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             iteration_statement_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2026,7 +2095,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_iteration_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2052,7 +2121,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             jump_statement_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2082,7 +2151,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             jump_statement_impl(kind, token1, token2);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token1);
         }
     }
     
@@ -2099,7 +2168,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_jump_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2117,7 +2186,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             declaration_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2133,7 +2202,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_declaration_statement_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2156,7 +2225,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             id_expression_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2172,7 +2241,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_id_expression_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2208,7 +2277,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             tilde_class_name_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2222,7 +2291,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_tilde_class_name_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2233,8 +2302,41 @@ public class CppParserActionImpl implements CppParserActionEx {
         }
     }
     
-    @Override public void alias_declaration(Token usingToken, Token identToken, Token assignequalToken) {}
-    @Override public void end_alias_declaration(Token token) {}
+    @Override 
+    public void alias_declaration(Token usingToken, Token identToken, Token assignequalToken) {
+        try {
+             alias_declaration_impl(usingToken, identToken, assignequalToken);
+        } catch (Exception ex) {
+            registerException(ex, usingToken);
+        }
+    }
+    
+    private void alias_declaration_impl(Token usingToken, Token identToken, Token assignequalToken) {
+        TypedefBuilder builder = new TypedefBuilder();
+        builder.setName(((APTToken) identToken).getTextID());
+        builder.setFile(currentContext.file);
+        builder.setStartOffset(((APTToken)usingToken).getOffset());
+        builderContext.push(builder);
+    }
+
+    @Override 
+    public void end_alias_declaration(Token token) {
+        try {
+            end_alias_declaration_impl(token);
+        } catch (Exception ex) {
+            registerException(ex, token);
+        }
+    }
+    
+    private void end_alias_declaration_impl(Token token) {
+        if(builderContext.top() instanceof TypedefBuilder) {
+            TypedefBuilder builder = (TypedefBuilder)builderContext.top();
+            builderContext.pop();
+            builder.setEndOffset(((APTToken)token).getOffset());
+            builder.create();
+        }
+    }
+
     @Override public void function_specifier(int kind, Token token) {}
     
     @Override
@@ -2242,7 +2344,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             type_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2261,7 +2363,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_type_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2274,22 +2376,6 @@ public class CppParserActionImpl implements CppParserActionEx {
             builderContext.pop();
             SimpleDeclarationBuilder declarationBuilder = (SimpleDeclarationBuilder) builderContext.top();
             declarationBuilder.setTypeBuilder(typeBuilder);
-
-            final NameBuilder nameBuilder = typeBuilder.getNameBuilder();
-            if (nameBuilder != null) {
-                for (int i = 0; i < nameBuilder.getNameParts().size() - 1; i++) {
-                    CharSequence part = nameBuilder.getNameParts().get(i);
-
-                    SymTabEntry classEntry = globalSymTab.lookup(part);
-                    SymTab st = null;
-                    if (classEntry != null) {
-                        st = (SymTab)classEntry.getAttribute(CppAttributes.SYM_TAB);
-                    }
-                    if(st != null) {
-                        globalSymTab.importToLocal(st);
-                    }
-                }
-            }
         }
     }
     
@@ -2304,14 +2390,16 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             elaborated_type_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
     private void elaborated_type_specifier_impl(Token token) {
-        SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder)builderContext.top(1);
-        declBuilder.setTypeSpecifier();
-        builderContext.push(new NameBuilder());
+        if(builderContext.top(1) instanceof SimpleDeclarationBuilder) {
+            SimpleDeclarationBuilder declBuilder = (SimpleDeclarationBuilder)builderContext.top(1);
+            declBuilder.setTypeSpecifier();
+            builderContext.push(new NameBuilder());
+        }
     }
     
     @Override
@@ -2319,16 +2407,20 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_elaborated_type_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
     private void end_elaborated_type_specifier_impl(Token token) {
-        NameBuilder nameBuilder = (NameBuilder) builderContext.top();
-        builderContext.pop();
+        if (builderContext.top() instanceof NameBuilder) {
+            NameBuilder nameBuilder = (NameBuilder) builderContext.top();
+            builderContext.pop();
         
-        TypeBuilder directParent = (TypeBuilder) builderContext.top();
-        directParent.setNameBuilder(nameBuilder);
+            if (builderContext.top() instanceof TypeBuilder) {
+                TypeBuilder directParent = (TypeBuilder) builderContext.top();
+                directParent.setNameBuilder(nameBuilder);
+            }
+        }
         
 //        CharSequence name = nameBuilder.getName();
 //        SymTabEntry classEntry = globalSymTab.lookup(name);
@@ -2343,7 +2435,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             typename_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2359,7 +2451,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_typename_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2391,7 +2483,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             declarator_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2410,11 +2502,11 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_declarator_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
-    private void end_declarator_impl(Token token) {
+    private void end_declarator_impl(Token token) throws MyRecognitionException {
         DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) builderContext.top();
         if(declaratorBuilder.isTopDeclarator()) {
             builderContext.pop();
@@ -2425,15 +2517,18 @@ public class CppParserActionImpl implements CppParserActionEx {
                 
                 if(declBuilder.getTemplateDescriptorBuilder() != null &&
                         !declBuilder.isConstructor() && !declBuilder.isDestructor()) {
-                    SymTabEntry classEntry = globalSymTab.lookupLocal(declaratorBuilder.getName());
-                    if (classEntry == null) {
-                        classEntry = globalSymTab.enterLocal(declaratorBuilder.getName());
-                        classEntry.setAttribute(CppAttributes.TEMPLATE, true);
+                    if (declaratorBuilder.getName() != null) {
+                        SymTabEntry classEntry = globalSymTab.lookupLocal(declaratorBuilder.getName());
+                        if (classEntry == null) {
+                            classEntry = globalSymTab.enterLocal(declaratorBuilder.getName());
+                            classEntry.setAttribute(CppAttributes.TEMPLATE, true);
+                        } else {
+                            classEntry.setAttribute(CppAttributes.TEMPLATE, true);
+                        }
                     } else {
-                        classEntry.setAttribute(CppAttributes.TEMPLATE, true);
+                        throw new MyRecognitionException("Expected not empty declarator name at '"+token.getText()+"'", token); // NOI18N
                     }
                 }
-                
             }
         } else {
             declaratorBuilder.leaveDeclarator();
@@ -2461,7 +2556,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             constructor_declarator_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2525,7 +2620,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             ptr_operator_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2535,6 +2630,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             TypeBuilder typeBuilder = sdb.getTypeBuilder();
             if (typeBuilder != null) {
                 switch (kind) {
+                    case PTR_OPERATOR__STAR2:
                     case PTR_OPERATOR__STAR:
                         typeBuilder.incPointerDepth();
                         break;
@@ -2557,7 +2653,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             cv_qualifier_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2586,7 +2682,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_declarator_id_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2616,7 +2712,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             type_id_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2624,7 +2720,11 @@ public class CppParserActionImpl implements CppParserActionEx {
         TypeBuilder typeBuilder = new TypeBuilder();
         typeBuilder.setFile(currentContext.file);
         typeBuilder.setStartOffset(((APTToken)token).getOffset());
-        builderContext.push(typeBuilder);    
+        if (builderContext.top() instanceof TypedefBuilder) {
+            TypedefBuilder parent = (TypedefBuilder) builderContext.top();
+            parent.setTypeBuilder(typeBuilder);
+        }
+        builderContext.push(typeBuilder);
     }
     
     @Override
@@ -2632,7 +2732,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_type_id_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2661,22 +2761,54 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             parameters_and_qualifiers_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
     private void parameters_and_qualifiers_impl(int kind, Token token) {
         if(kind == PARAMETERS_AND_QUALIFIERS__LPAREN) {
+            CsmObjectBuilder parent = builderContext.top();
+
+            // In case of definition of function/constructor which was declared previously we would have scopes in the name
+            if (parent instanceof DeclaratorBuilder) {
+                DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) parent;
+                
+                if (declaratorBuilder.getNameBuilder() != null) {
+                    
+                    List<CharSequence> nameParts = declaratorBuilder.getNameBuilder().getNameParts();
+                    
+                    if (nameParts.size() > 1) {
+                        globalSymTab.push();
+                        enterNestedScopes(nameParts.subList(0, nameParts.size() - 1));
+                    }
+                }
+            }            
+            
             FunctionParameterListBuilder builder = new FunctionParameterListBuilder();
             builder.setFile(currentContext.file);
             builder.setStartOffset(((APTToken)token).getOffset());
             builderContext.push(builder);
-        } else if(kind == PARAMETERS_AND_QUALIFIERS__RPAREN) {
+        } else if(kind == PARAMETERS_AND_QUALIFIERS__RPAREN) {                    
             FunctionParameterListBuilder builder = (FunctionParameterListBuilder) builderContext.top();
             builder.setEndOffset(((APTToken)token).getEndOffset());
             builderContext.pop();
             if(builderContext.top(1) instanceof SimpleDeclarationBuilder) {
                 ((SimpleDeclarationBuilder)builderContext.top(1)).setParametersListBuilder(builder);
+            }
+            
+            CsmObjectBuilder parent = builderContext.top();
+            
+            // We must remove symtab if it was added previously
+            if (parent instanceof DeclaratorBuilder) {
+                DeclaratorBuilder declaratorBuilder = (DeclaratorBuilder) parent;
+                
+                if (declaratorBuilder.getNameBuilder() != null) {
+                    List<CharSequence> nameParts = declaratorBuilder.getNameBuilder().getNameParts();
+                    
+                    if (nameParts.size() > 1) {
+                        globalSymTab.pop();
+                    }
+                }
             }
         }
     }
@@ -2690,7 +2822,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             parameter_declaration_clause_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2716,7 +2848,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             parameter_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2737,7 +2869,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_parameter_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2749,7 +2881,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         builder.setEndOffset(((APTToken)token).getEndOffset());
         builder.setTypeBuilder(declBuilder.getTypeBuilder());
         if(declBuilder.getDeclaratorBuilder() == null || declBuilder.getDeclaratorBuilder().getName() == null) {
-            builder.setName(""); // NOI18N
+            builder.setName(CharSequences.empty());
         } else {
             builder.setName(declBuilder.getDeclaratorBuilder().getName());
         }
@@ -2767,7 +2899,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             function_definition_after_declarator_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2863,7 +2995,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_function_definition_after_declarator_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2873,9 +3005,13 @@ public class CppParserActionImpl implements CppParserActionEx {
             FunctionDDBuilder builder = (FunctionDDBuilder)top;
             builder.setEndOffset(((APTToken)token).getEndOffset());
             builderContext.pop();
-            FunctionDDImpl create = builder.create();
-            if (create == null) {
-                throw new MyRecognitionException("Unrecognized function definition at '"+token.getText()+"'", token); // NOI18N
+            if (builder instanceof FriendFunctionDDBuilder) {
+                ((ClassBuilder)builderContext.top(1)).addFriendBuilder(builder);
+            } else {
+                FunctionDDImpl create = builder.create();
+                if (create == null) {
+                    throw new MyRecognitionException("Unrecognized function definition at '"+token.getText()+"'", token); // NOI18N
+                }
             }
         } else if(top instanceof FunctionDefinitionBuilder) {
             FunctionDefinitionBuilder builder = (FunctionDefinitionBuilder)top;
@@ -2904,7 +3040,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             initializer_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2926,7 +3062,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_initializer_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2964,7 +3100,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             optionally_qualified_name_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -2977,7 +3113,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_optionally_qualified_name_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -3029,7 +3165,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             simple_member_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -3057,7 +3193,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             simple_member_declaration_impl(kind, token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -3098,42 +3234,45 @@ public class CppParserActionImpl implements CppParserActionEx {
                     ((MemberBuilder)builder).setVisibility(parent.getCurrentMemberVisibility());
                     parent.addMemberBuilder((MemberBuilder)builder);
                 }
+                
+                // todo: decide what builders could be here
+                if (builder instanceof FieldBuilder) {
+                    if (builder.getName() != null) {
+                        declareSymbol(true, builder.getName(), builder);
+                    } else {
+                        registerException(new MyRecognitionException("Missing name for field", token), token); // NOI18N
+                    }
+                }
+                
             } else if (declBuilder.getTypeBuilder() != null && declBuilder.getTypeBuilder().getNameBuilder() != null) {
                 // Here we will register forward declarations inside class/struct
                 
                 CharSequence name = declBuilder.getTypeBuilder().getNameBuilder().getName();
                 
-                SymTabEntry entry = globalSymTab.lookupLocal(name);
-
-                if (entry == null) {
-                    if(declBuilder.isFriend()) {
-                        builder = new FriendClassBuilder(declBuilder);
-                    } else {
-                        builder = new ClassMemberForwardDeclarationBuilder(declBuilder);
-                    }
-                    
-                    builder.setParent(parent);
-                    builder.setEndOffset(((APTToken)token).getOffset());
-                    builder.setName(name);
-                    builder.setFile(currentContext.file);
-                    
-                    if(declBuilder.getTemplateDescriptorBuilder() != null) {
-                        builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
-                        builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
-                    }
-                    
-                    if(builder instanceof FriendClassBuilder) {
-                        parent.addFriendBuilder(builder);
-                    } else {
-                        parent.addMemberBuilder((ClassMemberForwardDeclarationBuilder)builder);
-                    }                    
-                    
-                    SymTabEntry classEntry = globalSymTab.lookup(name);
-                    if (classEntry == null) {
-                        classEntry = globalSymTab.enterLocal(name);
-                        classEntry.setAttribute(CppAttributes.TYPE, true);
-                    }
+                if(declBuilder.isFriend()) {
+                    builder = new FriendClassBuilder(declBuilder);
+                } else {
+                    builder = new ClassMemberForwardDeclarationBuilder(declBuilder);
                 }
+                
+                builder.setParent(parent);
+                builder.setEndOffset(((APTToken)token).getOffset());
+                builder.setName(name);
+                builder.setFile(currentContext.file);
+                
+                if(declBuilder.getTemplateDescriptorBuilder() != null) {
+                    builder.setTemplateDescriptorBuilder(declBuilder.getTemplateDescriptorBuilder());        
+                    builder.setStartOffset(declBuilder.getTemplateDescriptorBuilder().getStartOffset());
+                }
+                
+                if(builder instanceof FriendClassBuilder) {
+                    parent.addFriendBuilder(builder);
+                } else {
+                    parent.addMemberBuilder((ClassMemberForwardDeclarationBuilder)builder);
+                }               
+                
+                // FIXME: probably always must be redeclared (in different ways for different builders)
+                declareSymbol(false, builder.getName(), builder);
             }
         }    
     }
@@ -3143,7 +3282,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_simple_member_declaration_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -3166,6 +3305,20 @@ public class CppParserActionImpl implements CppParserActionEx {
     }
     
     @Override public void end_member_declarator(Token token) {
+        end_declarator(token);
+    }
+        
+    @Override
+    public void member_bitfield_declarator(Token token) {
+        declarator(token);
+        
+        NameBuilder nameBuilder = new NameBuilder();
+        nameBuilder.addNamePart(token.getText());        
+        
+        DeclaratorBuilder builder = (DeclaratorBuilder) builderContext.top();
+        builder.setName(nameBuilder.getName());
+        builder.setNameBuilder(nameBuilder);
+        
         end_declarator(token);
     }
     
@@ -3192,7 +3345,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             base_type_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -3209,7 +3362,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_base_type_specifier_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -3269,8 +3422,32 @@ public class CppParserActionImpl implements CppParserActionEx {
     @Override public void end_conversion_function_id(Token token) {}
     @Override public void conversion_type_id(Token token) {}
     @Override public void end_conversion_type_id(Token token) {}
-    @Override public void ctor_initializer(Token token) {}
-    @Override public void end_ctor_initializer(Token token) {}
+    
+    @Override 
+    public void ctor_initializer(Token token) {
+        CsmObjectBuilder parent = builderContext.top();
+        
+        if (parent instanceof ConstructorDefinitionBuilder) { // paranoia
+            CharSequence[] scopeNames = ((SimpleDeclarationBuilder) parent).getScopeNames();
+            if (scopeNames != null && scopeNames.length > 0) {
+                globalSymTab.push();
+                enterNestedScopes(((SimpleDeclarationBuilder) parent).getScopeNames());
+            }
+        }
+    }
+    
+    @Override 
+    public void end_ctor_initializer(Token token) {
+        CsmObjectBuilder parent = builderContext.top();
+        
+        if (parent instanceof ConstructorDefinitionBuilder) {
+            CharSequence[] scopeNames = ((SimpleDeclarationBuilder) parent).getScopeNames();
+            if (scopeNames != null && scopeNames.length > 0) {
+                globalSymTab.pop(); // pop symtab only if it has been added                
+            }
+        }        
+    }
+    
     @Override public void mem_initializer_list(Token token) {}
     @Override public void mem_initializer_list(int kind, Token token) {}
     @Override public void end_mem_initializer_list(Token token) {}
@@ -3288,7 +3465,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             operator_id_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -3298,7 +3475,7 @@ public class CppParserActionImpl implements CppParserActionEx {
             NameBuilder nameBuilder = (NameBuilder) top;
             APTToken aToken = (APTToken) token;
             CharSequence part = aToken.getTextID();
-            nameBuilder.addNamePart("operator " + part); // NOI18N
+            nameBuilder.addNamePart(CharSequences.create("operator " + part)); // NOI18N
         }        
     }
     @Override public void end_operator_id(Token token) {}
@@ -3314,7 +3491,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             template_parameter_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -3330,7 +3507,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_template_parameter_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -3353,7 +3530,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             explicit_instantiation_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -3370,7 +3547,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             explicit_specialization_impl(templateToken, lessthenToken, greaterthenToken);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, templateToken);
         }
     }
     
@@ -3404,7 +3581,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             expression_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -3425,7 +3602,7 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             end_expression_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
@@ -3467,13 +3644,16 @@ public class CppParserActionImpl implements CppParserActionEx {
         try {
             skip_balanced_curlies_impl(token);
         } catch (Exception ex) {
-            regesterException(ex);
+            registerException(ex, token);
         }
     }
     
     private void skip_balanced_curlies_impl(Token token) {
         if (builderContext.top() instanceof MethodDDBuilder) {
             MethodDDBuilder builder = (MethodDDBuilder) builderContext.top();
+            builder.addBodyToken(token);
+        } else if (builderContext.top() instanceof FriendFunctionDDBuilder) {
+            FriendFunctionDDBuilder builder = (FriendFunctionDDBuilder) builderContext.top();
             builder.addBodyToken(token);
         }
     }    
@@ -3555,6 +3735,83 @@ public class CppParserActionImpl implements CppParserActionEx {
             }
         };
         currentContext.file.addReference(ref, definition);
+    }
+
+    private class ParserErrorDelegateImpl implements CsmParserProvider.ParserErrorDelegate {
+
+        public ParserErrorDelegateImpl() {
+        }
+
+        @Override
+        public void onError(ParserError e) {
+            currentContext.file.getParsingFileContent().addParsingError(e);
+        }
+    }
+    
+    private void declareSymbol(boolean redeclare, CharSequence name, SimpleDeclarationBuilder declBuilder) {
+        if (!redeclare && globalSymTab.lookup(name) != null) {
+            return;
+        }
+        
+        SymTabEntry entry = globalSymTab.enterLocal(name);
+        
+        // elaborated type
+        if (declBuilder.getTypeBuilder() != null && declBuilder.getDeclaratorBuilder() == null) {
+            entry.setAttribute(CppAttributes.TYPE, true);
+        }
+                
+        if (declBuilder.getTemplateDescriptorBuilder() != null) {
+            entry.setAttribute(CppAttributes.TEMPLATE, true);
+        }
+    }
+    
+    private void populateScopeWithParameters(FunctionBuilder builder) {
+        if (builder.getParametersListBuilder() != null) {
+            FunctionParameterListBuilder parametersBuilder = (FunctionParameterListBuilder) builder.getParametersListBuilder();
+            List<ParameterBuilder> parameterBuildersList = parametersBuilder.getParameterBuilders();
+//            CsmFunctionParameterList parametersList = parametersBuilder.create();
+            
+            if (parameterBuildersList != null && !parameterBuildersList.isEmpty()) {
+                for (ParameterBuilder paramBuilder : parameterBuildersList) {
+                    if (paramBuilder.getName() != null && !String.valueOf(paramBuilder.getName()).isEmpty()) {
+                        globalSymTab.enterLocal(paramBuilder.getName());
+                    }
+                }
+            }
+        }
+    }
+        
+    private void enterNestedScopes(CharSequence[] scopeNames) {
+        if (scopeNames != null && scopeNames.length > 0) {
+            enterNestedScopes(Arrays.asList(scopeNames));
+        }
+    }
+    
+    private void enterNestedScopes(List<CharSequence> scopeNames) {
+        if (scopeNames != null && scopeNames.size() > 0) {
+            int firstSignificantNamePart = 0;
+            
+            if (scopeNames.get(0).length() == 0) {
+                // Name is a fully qualified name. Since it is possible to define function or constructor only in enclosing namespace,
+                // we could just skip common part
+                firstSignificantNamePart = globalSymTab.getSize() - 1;
+            }
+            
+            Iterator<CharSequence> iter = scopeNames.listIterator(firstSignificantNamePart);
+            
+            while (iter.hasNext()) {
+                CharSequence part = iter.next();
+
+                SymTabEntry classEntry = globalSymTab.lookup(part);
+                SymTab st = null;
+                if (classEntry != null) {
+                    st = (SymTab)classEntry.getAttribute(CppAttributes.SYM_TAB);
+                }
+                if(st != null) {
+                    globalSymTab.importToLocal(st);
+                }
+            }
+        }        
     }
     
 }

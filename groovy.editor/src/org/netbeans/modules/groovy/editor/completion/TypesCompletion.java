@@ -169,8 +169,8 @@ public class TypesCompletion extends BaseCompletion {
         JavaSource javaSource = getJavaSourceFromRequest();
 
         // if we are dealing with a basepackage we simply complete all the packages given in the basePackage
-        if (packageRequest.basePackage.length() > 0 || request.behindImport) {
-            if (!(request.behindImport && packageRequest.basePackage.length() == 0)) {
+        if (packageRequest.basePackage.length() > 0 || request.isBehindImportStatement()) {
+            if (!(request.isBehindImportStatement() && packageRequest.basePackage.length() == 0)) {
 
                 List<TypeHolder> typeList = getTypeHoldersForPackage(javaSource, packageRequest.basePackage, currentPackage);
 
@@ -335,7 +335,8 @@ public class TypesCompletion extends BaseCompletion {
             return;
         }
 
-        String typeName = GroovyUtils.stripPackage(type.getName());
+        String fqnTypeName = type.getName();
+        String typeName = GroovyUtils.stripPackage(fqnTypeName);
 
         // If we are in situation: "String s = new String|" we don't want to show
         // String type as a option - we want to show String constructors + types
@@ -347,12 +348,12 @@ public class TypesCompletion extends BaseCompletion {
         // We are dealing with prefix for some class type
         if (isPrefixed(request, typeName)) {
             alreadyPresent.add(type);
-            proposals.add(new CompletionItem.TypeItem(typeName, anchor, type.getKind()));
+            proposals.add(new CompletionItem.TypeItem(fqnTypeName, typeName, anchor, type.getKind()));
         }
 
         // We are dealing with CamelCase completion for some class type
         if (CamelCaseUtil.compareCamelCase(typeName, request.getPrefix())) {
-            CompletionItem.TypeItem camelCaseProposal = new CompletionItem.TypeItem(typeName, anchor, ElementKind.CLASS);
+            CompletionItem.TypeItem camelCaseProposal = new CompletionItem.TypeItem(fqnTypeName, typeName, anchor, ElementKind.CLASS);
             
             if (!proposals.contains(camelCaseProposal)) {
                 proposals.add(camelCaseProposal);

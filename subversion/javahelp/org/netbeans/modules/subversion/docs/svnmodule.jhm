@@ -141,8 +141,8 @@ Other names may be trademarks of their respective owners.
     <!-- Select dialog -->
     <mapID target="org.netbeans.modules.subversion.FileSelector" url="svnmodule/csh/svn_select_dialog.html" />
 
-    <!-- TODO find out what this is for -->
-    <mapID target="org.netbeans.modules.subversion.client.SvnClientExceptionHandler" url="pending.html" />
+    <!-- Authentication/Connection Failure dialog -->
+    <mapID target="org.netbeans.modules.subversion.client.SvnClientExceptionHandler" url="svnmodule/csh/svn_auth_failed_dialog.html" />
 
     <!-- Search Revisions dialog (i.e. Search button) -->
  
