@@ -304,7 +304,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
                 String url = getUrl();
                 String user = getUser();
                 String httpUser = getHttpUser();
-                TaskRepository taskRepo = BugzillaRepository.createTaskRepository(
+                TaskRepository taskRepo = BugzillaRepository.createTemporaryTaskRepository(
                         name,
                         url,
                         user,
