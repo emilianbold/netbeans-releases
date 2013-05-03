@@ -145,11 +145,11 @@ public class SubmitTaskCommand extends BugtrackingCommand {
             if(stringValue == null) {
                 StringBuilder sb = new StringBuilder();
                 if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
-                    sb.append("SubmitCommand new issue [repository="); //NOI18N
+                    sb.append("SubmitTaskCommand new issue [repository="); //NOI18N
                     sb.append(taskRepository.getUrl());
                     sb.append("]"); //NOI18N
                 } else {
-                    sb.append("SubmitCommand [task #"); //NOI18N
+                    sb.append("SubmitTaskCommand [task #"); //NOI18N
                     sb.append(taskData.getTaskId());
                     sb.append(",repository="); //NOI18N
                     sb.append(taskRepository.getUrl());

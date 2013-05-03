@@ -168,19 +168,14 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     static final int FIELD_STATUS_UPTODATE = 1;
 
     /**
-     * Field has a value in oposite to the last time when it was seen
+     * Field was changed since the issue was seen the last time
      */
-    static final int FIELD_STATUS_NEW = 2;
+    static final int FIELD_STATUS_MODIFIED = 2;
 
     /**
      * Field was changed since the issue was seen the last time
      */
-    static final int FIELD_STATUS_MODIFIED = 4;
-
-    /**
-     * Field was changed since the issue was seen the last time
-     */
-    static final int FIELD_STATUS_OUTGOING = 8;
+    static final int FIELD_STATUS_OUTGOING = 4;
 
     /**
      * Field was changed both locally and in repository
@@ -252,6 +247,10 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
+                if (task.getSynchronizationState() == ITask.SynchronizationState.INCOMING_NEW) {
+                    // mark as seen so no fields are highlighted
+                    setUpToDate(true);
+                }
                 // clear upon close
                 synchronized (MODEL_LOCK) {
                     model = MylynSupport.getInstance().getTaskDataModel(task);
@@ -278,21 +277,23 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
                 m.removeModelListener(list);
                 list = null;
             }
-            if (m.isDirty()) {
-                Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
-                    @Override
-                    public void run () {
+            Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run () {
+                    synchronized (MODEL_LOCK) {
+                        if (model == m) {
+                            model = null;
+                        }
+                    }
+                    if (m.isDirty()) {
                         try {
                             save(m);
                         } catch (CoreException ex) {
                             Bugzilla.LOG.log(Level.WARNING, null, ex);
                         }
                     }
-                });
-            }
-            synchronized (MODEL_LOCK) {
-                model = null;
-            }
+                }
+            });
         }
         if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close start", new Object[] {getID()});
         repository.stopRefreshing(task);
@@ -536,18 +537,18 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
             }
             if (event.getTaskDataUpdated()) {
                 availableOperations = null;
+                ensureConfigurationUptodate();
+                TaskDataModel m = model;
+                if (m != null) {
+                    try {
+                        m.refresh(null);
+                    } catch (CoreException ex) {
+                        Bugzilla.LOG.log(Level.INFO, null, ex);
+                    }
+                }
                 Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
-                        ensureConfigurationUptodate();
-                        TaskDataModel m = model;
-                        if (m != null) {
-                            try {
-                                m.refresh(null);
-                            } catch (CoreException ex) {
-                                Bugzilla.LOG.log(Level.WARNING, null, ex);
-                            }
-                        }
                         ((BugzillaIssueNode)getNode()).fireDataChanged();
                         fireDataChanged();
                         refreshViewData(false);
@@ -559,7 +560,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
 
     @Override
     public void editsDiscarded (TaskDataManagerEvent tdme) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // what here?
     }
 
     @Override
@@ -767,7 +768,6 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
      *  <li>{@link #FIELD_STATUS_MODIFIED} - field value was changed in repository
      *  <li>{@link #FIELD_STATUS_OUTGOING} - field value was changed locally
      *  <li>{@link #FIELD_STATUS_CONFLICT} - field value was changed both locally and remotely
-     *  <li>{@link #FIELD_STATUS_NEW} - field has a value for the first time since it was seen
      * </ul>
      * @param f IssueField
      * @return a status value
@@ -801,19 +801,24 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         }
     }
 
-    void resolve(String resolution) {
+    void resolve (final String resolution) {
         assert !isNew();
 
-        String value = getFieldValue(IssueField.STATUS);
-        if(!(value.equals("RESOLVED") && resolution.equals(getFieldValue(IssueField.RESOLUTION)))) { // NOI18N
-            setOperation(BugzillaOperation.resolve);
-            TaskAttribute rta = model.getTaskData().getRoot();
-            TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.resolve.getInputId());
-            if(ta != null) { // ta can be null when changing status from CLOSED to RESOLVED
-                ta.setValue(resolution);
-                model.attributeChanged(ta);
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                String value = getFieldValue(IssueField.STATUS);
+                if(!(value.equals("RESOLVED") && resolution.equals(getFieldValue(IssueField.RESOLUTION)))) { // NOI18N
+                    setOperation(BugzillaOperation.resolve);
+                    TaskAttribute rta = model.getTaskData().getRoot();
+                    TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.resolve.getInputId());
+                    if(ta != null) { // ta can be null when changing status from CLOSED to RESOLVED
+                        ta.setValue(resolution);
+                        model.attributeChanged(ta);
+                    }
+                }
             }
-        }
+        });
     }
 
     void accept() {
@@ -1064,56 +1069,67 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     }
 
     boolean submitAndRefresh() {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        final boolean[] result = new boolean[1];
+        runWithModelLoaded(new Runnable() {
 
-        prepareSubmit();
-        final boolean wasNew = isNew();
-        final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
-        
-        SubmitTaskCommand submitCmd;
-        try {
-            save(model);
-            submitCmd = MylynSupport.getInstance().getMylynFactory().createSubmitTaskCommand(task, model);
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.WARNING, null, ex);
-            return false;
-        }
-        repository.getExecutor().execute(submitCmd);
+            @Override
+            public void run () {
+                assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
-        if (!wasNew) {
-            refresh();
-        } else {
-            RepositoryResponse rr = submitCmd.getRepositoryResponse();
-            if(!submitCmd.hasFailed()) {
-                ITask newTask = submitCmd.getSubmittedTask();
-                assert newTask != null && newTask != task;
-                task = newTask;
-                resetModel();
-                String id = task.getTaskId();
+                prepareSubmit();
+                final boolean wasNew = isNew();
+
+                SubmitTaskCommand submitCmd;
                 try {
-                    repository.getIssueCache().setIssueData(id, this);
-                } catch (IOException ex) {
-                    Bugzilla.LOG.log(Level.INFO, null, ex);
+                    save(model);
+                    submitCmd = MylynSupport.getInstance().getMylynFactory().createSubmitTaskCommand(task, model);
+                } catch (CoreException ex) {
+                    Bugzilla.LOG.log(Level.WARNING, null, ex);
+                    result[0] = false;
+                    return;
                 }
-                Bugzilla.LOG.log(Level.FINE, "created issue #{0}", id);
-                // a new issue was created -> refresh all queries
-                repository.refreshAllQueries();
-            } else {
-                Bugzilla.LOG.log(Level.FINE, "submiting failed");
-                if(rr != null) {
-                    Bugzilla.LOG.log(Level.FINE, "repository response {0}", rr.getReposonseKind());
+                repository.getExecutor().execute(submitCmd);
+
+                if (!wasNew) {
+                    refresh();
                 } else {
-                    Bugzilla.LOG.log(Level.FINE, "no repository response available");
+                    RepositoryResponse rr = submitCmd.getRepositoryResponse();
+                    if(!submitCmd.hasFailed()) {
+                        ITask newTask = submitCmd.getSubmittedTask();
+                        assert newTask != null && newTask != task;
+                        task = newTask;
+                        resetModel();
+                        String id = task.getTaskId();
+                        try {
+                            repository.getIssueCache().setIssueData(id, BugzillaIssue.this);
+                        } catch (IOException ex) {
+                            Bugzilla.LOG.log(Level.INFO, null, ex);
+                        }
+                        Bugzilla.LOG.log(Level.FINE, "created issue #{0}", id);
+                        // a new issue was created -> refresh all queries
+                        repository.refreshAllQueries();
+                    } else {
+                        Bugzilla.LOG.log(Level.FINE, "submiting failed");
+                        if(rr != null) {
+                            Bugzilla.LOG.log(Level.FINE, "repository response {0}", rr.getReposonseKind());
+                        } else {
+                            Bugzilla.LOG.log(Level.FINE, "no repository response available");
+                        }
+                    }
                 }
+
+                if(submitCmd.hasFailed()) {
+                    result[0] = false;
+                    return;
+                }
+
+                setUpToDate(true);
+                result[0] = true;
+                return;
             }
-        }
-
-        if(submitCmd.hasFailed()) {
-            return false;
-        }
-
-        setUpToDate(true);
-        return true;
+            
+        });
+        return result[0];
     }
 
     boolean cancelChanges () {
@@ -1364,6 +1380,14 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
                 runnable.run();
             } finally {
                 if (closeModel) {
+                    if (model != null && model.isDirty()) {
+                        try {
+                            // let's not loose edits
+                            model.save(null);
+                        } catch (CoreException ex) {
+                            Bugzilla.LOG.log(Level.INFO, null, ex);
+                        }
+                    }
                     model = null;
                 }
             }

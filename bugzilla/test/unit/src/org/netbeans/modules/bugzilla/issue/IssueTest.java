@@ -46,10 +46,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;
 import org.eclipse.core.runtime.CoreException;
@@ -57,12 +55,16 @@ import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.ITask;
+import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
+import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.mylyn.util.MylynSupport;
+import org.netbeans.modules.mylyn.util.SubmitCommand;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -72,7 +74,6 @@ import org.openide.util.test.MockLookup;
 public class IssueTest extends NbTestCase implements TestConstants {
 
     private static String REPO_NAME = "Beautiful";
-    private Method getSeenAttributes;
 
     public IssueTest(String arg0) {
         super(arg0);
@@ -385,6 +386,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         String summary = "somary" + ts;
         String id = TestUtil.createIssue(getRepository(), summary);
         BugzillaIssue issue = (BugzillaIssue) getRepository().getIssue(id);
+        openTask(issue);
         assertEquals(summary, issue.getFieldValue(IssueField.SUMMARY));
 
         resetStatusValues(issue);
@@ -392,25 +394,23 @@ public class IssueTest extends NbTestCase implements TestConstants {
         BugzillaRepository repository = getRepository();
         BugzillaRepositoryConnector brc = new BugzillaRepositoryConnector(new File(getWorkDir().getAbsolutePath(), "bugzillaconfiguration"));
         ITask task = BugzillaUtil.getTask(repository, id, false);
-        BugzillaIssue modIssue = new BugzillaIssue(task, repository);
+        TaskData td = MylynSupport.getInstance().getTaskDataState(task).getRepositoryData();
 
         // add a cc
         assertNotSame(REPO_USER, issue.getFieldValue(IssueField.CC));
-        modIssue.setFieldValue(IssueField.NEWCC, REPO_USER);
-        submit(modIssue);
+        setFieldValue(td, IssueField.NEWCC, REPO_USER);
+        getRepository().getExecutor().execute(new SubmitCommand(brc, getRepository().getTaskRepository(), td));
         issue.refresh();
 
         assertEquals(REPO_USER, issue.getFieldValue(IssueField.CC));
-        assertStatus(BugzillaIssue.FIELD_STATUS_NEW, issue, IssueField.CC);
+        assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.CC);
 
         resetStatusValues(issue);
 
-        task = BugzillaUtil.getTask(repository, issue.getID(), false);
-        modIssue = new BugzillaIssue(task, repository);
-
         // add new cc
-        modIssue.setFieldValue(IssueField.NEWCC, REPO_USER2);
-        submit(modIssue);
+        td = MylynSupport.getInstance().getTaskDataState(task).getRepositoryData();
+        setFieldValue(td, IssueField.NEWCC, REPO_USER2);
+        getRepository().getExecutor().execute(new SubmitCommand(brc, getRepository().getTaskRepository(), td));
         issue.refresh();
 
         List<String> ccs = issue.getFieldValues(IssueField.CC);
@@ -419,12 +419,12 @@ public class IssueTest extends NbTestCase implements TestConstants {
         assertTrue(ccs.contains(REPO_USER2));
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.CC);
 
-        task = BugzillaUtil.getTask(repository, issue.getID(), false);
-        modIssue = new BugzillaIssue(task, repository);
-
+        resetStatusValues(issue);
+        
         // add two cc-s at once
-        modIssue.setFieldValue(IssueField.NEWCC, REPO_USER3 + ", " + REPO_USER4);
-        submit(modIssue);
+        td = MylynSupport.getInstance().getTaskDataState(task).getRepositoryData();
+        setFieldValue(td, IssueField.NEWCC, REPO_USER3 + ", " + REPO_USER4);
+        getRepository().getExecutor().execute(new SubmitCommand(brc, getRepository().getTaskRepository(), td));
         issue.refresh();
 
         ccs = issue.getFieldValues(IssueField.CC);
@@ -437,17 +437,15 @@ public class IssueTest extends NbTestCase implements TestConstants {
 
         resetStatusValues(issue);
 
-        task = BugzillaUtil.getTask(repository, issue.getID(), false);
-        modIssue = new BugzillaIssue(task, repository);
-
         // remove a cc
+        td = MylynSupport.getInstance().getTaskDataState(task).getRepositoryData();
         ccs = new ArrayList<String>();
         ccs.add(REPO_USER4);
         ccs.add(REPO_USER);
-        modIssue.setFieldValues(IssueField.REMOVECC, ccs);
-
-        submit(modIssue);
+        setFieldValues(td, IssueField.REMOVECC, ccs);
+        getRepository().getExecutor().execute(new SubmitCommand(brc, getRepository().getTaskRepository(), td));
         issue.refresh();
+
         ccs = issue.getFieldValues(IssueField.CC);
         assertEquals(2, ccs.size());
         assertTrue(ccs.contains(REPO_USER2));
@@ -456,15 +454,13 @@ public class IssueTest extends NbTestCase implements TestConstants {
 
         resetStatusValues(issue);
 
-        task = BugzillaUtil.getTask(repository, issue.getID(), false);
-        modIssue = new BugzillaIssue(task, repository);
-
         // remove all
+        td = MylynSupport.getInstance().getTaskDataState(task).getRepositoryData();
         ccs = new ArrayList<String>();
         ccs.add(REPO_USER3);
         ccs.add(REPO_USER2);        
-        modIssue.setFieldValues(IssueField.REMOVECC, ccs);
-        submit(modIssue);
+        setFieldValues(td, IssueField.REMOVECC, ccs);
+        getRepository().getExecutor().execute(new SubmitCommand(brc, getRepository().getTaskRepository(), td));
         issue.refresh();
         ccs = issue.getFieldValues(IssueField.CC);
         assertEquals(0, ccs.size());
@@ -805,7 +801,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
             fail("expected [" + getName(expectedStatus) + "], " +
                  "was [" + getName(status)+ "] " +
                  "because of value [" + issue.getFieldValue(f) + "] " +
-                 "vs [" + getSeenValue(issue, f) + "] in field " + f);
+                 "vs [" + issue.getLastSeenFieldValue(f) + "] in field " + f);
         }
     }
 
@@ -813,8 +809,6 @@ public class IssueTest extends NbTestCase implements TestConstants {
         switch(s) {
             case BugzillaIssue.FIELD_STATUS_IRELEVANT:
                 return "Irelevant";
-            case BugzillaIssue.FIELD_STATUS_NEW :
-                return "New";
             case BugzillaIssue.FIELD_STATUS_MODIFIED :
                 return "Modified";
             case BugzillaIssue.FIELD_STATUS_UPTODATE :
@@ -822,19 +816,6 @@ public class IssueTest extends NbTestCase implements TestConstants {
             default :
                 throw new IllegalStateException("Wrong status " + s);
         }
-    }
-
-    private String getSeenValue(BugzillaIssue issue, IssueField f) throws IllegalAccessException, IllegalArgumentException, NoSuchMethodException, InvocationTargetException {
-        if(getSeenAttributes ==  null) {
-            getSeenAttributes = issue.getClass().getDeclaredMethod("getSeenAttributes");
-            getSeenAttributes.setAccessible(true);
-        }
-        Map<String, String> m = (Map<String, String>) getSeenAttributes.invoke(issue);
-        if(m == null) {
-            return "";
-        }
-        String ret = m.get(f.getKey());
-        return ret != null ? ret : "";
     }
 
     private BugzillaRepository getRepository() {
@@ -911,17 +892,9 @@ public class IssueTest extends NbTestCase implements TestConstants {
     }
 
     private void resetStatusValues(BugzillaIssue issue) throws InterruptedException, SecurityException, IOException, IllegalAccessException, IllegalArgumentException, NoSuchMethodException, InvocationTargetException {
-        issue.closed(); // resets the status values
-        setSeen(issue);
-    }
-
-    private void setSeen(BugzillaIssue issue) throws SecurityException, InterruptedException, IOException, IllegalAccessException, IllegalArgumentException, NoSuchMethodException, InvocationTargetException {
-        LogHandler lh = new LogHandler("finished storing issue");
-        addHandler(lh);
         issue.setUpToDate(true);
-        while (!lh.done) {
-            Thread.sleep(100);
-        }
+        issue.closed();
+        openTask(issue);
         for (IssueField f : issue.getRepository().getConfiguration().getFields()) {
             // seen -> everything's uptodate
             assertStatus(BugzillaIssue.FIELD_STATUS_UPTODATE, issue, f);
@@ -951,6 +924,33 @@ public class IssueTest extends NbTestCase implements TestConstants {
         } finally {
             try { if (fw != null) fw.close(); } catch (IOException iOException) { }
         }
+    }
+
+    private void openTask (BugzillaIssue issue) throws InterruptedException {
+        // make sure model is loaded
+        issue.opened();
+        for (int i = 0; i < 10; ++i) {
+            if (!issue.getFieldValue(IssueField.SUMMARY).isEmpty()) {
+                break;
+            }
+            Thread.sleep(1000);
+        }
+    }
+
+    private void setFieldValue (TaskData td, IssueField f, String value) {
+        TaskAttribute a = td.getRoot().getMappedAttribute(f.getKey());
+        if(a == null) {
+            a = new TaskAttribute(td.getRoot(), f.getKey());
+        }
+        a.setValue(value);
+    }
+
+    private void setFieldValues (TaskData td, IssueField f, List<String> values) {
+        TaskAttribute a = td.getRoot().getMappedAttribute(f.getKey());
+        if(a == null) {
+            a = new TaskAttribute(td.getRoot(), f.getKey());
+        }
+        a.setValues(values);
     }
 
     private class LogHandler extends Handler {
