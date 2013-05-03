@@ -44,6 +44,7 @@
 
 package org.netbeans.lib.editor.codetemplates.spi;
 
+import java.util.List;
 import javax.swing.text.JTextComponent;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.spi.editor.mimelookup.MimeLocation;
@@ -80,6 +81,24 @@ public interface CodeTemplateFilter {
          * @return non-null code template filter instance.
          */
         CodeTemplateFilter createFilter(JTextComponent component, int offset);
+    }
+    
+    /**
+     * Factory for producing of the code template filters that filter templates
+     * based on their contexts.
+     * <br/>
+     * It should be registered in the MimeLookup for a given mime-type.
+     * 
+     * @since 1.34
+     */
+    @MimeLocation(subfolderName="CodeTemplateFilterFactories")
+    public interface ContextBasedFactory extends Factory {
         
+        /**
+         * Get the list of all code template contexts supported by filters
+         * created by the factory.
+         * @return non-null list of supported contexts.
+         */
+        List<String> getSupportedContexts();
     }
 }
