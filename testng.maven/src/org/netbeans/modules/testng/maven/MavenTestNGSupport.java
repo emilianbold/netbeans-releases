@@ -104,7 +104,7 @@ public class MavenTestNGSupport extends TestNGSupportImplementation {
                     String artifactID = "testng"; //NOI18N
                     if (!ModelUtils.hasModelDependency(model, groupID, artifactID)) {
                         Dependency dep = ModelUtils.checkModelDependency(model, groupID, artifactID, true);
-                        dep.setVersion("6.5.2"); //NOI18N
+                        dep.setVersion("6.8.1"); //NOI18N
                         dep.setScope("test"); //NOI18N
                     }
                 }
