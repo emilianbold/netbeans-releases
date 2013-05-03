@@ -91,6 +91,22 @@ public abstract class IOColors {
         /** input text
          * @since 1.39 */
         INPUT,
+        /** Info about success. Change is not guaranteed to affect colored
+         * output written in the past.
+         * @since 1.40 */
+        LOG_SUCCESS,
+        /** Info about failure. Change is not guaranteed to affect colored
+         * output written in the past.
+         * @since 1.40 */
+        LOG_FAILURE,
+        /**Info about warning. Change is not guaranteed to affect colored
+         * output written in the past.
+         * @since 1.40 */
+        LOG_WARNING,
+        /** Debugging info. Change is not guaranteed to affect colored
+         * output written in the past.
+         * @since 1.40 */
+        LOG_DEBUG
     }
 
     /**

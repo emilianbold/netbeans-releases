@@ -88,6 +88,10 @@ public class OutputOptions {
             "color.link.important";                                     //NOI18N
     public static final String PROP_COLOR_BACKGROUND =
             "color.backgorund";                                         //NOI18N
+    public static final String PROP_COLOR_WARNING = "color.warning";    //NOI18N
+    public static final String PROP_COLOR_FAILURE = "color.failure";    //NOI18N
+    public static final String PROP_COLOR_SUCCESS = "color.success";    //NOI18N
+    public static final String PROP_COLOR_DEBUG = "color.debug";        //NOI18N
     public static final String PROP_STYLE_LINK = "style.link";          //NOI18N
     public static final String PROP_FONT_SIZE_WRAP = "font.size.wrap";  //NOI18N
     private static final String PROP_INITIALIZED = "initialized";       //NOI18N
@@ -102,6 +106,10 @@ public class OutputOptions {
     private Color colorLink;
     private Color colorLinkImportant;
     private Color colorBackground;
+    private Color colorWarning;
+    private Color colorFailure;
+    private Color colorSuccess;
+    private Color colorDebug;
     private LinkStyle linkStyle = LinkStyle.UNDERLINE;
     private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private boolean defaultFontType = false;
@@ -139,6 +147,28 @@ public class OutputOptions {
                 getDefaultFont().getSize());
         diskData.setFontForWrappedMode(
                 getDefaultFont().deriveFont((float) fontSizeWrapped));
+        loadColors(preferences, diskData);
+        String linkStyleStr = preferences.get(PREFIX + PROP_STYLE_LINK,
+                "UNDERLINE");                                           //NOI18N
+        try {
+            diskData.setLinkStyle(LinkStyle.valueOf(linkStyleStr));
+        } catch (Exception e) {
+            LOG.log(Level.INFO, "Invalid link style {0}", linkStyleStr);//NOI18N
+        }
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                assign(diskData);
+                synchronized (OutputOptions.this) {
+                    initialized = true;
+                }
+                pcs.firePropertyChange(PROP_INITIALIZED, false, true);
+            }
+        });
+    }
+
+    private void loadColors(final Preferences preferences,
+            final OutputOptions diskData) {
         int rgbStandard = preferences.getInt(PREFIX + PROP_COLOR_STANDARD,
                 getDefaultColorStandard().getRGB());
         diskData.setColorStandard(new Color(rgbStandard));
@@ -157,24 +187,23 @@ public class OutputOptions {
         int rgbLinkImportant = preferences.getInt(
                 PREFIX + PROP_COLOR_LINK_IMPORTANT,
                 getDefaultColorLinkImportant().getRGB());
-        String linkStyleStr = preferences.get(PREFIX + PROP_STYLE_LINK,
-                "UNDERLINE");                                           //NOI18N
-        try {
-            diskData.setLinkStyle(LinkStyle.valueOf(linkStyleStr));
-        } catch (Exception e) {
-            LOG.log(Level.INFO, "Invalid link style {0}", linkStyleStr);//NOI18N
-        }
         diskData.setColorLinkImportant(new Color(rgbLinkImportant));
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                assign(diskData);
-                synchronized (OutputOptions.this) {
-                    initialized = true;
-                }
-                pcs.firePropertyChange(PROP_INITIALIZED, false, true);
-            }
-        });
+        int rgbDebug = preferences.getInt(
+                PREFIX + PROP_COLOR_DEBUG,
+                getDefaultColorDebug().getRGB());
+        diskData.setColorDebug(new Color(rgbDebug));
+        int rgbWarning = preferences.getInt(
+                PREFIX + PROP_COLOR_WARNING,
+                getDefaultColorWarning().getRGB());
+        diskData.setColorWarning(new Color(rgbWarning));
+        int rgbFailure = preferences.getInt(
+                PREFIX + PROP_COLOR_FAILURE,
+                getDefaultColorFailure().getRGB());
+        diskData.setColorFailure(new Color(rgbFailure));
+        int rgbSuccess = preferences.getInt(
+                PREFIX + PROP_COLOR_SUCCESS,
+                getDefaultColorSuccess().getRGB());
+        diskData.setColorSuccess(new Color(rgbSuccess));
     }
 
     public void saveTo(Preferences preferences) {
@@ -189,6 +218,14 @@ public class OutputOptions {
                 getColorBackground().getRGB());
         preferences.putInt(PREFIX + PROP_COLOR_LINK,
                 getColorLink().getRGB());
+        preferences.putInt(PREFIX + PROP_COLOR_WARNING,
+                getColorWarning().getRGB());
+        preferences.putInt(PREFIX + PROP_COLOR_FAILURE,
+                getColorFailure().getRGB());
+        preferences.putInt(PREFIX + PROP_COLOR_SUCCESS,
+                getColorSuccess().getRGB());
+        preferences.putInt(PREFIX + PROP_COLOR_DEBUG,
+                getColorDebug().getRGB());
         preferences.putInt(PREFIX + PROP_COLOR_LINK_IMPORTANT,
                 getColorLinkImportant().getRGB());
         preferences.putInt(PREFIX + PROP_FONT_SIZE, getFont().getSize());
@@ -211,6 +248,10 @@ public class OutputOptions {
         setColorLink(getDefaultColorLink());
         setColorLinkImportant(getDefaultColorLinkImportant());
         setColorBackground(getDefaultColorBackground());
+        setColorWarning(getDefaultColorWarning());
+        setColorFailure(getDefaultColorFailure());
+        setColorSuccess(getDefaultColorSuccess());
+        setColorDebug(getDefaultColorDebug());
     }
 
     private void setDefaultFont() {
@@ -272,6 +313,22 @@ public class OutputOptions {
 
     public Color getColorBackground() {
         return colorBackground;
+    }
+
+    public Color getColorWarning() {
+        return colorWarning;
+    }
+
+    public Color getColorFailure() {
+        return colorFailure;
+    }
+
+    public Color getColorSuccess() {
+        return colorSuccess;
+    }
+
+    public Color getColorDebug() {
+        return colorDebug;
     }
 
     public LinkStyle getLinkStyle() {
@@ -408,6 +465,46 @@ public class OutputOptions {
         }
     }
 
+    public void setColorWarning(Color colorWarning) {
+        Parameters.notNull("colorWarning", colorWarning);               //NOI18N
+        if (!colorWarning.equals(this.colorWarning)) {
+            Color oldColorWarning = this.colorWarning;
+            this.colorWarning = colorWarning;
+            pcs.firePropertyChange(PROP_COLOR_WARNING, oldColorWarning,
+                    colorWarning);
+        }
+    }
+
+    public void setColorFailure(Color colorFailure) {
+        Parameters.notNull("colorFailure", colorFailure);               //NOI18N
+        if (!colorFailure.equals(this.colorFailure)) {
+            Color oldColorFailure = this.colorFailure;
+            this.colorFailure = colorFailure;
+            pcs.firePropertyChange(PROP_COLOR_FAILURE, oldColorFailure,
+                    colorFailure);
+        }
+    }
+
+    public void setColorSuccess(Color colorSuccess) {
+        Parameters.notNull("colorSuccess", colorSuccess);               //NOI18N
+        if (!colorSuccess.equals(this.colorSuccess)) {
+            Color oldColorSuccess = this.colorSuccess;
+            this.colorSuccess = colorSuccess;
+            pcs.firePropertyChange(PROP_COLOR_SUCCESS, oldColorSuccess,
+                    colorSuccess);
+        }
+    }
+
+    public void setColorDebug(Color colorDebug) {
+        Parameters.notNull("colorDebug", colorDebug);                   //NOI18N
+        if (!colorDebug.equals(this.colorDebug)) {
+            Color oldColorDebug = this.colorDebug;
+            this.colorDebug = colorDebug;
+            pcs.firePropertyChange(PROP_COLOR_DEBUG, oldColorDebug,
+                    colorDebug);
+        }
+    }
+
     public void setLinkStyle(LinkStyle linkStyle) {
         Parameters.notNull("linkStyle", linkStyle);                     //NOI18N
         if (!linkStyle.equals(this.linkStyle)) {
@@ -448,6 +545,10 @@ public class OutputOptions {
         copy.colorBackground = this.colorBackground;
         copy.colorLink = this.colorLink;
         copy.colorLinkImportant = this.colorLinkImportant;
+        copy.colorWarning = this.colorWarning;
+        copy.colorFailure = this.colorFailure;
+        copy.colorSuccess = this.colorSuccess;
+        copy.colorDebug = this.colorDebug;
         copy.initialized = initialized;
         copy.linkStyle = linkStyle;
         if (!initialized) {
@@ -480,6 +581,10 @@ public class OutputOptions {
         this.setColorLink(outputOptions.getColorLink());
         this.setColorLinkImportant(outputOptions.getColorLinkImportant());
         this.setColorBackground(outputOptions.getColorBackground());
+        this.setColorDebug(outputOptions.getColorDebug());
+        this.setColorWarning(outputOptions.getColorWarning());
+        this.setColorFailure(outputOptions.getColorFailure());
+        this.setColorSuccess(outputOptions.getColorSuccess());
         this.setLinkStyle(outputOptions.getLinkStyle());
     }
 
@@ -543,6 +648,110 @@ public class OutputOptions {
         }
     }
 
+    static Color getDefaultColorWarning() {
+        Color c = UIManager.getColor("nb.output.warning.foreground");
+        if (c == null) {
+            c = ensureContrastingColor(Color.ORANGE, getDefaultColorBackground());
+        }
+        return c;
+    }
+
+    static Color getDefaultColorFailure() {
+        Color c = UIManager.getColor("nb.output.failure.foreground");
+        if (c == null) {
+            c = ensureContrastingColor(Color.RED, getDefaultColorBackground());
+        }
+        return c;
+    }
+
+    static Color getDefaultColorSuccess() {
+        Color c = UIManager.getColor("nb.output.success.foreground");
+        if (c == null) {
+            c = ensureContrastingColor(Color.GREEN.darker().darker(),
+                    getDefaultColorBackground());
+        }
+        return c;
+    }
+
+    static Color getDefaultColorDebug() {
+        Color c = UIManager.getColor("nb.output.debug.foreground");
+        if (c == null) {
+            c = ensureContrastingColor(Color.GRAY, getDefaultColorBackground());
+        }
+        return c;
+    }
+
+    /* From openide.awt/HtmlLabelUI.
+     (int pos, String s, Graphics g, int x,
+     int y, int w, int h, Font f, Color defaultColor, int style,
+     boolean paint, Color background) {  */
+    static Color ensureContrastingColor(Color fg, Color bg) {
+        if (bg == null) {
+            if (isNimbus()) {
+                bg = UIManager.getColor("Tree.background"); //NOI18N
+                if (null == bg) {
+                    bg = Color.WHITE;
+                }
+            } else {
+                bg = UIManager.getColor("text"); //NOI18N
+
+                if (bg == null) {
+                    bg = Color.WHITE;
+                }
+            }
+        }
+        if (fg == null) {
+            if (isNimbus()) {
+                fg = UIManager.getColor("Tree.foreground"); //NOI18N
+                if (null == fg) {
+                    fg = Color.BLACK;
+                }
+            } else {
+                fg = UIManager.getColor("textText"); //NOI18N
+                if (fg == null) {
+                    fg = Color.BLACK;
+                }
+            }
+        }
+
+        if (Color.BLACK.equals(fg) && Color.WHITE.equals(fg)) {
+            return fg;
+        }
+
+        boolean replace = fg.equals(bg);
+        int dif = 0;
+
+        if (!replace) {
+            dif = difference(fg, bg);
+            replace = dif < 60;
+        }
+
+        if (replace) {
+            int lum = luminance(bg);
+            boolean darker = lum >= 128;
+
+            if (darker) {
+                fg = fg.darker();
+            } else {
+                fg = fg.brighter();
+            }
+        }
+
+        return fg;
+    }
+
+    private static int difference(Color a, Color b) {
+        return Math.abs(luminance(a) - luminance(b));
+    }
+
+    private static int luminance(Color c) {
+        return (299 * c.getRed() + 587 * c.getGreen() + 114 * c.getBlue()) / 1000;
+    }
+
+    static boolean isNimbus() {
+        return "Nimbus".equals(UIManager.getLookAndFeel().getID());     //NOI18N
+    }
+
     public Color getColorForType(IOColors.OutputType type) {
         switch (type) {
             case OUTPUT:
@@ -555,6 +764,14 @@ public class OutputOptions {
                 return getColorLink();
             case HYPERLINK_IMPORTANT:
                 return getColorLinkImportant();
+            case LOG_DEBUG:
+                return getColorDebug();
+            case LOG_WARNING:
+                return getColorWarning();
+            case LOG_FAILURE:
+                return getColorFailure();
+            case LOG_SUCCESS:
+                return getColorSuccess();
             default:
                 return getColorStandard();
         }

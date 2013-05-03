@@ -46,6 +46,8 @@ import java.awt.Color;
 import javax.swing.Action;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
+import org.openide.windows.IOColors;
+import org.openide.windows.InputOutput;
 import org.openide.windows.OutputListener;
 
 /**
@@ -59,6 +61,7 @@ public final class OutputVisitor {
     private boolean important;
     private String line;
     private boolean skipLine = false;
+    private IOColors.OutputType outputType;
     private Color color;
     private Context context;
     
@@ -92,6 +95,7 @@ public final class OutputVisitor {
         line = null;
         skipLine = false;
         color = null;
+        outputType = null;
     }
     
     public OutputListener getOutputListener() {
@@ -155,6 +159,24 @@ public final class OutputVisitor {
         return skipLine;
     }
 
+    /**
+     * Get the color. If the output type was set using
+     * {@link #setOutputType(org.openide.windows.IOColors.OutputType)}, try to
+     * resolve the actual color. If the output type was not set, or the actual
+     * color cannot be resolved, return value that was set using
+     * {@link #setColor(java.awt.Color)}; supported.
+     *
+     * @since maven/2.78
+     */
+    public Color getColor(InputOutput io) {
+        Color c = this.outputType == null
+                ? null
+                : IOColors.getColor(io, this.outputType);
+        return c == null
+                ? getColor()
+                : c;
+    }
+
     public Color getColor() {
         return color;
     }
@@ -163,6 +185,16 @@ public final class OutputVisitor {
         this.color = color;
     }
     
+    /**
+     * Set output type that will be used in method
+     * {@link #getColor(org.openide.windows.InputOutput)}.
+     *
+     * @since maven/2.78
+     */
+    public void setOutputType(IOColors.OutputType outputType) {
+        this.outputType = outputType;
+    }
+
     public @CheckForNull Context getContext() {
         return context;
     }

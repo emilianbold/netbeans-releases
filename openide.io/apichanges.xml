@@ -107,6 +107,24 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="coloredLoggingText">
+      <api name="io"/>
+      <summary>Added LOG_SUCCESS, LOG_FAILURE, LOG_WARNING and LOG_DEBUG into IOColors.OutputType to be able to specify a color of logging messages.</summary>
+      <version major="1" minor="40"/>
+      <date day="25" month="4" year="2013"/>
+      <author login="jhavlin"/>
+      <compatibility addition="yes" binary="compatible" semantic="compatible" />
+      <description>
+          <p>
+              Added enum elements <code>LOG_SUCCESS, LOG_FAILURE, LOG_WARNING
+              and LOG_DEBUG</code> into <code>IOColors.OutputType</code>
+              that can be passed to get/setColor methods to have access
+              to color of standard logging messages.
+          </p>
+      </description>
+      <class package="org.openide.windows" name="IOColors"/>
+      <issue number="225439" />
+    </change>
     <change id="coloredInput">
       <api name="io"/>
       <summary>Added IOColors.OutputType.INPUT to be able to specify a color of input text.</summary>
