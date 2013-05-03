@@ -82,6 +82,7 @@ public final class MavenSettings  {
     public static final String PROP_PROJECTNODE_NAME_PATTERN = "project.displayName"; //NOI18N
     private static final String PROP_ALWAYS_OUTPUT = "alwaysShowOutput";
     private static final String PROP_REUSE_OUTPUT = "reuseOutputTabs";
+    private static final String PROP_COLLAPSE_FOLDS = "collapseSuccessFolds";
 
     //these are from former versions (6.5) and are here only for conversion
     private static final String PROP_DEBUG = "showDebug"; // NOI18N
@@ -289,6 +290,14 @@ public final class MavenSettings  {
 
     public String getProjectNodeNamePattern() {
         return getPreferences().get(PROP_PROJECTNODE_NAME_PATTERN, null); //NOI18N
+    }
+
+    public boolean isCollapseSuccessFolds() {
+        return getPreferences().getBoolean(PROP_COLLAPSE_FOLDS, false);
+    }
+    
+    public void setCollapseSuccessFolds(boolean collapse) {
+        getPreferences().putBoolean(PROP_COLLAPSE_FOLDS, collapse);
     }
     
     public static enum DownloadStrategy {

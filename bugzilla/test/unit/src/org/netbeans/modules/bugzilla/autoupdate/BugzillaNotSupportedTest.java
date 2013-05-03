@@ -64,6 +64,7 @@ public class BugzillaNotSupportedTest extends NbTestCase implements TestConstant
     @Override
     protected void setUp() throws Exception {
         System.setProperty("netbeans.t9y.bugzilla.supported.version", "0.0.0");
+        System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
         super.setUp();
     }
 
