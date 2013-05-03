@@ -448,15 +448,15 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
          */
         private void updateFoldForException(String line) {
             if (exceptionStart.matcher(line).find()) {
-                currentTreeNode.finishNestedFold();
+                currentTreeNode.finishInnerOutputFold();
                 inStackTrace = true;
             } else if (inStackTrace
                     && stackTraceElement.matcher(line).find()) {
-                if (!currentTreeNode.hasNestedFold()) {
-                    currentTreeNode.startNestedFold();
+                if (!currentTreeNode.hasInnerOutputFold()) {
+                    currentTreeNode.startInnerOutputFold();
                 }
             } else {
-                currentTreeNode.finishNestedFold();
+                currentTreeNode.finishInnerOutputFold();
                 inStackTrace = false;
             }
         }

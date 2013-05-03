@@ -121,7 +121,7 @@ public class ExecutionEventObject {
         private IOPosition.Position startOffset;
         private IOPosition.Position endOffset;
         private FoldHandle foldHandle;
-        private FoldHandle nestedFoldHandle;
+        private FoldHandle innerOutputFoldHandle;
 
         public Tree(ExecutionEventObject current, ExecutionEventObject.Tree parent) {
             this.startEvent = current;
@@ -182,7 +182,7 @@ public class ExecutionEventObject {
          */
         public void finishFold() {
             if (foldHandle != null) {
-                finishNestedFold();
+                finishInnerOutputFold();
                 foldHandle.finish();
                 foldHandle = null;
             }
@@ -193,30 +193,30 @@ public class ExecutionEventObject {
          * stacktrace folds in the exec tree. If a nested fold already exists,
          * it will be finished before starting new fold.
          */
-        public void startNestedFold() {
+        public void startInnerOutputFold() {
             if (foldHandle != null) {
-                if (nestedFoldHandle != null) {
-                    nestedFoldHandle.finish();
+                if (innerOutputFoldHandle != null) {
+                    innerOutputFoldHandle.finish();
                 }
-                nestedFoldHandle = foldHandle.startFold(true);
+                innerOutputFoldHandle = foldHandle.startFold(true);
             }
         }
 
         /**
-         * Finish current nested fold created with {@link #startNestedFold()}.
+         * Finish current nested fold created with {@link #startInnerOutputFold()}.
          */
-        public void finishNestedFold() {
-            if (nestedFoldHandle != null) {
-                nestedFoldHandle.finish();
-                nestedFoldHandle = null;
+        public void finishInnerOutputFold() {
+            if (innerOutputFoldHandle != null) {
+                innerOutputFoldHandle.finish();
+                innerOutputFoldHandle = null;
             }
         }
 
         /**
          * Check whether a nested fold exists.
          */
-        public boolean hasNestedFold() {
-            return nestedFoldHandle != null;
+        public boolean hasInnerOutputFold() {
+            return innerOutputFoldHandle != null;
         }
     }
     
