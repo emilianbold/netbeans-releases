@@ -320,7 +320,7 @@ public class WorkingCopy extends CompilationController {
      *                 values are not allowed.
      * @throws IllegalStateException if <code>toPhase()</code> method was not
      *         called before.
-     * @since 0.123
+     * @since 0.124
      */
     public synchronized void rewrite(@NonNull Tree tree, @NonNull DocTree oldTree, @NonNull DocTree newTree) {
         checkConfinement();

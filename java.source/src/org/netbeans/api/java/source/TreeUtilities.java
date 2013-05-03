@@ -380,7 +380,7 @@ public final class TreeUtilities {
      * @param doc the documentation comment inside which the search should be performed
      * @param pos the position to search for
      * @return the deepest DocTreePath at the given position
-     * @since 0.123
+     * @since 0.124
      */
     public DocTreePath pathFor(TreePath treepath, DocCommentTree doc, int pos) {
         return pathFor(new DocTreePath(treepath, doc), pos);
@@ -391,7 +391,7 @@ public final class TreeUtilities {
      * @param path where the search should start
      * @param pos the position to search for
      * @return the deepest DocTreePath at the given position
-     * @since 0.123
+     * @since 0.124
      */
     public DocTreePath pathFor(DocTreePath path, int pos) {
         return pathFor(path, pos, info.getDocTrees().getSourcePositions());
@@ -403,7 +403,7 @@ public final class TreeUtilities {
      * @param pos the position to search for
      * @param sourcePositions to determine spans of {@link DocTree}s
      * @return the deepest DocTreePath at the given position
-     * @since 0.123
+     * @since 0.124
      */
     public DocTreePath pathFor(DocTreePath path, int pos, DocSourcePositions sourcePositions) {
         if (info == null || path == null || sourcePositions == null)
@@ -830,7 +830,7 @@ public final class TreeUtilities {
      * 
      * @param mst member reference for which the identifier should be searched for
      * @return the span of the name, or null if cannot be found
-     * @since 0.123
+     * @since 0.124
      */
     public int[] findNameSpan(MemberReferenceTree mst) {
         return findNameSpan(mst.getName().toString(), mst, JavaTokenId.DOT, JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT);
@@ -844,7 +844,7 @@ public final class TreeUtilities {
      * 
      * @param ref reference for which the identifier should be found
      * @return the span of the name, or null if cannot be found
-     * @since 0.123
+     * @since 0.124
      */
     public int[] findNameSpan(DocCommentTree docTree, ReferenceTree ref) {
         Name name = ((DCReference) ref).memberName;
@@ -1178,7 +1178,7 @@ public final class TreeUtilities {
      * @param original the tree that should be translated
      * @param original2Translated map containing trees that should be translated
      * @return translated tree.
-     * @since 0.123
+     * @since 0.124
      */
     public @NonNull DocTree translate(final @NonNull DocTree original, final @NonNull Map<? extends DocTree, ? extends DocTree> original2Translated) {
         return translate(original, original2Translated, new NoImports(info), null);
@@ -1443,7 +1443,7 @@ public final class TreeUtilities {
      * 
      * @param path the leaf must be {@link ReferenceTree}
      * @return the referred type, or {@code null} if none.
-     * @since 0.123
+     * @since 0.124
      */
     public @CheckForNull ExpressionTree getReferenceClass(@NonNull DocTreePath path) {
         TreePath tp = path.getTreePath();
@@ -1458,7 +1458,7 @@ public final class TreeUtilities {
      * 
      * @param path the leaf must be {@link ReferenceTree}
      * @return the referred member name, or {@code null} if none.
-     * @since 0.123
+     * @since 0.124
      */
     public @CheckForNull Name getReferenceName(@NonNull DocTreePath path) {
         return ((DCReference) path.getLeaf()).memberName;
@@ -1468,7 +1468,7 @@ public final class TreeUtilities {
      * 
      * @param path the leaf must be {@link ReferenceTree}
      * @return the parameters for the referred method, or {@code null} if none.
-     * @since 0.123
+     * @since 0.124
      */
     public @CheckForNull List<? extends Tree> getReferenceParameters(@NonNull DocTreePath path) {
         TreePath tp = path.getTreePath();

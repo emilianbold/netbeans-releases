@@ -291,7 +291,7 @@ public class CompilationInfo {
     /**
      * Return the {@link DocTrees} service of the javac represented by this {@link CompilationInfo}.
      * @return javac DocTrees service
-     * @since 0.123
+     * @since 0.124
      */
     public @NonNull DocTrees getDocTrees() {
         return (DocTrees) getTrees();
