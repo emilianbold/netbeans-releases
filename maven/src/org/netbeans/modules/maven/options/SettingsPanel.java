@@ -341,6 +341,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         btnGoals = new javax.swing.JButton();
         cbAlwaysShow = new javax.swing.JCheckBox();
         cbReuse = new javax.swing.JCheckBox();
+        cbCollapseSuccessFolds = new javax.swing.JCheckBox();
         pnlAppearance = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -389,6 +390,8 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbReuse, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbReuse.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbCollapseSuccessFolds, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbCollapseSuccessFolds.text")); // NOI18N
+
         javax.swing.GroupLayout pnlExecutionLayout = new javax.swing.GroupLayout(pnlExecution);
         pnlExecution.setLayout(pnlExecutionLayout);
         pnlExecutionLayout.setHorizontalGroup(
@@ -413,7 +416,8 @@ public class SettingsPanel extends javax.swing.JPanel {
                             .addComponent(btnGoals)
                             .addComponent(cbAlwaysShow)
                             .addComponent(cbReuse)
-                            .addComponent(cbSkipTests))
+                            .addComponent(cbSkipTests)
+                            .addComponent(cbCollapseSuccessFolds))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -439,7 +443,9 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addComponent(cbReuse)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbAlwaysShow)
-                .addContainerGap(29, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbCollapseSuccessFolds)
+                .addContainerGap(47, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlExecution, "execution");
@@ -491,7 +497,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(cbProjectNodeNameMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txtProjectNodeNameCustomPattern, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(196, Short.MAX_VALUE))
+                .addContainerGap(243, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlAppearance, "appearance");
@@ -557,7 +563,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(comSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(114, Short.MAX_VALUE))
+                .addContainerGap(161, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlDependencies, "dependencies");
@@ -595,7 +601,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(lblIndex)
                     .addComponent(comIndex, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnIndex))
-                .addContainerGap(250, Short.MAX_VALUE))
+                .addContainerGap(297, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlIndex, "index");
@@ -707,6 +713,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnIndex;
     private javax.swing.JButton btnOptions;
     private javax.swing.JCheckBox cbAlwaysShow;
+    private javax.swing.JCheckBox cbCollapseSuccessFolds;
     private javax.swing.JComboBox cbProjectNodeNameMode;
     private javax.swing.JCheckBox cbReuse;
     private javax.swing.JCheckBox cbSkipTests;
@@ -822,6 +829,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbSkipTests.setSelected(MavenSettings.getDefault().isSkipTests());
         cbAlwaysShow.setSelected(MavenSettings.getDefault().isAlwaysShowOutput());
         cbReuse.setSelected(MavenSettings.getDefault().isReuseOutputTabs());
+        cbCollapseSuccessFolds.setSelected(MavenSettings.getDefault().isCollapseSuccessFolds());
 
         final String pattern = MavenSettings.getDefault().getProjectNodeNamePattern();
         txtProjectNodeNameCustomPattern.setText("");
@@ -885,6 +893,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         MavenSettings.getDefault().setSkipTests(cbSkipTests.isSelected());
         MavenSettings.getDefault().setAlwaysShowOutput(cbAlwaysShow.isSelected());
         MavenSettings.getDefault().setReuseOutputTabs(cbReuse.isSelected());
+        MavenSettings.getDefault().setCollapseSuccessFolds(cbCollapseSuccessFolds.isSelected());
         
         if (0 == cbProjectNodeNameMode.getSelectedIndex()) {
             //selected "default" entry

@@ -380,6 +380,9 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                 CommandLineOutputHandler.this.processStart(getEventId(SEC_MOJO_EXEC, tag), stdOut);
             }
             if (ExecutionEvent.Type.MojoSucceeded.equals(obj.type)) {
+                if (MavenSettings.getDefault().isCollapseSuccessFolds()) {
+                    currentTreeNode.collapseFold();
+                }
                 currentTreeNode.finishFold();
                 trimTree(obj);
                 ExecMojo exec = (ExecMojo) obj;
@@ -409,6 +412,9 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                 //GlobalOutputProcessor currently depens on skipped projects not being added to tree.
             }
             else if (ExecutionEvent.Type.ProjectSucceeded.equals(obj.type)) {
+                if (MavenSettings.getDefault().isCollapseSuccessFolds()) {
+                    currentTreeNode.collapseFold();
+                }
                 currentTreeNode.finishFold();
                 trimTree(obj);
                 CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);                    

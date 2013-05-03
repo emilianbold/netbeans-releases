@@ -174,8 +174,17 @@ public class ExecutionEventObject {
          */
         public void startFold(InputOutput io) {
             assert foldHandle == null;
-            ExecutionEventObject.Tree parentProject = findParentNodeOfType(ExecutionEvent.Type.ProjectStarted);
+            ExecutionEventObject.Tree parentProject = findParentNodeOfType(ExecutionEvent.Type.MojoStarted);
+            if (parentProject != null) {
+                //in forked environment..
+                assert parentProject.foldHandle != null;
+                this.foldHandle = parentProject.foldHandle.startFold(true);
+                return;
+            }
+            
+            parentProject = findParentNodeOfType(ExecutionEvent.Type.ProjectStarted);
             if (parentProject == null) {
+                
                 this.foldHandle = IOFolding.startFold(io, true);
             } else {
                 if (parentProject.foldHandle == null) {
@@ -227,6 +236,18 @@ public class ExecutionEventObject {
          */
         public boolean hasInnerOutputFold() {
             return innerOutputFoldHandle != null;
+        }
+
+        public void collapseFold() {
+            if (foldHandle != null) {
+                foldHandle.setExpanded(false);
+            }
+        }
+
+        public void expandFold() {
+            if (foldHandle != null) {
+                foldHandle.setExpanded(true);
+            }
         }
     }
     
