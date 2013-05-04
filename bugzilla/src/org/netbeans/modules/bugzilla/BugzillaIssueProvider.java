@@ -71,7 +71,7 @@ public class BugzillaIssueProvider extends KenaiIssueProvider<BugzillaIssue> {
 
     @Override
     public String[] getSubtasks(BugzillaIssue data) {
-        List<String> l = data.getFieldValues(IssueField.BLOCKS);
+        List<String> l = data.getRepositoryFieldValues(IssueField.BLOCKS);
         return l.toArray(new String[l.size()]);
     }
 
@@ -130,7 +130,11 @@ public class BugzillaIssueProvider extends KenaiIssueProvider<BugzillaIssue> {
                 }
                 @Override
                 public void setSeen(BugzillaIssue issue, boolean uptodate) {
-                    issue.setUpToDate(uptodate);
+                    if (uptodate) {
+                        // makes no sense, IssueAction marks issue seen                        
+                    } else {
+                        issue.setUpToDate(uptodate);
+                    }
                 }
                 @Override
                 public void removePropertyChangeListener(BugzillaIssue issue, PropertyChangeListener listener) {

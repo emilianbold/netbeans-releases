@@ -109,7 +109,6 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.Places;
-import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -265,8 +264,10 @@ public class Installer extends ModuleInstall implements Runnable {
                 for (LogRecord rec : disabledRec) {
                     LogRecords.write(logStreamMetrics(), rec);
                 }
-                LogRecord clusterRec = getClusterList(log);
+                LogRecord clusterRec = EnabledModulesCollector.getClusterList(log);
                 LogRecords.write(logStreamMetrics(), clusterRec);
+                LogRecord userInstalledRec = EnabledModulesCollector.getUserInstalledModules(log);
+                LogRecords.write(logStreamMetrics(), userInstalledRec);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -642,56 +643,20 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         if (!enabled.isEmpty()) {
             LogRecord rec = new LogRecord(Level.INFO, "USG_ENABLED_MODULES");
-            String[] enabledNames = new String[enabled.size()];
-            int i = 0;
-            for (ModuleInfo m : enabled) {
-                SpecificationVersion specVersion = m.getSpecificationVersion();
-                if (specVersion != null){
-                    enabledNames[i++]  = m.getCodeName() + " [" + specVersion.toString() + "]";
-                }else{
-                    enabledNames[i++] = m.getCodeName();
-                }
-            }
+            String[] enabledNames = EnabledModulesCollector.getModuleNames(enabled);
             rec.setParameters(enabledNames);
             rec.setLoggerName(logger.getName());
             enabledRec.add(rec);
         }
         if (!disabled.isEmpty()) {
             LogRecord rec = new LogRecord(Level.INFO, "USG_DISABLED_MODULES");
-            String[] disabledNames = new String[disabled.size()];
-            int i = 0;
-            for (ModuleInfo m : disabled) {
-                SpecificationVersion specVersion = m.getSpecificationVersion();
-                if (specVersion != null){
-                    disabledNames[i++]   = m.getCodeName() + " [" + specVersion.toString() + "]";
-                }else{
-                    disabledNames[i++] = m.getCodeName();
-                }
-            }
+            String[] disabledNames = EnabledModulesCollector.getModuleNames(disabled);
             rec.setParameters(disabledNames);
             rec.setLoggerName(logger.getName());
             disabledRec.add(rec);
         }
     }
 
-    static LogRecord getClusterList (Logger logger) {
-        LogRecord rec = new LogRecord(Level.INFO, "USG_INSTALLED_CLUSTERS");
-        String dirs = System.getProperty("netbeans.dirs");
-        if (dirs != null) {
-            String [] dirsArray = dirs.split(File.pathSeparator);
-            List<String> list = new ArrayList<String>();
-            for (int i = 0; i < dirsArray.length; i++) {
-                File f = new File(dirsArray[i]);
-                if (f.exists()){
-                    list.add(f.getName());
-                }
-            }
-            rec.setParameters(list.toArray());
-        }
-        rec.setLoggerName(logger.getName());
-        return rec;
-    }
-    
     public static URL hintsURL() {
         return hintURL;
     }

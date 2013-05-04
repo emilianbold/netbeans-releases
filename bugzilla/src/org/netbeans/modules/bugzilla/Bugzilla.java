@@ -57,6 +57,7 @@ import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -82,6 +83,7 @@ public class Bugzilla {
     private Bugzilla() {
         brc = new BugzillaRepositoryConnector();
         clientManager = brc.getClientManager();
+        MylynSupport.getInstance().addRepositoryListener(clientManager);
     }
 
     public static synchronized Bugzilla getInstance() {
