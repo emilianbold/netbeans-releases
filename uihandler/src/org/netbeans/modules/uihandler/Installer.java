@@ -642,32 +642,14 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         if (!enabled.isEmpty()) {
             LogRecord rec = new LogRecord(Level.INFO, "USG_ENABLED_MODULES");
-            String[] enabledNames = new String[enabled.size()];
-            int i = 0;
-            for (ModuleInfo m : enabled) {
-                SpecificationVersion specVersion = m.getSpecificationVersion();
-                if (specVersion != null){
-                    enabledNames[i++]  = m.getCodeName() + " [" + specVersion.toString() + "]";
-                }else{
-                    enabledNames[i++] = m.getCodeName();
-                }
-            }
+            String[] enabledNames = EnabledModulesCollector.getModuleNames(enabled);
             rec.setParameters(enabledNames);
             rec.setLoggerName(logger.getName());
             enabledRec.add(rec);
         }
         if (!disabled.isEmpty()) {
             LogRecord rec = new LogRecord(Level.INFO, "USG_DISABLED_MODULES");
-            String[] disabledNames = new String[disabled.size()];
-            int i = 0;
-            for (ModuleInfo m : disabled) {
-                SpecificationVersion specVersion = m.getSpecificationVersion();
-                if (specVersion != null){
-                    disabledNames[i++]   = m.getCodeName() + " [" + specVersion.toString() + "]";
-                }else{
-                    disabledNames[i++] = m.getCodeName();
-                }
-            }
+            String[] disabledNames = EnabledModulesCollector.getModuleNames(disabled);
             rec.setParameters(disabledNames);
             rec.setLoggerName(logger.getName());
             disabledRec.add(rec);

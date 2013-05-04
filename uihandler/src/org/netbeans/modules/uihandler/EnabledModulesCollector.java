@@ -89,16 +89,7 @@ public class EnabledModulesCollector implements Deactivated {
         
         if (!newEnabled.isEmpty()) {
             LogRecord rec = new LogRecord(Level.CONFIG, "UI_ENABLED_MODULES");
-            String[] enabledNames = new String[newEnabled.size()];
-            int i = 0;
-            for (ModuleInfo m : newEnabled) {
-                SpecificationVersion specVersion = m.getSpecificationVersion();
-                if (specVersion != null){
-                    enabledNames[i++]  = m.getCodeName() + " [" + specVersion.toString() + "]";
-                }else{
-                    enabledNames[i++] = m.getCodeName();
-                }
-            }
+            String[] enabledNames = getModuleNames(newEnabled);
             rec.setParameters(enabledNames);
             rec.setLoggerName(uiLogger.getName());
             rec.setResourceBundle(NbBundle.getBundle(EnabledModulesCollector.class));
@@ -107,16 +98,7 @@ public class EnabledModulesCollector implements Deactivated {
         }
         if (!newDisabled.isEmpty()) {
             LogRecord rec = new LogRecord(Level.CONFIG, "UI_DISABLED_MODULES");
-            String[] disabledNames = new String[newDisabled.size()];
-            int i = 0;
-            for (ModuleInfo m : newDisabled) {
-                SpecificationVersion specVersion = m.getSpecificationVersion();
-                if (specVersion != null){
-                    disabledNames[i++]   = m.getCodeName() + " [" + specVersion.toString() + "]";
-                }else{
-                    disabledNames[i++] = m.getCodeName();
-                }
-            }
+            String[] disabledNames = getModuleNames(newDisabled);
             rec.setParameters(disabledNames);
             rec.setLoggerName(uiLogger.getName());
             rec.setResourceBundle(NbBundle.getBundle(EnabledModulesCollector.class));
@@ -126,6 +108,20 @@ public class EnabledModulesCollector implements Deactivated {
         
         previouslyEnabled = enabled;
         previouslyDisabled = disabled;
+    }
+    
+    static String[] getModuleNames(List<ModuleInfo> modules) {
+        String[] names = new String[modules.size()];
+        int i = 0;
+        for (ModuleInfo m : modules) {
+            SpecificationVersion specVersion = m.getSpecificationVersion();
+            if (specVersion != null) {
+                names[i++]   = m.getCodeName() + " [" + specVersion.toString() + "]";
+            } else {
+                names[i++] = m.getCodeName();
+            }
+        }
+        return names;
     }
     
 }
