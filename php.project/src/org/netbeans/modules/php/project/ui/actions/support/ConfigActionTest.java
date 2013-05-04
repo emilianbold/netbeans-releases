@@ -52,7 +52,6 @@ import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.Testcase;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpActionProvider;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -66,6 +65,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 
 /**
  * Action implementation for TEST configuration.
@@ -208,7 +208,7 @@ class ConfigActionTest extends ConfigAction {
         TestRunInfo testRunInfo = getTestRunInfoForFile(file, debug);
         assert testRunInfo != null;
         Pair<String, String> method = CommandUtils.decodeMethod(singleMethod.getMethodName());
-        TestRunInfo.TestInfo testInfo = new TestRunInfo.TestInfo(TestRunInfo.TestInfo.UNKNOWN_TYPE, method.second, method.first,
+        TestRunInfo.TestInfo testInfo = new TestRunInfo.TestInfo(TestRunInfo.TestInfo.UNKNOWN_TYPE, method.second(), method.first(),
                 FileUtil.toFile(file).getAbsolutePath());
         testRunInfo.setCustomTests(Collections.singleton(testInfo));
         return testRunInfo;

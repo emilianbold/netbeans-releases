@@ -46,9 +46,8 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.api.common.ui.PlatformFilter;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.netbeans.spi.project.support.ant.EditableProperties;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 
@@ -58,11 +57,6 @@ import org.openide.util.Parameters;
  */
 @ProjectServiceProvider(service=PlatformFilter.class, projectType={"org-netbeans-modules-java-j2seproject"}) // NOI18N
 public class JFXProjectPlatformFilter implements PlatformFilter {
-
-    private static final String PLATFORM_ANT_NAME = "platform.ant.name"; // NOI18N
-    private static final String PLATFORM_PREFIX = "platforms"; // NOI18N
-    private static final String JAVAFX_SDK_PREFIX = "javafx.sdk.home"; // NOI18N
-    private static final String JAVAFX_RUNTIME_PREFIX = "javafx.runtime.home"; // NOI18N
 
     private final J2SEPropertyEvaluator eval;
 
@@ -76,7 +70,7 @@ public class JFXProjectPlatformFilter implements PlatformFilter {
     public boolean accept(final JavaPlatform platform) {
         if(platform != null) {
             if(isFXProject(eval)) {
-                if(isJavaFXEnabled(platform)) {
+                if(JavaFXPlatformUtils.isJavaFXEnabled(platform)) {
                     return true;
                 }
                 return false;
@@ -86,22 +80,6 @@ public class JFXProjectPlatformFilter implements PlatformFilter {
         return false;
     }
     
-    /**
-     * Determines whether given Java Platform supports JavaFX
-     * (copied from JavaFXPlatformUtils to prevent load on startup)
-     * 
-     * @param IDE java platform instance
-     * @return is JavaFX supported
-     */
-    private static boolean isJavaFXEnabled(@NonNull final JavaPlatform platform) {
-        Parameters.notNull("platform", platform); // NOI18N
-        String platformName = platform.getProperties().get(PLATFORM_ANT_NAME);
-        EditableProperties properties = PropertyUtils.getGlobalProperties();
-        String sdkPath = properties.get(PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_SDK_PREFIX);
-        String runtimePath = properties.get(PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_RUNTIME_PREFIX);
-        return sdkPath != null && runtimePath != null;
-    }
-
     /**
      * Checks whether the project represented by its evaluator is a FX project
      * 

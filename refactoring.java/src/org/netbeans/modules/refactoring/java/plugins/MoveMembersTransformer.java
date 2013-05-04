@@ -59,7 +59,6 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.Pair;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties;
 import org.netbeans.modules.refactoring.java.api.JavaMoveMembersProperties.Visibility;
@@ -68,6 +67,7 @@ import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
@@ -648,8 +648,8 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                             public Void visitIdentifier(IdentifierTree node, Pair<Element, ExpressionTree> p) {
                                 TreePath currentPath = new TreePath(resolvedPath, node);
                                 Element el = trees.getElement(currentPath);
-                                if (p.first.equals(el)) {
-                                    original2Translated.put(node, p.second);
+                                if (p.first().equals(el)) {
+                                    original2Translated.put(node, p.second());
                                 }
                                 return super.visitIdentifier(node, p);
                             }

@@ -57,13 +57,13 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.IndexingState;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.Pair;
 
 /**
  *
@@ -281,10 +281,10 @@ public class RunWhenScanFinishedSupportTest extends NbTestCase {
             final Object param = record.getParameters()[0];
             for (Iterator<Pair<Pair<String, Object>, CountDownLatch>> it = condition.iterator(); it.hasNext();) {
                 final Pair<Pair<String,Object>,CountDownLatch> cnd = it.next();
-                if (cnd != null && cnd.first.first.equals(message) && cnd.first.second.equals(param)) {
+                if (cnd != null && cnd.first().first().equals(message) && cnd.first().second().equals(param)) {
                     //System.out.println("GOT: " + cnd.first.first + " " + cnd.first.second);
                     it.remove();
-                    cnd.second.countDown();
+                    cnd.second().countDown();
                     break;
                 }
             }

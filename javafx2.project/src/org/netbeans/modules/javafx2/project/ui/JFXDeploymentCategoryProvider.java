@@ -37,12 +37,18 @@
  */
 package org.netbeans.modules.javafx2.project.ui;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -56,25 +62,75 @@ public final class JFXDeploymentCategoryProvider implements ProjectCustomizer.Co
 
     private static final String CAT_DEPLOYMENT = "Deployment"; // NOI18N
     
+    private static final Map<String, JFXProjectProperties> projectProperties = new HashMap<String, JFXProjectProperties>();
+       
     @Override
     public Category createCategory(Lookup context) {
-        boolean fxProjectEnabled = true;
+        boolean deploymentEnabled = true;
         final Project project = context.lookup(Project.class);
         if (project != null) {
             final J2SEPropertyEvaluator j2sepe = project.getLookup().lookup(J2SEPropertyEvaluator.class);
-            fxProjectEnabled = JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED)) //NOI18N
-                    && !JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_PRELOADER)); //NOI18N
+            String fxEnabled = j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED);
+            String fxPreloader = j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_PRELOADER);
+            deploymentEnabled = !JFXProjectProperties.isTrue(fxEnabled) ||
+                    (JFXProjectProperties.isTrue(fxEnabled) && !JFXProjectProperties.isTrue(fxPreloader)); 
         }
-        if(fxProjectEnabled) {
-            return ProjectCustomizer.Category.create(CAT_DEPLOYMENT,
+        if(deploymentEnabled) {
+            ProjectCustomizer.Category c = ProjectCustomizer.Category.create(CAT_DEPLOYMENT,
                     NbBundle.getMessage(JFXDeploymentCategoryProvider.class, "LBL_Category_Deployment"), null); //NOI18N
+            c.setOkButtonListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if(project != null) {
+                        JFXProjectProperties prop = JFXProjectProperties.getInstanceIfExists(project.getLookup());
+                        if(prop != null) {
+                            projectProperties.put(project.getProjectDirectory().getPath(), prop);
+                        }
+                    }
+                }
+            });
+            c.setStoreListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if(project != null) {
+                        JFXProjectProperties prop = projectProperties.get(project.getProjectDirectory().getPath());
+                        if(prop != null) {
+                            try {
+                                prop.store();
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                        projectProperties.remove(project.getProjectDirectory().getPath());
+                    }
+                }
+            });
+            c.setCloseListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if(project != null) {
+                        JFXProjectProperties.cleanup(project.getLookup());
+                    }
+                }
+            });
+            return c;
         }
         return null;
     }
 
     @Override
     public JComponent createComponent(Category category, Lookup context) {
-        return new JFXDeploymentPanel(JFXProjectProperties.getInstance(context));
+        boolean fxProjectEnabled = true;
+        final Project project = context.lookup(Project.class);
+        if (project != null) {
+            final J2SEPropertyEvaluator j2sepe = project.getLookup().lookup(J2SEPropertyEvaluator.class);
+            String fxEnabled = j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED);
+            String fxPreloader = j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_PRELOADER);
+            fxProjectEnabled = JFXProjectProperties.isTrue(fxEnabled) && !JFXProjectProperties.isTrue(fxPreloader);
+        }
+        return fxProjectEnabled ?
+                new JFXDeploymentPanel(JFXProjectProperties.getInstance(context)) :
+                new JSEDeploymentPanel(JFXProjectProperties.getInstance(context));
     }
 
 }

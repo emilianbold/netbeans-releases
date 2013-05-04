@@ -55,8 +55,8 @@ import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
-import org.netbeans.modules.java.hints.infrastructure.Pair;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.openide.util.Pair;
 
 /**
  *
@@ -69,7 +69,7 @@ public class ForbiddenMethod {
 
     static {
         map = new HashMap<String, Pair<String, String>>();
-        map.put("exit", new Pair<String, String>("System", "Non-portable"));
+        map.put("exit", Pair.<String, String>of("System", "Non-portable"));
     }
 
     @TriggerTreeKind(Tree.Kind.METHOD_INVOCATION)
@@ -86,8 +86,8 @@ public class ForbiddenMethod {
         String parent = e.getEnclosingElement().getSimpleName().toString();
 
         Pair<String, String> pair = map.get(simpleName);
-        if (pair != null && pair.getA().equals(parent)) {
-            return ErrorDescriptionFactory.forName(ctx, mit, pair.getB());
+        if (pair != null && pair.first().equals(parent)) {
+            return ErrorDescriptionFactory.forName(ctx, mit, pair.second());
         }
 
 

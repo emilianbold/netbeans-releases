@@ -77,12 +77,12 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.Pair;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
@@ -476,8 +476,8 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 if(path != null) {
                     el = trees.getElement(path);
                 }
-                if (p.first.equals(el)) {
-                    original2TranslatedBody.put(node, make.setLabel(node, p.second));
+                if (p.first().equals(el)) {
+                    original2TranslatedBody.put(node, make.setLabel(node, p.second()));
                 }
                 return super.visitIdentifier(node, p);
             }
@@ -513,8 +513,8 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 if(currentPath != null) {
                     el = trees.getElement(currentPath);
                 }
-                if (p.first.equals(el)) {
-                    original2TranslatedBody.put(node, p.second);
+                if (p.first().equals(el)) {
+                    original2TranslatedBody.put(node, p.second());
                 }
                 return super.visitIdentifier(node, p);
             }

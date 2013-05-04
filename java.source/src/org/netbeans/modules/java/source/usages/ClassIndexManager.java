@@ -61,6 +61,7 @@ import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  *
@@ -106,14 +107,14 @@ public final class ClassIndexManager {
                         return;
                     }
                     Pair<ClassIndexImpl,Boolean> pair = getClassIndex(root, beforeCreateAllowed, false);
-                    index[0] = pair.first;
+                    index[0] = pair.first();
                     if (index[0] != null) {
                         return;
                     }
                     URL translatedRoot = AptCacheForSourceQuery.getSourceFolder(root);
                     if (translatedRoot != null) {
                         pair = getClassIndex(translatedRoot, beforeCreateAllowed, false);
-                        index[0] = pair.first;
+                        index[0] = pair.first();
                         if (index[0] != null) {
                             return;
                         }
@@ -170,7 +171,7 @@ public final class ClassIndexManager {
                 return null;
             }
             Pair<ClassIndexImpl,Boolean> pair = getClassIndex (root, true, true);
-            ClassIndexImpl qi = pair.first;
+            ClassIndexImpl qi = pair.first();
             if (qi == null) {
                 qi = getUsagesQuery(root, true);
                 if (qi == null) {
@@ -194,7 +195,7 @@ public final class ClassIndexManager {
                 this.instances.put(root,qi);
                 this.transientInstances.remove(root);
                 markAddedRoot(root);
-            } else if (pair.second) {
+            } else if (pair.second()) {
                 markAddedRoot(root);
             }
             return qi;

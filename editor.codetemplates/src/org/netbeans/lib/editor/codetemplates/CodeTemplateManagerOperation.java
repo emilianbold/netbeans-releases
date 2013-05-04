@@ -164,6 +164,62 @@ public final class CodeTemplateManagerOperation
         return abbrev2template.get(abbreviation);
     }
     
+    public Collection<? extends CodeTemplate> findByAbbreviationPrefix(String prefix, boolean ignoreCase) {
+        List<CodeTemplate> result = new ArrayList<CodeTemplate>();
+        
+        int low = 0;
+	int high = sortedTemplatesByAbbrev.size() - 1;
+	while (low <= high) {
+	    int mid = (low + high) >> 1;
+	    CodeTemplate t = sortedTemplatesByAbbrev.get(mid);
+	    int cmp = compareTextIgnoreCase(t.getAbbreviation(), prefix);
+
+	    if (cmp < 0) {
+		low = mid + 1;
+            } else if (cmp > 0) {
+		high = mid - 1;
+            } else {
+                low = mid;
+		break;
+            }
+	}
+        
+        // Go back whether prefix matches the name
+        int i = low - 1;
+        while (i >= 0) {
+            CodeTemplate t = sortedTemplatesByAbbrev.get(i);
+            int mp = matchPrefix(t.getAbbreviation(), prefix);
+            if (mp == MATCH_NO) { // not matched
+                break;
+            } else if (mp == MATCH_IGNORE_CASE) { // matched when ignoring case
+                if (ignoreCase) { // do not add if exact match required
+                    result.add(t);
+                }
+            } else { // matched exactly
+                result.add(t);
+            }
+            i--;
+        }
+        
+        i = low;
+        while (i < sortedTemplatesByAbbrev.size()) {
+            CodeTemplate t = sortedTemplatesByAbbrev.get(i);
+            int mp = matchPrefix(t.getAbbreviation(), prefix);
+            if (mp == MATCH_NO) { // not matched
+                break;
+            } else if (mp == MATCH_IGNORE_CASE) { // matched when ignoring case
+                if (ignoreCase) { // do not add if exact match required
+                    result.add(t);
+                }
+            } else { // matched exactly
+                result.add(t);
+            }
+            i++;
+        }
+        
+        return result;
+    }
+    
     public Collection<? extends CodeTemplate> findByParametrizedText(String prefix, boolean ignoreCase) {
         List<CodeTemplate> result = new ArrayList<CodeTemplate>();
         

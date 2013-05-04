@@ -84,10 +84,10 @@ import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.DependencyType;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.Lines;
-import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -475,7 +475,7 @@ public class CPCssEditorModule extends CssEditorModule {
                         return DeclarationLocation.NONE;
                     }
                 };
-                return new Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>(foundRange, callable);
+                return Pair.<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>of(foundRange, callable);
 
             case SASS_VAR:
             case AT_IDENT: //less var //TODO - add default directives - see the css grammar file comment about that
@@ -521,7 +521,7 @@ public class CPCssEditorModule extends CssEditorModule {
                         return DeclarationLocation.NONE;
                     }
                 };
-                return new Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>(foundRange, callable);
+                return Pair.<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>of(foundRange, callable);
 
             default:
                 return null;

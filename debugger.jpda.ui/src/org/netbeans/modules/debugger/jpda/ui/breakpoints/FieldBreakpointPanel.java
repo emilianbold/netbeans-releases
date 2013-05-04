@@ -62,6 +62,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * @author  Jan Jancura
@@ -124,16 +125,16 @@ public class FieldBreakpointPanel extends JPanel implements Controller, org.open
         ResourceBundle bundle = NbBundle.getBundle(FieldBreakpointPanel.class);
         String tooltipText = bundle.getString("TTT_TF_Field_Breakpoint_Class_Name");
         Pair<JScrollPane, JEditorPane> editorCC = ClassBreakpointPanel.addClassNameEditorCC(JavaClassNbDebugEditorKit.MIME_TYPE, pSettings, className, tooltipText);
-        spClassName = editorCC.get1();
-        epClassName = editorCC.get2();
+        spClassName = editorCC.first();
+        epClassName = editorCC.second();
         epClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
         epClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Field_Breakpoint_ClassName"));
         HelpCtx.setHelpIDString(epClassName, HELP_ID);
         jLabel3.setLabelFor(spClassName);
         
         editorCC = ClassBreakpointPanel.addClassNameEditorCC(JavaFieldNbDebugEditorKit.MIME_TYPE, null, b.getFieldName(), bundle.getString("TTT_TF_Field_Breakpoint_Field_Name"));
-        spFieldName = editorCC.get1();
-        epFieldName = editorCC.get2();
+        spFieldName = editorCC.first();
+        epFieldName = editorCC.second();
         
         jLabel1.setLabelFor(spFieldName);
         java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();

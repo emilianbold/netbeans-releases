@@ -67,7 +67,7 @@ public final class ExternalExecutableValidator {
     public static String validateCommand(@NullAllowed String command, @NullAllowed String executableName) {
         String executable = null;
         if (command != null) {
-            executable = ExternalExecutable.parseCommand(command).getA();
+            executable = ExternalExecutable.parseCommand(command).first();
         }
         if (executableName == null) {
             return FileUtils.validateFile(executable, false);

@@ -80,7 +80,7 @@ public class SourceGroupSupport {
     private SourceGroupSupport parent = null;
     private String currentFileName = null;    
     
-    SourceGroupSupport(@NonNull String type) {
+    public SourceGroupSupport(@NonNull String type) {
         this.type = type;
     }
     

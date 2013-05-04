@@ -70,6 +70,7 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Pair;
 
 /**
  *
@@ -534,8 +535,8 @@ public class ScanStartedTest extends NbTestCase {
             if (ie != null &&
                 msg != null &&
                 msg.startsWith("scanStarting:") &&  //NOI18N
-                ie.first.equals(record.getParameters()[0])) {
-                throw ie.second;
+                ie.first().equals(record.getParameters()[0])) {
+                throw ie.second();
             } else {
                 super.publish(record);
             }

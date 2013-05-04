@@ -57,7 +57,7 @@ import org.openide.util.Lookup;
 final class CallHierarchyModel {
 
     enum HierarchyType { CALLER, CALLEE };
-    enum Scope { ALL, PROJECT, TESTS }
+    enum Scope { ALL, PROJECT, TESTS, BASE }
     
     public static final String PROP_ROOT = "root"; // NOI18N
     
@@ -132,7 +132,7 @@ final class CallHierarchyModel {
         if (root == null) {
             return;
         }
-        CallHierarchyTasks.resolveRoot(root.selection, type == HierarchyType.CALLER, new ReplaceRootTask(this));
+        CallHierarchyTasks.resolveRoot(root.selection, scopes.contains(Scope.BASE), type == HierarchyType.CALLER, new ReplaceRootTask(this));
     }
     
     void replaceRoot(Call root) {
@@ -150,14 +150,14 @@ final class CallHierarchyModel {
     static CallHierarchyModel create(Lookup context, Set<Scope> scopes, HierarchyType type) {
         boolean isCallerGraph = type == null || type == HierarchyType.CALLER;
         CallHierarchyModel m = new CallHierarchyModel(type, scopes);
-        CallHierarchyTasks.resolveRoot(context, isCallerGraph, m.new ReplaceRootTask(m));
+        CallHierarchyTasks.resolveRoot(context, scopes.contains(Scope.BASE), isCallerGraph, m.new ReplaceRootTask(m));
         return m;
     }
     
     static CallHierarchyModel create(TreePathHandle selection, Set<Scope> scopes, HierarchyType type) {
         boolean isCallerGraph = type == null || type == HierarchyType.CALLER;
         CallHierarchyModel m = new CallHierarchyModel(type, scopes);
-        CallHierarchyTasks.resolveRoot(selection, isCallerGraph, m.new ReplaceRootTask(m));
+        CallHierarchyTasks.resolveRoot(selection, scopes.contains(Scope.BASE), isCallerGraph, m.new ReplaceRootTask(m));
         return m;
     }
     

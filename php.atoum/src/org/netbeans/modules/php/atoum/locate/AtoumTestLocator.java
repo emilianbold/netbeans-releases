@@ -51,12 +51,12 @@ import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.locate.TestLocator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 
 public class AtoumTestLocator implements TestLocator {
 
@@ -109,10 +109,10 @@ public class AtoumTestLocator implements TestLocator {
     private List<Locations.Offset> filterPhpFiles(FileObject sourceRoot, Collection<Pair<FileObject, Integer>> files) {
         List<Locations.Offset> results = new ArrayList<>(files.size());
         for (Pair<FileObject, Integer> pair : files) {
-            FileObject fileObject = pair.first;
+            FileObject fileObject = pair.first();
             if (FileUtils.isPhpFile(fileObject)
                     && FileUtil.isParentOf(sourceRoot, fileObject)) {
-                results.add(new Locations.Offset(fileObject, pair.second));
+                results.add(new Locations.Offset(fileObject, pair.second()));
             }
         }
         return results;

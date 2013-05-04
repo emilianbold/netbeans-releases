@@ -129,7 +129,6 @@ public class JavaCompletionProvider implements CompletionProvider {
         assert source != null;
         assert (queryType & COMPLETION_QUERY_TYPE) != 0;
         final JavaCompletionQuery query = new JavaCompletionQuery(queryType, offset, false);
-        query.codeStyle = CodeStyle.getDefault(source.getFileObject());
         ParserManager.parse(Collections.singletonList(source), query.getTask());
         if (offset != substitutionOffset) {
             for (JavaCompletionItem jci : query.results) {
@@ -248,7 +247,6 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private ElementHandle element;
         private boolean hasTask;
-        private CodeStyle codeStyle;
         
         private JavaCompletionQuery(int queryType, int caretOffset, boolean hasTask) {
             this.queryType = queryType;
@@ -272,7 +270,6 @@ public class JavaCompletionProvider implements CompletionProvider {
         @Override
         protected void prepareQuery(JTextComponent component) {
             this.component = component;
-            this.codeStyle = CodeStyle.getDefault(component.getDocument());
             if (queryType == TOOLTIP_QUERY_TYPE) {
                 this.toolTip = new MethodParamsTipPaintComponent(component);
             }
@@ -1197,6 +1194,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                         break;
                     case STATIC:
                         m.add(STATIC);
+                        break;
+                    case DEFAULT:
+                        m.add(DEFAULT);
                         break;
                     case ABSTRACT:
                         m.add(ABSTRACT);
@@ -2618,27 +2618,14 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (last != null && last.token().id() != JavaTokenId.COMMA)
                     return;
             }
-            controller.toPhase(Phase.ELEMENTS_RESOLVED);
-            boolean isConst = parent.getKind() == Tree.Kind.VARIABLE && ((VariableTree)parent).getModifiers().getFlags().containsAll(EnumSet.of(FINAL, STATIC));
-            boolean preferLong = false;
-            String csPrefix = null;
-            String csSuffix = null;
-            if(codeStyle != null && false) {
-                preferLong = codeStyle.preferLongerNames();
-                if(env.getScope().getEnclosingMethod() == null) {
-                    if(exPath.getParentPath().getParentPath().getLeaf().getKind() == Tree.Kind.METHOD) {
-                        csPrefix = codeStyle.getParameterNamePrefix();
-                        csSuffix = codeStyle.getParameterNameSuffix();
-                    } else if(((VariableTree)parent).getModifiers().getFlags().contains(STATIC)) {
-                        csPrefix = codeStyle.getStaticFieldNamePrefix();
-                        csSuffix = codeStyle.getStaticFieldNameSuffix();
-                    } else {
-                        csPrefix = codeStyle.getFieldNamePrefix();
-                        csSuffix = codeStyle.getFieldNameSuffix();
-                    }
-                } else {
-                    csPrefix = codeStyle.getLocalVarNamePrefix();
-                    csSuffix = codeStyle.getLocalVarNameSuffix();
+            controller.toPhase(Phase.RESOLVED);
+            ElementKind varKind = ElementKind.LOCAL_VARIABLE;
+            Set<Modifier> varMods = EnumSet.noneOf(Modifier.class);
+            if (parent.getKind() == Tree.Kind.VARIABLE) {
+                varMods = ((VariableTree)parent).getModifiers().getFlags();
+                Element varEl = controller.getTrees().getElement(exPath.getParentPath());
+                if (varEl != null) {
+                    varKind = varEl.getKind();
                 }
             }
             if (et.getKind() == Tree.Kind.ANNOTATED_TYPE) {
@@ -2657,7 +2644,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 !illegalForwardRefs.contains(e);
                     }
                 };
-                for (String name : Utilities.varNamesSuggestions(tm, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), isConst, csPrefix, csSuffix, preferLong))
+                for (String name : Utilities.varNamesSuggestions(tm, varKind, varMods, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), CodeStyle.getDefault(controller.getDocument())))
                     results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
                 return;
             }
@@ -2689,9 +2676,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             !illegalForwardRefs.contains(e);
                                 }
                             };
-                            for (String name : Utilities.varNamesSuggestions(tm, null, prefix, controller.getTypes(), controller.getElements(),
-                                    controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), isConst,
-                                    csPrefix, csSuffix, preferLong))
+                            for (String name : Utilities.varNamesSuggestions(tm, varKind, varMods, null, prefix, controller.getTypes(), controller.getElements(),
+                                    controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), CodeStyle.getDefault(controller.getDocument())))
                                 results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
                         }
                         VariableElement ve = getFieldOrVar(env, e.getSimpleName().toString());
@@ -2719,9 +2705,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                                             !illegalForwardRefs.contains(e);
                                 }
                             };
-                            for (String name : Utilities.varNamesSuggestions(controller.getTypes().getDeclaredType(te), null, prefix, controller.getTypes(),
-                                    controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), isConst,
-                                    csPrefix, csSuffix, preferLong))
+                            for (String name : Utilities.varNamesSuggestions(controller.getTypes().getDeclaredType(te), varKind, varMods, null, prefix, controller.getTypes(),
+                                    controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), CodeStyle.getDefault(controller.getDocument())))
                                 results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
                         }
                         break;
@@ -2825,7 +2810,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                                     !illegalForwardRefs.contains(e);
                         }
                     };
-                    for (String name : Utilities.varNamesSuggestions(tm, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), isConst, csPrefix, csSuffix, preferLong))
+                    for (String name : Utilities.varNamesSuggestions(tm, varKind, varMods, null, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalMembersAndVars(scope, acceptor), CodeStyle.getDefault(controller.getDocument())))
                         results.add(JavaCompletionItem.createVariableItem(env.getController(), name, anchorOffset, true, false));
                     break;
                 case ENUM_CONSTANT:
@@ -4111,17 +4096,17 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }
                 if (env.getController().getSourceVersion().compareTo(SourceVersion.RELEASE_8) >= 0
                         && Utilities.getPathElementOfKind(Tree.Kind.INTERFACE, env.getPath()) != null
-                        && !modifiers.contains(STATIC) && !modifiers.contains(ABSTRACT) /*TODO: && !modifiers.contains(DEFAULT)*/) {
+                        && !modifiers.contains(STATIC) && !modifiers.contains(ABSTRACT) && !modifiers.contains(DEFAULT)) {
                         kws.add(DEFAULT_KEYWORD);
                 }
                 if (!modifiers.contains(FINAL) && !modifiers.contains(ABSTRACT) && !modifiers.contains(VOLATILE)) {
                     kws.add(FINAL_KEYWORD);
                 }
-                if (!modifiers.contains(FINAL) && !modifiers.contains(ABSTRACT) /*TODO: && !modifiers.contains(DEFAULT)*/
+                if (!modifiers.contains(FINAL) && !modifiers.contains(ABSTRACT) && !modifiers.contains(DEFAULT)
                         && !modifiers.contains(NATIVE) && !modifiers.contains(SYNCHRONIZED)) {
                     kws.add(ABSTRACT_KEYWORD);
                 }
-                if (!modifiers.contains(STATIC) /*TODO: && !modifiers.contains(DEFAULT)*/) {
+                if (!modifiers.contains(STATIC) && !modifiers.contains(DEFAULT)) {
                     kws.add(STATIC_KEYWORD);
                 }
                 if (!modifiers.contains(ABSTRACT) && !modifiers.contains(NATIVE)) {
@@ -4219,6 +4204,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                     l.add(method);
                 }
+                CodeStyle codeStyle = CodeStyle.getDefault(controller.getDocument());
                 for (VariableElement variableElement : ElementFilter.fieldsIn(members)) {
                     Name name = variableElement.getSimpleName();
                     if (!name.contentEquals(ERROR)) {

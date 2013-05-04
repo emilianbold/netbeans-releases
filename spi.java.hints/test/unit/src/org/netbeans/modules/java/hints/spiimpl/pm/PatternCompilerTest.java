@@ -52,9 +52,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.java.hints.spiimpl.TestBase;
-import org.netbeans.modules.java.hints.infrastructure.Pair;
 import org.netbeans.api.java.source.matching.Matcher;
 import org.netbeans.api.java.source.matching.Occurrence;
+import org.openide.util.Pair;
 
 /**
  *
@@ -68,13 +68,13 @@ public class PatternCompilerTest extends TestBase {
 
     public void testSimple1() throws Exception {
         performVariablesTest("package test; public class Test {public void test() {int i = |1 + 2|;}}", "$1+$2",
-                             new Pair<String, String>("$1", "1"),
-                             new Pair<String, String>("$2", "2"));
+                             Pair.<String, String>of("$1", "1"),
+                             Pair.<String, String>of("$2", "2"));
     }
 
     public void testTyped1() throws Exception {
         performVariablesTest("package test; public class Test {public void test() {|String.valueOf(\"t\")|;}}", "String.valueOf($1{String})",
-                             new Pair<String, String>("$1", "\"t\""));
+                             Pair.<String, String>of("$1", "\"t\""));
     }
 
 //    public void testTyped2() throws Exception {
@@ -85,7 +85,7 @@ public class PatternCompilerTest extends TestBase {
 
     public void testTyped3() throws Exception {
         performVariablesTest("package test; public class Test {public void test(String str) {|str.valueOf(\"t\")|;}}", "String.valueOf($1{String})",
-                             new Pair<String, String>("$1", "\"t\""));
+                             Pair.<String, String>of("$1", "\"t\""));
     }
 
     public void testTyped4() throws Exception {
@@ -100,7 +100,7 @@ public class PatternCompilerTest extends TestBase {
 
     public void testTypedPrimitiveType() throws Exception {
         performVariablesTest("package test; public class Test {public void test(int i) {|test(1)|;}}", "$0{test.Test}.test($1{int})",
-                             new Pair<String, String>("$1", "1"));
+                             Pair.<String, String>of("$1", "1"));
     }
 
     public void testMemberSelectVSIdentifier() throws Exception {
@@ -110,7 +110,7 @@ public class PatternCompilerTest extends TestBase {
 
     public void testSubClass() throws Exception {
         performVariablesTest("package test; public class Test {void test() {String s = null; |s.toString()|;}}", "$1{java.lang.CharSequence}.toString()",
-                             new Pair<String, String>("$1", "s"));
+                             Pair.<String, String>of("$1", "s"));
     }
 
     public void testEquality1() throws Exception {
@@ -120,7 +120,7 @@ public class PatternCompilerTest extends TestBase {
 
     public void testEquality2() throws Exception {
         performVariablesTest("package test; public class Test {void test() {String s = null; |String.valueOf(1).charAt(0)|;}}", "$1{java.lang.String}.charAt(0)",
-                             new Pair<String, String>("$1", "String.valueOf(1)"));
+                             Pair.<String, String>of("$1", "String.valueOf(1)"));
     }
 
     public void testEquality3() throws Exception {
@@ -191,12 +191,12 @@ public class PatternCompilerTest extends TestBase {
         assertFalse(vars.hasNext());
 
         for (Pair<String, String> dup : duplicates) {
-            String span = actual.remove(dup.getA());
+            String span = actual.remove(dup.first());
 
             if (span == null) {
-                fail(dup.getA());
+                fail(dup.first());
             }
-            assertEquals(dup.getA() + ":" + span, span, dup.getB());
+            assertEquals(dup.first()+ ":" + span, span, dup.second());
         }
     }
 

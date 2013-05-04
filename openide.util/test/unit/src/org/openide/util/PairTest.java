@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,33 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.common.api;
+package org.openide.util;
+
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Jan Lahoda
+ * @author Tomas Zezula
  */
-public final class Pair<A, B> {
+public class PairTest extends NbTestCase {
 
-    private final A a;
-    private final B b;
-
-    public Pair(A a, B b) {
-        this.a = a;
-        this.b = b;
+    public PairTest(String name) {
+        super(name);
     }
 
-    public A getA() {
-        return a;
+
+    public void testPairs() {
+        final Pair<Integer,Integer> p1a = Pair.of(1, 1);
+        final Pair<Integer,Integer> p1b = Pair.of(1, 1);
+        final Pair<Integer,Integer> p2 = Pair.of(1, 2);
+        final Pair<Integer,Integer> p3 = Pair.of(2, 1);
+        final Pair<Integer,Integer> p4 = Pair.of(null, 1);
+        final Pair<Integer,Integer> p5 = Pair.of(1, null);
+        final Pair<Integer,Integer> p6 = Pair.of(null, null);
+        assertTrue(p1a.equals(p1a));
+        assertTrue(p1a.equals(p1b));
+        assertFalse(p1a.equals(p2));
+        assertFalse(p1a.equals(p3));
+        assertFalse(p1a.equals(p4));
+        assertFalse(p1a.equals(p5));
+        assertFalse(p1a.equals(p6));
+        assertEquals(p1a.hashCode(), p1b.hashCode());
+        assertEquals(p4.hashCode(), p4.hashCode());
+        assertEquals(p5.hashCode(), p5.hashCode());
+        assertEquals(p6.hashCode(), p6.hashCode());
+        assertFalse(p4.hashCode() == p5.hashCode());
     }
 
-    public B getB() {
-        return b;
-    }
-
-    public static <A,B> Pair<A,B> of(A a, B b) {
-      return new Pair<A, B>(a, b);
-    } 
 }

@@ -131,8 +131,8 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
             signingWarning.setVisible(true);
         } else if (JWSProjectProperties.SIGNING_KEY.equals(jwsProps.signing)) {
             signingInfolabel.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.Signing.Key", jwsProps.signingKeyAlias)); //NOI18N
-            signingWarning.setText(null);
-            signingWarning.setVisible(false);
+            signingWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.InfoDeprecated")); //NOI18N
+            signingWarning.setVisible(true);
         } else {
             signingInfolabel.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.Signing.Unsigned")); //NOI18N
             signingWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.WarnDeprecated")); //NOI18N

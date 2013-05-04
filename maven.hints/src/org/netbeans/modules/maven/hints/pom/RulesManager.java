@@ -61,6 +61,7 @@ import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.util.Pair;
 
 /** Manages rules read from the system filesystem.
  *
@@ -126,7 +127,7 @@ public class RulesManager  {
                     r = instantiateRule(o);
                 }
                 if ( r != null ) {
-                    rules.add( new Pair<POMErrorFixBase,FileObject>( r, o ) );
+                    rules.add( Pair.<POMErrorFixBase,FileObject>of( r, o ) );
                 }
             }
         }
@@ -140,8 +141,8 @@ public class RulesManager  {
         dir2node.put(rootFolder, rootNode);
 
         for( Pair<POMErrorFixBase,FileObject> pair : rules ) {
-            POMErrorFixBase rule = pair.getA();
-            FileObject fo = pair.getB();
+            POMErrorFixBase rule = pair.first();
+            FileObject fo = pair.second();
 
                 Object nonGuiObject = fo.getAttribute(NON_GUI);
                 boolean toGui = true;

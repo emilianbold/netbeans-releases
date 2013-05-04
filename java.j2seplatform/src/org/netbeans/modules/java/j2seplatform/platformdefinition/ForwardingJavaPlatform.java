@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,81 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
-package org.netbeans.modules.java.j2seprofiles;
+import java.net.URL;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.Specification;
+import org.openide.filesystems.FileObject;
 
 /**
- * Just another copy of Pair.
+ *
  * @author Tomas Zezula
  */
-final class Pair<P,K> {
+class ForwardingJavaPlatform extends JavaPlatform {
 
-    public final P first;
-    public final K second;
+    protected final JavaPlatform delegate;
 
-    private Pair (P first, K second) {
-        this.first = first;
-        this.second = second;
-    }
-
-
-    public static <P,K> Pair<P,K> of (P first, K second) {
-        return new Pair<P,K> (first,second);
+    ForwardingJavaPlatform(@NonNull final JavaPlatform delegate) {
+        this.delegate = delegate;
     }
 
 
     @Override
-    public int hashCode () {
-        int hashCode  = 0;
-        hashCode ^= first == null ? 0 : first.hashCode();
-        hashCode ^= second == null ? 0: second.hashCode();
-        return hashCode;
+    public String getDisplayName() {
+        return delegate.getDisplayName();
     }
 
     @Override
-    public boolean equals (final Object other) {
-        if (other instanceof Pair) {
-            Pair<?,?> otherPair = (Pair<?,?>) other;
-            return (this.first == null ? otherPair.first == null : this.first.equals(otherPair.first)) &&
-                   (this.second == null ? otherPair.second == null : this.second.equals(otherPair.second));
-        }
-        return false;
+    public Map<String, String> getProperties() {
+        return delegate.getProperties();
     }
 
     @Override
-    public String toString () {
-        return String.format("Pair[%s,%s]", first,second);
+    public ClassPath getBootstrapLibraries() {
+        return delegate.getBootstrapLibraries();
     }
+
+    @Override
+    public ClassPath getStandardLibraries() {
+        return delegate.getStandardLibraries();
+    }
+
+    @Override
+    public String getVendor() {
+        return delegate.getVendor();
+    }
+
+    @Override
+    public Specification getSpecification() {
+        return delegate.getSpecification();
+    }
+
+    @Override
+    public Collection<FileObject> getInstallFolders() {
+        return delegate.getInstallFolders();
+    }
+
+    @Override
+    public FileObject findTool(String toolName) {
+        return delegate.findTool(toolName);
+    }
+
+    @Override
+    public ClassPath getSourceFolders() {
+        return delegate.getSourceFolders();
+    }
+
+    @Override
+    public List<URL> getJavadocFolders() {
+        return delegate.getJavadocFolders();
+    }
+
 }

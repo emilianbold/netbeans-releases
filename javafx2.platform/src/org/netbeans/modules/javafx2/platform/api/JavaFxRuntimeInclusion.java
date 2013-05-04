@@ -41,12 +41,17 @@
  */
 package org.netbeans.modules.javafx2.platform.api;
 
+import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.modules.javafx2.platform.Utils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
@@ -54,39 +59,41 @@ import org.openide.util.Parameters;
 /**
  * Type of JavaFX runtime in {@link JavaPlatform}.
  * @author Tomas Zezula
+ * @author Petr Somol
  * @since 1.13
  */
-public enum JavaFxRuntimeInclusion {
+public class JavaFxRuntimeInclusion {
 
+    public enum Support {
     /**
      * No JavaFX runtime.
      */
-    MISSING(false,false),
+        MISSING, 
     /**
      * JavaFX is a part of {@link JavaPlatform} but it's not
      * on classpath.
      */
-    PRESENT(true,false),
+        PRESENT, 
     /**
      * JavaFX is a part of {@link JavaPlatform} and it's a part
      * of platform classpath.
      */
-    INCLUDED(true,true);
-
-    private static final String JFXRT_JAR = "jre/lib/jfxrt.jar"; //NOI18N
+        INCLUDED
+    };
+    
     private static final String PROP_PLATFORM_ANT_NAME = "platform.ant.name";   //NOI18N
     private static final String PROP_JAVA_HOME = "java.home";    //NOI18N
     private static final String SPEC_J2SE = "j2se"; //NOI18N
 
-    private final boolean supported;
-    private final boolean included;
-
+    private final Support support;
+    private final List<String> artifacts;
 
     private JavaFxRuntimeInclusion(
-            final boolean supported,
-            final boolean included) {
-        this.supported = supported;
-        this.included = included;
+            final Support supported,
+            final List<String> artifacts
+            ) {
+        this.support = supported;
+        this.artifacts = artifacts;
     }
 
     /**
@@ -94,7 +101,7 @@ public enum JavaFxRuntimeInclusion {
      * @return true if there is jfxrt.jar installed
      */
     public boolean isSupported() {
-        return supported;
+        return support == Support.INCLUDED || support == Support.PRESENT;
     }
 
     /**
@@ -102,7 +109,17 @@ public enum JavaFxRuntimeInclusion {
      * @return true if jfxrt.jar is on boot classpath
      */
     public boolean isIncludedOnClassPath() {
-        return included;
+        return support == Support.INCLUDED;
+    }
+    
+    /**
+     * Returns list of relative paths to artifacts that are needed
+     * by FX Projects but that are not on boot classpath and need
+     * to be added (jfxrt.jar in JDK7, javaws.jar..)
+     * @return list of relative paths
+     */
+    public List<String> getExtensionArtifactPaths() {
+        return artifacts;
     }
 
     /**
@@ -113,21 +130,64 @@ public enum JavaFxRuntimeInclusion {
     @NonNull
     public static JavaFxRuntimeInclusion forPlatform(@NonNull final JavaPlatform javaPlatform) {
         Parameters.notNull("javaPlatform", javaPlatform);   //NOI18N
+        boolean isDefault = JavaPlatform.getDefault().equals(javaPlatform);
+        List<String> paths = new ArrayList<String>();
+        Support runtimeSupport = Support.MISSING;
+        String runtimePath = null;
+        for(String runtimeLocation : Utils.getJavaFxRuntimeLocations()) {
+            runtimePath = runtimeLocation + Utils.getJavaFxRuntimeArchiveName();
+            runtimeSupport = forRuntime(javaPlatform, Utils.getJavaFxRuntimeSubDir() + runtimePath);
+            if(runtimeSupport != Support.MISSING) {
+                break;
+            }
+        }
+        if(runtimeSupport != Support.MISSING && runtimePath != null) {
+            if(runtimeSupport == Support.PRESENT) {
+                paths.add((isDefault ? "" : Utils.getJavaFxRuntimeSubDir()) + runtimePath);
+            }
+            for(String optionalName : Utils.getJavaFxRuntimeOptionalNames()) {
+                Support optionalSupport = Support.MISSING;
+                String optionalPath = null;
+                for(String optionalLocation : Utils.getJavaFxRuntimeLocations()) {
+                    optionalPath = optionalLocation + optionalName;
+                    optionalSupport = forRuntime(javaPlatform, Utils.getJavaFxRuntimeSubDir() + optionalPath);
+                    if(optionalSupport == Support.PRESENT) {
+                        break;
+                    }
+                }
+                if(optionalSupport == Support.PRESENT && optionalPath != null) {
+                    paths.add((isDefault ? "" : Utils.getJavaFxRuntimeSubDir()) + optionalPath);
+                }
+            }
+        }
+        return new JavaFxRuntimeInclusion(runtimeSupport, paths);
+    }
+
+    /**
+     * Returns status of the artifact at relative path runtimePath in platform javaPlatform
+     * @param javaPlatform the {@link JavaPlatform} where the artifact is to be searched for
+     * @param runtimePath relative path to artifact
+     * @return status of artifact presence/inclusion in platform
+     */
+    @NonNull
+    private static Support forRuntime(@NonNull final JavaPlatform javaPlatform, @NonNull final String runtimePath) {
+        Parameters.notNull("javaPlatform", javaPlatform);   //NOI18N
+        Parameters.notNull("rtPath", runtimePath);   //NOI18N
         for (FileObject installFolder : javaPlatform.getInstallFolders()) {
-            final FileObject jfxrtJar = installFolder.getFileObject(JFXRT_JAR);
+            final FileObject jfxrtJar = installFolder.getFileObject(runtimePath);
             if (jfxrtJar != null  && jfxrtJar.isData()) {
                 final URL jfxrtRoot = FileUtil.getArchiveRoot(jfxrtJar.toURL());
                 for (ClassPath.Entry e : javaPlatform.getBootstrapLibraries().entries()) {
                     if (jfxrtRoot.equals(e.getURL())) {
-                        return INCLUDED;
+                        return Support.INCLUDED;
                     }
                 }
-                return PRESENT;
+                return Support.PRESENT;
             }
         }
-        return MISSING;
+        return Support.MISSING;
     }
-
+    
     /**
      * Returns the classpath entries which should be included into project's classpath
      * to include JavaFX on given platform.
@@ -143,8 +203,8 @@ public enum JavaFxRuntimeInclusion {
      * <pre>
      * {@code
      * if (JavaFxRuntimeInclusion.forPlatform(javaPlatform).isSupported()) {
-     *      String cpEntries = JavaFxRuntimeInclusion.getProjectClassPathExtension(javaPlatform);
-     *      if (!cpEntries.isEmpty()) {
+     *      String[] cpEntries = JavaFxRuntimeInclusion.getProjectClassPathExtension(javaPlatform);
+     *      if (cpEntries.length > 0) {
      *          appendToProjectClasspath(cpEntries);
      *      }
      * }
@@ -152,8 +212,7 @@ public enum JavaFxRuntimeInclusion {
      * </p>
      *
      */
-    @NonNull
-    public static String getProjectClassPathExtension(@NonNull final JavaPlatform javaPlatform) {
+    public static String[] getProjectClassPathExtension(@NonNull final JavaPlatform javaPlatform) {
         Parameters.notNull("javaPlatform", javaPlatform);   //NOI18N
         if (!SPEC_J2SE.equals(javaPlatform.getSpecification().getName())) {
             final Collection<? extends FileObject> installFolders = javaPlatform.getInstallFolders();
@@ -178,19 +237,37 @@ public enum JavaFxRuntimeInclusion {
                         "???" : //NOI18N
                         FileUtil.getFileDisplayName(installFolders.iterator().next())));
         }
-        if (inclusion.isIncludedOnClassPath()) {
-            return "";  //NOI18N
+        List<String> artifacts = inclusion.getExtensionArtifactPaths();
+        if(!artifacts.isEmpty()) {
+            List<String> extensionProp = new ArrayList<String>();
+            Iterator<String> i = artifacts.iterator();
+            while(i.hasNext()) {
+                String artifact = i.next();
+                extensionProp.add(
+                        String.format(
+                            "${%s}/%s%s",  //NOI18N
+                            getPlatformHomeProperty(javaPlatform),
+                            artifact,
+                            i.hasNext() ? ":" : "")); //NOI18N
+            }
+            return extensionProp.toArray(new String[0]);
         }
-        final String platformHomeProperty = 
-            javaPlatform.equals(JavaPlatformManager.getDefault().getDefaultPlatform()) ?
-                PROP_JAVA_HOME :
-                String.format(
-                    "platforms.%s.home",   //NOI18N
-                    javaPlatform.getProperties().get(PROP_PLATFORM_ANT_NAME));
-        return String.format(
-            "${%s}/%s",  //NOI18N
-            platformHomeProperty,
-            JFXRT_JAR);
+        return null;
+    }
+
+    /**
+     * Returns name of property that should contain valid path to platform install folder
+     * @param javaPlatform the {@link JavaPlatform} whose location the property contains
+     * @return property name
+     */
+    @NonNull
+    public static String getPlatformHomeProperty(@NonNull final JavaPlatform javaPlatform) {
+        Parameters.notNull("javaPlatform", javaPlatform);   //NOI18N
+        return javaPlatform.equals(JavaPlatformManager.getDefault().getDefaultPlatform()) ?
+            PROP_JAVA_HOME :
+            String.format(
+                "platforms.%s.home",   //NOI18N
+                javaPlatform.getProperties().get(PROP_PLATFORM_ANT_NAME));
     }
 
 }

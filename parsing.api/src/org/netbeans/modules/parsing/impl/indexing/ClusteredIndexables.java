@@ -72,6 +72,7 @@ import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -725,10 +726,10 @@ public final class ClusteredIndexables {
                     MessageFormat.format(
                         "{0} : Attached at: {1} by: {2}, Detached at: {3} by: {4}",   //NOI18N
                         reason,
-                        attach == null ? null : attach.first,
-                        attach == null ? null : Arrays.asList(attach.second),
-                        detach == null ? null : detach.first,
-                        detach == null ? null : Arrays.asList(detach.second)));
+                        attach == null ? null : attach.first(),
+                        attach == null ? null : Arrays.asList(attach.second()),
+                        detach == null ? null : detach.first(),
+                        detach == null ? null : Arrays.asList(detach.second())));
             }
             
         }

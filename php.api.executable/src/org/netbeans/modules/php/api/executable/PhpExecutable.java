@@ -79,7 +79,6 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.api.phpmodule.PhpOptions;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.spi.executable.DebugStarter;
@@ -89,6 +88,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
@@ -162,8 +162,8 @@ public final class PhpExecutable {
      */
     public PhpExecutable(String command) {
         Pair<String, List<String>> parsedCommand = parseCommand(command);
-        executable = parsedCommand.first;
-        parameters = parsedCommand.second;
+        executable = parsedCommand.first();
+        parameters = parsedCommand.second();
         this.command = command.trim();
     }
 
@@ -179,7 +179,7 @@ public final class PhpExecutable {
             return Pair.of(tokens[0].trim(), Collections.<String>emptyList());
         }
         Pair<String, List<String>> parsedCommand = Pair.of(tokens[0].trim(), Arrays.asList(Utilities.parseParameters(tokens[1].trim())));
-        LOGGER.log(Level.FINE, "Parameters parsed: {0} {1}", new Object[] {parsedCommand.first, parsedCommand.second});
+        LOGGER.log(Level.FINE, "Parameters parsed: {0} {1}", new Object[] {parsedCommand.first(), parsedCommand.second()});
         return parsedCommand;
     }
 

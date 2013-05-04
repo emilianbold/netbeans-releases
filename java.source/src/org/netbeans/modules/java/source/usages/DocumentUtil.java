@@ -77,6 +77,7 @@ import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  *
@@ -529,10 +530,10 @@ public class DocumentUtil {
     private static class DocumentConvertor implements Convertor<Pair<Pair<String,String>,Object[]>,Document> {
         @Override
         public Document convert(Pair<Pair<String, String>, Object[]> entry) {
-            final Pair<String,String> pair = entry.first;
-            final String cn = pair.first;
-            final String srcName = pair.second;
-            final Object[] data = entry.second;
+            final Pair<String,String> pair = entry.first();
+            final String cn = pair.first();
+            final String srcName = pair.second();
+            final Object[] data = entry.second();
             final List<String> cr = (List<String>) data[0];
             final String fids = (String) data[1];
             final String ids = (String) data[2];
@@ -550,8 +551,8 @@ public class DocumentUtil {
 
         @Override
         public Query convert(Pair<String, String> p) {
-            final String resourceName = p.first;
-            final String sourceName = p.second;
+            final String resourceName = p.first();
+            final String sourceName = p.second();
             return fileBased ? createClassesInFileQuery(resourceName,sourceName) : createClassWithEnclosedQuery(resourceName, sourceName);
         }
         
@@ -613,8 +614,8 @@ public class DocumentUtil {
         
         private static Query binaryNameSourceNamePairQuery (final Pair<String,String> binaryNameSourceNamePair) {
             assert binaryNameSourceNamePair != null;
-            final String binaryName = binaryNameSourceNamePair.first;
-            final String sourceName = binaryNameSourceNamePair.second;
+            final String binaryName = binaryNameSourceNamePair.first();
+            final String sourceName = binaryNameSourceNamePair.second();
             final Query query = binaryNameQuery(binaryName);
             if (sourceName != null) {
                 assert query instanceof BooleanQuery : "The DocumentUtil.binaryNameQuery was incompatibly changed!";        //NOI18N

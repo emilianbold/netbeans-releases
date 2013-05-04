@@ -56,6 +56,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
@@ -158,17 +159,17 @@ final class ArchiveTimeStamps {
     @NonNull
     private static String generate(Pair<Long,Map<Pair<String,Integer>,Integer>> data) {
         final StringBuilder sb = new StringBuilder();
-        for (Map.Entry<Pair<String,Integer>,Integer> r : data.second.entrySet()) {
+        for (Map.Entry<Pair<String,Integer>,Integer> r : data.second().entrySet()) {
             final Pair<String,Integer> key = r.getKey();
-            assert key.first.indexOf(SEPARATOR) < 0;
-            sb.append(key.first);
+            assert key.first().indexOf(SEPARATOR) < 0;
+            sb.append(key.first());
             sb.append(SEPARATOR);
-            sb.append(key.second);
+            sb.append(key.second());
             sb.append(SEPARATOR);
             sb.append(r.getValue());
             sb.append(SEPARATOR);
         }
-        sb.append(data.first);
+        sb.append(data.first());
         return sb.toString();
     }
 
