@@ -56,9 +56,9 @@ import org.netbeans.modules.cnd.repository.spi.DatabaseStorage.Provider;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Key.Behavior;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.util.Pair;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 
 /**
  * Implements a repository unit
@@ -197,7 +197,7 @@ public final class UnitImpl implements Unit {
     public void close() throws IOException {
         Collection<Pair<Key, Persistent>> hung = cache.clearHungObjects();
         for( Pair<Key, Persistent> pair : hung ) {
-            putPhysically(pair.first, pair.second);
+            putPhysically(pair.first(), pair.second());
         }
         singleFileStorage.close();
         multyFileStorage.close();

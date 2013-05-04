@@ -747,6 +747,11 @@ made subject to such option by the copyright holder.
    folder on the system file system. These instances are added as additional tabs into the
    J2SE platform customizer.
   </p>
+  <p>
+      The J2SE platform consults instances of the <code>J2SEPlatformDefaultJavadoc</code>
+      registered in the <code>org-netbeans-api-java/platform/j2seplatform/defaultJavadocProviders/</code>
+      folder to suggest Javadoc roots when there are no Javadoc roots explicitly attached by an user.
+  </p>
  </answer>
 
 

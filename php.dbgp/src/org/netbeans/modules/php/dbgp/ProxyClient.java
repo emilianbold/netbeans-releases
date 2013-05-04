@@ -71,11 +71,11 @@ class ProxyClient {
 
     private ProxyClient(DebuggerOptions options) {
         assert options != null;
-        assert options.getDebugProxy().first != null;
-        assert options.getDebugProxy().second != null;
+        assert options.getDebugProxy().first() != null;
+        assert options.getDebugProxy().second() != null;
 
-        this.proxyHost = options.getDebugProxy().first;
-        this.proxyPort = options.getDebugProxy().second;
+        this.proxyHost = options.getDebugProxy().first();
+        this.proxyPort = options.getDebugProxy().second();
         this.idePort = PhpOptions.getInstance().getDebuggerPort();
         this.ideKey = PhpOptions.getInstance().getDebuggerSessionId();
     }

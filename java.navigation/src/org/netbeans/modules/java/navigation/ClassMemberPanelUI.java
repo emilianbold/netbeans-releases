@@ -96,7 +96,6 @@ import org.netbeans.modules.java.navigation.actions.FilterSubmenuAction;
 import org.netbeans.modules.java.navigation.actions.SortActions;
 import org.netbeans.modules.java.navigation.base.FiltersManager;
 import org.netbeans.modules.java.navigation.base.HistorySupport;
-import org.netbeans.modules.java.navigation.base.Pair;
 import org.netbeans.modules.java.navigation.base.Resolvers;
 import org.netbeans.modules.java.navigation.base.SelectJavadocTask;
 import org.openide.nodes.Node;
@@ -117,6 +116,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbPreferences;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -756,7 +756,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             try {
                 final Pair<URI,ElementHandle<TypeElement>> handlePair = becomesHandle.get();
                 if (handlePair != null) {
-                    final FileObject target = URLMapper.findFileObject(handlePair.first.toURL());
+                    final FileObject target = URLMapper.findFileObject(handlePair.first().toURL());
                     if (target != null) {
                         final JavaSource targetJs = JavaSource.forFileObject(target);
                         if (targetJs != null) {
@@ -766,12 +766,12 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
                         } else {
                             clearNodes();
                             StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
-                                handlePair.second.getQualifiedName()));
+                                handlePair.second().getQualifiedName()));
                         }
                     } else {
                         clearNodes();
                         StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(
-                                handlePair.second.getQualifiedName()));
+                                handlePair.second().getQualifiedName()));
                     }
                 } else {
                     clearNodes();

@@ -43,7 +43,6 @@ package org.netbeans.modules.java.metrics.hints;
 
 import java.util.Collection;
 import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.AnnotatedType;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.IntersectionType;

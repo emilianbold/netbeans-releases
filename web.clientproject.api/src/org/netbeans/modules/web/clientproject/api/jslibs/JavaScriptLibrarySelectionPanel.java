@@ -96,13 +96,13 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
-import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.modules.web.common.api.Version;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -566,8 +566,8 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         Pair<Set<SelectedLibrary>, String> result = librariesValidator.validate(librariesFolder, newLibraries);
         // libraries
         invalidLibraries.clear();
-        invalidLibraries.addAll(result.getA());
-        return result.getB();
+        invalidLibraries.addAll(result.first());
+        return result.second();
     }
 
     private void fireSelectedLibrariesChangeInEDT() {

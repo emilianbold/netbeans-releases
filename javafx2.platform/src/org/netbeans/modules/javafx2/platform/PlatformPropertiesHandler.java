@@ -41,17 +41,9 @@
  */
 package org.netbeans.modules.javafx2.platform;
 
-import java.util.Iterator;
-import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.ErrorManager;
-import org.openide.util.Mutex;
-import org.openide.util.MutexException;
 
 /**
  * Utility class for platform properties manipulation
@@ -75,68 +67,4 @@ public final class PlatformPropertiesHandler {
     public static EditableProperties getGlobalProperties() {
         return PropertyUtils.getGlobalProperties();
     }
-    
-    /**
-     * Saves given properties to IDE global properties file located in userdir.
-     * <p>
-     * Acquires write access.
-     * <p>
-     * @param map of properties
-     */
-    public static void saveGlobalProperties(@NonNull final Map<String, String> propMap) {
-        try {
-            ProjectManager.mutex().writeAccess(
-                    new Mutex.ExceptionAction<Object>() {
-                        @Override
-                        public Object run() throws Exception {
-                            final EditableProperties props = PropertyUtils.getGlobalProperties();
-                            for (Map.Entry<String, String> entry : propMap.entrySet()) {
-                                props.setProperty(entry.getKey(), entry.getValue());
-                            }
-                            PropertyUtils.putGlobalProperties(props);
-                            return null;
-                        }
-                    });
-        } catch (MutexException me) {
-            ErrorManager.getDefault().notify(me.getException());
-        }
-    }
-
-    /**
-     * Removes all properties for given platform from IDE global properties file located in userdir.
-     * <p>
-     * Acquires write access.
-     * <p>
-     * @param java platform instance
-     */
-    public static void clearGlobalPropertiesForPlatform(@NonNull final JavaPlatform platform) {
-        try {
-            ProjectManager.mutex().writeAccess(
-                    new Mutex.ExceptionAction<Object>() {
-                        @Override
-                        public Object run() throws Exception {
-                            String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
-                            String propPrefix = "platforms." + platformName + ".javafx."; // NOI18N
-                            boolean changed = false;
-                            
-                            final EditableProperties props = PropertyUtils.getGlobalProperties();
-                            for (Iterator<String> it = props.keySet().iterator(); it.hasNext();) {
-                                String key = it.next();
-                                if (key.startsWith(propPrefix)) {
-                                    it.remove();
-                                    changed = true;
-                                }
-                            }
-                            
-                            if (changed) {
-                                PropertyUtils.putGlobalProperties(props);
-                            }
-                            return null;
-                        }
-                    });
-        } catch (MutexException me) {
-            ErrorManager.getDefault().notify(me.getException());
-        }
-    }
-
 }

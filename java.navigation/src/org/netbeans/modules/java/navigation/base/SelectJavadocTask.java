@@ -58,6 +58,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -90,7 +91,7 @@ public class SelectJavadocTask implements Runnable, Callable<Boolean>, Cancellab
                         final JavadocTopComponent tc = JavadocTopComponent.findInstance();
                         if (tc != null) {
                             tc.open();
-                            tc.setJavadoc(documentation.first,documentation.second);
+                            tc.setJavadoc(documentation.first(),documentation.second());
                         }
                     }
                 });

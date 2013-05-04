@@ -59,7 +59,6 @@ import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdaterTest;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
@@ -70,6 +69,7 @@ import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Pair;
 
 /**
  *
@@ -584,12 +584,12 @@ public class QuerySupportTest extends NbTestCase {
             return new Result() {
                 @Override
                 public boolean preferSources() {
-                    return sources.first;
+                    return sources.first();
                 }
 
                 @Override
                 public FileObject[] getRoots() {
-                    return sources.second.toArray(new FileObject[sources.second.size()]);
+                    return sources.second().toArray(new FileObject[sources.second().size()]);
                 }
 
                 @Override

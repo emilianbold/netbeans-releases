@@ -62,6 +62,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * @author  Jan Jancura
@@ -119,8 +120,8 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
         ResourceBundle bundle = NbBundle.getBundle(ClassBreakpointPanel.class);
         String tooltipText = bundle.getString("TTT_TF_Class_Breakpoint_Class_Name");
         Pair<JScrollPane, JEditorPane> editorCC = addClassNameEditorCC(JavaClassNbDebugEditorKit.MIME_TYPE, pSettings, className, tooltipText);
-        spClassName = editorCC.get1();
-        epClassName = editorCC.get2();
+        spClassName = editorCC.first();
+        epClassName = editorCC.second();
         epClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
         epClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Class_Breakpoint_ClassName"));
         HelpCtx.setHelpIDString(epClassName, HELP_ID);
@@ -347,7 +348,7 @@ public class ClassBreakpointPanel extends JPanel implements Controller, org.open
         }
         sle.setToolTipText(tooltipText);
         epClassName.setToolTipText(tooltipText);
-        return new Pair(sle, epClassName);
+        return Pair.<JScrollPane, JEditorPane>of(sle, epClassName);
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

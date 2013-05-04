@@ -76,13 +76,13 @@ import org.netbeans.modules.java.source.parsing.OutputFileManager;
 import org.netbeans.modules.java.source.usages.ClassNamesForFileOraculumImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.lucene.support.LowMemoryWatcher;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.netbeans.modules.parsing.spi.indexing.SuspendStatus;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  *
@@ -217,7 +217,7 @@ final class OnePassCompileWorker extends CompileWorker {
                     return null;
                 }
                 Pair<CompilationUnitTree, CompileTuple> unit = units.removeFirst();
-                active = unit.second;
+                active = unit.second();
                 if (finished.contains(active.indexable)) {
                     continue;
                 }
@@ -228,7 +228,7 @@ final class OnePassCompileWorker extends CompileWorker {
                 }
                 Iterable<? extends TypeElement> types;
                 s = System.nanoTime();
-                types = jt.enterTrees(Collections.singletonList(unit.first));
+                types = jt.enterTrees(Collections.singletonList(unit.first()));
                 total += System.nanoTime() - s;
                 if (jfo2units.remove(active.jfo) != null) {
                     final Types ts = Types.instance(jt.getContext());
@@ -239,21 +239,24 @@ final class OnePassCompileWorker extends CompileWorker {
                         public void visitClassDef(JCClassDecl node) {
                             if (node.sym != null) {
                                 Type st = ts.supertype(node.sym.type);
-                                if (st.hasTag(TypeTag.CLASS)) {
+                                boolean envForSuperTypeFound = false;
+                                while (!envForSuperTypeFound && st != null && st.hasTag(TypeTag.CLASS)) {
                                     ClassSymbol c = st.tsym.outermostClass();
                                     Pair<CompilationUnitTree, CompileTuple> u = jfo2units.remove(c.sourcefile);
-                                    if (u != null && !finished.contains(u.second.indexable) && !u.second.indexable.equals(activeIndexable)) {
+                                    if (u != null && !finished.contains(u.second().indexable) && !u.second().indexable.equals(activeIndexable)) {
                                         if (dependencies.add(u)) {
-                                            scan((JCCompilationUnit)u.first);
+                                            scan((JCCompilationUnit)u.first());
                                         }
+                                        envForSuperTypeFound = true;
                                     }
+                                    st = ts.supertype(st);
                                 }
                             }
                             super.visitClassDef(node);
                         }
                     }
                     ScanNested scanner = new ScanNested();
-                    scanner.scan((JCCompilationUnit)unit.first);
+                    scanner.scan((JCCompilationUnit)unit.first());
                     if (!scanner.dependencies.isEmpty()) {
                         units.addFirst(unit);
                         for (Pair<CompilationUnitTree, CompileTuple> pair : scanner.dependencies) {
@@ -281,10 +284,10 @@ final class OnePassCompileWorker extends CompileWorker {
                 javaContext.getFQNs().set(types, active.indexable.getURL());
                 boolean[] main = new boolean[1];
                 if (javaContext.getCheckSums().checkAndSet(active.indexable.getURL(), types, jt.getElements()) || context.isSupplementaryFilesIndexing()) {
-                    javaContext.analyze(Collections.singleton(unit.first), jt, unit.second, addedTypes, main);
+                    javaContext.analyze(Collections.singleton(unit.first()), jt, unit.second(), addedTypes, main);
                 } else {
                     final Set<ElementHandle<TypeElement>> aTypes = new HashSet<ElementHandle<TypeElement>>();
-                    javaContext.analyze(Collections.singleton(unit.first), jt, unit.second, aTypes, main);
+                    javaContext.analyze(Collections.singleton(unit.first()), jt, unit.second(), aTypes, main);
                     addedTypes.addAll(aTypes);
                     modifiedTypes.addAll(aTypes);
                 }

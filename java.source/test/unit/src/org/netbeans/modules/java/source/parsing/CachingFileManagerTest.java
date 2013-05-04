@@ -58,9 +58,9 @@ import javax.tools.FileObject;
 import javax.tools.StandardLocation;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Pair;
 import org.openide.util.Utilities;
 
 /**
@@ -120,20 +120,20 @@ public class CachingFileManagerTest extends NbTestCase {
         final CachingArchiveProvider provider = CachingArchiveProvider.getDefault();
         final CachingFileManager manager = new CachingFileManager(provider, cp, false, true);
         for (Pair<Pair<String,String>,URI> testCase : testCases) {
-            final Pair<String,String> name = testCase.first;
-            final URI expectedURI = testCase.second;
-            FileObject fo = manager.getFileForInput(StandardLocation.CLASS_PATH, name.first, name.second);
+            final Pair<String,String> name = testCase.first();
+            final URI expectedURI = testCase.second();
+            FileObject fo = manager.getFileForInput(StandardLocation.CLASS_PATH, name.first(), name.second());
             if (expectedURI == null) {
                 assertNull(
                     String.format("Lookup: %s/%s expected: null",
-                    name.first,
-                    name.second),
+                    name.first(),
+                    name.second()),
                     fo);
             } else {
                 assertEquals(
                     String.format("Lookup: %s/%s expected: %s",
-                    name.first,
-                    name.second,
+                    name.first(),
+                    name.second(),
                     expectedURI),
                     expectedURI,
                     fo.toUri());

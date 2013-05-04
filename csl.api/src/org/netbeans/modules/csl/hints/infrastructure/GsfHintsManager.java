@@ -89,6 +89,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  *
@@ -322,14 +323,14 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
                     r = instantiateRule(o);
                 }
                 if ( r != null ) {
-                    rules.add( new Pair<Rule,FileObject>( r, o ) );
+                    rules.add( Pair.<Rule,FileObject>of( r, o ) );
                 }
             }
         }
         Collections.sort(rules, new Comparator<Pair<Rule,FileObject>>() {
             @Override
             public int compare(Pair<Rule,FileObject> p1, Pair<Rule,FileObject> p2) {
-                return p1.getA().getDisplayName().compareTo(p2.getA().getDisplayName());
+                return p1.first().getDisplayName().compareTo(p2.first().getDisplayName());
             }
         });
         return rules;
@@ -366,8 +367,8 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         dir2node.put(rootFolder, rootNode);
 
         for( Pair<Rule,FileObject> pair : rules ) {
-            Rule rule = pair.getA();
-            FileObject fo = pair.getB();
+            Rule rule = pair.first();
+            FileObject fo = pair.second();
 
             if ( rule instanceof ErrorRule ) {
                 addRule( (ErrorRule)rule, (Map)dest );
@@ -395,8 +396,8 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         dir2node.put(rootFolder, rootNode);
 
         for( Pair<Rule,FileObject> pair : rules ) {
-            Rule rule = pair.getA();
-            FileObject fo = pair.getB();
+            Rule rule = pair.first();
+            FileObject fo = pair.second();
 
             if ( rule instanceof AstRule ) {
                 
@@ -436,8 +437,8 @@ public class GsfHintsManager extends HintsProvider.HintsManager {
         dir2node.put(rootFolder, rootNode);
 
         for( Pair<Rule,FileObject> pair : rules ) {
-            Rule rule = pair.getA();
-            FileObject fo = pair.getB();
+            Rule rule = pair.first();
+            FileObject fo = pair.second();
 
             if ( rule instanceof SelectionRule ) {
                 addRule((SelectionRule)rule, (List)dest );

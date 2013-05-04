@@ -59,6 +59,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 
 /**
@@ -114,8 +115,8 @@ public class ExceptionBreakpointPanel extends JPanel implements Controller, org.
         String tooltipText = bundle.getString("TTT_TF_Field_Breakpoint_Class_Name");
         Pair<JScrollPane, JEditorPane> editorCC = ClassBreakpointPanel.addClassNameEditorCC(
                 ExceptionClassNbDebugEditorKit.MIME_TYPE, pSettings, className, tooltipText);
-        spExceptionClassName = editorCC.get1();
-        epExceptionClassName = editorCC.get2();
+        spExceptionClassName = editorCC.first();
+        epExceptionClassName = editorCC.second();
         epExceptionClassName.getAccessibleContext().setAccessibleName(bundle.getString("ACSN_Method_Breakpoint_ClassName"));
         epExceptionClassName.getAccessibleContext().setAccessibleDescription(bundle.getString("ACSD_Exception_Breakpoint_ClassName"));
         HelpCtx.setHelpIDString(epExceptionClassName, HELP_ID);

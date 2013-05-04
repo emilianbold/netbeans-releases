@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,34 +34,32 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.hints.pom;
+package org.netbeans.modules.apisupport.hints.projectbridge;
+
+import org.netbeans.spi.editor.hints.projects.support.StandardProjectSettings;
+import org.netbeans.spi.project.LookupProvider;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer.CompositeCategoryProvider;
 
 /**
  *
- * @author Jan Lahoda
+ * @author lahvac
  */
-public final class Pair<A, B> {
-
-    private A a;
-    private B b;
-
-    public Pair(A a, B b) {
-        this.a = a;
-        this.b = b;
-    }
-
-    public A getA() {
-        return a;
-    }
-
-    public B getB() {
-        return b;
+public class SuiteConfiguration {
+    
+    @CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-apisupport-project-suite", position=2000)
+    public static CompositeCategoryProvider customizer() {
+        return StandardProjectSettings.createCustomizerProvider("Projects/hints/java-based");
     }
     
-     @Override
-     public String toString() {
-         return "[" + String.valueOf(a) + "/" + String.valueOf(b) + "]";
-     }
+    @LookupProvider.Registration(projectType = "org-netbeans-modules-apisupport-project-suite")
+    public static LookupProvider lookupProvider() {
+        return StandardProjectSettings.createSettings(null, null, null);
+    }
+
 }

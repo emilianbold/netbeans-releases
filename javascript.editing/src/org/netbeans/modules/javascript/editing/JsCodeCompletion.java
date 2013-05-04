@@ -99,6 +99,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * Code completion handler for JavaScript
@@ -1222,8 +1223,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
             matches = index.getElements(prefix, fqn, kind, result);
         } else {
             Pair<Set<IndexedElement>, Boolean> names = index.getAllNamesTruncated(prefix, kind, result);
-            matches = names.getA();
-            boolean isTruncated = names.getB();
+            matches = names.first();
+            boolean isTruncated = names.second();
             if (isTruncated) {
                 request.completionResult.setTruncated(true);
                 includeNonFqn = false;
@@ -1446,8 +1447,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 //                    return true;
 //                } else {
                 Pair<Set<IndexedElement>, Boolean> names = index.getAllNamesTruncated(prefix, kind, result);
-                elements = names.getA();
-                boolean isTruncated = names.getB();
+                elements = names.first();
+                boolean isTruncated = names.second();
                 if (isTruncated) {
                     request.completionResult.setTruncated(true);
                 }
@@ -1583,8 +1584,8 @@ public class JsCodeCompletion implements CodeCompletionHandler {
 
                 if (token.id() == JsTokenId.NEW) {
                     Pair<Set<IndexedElement>, Boolean> constructors = index.getConstructors(prefix, kind);
-                    Set<IndexedElement> elements = constructors.getA();
-                    if (constructors.getB()) {
+                    Set<IndexedElement> elements = constructors.first();
+                    if (constructors.second()) {
                         request.completionResult.setTruncated(true);
                     }
                     String lhs = request.call.getLhs();

@@ -105,15 +105,6 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
             chl = new ConfigChangeListener(prj);
             pcp.addPropertyChangeListener(chl);
 
-            // create Default JavaFX platform if necessary
-            // #205341
-            final Runnable runCreateJFXPlatform = missingJFXPlatform() ? new Runnable() {
-                @Override
-                public void run() {
-                    createJFXPlatform();
-                }
-            } : null;
-
             // and update FX build script file jfx-impl.xml if it is not in expected state
             // #204765
             // and create Default RunAs Configurations
@@ -143,31 +134,16 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
                 }
             } : null;
 
-            if(runCreateJFXPlatform != null && runUpdateJFXImpl != null) {
+            if(runUpdateJFXImpl != null) {
                 switchBusy();
                 final ProjectInformation info = ProjectUtils.getInformation(prj);
                 final String projName = info != null ? info.getName() : null;
                 final RequestProcessor RP = new RequestProcessor(JFXProjectOpenedHook.class.getName() + projName, 2);
-                final RequestProcessor.Task taskPlatforms = RP.post(runCreateJFXPlatform);
                 final RequestProcessor.Task taskJfxImpl = RP.post(runUpdateJFXImpl);
-                if(taskPlatforms != null) {
-                    taskPlatforms.waitFinished();
-                }
                 if(taskJfxImpl != null) {
                     taskJfxImpl.waitFinished();
                 }
                 switchDefault();
-            } else {
-                if(runCreateJFXPlatform != null) {
-                    switchBusy();
-                    runCreateJFXPlatform.run();
-                    switchDefault();
-                }
-                if(runUpdateJFXImpl != null) {
-                    switchBusy();
-                    runUpdateJFXImpl.run();
-                    switchDefault();
-                }
             }
         }
     }
@@ -188,16 +164,6 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
 
     private boolean missingJFXPlatform() {
         return !JavaFXPlatformUtils.isThereAnyJavaFXPlatform();
-    }
-
-    private void createJFXPlatform() {
-        // I do it in the same thread because otherwise we have problem with "resolve reference" modal dialog.
-        // Creation of Deafult JavaFX platform must be finished before J2SEProject checks for broken links after opening.
-        try {
-            JavaFXPlatformUtils.createDefaultJavaFXPlatform();
-        } catch (Exception ex) {
-            LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ex); // NOI18N
-        }
     }
 
     private boolean isEnabledJFXUpdate() {

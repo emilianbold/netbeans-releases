@@ -113,7 +113,6 @@ import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.ExecutableFilesIndex;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
@@ -126,6 +125,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -491,19 +491,19 @@ public class SourceUtils {
             }
             final List<Pair<FileObject,ClassPath>> fos = findAllResources(pkgName, cps);
             for (Pair<FileObject,ClassPath> pair : fos) {                
-                FileObject root = pair.second.findOwnerRoot(pair.first);
+                FileObject root = pair.second().findOwnerRoot(pair.first());
                 if (root == null)
                     continue;
                 FileObject[] sourceRoots = SourceForBinaryQuery.findSourceRoots(root.toURL()).getRoots();                        
                 ClassPath sourcePath = ClassPathSupport.createClassPath(sourceRoots);
                 LinkedList<FileObject> folders = new LinkedList<FileObject>(sourcePath.findAllResources(pkgName));
                 if (pkg) {
-                    return folders.isEmpty() ? pair.first : folders.get(0);
+                    return folders.isEmpty() ? pair.first() : folders.get(0);
                 } else {               
                     final boolean caseSensitive = isCaseSensitive ();
                     final String sourceFileName = getSourceFileName (className);
                     final Match matchSet = caseSensitive ? new CaseSensitiveMatch(sourceFileName) : new CaseInsensitiveMatch(sourceFileName);
-                    folders.addFirst(pair.first);
+                    folders.addFirst(pair.first());
                     for (FileObject folder : folders) {
                         for (FileObject child : folder.getChildren()) {
                             if (matchSet.apply(child)) {

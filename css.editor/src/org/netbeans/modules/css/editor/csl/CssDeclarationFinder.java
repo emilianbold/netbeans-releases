@@ -51,7 +51,7 @@ import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
 import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
 import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.web.common.api.Pair;
+import org.openide.util.Pair;
 
 /**
  * Hyperlinking for @import declaration only.
@@ -80,8 +80,8 @@ public class CssDeclarationFinder implements DeclarationFinder {
     public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
         Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> declarationLocation = CssModuleSupport.getDeclarationLocation(doc, caretOffset, new FeatureCancel());
         if(declarationLocation != null) {
-            taskRef.set(declarationLocation.getB());
-            return declarationLocation.getA();
+            taskRef.set(declarationLocation.second());
+            return declarationLocation.first();
         }
         return OffsetRange.NONE;
     }

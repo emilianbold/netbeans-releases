@@ -57,10 +57,10 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.web.common.api.Pair;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.html.editor.gsf.Bundle.*;
+import org.openide.util.Pair;
 
 /**
  *
@@ -99,8 +99,8 @@ public class HtmlStructureScanner implements StructureScanner {
         if (cache != null) {
             Pair<ParserResult, List<HtmlStructureItem>> pair = cache.get();
             if (pair != null) {
-                if (info == pair.getA()) {
-                    return pair.getB();
+                if (info == pair.first()) {
+                    return pair.second();
                 }
             }
         }
@@ -119,15 +119,15 @@ public class HtmlStructureScanner implements StructureScanner {
 
         Snapshot snapshot = info.getSnapshot();
         FileObject file = snapshot.getSource().getFileObject();
-        List<StructureItem> elements = new ArrayList<StructureItem>();
+        List<HtmlStructureItem> elements = new ArrayList<HtmlStructureItem>();
         for(OpenTag tag : root.children(OpenTag.class)) {
             HtmlElementHandle handle = new HtmlElementHandle(tag, file);
-            StructureItem si = new HtmlStructureItem(tag, handle, snapshot);
+            HtmlStructureItem si = new HtmlStructureItem(tag, handle, snapshot);
             elements.add(si);
         }
 
         //cache
-        Pair<ParserResult, List<HtmlStructureItem>> pair = new Pair(info, elements);
+        Pair<ParserResult, List<HtmlStructureItem>> pair = Pair.of(info, elements);
         cache = new WeakReference<Pair<ParserResult, List<HtmlStructureItem>>>(pair);
 
         return elements;

@@ -1,4 +1,3 @@
-abstract
 boolean
 byte
 char
@@ -15,7 +14,6 @@ private
 protected
 public
 short
-static
 strictfp
 synchronized
 transient
@@ -27,7 +25,9 @@ ArithmeticException
 ArrayIndexOutOfBoundsException
 ArrayStoreException
 AssertionError
+AutoCloseable
 Boolean
+BootstrapMethodError
 Byte
 CharSequence
 Character
@@ -37,6 +37,7 @@ ClassCircularityError
 ClassFormatError
 ClassLoader
 ClassNotFoundException
+ClassValue
 CloneNotSupportedException
 Cloneable
 Comparable
@@ -83,10 +84,12 @@ Package
 Process
 ProcessBuilder
 Readable
+ReflectiveOperationException
 Runnable
 Runtime
 RuntimeException
 RuntimePermission
+SafeVarargs
 SecurityException
 SecurityManager
 Short
@@ -116,6 +119,7 @@ Void
 com
 java
 javax
+oracle
 org
 sun
 sunw

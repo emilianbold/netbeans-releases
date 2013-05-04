@@ -67,6 +67,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Utilities;
 
 /** Should probably final class with private constructor.

@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.dbgp;
 
 import java.util.LinkedList;
-import org.netbeans.modules.php.api.util.Pair;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -52,6 +51,7 @@ import java.util.List;
 import org.netbeans.junit.NbTestCase;
 import org.openide.filesystems.FileUtil;
 import static org.junit.Assert.*;
+import org.openide.util.Pair;
 
 /**
  * @author Radek Matous
