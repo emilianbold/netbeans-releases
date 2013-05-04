@@ -175,6 +175,8 @@ final class RegexpUtils {
 
     static final String COMPARISON_REGEX = ".*expected:<(.*)\\[(.*)\\](.*)> but was:<(.*)\\[(.*)\\](.*)>$"; //NOI18N
     static final String COMPARISON_HIDDEN_REGEX = ".*expected:<(.*)> but was:<(.*)>$"; //NOI18N
+    static final String COMPARISON_AFTER_65_REGEX = ".*expected \\[(.*)\\[(.*)\\](.*)\\] but found \\[(.*)\\[(.*)\\](.*)\\]$"; //NOI18N
+    static final String COMPARISON_AFTER_65_HIDDEN_REGEX = ".*expected \\[(.*)\\] but found \\[(.*)\\]$"; //NOI18N
 
     /**
      * Regexp matching part of a Java task's invocation debug message
@@ -224,7 +226,7 @@ final class RegexpUtils {
                              testcaseHeaderBriefPattern,
                              testcaseHeaderPlainPattern,
                              xmlDeclPattern, floatNumPattern,
-                             comparisonPattern, comparisonHiddenPattern;
+                             comparisonPattern, comparisonHiddenPattern, comparisonAfter65Pattern, comparisonAfter65HiddenPattern;
 
     //<editor-fold defaultstate="collapsed" desc=" Note about synchronization ">
     /*
@@ -355,6 +357,19 @@ final class RegexpUtils {
         return comparisonHiddenPattern;
     }
 
+    Pattern getComparisonAfter65Pattern() {
+        if (comparisonAfter65Pattern == null) {
+            comparisonAfter65Pattern = Pattern.compile(COMPARISON_AFTER_65_REGEX);
+        }
+        return comparisonAfter65Pattern;
+    }
+
+    Pattern getComparisonAfter65HiddenPattern() {
+	if (comparisonAfter65HiddenPattern == null) {
+            comparisonAfter65HiddenPattern = Pattern.compile(COMPARISON_AFTER_65_HIDDEN_REGEX);
+        }
+        return comparisonAfter65HiddenPattern;
+    }
 
     /**
      * Parses a floating-point number describing elapsed time.

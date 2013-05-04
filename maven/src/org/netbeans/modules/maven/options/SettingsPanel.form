@@ -26,7 +26,6 @@
                   </Group>
                   <Component id="lblCategory" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -62,31 +61,28 @@
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Group type="102" attributes="0">
-                              <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="cbSkipTests" min="-2" max="-2" attributes="0"/>
-                                  <Component id="btnGoals" min="-2" max="-2" attributes="0"/>
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="lblOptions" min="-2" max="-2" attributes="0"/>
-                                      <EmptySpace max="-2" attributes="0"/>
-                                      <Component id="txtOptions" pref="230" max="32767" attributes="0"/>
-                                  </Group>
-                              </Group>
-                              <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="btnOptions" linkSize="1" min="-2" max="-2" attributes="0"/>
-                          </Group>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="lblCommandLine" min="-2" pref="69" max="-2" attributes="0"/>
+                              <Component id="lblCommandLine" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="lblExternalVersion" max="32767" attributes="0"/>
                                   <Component id="comMavenHome" max="32767" attributes="0"/>
                               </Group>
                           </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="lblOptions" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="txtOptions" max="32767" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="btnOptions" linkSize="1" min="-2" max="-2" attributes="0"/>
+                          </Group>
                           <Group type="102" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="btnGoals" min="-2" max="-2" attributes="0"/>
                                   <Component id="cbAlwaysShow" min="-2" max="-2" attributes="0"/>
                                   <Component id="cbReuse" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbSkipTests" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="cbCollapseSuccessFolds" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
@@ -119,7 +115,9 @@
                       <Component id="cbReuse" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="cbAlwaysShow" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="29" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="cbCollapseSuccessFolds" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace pref="47" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -194,6 +192,13 @@
                 </Property>
               </Properties>
             </Component>
+            <Component class="javax.swing.JCheckBox" name="cbCollapseSuccessFolds">
+              <Properties>
+                <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+                  <ResourceString bundle="org/netbeans/modules/maven/options/Bundle.properties" key="SettingsPanel.cbCollapseSuccessFolds.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+                </Property>
+              </Properties>
+            </Component>
           </SubComponents>
         </Container>
         <Container class="javax.swing.JPanel" name="pnlAppearance">
@@ -216,7 +221,7 @@
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Component id="txtProjectNodeNameCustomPattern" max="32767" attributes="0"/>
-                                  <Component id="cbProjectNodeNameMode" pref="305" max="32767" attributes="0"/>
+                                  <Component id="cbProjectNodeNameMode" pref="290" max="32767" attributes="0"/>
                               </Group>
                           </Group>
                       </Group>
@@ -236,7 +241,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="txtProjectNodeNameCustomPattern" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace pref="182" max="32767" attributes="0"/>
+                      <EmptySpace pref="243" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -319,7 +324,7 @@
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="comSource" max="32767" attributes="1"/>
                           </Group>
-                          <Component id="jLabel3" alignment="0" pref="429" max="32767" attributes="0"/>
+                          <Component id="jLabel3" alignment="0" pref="442" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
@@ -347,7 +352,7 @@
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jLabel3" min="-2" pref="44" max="-2" attributes="0"/>
-                      <EmptySpace pref="106" max="32767" attributes="0"/>
+                      <EmptySpace pref="161" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -420,9 +425,9 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="lblIndex" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="comIndex" pref="210" max="32767" attributes="0"/>
+                      <Component id="comIndex" pref="164" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="btnIndex" linkSize="1" min="-2" max="-2" attributes="0"/>
+                      <Component id="btnIndex" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
@@ -436,7 +441,7 @@
                           <Component id="comIndex" alignment="3" min="-2" max="-2" attributes="0"/>
                           <Component id="btnIndex" alignment="3" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace pref="225" max="32767" attributes="0"/>
+                      <EmptySpace pref="297" max="32767" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>

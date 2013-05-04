@@ -88,6 +88,9 @@ public class IssueField {
     public static final IssueField REMAINING_TIME = new IssueField(BugzillaAttribute.REMAINING_TIME.getKey(), "LBL_REMAINING_TIME", true);
     public static final IssueField ESTIMATED_TIME = new IssueField(BugzillaAttribute.ESTIMATED_TIME.getKey(), "LBL_DEADLINE", true);
     public static final IssueField DEADLINE = new IssueField(BugzillaAttribute.DEADLINE.getKey(), null, true);
+    public static final IssueField COMMENT = new IssueField(TaskAttribute.COMMENT_NEW, null, true);
+    public static final IssueField DUPLICATE_ID = new IssueField(BugzillaAttribute.DUP_ID.getKey(), "LBL_DUPLICATE_ID", true);
+    public static final IssueField REASSIGN_TO_DEFAULT = new IssueField(BugzillaAttribute.SET_DEFAULT_ASSIGNEE.getKey(), null, true);
 
     private final String key;
     private final String displayNameKey;

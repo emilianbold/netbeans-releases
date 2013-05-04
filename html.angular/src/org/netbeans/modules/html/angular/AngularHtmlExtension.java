@@ -74,6 +74,11 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 public class AngularHtmlExtension extends HtmlExtension {
 
     @Override
+    public boolean isApplicationPiece(HtmlParserResult result) {
+        return AngularModel.getModel(result).isAngularPage();
+    }
+
+    @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights(HtmlParserResult result, SchedulerEvent event) {
         final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<>();
         AngularModel model = AngularModel.getModel(result);

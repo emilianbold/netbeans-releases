@@ -1003,6 +1003,21 @@ final class TestNGOutputReader {
                         matcher.group(2)));
             }
         }
+	matcher = RegexpUtils.getInstance().getComparisonAfter65Pattern().matcher(txt.get(0));
+	if (matcher.matches()) {
+            t.setComparisonFailure(
+                    new Trouble.ComparisonFailure(
+                    matcher.group(1) + matcher.group(2) + matcher.group(3),
+                    matcher.group(4) + matcher.group(5) + matcher.group(6)));
+        } else {
+            matcher = RegexpUtils.getInstance().getComparisonAfter65HiddenPattern().matcher(txt.get(0));
+            if (matcher.matches()) {
+                t.setComparisonFailure(
+                        new Trouble.ComparisonFailure(
+                        matcher.group(1),
+                        matcher.group(2)));
+            }
+        }
         t.setStackTrace(txt.toArray(new String[txt.size()]));
         testSession.getCurrentTestCase().setTrouble(t);
 

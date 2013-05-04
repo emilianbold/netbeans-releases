@@ -42,6 +42,7 @@
 package org.netbeans.modules.html.editor.api.gsf;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -283,8 +284,31 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
             
             ValidationResult res = validator.validate(context);
 
+            //Filter out errors from elements which contains masked areas.
+            //
+            //For example <img ng-src="{{mainImageUrl}}"> causes the validator
+            //to complain about missing src attribute, which is in fact generated
+            //in runtime by AngularJS
             List<Error> errs = new ArrayList<>();
-            for (ProblemDescription pd : res.getProblems()) {
+            int[] positions = maskedAreas.positions();
+            int[] lens = maskedAreas.lens();
+            problems: for (ProblemDescription pd : res.getProblems()) {
+                int from = pd.getFrom();
+                int to = pd.getTo();
+                
+                int idx = Arrays.binarySearch(positions, from);
+                if(idx < 0) {
+                    idx = -idx - 1; //points to the index of the closest higher position
+                }
+                //if the index is higher than the arr len it means there's no higher position
+                if(idx < positions.length) {
+                    int pos = positions[idx];
+                    if(pos + lens[idx] <= to) {
+                        //match - filter out
+                        continue problems;
+                    }
+                }
+                
                 DefaultError error = new DefaultError(pd.getKey(),
                         pd.getText(), //NOI18N
                         pd.getText(),

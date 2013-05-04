@@ -170,8 +170,10 @@ public class CommentsPanel extends JPanel {
         DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT);
         String creationTxt = issue.getFieldValue(IssueField.CREATION);
         try {
-            Date creation = dateTimeFormat.parse(creationTxt);
-            creationTxt = format.format(creation);
+            if (!creationTxt.isEmpty()) {
+                Date creation = dateTimeFormat.parse(creationTxt);
+                creationTxt = format.format(creation);
+            }
         } catch (ParseException pex) {
             Bugzilla.LOG.log(Level.INFO, null, pex);
         }

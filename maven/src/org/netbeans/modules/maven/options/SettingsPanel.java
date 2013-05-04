@@ -341,6 +341,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         btnGoals = new javax.swing.JButton();
         cbAlwaysShow = new javax.swing.JCheckBox();
         cbReuse = new javax.swing.JCheckBox();
+        cbCollapseSuccessFolds = new javax.swing.JCheckBox();
         pnlAppearance = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -389,6 +390,8 @@ public class SettingsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(cbReuse, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbReuse.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbCollapseSuccessFolds, org.openide.util.NbBundle.getMessage(SettingsPanel.class, "SettingsPanel.cbCollapseSuccessFolds.text")); // NOI18N
+
         javax.swing.GroupLayout pnlExecutionLayout = new javax.swing.GroupLayout(pnlExecution);
         pnlExecution.setLayout(pnlExecutionLayout);
         pnlExecutionLayout.setHorizontalGroup(
@@ -397,25 +400,24 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(pnlExecutionLayout.createSequentialGroup()
-                        .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(cbSkipTests)
-                            .addComponent(btnGoals)
-                            .addGroup(pnlExecutionLayout.createSequentialGroup()
-                                .addComponent(lblOptions)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(txtOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 230, Short.MAX_VALUE)))
-                        .addGap(18, 18, 18)
-                        .addComponent(btnOptions))
-                    .addGroup(pnlExecutionLayout.createSequentialGroup()
-                        .addComponent(lblCommandLine, javax.swing.GroupLayout.PREFERRED_SIZE, 69, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(lblCommandLine)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lblExternalVersion, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addComponent(comMavenHome, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addGroup(pnlExecutionLayout.createSequentialGroup()
+                        .addComponent(lblOptions)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(txtOptions)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(btnOptions))
+                    .addGroup(pnlExecutionLayout.createSequentialGroup()
                         .addGroup(pnlExecutionLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(btnGoals)
                             .addComponent(cbAlwaysShow)
-                            .addComponent(cbReuse))
+                            .addComponent(cbReuse)
+                            .addComponent(cbSkipTests)
+                            .addComponent(cbCollapseSuccessFolds))
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
@@ -441,7 +443,9 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addComponent(cbReuse)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(cbAlwaysShow)
-                .addContainerGap(29, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cbCollapseSuccessFolds)
+                .addContainerGap(47, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlExecution, "execution");
@@ -479,7 +483,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(pnlAppearanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtProjectNodeNameCustomPattern)
-                            .addComponent(cbProjectNodeNameMode, 0, 305, Short.MAX_VALUE))))
+                            .addComponent(cbProjectNodeNameMode, 0, 290, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         pnlAppearanceLayout.setVerticalGroup(
@@ -493,7 +497,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(cbProjectNodeNameMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txtProjectNodeNameCustomPattern, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(182, Short.MAX_VALUE))
+                .addContainerGap(243, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlAppearance, "appearance");
@@ -534,7 +538,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                         .addComponent(lblSource)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(comSource, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 429, Short.MAX_VALUE))
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, 442, Short.MAX_VALUE))
                 .addContainerGap())
         );
 
@@ -559,7 +563,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(comSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(106, Short.MAX_VALUE))
+                .addContainerGap(161, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlDependencies, "dependencies");
@@ -584,7 +588,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(lblIndex)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(comIndex, 0, 210, Short.MAX_VALUE)
+                .addComponent(comIndex, 0, 164, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnIndex)
                 .addContainerGap())
@@ -597,7 +601,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(lblIndex)
                     .addComponent(comIndex, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnIndex))
-                .addContainerGap(225, Short.MAX_VALUE))
+                .addContainerGap(297, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlIndex, "index");
@@ -629,8 +633,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                         .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 140, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(pnlCards, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addComponent(lblCategory))
-                .addContainerGap())
+                    .addComponent(lblCategory)))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -710,6 +713,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnIndex;
     private javax.swing.JButton btnOptions;
     private javax.swing.JCheckBox cbAlwaysShow;
+    private javax.swing.JCheckBox cbCollapseSuccessFolds;
     private javax.swing.JComboBox cbProjectNodeNameMode;
     private javax.swing.JCheckBox cbReuse;
     private javax.swing.JCheckBox cbSkipTests;
@@ -825,6 +829,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         cbSkipTests.setSelected(MavenSettings.getDefault().isSkipTests());
         cbAlwaysShow.setSelected(MavenSettings.getDefault().isAlwaysShowOutput());
         cbReuse.setSelected(MavenSettings.getDefault().isReuseOutputTabs());
+        cbCollapseSuccessFolds.setSelected(MavenSettings.getDefault().isCollapseSuccessFolds());
 
         final String pattern = MavenSettings.getDefault().getProjectNodeNamePattern();
         txtProjectNodeNameCustomPattern.setText("");
@@ -888,6 +893,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         MavenSettings.getDefault().setSkipTests(cbSkipTests.isSelected());
         MavenSettings.getDefault().setAlwaysShowOutput(cbAlwaysShow.isSelected());
         MavenSettings.getDefault().setReuseOutputTabs(cbReuse.isSelected());
+        MavenSettings.getDefault().setCollapseSuccessFolds(cbCollapseSuccessFolds.isSelected());
         
         if (0 == cbProjectNodeNameMode.getSelectedIndex()) {
             //selected "default" entry
