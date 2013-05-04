@@ -109,7 +109,6 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.Places;
-import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -265,8 +264,10 @@ public class Installer extends ModuleInstall implements Runnable {
                 for (LogRecord rec : disabledRec) {
                     LogRecords.write(logStreamMetrics(), rec);
                 }
-                LogRecord clusterRec = getClusterList(log);
+                LogRecord clusterRec = EnabledModulesCollector.getClusterList(log);
                 LogRecords.write(logStreamMetrics(), clusterRec);
+                LogRecord userInstalledRec = EnabledModulesCollector.getUserInstalledModules(log);
+                LogRecords.write(logStreamMetrics(), userInstalledRec);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -656,24 +657,6 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
-    static LogRecord getClusterList (Logger logger) {
-        LogRecord rec = new LogRecord(Level.INFO, "USG_INSTALLED_CLUSTERS");
-        String dirs = System.getProperty("netbeans.dirs");
-        if (dirs != null) {
-            String [] dirsArray = dirs.split(File.pathSeparator);
-            List<String> list = new ArrayList<String>();
-            for (int i = 0; i < dirsArray.length; i++) {
-                File f = new File(dirsArray[i]);
-                if (f.exists()){
-                    list.add(f.getName());
-                }
-            }
-            rec.setParameters(list.toArray());
-        }
-        rec.setLoggerName(logger.getName());
-        return rec;
-    }
-    
     public static URL hintsURL() {
         return hintURL;
     }
