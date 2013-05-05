@@ -500,6 +500,13 @@ class JsCodeCompletion implements CodeCompletionHandler {
             fqn.append(expChain.get(--i));
             fqn.append('.');
         }
+        Collection<IndexedElement> indexResults = jsIndex.getPropertiesWithPrefix(fqn.toString().substring(0, fqn.length() - 1), request.prefix);
+        for (IndexedElement indexedElement : indexResults) {
+            if (!indexedElement.isAnonymous()
+                    && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
+                addPropertyToMap(request, addedProperties, indexedElement);
+            }
+        }
         return addedProperties;
     }
     
@@ -582,8 +589,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             return Collections.<String>emptyList();
         }
 
-        int offset = request.info.getSnapshot().getEmbeddedOffset(request.anchor);
-        ts.move(offset);
+        ts.move(request.anchor);
         if (ts.movePrevious() && (ts.moveNext() || ((ts.offset() + ts.token().length()) == request.result.getSnapshot().getText().length()))) {
             if (ts.token().id() != JsTokenId.OPERATOR_DOT) {
                 ts.movePrevious();
