@@ -49,13 +49,30 @@ import com.sun.javadoc.MethodDoc;
 import com.sun.javadoc.ParamTag;
 import com.sun.javadoc.Tag;
 import com.sun.javadoc.ThrowsTag;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import static com.sun.source.tree.Tree.Kind.ANNOTATION_TYPE;
+import static com.sun.source.tree.Tree.Kind.CLASS;
+import static com.sun.source.tree.Tree.Kind.ENUM;
+import static com.sun.source.tree.Tree.Kind.INTERFACE;
+import static com.sun.source.tree.Tree.Kind.METHOD;
+import static com.sun.source.tree.Tree.Kind.VARIABLE;
+import com.sun.source.tree.TypeParameterTree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.SourcePositions;
+import com.sun.source.util.TreePath;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.lang.model.SourceVersion;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -68,13 +85,18 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
+import org.netbeans.api.editor.guards.GuardedSection;
+import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.lexer.JavadocTokenId;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
@@ -87,6 +109,7 @@ import org.openide.text.NbDocument;
  * @author Jan Pokorsky
  */
 public class JavadocUtilities {
+    private static final String ERROR_IDENT = "<error>"; //NOI18N
     
     private JavadocUtilities() {
     }
@@ -609,6 +632,228 @@ public class JavadocUtilities {
             Logger.getLogger(JavadocUtilities.class.getName()).log(Level.SEVERE, ex.getMessage(), ex);
         }
         return false;
+    }
+
+    static boolean isValid(CompilationInfo javac, TreePath path, Severity severity, Access access, int caret) {
+        Tree leaf = path.getLeaf();
+        boolean onLine = severity == Severity.HINT && caret > -1;
+        switch (leaf.getKind()) {
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+                return access.isAccessible(javac, path, false) && (!onLine || isInHeader(javac, (ClassTree) leaf, caret));
+            case METHOD:
+                return access.isAccessible(javac, path, false) && (!onLine || isInHeader(javac, (MethodTree) leaf, caret));
+            case VARIABLE:
+                return access.isAccessible(javac, path, false);
+        }
+        return false;
+    }
+    
+    public static boolean isGuarded(Tree node, CompilationInfo javac, Document doc) {
+        GuardedSectionManager guards = GuardedSectionManager.getInstance((StyledDocument) doc);
+        if (guards != null) {
+            try {
+                final int startOff = (int) javac.getTrees().getSourcePositions().
+                        getStartPosition(javac.getCompilationUnit(), node);
+                final Position startPos = doc.createPosition(startOff);
+
+                for (GuardedSection guard : guards.getGuardedSections()) {
+                    if (guard.contains(startPos, false)) {
+                        return true;
+                    }
+                }
+            } catch (BadLocationException ex) {
+                Logger.getLogger(Analyzer.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+                // consider it as guarded
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * has syntax errors preventing to generate javadoc?
+     */
+    public static boolean hasErrors(Tree leaf) {
+        switch (leaf.getKind()) {
+            case METHOD:
+                MethodTree mt = (MethodTree) leaf;
+                Tree rt = mt.getReturnType();
+                if (rt != null && rt.getKind() == Tree.Kind.ERRONEOUS) {
+                    return true;
+                }
+                if (ERROR_IDENT.contentEquals(mt.getName())) {
+                    return true;
+                }
+                for (VariableTree vt : mt.getParameters()) {
+                    if (ERROR_IDENT.contentEquals(vt.getName())) {
+                        return true;
+                    }
+                }
+                for (Tree t : mt.getThrows()) {
+                    if (t.getKind() == Tree.Kind.ERRONEOUS ||
+                            (t.getKind() == Tree.Kind.IDENTIFIER && ERROR_IDENT.contentEquals(((IdentifierTree) t).getName()))) {
+                        return true;
+                    }
+                }
+                break;
+
+            case VARIABLE:
+                VariableTree vt = (VariableTree) leaf;
+                return vt.getType().getKind() == Tree.Kind.ERRONEOUS
+                        || ERROR_IDENT.contentEquals(vt.getName());
+
+            case ANNOTATION_TYPE:
+            case CLASS:
+            case ENUM:
+            case INTERFACE:
+                ClassTree ct = (ClassTree) leaf;
+                if (ERROR_IDENT.contentEquals(ct.getSimpleName())) {
+                    return true;
+                }
+                for (TypeParameterTree tpt : ct.getTypeParameters()) {
+                    if (ERROR_IDENT.contentEquals(tpt.getName())) {
+                        return true;
+                    }
+                }
+                break;
+
+        }
+        return false;
+    }
+        
+    private static boolean isInHeader(CompilationInfo info, ClassTree tree, int offset) {
+        CompilationUnitTree cut = info.getCompilationUnit();
+        SourcePositions sp = info.getTrees().getSourcePositions();
+        long lastKnownOffsetInHeader = sp.getStartPosition(cut, tree);
+        
+        List<? extends Tree> impls = tree.getImplementsClause();
+        List<? extends TypeParameterTree> typeparams;
+        if (impls != null && !impls.isEmpty()) {
+            lastKnownOffsetInHeader= sp.getEndPosition(cut, impls.get(impls.size() - 1));
+        } else if ((typeparams = tree.getTypeParameters()) != null && !typeparams.isEmpty()) {
+            lastKnownOffsetInHeader= sp.getEndPosition(cut, typeparams.get(typeparams.size() - 1));
+        } else if (tree.getExtendsClause() != null) {
+            lastKnownOffsetInHeader = sp.getEndPosition(cut, tree.getExtendsClause());
+        } else if (tree.getModifiers() != null) {
+            lastKnownOffsetInHeader = sp.getEndPosition(cut, tree.getModifiers());
+        }
+        
+        TokenSequence<JavaTokenId> ts = info.getTreeUtilities().tokensFor(tree);
+        
+        ts.move((int) lastKnownOffsetInHeader);
+        
+        while (ts.moveNext()) {
+            if (ts.token().id() == JavaTokenId.LBRACE) {
+                return offset < ts.offset();
+            }
+        }
+        
+        return false;
+    }
+    
+    private static boolean isInHeader(CompilationInfo info, MethodTree tree, int offset) {
+        CompilationUnitTree cut = info.getCompilationUnit();
+        SourcePositions sp = info.getTrees().getSourcePositions();
+        long lastKnownOffsetInHeader = sp.getStartPosition(cut, tree);
+        
+        List<? extends ExpressionTree> throwz;
+        List<? extends VariableTree> params;
+        List<? extends TypeParameterTree> typeparams;
+        
+        if ((throwz = tree.getThrows()) != null && !throwz.isEmpty()) {
+            lastKnownOffsetInHeader = sp.getEndPosition(cut, throwz.get(throwz.size() - 1));
+        } else if ((params = tree.getParameters()) != null && !params.isEmpty()) {
+            lastKnownOffsetInHeader = sp.getEndPosition(cut, params.get(params.size() - 1));
+        } else if ((typeparams = tree.getTypeParameters()) != null && !typeparams.isEmpty()) {
+            lastKnownOffsetInHeader = sp.getEndPosition(cut, typeparams.get(typeparams.size() - 1));
+        } else if (tree.getReturnType() != null) {
+            lastKnownOffsetInHeader = sp.getEndPosition(cut, tree.getReturnType());
+        } else if (tree.getModifiers() != null) {
+            lastKnownOffsetInHeader = sp.getEndPosition(cut, tree.getModifiers());
+        }
+        
+        TokenSequence<JavaTokenId> ts = info.getTreeUtilities().tokensFor(tree);
+        
+        ts.move((int) lastKnownOffsetInHeader);
+        
+        while (ts.moveNext()) {
+            if (ts.token().id() == JavaTokenId.LBRACE || ts.token().id() == JavaTokenId.SEMICOLON) {
+                return offset < ts.offset();
+            }
+        }
+        
+        return false;
+    }
+    
+    public static Position[] createPositions(final Tree t, final CompilationInfo javac, final Document doc) throws BadLocationException {
+        final Position[] poss = new Position[2];
+        final int start = (int) javac.getTrees().getSourcePositions().
+                getStartPosition(javac.getCompilationUnit(), t);
+        final int end = (int) javac.getTrees().getSourcePositions().
+                getEndPosition(javac.getCompilationUnit(), t);
+
+        // XXX needs document lock?
+        poss[0] = doc.createPosition(start);
+        poss[1] = doc.createPosition(end);
+        return poss;
+    }
+
+    /**
+     * creates start and end positions of the tree
+     */
+    public static Position[] createSignaturePositions(final Tree t, final CompilationInfo javac, final Document doc) throws BadLocationException {
+        final Position[] pos = new Position[2];
+        final BadLocationException[] blex = new BadLocationException[1];
+        doc.render(new Runnable() {
+            public void run() {
+                try {
+                    int[] span = null;
+                    if (t.getKind() == Tree.Kind.METHOD) { // method + constructor
+                        span = javac.getTreeUtilities().findNameSpan((MethodTree) t);
+                    } else if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
+                        span = javac.getTreeUtilities().findNameSpan((ClassTree) t);
+                    } else if (Tree.Kind.VARIABLE == t.getKind()) {
+                        span = javac.getTreeUtilities().findNameSpan((VariableTree) t);
+                    }
+
+                    if (span != null) {
+                        pos[0] = doc.createPosition(span[0]);
+                        pos[1] = doc.createPosition(span[1]);
+                    }
+                } catch (BadLocationException ex) {
+                    blex[0] = ex;
+                }
+            }
+        });
+        if (blex[0] != null)
+            throw (BadLocationException) new BadLocationException(blex[0].getMessage(), blex[0].offsetRequested()).initCause(blex[0]);
+        return pos[0] != null ? pos : null;
+    }
+
+    public static SourceVersion resolveSourceVersion(FileObject file) {
+        String sourceLevel = SourceLevelQuery.getSourceLevel(file);
+        if (sourceLevel == null) {
+            return SourceVersion.latest();
+        } else if (sourceLevel.startsWith("1.6")) {
+            return SourceVersion.RELEASE_6;
+        } else if (sourceLevel.startsWith("1.5")) {
+            return SourceVersion.RELEASE_5;
+        } else if (sourceLevel.startsWith("1.4")) {
+            return SourceVersion.RELEASE_4;
+        } else if (sourceLevel.startsWith("1.3")) {
+            return SourceVersion.RELEASE_3;
+        } else if (sourceLevel.startsWith("1.2")) {
+            return SourceVersion.RELEASE_2;
+        } else if (sourceLevel.startsWith("1.1")) {
+            return SourceVersion.RELEASE_1;
+        } else if (sourceLevel.startsWith("1.0")) {
+            return SourceVersion.RELEASE_0;
+        }
+        
+        return SourceVersion.latest();
     }
     
     public static final class TagHandle {

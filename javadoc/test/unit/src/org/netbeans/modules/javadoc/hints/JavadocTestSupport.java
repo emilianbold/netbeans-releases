@@ -49,7 +49,6 @@ import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.JavaDataLoader;
-import org.netbeans.modules.java.hints.spi.AbstractHint.HintSeverity;
 import org.netbeans.modules.java.source.save.Reindenter;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -145,7 +144,7 @@ public abstract class JavadocTestSupport extends NbTestCase {
     }
     
     protected void doFixTest(String code, String expectation, TreePath tpath, boolean createJD) throws Exception {
-        Analyzer an = new Analyzer(info, doc, tpath, Severity.WARNING, createJD, Access.PRIVATE);
+        Analyzer an = new Analyzer(info, doc, tpath, Severity.WARNING, Access.PRIVATE);
         List<ErrorDescription> errs = an.analyze();
         assertNotNull(errs);
         assertFalse("none error found", errs.isEmpty());

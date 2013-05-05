@@ -105,7 +105,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.Places;
@@ -807,14 +806,12 @@ public class Installer extends ModuleInstall implements Runnable {
 
     static File logsDirectory(){
         
-        File logDir = InstalledFileLocator.getDefault().locate("var/log", null, false); // NOI18N
-        if (logDir == null) {
-            File userDir = Places.getUserDirectory();
-            if (userDir != null) {
-                logDir = new File(new File(userDir, "var"), "log");             // NOI18N
-            }
+        File userDir = Places.getUserDirectory();
+        if (userDir != null) {
+            return new File(new File(userDir, "var"), "log");                   // NOI18N
+        } else {
+            return null;
         }
-        return logDir;
     }
 
     private static File logFile(int revision) {
@@ -2013,7 +2010,8 @@ public class Installer extends ModuleInstall implements Runnable {
                 if (dataType != DataType.DATA_METRICS) {
                     String txt;
                     String logFile = NbBundle.getMessage(Installer.class, "LOG_FILE");
-                    File log = InstalledFileLocator.getDefault().locate(logFile, null, false);
+                    File userDir = Places.getUserDirectory();
+                    File log = (userDir != null) ? new File(userDir, logFile) : null;
                     if (log != null) {
                         logFile = log.getAbsolutePath();
                     }
@@ -2364,7 +2362,8 @@ public class Installer extends ModuleInstall implements Runnable {
                  os.write(slownData.getNpsContent());
                  os.close();
 
-                 File gestures = InstalledFileLocator.getDefault().locate("var/log/uigestures", null, false); // NOI18N
+                 File varLogs = logsDirectory();
+                 File gestures = (varLogs != null) ? new File(varLogs, "uigestures") : null; // NOI18N
 
                  SelfSampleVFS fs;
                  if (gestures != null && gestures.exists()) {

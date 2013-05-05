@@ -47,6 +47,7 @@ package org.netbeans.api.java.source;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacTrees;
@@ -285,6 +286,15 @@ public class CompilationInfo {
             }
         }
         return trees;
+    }
+    
+    /**
+     * Return the {@link DocTrees} service of the javac represented by this {@link CompilationInfo}.
+     * @return javac DocTrees service
+     * @since 0.124
+     */
+    public @NonNull DocTrees getDocTrees() {
+        return (DocTrees) getTrees();
     }
     
     /**

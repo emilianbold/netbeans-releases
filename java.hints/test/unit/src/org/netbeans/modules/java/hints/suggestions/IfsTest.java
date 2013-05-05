@@ -534,7 +534,7 @@ public class IfsTest {
                               "}\n");
     }
     
-//    @Test
+    @Test
     public void testJoinIfs1() throws Exception {
         HintTest.create()
                 .setCaretMarker('^')
@@ -682,7 +682,7 @@ public class IfsTest {
                        "    }\n" +
                        "}\n")
                 .run(Ifs.class)
-                .findWarning("3:20-3:20:verifier:" + Bundle.ERR_ToOrIf())
+                .findWarning("3:20-3:20:verifier:" + Bundle.ERR_splitIfCondition())
                 .applyFix()
                 .assertCompilable()
                 .assertVerbatimOutput("package test;\n" +
@@ -712,7 +712,7 @@ public class IfsTest {
                        "    }\n" +
                        "}\n")
                 .run(Ifs.class)
-                .findWarning("3:20-3:20:verifier:" + Bundle.ERR_ToOrIf())
+                .findWarning("3:20-3:20:verifier:" + Bundle.ERR_splitIfCondition())
                 .applyFix()
                 .assertCompilable()
                 .assertVerbatimOutput("package test;\n" +
