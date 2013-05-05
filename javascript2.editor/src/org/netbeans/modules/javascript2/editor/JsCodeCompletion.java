@@ -500,16 +500,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
             fqn.append(expChain.get(--i));
             fqn.append('.');
         }
-        fqn.append(request.prefix);
-        Collection<? extends IndexResult> indexResults = jsIndex.query(JsIndex.FIELD_FQ_NAME, fqn.toString(), QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
-        for (IndexResult indexResult : indexResults) {
-            IndexedElement indexedElement = IndexedElement.create(indexResult);
-            if (!indexedElement.isAnonymous()
-                    && indexedElement.getFQN().indexOf('.', fqn.length()) == -1
-                    && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
-                addPropertyToMap(request, addedProperties, indexedElement);
-            }
-        }
         return addedProperties;
     }
     
