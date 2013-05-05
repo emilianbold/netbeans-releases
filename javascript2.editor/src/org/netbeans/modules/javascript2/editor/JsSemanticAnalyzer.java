@@ -153,7 +153,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                 case OBJECT_LITERAL:
                     if(!"UNKNOWN".equals(object.getName())) {
                         if (parent.getParent() == null && !GLOBAL_TYPES.contains(object.getName())) {
-                            highlights.put(object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
+                            highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.GLOBAL_SET);
                             for (Occurrence occurence : object.getOccurrences()) {
                                 if (!isCommentOccurence(result, occurence)) {
                                     highlights.put(LexUtilities.getLexerOffsets(result, occurence.getOffsetRange()), ColoringAttributes.GLOBAL_SET);
