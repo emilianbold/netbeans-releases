@@ -122,6 +122,11 @@ public class BrowserConsoleLogger implements Console.Listener {
             }
             colorStdBrighter = shiftTowards(colorStd, background);
             //colorErrBrighter = shiftTowards(colorErr, background);
+            Color foreground = UIManager.getDefaults().getColor("nb.output.foreground");    // NOI18N
+            if (foreground == null) {
+                foreground = SystemColor.textText;
+            }
+            IOColors.setColor(io, IOColors.OutputType.INPUT, shiftTowards(foreground, Color.GREEN));
         }
         io.setInputVisible(true);
         //io.getOut().print(PROMPT);
