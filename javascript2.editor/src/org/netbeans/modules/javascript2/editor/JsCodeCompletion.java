@@ -500,11 +500,13 @@ class JsCodeCompletion implements CodeCompletionHandler {
             fqn.append(expChain.get(--i));
             fqn.append('.');
         }
-        Collection<IndexedElement> indexResults = jsIndex.getPropertiesWithPrefix(fqn.toString().substring(0, fqn.length() - 1), request.prefix);
-        for (IndexedElement indexedElement : indexResults) {
-            if (!indexedElement.isAnonymous()
-                    && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
-                addPropertyToMap(request, addedProperties, indexedElement);
+        if (fqn.length() > 0) {
+            Collection<IndexedElement> indexResults = jsIndex.getPropertiesWithPrefix(fqn.toString().substring(0, fqn.length() - 1), request.prefix);
+            for (IndexedElement indexedElement : indexResults) {
+                if (!indexedElement.isAnonymous()
+                        && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
+                    addPropertyToMap(request, addedProperties, indexedElement);
+                }
             }
         }
         return addedProperties;
