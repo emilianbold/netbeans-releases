@@ -44,6 +44,30 @@
 
 package org.netbeans.modules.java.source.builder;
 
+import com.sun.source.doctree.AttributeTree;
+import com.sun.source.doctree.AuthorTree;
+import com.sun.source.doctree.DeprecatedTree;
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocRootTree;
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.EndElementTree;
+import com.sun.source.doctree.EntityTree;
+import com.sun.source.doctree.InheritDocTree;
+import com.sun.source.doctree.LinkTree;
+import com.sun.source.doctree.ParamTree;
+import com.sun.source.doctree.ReferenceTree;
+import com.sun.source.doctree.SeeTree;
+import com.sun.source.doctree.SerialDataTree;
+import com.sun.source.doctree.SerialFieldTree;
+import com.sun.source.doctree.SerialTree;
+import com.sun.source.doctree.SinceTree;
+import com.sun.source.doctree.StartElementTree;
+import com.sun.source.doctree.TextTree;
+import com.sun.source.doctree.ThrowsTree;
+import com.sun.source.doctree.UnknownBlockTagTree;
+import com.sun.source.doctree.UnknownInlineTagTree;
+import com.sun.source.doctree.ValueTree;
+import com.sun.source.doctree.VersionTree;
 import com.sun.source.tree.MemberReferenceTree.ReferenceMode;
 import com.sun.tools.javac.code.Type.ErrorType;
 import com.sun.tools.javac.model.JavacElements;
@@ -78,6 +102,12 @@ import org.netbeans.api.annotations.common.NonNull;
 import static org.netbeans.modules.java.source.save.PositionEstimator.*;
 import static com.sun.tools.javac.code.Flags.*;
 import com.sun.tools.javac.code.TypeTag;
+import com.sun.tools.javac.tree.DCTree;
+import com.sun.tools.javac.tree.DCTree.DCIdentifier;
+import com.sun.tools.javac.tree.DCTree.DCReference;
+import com.sun.tools.javac.tree.DCTree.DCText;
+import com.sun.tools.javac.tree.DocTreeMaker;
+import com.sun.tools.javac.util.DiagnosticSource;
 
 /**
  * Factory for creating new com.sun.source.tree instances.
@@ -110,6 +140,7 @@ public class TreeFactory {
         names = Names.instance(context);
         classReader = ClassReader.instance(context);
         make = com.sun.tools.javac.tree.TreeMaker.instance(context);
+        docMake = com.sun.tools.javac.tree.DocTreeMaker.instance(context);
         elements = JavacElements.instance(context);
         types = JavacTypes.instance(context);
         chs = CommentHandlerService.instance(context);
@@ -1577,5 +1608,229 @@ public class TreeFactory {
             }
         }
         return flags;
+    }
+    
+    
+    private DocTreeMaker docMake;
+
+    public AttributeTree Attribute(CharSequence name, AttributeTree.ValueKind vkind, List<? extends DocTree> value) {
+        ListBuffer<DCTree> lb = null;
+        if(value != null) {
+            lb = new ListBuffer<DCTree>();
+            for (DocTree t : value) {
+                lb.append((DCTree) t);
+            }
+        }
+        return docMake.at(NOPOS).Attribute((Name) names.fromString(name.toString()), vkind, lb != null ? lb.toList() : null);
+    }
+
+    public AuthorTree Author(List<? extends DocTree> name) {
+        ListBuffer<DCTree> lb = new ListBuffer<DCTree>();
+        for (DocTree t : name) {
+            lb.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).Author(lb.toList());
+    }
+
+    public DeprecatedTree Deprecated(List<? extends DocTree> text) {
+        ListBuffer<DCTree> txt = new ListBuffer<DCTree>();
+        for (DocTree t : text) {
+            txt.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).Deprecated(txt.toList());
+    }
+    
+    public DocCommentTree DocComment(List<? extends DocTree> firstSentence, List<? extends DocTree> body, List<? extends DocTree> tags) {
+        ListBuffer<DCTree> fs = new ListBuffer<DCTree>();
+        for (DocTree t : firstSentence) {
+            fs.append((DCTree) t);
+        }
+        ListBuffer<DCTree> bd = new ListBuffer<DCTree>();
+        for (DocTree t : body) {
+            bd.append((DCTree) t);
+        }
+        ListBuffer<DCTree> tg = new ListBuffer<DCTree>();
+        for (DocTree t : tags) {
+            tg.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).DocComment(null, fs.toList(), bd.toList(), tg.toList());
+    }
+    
+    public com.sun.source.doctree.ErroneousTree Erroneous(String text, DiagnosticSource diagSource, String code, Object... args) {
+        String msg = "Erroneous tree implemented: "
+                + text
+                + " " + code;
+        throw new AssertionError(msg);
+    }
+
+    public ParamTree Param(boolean isTypeParameter, com.sun.source.doctree.IdentifierTree name, List<? extends DocTree> description) {
+        ListBuffer<DCTree> desc = new ListBuffer<DCTree>();
+        for (DocTree t : description) {
+            desc.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).Param(isTypeParameter, (DCTree.DCIdentifier)name, desc.toList());
+    }
+    
+    public LinkTree Link(ReferenceTree ref, List<? extends DocTree> label) {
+        ListBuffer<DCTree> lbl = new ListBuffer<DCTree>();
+        for (DocTree t : label) {
+            lbl.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).Link((DCTree.DCReference)ref, lbl.toList());
+    }
+    
+    public com.sun.source.doctree.LiteralTree Literal(com.sun.source.doctree.TextTree text) {
+        return docMake.at(NOPOS).Literal((DCText)text);
+    }
+    
+    public com.sun.source.doctree.ReturnTree Return(List<? extends DocTree> description) {
+        ListBuffer<DCTree> desc = new ListBuffer<DCTree>();
+        for (DocTree t : description) {
+            desc.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).Return(desc.toList());
+    }
+    
+    public SeeTree See(List<? extends DocTree> reference) {
+        ListBuffer<DCTree> ref = new ListBuffer<DCTree>();
+        for (DocTree t : reference) {
+            ref.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).See(ref.toList());
+    }
+    
+    public SerialTree Serial(List<? extends DocTree> description) {
+        ListBuffer<DCTree> desc = new ListBuffer<DCTree>();
+        for (DocTree t : description) {
+            desc.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).Serial(desc.toList());
+    }
+    
+    public SerialDataTree SerialData(List<? extends DocTree> description) {
+        ListBuffer<DCTree> desc = new ListBuffer<DCTree>();
+        for (DocTree t : description) {
+            desc.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).SerialData(desc.toList());
+    }
+    
+    public SerialFieldTree SerialField(com.sun.source.doctree.IdentifierTree name, ReferenceTree type, List<? extends DocTree> description) {
+        ListBuffer<DCTree> desc = new ListBuffer<DCTree>();
+        for (DocTree t : description) {
+            desc.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).SerialField((DCIdentifier)name, (DCReference)type, desc.toList());
+    }
+    
+    public SinceTree Since(List<? extends DocTree> text) {
+        ListBuffer<DCTree> txt = new ListBuffer<DCTree>();
+        for (DocTree t : text) {
+            txt.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).Since(txt.toList());
+    }
+    
+    public StartElementTree StartElement(CharSequence name, List<? extends DocTree> attrs, boolean selfClosing) {
+        ListBuffer<DCTree> atr = new ListBuffer<DCTree>();
+        for (DocTree t : attrs) {
+            atr.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).StartElement(names.fromString(name.toString()), atr.toList(), selfClosing);
+    }
+    
+    public TextTree Text(String text) {
+        return docMake.at(NOPOS).Text(text);
+    }
+    
+    public ThrowsTree Throws(ReferenceTree name, List<? extends DocTree> description) {
+        ListBuffer<DCTree> desc = new ListBuffer<DCTree>();
+        for (DocTree t : description) {
+            desc.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).Throws((DCReference)name, desc.toList());
+    }
+    
+    public UnknownBlockTagTree UnknownBlockTag(CharSequence name, List<? extends DocTree> content) {
+        ListBuffer<DCTree> cont = new ListBuffer<DCTree>();
+        for (DocTree t : content) {
+            cont.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).UnknownBlockTag(names.fromString(name.toString()), cont.toList());
+    }
+
+    public UnknownInlineTagTree UnknownInlineTag(CharSequence name, List<? extends DocTree> content) {
+        ListBuffer<DCTree> cont = new ListBuffer<DCTree>();
+        for (DocTree t : content) {
+            cont.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).UnknownInlineTag(names.fromString(name.toString()), cont.toList());
+    }
+    
+    public ValueTree Value(ReferenceTree ref) {
+        return docMake.at(NOPOS).Value((DCReference)ref);
+    }
+
+    public VersionTree Version(List<? extends DocTree> text) {
+        ListBuffer<DCTree> txt = new ListBuffer<DCTree>();
+        for (DocTree t : text) {
+            txt.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).Version(txt.toList());
+    }
+    
+    public com.sun.source.doctree.LiteralTree Code(TextTree text) {
+        return docMake.at(NOPOS).Code((DCText)text);
+    }
+
+    public com.sun.source.doctree.CommentTree Comment(String text) {
+        return docMake.at(NOPOS).Comment(text);
+    }
+    public DocRootTree DocRoot() {
+        return docMake.at(NOPOS).DocRoot();
+    }
+
+    public EndElementTree EndElement(CharSequence name) {
+        return docMake.at(NOPOS).EndElement(names.fromString(name.toString()));
+    }
+
+    public EntityTree Entity(CharSequence name) {
+        return docMake.at(NOPOS).Entity(names.fromString(name.toString()));
+    }
+    
+    public ThrowsTree Exception(ReferenceTree name, List<? extends DocTree> description) {
+        ListBuffer<DCTree> desc = new ListBuffer<DCTree>();
+        for (DocTree t : description) {
+            desc.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).Exception((DCReference)name, desc.toList());
+    }
+
+    public com.sun.source.doctree.IdentifierTree DocIdentifier(CharSequence name) {
+        return docMake.at(NOPOS).Identifier((Name) names.fromString(name.toString()));
+    }
+
+    public InheritDocTree InheritDoc() {
+        return docMake.at(NOPOS).InheritDoc();
+    }
+
+    public LinkTree LinkPlain(ReferenceTree ref, List<? extends DocTree> label) {
+        ListBuffer<DCTree> lbl = new ListBuffer<DCTree>();
+        for (DocTree t : label) {
+            lbl.append((DCTree) t);
+        }
+        return docMake.at(NOPOS).LinkPlain((DCReference)ref, lbl.toList());
+    }
+
+    public ReferenceTree Reference(ExpressionTree qualExpr, CharSequence member, List<? extends Tree> paramTypes) {
+        com.sun.tools.javac.util.List<JCTree> paramTypesList = null;
+        if (paramTypes != null) {
+            ListBuffer<JCTree> lbl = new ListBuffer<JCTree>();
+            for (Tree t : paramTypes) {
+                lbl.append((JCTree) t);
+            }
+            paramTypesList = lbl.toList();
+        }
+        return docMake.at(NOPOS).Reference("", (JCExpression) qualExpr, member != null ? (Name) names.fromString(member.toString()) : null, paramTypesList);
     }
 }

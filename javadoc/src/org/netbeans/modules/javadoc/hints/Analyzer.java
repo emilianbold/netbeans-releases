@@ -44,64 +44,78 @@
 
 package org.netbeans.modules.javadoc.hints;
 
-import com.sun.javadoc.AnnotationTypeElementDoc;
-import com.sun.javadoc.ClassDoc;
-import com.sun.javadoc.Doc;
-import com.sun.javadoc.ExecutableMemberDoc;
-import com.sun.javadoc.MethodDoc;
-import com.sun.javadoc.ParamTag;
-import com.sun.javadoc.Tag;
-import com.sun.javadoc.ThrowsTag;
+import static org.netbeans.modules.javadoc.hints.JavadocUtilities.*;
+import com.sun.source.doctree.AttributeTree;
+import com.sun.source.doctree.AuthorTree;
+import com.sun.source.doctree.CommentTree;
+import com.sun.source.doctree.DeprecatedTree;
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocRootTree;
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.EndElementTree;
+import com.sun.source.doctree.EntityTree;
+import com.sun.source.doctree.ErroneousTree;
+import com.sun.source.doctree.IdentifierTree;
+import com.sun.source.doctree.InheritDocTree;
+import com.sun.source.doctree.LinkTree;
+import com.sun.source.doctree.LiteralTree;
+import com.sun.source.doctree.ParamTree;
+import com.sun.source.doctree.ReferenceTree;
+import com.sun.source.doctree.ReturnTree;
+import com.sun.source.doctree.SeeTree;
+import com.sun.source.doctree.SerialDataTree;
+import com.sun.source.doctree.SerialFieldTree;
+import com.sun.source.doctree.SerialTree;
+import com.sun.source.doctree.SinceTree;
+import com.sun.source.doctree.StartElementTree;
+import com.sun.source.doctree.TextTree;
+import com.sun.source.doctree.ThrowsTree;
+import com.sun.source.doctree.UnknownBlockTagTree;
+import com.sun.source.doctree.UnknownInlineTagTree;
+import com.sun.source.doctree.ValueTree;
+import com.sun.source.doctree.VersionTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.TypeParameterTree;
-import com.sun.source.tree.VariableTree;
-import com.sun.source.util.SourcePositions;
+import com.sun.source.util.DocSourcePositions;
+import com.sun.source.util.DocTreePath;
+import com.sun.source.util.DocTreePathScanner;
+import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
+import javax.lang.model.util.Types;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
-import javax.swing.text.StyledDocument;
-import org.netbeans.api.editor.guards.GuardedSection;
-import org.netbeans.api.editor.guards.GuardedSectionManager;
-import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.TreePathHandle;
-import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.DocTreePathHandle;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.javadoc.hints.JavadocUtilities.TagHandle;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.LazyFixList;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.javadoc.hints.Bundle.*;
 
 /**
  * Checks:
@@ -118,29 +132,33 @@ import org.openide.util.NbBundle;
  * @see <a href="http://java.sun.com/javase/6/docs/technotes/guides/javadoc/deprecation/index.html">Deprecation of APIs</a>
  * 
  * @author Jan Pokorsky
+ * @author Ralph Benjamin Ruijs
  */
-final class Analyzer {
+    @NbBundle.Messages({"MISSING_RETURN_DESC=Missing @return tag.",
+                        "# {0} - @param name", "MISSING_PARAM_DESC=Missing @param tag for {0}"})
+final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
 
-    private static final String ERROR_IDENT = "<error>";
     private final CompilationInfo javac;
-    private final SourceVersion spec;
-    private final Document doc;
     private final FileObject file;
-    private final Severity severity;
+    private final Document doc;
     private final TreePath currentPath;
-    private final boolean createJavadocKind;
+    private final Severity severity;
+    private final SourceVersion sourceVersion;
     private final Access access;
+    
+    private Set<Element> foundParams = new HashSet<Element>();
+    private Set<TypeMirror> foundThrows = new HashSet<TypeMirror>();
+    private TypeMirror returnType = null;
+    private boolean returnTypeFound = false;
+    private Element currentElement;
 
-    Analyzer(CompilationInfo javac, Document doc, TreePath currentPath,
-            Severity severity, boolean createJavadocKind, Access access) {
-        
+    Analyzer(CompilationInfo javac, Document doc, TreePath currentPath, Severity severity, Access access) {
         this.javac = javac;
-        this.doc = doc;
         this.file = javac.getFileObject();
+        this.doc = doc;
         this.currentPath = currentPath;
         this.severity = severity;
-        this.spec = resolveSourceVersion(javac.getFileObject());
-        this.createJavadocKind = createJavadocKind;
+        this.sourceVersion = resolveSourceVersion(javac.getFileObject());
         this.access = access;
     }
 
@@ -170,153 +188,80 @@ final class Analyzer {
         List<ErrorDescription> errors = Collections.<ErrorDescription>emptyList();
         Tree node = currentPath.getLeaf();
 
-        if (javac.getTreeUtilities().isSynthetic(currentPath) || !isValid(currentPath)) {
+        if (javac.getTreeUtilities().isSynthetic(currentPath) || /*!isValid(javac, currentPath, severity, access, -1)*/
+                !access.isAccessible(javac, currentPath, false)) {
             return errors;
         }
-        // check javadoc
-        Element elm = javac.getTrees().getElement(currentPath);
-
-        if (elm == null) {
+        
+        currentElement = javac.getTrees().getElement(currentPath);
+        if (currentElement == null) {
             Logger.getLogger(Analyzer.class.getName()).log(
-                    Level.INFO, "Cannot resolve element for " + node + " in " + file); // NOI18N
-            return errors;
-        } else if (isGuarded(node)) {
+                    Level.INFO, "Cannot resolve element for {0} in {1}", new Object[]{node, file}); // NOI18N
             return errors;
         }
-
-        String jdText = javac.getElements().getDocComment(elm);
-        // create hint descriptor + prepare javadoc
-        if (jdText == null || jdText.length() == 0 && null == JavadocUtilities.findTokenSequence(javac, elm)) {
-            if (!createJavadocKind)
-                return errors;
-
-            if (hasErrors(node) || JavadocUtilities.hasInheritedDoc(javac, elm)) {
-                return errors;
-            }
-
-            try {
-                Position[] positions = createSignaturePositions(node);
-                if (positions == null) {
-                    return errors;
-                }
-                ErrorDescription err = createErrorDescription(
-                        NbBundle.getMessage(Analyzer.class, "MISSING_JAVADOC_DESC"), // NOI18N
-                        createGenerateFixes(elm),
-                        positions);
-                errors = new ArrayList<ErrorDescription>();
-                errors.add(err);
-            } catch (BadLocationException ex) {
-                Logger.getLogger(Analyzer.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-            }
-        } else {
-            if (createJavadocKind || hasErrors(node))
-                return errors;
-
+        if (isGuarded(node, javac, doc)) {
+            return errors;
+        }
+        
+        // check javadoc
+        DocCommentTree docCommentTree = javac.getDocTrees().getDocCommentTree(currentPath);
+        if (docCommentTree != null) {
             errors = new ArrayList<ErrorDescription>();
-            Doc jDoc = javac.getElementUtilities().javaDocFor(elm);
-            if (jDoc.isMethod() || jDoc.isConstructor()) {
-                ExecutableMemberDoc methDoc = (ExecutableMemberDoc) jDoc;
-                ExecutableElement methodEl = (ExecutableElement) elm;
-                MethodTree methodTree = (MethodTree) node;
-                processTypeParameters(methodEl, methodTree, methDoc, errors);
-                processParameters(methodEl, methodTree, methDoc, errors);
-                processReturn(methodEl, methodTree, methDoc, errors);
-                processThrows(methodEl, methodTree, methDoc, errors);
-            } else if(jDoc.isClass() || jDoc.isInterface()) {
-                TypeElement classEl = (TypeElement) elm;
-                ClassDoc classDoc = (ClassDoc) jDoc;
-                ClassTree classTree = (ClassTree) node;
-                processTypeParameters(classEl, classTree, classDoc, errors);
-                processParameters(classEl, classTree, classDoc, errors);
-            } else if (jDoc.isAnnotationType()) {
-                processAnnTypeParameters(elm, node, jDoc, errors);
-            } else if (jDoc.isAnnotationTypeElement()) {
-                AnnotationTypeElementDoc annDoc = (AnnotationTypeElementDoc) jDoc;
-                ExecutableElement methodEl = (ExecutableElement) elm;
-                MethodTree methodTree = (MethodTree) node;
-                processAnnTypeParameters(methodEl, methodTree, annDoc, errors);
-                processReturn(methodEl, methodTree, annDoc, errors);
-                processAnnTypeThrows(methodEl, methodTree, annDoc, errors);
+            if (node.getKind() == Tree.Kind.METHOD) {
+                ExecutableElement methodElm = (ExecutableElement) currentElement;
+                returnType = methodElm.getReturnType();
             }
+            DocTreePath docTreePath = new DocTreePath(currentPath, docCommentTree);
+            scan(docTreePath, errors);
 
-            processDeprecatedAnnotation(elm, jDoc, errors);
+            switch (currentElement.getKind()) {
+                case METHOD:
+                case CONSTRUCTOR: {
+                    MethodTree methodTree = (MethodTree)currentPath.getLeaf();
+                    ExecutableElement ee = (ExecutableElement) currentElement;
+                    checkParamsDocumented(ee.getTypeParameters(), methodTree.getTypeParameters(), docTreePath, errors);
+                    checkParamsDocumented(ee.getParameters(), methodTree.getParameters(), docTreePath, errors);
+                    checkThrowsDocumented(ee.getThrownTypes(), methodTree.getThrows(), docTreePath, errors);
+                    switch (ee.getReturnType().getKind()) {
+                        case VOID:
+                        case NONE:
+                            break;
+                        default:
+                            if (!returnTypeFound
+//                                    && !foundInheritDoc
+                                    && !javac.getTypes().isSameType(ee.getReturnType(), javac.getElements().getTypeElement("java.lang.Void").asType())) {
+                                Tree returnTree = methodTree.getReturnType();
+                                try {
+                                    Position[] poss = createPositions(returnTree, javac, doc);
+                                    DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
+                                    errors.add(createErrorDescription(MISSING_RETURN_DESC(), // NOI18N
+                                            Collections.singletonList(AddTagFix.createAddReturnTagFix(dtph).toEditorFix()), poss)); //NOI18N
+    //                                reportMissing("dc.missing.return");
+                                } catch (BadLocationException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                }
+                            }
+                    }
+//                    checkThrowsDocumented(ee.getThrownTypes());
+                    break;
+                }
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                case ANNOTATION_TYPE: {
+                    ClassTree classTree = (ClassTree) currentPath.getLeaf();
+                    TypeElement typeElement = (TypeElement) currentElement;
+                    checkParamsDocumented(typeElement.getTypeParameters(), classTree.getTypeParameters(), docTreePath, errors);
+                    break;
+                }
+            }
         }
         return errors;
     }
 
-    /**
-     * has syntax errors preventing to generate javadoc?
-     */
-    static boolean hasErrors(Tree leaf) {
-        switch (leaf.getKind()) {
-            case METHOD:
-                MethodTree mt = (MethodTree) leaf;
-                Tree rt = mt.getReturnType();
-                if (rt != null && rt.getKind() == Kind.ERRONEOUS) {
-                    return true;
-                }
-                if (ERROR_IDENT.contentEquals(mt.getName())) {
-                    return true;
-                }
-                for (VariableTree vt : mt.getParameters()) {
-                    if (ERROR_IDENT.contentEquals(vt.getName())) {
-                        return true;
-                    }
-                }
-                for (Tree t : mt.getThrows()) {
-                    if (t.getKind() == Kind.ERRONEOUS ||
-                            (t.getKind() == Kind.IDENTIFIER && ERROR_IDENT.contentEquals(((IdentifierTree) t).getName()))) {
-                        return true;
-                    }
-                }
-                break;
-
-            case VARIABLE:
-                VariableTree vt = (VariableTree) leaf;
-                return vt.getType().getKind() == Kind.ERRONEOUS
-                        || ERROR_IDENT.contentEquals(vt.getName());
-
-            case ANNOTATION_TYPE:
-            case CLASS:
-            case ENUM:
-            case INTERFACE:
-                ClassTree ct = (ClassTree) leaf;
-                if (ERROR_IDENT.contentEquals(ct.getSimpleName())) {
-                    return true;
-                }
-                for (TypeParameterTree tpt : ct.getTypeParameters()) {
-                    if (ERROR_IDENT.contentEquals(tpt.getName())) {
-                        return true;
-                    }
-                }
-                break;
-
-        }
-        return false;
-    }
-
-    private boolean isValid(TreePath path) {
-        Tree leaf = path.getLeaf();
-        int caret = CaretAwareJavaSourceTaskFactory.getLastPosition(javac.getFileObject());
-        boolean onLine = severity == Severity.HINT;
-        switch (leaf.getKind()) {
-        case ANNOTATION_TYPE:
-        case CLASS:
-        case ENUM:
-        case INTERFACE:
-            return access.isAccessible(javac, path, false)
-                    && (!onLine || isInHeader(javac, (ClassTree) leaf, caret));
-        case METHOD:
-            return access.isAccessible(javac, path, false)
-                    && (!onLine || isInHeader(javac, (MethodTree) leaf, caret));
-        case VARIABLE:
-            return access.isAccessible(javac, path, false);
-        }
-        return false;
-    }
-
+    /*
     private void processDeprecatedAnnotation(Element elm, Doc jDoc, List<ErrorDescription> errors) {
-        if (SourceVersion.RELEASE_5.compareTo(spec) > 0
+        if (SourceVersion.RELEASE_5.compareTo(sourceVersion) > 0
                 // #150550: under some unexplained conditions java.lang.Deprecated may not be available
                 || javac.getElements().getTypeElement("java.lang.Deprecated") == null) { //NOI18N
             // jdks older than 1.5 do not support annotations
@@ -331,10 +276,10 @@ final class Analyzer {
             if (deprTags.length == 0) {
                 // missing tag
                 try {
-                    Position[] poss = createPositions(javac.getTrees().getTree(elm, annMirror));
+                    Position[] poss = createPositions(javac.getTrees().getTree(elm, annMirror), javac, doc);
                     ErrorDescription err = createErrorDescription(
                             NbBundle.getMessage(Analyzer.class, "MISSING_DEPRECATED_DESC"), // NOI18N
-                            Collections.<Fix>singletonList(AddTagFix.createAddDeprecatedTagFix(elm, file, spec)),
+                            Collections.<Fix>singletonList(AddTagFix.createAddDeprecatedTagFix(elm, file, sourceVersion)),
                             poss);
                     addTagHint(errors, err);
                 } catch (BadLocationException ex) {
@@ -405,10 +350,10 @@ final class Analyzer {
                 JavadocUtilities.findReturnTag(javac, (MethodDoc) jdoc, true) == null) {
             // missing @return
             try {
-                Position[] poss = createPositions(returnTree);
+                Position[] poss = createPositions(returnTree, javac, doc);
                 ErrorDescription err = createErrorDescription(
                         NbBundle.getMessage(Analyzer.class, "MISSING_RETURN_DESC"), // NOI18N
-                        Collections.<Fix>singletonList(AddTagFix.createAddReturnTagFix(exec, file, spec)),
+                        Collections.<Fix>singletonList(AddTagFix.createAddReturnTagFix(exec, file, sourceVersion)),
                         poss);
                 addTagHint(errors, err);
             } catch (BadLocationException ex) {
@@ -468,11 +413,11 @@ final class Analyzer {
                     JavadocUtilities.findThrowsTag(javac, (MethodDoc) jdoc, fqn, true) == null)) {
                 // missing @throws
                 try {
-                    Position[] poss = createPositions(throwTree);
+                    Position[] poss = createPositions(throwTree, javac, doc);
                     String insertName = resolveThrowsName(el, fqn, throwTree);
                     ErrorDescription err = createErrorDescription(
                             NbBundle.getMessage(Analyzer.class, "MISSING_THROWS_DESC", fqn), // NOI18N
-                            Collections.<Fix>singletonList(AddTagFix.createAddThrowsTagFix(exec, insertName, index, file, spec)),
+                            Collections.<Fix>singletonList(AddTagFix.createAddThrowsTagFix(exec, insertName, index, file, sourceVersion)),
                             poss);
                     addTagHint(errors, err);
                 } catch (BadLocationException ex) {
@@ -559,10 +504,10 @@ final class Analyzer {
                     JavadocUtilities.findParamTag(javac, (MethodDoc) jdoc, param.getName().toString(), false, true) == null)) {
                 // missing @param
                 try {
-                    Position[] poss = createPositions(param);
+                    Position[] poss = createPositions(param, javac, doc);
                     ErrorDescription err = createErrorDescription(
                             NbBundle.getMessage(Analyzer.class, "MISSING_PARAM_DESC", param.getName()), // NOI18N
-                            Collections.<Fix>singletonList(AddTagFix.createAddParamTagFix(exec, param.getName().toString(), file, spec)),
+                            Collections.<Fix>singletonList(AddTagFix.createAddParamTagFix(exec, param.getName().toString(), file, sourceVersion)),
                             poss);
                     addTagHint(errors, err);
                 } catch (BadLocationException ex) {
@@ -624,12 +569,12 @@ final class Analyzer {
                     JavadocUtilities.findParamTag(javac, (MethodDoc) jdoc, param.getName().toString(), true, true) == null)) {
                 // missing @param
                 try {
-                    Position[] poss = createPositions(param);
+                    Position[] poss = createPositions(param, javac, doc);
                     String paramName = param.getName().toString();
                     String typeParamName = '<' + paramName + '>';
                     ErrorDescription err = createErrorDescription(
                             NbBundle.getMessage(Analyzer.class, "MISSING_TYPEPARAM_DESC", typeParamName), // NOI18N
-                            Collections.<Fix>singletonList(AddTagFix.createAddTypeParamTagFix(elm, paramName, file, spec)),
+                            Collections.<Fix>singletonList(AddTagFix.createAddTypeParamTagFix(elm, paramName, file, sourceVersion)),
                             poss);
                     addTagHint(errors, err);
                 } catch (BadLocationException ex) {
@@ -648,247 +593,370 @@ final class Analyzer {
         }
     }
 
-    Position[] createPositions(Tree t) throws BadLocationException {
-        final Position[] poss = new Position[2];
-        final int start = (int) javac.getTrees().getSourcePositions().
-                getStartPosition(javac.getCompilationUnit(), t);
-        final int end = (int) javac.getTrees().getSourcePositions().
-                getEndPosition(javac.getCompilationUnit(), t);
-
-        // XXX needs document lock?
-        poss[0] = doc.createPosition(start);
-        poss[1] = doc.createPosition(end);
-        return poss;
-    }
-
-    /**
-     * creates start and end positions of the tree
-     */
-    Position[] createSignaturePositions(final Tree t) throws BadLocationException {
-        final Position[] pos = new Position[2];
-        final BadLocationException[] blex = new BadLocationException[1];
-        doc.render(new Runnable() {
-            public void run() {
-                try {
-                    int[] span = null;
-                    if (t.getKind() == Tree.Kind.METHOD) { // method + constructor
-                        span = javac.getTreeUtilities().findNameSpan((MethodTree) t);
-                    } else if (TreeUtilities.CLASS_TREE_KINDS.contains(t.getKind())) {
-                        span = javac.getTreeUtilities().findNameSpan((ClassTree) t);
-                    } else if (Tree.Kind.VARIABLE == t.getKind()) {
-                        span = javac.getTreeUtilities().findNameSpan((VariableTree) t);
-                    }
-
-                    if (span != null) {
-                        pos[0] = doc.createPosition(span[0]);
-                        pos[1] = doc.createPosition(span[1]);
-                    }
-                } catch (BadLocationException ex) {
-                    blex[0] = ex;
-                }
-            }
-        });
-        if (blex[0] != null)
-            throw (BadLocationException) new BadLocationException(blex[0].getMessage(), blex[0].offsetRequested()).initCause(blex[0]);
-        return pos[0] != null ? pos : null;
-    }
-
-    private boolean isGuarded(Tree node) {
-        GuardedSectionManager guards = GuardedSectionManager.getInstance((StyledDocument) doc);
-        if (guards != null) {
-            try {
-                final int startOff = (int) javac.getTrees().getSourcePositions().
-                        getStartPosition(javac.getCompilationUnit(), node);
-                final Position startPos = doc.createPosition(startOff);
-
-                for (GuardedSection guard : guards.getGuardedSections()) {
-                    if (guard.contains(startPos, false)) {
-                        return true;
-                    }
-                }
-            } catch (BadLocationException ex) {
-                Logger.getLogger(Analyzer.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-                // consider it as guarded
-                return true;
-            }
-        }
-        return false;
-    }
-
     private void addRemoveTagFix(Tag tag, String description, Element elm, List<ErrorDescription> errors) {
         try {
             Position[] poss = JavadocUtilities.findTagNameBounds(javac, doc, tag);
             if (poss == null) {
                 throw new BadLocationException("no position for " + tag, -1); // NOI18N
             }
-            ErrorDescription err = createErrorDescription(
-                    description,
-                    Collections.<Fix>singletonList(new RemoveTagFix(tag.name(), TagHandle.create(tag), ElementHandle.create(elm), file, spec)),
-                    poss);
-            addTagHint(errors, err);
+//            ErrorDescription err = createErrorDescription(
+//                    description,
+//                    Collections.<Fix>singletonList(new RemoveTagFix(tag.name(), TagHandle.create(tag), ElementHandle.create(elm), file, spec)),
+//                    poss);
+//            addTagHint(errors, err);
         } catch (BadLocationException ex) {
             Logger.getLogger(Analyzer.class.getName()).log(Level.INFO, ex.getMessage(), ex);
         }
     }
 
-    JavadocLazyFixList createGenerateFixes(Element elm) {
-        List<Fix> fixes = new ArrayList<Fix>(3);
-        TreePathHandle handle = TreePathHandle.create(javac.getTrees().getPath(elm), javac);
-
-        String description;
-        if (elm.getKind() == ElementKind.CONSTRUCTOR) {
-            description = elm.getEnclosingElement().getSimpleName().toString();
-        } else {
-            description = elm.getSimpleName().toString();
-        }
-
-        JavadocLazyFixList fixList = new JavadocLazyFixList(fixes);
-
-        GenerateJavadocFix javadocFix = new GenerateJavadocFix(description, handle, spec);
-        
-//        GenerateJavadocFix jdFix = new GenerateJavadocFix(description, handle, javac.getFileObject(), this.spec);
-
-        fixes.add(javadocFix.toEditorFix());
-//            fixAll.addFix(jdFix);
-
-        // XXX add Inherit javadoc
-
-        //            Fix fixInherit = new JavadocFix("Inherit javadoc");
-        //            fixes.add(fixInherit);
-        //            fixes.add(new JavadocFix("Create missing javadoc"));
-        //            fixes.add(new JavadocFix("Fix all missing javadocs"));
-        return fixList;
-    }
-
     private void addTagHint(List<ErrorDescription> errors, ErrorDescription desc) {
         errors.add(desc);
     }
+*/
     
-    private static boolean isInHeader(CompilationInfo info, ClassTree tree, int offset) {
-        CompilationUnitTree cut = info.getCompilationUnit();
-        SourcePositions sp = info.getTrees().getSourcePositions();
-        long lastKnownOffsetInHeader = sp.getStartPosition(cut, tree);
-        
-        List<? extends Tree> impls = tree.getImplementsClause();
-        List<? extends TypeParameterTree> typeparams;
-        if (impls != null && !impls.isEmpty()) {
-            lastKnownOffsetInHeader= sp.getEndPosition(cut, impls.get(impls.size() - 1));
-        } else if ((typeparams = tree.getTypeParameters()) != null && !typeparams.isEmpty()) {
-            lastKnownOffsetInHeader= sp.getEndPosition(cut, typeparams.get(typeparams.size() - 1));
-        } else if (tree.getExtendsClause() != null) {
-            lastKnownOffsetInHeader = sp.getEndPosition(cut, tree.getExtendsClause());
-        } else if (tree.getModifiers() != null) {
-            lastKnownOffsetInHeader = sp.getEndPosition(cut, tree.getModifiers());
-        }
-        
-        TokenSequence<JavaTokenId> ts = info.getTreeUtilities().tokensFor(tree);
-        
-        ts.move((int) lastKnownOffsetInHeader);
-        
-        while (ts.moveNext()) {
-            if (ts.token().id() == JavaTokenId.LBRACE) {
-                return offset < ts.offset();
-            }
-        }
-        
-        return false;
-    }
-    
-    private static boolean isInHeader(CompilationInfo info, MethodTree tree, int offset) {
-        CompilationUnitTree cut = info.getCompilationUnit();
-        SourcePositions sp = info.getTrees().getSourcePositions();
-        long lastKnownOffsetInHeader = sp.getStartPosition(cut, tree);
-        
-        List<? extends ExpressionTree> throwz;
-        List<? extends VariableTree> params;
-        List<? extends TypeParameterTree> typeparams;
-        
-        if ((throwz = tree.getThrows()) != null && !throwz.isEmpty()) {
-            lastKnownOffsetInHeader = sp.getEndPosition(cut, throwz.get(throwz.size() - 1));
-        } else if ((params = tree.getParameters()) != null && !params.isEmpty()) {
-            lastKnownOffsetInHeader = sp.getEndPosition(cut, params.get(params.size() - 1));
-        } else if ((typeparams = tree.getTypeParameters()) != null && !typeparams.isEmpty()) {
-            lastKnownOffsetInHeader = sp.getEndPosition(cut, typeparams.get(typeparams.size() - 1));
-        } else if (tree.getReturnType() != null) {
-            lastKnownOffsetInHeader = sp.getEndPosition(cut, tree.getReturnType());
-        } else if (tree.getModifiers() != null) {
-            lastKnownOffsetInHeader = sp.getEndPosition(cut, tree.getModifiers());
-        }
-        
-        TokenSequence<JavaTokenId> ts = info.getTreeUtilities().tokensFor(tree);
-        
-        ts.move((int) lastKnownOffsetInHeader);
-        
-        while (ts.moveNext()) {
-            if (ts.token().id() == JavaTokenId.LBRACE || ts.token().id() == JavaTokenId.SEMICOLON) {
-                return offset < ts.offset();
-            }
-        }
-        
-        return false;
-    }
-    
-    static SourceVersion resolveSourceVersion(FileObject file) {
-        String sourceLevel = SourceLevelQuery.getSourceLevel(file);
-        if (sourceLevel == null) {
-            return SourceVersion.latest();
-        } else if (sourceLevel.startsWith("1.6")) {
-            return SourceVersion.RELEASE_6;
-        } else if (sourceLevel.startsWith("1.5")) {
-            return SourceVersion.RELEASE_5;
-        } else if (sourceLevel.startsWith("1.4")) {
-            return SourceVersion.RELEASE_4;
-        } else if (sourceLevel.startsWith("1.3")) {
-            return SourceVersion.RELEASE_3;
-        } else if (sourceLevel.startsWith("1.2")) {
-            return SourceVersion.RELEASE_2;
-        } else if (sourceLevel.startsWith("1.1")) {
-            return SourceVersion.RELEASE_1;
-        } else if (sourceLevel.startsWith("1.0")) {
-            return SourceVersion.RELEASE_0;
-        }
-        
-        return SourceVersion.latest();
-        
-    }
-    
-    private static final class JavadocLazyFixList implements LazyFixList {
-        
-        private List<Fix> contexFixes;
-        
-        public JavadocLazyFixList(List<Fix> contexFixes) {
-            this.contexFixes = contexFixes;
-        }
-        
-        public void addPropertyChangeListener(PropertyChangeListener l) {
-        }
-        
-        public void removePropertyChangeListener(PropertyChangeListener l) {
-        }
-        
-        public boolean probablyContainsFixes() {
-            return true;
-        }
-        
-        public List<Fix> getFixes() {
-            return contexFixes;
-        }
-        
-        public boolean isComputed() {
-            return true;
-        }
-        
+    @Override
+    public Void visitAttribute(AttributeTree node, List<ErrorDescription> errors) {
+        return super.visitAttribute(node, errors); //To change body of generated methods, choose Tools | Templates.
     }
 
-    /**
-     * computes name of throws clause to work around
-     * <a href="http://www.netbeans.org/issues/show_bug.cgi?id=160414">issue 160414</a>.
-     */
-    static String resolveThrowsName(Element el, String fqn, ExpressionTree throwTree) {
-        boolean nestedClass = ElementKind.CLASS == el.getKind()
-                && NestingKind.TOP_LEVEL != ((TypeElement) el).getNestingKind();
-        String insertName = nestedClass ? fqn : throwTree.toString();
-        return insertName;
+    @Override
+    public Void visitAuthor(AuthorTree node, List<ErrorDescription> errors) {
+        return super.visitAuthor(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitComment(CommentTree node, List<ErrorDescription> errors) {
+        return super.visitComment(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitDeprecated(DeprecatedTree node, List<ErrorDescription> errors) {
+        return super.visitDeprecated(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitDocComment(DocCommentTree node, List<ErrorDescription> errors) {
+        return super.visitDocComment(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitDocRoot(DocRootTree node, List<ErrorDescription> errors) {
+        return super.visitDocRoot(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitEndElement(EndElementTree node, List<ErrorDescription> errors) {
+        return super.visitEndElement(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitEntity(EntityTree node, List<ErrorDescription> errors) {
+        return super.visitEntity(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitErroneous(ErroneousTree node, List<ErrorDescription> errors) {
+        return super.visitErroneous(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitIdentifier(IdentifierTree node, List<ErrorDescription> errors) {
+        return super.visitIdentifier(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitInheritDoc(InheritDocTree node, List<ErrorDescription> errors) {
+        return super.visitInheritDoc(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitLink(LinkTree node, List<ErrorDescription> errors) {
+        return super.visitLink(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitLiteral(LiteralTree node, List<ErrorDescription> errors) {
+        return super.visitLiteral(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    @NbBundle.Messages({"# {0} - tag name", "# {1} - element type", "INVALID_TAG_DESC={0} tag cannot be used on {1}."})
+    public Void visitParam(ParamTree tree, List<ErrorDescription> errors) {
+        DocTreePath currentDocPath = getCurrentPath();
+        DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
+        try {
+            DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
+            int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
+            int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
+            Position[] positions = { doc.createPosition(start), doc.createPosition(end) };
+            boolean typaram = tree.isTypeParameter();
+            switch (currentElement.getKind()) {
+                case METHOD:
+                case CONSTRUCTOR: {
+                    ExecutableElement ee = (ExecutableElement) currentElement;
+                    checkParamDeclared(tree, typaram ? ee.getTypeParameters() : ee.getParameters(), dtph, positions, errors);
+                    break;
+                }
+                case CLASS:
+                case INTERFACE: {
+                    TypeElement te = (TypeElement) currentElement;
+                    if (typaram) {
+                        checkParamDeclared(tree, te.getTypeParameters(), dtph, positions, errors);
+                    } else {
+                    errors.add(createErrorDescription(INVALID_TAG_DESC("@param", currentElement.getKind()), //NOI18N
+                            Collections.singletonList(new RemoveTagFix(dtph, "@param").toEditorFix()), positions)); //NOI18N
+    //                    env.messages.error(REFERENCE, tree, "dc.invalid.param");
+                    }
+                    break;
+                }
+                default:
+                    errors.add(createErrorDescription(INVALID_TAG_DESC("@param", currentElement.getKind()), //NOI18N
+                            Collections.singletonList(new RemoveTagFix(dtph, "@param").toEditorFix()), positions)); //NOI18N
+    //                env.messages.error(REFERENCE, tree, "dc.invalid.param");
+                    break;
+            }
+            warnIfEmpty(tree, tree.getDescription());
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return super.visitParam(tree, errors);
     }
     
+    @NbBundle.Messages({"# {0} - @param name", "UNKNOWN_TYPEPARAM_DESC=Unknown @param: {0}",
+                        "# {0} - @param name", "DUPLICATE_PARAM_DESC=Duplicate @param name: {0}"})
+    private void checkParamDeclared(ParamTree tree, List<? extends Element> list,
+            DocTreePathHandle dtph, Position[] positions, List<ErrorDescription> errors) {
+        Name name = tree.getName().getName();
+        boolean found = false;
+        for (Element e: list) {
+            if (name.equals(e.getSimpleName())) {
+                if(!foundParams.add(e)) {
+                    errors.add(createErrorDescription(DUPLICATE_PARAM_DESC(name), //NOI18N
+                    Collections.singletonList(new RemoveTagFix(dtph, "@param").toEditorFix()), positions)); //NOI18N
+                }
+                found = true;
+            }
+        }
+        if (!found) {
+            errors.add(createErrorDescription(UNKNOWN_TYPEPARAM_DESC(name), //NOI18N
+                    Collections.singletonList(new RemoveTagFix(dtph, "@param").toEditorFix()), positions)); //NOI18N
+        }
+    }
+
+    private void checkParamsDocumented(List<? extends Element> list, List<? extends Tree> trees, DocTreePath docTreePath, List<ErrorDescription> errors) {
+//        if (foundInheritDoc)
+//            return;
+
+        for (int i = 0; i < list.size(); i++) {
+            Element e = list.get(i);
+            Tree t = trees.get(i);
+            if (!foundParams.contains(e)) {
+                boolean isTypeParam = e.getKind() == ElementKind.TYPE_PARAMETER;
+                CharSequence paramName = (isTypeParam)
+                        ? "<" + e.getSimpleName() + ">"
+                        : e.getSimpleName();
+                try {
+                    Position[] poss = createPositions(t, javac, doc);
+                    DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
+                    errors.add(createErrorDescription(MISSING_PARAM_DESC(paramName),
+                            Collections.singletonList(AddTagFix.createAddParamTagFix(dtph, e.getSimpleName().toString(), isTypeParam, i).toEditorFix()), poss));
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+    
+    @NbBundle.Messages({"# {0} - [@throws|@exception]", "# {1} - @throws name",
+                        "DUPLICATE_THROWS_DESC=Duplicate @{0} tag: {1}",
+                        "# {0} - [@throws|@exception]", "# {1} - @throws name",
+                        "UNKNOWN_THROWABLE_DESC=Unknown throwable: @{0} {1}"})
+    private void checkThrowsDeclared(ThrowsTree tree, String fqn, List<? extends TypeMirror> list, DocTreePathHandle dtph, Position[] positions, List<ErrorDescription> errors) {
+        boolean found = false;
+        for (TypeMirror t: list) {
+            if (fqn.equals(t.toString())) {
+                if(!foundThrows.add(t)) {
+                    errors.add(createErrorDescription(DUPLICATE_THROWS_DESC(tree.getTagName(), fqn),
+                    Collections.singletonList(new RemoveTagFix(dtph, "@" + tree.getTagName()).toEditorFix()), positions));
+                }
+                found = true;
+            }
+        }
+        if (!found) {
+            errors.add(createErrorDescription(UNKNOWN_THROWABLE_DESC(tree.getTagName(), fqn),
+                    Collections.singletonList(new RemoveTagFix(dtph, "@" + tree.getTagName()).toEditorFix()), positions));
+        }
+    }
+    
+    private void checkThrowsDocumented(List<? extends TypeMirror> list, List<? extends ExpressionTree> trees, DocTreePath docTreePath, List<ErrorDescription> errors) {
+        for (int i = 0; i < list.size(); i++) {
+            TypeMirror e = list.get(i);
+            Tree t = trees.get(i);
+            Types types = javac.getTypes();
+            if (!foundThrows.contains(e)
+                    && (!(types.isAssignable(e, javac.getElements().getTypeElement("java.lang.Error").asType())
+                || types.isAssignable(e, javac.getElements().getTypeElement("java.lang.RuntimeException").asType())))) {
+                try {
+                    Position[] poss = createPositions(t, javac, doc);
+                    DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
+                    errors.add(createErrorDescription(NbBundle.getMessage(Analyzer.class, "MISSING_THROWS_DESC", e.toString()),
+                            Collections.singletonList(AddTagFix.createAddThrowsTagFix(dtph, e.toString(), i).toEditorFix()), poss));
+                } catch (BadLocationException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+    
+    void warnIfEmpty(DocTree tree, List<? extends DocTree> list) {
+//        for (DocTree d: list) {
+//            switch (d.getKind()) {
+//                case TEXT:
+//                    if (hasNonWhitespace((TextTree) d))
+//                        return;
+//                    break;
+//                default:
+//                    return;
+//            }
+//        }
+//        env.messages.warning(SYNTAX, tree, "dc.empty", tree.getKind().tagName);
+    }
+
+    @Override
+    public Void visitReference(ReferenceTree node, List<ErrorDescription> errors) {
+        return super.visitReference(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    @NbBundle.Messages({"WRONG_RETURN_DESC=@return tag cannot be used in method with void return type.",
+                        "WRONG_CONSTRUCTOR_RETURN_DESC=Illegal @return tag.",
+                        "DUPLICATE_RETURN_DESC=Duplicate @return tag."})
+    public Void visitReturn(ReturnTree node, List<ErrorDescription> errors) {
+        DocTreePath currentDocPath = getCurrentPath();
+
+        try {
+            DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
+            DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
+            int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), node);
+            int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), node);
+            Position[] positions = { doc.createPosition(start), doc.createPosition(end) };
+            if(returnType == null) {
+                errors.add(createErrorDescription(WRONG_CONSTRUCTOR_RETURN_DESC(),
+                        Collections.singletonList(new RemoveTagFix(dtph, "@return").toEditorFix()), positions));
+            } else if (returnType.getKind() == TypeKind.VOID) {
+                errors.add(createErrorDescription(WRONG_RETURN_DESC(),
+                        Collections.singletonList(new RemoveTagFix(dtph, "@return").toEditorFix()), positions));
+            } else if(returnTypeFound) {
+                errors.add(createErrorDescription(DUPLICATE_RETURN_DESC(),
+                        Collections.singletonList(new RemoveTagFix(dtph, "@return").toEditorFix()), positions));
+            } else {
+                returnTypeFound = true;
+            }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return super.visitReturn(node, errors);
+    }
+
+    @Override
+    public Void visitSee(SeeTree node, List<ErrorDescription> errors) {
+        return super.visitSee(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitSerial(SerialTree node, List<ErrorDescription> errors) {
+        return super.visitSerial(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitSerialData(SerialDataTree node, List<ErrorDescription> errors) {
+        return super.visitSerialData(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitSerialField(SerialFieldTree node, List<ErrorDescription> errors) {
+        return super.visitSerialField(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitSince(SinceTree node, List<ErrorDescription> errors) {
+        return super.visitSince(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitStartElement(StartElementTree node, List<ErrorDescription> errors) {
+        return super.visitStartElement(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitText(TextTree node, List<ErrorDescription> errors) {
+        return super.visitText(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitThrows(ThrowsTree tree, List<ErrorDescription> errors) {
+        ReferenceTree exName = tree.getExceptionName();
+        try {
+            DocTreePath refPath = new DocTreePath(getCurrentPath(), tree.getExceptionName());
+            Element ex = javac.getDocTrees().getElement(refPath);
+            Types types = javac.getTypes();
+            Elements elements = javac.getElements();
+            TypeMirror throwable = elements.getTypeElement("java.lang.Throwable").asType();
+            TypeMirror error = elements.getTypeElement("java.lang.Error").asType();
+            TypeMirror runtime = elements.getTypeElement("java.lang.RuntimeException").asType();
+            DocTreePath currentDocPath = getCurrentPath();
+            DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
+            DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
+            int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
+            int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
+            Position[] positions = {doc.createPosition(start), doc.createPosition(end)};
+            if (ex == null || (ex.asType().getKind() == TypeKind.DECLARED
+                    && types.isAssignable(ex.asType(), throwable))) {
+                switch (currentElement.getKind()) {
+                    case CONSTRUCTOR:
+                    case METHOD:
+                        if (ex == null || !(types.isAssignable(ex.asType(), error)
+                                || types.isAssignable(ex.asType(), runtime))) {
+                            ExecutableElement ee = (ExecutableElement) currentElement;
+                            String fqn = ex != null ? ((TypeElement) ex).getQualifiedName().toString() : javac.getTreeUtilities().getReferenceClass(new DocTreePath(currentDocPath, exName)).toString();
+                            checkThrowsDeclared(tree, fqn, ee.getThrownTypes(), dtph, positions, errors);
+                        }
+                        break;
+                    default:
+//                        env.messages.error(REFERENCE, tree, "dc.invalid.throws");
+                }
+            } else {
+//                env.messages.error(REFERENCE, tree, "dc.invalid.throws");
+            }
+            warnIfEmpty(tree, tree.getDescription());
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return super.visitThrows(tree, errors);
+    }
+
+    @Override
+    public Void visitUnknownBlockTag(UnknownBlockTagTree node, List<ErrorDescription> errors) {
+        return super.visitUnknownBlockTag(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitUnknownInlineTag(UnknownInlineTagTree node, List<ErrorDescription> errors) {
+        return super.visitUnknownInlineTag(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitValue(ValueTree node, List<ErrorDescription> errors) {
+        return super.visitValue(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitVersion(VersionTree node, List<ErrorDescription> errors) {
+        return super.visitVersion(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Void visitOther(DocTree node, List<ErrorDescription> errors) {
+        return super.visitOther(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
 }

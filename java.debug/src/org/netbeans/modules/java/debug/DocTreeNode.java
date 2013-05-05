@@ -41,13 +41,18 @@
  */
 package org.netbeans.modules.java.debug;
 
+import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.ReferenceTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.DocTreePathScanner;
 import com.sun.source.util.DocTreeScanner;
 import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.java.debug.TreeNode.NodeChilren;
 import org.openide.nodes.AbstractNode;
@@ -57,30 +62,62 @@ import org.openide.nodes.Node;
  *
  * @author lahvac
  */
-public class DocTreeNode extends AbstractNode {
+public class DocTreeNode extends AbstractNode implements OffsetProvider {
 
-    public DocTreeNode(CompilationInfo info, TreePath declaration, DocTree tree) {
-        super(new NodeChilren(children(info, declaration, tree)));
+    private final CompilationInfo info;
+    private final DocCommentTree docComment;
+    private final DocTree tree;
+    
+    public DocTreeNode(CompilationInfo info, TreePath declaration, DocCommentTree docComment, DocTree tree) {
+        super(new NodeChilren(children(info, declaration, docComment, tree)));
+        this.info = info;
+        this.docComment = docComment;
+        this.tree = tree;
         setDisplayName(tree.getKind() + ":" + tree.toString());
     }
     
-    private static List<Node> children(final CompilationInfo info, final TreePath declaration, DocTree tree) {
+    private static List<Node> children(final CompilationInfo info, final TreePath declaration, final DocCommentTree docComment, DocTree tree) {
         final List<Node> result = new ArrayList<Node>();
         
-        tree.accept(new DocTreeScanner<Void, Void>() {
+        tree.accept(new DocTreePathScanner<Void, Void>() {
             @Override public Void scan(DocTree node, Void p) {
-                result.add(new DocTreeNode(info, declaration, node));
+                result.add(new DocTreeNode(info, declaration, docComment, node));
                 return null;
             }
             @Override
             public Void visitReference(ReferenceTree node, Void p) {
-                result.add(TreeNode.nodeForElement(info, ((DocTrees) info.getTrees()).getElement(declaration, node)));
+                result.add(TreeNode.nodeForElement(info, ((DocTrees) info.getTrees()).getElement(getCurrentPath())));
+                ExpressionTree classReference = info.getTreeUtilities().getReferenceClass(getCurrentPath());
+                if (classReference != null) {
+                    result.add(TreeNode.getTree(info, new TreePath(declaration, classReference), /*TODO: cancel*/new AtomicBoolean()));
+                }
+                List<? extends Tree> methodParameters = info.getTreeUtilities().getReferenceParameters(getCurrentPath());
+                if (methodParameters != null) {
+                    for (Tree param : methodParameters) {
+                        result.add(TreeNode.getTree(info, new TreePath(declaration, param), /*TODO: cancel*/new AtomicBoolean()));
+                    }
+                }
                 super.visitReference(node, p);
                 return null;
             }
         }, null);
         
         return result;
+    }
+
+    @Override
+    public int getStart() {
+        return (int) ((DocTrees)info.getTrees()).getSourcePositions().getStartPosition(info.getCompilationUnit(), docComment, tree);
+    }
+
+    @Override
+    public int getEnd() {
+        return (int) ((DocTrees)info.getTrees()).getSourcePositions().getEndPosition(info.getCompilationUnit(), docComment, tree);
+    }
+
+    @Override
+    public int getPreferredPosition() {
+        return -1;
     }
     
 }
