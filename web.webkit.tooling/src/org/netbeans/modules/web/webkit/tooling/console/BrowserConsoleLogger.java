@@ -190,12 +190,20 @@ public class BrowserConsoleLogger implements Console.Listener {
     
     private void logMessage(ConsoleMessage msg) throws IOException {
         io.getOut().print("\b\b");
+        Project project = projectContext.lookup(Project.class);
+        logMessage(msg, project);
+        io.getOut().print(PROMPT);
+        boolean isErr = LEVEL_ERROR.equals(msg.getLevel());
+        if (io.isClosed() || (isErr && !shownOnError.getAndSet(true))) {
+            io.select();
+        }
+    }
+    
+    private void logMessage(ConsoleMessage msg, Project project) throws IOException {
         String level = msg.getLevel();
         boolean isErr = LEVEL_ERROR.equals(level);
         String time = getCurrentTime();
 
-        Project project = projectContext.lookup(Project.class);
-        
         String logInfo = createLogInfo(time, level, msg.getSource(), msg.getType());
         OutputWriter ow = isErr ? io.getErr() : io.getOut();
         String lines[] = msg.getText().replace("\r", "").split("\n");
@@ -286,9 +294,18 @@ public class BrowserConsoleLogger implements Console.Listener {
                 ow.println(sb.toString());
             }
         }
-        io.getOut().print(PROMPT);
-        if (io.isClosed() || (isErr && !shownOnError.getAndSet(true))) {
-            io.select();
+        List<ConsoleMessage> subMessages = msg.getSubMessages();
+        if (!subMessages.isEmpty()) {
+            FoldHandle fold = null;
+            if (isFoldingSupported) {
+                fold = IOFolding.startFold(io, false);
+            }
+            for (ConsoleMessage cm : subMessages) {
+                logMessage(cm, project);
+            }
+            if (fold != null) {
+                fold.finish();
+            }
         }
     }
     
