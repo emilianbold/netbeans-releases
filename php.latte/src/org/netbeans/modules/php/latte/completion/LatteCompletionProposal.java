@@ -190,7 +190,6 @@ public abstract class LatteCompletionProposal implements CompletionProposal {
         public int anchorOffset;
         public String prefix;
         public LatteParserResult parserResult;
-        public LatteCompletionContext context;
     }
 
 }

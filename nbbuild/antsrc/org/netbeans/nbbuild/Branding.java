@@ -46,6 +46,7 @@ package org.netbeans.nbbuild;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.StringTokenizer;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
@@ -63,6 +64,7 @@ public final class Branding extends Task {
     private File cluster;
     private File overrides;
     private String token;
+    private String locales;
     
     public Branding() {}
     
@@ -77,6 +79,10 @@ public final class Branding extends Task {
     public void setToken(String token) {
         this.token = token;
     }
+
+    public void setLocales(String locales) {
+        this.locales = locales;
+    }
     
     public void execute() throws BuildException {
         if (cluster == null || !cluster.isDirectory()) {
@@ -89,7 +95,13 @@ public final class Branding extends Task {
             throw new BuildException("Must specify a valid branding token: " + token, getLocation());
         }
         try {
-            lookForBrandingJars(overrides, cluster, overrides.getAbsolutePath() + File.separatorChar);
+            if(locales != null) {
+                StringTokenizer tokenizer = new StringTokenizer(locales, ",");
+                while (tokenizer.hasMoreElements()) {
+                    lookForBrandingJars(overrides, cluster, overrides.getAbsolutePath() + File.separatorChar, tokenizer.nextToken());
+                }
+            }
+            lookForBrandingJars(overrides, cluster, overrides.getAbsolutePath() + File.separatorChar, null);
         } catch (IOException e) {
             throw new BuildException(e, getLocation());
         }
@@ -110,9 +122,9 @@ public final class Branding extends Task {
         return false;
     }
     
-    private boolean lookForBrandingJars(File srcDir, File destDir, String srcPrefix) throws IOException {
+    private boolean lookForBrandingJars(File srcDir, File destDir, String srcPrefix, String locale) throws IOException {
         if (srcDir.getName().endsWith(".jar")) {
-            packBrandingJar(srcDir, destDir);
+            packBrandingJar(srcDir, destDir, locale);
             return true;
         } else {
             String[] kids = srcDir.list();
@@ -129,7 +141,7 @@ public final class Branding extends Task {
                     log("Warning: stray file " + kid + " encountered; ignoring", Project.MSG_WARN);
                     continue;
                 }
-                used |= lookForBrandingJars(kid, new File(destDir, kids[i]), srcPrefix);
+                used |= lookForBrandingJars(kid, new File(destDir, kids[i]), srcPrefix, locale);
             }
             if (!used) {
                 log("Warning: stray directory " + srcDir + " with no brandables encountered; ignoring", Project.MSG_WARN);
@@ -138,41 +150,51 @@ public final class Branding extends Task {
         }
     }
     
-    private void packBrandingJar(File srcDir, File destJarBase) throws IOException {
+    private void packBrandingJar(File srcDir, File destJarBase, String locale) throws IOException {
         DirectoryScanner scanner = new DirectoryScanner();
         scanner.setBasedir(srcDir);
+        String localeToken = "";
+        if(locale != null) {
+            String [] includes = {"**/*_" + locale.toString().toLowerCase() + ".*"};
+            scanner.setIncludes(includes);
+            localeToken = "_" + locale.toString().toLowerCase();
+        } else {
+            String [] excludes = {"**/*_??_??.*", "**/*_??.*"};
+            scanner.setExcludes(excludes);
+        }
         scanner.addDefaultExcludes(); // #68929
         scanner.scan();
         String[] files = scanner.getIncludedFiles();
-        Zip zip = (Zip) getProject().createTask("zip");
-        String name = destJarBase.getName();
-        String nameBase = name.substring(0, name.length() - ".jar".length());
-        File destFolder = new File(destJarBase.getParentFile(), "locale");
-        if (!destFolder.isDirectory() && !destFolder.mkdirs()) {
-            throw new IOException("Could not create directory " + destFolder);
-        }
-        File destJar = new File(destFolder, nameBase + "_" + token + ".jar");
-        zip.setDestFile(destJar);
-        zip.setCompress(true);
-        for (int i = 0; i < files.length; i++) {
-            ZipFileSet entry = new ZipFileSet();
-            entry.setFile(new File(srcDir, files[i]));
-            String basePath = files[i].replace(File.separatorChar, '/');
-            int slash = basePath.lastIndexOf('/');
-            int dot = basePath.lastIndexOf('.');
-            String infix = "_" + token;
-            String brandedPath;
-            if (dot == -1 || dot < slash) {
-                brandedPath = basePath + infix;
-            } else {
-                brandedPath = basePath.substring(0, dot) + infix + basePath.substring(dot);
+        if(files.length > 0) {
+            Zip zip = (Zip) getProject().createTask("zip");
+            String name = destJarBase.getName();
+            String nameBase = name.substring(0, name.length() - ".jar".length());
+            File destFolder = new File(destJarBase.getParentFile(), "locale");
+            if (!destFolder.isDirectory() && !destFolder.mkdirs()) {
+                throw new IOException("Could not create directory " + destFolder);
             }
-            entry.setFullpath(brandedPath);
-            zip.addZipfileset(entry);
+            File destJar = new File(destFolder, nameBase + "_" + token + localeToken + ".jar");
+            zip.setDestFile(destJar);
+            zip.setCompress(true);
+            for (int i = 0; i < files.length; i++) {
+                ZipFileSet entry = new ZipFileSet();
+                entry.setFile(new File(srcDir, files[i]));
+                String basePath = files[i].replace(File.separatorChar, '/');
+                int slash = basePath.lastIndexOf('/');
+                int dot = basePath.lastIndexOf('.');
+                String infix = "_" + token + localeToken;
+                String brandedPath;
+                if (dot == -1 || dot < slash) {
+                    brandedPath = basePath + infix;
+                } else {
+                    brandedPath = basePath.substring(0, dot - localeToken.length()) + infix + basePath.substring(dot);
+                }
+                entry.setFullpath(brandedPath);
+                zip.addZipfileset(entry);
+            }
+            zip.setLocation(getLocation());
+            zip.init();
+            zip.execute();
         }
-        zip.setLocation(getLocation());
-        zip.init();
-        zip.execute();
     }
-    
 }

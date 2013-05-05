@@ -77,4 +77,14 @@ public interface Variable {
      * @return text representation of current value of "this" variable
      */
     public abstract String getValue ();
+
+    /**
+     * Create an object in this JVM, which mirrors the value of this variable in
+     * the target JVM.
+     * 
+     * @return The mirror object, or <code>null</code> when a mirror object can not be created.
+     * @since 2.44
+     */
+    Object createMirrorObject();
+    
 }

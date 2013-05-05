@@ -727,7 +727,7 @@
                       <Component id="stopProgressButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="closeIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="reopenIssueButton" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="tasklistButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="addToCategoryButton" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="showInBrowserButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="32767" attributes="0"/>
@@ -756,7 +756,7 @@
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="logWorkButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
-                  <Component id="tasklistButton" min="-2" max="-2" attributes="0"/>
+                  <Component id="addToCategoryButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
                   <Component id="showInBrowserButton" min="-2" max="-2" attributes="0"/>
                   <EmptySpace max="-2" attributes="0"/>
@@ -866,15 +866,14 @@
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="reopenIssueButtonActionPerformed"/>
           </Events>
         </Component>
-        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="tasklistButton">
+        <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="addToCategoryButton">
           <Properties>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/jira/issue/Bundle.properties" key="IssuePanel.tasklistButton.add" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
-            <Property name="enabled" type="boolean" value="false"/>
           </Properties>
           <Events>
-            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tasklistButtonActionPerformed"/>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addToCategoryButtonActionPerformed"/>
           </Events>
         </Component>
         <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="showInBrowserButton">

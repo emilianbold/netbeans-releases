@@ -92,25 +92,25 @@ public class BrandingSupportTest extends TestBase {
     public void testBranding1() throws IOException {
         assertFalse(instance.getBrandingRoot().exists());
         implOfBundleKeyTest("org.netbeans.core.startup",
-                "org/netbeans/core/startup/Bundle.properties", Collections.singleton("CTL_About_Title"), "About");
+                "org/netbeans/core/startup/Bundle.properties", Collections.singleton("CTL_About_Title"), "About", instance.getBrandedBundleKeys());
     }
     
     public void testBranding2() throws IOException {
         assertFalse(instance.getBrandingRoot().exists());
-        implOfBundleKeyTest("org.netbeans.core.startup", null, Collections.singleton("CTL_About_Title"), "About");
+        implOfBundleKeyTest("org.netbeans.core.startup", null, Collections.singleton("CTL_About_Title"), "About", instance.getBrandedBundleKeys());
     }
     
     
     public void testBranding3() throws IOException {
         assertFalse(instance.getBrandingRoot().exists());
         implOfBundleKeyTest("org.netbeans.core",
-                "org/netbeans/core/ui/Bundle.properties", Collections.singleton("LBL_SwingBrowserDescription"), "Simple HTML Browser based on a Swing component");
+                "org/netbeans/core/ui/Bundle.properties", Collections.singleton("LBL_SwingBrowserDescription"), "Simple HTML Browser based on a Swing component", instance.getBrandedBundleKeys());
     }
 
     public void testBranding4() throws IOException {
         assertFalse(instance.getBrandingRoot().exists());
         implOfBundleKeyTest("org.netbeans.core.windows",
-                "org/netbeans/core/windows/view/ui/Bundle.properties", Collections.singleton("CTL_MainWindow_Title"), "NetBeans Platform {0}");
+                "org/netbeans/core/windows/view/ui/Bundle.properties", Collections.singleton("CTL_MainWindow_Title"), "NetBeans Platform {0}", instance.getBrandedBundleKeys());
     }
     
     public void testBrandingFile() throws IOException {
@@ -178,10 +178,10 @@ public class BrandingSupportTest extends TestBase {
     }
     
     
-    private void implOfBundleKeyTest(final String moduleCodeNameBase, final String bundleEntry, final Set<String> keys, String expectedValue) throws IOException {
+    private void implOfBundleKeyTest(final String moduleCodeNameBase, final String bundleEntry, final Set<String> keys, String expectedValue, Set<BrandingSupport.BundleKey> bundleKeys) throws IOException {
         Set<BrandingSupport.BundleKey> bKeys;
         if (bundleEntry != null) {
-            bKeys= instance.getBundleKeys(moduleCodeNameBase,bundleEntry,keys);
+            bKeys= instance.getBundleKeys(moduleCodeNameBase,bundleEntry,keys, bundleKeys);
         } else {
             bKeys= instance.getLocalizingBundleKeys(moduleCodeNameBase,keys);
         }

@@ -158,6 +158,7 @@ final class CallHierarchyTopComponent extends TopComponent implements ExplorerMa
         jMenuItemFilterAll = new javax.swing.JRadioButtonMenuItem();
         jMenuItemCurrProject = new javax.swing.JRadioButtonMenuItem();
         jMenuItemUnitTests = new javax.swing.JCheckBoxMenuItem();
+        jMenuItemBaseClass = new javax.swing.JCheckBoxMenuItem();
         buttonGroupScope = new javax.swing.ButtonGroup();
         listView = new org.openide.explorer.view.ListView();
         jToolBar = new javax.swing.JToolBar();
@@ -188,6 +189,10 @@ final class CallHierarchyTopComponent extends TopComponent implements ExplorerMa
         org.openide.awt.Mnemonics.setLocalizedText(jMenuItemUnitTests, org.openide.util.NbBundle.getMessage(CallHierarchyTopComponent.class, "CallHierarchyTopComponent.jMenuItemUnitTests.text")); // NOI18N
         jMenuItemUnitTests.addActionListener(formListener);
         jPopupMenuScope.add(jMenuItemUnitTests);
+
+        org.openide.awt.Mnemonics.setLocalizedText(jMenuItemBaseClass, org.openide.util.NbBundle.getMessage(CallHierarchyTopComponent.class, "CallHierarchyTopComponent.jMenuItemBaseClass.text")); // NOI18N
+        jMenuItemBaseClass.addActionListener(formListener);
+        jPopupMenuScope.add(jMenuItemBaseClass);
 
         setLayout(new java.awt.BorderLayout());
 
@@ -264,6 +269,9 @@ final class CallHierarchyTopComponent extends TopComponent implements ExplorerMa
             else if (evt.getSource() == jMenuItemUnitTests) {
                 CallHierarchyTopComponent.this.jMenuItemScopeActionPerformed(evt);
             }
+            else if (evt.getSource() == jMenuItemBaseClass) {
+                CallHierarchyTopComponent.this.jMenuItemBaseClassActionPerformed(evt);
+            }
         }
 
         public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -309,12 +317,19 @@ private void jMenuItemScopeActionPerformed(java.awt.event.ActionEvent evt) {//GE
     }
 }//GEN-LAST:event_jMenuItemScopeActionPerformed
 
+    private void jMenuItemBaseClassActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItemBaseClassActionPerformed
+        if (model != null) {
+            model.setScopes(getScopes());
+        }
+    }//GEN-LAST:event_jMenuItemBaseClassActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.openide.explorer.view.BeanTreeView beanTreeView;
     private javax.swing.ButtonGroup buttonGroupScope;
     private javax.swing.JButton jBtnCancel;
     private javax.swing.JButton jBtnRefresh;
+    private javax.swing.JCheckBoxMenuItem jMenuItemBaseClass;
     private javax.swing.JRadioButtonMenuItem jMenuItemCurrProject;
     private javax.swing.JRadioButtonMenuItem jMenuItemFilterAll;
     private javax.swing.JCheckBoxMenuItem jMenuItemUnitTests;
@@ -473,6 +488,9 @@ private void jMenuItemScopeActionPerformed(java.awt.event.ActionEvent evt) {//GE
         }
         if (jMenuItemUnitTests.isSelected()) {
             scopes.add(Scope.TESTS);
+        }
+        if(jMenuItemBaseClass.isSelected()) {
+            scopes.add(Scope.BASE);
         }
         return scopes;
     }

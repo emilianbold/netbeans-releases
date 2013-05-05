@@ -93,7 +93,7 @@ final class SparseIntList {
      * this method.
      */
     public synchronized void add(int idx, int value) {
-        if (value <= lastAdded) {
+        if (value < lastAdded) {
             throw new IllegalArgumentException ("Contents must be presorted - " + //NOI18N
                 "added value " + value + " is less than preceding " + //NOI18N
                 "value " + lastAdded); //NOI18N
@@ -234,6 +234,10 @@ final class SparseIntList {
             int key = val - values[pos - 1] + keys[pos - 1] + 1;
             return lastGetNextKeyResult = pos < used ? Math.min(key, keys[pos]) : key;
         } else {
+            while (pos >= 0 && pos + 1 < values.length
+                    && values[pos] == values[pos + 1]) {
+                pos++;
+            }
             return lastGetNextKeyResult = keys[pos] + 1;
         }
     }

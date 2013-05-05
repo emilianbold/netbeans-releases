@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.accessibility.AccessibleContext;
@@ -56,6 +57,7 @@ import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
 import org.netbeans.modules.team.ui.util.treelist.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.CreateCategoryAction;
@@ -68,7 +70,6 @@ import org.netbeans.modules.bugtracking.tasks.filter.AppliedFilters;
 import org.netbeans.modules.bugtracking.tasks.filter.DashboardFilter;
 import org.netbeans.modules.bugtracking.tasks.Category;
 import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
-import org.netbeans.modules.bugtracking.tasks.DashboardRefresher;
 import org.netbeans.modules.bugtracking.tasks.Utils;
 import org.netbeans.modules.team.ui.util.treelist.ColorManager;
 import org.netbeans.modules.team.ui.util.treelist.TreeList;
@@ -77,6 +78,7 @@ import org.netbeans.modules.team.ui.util.treelist.TreeListModelListener;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -333,7 +335,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 if (DashboardViewer.getInstance().isTaskNodeActive(taskNode)) {
                     DashboardViewer.getInstance().setActiveTaskNode(toAdd);
                 }
-                toSelect.add(taskNode);
+                toSelect.add(toAdd);
             }
             if (isTaskInFilter && !isCatInFilter) {
                 addCategoryToModel(destCategoryNode);
@@ -789,15 +791,29 @@ public final class DashboardViewer implements PropertyChangeListener {
             public void run() {
                 // w8 with loading to preject ot be opened
                 //TODO add w8 for open project method to the bugtracking manager a ProjectServices
-                BugtrackingManager.getInstance().getProjectServices().getOpenProjectsDirectories();
-
-                titleRepositoryNode.setProgressVisible(true);
-                titleCategoryNode.setProgressVisible(true);
-                loadRepositories();
-                titleRepositoryNode.setProgressVisible(false);
-                loadCategories();
-                titleCategoryNode.setProgressVisible(false);
-                DashboardRefresher.getInstance().setupDashboardRefresh();
+                Callable<Void> c = new Callable<Void>() {
+                    @Override
+                    public Void call() throws Exception {
+                        titleRepositoryNode.setProgressVisible(true);
+                        titleCategoryNode.setProgressVisible(true);
+                        loadRepositories();
+                        titleRepositoryNode.setProgressVisible(false);
+                        loadCategories();
+                        titleCategoryNode.setProgressVisible(false);
+                        DashboardRefresher.getInstance().setupDashboardRefresh();
+                        return null;
+                    }
+                };
+                ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
+                try {
+                    if(projectServices != null) {
+                        projectServices.runAfterProjectOpenFinished(c);
+                    } else {
+                        c.call();
+                    }
+                } catch (Exception ex) {
+                    BugtrackingManager.LOG.log(Level.WARNING, null, ex);
+                }
             }
         });
     }
@@ -809,12 +825,6 @@ public final class DashboardViewer implements PropertyChangeListener {
         if (model.getRootNodes().contains(errorRepositories)) {
             model.removeRoot(errorRepositories);
         }
-    }
-
-    public void loadCategory(Category category) {
-        DashboardStorage storage = DashboardStorage.getInstance();
-        List<TaskEntry> taskEntries = storage.readCategory(category.getName());
-        category.setTasks(loadTasks(taskEntries));
     }
 
     private void loadCategories() {
@@ -848,40 +858,6 @@ public final class DashboardViewer implements PropertyChangeListener {
             LOG.log(Level.WARNING, "Categories loading failed due to: {0}", ex);
             showCategoriesError();
         }
-    }
-
-    private List<Issue> loadTasks(List<TaskEntry> taskEntries) {
-        List<Issue> tasks = new ArrayList<Issue>(taskEntries.size());
-        Map<String, List<String>> m = new HashMap<String, List<String>>();
-        for (TaskEntry taskEntry : taskEntries) {
-            List<String> l = m.get(taskEntry.getRepositoryId());
-            if (l == null) {
-                l = new LinkedList<String>();
-                m.put(taskEntry.getRepositoryId(), l);
-            }
-            l.add(taskEntry.getIssueId());
-        }
-        for (Entry<String, List<String>> e : m.entrySet()) {
-            Repository repository = getRepository(e.getKey());
-            if (repository != null) {
-                List<String> l = e.getValue();
-                Issue[] issues = repository.getIssues(l.toArray(new String[l.size()]));
-                if (issues != null) {
-                    tasks.addAll(Arrays.asList(issues));
-                }
-            }
-        }
-        return tasks;
-    }
-
-    private Repository getRepository(String repositoryId) {
-        List<Repository> repositories = new ArrayList<Repository>(RepositoryManager.getInstance().getRepositories());
-        for (Repository repository : repositories) {
-            if (repository.getId().equals(repositoryId)) {
-                return repository;
-            }
-        }
-        return null;
     }
 
     private void updateRepositories(Collection<Repository> addedRepositories, Collection<Repository> removedRepositories) {

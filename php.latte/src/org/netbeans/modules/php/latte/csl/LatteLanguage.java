@@ -65,7 +65,7 @@ public class LatteLanguage extends DefaultLanguageConfig {
     public static final String LATTE_MIME_TYPE = "text/x-latte"; //NOI18N
 
     @Override
-    public Language getLexerLanguage() {
+    public Language<LatteTopTokenId> getLexerLanguage() {
         return LatteTopTokenId.language();
     }
 
@@ -85,7 +85,7 @@ public class LatteLanguage extends DefaultLanguageConfig {
     }
 
     @Override
-    public SemanticAnalyzer getSemanticAnalyzer() {
+    public SemanticAnalyzer<LatteParser.LatteParserResult> getSemanticAnalyzer() {
         return new LatteSemanticAnalyzer();
     }
 

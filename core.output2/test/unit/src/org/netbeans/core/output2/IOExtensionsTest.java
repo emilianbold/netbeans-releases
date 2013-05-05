@@ -108,6 +108,7 @@ public class IOExtensionsTest extends NbTestCase {
     public void testSetDefColors() throws IOException {
         IOColors.setColor(io, IOColors.OutputType.OUTPUT, Color.GRAY);
         IOColors.setColor(io, IOColors.OutputType.ERROR, Color.PINK);
+        IOColors.setColor(io, IOColors.OutputType.INPUT, Color.BLUE);
         IOColors.setColor(io, IOColors.OutputType.HYPERLINK, Color.MAGENTA);
         IOColors.setColor(io, IOColors.OutputType.HYPERLINK_IMPORTANT, Color.GREEN);
         io.getOut().println("Test out");
@@ -116,6 +117,7 @@ public class IOExtensionsTest extends NbTestCase {
         io.getOut().println("Test important hyperlink", new L(), true);
         IOColors.setColor(io, IOColors.OutputType.OUTPUT, Color.BLACK);
         IOColors.setColor(io, IOColors.OutputType.ERROR, Color.RED);
+        IOColors.setColor(io, IOColors.OutputType.INPUT, Color.BLACK);
         IOColors.setColor(io, IOColors.OutputType.HYPERLINK, Color.BLUE);
         IOColors.setColor(io, IOColors.OutputType.HYPERLINK_IMPORTANT, Color.MAGENTA);
     }

@@ -166,7 +166,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private boolean reloading;
     private boolean skipReload;
     private boolean usingTargetMilestones;
-    private PropertyChangeListener tasklistListener;
     private OwnerInfo ownerInfo;
     private String assignee = null;
     private UndoRedoSupport undoRedoSupport;
@@ -358,7 +357,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             swap(layout, severityWarning, issueTypeWarning, temp);
         }
                 
-        tasklistButton.setEnabled(false);
         reloadForm(true);
 
         if (issue.isNew()) {
@@ -669,7 +667,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (force && !isNew) {
             addCommentArea.setText(""); // NOI18N
         }
-        updateTasklistButton();
         updateFieldStatuses();
         updateNoSummary();
         if ((fieldWarnings.size() != noWarnings) || (fieldErrors.size() != noErrors)) {
@@ -1247,58 +1244,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }
 
-    private void attachTasklistListener (BugzillaTaskListProvider provider) {
-        if (tasklistListener == null) { // is not attached yet
-            // listens on events comming from the tasklist, like when an issue is removed, etc.
-            // needed to correctly update tasklistButton label and status
-            tasklistListener = new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (BugzillaTaskListProvider.PROPERTY_ISSUE_REMOVED.equals(evt.getPropertyName()) && issue.equals(evt.getOldValue())) {
-                        Runnable inAWT = new Runnable() {
-                            @Override
-                            public void run() {
-                                updateTasklistButton();
-                            }
-                        };
-                        if (EventQueue.isDispatchThread()) {
-                            inAWT.run();
-                        } else {
-                            EventQueue.invokeLater(inAWT);
-                        }
-                    }
-                }
-            };
-            provider.addPropertyChangeListener(org.openide.util.WeakListeners.propertyChange(tasklistListener, provider));
-        }
-    }
-
-    private void updateTasklistButton() {
-        tasklistButton.setEnabled(false);
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                BugzillaTaskListProvider provider = BugzillaTaskListProvider.getInstance();
-                if (provider == null || issue.isNew()) { // do not enable button for new issues
-                    return;
-                }
-                final boolean isInTasklist = provider.isAdded(issue);
-                if (isInTasklist) {
-                    attachTasklistListener(provider);
-                }
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        String tasklistMessage = NbBundle.getMessage(IssuePanel.class,
-                                isInTasklist ? "IssuePanel.tasklistButton.remove" : "IssuePanel.tasklistButton.add"); // NOI18N
-                        tasklistButton.setText(tasklistMessage);
-                        tasklistButton.setEnabled(true);
-                    }
-                });
-            }
-        });
-    }
-
     private void initSpellChecker () {
         Spellchecker.register(summaryField);
         Spellchecker.register(addCommentArea);
@@ -1535,7 +1480,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         showInBrowserButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         separatorLabel = new javax.swing.JLabel();
         resolutionLabel = new javax.swing.JLabel();
-        tasklistButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        addToCategoryButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         separatorLabel2 = new javax.swing.JLabel();
         separatorLabel3 = new javax.swing.JLabel();
         productLabel = new javax.swing.JLabel();
@@ -1840,8 +1785,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
         org.openide.awt.Mnemonics.setLocalizedText(resolutionLabel, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.resolutionLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(tasklistButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.tasklistButton.add")); // NOI18N
-        tasklistButton.addActionListener(formListener);
+        org.openide.awt.Mnemonics.setLocalizedText(addToCategoryButton, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.tasklistButton.add")); // NOI18N
+        addToCategoryButton.addActionListener(formListener);
 
         separatorLabel2.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
@@ -1917,7 +1862,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                         .addComponent(headerField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(tasklistButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(addToCategoryButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(separatorLabel2)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -2075,7 +2020,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(headerField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(separatorLabel2)
-                    .addComponent(tasklistButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addToCategoryButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(separatorLabel)
                     .addComponent(reloadButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(refreshButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -2201,7 +2146,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(addCommentLabel)
                     .addComponent(scrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(2, 2, 2)
@@ -2296,8 +2240,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             else if (evt.getSource() == showInBrowserButton) {
                 IssuePanel.this.showInBrowserButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == tasklistButton) {
-                IssuePanel.this.tasklistButtonActionPerformed(evt);
+            else if (evt.getSource() == addToCategoryButton) {
+                IssuePanel.this.addToCategoryButtonActionPerformed(evt);
             }
             else if (evt.getSource() == versionCombo) {
                 IssuePanel.this.versionComboActionPerformed(evt);
@@ -2317,11 +2261,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             else if (evt.getSource() == submitButton) {
                 IssuePanel.this.submitButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == resolutionCombo) {
-                IssuePanel.this.resolutionComboActionPerformed(evt);
-            }
-            else if (evt.getSource() == assignedCombo) {
-                IssuePanel.this.assignedComboActionPerformed(evt);
+            else if (evt.getSource() == cancelButton) {
+                IssuePanel.this.cancelButtonActionPerformed(evt);
             }
             else if (evt.getSource() == attachLogCheckBox) {
                 IssuePanel.this.attachLogCheckBoxActionPerformed(evt);
@@ -2329,8 +2270,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             else if (evt.getSource() == viewLogButton) {
                 IssuePanel.this.viewLogButtonActionPerformed(evt);
             }
-            else if (evt.getSource() == cancelButton) {
-                IssuePanel.this.cancelButtonActionPerformed(evt);
+            else if (evt.getSource() == resolutionCombo) {
+                IssuePanel.this.resolutionComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == assignedCombo) {
+                IssuePanel.this.assignedComboActionPerformed(evt);
             }
         }
 
@@ -2798,17 +2742,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }//GEN-LAST:event_duplicateButtonActionPerformed
 
-    private void tasklistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tasklistButtonActionPerformed
-        tasklistButton.setEnabled(false);
-        BugzillaTaskListProvider provider = BugzillaTaskListProvider.getInstance();
-        if (provider.isAdded(issue)) {
-            provider.remove(issue);
-        } else {
-            attachTasklistListener(provider);
-            provider.add(issue, true);
-        }
-        updateTasklistButton();
-    }//GEN-LAST:event_tasklistButtonActionPerformed
+    private void addToCategoryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addToCategoryButtonActionPerformed
+        Bugzilla.getInstance().getBugtrackingFactory().addToCategory(BugzillaUtil.getRepository(issue.getRepository()), issue);
+    }//GEN-LAST:event_addToCategoryButtonActionPerformed
 
     private void assignedComboActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_assignedComboActionPerformed
         cancelHighlight(assignedLabel);
@@ -2918,6 +2854,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel actualWarning;
     private javax.swing.JTextArea addCommentArea;
     private javax.swing.JLabel addCommentLabel;
+    private org.netbeans.modules.bugtracking.util.LinkButton addToCategoryButton;
     private javax.swing.JCheckBox assignToDefaultCheckBox;
     private javax.swing.JComboBox assignedCombo;
     private javax.swing.JTextField assignedField;
@@ -3025,7 +2962,6 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JLabel summaryWarning;
     private javax.swing.JComboBox targetMilestoneCombo;
     private javax.swing.JLabel targetMilestoneLabel;
-    private org.netbeans.modules.bugtracking.util.LinkButton tasklistButton;
     private javax.swing.JLabel timetrackingLabel;
     private javax.swing.JPanel timetrackingPanel;
     private javax.swing.JTextField urlField;

@@ -44,10 +44,15 @@
 
 package org.netbeans.modules.debugger.jpda.ui.models;
 
+import com.sun.jdi.Value;
 import java.awt.Color;
-import java.util.HashSet;
+import java.io.InvalidObjectException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.prefs.Preferences;
+import java.util.WeakHashMap;
 import javax.security.auth.Refreshable;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
@@ -55,10 +60,12 @@ import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAWatch;
 import org.netbeans.api.debugger.jpda.LocalVariable;
+import org.netbeans.api.debugger.jpda.MutableVariable;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.This;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
 import org.netbeans.modules.debugger.jpda.ui.views.VariablesViewButtons;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -73,7 +80,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
+import org.openide.util.WeakSet;
 
 
 /**
@@ -96,7 +103,12 @@ import org.openide.util.NbPreferences;
 })
 public class VariablesTableModel implements TableModel, Constants {
     
+    private static final Map<Variable, Object> mirrors = new WeakHashMap<Variable, Object>();
+    private final Map<Variable, Value> origValues = new WeakHashMap<Variable, Value>();
+    private static final Set<Variable> checkReadOnlyMutables = new WeakSet<Variable>();
+    
     private JPDADebugger debugger;
+    private final List<ModelListener> modelListeners = new ArrayList<ModelListener>();
 
     public VariablesTableModel(ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
@@ -158,7 +170,28 @@ public class VariablesTableModel implements TableModel, Constants {
                 return w.getValue ();
             } else 
             if (row instanceof Variable) {
-                return ((Variable) row).getValue ();
+                //return ((Variable) row).getValue ();
+                Variable var = (Variable) row;
+                if (ValuePropertyEditor.hasPropertyEditorFor(var)) {
+                    Object mirror = var.createMirrorObject();
+                    synchronized (mirrors) {
+                        if (mirror == null) {
+                            mirrors.remove(var);
+                            origValues.remove(var);
+                        } else {
+                            mirrors.put(var, mirror);
+                            //origValues.put(var, ((JDIVariable) var).getJDIValue());
+                        }
+                    }
+                }
+                boolean isROCheck;
+                synchronized (checkReadOnlyMutables) {
+                    isROCheck = checkReadOnlyMutables.remove((Variable) row);
+                }
+                if (true || isROCheck) {
+                    fireModelChange(new ModelEvent.TableValueChanged(this, row, columnID, ModelEvent.TableValueChanged.IS_READ_ONLY_MASK));
+                }
+                return var;
             }
         }
         if (row instanceof JPDAClassType) {
@@ -180,6 +213,18 @@ public class VariablesTableModel implements TableModel, Constants {
             return "";
         }
         throw new UnknownTypeException (row);
+    }
+    
+    void setOrigValue(Variable var) {
+        synchronized (mirrors) {
+            origValues.put(var, ((JDIVariable) var).getJDIValue());
+        }
+    }
+    
+    static Object getMirrorFor(Variable var) {
+        synchronized (mirrors) {
+            return mirrors.get(var);
+        }
     }
     
     public boolean isReadOnly (Object row, String columnID) throws 
@@ -214,6 +259,15 @@ public class VariablesTableModel implements TableModel, Constants {
                         String e = w.getExceptionDescription ();
                         if (e != null) {
                             return true; // Errors are read only
+                        }
+                    }
+                    if (row instanceof MutableVariable) {
+                        synchronized (checkReadOnlyMutables) {
+                            checkReadOnlyMutables.add((MutableVariable) row);
+                        }
+                        Object mirror = getMirrorFor((Variable) row);
+                        if (mirror != null) {
+                            return false;
                         }
                     }
                     if (row instanceof ObjectVariable) {
@@ -265,6 +319,58 @@ public class VariablesTableModel implements TableModel, Constants {
     
     public void setValueAt (Object row, String columnID, Object value) 
     throws UnknownTypeException {
+        if (row instanceof MutableVariable) {
+            if ( LOCALS_VALUE_COLUMN_ID.equals (columnID) ||
+                 WATCH_VALUE_COLUMN_ID.equals (columnID)
+            ) {
+                if (row == value) {
+                    // set of the original value (Cancel)
+                    boolean doSet = false;
+                    Variable var;
+                    Value origValue = null;
+                    synchronized (mirrors) {
+                        var = (Variable) row;
+                        if (origValues.containsKey(var)) {
+                            origValue = origValues.get(var);
+                            doSet = true;
+                        }
+                    }
+                    if (doSet) {
+                        setValueToVar(var, origValue);
+                        fireModelChange(new ModelEvent.TableValueChanged(this, row, columnID));
+                        return ;
+                    }
+                }
+                try {
+                    if (value instanceof String) {
+                        ((MutableVariable) row).setValue((String) value);
+                    } else if (value instanceof ValuePropertyEditor.VariableWithMirror) {
+                        Object mirror = ((ValuePropertyEditor.VariableWithMirror) value).createMirrorObject();
+                        ((MutableVariable) row).setFromMirrorObject(mirror);
+                    } else if (value instanceof Variable) {
+                        return ; // Value is set already.
+                    } else {
+                        ((MutableVariable) row).setFromMirrorObject(value);
+                    }
+                } catch (InvalidExpressionException e) {
+                    NotifyDescriptor.Message descriptor = 
+                        new NotifyDescriptor.Message (
+                            e.getLocalizedMessage (), 
+                            NotifyDescriptor.WARNING_MESSAGE
+                        );
+                    DialogDisplayer.getDefault ().notify (descriptor);
+                } catch (InvalidObjectException e) {
+                    NotifyDescriptor.Message descriptor = 
+                        new NotifyDescriptor.Message (
+                            e.getLocalizedMessage (), 
+                            NotifyDescriptor.WARNING_MESSAGE
+                        );
+                    DialogDisplayer.getDefault ().notify (descriptor);
+                }
+                return;
+            }
+        }
+        /*
         if (row instanceof LocalVariable) {
             if (LOCALS_VALUE_COLUMN_ID.equals (columnID)) {
                 try {
@@ -314,7 +420,25 @@ public class VariablesTableModel implements TableModel, Constants {
                 return;
             }
         }
+        */
         throw new UnknownTypeException (row);
+    }
+    
+    private static void setValueToVar(Variable var, Value value) {
+        synchronized (mirrors) {
+            mirrors.remove(var);
+        }
+        try {
+            Method setValueMethod = var.getClass().getDeclaredMethod("setValue", Value.class);
+            setValueMethod.setAccessible(true);
+            setValueMethod.invoke(var, value);
+            ValuePropertyEditor pe = VariablesPropertyEditorsModel.getExistingValuePropertyEditor(var);
+            if (pe != null) {
+                pe.setValue(var);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
     
     /** 
@@ -323,6 +447,9 @@ public class VariablesTableModel implements TableModel, Constants {
      * @param l the listener to add
      */
     public void addModelListener (ModelListener l) {
+        synchronized (modelListeners) {
+            modelListeners.add(l);
+        }
     }
 
     /** 
@@ -331,8 +458,21 @@ public class VariablesTableModel implements TableModel, Constants {
      * @param l the listener to remove
      */
     public void removeModelListener (ModelListener l) {
+        synchronized (modelListeners) {
+            modelListeners.remove(l);
+        }
     }
     
+    protected void fireModelChange(ModelEvent me) {
+        Object[] listeners;
+        synchronized (modelListeners) {
+            listeners = modelListeners.toArray();
+        }
+        for (int i = 0; i < listeners.length; i++) {
+            ((ModelListener) listeners[i]).modelChanged(me);
+        }
+    }
+
     static String getShort (String c) {
         int i = c.lastIndexOf ('.');
         if (i < 0) return c;

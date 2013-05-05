@@ -72,6 +72,7 @@ import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.IOColors;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -117,11 +118,11 @@ public class GlobalOutputProcessor implements OutputProcessor {
         }
         //silly prepend of  [INFO} to reuse the same regexp
         if (CommandLineOutputHandler.startPatternM3.matcher("[INFO] " + line).matches() || CommandLineOutputHandler.startPatternM2.matcher("[INFO] " + line).matches()) {
-            visitor.setColor(Color.GRAY);
+            visitor.setOutputType(IOColors.OutputType.LOG_DEBUG);
             return;
         } 
         if (line.startsWith("BUILD SUCCESS")) { //NOI18N 3.0.4 has build success, some older versions have build successful
-            visitor.setColor(Color.GREEN.darker().darker());
+            visitor.setOutputType(IOColors.OutputType.LOG_SUCCESS);
             return;
         }
         
@@ -173,7 +174,7 @@ public class GlobalOutputProcessor implements OutputProcessor {
         
         if (LOW_MVN.matcher(line).matches()) {
             visitor.setLine(line + '\n' + TXT_ChangeSettings());
-            visitor.setColor(Color.RED);
+            visitor.setOutputType(IOColors.OutputType.LOG_FAILURE);
             visitor.setOutputListener(new OutputListener() {
                 @Override public void outputLineSelected(OutputEvent ev) {}
                 @Override public void outputLineAction(OutputEvent ev) {

@@ -48,6 +48,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.html.editor.HtmlExtensions;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.hints.HtmlRule;
 import org.netbeans.modules.html.editor.hints.HtmlRuleContext;
@@ -83,6 +84,8 @@ public class MissingClassRule extends HtmlRule {
     private static final String MSG_MISSING_CSS_CLASS = NbBundle.getMessage(MissingCssElement.class, "MSG_MissingCssClass");
     private static final String MSG_MISSING_CSS_CLASS_DESC = NbBundle.getMessage(MissingCssElement.class, "MSG_MissingCssClass_Desc");
 
+    private boolean isApplicationPiece = false;
+    
     public MissingClassRule() {
     }
 
@@ -110,6 +113,15 @@ public class MissingClassRule extends HtmlRule {
         if (project == null) {
             return false;
         }
+        //do not apply the missing class rule on js-html web application files 
+        //as these typically uses external stylesheets binding (there's no static
+        //link in the application html files).
+        //XXX possibly apply the hint, but use HintSeverity.CURRENT_LINE_WARNING 
+        //HintSeverity
+        if(HtmlExtensions.isApplicationPiece(result)) {
+            return false;
+        }
+        
         return true;
     }
 

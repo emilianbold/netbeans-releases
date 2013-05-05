@@ -53,6 +53,7 @@ import javax.swing.text.Position.Bias;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
+import org.netbeans.modules.css.lib.api.Node;
 import static org.netbeans.modules.css.lib.api.NodeType.cp_mixin_name;
 import static org.netbeans.modules.css.lib.api.NodeType.cp_variable;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -96,13 +97,16 @@ public class CPRenameRefactoringPlugin implements RefactoringPlugin {
         if (newName == null || newName.isEmpty()) {
             return new Problem(true, NbBundle.getMessage(CPRenameRefactoringPlugin.class, "MSG_Error_ElementEmpty")); //NOI18N
         }
-        switch (context.getElement().type()) {
-            case cp_variable:
-                //todo add some content tests for newName here
-                break;
-            case cp_mixin_name:
-                //todo add some content tests for newName here
-                break;
+        Node element = context.getElement();
+        if(element != null) {
+            switch (element.type()) {
+                case cp_variable:
+                    //todo add some content tests for newName here
+                    break;
+                case cp_mixin_name:
+                    //todo add some content tests for newName here
+                    break;
+            }
         }
         return null;
     }
@@ -146,14 +150,14 @@ public class CPRenameRefactoringPlugin implements RefactoringPlugin {
             }
             
             return null; //no problem
-        } catch (Exception /* IOException, ParseException */ ex) {
+        } catch (IOException | ParseException ex) {
             Exceptions.printStackTrace(ex);
             return new Problem(true, ex.getLocalizedMessage() == null ? ex.toString() : ex.getLocalizedMessage());
         }
     }
     
     private void refactorElements(ModificationResult modificationResult, RefactoringElementContext context, Collection<RefactoringElement> elementsToRename, String renameMsg) throws IOException, ParseException {
-        Map<FileObject, List<Difference>> file2diffs = new HashMap<FileObject, List<Difference>>();
+        Map<FileObject, List<Difference>> file2diffs = new HashMap<>();
         for(RefactoringElement re : elementsToRename) {
             CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(re.getFile());
             
@@ -166,7 +170,7 @@ public class CPRenameRefactoringPlugin implements RefactoringPlugin {
             
             List<Difference> diffs = file2diffs.get(re.getFile());
             if(diffs == null) {
-                diffs = new ArrayList<Difference>();
+                diffs = new ArrayList<>();
                 file2diffs.put(re.getFile(), diffs);
             }
             diffs.add(diff);

@@ -47,15 +47,15 @@ import java.util.Set;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerEvent;
+import org.netbeans.modules.php.latte.parser.LatteParser;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteSemanticAnalyzer extends SemanticAnalyzer {
+public class LatteSemanticAnalyzer extends SemanticAnalyzer<LatteParser.LatteParserResult> {
 
     public LatteSemanticAnalyzer() {
     }
@@ -66,7 +66,7 @@ public class LatteSemanticAnalyzer extends SemanticAnalyzer {
     }
 
     @Override
-    public void run(Parser.Result result, SchedulerEvent event) {
+    public void run(LatteParser.LatteParserResult result, SchedulerEvent event) {
     }
 
     @Override

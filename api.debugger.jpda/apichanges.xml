@@ -835,6 +835,28 @@ These are mainly class and thread filters and hit counts.
         <issue number="79027"/>
     </change>
 
+    <change>
+        <api name="JPDADebuggerAPI"/>
+        <summary>A possibility to get/set mirror objects from debugger variables.</summary>
+        <version major="2" minor="44"/>
+        <date day="30" month="4" year="2013"/>
+        <author login="mentlicher"/>
+        <compatibility addition="yes" source="compatible" binary="compatible"/>
+        <description>
+            <code>MutableVariable</code> interface is introduced. It's to be implemented by
+            variables that can change their values. <code>Field</code>,
+            <code>LocalVariable</code> and <code>JPDAWatch</code> now extend
+            <code>MutableVariable</code>.
+            <p/>
+            <code>Object createMirrorObject()</code> method is added to <code>Variable</code>
+            class and <code>void setFromMirrorObject(Object obj)</code> method
+            is declared by <code>MutableVariable</code>.
+        </description>
+        <class package="org.netbeans.api.debugger.jpda" name="Variable" />
+        <class package="org.netbeans.api.debugger.jpda" name="MutableVariable" />
+        <issue number="228894"/>
+    </change>
+
 
 </changes>
 

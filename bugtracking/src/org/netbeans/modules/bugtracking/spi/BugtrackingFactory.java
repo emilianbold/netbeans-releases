@@ -37,8 +37,11 @@
  */
 package org.netbeans.modules.bugtracking.spi;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
+import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 
@@ -100,6 +103,18 @@ public final class BugtrackingFactory<R, Q, I> {
         if (issue != null) {
             issue.open();
         }
+    }
+    
+    public void addToCategory(final Repository repository, final I i) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                IssueImpl issue = getIssueImpl(repository, i);
+                if (issue != null) {
+                    DashboardTopComponent.findInstance().addTask(issue.getIssue());
+                }
+            }
+        });
     }
     
     public UndoRedoSupport getUndoRedoSupport(Repository repository, I i) {

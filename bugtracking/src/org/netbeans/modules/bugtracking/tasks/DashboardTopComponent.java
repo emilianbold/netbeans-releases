@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.bugtracking.tasks;
 
+import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardRefresher;
 import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -66,6 +67,7 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
@@ -308,6 +310,10 @@ public final class DashboardTopComponent extends TopComponent {
         return confirm;
     }
 
+    public void addTask(Issue issue) {
+        addTask(new TaskNode(issue, null));
+    }
+    
     public void addTask(TaskNode... taskNodes) {
         List<Category> categories = dashboard.getCategories(true);
         for (TaskNode taskNode : taskNodes) {
