@@ -123,7 +123,7 @@ is the proper place.
                  valid for the given language (supported by the particular
                  CodeTemplateFilters that the factory creates).
              </description>
-             <class package="org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter" name="ContextBasedFactory"/>
+             <class package="org.netbeans.lib.editor.codetemplates.spi" name="CodeTemplateFilter"/>
              <issue number="160771"/>
         </change>
 

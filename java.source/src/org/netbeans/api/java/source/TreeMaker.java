@@ -43,6 +43,31 @@
  */
 package org.netbeans.api.java.source;
 
+import com.sun.source.doctree.AttributeTree;
+import com.sun.source.doctree.AuthorTree;
+import com.sun.source.doctree.CommentTree;
+import com.sun.source.doctree.DeprecatedTree;
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocRootTree;
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.EndElementTree;
+import com.sun.source.doctree.EntityTree;
+import com.sun.source.doctree.InheritDocTree;
+import com.sun.source.doctree.LinkTree;
+import com.sun.source.doctree.ParamTree;
+import com.sun.source.doctree.ReferenceTree;
+import com.sun.source.doctree.SeeTree;
+import com.sun.source.doctree.SerialDataTree;
+import com.sun.source.doctree.SerialFieldTree;
+import com.sun.source.doctree.SerialTree;
+import com.sun.source.doctree.SinceTree;
+import com.sun.source.doctree.StartElementTree;
+import com.sun.source.doctree.TextTree;
+import com.sun.source.doctree.ThrowsTree;
+import com.sun.source.doctree.UnknownBlockTagTree;
+import com.sun.source.doctree.UnknownInlineTagTree;
+import com.sun.source.doctree.ValueTree;
+import com.sun.source.doctree.VersionTree;
 import com.sun.source.tree.*;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.openide.filesystems.FileObject;
@@ -68,6 +93,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 
@@ -3112,6 +3138,322 @@ public final class TreeMaker {
             return super.scan(tree, p);
         }
 
+    }
+
+    /**Creates the DocTree's HTML AttributeTree.
+     * 
+     * @param name attribute name
+     * @param vkind attribute value kid
+     * @param value attribute value
+     * @return newly created AttributeTree
+     * @since 0.124
+     */
+    public AttributeTree Attribute(CharSequence name, AttributeTree.ValueKind vkind, List<? extends DocTree> value) {
+        return delegate.Attribute(name, vkind, value);
+    }
+
+    /**Creates the DocTree's AuthorTree.
+     * 
+     * @param name the content of the tree
+     * @return newly created AuthorTree
+     * @since 0.124
+     */
+    public AuthorTree Author(List<? extends DocTree> name) {
+        return delegate.Author(name);
+    }
+
+    /**Creates the DocTree's HTML EntityTree.
+     * 
+     * @param name entity name/code
+     * @return newly created EntityTree
+     * @since 0.124
+     */
+    public EntityTree Entity(CharSequence name) {
+        return delegate.Entity(name);
+    }
+
+    /**Creates the DocTree's DeprecatedTree.
+     * 
+     * @param text the deprecation message
+     * @return newly created DeprecatedTree
+     * @since 0.124
+     */
+    public DeprecatedTree Deprecated(List<? extends DocTree> text) {
+        return delegate.Deprecated(text);
+    }
+
+    /**Creates a new javadoc comment.
+     * 
+     * @param firstSentence the javadoc comment's first sentence
+     * @param body the main body of the comment
+     * @param tags the block tags of the comment (after the main body)
+     * @return newly created DocCommentTree
+     * @since 0.124
+     */
+    public DocCommentTree DocComment(List<? extends DocTree> firstSentence, List<? extends DocTree> body, List<? extends DocTree> tags) {
+        return delegate.DocComment(firstSentence, body, tags);
+    }
+
+    /**Creates the DocTree's ParamTree.
+     * 
+     * @param isTypeParameter true if and only if the parameter is a type parameter
+     * @param name the name of the parameter
+     * @param description the description of the parameter
+     * @return newly created ParamTree
+     * @since 0.124
+     */
+    public ParamTree Param(boolean isTypeParameter, com.sun.source.doctree.IdentifierTree name, List<? extends DocTree> description) {
+        return delegate.Param(isTypeParameter, name, description);
+    }
+
+    /**Creates the DocTree's LinkTree.
+     * 
+     * @param ref the reference linked by the {@code @link}
+     * @param label the optional description of the reference
+     * @return newly created LinkTree
+     * @since 0.124
+     */
+    public LinkTree Link(ReferenceTree ref, List<? extends DocTree> label) {
+        return delegate.Link(ref, label);
+    }
+
+    /**Creates the DocTree's LiteralTree.
+     * 
+     * @param text the literal content
+     * @since 0.124
+     * @return newly created LiteralTree
+     */
+    public com.sun.source.doctree.LiteralTree DocLiteral(TextTree text) {
+        return delegate.Literal(text);
+    }
+
+    /**Creates the DocTree's ReturnTree.
+     * 
+     * @param description the description of the method's return
+     * @return newly created ReturnTree
+     * @since 0.124
+     */
+    public com.sun.source.doctree.ReturnTree DocReturn(List<? extends DocTree> description) {
+        return delegate.Return(description);
+    }
+
+    /**Creates the DocTree's ReferenceTree.
+     * 
+     * @param qualExpr the type to to which the reference is being made (the part of the reference before {@code '#'})
+     * @param member the member to which the reference is being made (the part of the reference after {@code '#'})
+     * @param paramTypes optional parameter type of the methods to which this reference is being made
+     * @return newly created ReferenceTree
+     * @since 0.124
+     */
+    public ReferenceTree Reference(@NullAllowed ExpressionTree qualExpr, @NullAllowed CharSequence member, @NullAllowed List<? extends Tree> paramTypes) {
+        return delegate.Reference(qualExpr, member, paramTypes);
+    }
+
+    /**Creates the DocTree's SeeTree.
+     * 
+     * @param reference to an element the tag refers to
+     * @return newly created SeeTree
+     * @since 0.124
+     */
+    public SeeTree See(List<? extends DocTree> reference) {
+        return delegate.See(reference);
+    }
+
+    /**Creates the DocTree's SerialTree.
+     * 
+     * @param description the description of the field
+     * @return newly created SerialTree
+     * @since 0.124
+     */
+    public SerialTree Serial(List<? extends DocTree> description) {
+        return delegate.Serial(description);
+    }
+
+    /**Creates the DocTree's SerialDataTree.
+     * 
+     * @param description the description of the serial data
+     * @return newly created SerialDataTree
+     * @since 0.124
+     */
+    public SerialDataTree SerialData(List<? extends DocTree> description) {
+        return delegate.SerialData(description);
+    }
+
+    /**Creates the DocTree's SerialFieldTree.
+     * 
+     * @param name the name of the field
+     * @param type the type of the field
+     * @param description the description of the field
+     * @return newly created SerialFieldTree
+     * @since 0.124
+     */
+    public SerialFieldTree SerialField(com.sun.source.doctree.IdentifierTree name, ReferenceTree type, List<? extends DocTree> description) {
+        return delegate.SerialField(name, type, description);
+    }
+
+    /**Creates the DocTree's SinceTree.
+     * 
+     * @param text the content of the tag
+     * @return newly created SinceTree
+     * @since 0.124
+     */
+    public SinceTree Since(List<? extends DocTree> text) {
+        return delegate.Since(text);
+    }
+
+    /**Creates the DocTree's HTML StartElementTree.
+     * 
+     * @param name name of the element
+     * @param attrs elements attributes
+     * @param selfClosing if the element is also the closing element (e.g. {@code <br/>}).
+     * @return newly created StartElementTree
+     * @since 0.124
+     */
+    public StartElementTree StartElement(CharSequence name, List<? extends DocTree> attrs, boolean selfClosing) {
+        return delegate.StartElement(name, attrs, selfClosing);
+    }
+
+    /**Creates the DocTree's TextTree.
+     * 
+     * @param text the text
+     * @return newly created TextTree
+     * @since 0.124
+     */
+    public TextTree Text(String text) {
+        return delegate.Text(text);
+    }
+
+    /**Creates the DocTree's ThrowsTree that will produce @throws.
+     * 
+     * @param name reference to the documented exception
+     * @param description the description of the thrown exception
+     * @return newly created ThrowsTree
+     * @since 0.124
+     */
+    public ThrowsTree Throws(ReferenceTree name, List<? extends DocTree> description) {
+        return delegate.Throws(name, description);
+    }
+
+    /**Creates the DocTree's UnknownBlockTagTree.
+     * 
+     * @param name the tag's name
+     * @param content the tag's content
+     * @return newly created UnknownBlockTagTree
+     * @since 0.124
+     */
+    public UnknownBlockTagTree UnknownBlockTag(CharSequence name, List<? extends DocTree> content) {
+        return delegate.UnknownBlockTag(name, content);
+    }
+
+    /**Creates the DocTree's UnknownInlineTagTree.
+     * 
+     * @param name the tag's name
+     * @param content the tag's content
+     * @return newly created UnknownInlineTagTree
+     * @since 0.124
+     */
+    public UnknownInlineTagTree UnknownInlineTag(CharSequence name, List<? extends DocTree> content) {
+        return delegate.UnknownInlineTag(name, content);
+    }
+
+    /**Creates the DocTree's VersionTree.
+     * 
+     * @param text the version's text
+     * @return newly created VersionTree
+     * @since 0.124
+     */
+    public VersionTree Version(List<? extends DocTree> text) {
+        return delegate.Version(text);
+    }
+
+    /**Creates the DocTree's ValueTree.
+     * 
+     * @param ref the value's reference
+     * @return newly created ValueTree
+     * @since 0.124
+     */
+    public ValueTree Value(ReferenceTree ref) {
+        return delegate.Value(ref);
+    }
+
+    /**Creates the DocTree's LiteralTree for a verbatim code.
+     * 
+     * @param text the text that should be wrapped by {@code @code}
+     * @return newly created LiteralTree
+     * @since 0.124
+     */
+    public com.sun.source.doctree.LiteralTree Code(TextTree text) {
+        return delegate.Code(text);
+    }
+
+    /**Creates the DocTree's HTML CommentTree.
+     * 
+     * @param text the text that should be wrapped as HTML comment
+     * @return newly created CommentTree
+     * @since 0.124
+     */
+    public CommentTree Comment(String text) {
+        return delegate.Comment(text);
+    }
+
+    /**Creates the DocTree's DocRootTree.
+     * 
+     * @return newly created DocRootTree
+     * @since 0.124
+     */
+    public DocRootTree DocRoot() {
+        return delegate.DocRoot();
+    }
+
+    /**Creates the DocTree's HTML EndElementTree.
+     * 
+     * @param name name of the element to be closed
+     * @return newly created EndElementTree
+     * @since 0.124
+     */
+    public EndElementTree EndElement(CharSequence name) {
+        return delegate.EndElement(name);
+    }
+
+    /**Creates the DocTree's ThrowsTree that will produce @exception.
+     * 
+     * @param name reference to the documented exception
+     * @param description the description of the thrown exception
+     * @return newly created Exception
+     * @since 0.124
+     */
+    public ThrowsTree Exception(ReferenceTree name, List<? extends DocTree> description) {
+        return delegate.Exception(name, description);
+    }
+
+    /**Creates the DocTree's IdentifierTree.
+     * 
+     * @param name the identifier name
+     * @return newly created IdentifierTree
+     * @since 0.124
+     */
+    public com.sun.source.doctree.IdentifierTree DocIdentifier(CharSequence name) {
+        return delegate.DocIdentifier(name);
+    }
+
+    /**Creates the DocTree's InheritDocTree.
+     * 
+     * @return newly created InheritDocTree
+     * @since 0.124
+     */
+    public InheritDocTree InheritDoc() {
+        return delegate.InheritDoc();
+    }
+
+    /**Creates the DocTree's LinkTree for {@code @linkplain}.
+     * 
+     * @param ref the reference linked by the {@code @link}
+     * @param label the optional description of the reference
+     * @return newly created LinkTree
+     * @since 0.124
+     */
+    public LinkTree LinkPlain(ReferenceTree ref, List<? extends DocTree> label) {
+        return delegate.LinkPlain(ref, label);
     }
 
     /**

@@ -44,6 +44,8 @@
 
 package org.netbeans.api.java.source;
 
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionStatementTree;
@@ -80,7 +82,9 @@ import javax.tools.JavaFileObject;
 
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ForLoopTree;
+import com.sun.source.tree.TreeVisitor;
 import com.sun.source.tree.TryTree;
+import com.sun.source.util.DocTrees;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.annotations.common.NullUnknown;
@@ -102,12 +106,15 @@ import org.netbeans.modules.java.source.save.DiffUtilities;
 import org.netbeans.modules.java.source.save.ElementOverlay;
 import org.netbeans.modules.java.source.save.ElementOverlay.FQNComputer;
 import org.netbeans.modules.java.source.save.OverlayTemplateAttributesProvider;
+import org.netbeans.modules.java.source.transform.ImmutableDocTreeTranslator;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
+import org.netbeans.modules.java.source.transform.TreeDuplicator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Utilities;
 
 /**XXX: extends CompilationController now, finish method delegation
@@ -118,6 +125,7 @@ public class WorkingCopy extends CompilationController {
 
     static Reference<WorkingCopy> instance;
     private Map<Tree, Tree> changes;
+    private Map<Tree, Map<DocTree, DocTree>> docChanges;
     private Map<JavaFileObject, CompilationUnitTree> externalChanges;
     private List<Diff> textualChanges;
     private Map<Integer, String> userInfo;
@@ -137,6 +145,7 @@ public class WorkingCopy extends CompilationController {
         
         treeMaker = new TreeMaker(this, TreeFactory.instance(getContext()));
         changes = new IdentityHashMap<Tree, Tree>();
+        docChanges = new IdentityHashMap<Tree, Map<DocTree, DocTree>>();
         tree2Tag = new IdentityHashMap<Tree, Object>();
         externalChanges = null;
         textualChanges = new ArrayList<Diff>();
@@ -242,6 +251,47 @@ public class WorkingCopy extends CompilationController {
             throw new IllegalArgumentException("Null values are not allowed.");
         
         changes.put(oldTree, newTree);
+    }
+    
+    /**
+     * Replaces the original doctree <code>oldTree</code> with the new one -
+     * <code>newTree</code> for a specific tree.
+     * <p>
+     * To create a new javadoc comment, use
+     * <code>rewrite(tree, null, docCommentTree)</code>.
+     * <p>
+     * <code>tree</code> and <code>newTree</code> cannot be <code>null</code>.
+     * If <code>oldTree</code> is null, <code>newTree</code> must be of kind
+     * {@link DocTree.Kind#DOC_COMMENT DOC_COMMENT}.
+     * 
+     * @param tree     the tree to which the doctrees belong.
+     * @param oldTree  tree to be replaced, use tree already represented in
+     *                 source code. <code>null</code> to create a new file.
+     * @param newTree  new tree, either created by <code>TreeMaker</code>
+     *                 or obtained from different place. <code>null</code>
+     *                 values are not allowed.
+     * @throws IllegalStateException if <code>toPhase()</code> method was not
+     *         called before.
+     * @since 0.124
+     */
+    public synchronized void rewrite(@NonNull Tree tree, @NonNull DocTree oldTree, @NonNull DocTree newTree) {
+        checkConfinement();
+        if (docChanges == null) {
+            throw new IllegalStateException("Cannot call rewrite before toPhase.");
+        }
+        
+        if (oldTree == newTree) {
+            // no change operation called.
+            return;
+        }
+        
+        Map<DocTree, DocTree> changesMap = docChanges.get(tree);
+        if(changesMap == null) {
+            changesMap = new IdentityHashMap<DocTree, DocTree>();
+            docChanges.put(tree, changesMap);
+        }
+        
+        changesMap.put(oldTree, newTree);
     }
               
     /**
@@ -401,6 +451,7 @@ public class WorkingCopy extends CompilationController {
     private List<Difference> processCurrentCompilationUnit(final DiffContext diffContext, Map<?, int[]> tag2Span) throws IOException, BadLocationException {
         final Set<TreePath> pathsToRewrite = new LinkedHashSet<TreePath>();
         final Map<TreePath, Map<Tree, Tree>> parent2Rewrites = new IdentityHashMap<TreePath, Map<Tree, Tree>>();
+        final Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc = new IdentityHashMap<Tree, Pair<DocCommentTree, DocCommentTree>>();
         boolean fillImports = true;
         
         Map<Integer, String> userInfo = new HashMap<Integer, String>();
@@ -498,6 +549,19 @@ public class WorkingCopy extends CompilationController {
 
                 @Override
                 public Void scan(Tree tree, Void p) {
+                    if (docChanges.containsKey(tree)) {
+                        TreePath parentPath = currentParent;
+                        if (parentPath == null) {
+                            parentPath = getParentPath(getCurrentPath(), tree);
+                            if (parentPath.getParentPath() != null && parentPath.getParentPath().getLeaf().getKind() == Kind.COMPILATION_UNIT) {
+                                parentPath = parentPath.getParentPath();
+                            }
+                            pathsToRewrite.add(parentPath);
+                            if (!parent2Rewrites.containsKey(parentPath)) {
+                                parent2Rewrites.put(parentPath, new IdentityHashMap<Tree, Tree>());
+                            }
+                        }
+                    }
                     if (changes.containsKey(tree)) {
                         boolean clearCurrentParent = false;
                         if (currentParent == null) {
@@ -556,11 +620,11 @@ public class WorkingCopy extends CompilationController {
         }
         
         List<Diff> diffs = new ArrayList<Diff>();
-        ImportAnalysis2 ia = new ImportAnalysis2(this);
+        final ImportAnalysis2 ia = new ImportAnalysis2(this);
         
         boolean importsFilled = false;
 
-        for (TreePath path : pathsToRewrite) {
+        for (final TreePath path : pathsToRewrite) {
             List<ClassTree> classes = new ArrayList<ClassTree>();
 
             if (path.getParentPath() != null) {
@@ -576,7 +640,7 @@ public class WorkingCopy extends CompilationController {
                         classes.add((ClassTree) t);
                     }
                 }
-            } else if (path.getLeaf().getKind() == Kind.COMPILATION_UNIT && parent2Rewrites.get(path).size() == 1) {
+            } else if (path.getLeaf().getKind() == Kind.COMPILATION_UNIT && parent2Rewrites.get(path).size() == 1) { // XXX: not true if there are doc changes.
                 //short-circuit import-only changes:
                 CompilationUnitTree origCUT = (CompilationUnitTree) path.getLeaf();
                 Tree nue = parent2Rewrites.get(path).get(origCUT);
@@ -588,7 +652,7 @@ public class WorkingCopy extends CompilationController {
                         && Utilities.compareObjects(origCUT.getPackageName(), nueCUT.getPackageName())
                         && Utilities.compareObjects(origCUT.getTypeDecls(), nueCUT.getTypeDecls())) {
                         fillImports = false;
-                        diffs.addAll(CasualDiff.diff(getContext(), diffContext, origCUT.getImports(), nueCUT.getImports(), userInfo, tree2Tag, tag2Span, oldTrees));
+                        diffs.addAll(CasualDiff.diff(getContext(), diffContext, origCUT.getImports(), nueCUT.getImports(), userInfo, tree2Tag, tree2Doc, tag2Span, oldTrees));
                         continue;
                     }
                 }
@@ -600,8 +664,62 @@ public class WorkingCopy extends CompilationController {
                 ia.classEntered(ct);
                 ia.enterVisibleThroughClasses(ct);
             }
+            final Map<Tree, Tree> rewrites = parent2Rewrites.get(path);
+            
+            ImmutableDocTreeTranslator itt = new ImmutableDocTreeTranslator(this) {
+                private @NonNull Map<Tree, Tree> map = new HashMap<Tree, Tree>(rewrites);
+                private @NonNull Map<DocTree, DocTree> docMap = null;
+                private final TreeVisitor<Tree, Void> duplicator = new TreeDuplicator(getContext());
 
-            Tree brandNew = getTreeUtilities().translate(path.getLeaf(), parent2Rewrites.get(path), ia, tree2Tag);
+                @Override
+                public Tree translate(Tree tree) {
+                    if(docChanges.containsKey(tree)) {
+                        Tree newTree = null;
+                        if(!map.containsKey(tree)) {
+                            Tree importComments = GeneratorUtilities.get(WorkingCopy.this).importComments(tree, getCompilationUnit());
+                            newTree = importComments.accept(duplicator, null);
+                            map.put(tree, newTree);
+                        }
+                        docMap = docChanges.remove(tree);
+                        DocCommentTree oldDoc;
+                        DocCommentTree newDoc;
+                        Pair<DocCommentTree, DocCommentTree> docChange;
+                        if(docMap.size() == 1 && docMap.containsKey(null)) {
+                            newDoc = (DocCommentTree) translate((DocCommentTree) docMap.get(null)); // Update QualIdent Trees
+                            docChange = Pair.of((DocCommentTree)null, (DocCommentTree)newDoc);
+                        } else {
+                            oldDoc = ((DocTrees)getTrees()).getDocCommentTree(new TreePath(path, tree));
+                            newDoc = (DocCommentTree) translate(oldDoc);
+                            docChange = Pair.of(oldDoc, newDoc);
+                        }
+                        tree2Doc.put(tree, docChange);
+                        if(tree != newTree) {
+                            tree2Doc.put(newTree, docChange);
+                        }
+                    }
+                    Tree translated = map.remove(tree);
+
+                    if (translated != null) {
+                        return translate(translated);
+                    } else {
+                        return super.translate(tree);
+                    }
+                }
+                
+                @Override
+                public DocTree translate(DocTree tree) {
+                    if(docMap != null) {
+                        DocTree translated = docMap.remove(tree);
+                        if (translated != null) {
+                            return translate(translated);
+                        }
+                    }
+                    return super.translate(tree);
+                }
+            };
+            Context c = impl.getJavacTask().getContext();
+            itt.attach(c, ia, tree2Tag);
+            Tree brandNew = itt.translate(path.getLeaf());
 
             //tagging debug
             //System.err.println("brandNew=" + brandNew);
@@ -613,8 +731,7 @@ public class WorkingCopy extends CompilationController {
             if (brandNew.getKind() == Kind.COMPILATION_UNIT) {
                 fillImports = false;
             }
-
-            diffs.addAll(CasualDiff.diff(getContext(), diffContext, path, (JCTree) brandNew, userInfo, tree2Tag, tag2Span, oldTrees));
+            diffs.addAll(CasualDiff.diff(getContext(), diffContext, path, (JCTree) brandNew, userInfo, tree2Tag, tree2Doc, tag2Span, oldTrees));
         }
 
         if (fillImports) {
@@ -622,7 +739,7 @@ public class WorkingCopy extends CompilationController {
 
             if (nueImports != null && !nueImports.isEmpty()) { //may happen if no changes, etc.
                 CompilationUnitTree ncut = GeneratorUtilities.get(this).addImports(diffContext.origUnit, nueImports);
-                diffs.addAll(CasualDiff.diff(getContext(), diffContext, diffContext.origUnit.getImports(), ncut.getImports(), userInfo, tree2Tag, tag2Span, oldTrees));
+                diffs.addAll(CasualDiff.diff(getContext(), diffContext, diffContext.origUnit.getImports(), ncut.getImports(), userInfo, tree2Tag, tree2Doc, tag2Span, oldTrees));
             }
         }
         

@@ -42,31 +42,42 @@
 
 package org.netbeans.modules.java.editor.javadoc;
 
-import com.sun.javadoc.Doc;
-import com.sun.javadoc.ParamTag;
-import com.sun.javadoc.Tag;
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.ParamTree;
+import com.sun.source.doctree.ReferenceTree;
+import com.sun.source.doctree.SeeTree;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MemberReferenceTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import com.sun.source.util.DocSourcePositions;
+import com.sun.source.util.DocTreePath;
+import com.sun.source.util.DocTreePathScanner;
+import com.sun.source.util.DocTreeScanner;
+import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
-import java.io.IOException;
+import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-import javax.lang.model.util.ElementScanner6;
-import javax.swing.text.Document;
+import org.netbeans.api.java.lexer.JavaTokenId;
 
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 
@@ -88,9 +99,8 @@ public final class JavadocImports {
      * @return names that have to be resoved (imported).
      */
     public static Set<String> computeUnresolvedImports(CompilationInfo javac) {
-        List<? extends TypeElement> topLevelElements = javac.getTopLevelElements();
         UnresolvedImportScanner scanner = new UnresolvedImportScanner(javac);
-        scanner.scan(topLevelElements, null);
+        scanner.scan(javac.getCompilationUnit(), null);
         return scanner.unresolved;
     }
     
@@ -102,58 +112,39 @@ public final class JavadocImports {
      * @param el an element to search
      * @return referenced elements.
      */
-    public static Set<TypeElement> computeReferencedElements(CompilationInfo javac, TreePath tp) {
-        Set<TypeElement> result = null;
-        Element el = javac.getTrees().getElement(tp);
-        TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, tp.getLeaf(), el);
-        if (el != null && jdTokenSequence != null) {
-            ElementKind kind = el.getKind();
-            TypeElement scope;
-            
-            if (kind.isClass() || kind.isInterface()) {
-                scope = (TypeElement) el;
-            } else {
-                scope = javac.getElementUtilities().enclosingTypeElement(el);
-            }
-            Doc javadoc = javac.getElementUtilities().javaDocFor(el);
-            DocPositions positions = null;
-            List<? extends Tag> tags;
-            if (javadoc != null && scope != null) {
-                positions = DocPositions.get(javac, javadoc, jdTokenSequence);
-                tags = positions.getTags();
-            } else {
-                tags = Collections.emptyList();
-            }
-            for (Tag tag : tags) {
-                List<JavaReference> refs = findReferences (tag, positions, jdTokenSequence);
-                if (refs != null) {
-                    for (JavaReference reference : refs) {
-                        if (reference.fqn != null) {
-                            String fqn = reference.fqn.toString ();
-                            TypeMirror type = javac.getTreeUtilities ().parseType (fqn, scope);
-                            if (type != null &&
-                                ( type.getKind () == TypeKind.DECLARED ||
-                                  type.getKind() == TypeKind.ERROR
-                                )
-                            ) {
-                                DeclaredType declaredType = (DeclaredType) type;
-                                TypeElement foundElement = (TypeElement) declaredType.asElement ();
-                                if (
-                                    SourceVersion.isIdentifier (foundElement.getSimpleName ())
-                                ) {
-                                    if (result == null)
-                                        result = new HashSet<TypeElement> ();
-                                    result.add (foundElement);
-                                }
-                            }
+    public static Set<TypeElement> computeReferencedElements(final CompilationInfo javac, final TreePath tp) {
+        final DocTrees trees = javac.getDocTrees();
+        DocCommentTree docComment = trees.getDocCommentTree(tp);
+        
+        if (docComment == null) return Collections.emptySet();
+        
+        final Set<TypeElement> result = new HashSet<TypeElement>();
+        
+        new DocTreePathScanner<Void, Void>() {
+            @Override public Void visitReference(ReferenceTree node, Void p) {
+                new TreePathScanner<Void, Void>() {
+                    @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                        Element el = trees.getElement(getCurrentPath());
+                        
+                        if (el != null && (el.getKind().isClass() || el.getKind().isInterface())) {
+                            result.add((TypeElement) el);
                         }
+                        return super.visitIdentifier(node, p);
                     }
-                }
+                    public Void scan(Iterable<? extends TreePath> toAnalyze, Void p) {
+                        for (TreePath tp : toAnalyze) {
+                            scan(tp, p);
+                        }
+                        return null;
+                    }
+                }.scan(referenceEmbeddedSourceNodes(javac, getCurrentPath()), null);
+                return super.visitReference(node, p);
             }
-        }
-        if (result == null) {
-            result = Collections.emptySet();
-        }
+            @Override public Void visitSee(SeeTree node, Void p) {
+                return super.visitSee(node, p);
+            }
+        }.scan(new DocTreePath(tp, docComment), null);
+        
         return result;
     }
     
@@ -166,99 +157,87 @@ public final class JavadocImports {
      * @param toFind an element to find in favadoc
      * @return referenced elements.
      */
-    public static List<Token> computeTokensOfReferencedElements(CompilationInfo javac, TreePath forElement, Element toFind) {
-        List<Token> result = null;
-        Element el = javac.getTrees().getElement(forElement);
-        TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, forElement.getLeaf(), el);
-        if (el != null && jdTokenSequence != null) {
-            ElementKind kind = el.getKind();
-            TypeElement scope;
-            
-            if (kind.isClass() || kind.isInterface()) {
-                scope = (TypeElement) el;
-            } else {
-                scope = javac.getElementUtilities().enclosingTypeElement(el);
-            }
-            Doc javadoc = javac.getElementUtilities().javaDocFor(el);
-            DocPositions positions = null;
-            List<? extends Tag> tags;
-            if (javadoc != null && scope != null) {
-                positions = DocPositions.get(javac, javadoc, jdTokenSequence);
-                tags = positions.getTags();
-            } else {
-                tags = Collections.emptyList();
-            }
-
-            final boolean isParam = toFind.getKind() == ElementKind.PARAMETER;
-            final boolean isTypeParam = toFind.getKind() == ElementKind.TYPE_PARAMETER;
-
-            for (Tag tag : tags) {
-                List<JavaReference> references = findReferences (tag, positions, jdTokenSequence);
-                if (references != null) {
-                    for (JavaReference ref : references) {
-
-                        Element referenced = ref.getReferencedElement(javac, scope);
-                        while (referenced != null) {
-                            if (referenced == toFind) {
-                                break;
-                            }
-                            referenced = referenced.getEnclosingElement();
+    public static List<Token> computeTokensOfReferencedElements(final CompilationInfo javac, final TreePath forElement, final Element toFind) {
+        final DocTrees trees = javac.getDocTrees();
+        final DocCommentTree docComment = javac.getDocTrees().getDocCommentTree(forElement);
+        
+        if (docComment == null) return Collections.emptyList();
+        
+        final List<Token> result = new ArrayList<Token>();
+        
+        new DocTreePathScanner<Void, Void>() {
+            @Override public Void visitReference(ReferenceTree node, Void p) {
+                new TreePathScanner<Void, Void>() {
+                    @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                        foobar();
+                        if (toFind.equals(trees.getElement(getCurrentPath()))) {
+                            handleUsage((int) trees.getSourcePositions().getStartPosition(javac.getCompilationUnit(), node));
                         }
-                        if (referenced == toFind) {
-                            int pos = -1;
-                            ElementKind rkind = referenced.getKind();
-                            if (ref.fqn != null && (rkind.isClass() || rkind.isInterface())) {
-                                String fqn = ((TypeElement) referenced).getQualifiedName().toString();
-                                String reffqn = ref.fqn.toString(); // NOI18N
-                                if (reffqn.startsWith(fqn)) {
-                                    pos = ref.begin + fqn.length() - 1;
-                                } else {
-                                    String simpleName = referenced.getSimpleName().toString();
-                                    pos = ref.begin + simpleName.length() - 1;
-                                }
-                            } else if (rkind.isField() || rkind == ElementKind.METHOD || rkind == ElementKind.CONSTRUCTOR || rkind == ElementKind.TYPE_PARAMETER) {
-                                pos = ref.end - 1;
-                            }
-
-                            if (pos < 0) {
-                                continue;
-                            }
-
-                            jdTokenSequence.move(pos);
-                            if (jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.IDENT) {
-                                if (result == null) {
-                                    result = new ArrayList<Token>();
-                                }
-                                result.add(jdTokenSequence.token());
-                            }
-                        }
+                        return null;
                     }
-                } else if ((isParam || isTypeParam) && tag != null && "@param".equals(tag.name())) { // NOI18N
-                    ParamTag ptag = (ParamTag) tag;
-                    boolean isKindMatching = (isParam && !ptag.isTypeParameter())
-                            || (isTypeParam && ptag.isTypeParameter());
-                    if (isKindMatching && toFind.getSimpleName().contentEquals(ptag.parameterName())
-                            && toFind == paramElementFor(el, ptag)) {
-                        Token<JavadocTokenId> token = findNameTokenOfParamTag(tag, positions, jdTokenSequence);
-                        if (token != null) {
-                            if (result == null) {
-                                result = new ArrayList<Token>();
+                    @Override public Void visitMemberSelect(MemberSelectTree node, Void p) {
+                        foobar();
+                        if (toFind.equals(trees.getElement(getCurrentPath()))) {
+                            int[] span = javac.getTreeUtilities().findNameSpan(node);
+                            if (span != null) {
+                                handleUsage(span[0]);
                             }
-                            result.add(token);
+                            return null;
                         }
+                        return super.visitMemberSelect(node, p);
+                    }
+                    public Void scan(Iterable<? extends TreePath> toAnalyze, Void p) {
+                        for (TreePath tp : toAnalyze) {
+                            scan(tp, p);
+                        }
+                        return null;
+                    }
+                }.scan(referenceEmbeddedSourceNodes(javac, getCurrentPath()), null);
+                if (toFind.equals(trees.getElement(getCurrentPath()))) {
+                    int[] span = javac.getTreeUtilities().findNameSpan(docComment, node);
+                    if (span != null) {
+                        handleUsage(span[0]);
+                    }
+                    return null;
+                }
+                return super.visitReference(node, p);
+            }
+            private TokenSequence<JavadocTokenId> javadoc;
+            private void handleUsage(int start) {
+                if (javadoc == null) {
+                    javadoc = getJavadocTS(javac, start);
+                        
+                    if (javadoc == null) {
+                        //not really expected:
+                        return ;
                     }
                 }
-                
+                javadoc.move(start);
+                if (javadoc.moveNext()) {
+                    result.add(javadoc.token());
+                }
             }
-        }
-        if (result == null) {
-            result = Collections.emptyList();
-        }
+            private void foobar() {
+                System.err.println("adf");
+            }
+            @Override
+            public Void visitParam(ParamTree node, Void p) {
+                if (   node.getName() != null
+                    && toFind.equals(paramElementFor(trees.getElement(forElement), node))) {
+                    handleUsage((int) trees.getSourcePositions().getStartPosition(javac.getCompilationUnit(), docComment, node.getName()));
+                    return null;
+                }
+                return super.visitParam(node, p);
+            }
+            @Override public Void visitSee(SeeTree node, Void p) {
+                return super.visitSee(node, p);
+            }
+        }.scan(new DocTreePath(forElement, docComment), null);
+        
         return result;
     }
 
-    /** maps ParamTag to parameter or type parameter of method or class */
-    private static Element paramElementFor(Element methodOrClass, ParamTag ptag) {
+    private static Element paramElementFor(Element methodOrClass, ParamTree ptag) {
         ElementKind kind = methodOrClass.getKind();
         List<? extends Element> params = Collections.emptyList();
         if (kind == ElementKind.METHOD || kind == ElementKind.CONSTRUCTOR) {
@@ -272,7 +251,7 @@ public final class JavadocImports {
         }
 
         for (Element param : params) {
-            if (param.getSimpleName().contentEquals(ptag.parameterName())) {
+            if (param.getSimpleName().contentEquals(ptag.getName().getName())) {
                 return param;
             }
         }
@@ -288,156 +267,186 @@ public final class JavadocImports {
      * @param offset offset pointing to javadoc part to resolve
      * @return the found element or {@code null}.
      */
-    public static Element findReferencedElement(CompilationInfo javac, int offset) {
-        Element result = null;
-        Document doc = null;
-        try {
-            doc = javac.getDocument();
-        } catch (IOException ex) {
-            // ignore
-        }
-        if (doc == null) {
-            return null;
-        }
-        TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, offset);
-        if (jdTokenSequence != null) {
-            Doc javadoc = JavadocCompletionUtils.findJavadoc(javac, doc, offset);
-            if (javadoc == null) {
-                return null;
-            }
-            DocPositions positions = DocPositions.get(javac, javadoc, jdTokenSequence);
-            Element el = javac.getElementUtilities().elementFor(javadoc);
-            if (positions == null || el == null) {
-                return null;
-            }
-            
-            ElementKind kind = el.getKind();
-            TypeElement scope;
-            
-            if (kind.isClass() || kind.isInterface()) {
-                scope = (TypeElement) el;
-            } else {
-                scope = javac.getElementUtilities().enclosingTypeElement(el);
-            }
-
-            Tag tag = positions.getTag (offset);
-            
-            List<JavaReference> references = tag != null
-                    ? findReferences (tag, positions, jdTokenSequence)
-                    : null;
-            
-            if (references != null && scope != null) {
-                for (JavaReference reference : references) {
-                    result = reference.getReferencedElement (javac, scope);
-                    if (result != null &&
-                        reference.fqn != null &&
-                        offset < reference.begin + reference.fqn.length ()
-                    ) {
-                        result = result.getKind ().isClass () ||
-                                 result.getKind ().isInterface () ||
-                                 result.getKind() == ElementKind.TYPE_PARAMETER
-                                    ? result : result.getEnclosingElement ();
-                        int elmNameLength = result.getSimpleName ().length ();
-                        while (
-                            result != null &&
-                            offset < reference.begin + reference.fqn.length () - elmNameLength
-                        ) {
-                            result = result.getEnclosingElement ();
-                            elmNameLength += result != null
-                                    ? result.getSimpleName ().length () + 1
-                                    : 0;
-                        }
-                    }
-                    if (result != null) break;
+    public static Element findReferencedElement(final CompilationInfo javac, final int offset) {
+        final DocTrees trees = javac.getDocTrees();
+        final TreePath tp = JavadocCompletionUtils.findJavadoc(javac, offset);
+        
+        if (tp == null) return null;
+        
+        final DocCommentTree docComment = javac.getDocTrees().getDocCommentTree(tp);
+        
+        if (docComment == null) return null;
+        
+        final DocSourcePositions positions = trees.getSourcePositions();
+        final Element[] result = new Element[1];
+        
+        new DocTreePathScanner<Void, Void>() {
+            @Override public Void scan(DocTree node, Void p) {
+                if (   node != null
+                    && positions.getStartPosition(javac.getCompilationUnit(), docComment, node) <= offset
+                    && positions.getEndPosition(javac.getCompilationUnit(), docComment, node) >= offset) {
+                    return super.scan(node, p);
                 }
-            } else if (tag instanceof ParamTag && "@param".equals(tag.name())) { // NOI18N
-                ParamTag ptag = (ParamTag) tag;
-                result = paramElementFor(el, ptag);
+                
+                return null;
             }
-        }
-        return result;
+            @Override public Void visitReference(ReferenceTree node, Void p) {
+                int[] span = javac.getTreeUtilities().findNameSpan(docComment, node);
+                if (   span != null
+                    && span[0] <= offset
+                    && span[1] >= offset) {
+                    result[0] = trees.getElement(getCurrentPath());
+                    return null;
+                }
+                new TreePathScanner<Void, Void>() {
+                    @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                        if (   positions.getStartPosition(javac.getCompilationUnit(), node) <= offset
+                            && positions.getEndPosition(javac.getCompilationUnit(), node) >= offset) {
+                            result[0] = trees.getElement(getCurrentPath());
+                        }
+                        return null;
+                    }
+                    @Override public Void visitMemberSelect(MemberSelectTree node, Void p) {
+                        int[] span = javac.getTreeUtilities().findNameSpan(node);
+                        if (   span != null
+                            && span[0] <= offset
+                            && span[1] >= offset) {
+                            result[0] = trees.getElement(getCurrentPath());
+                            return null;
+                        }
+                        return super.visitMemberSelect(node, p);
+                    }
+                    @Override public Void visitMemberReference(MemberReferenceTree node, Void p) {
+                        return super.visitMemberReference(node, p);
+                    }
+                    public Void scan(Iterable<? extends TreePath> toAnalyze, Void p) {
+                        for (TreePath tp : toAnalyze) {
+                            scan(tp, p);
+                        }
+                        return null;
+                    }
+                }.scan(referenceEmbeddedSourceNodes(javac, getCurrentPath()), null);
+                return super.visitReference(node, p);
+            }
+            @Override
+            public Void visitParam(ParamTree node, Void p) {
+                //XXX: getElement for the param's identifier???
+                if (   node.getName() != null
+                    && positions.getStartPosition(javac.getCompilationUnit(), docComment, node.getName()) <= offset
+                    && positions.getEndPosition(javac.getCompilationUnit(), docComment, node.getName()) >= offset) {
+                    result[0] = paramElementFor(trees.getElement(tp), node);
+                    
+                    return null;
+                }
+                return super.visitParam(node, p);
+            }
+            @Override public Void visitSee(SeeTree node, Void p) {
+                return super.visitSee(node, p);
+            }
+        }.scan(new DocTreePath(tp, docComment), null);
+        
+        return result[0];
     }
     
-    public static Token findNameTokenOfReferencedElement(CompilationInfo javac, int offset) {
-        Document doc = null;
-        try {
-            doc = javac.getDocument();
-        } catch (IOException ex) {
-            // ignore
-        }
-        if (doc == null) {
-            return null;
-        }
-        TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, offset);
-        if (jdTokenSequence != null) {
-            Doc javadoc = JavadocCompletionUtils.findJavadoc(javac, doc, offset);
-            if (javadoc == null) {
-                return null;
-            }
-            DocPositions positions = DocPositions.get(javac, javadoc, jdTokenSequence);
-            Element el = javac.getElementUtilities().elementFor(javadoc);
-            if (positions == null || el == null) {
-                return null;
-            }
-            
-            ElementKind kind = el.getKind();
-            TypeElement scope;
-            
-            if (kind.isClass() || kind.isInterface()) {
-                scope = (TypeElement) el;
-            } else {
-                scope = javac.getElementUtilities().enclosingTypeElement(el);
-            }
-
-            Tag tag = positions.getTag(offset);
-            
-            List<JavaReference> references = tag != null
-                    ? findReferences (tag, positions, jdTokenSequence)
-                    : null;
-            
-            if (references != null && scope != null) {
-                for (JavaReference reference : references) {
-                    Element elm = reference.getReferencedElement (javac, scope);
-                    if (elm != null) {
-                        int fqnLength = reference.fqn != null ?
-                            reference.fqn.length () : 0;
-                        if (reference.fqn != null &&
-                            offset >= reference.begin &&
-                            offset < reference.begin + fqnLength ||
-                            reference.member != null &&
-                            offset > reference.begin + fqnLength &&
-                            offset < reference.end
-                        ) {
-                            jdTokenSequence.move (offset);
-                            if (jdTokenSequence.moveNext ()) {
-                                return jdTokenSequence.token ().id () == JavadocTokenId.IDENT
-                                    ? jdTokenSequence.token ()
-                                    : null;
-                            }
-                        }
-                    }
+    public static Token findNameTokenOfReferencedElement(final CompilationInfo javac, final int offset) {
+        final DocTrees trees = javac.getDocTrees();
+        final TreePath tp = JavadocCompletionUtils.findJavadoc(javac, offset);
+        
+        if (tp == null) return null;
+        
+        final DocCommentTree docComment = javac.getDocTrees().getDocCommentTree(tp);
+        
+        if (docComment == null) return null;
+        
+        final DocSourcePositions positions = trees.getSourcePositions();
+        final Token[] result = new Token[1];
+        
+        new DocTreePathScanner<Void, Void>() {
+            @Override public Void scan(DocTree node, Void p) {
+                if (   node != null
+                    && positions.getStartPosition(javac.getCompilationUnit(), docComment, node) <= offset
+                    && positions.getEndPosition(javac.getCompilationUnit(), docComment, node) >= offset) {
+                    return super.scan(node, p);
                 }
-            } else {
-                // try to resolve @param name
-                Token<JavadocTokenId> token = findNameTokenOfParamTag (
-                    tag, positions, jdTokenSequence
-                );
-                return token;
+                
+                return null;
             }
+            @Override public Void visitReference(ReferenceTree node, Void p) {
+                int[] span = javac.getTreeUtilities().findNameSpan(docComment, node);
+                if (   span != null
+                    && span[0] <= offset
+                    && span[1] >= offset) {
+                    handleUsage(offset);
+                    return null;
+                }
+                new TreePathScanner<Void, Void>() {
+                    @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                        if (   positions.getStartPosition(javac.getCompilationUnit(), node) <= offset
+                            && positions.getEndPosition(javac.getCompilationUnit(), node) >= offset) {
+                            handleUsage(offset);
+                        }
+                        return null;
+                    }
+                    @Override public Void visitMemberSelect(MemberSelectTree node, Void p) {
+                        int[] span = javac.getTreeUtilities().findNameSpan(node);
+                        if (   span != null
+                            && span[0] <= offset
+                            && span[1] >= offset) {
+                            handleUsage(offset);
+                            return null;
+                        }
+                        return super.visitMemberSelect(node, p);
+                    }
+                    @Override public Void visitMemberReference(MemberReferenceTree node, Void p) {
+                        return super.visitMemberReference(node, p);
+                    }
+                    public Void scan(Iterable<? extends TreePath> toAnalyze, Void p) {
+                        for (TreePath tp : toAnalyze) {
+                            scan(tp, p);
+                        }
+                        return null;
+                    }
+                }.scan(referenceEmbeddedSourceNodes(javac, getCurrentPath()), null);
+                return super.visitReference(node, p);
+            }
+            private void handleUsage(int start) {
+                TokenSequence<JavadocTokenId> javadoc = getJavadocTS(javac, start);
 
-        }
-        return null;
+                if (javadoc == null) {
+                    //not really expected:
+                    return ;
+                }
+
+                javadoc.move(start);
+
+                if (javadoc.moveNext()) {
+                    result[0] = javadoc.token();
+                }
+            }
+            @Override
+            public Void visitParam(ParamTree node, Void p) {
+                //XXX: getElement for the param's identifier???
+                if (   node.getName() != null
+                    && positions.getStartPosition(javac.getCompilationUnit(), docComment, node.getName()) <= offset
+                    && positions.getEndPosition(javac.getCompilationUnit(), docComment, node.getName()) >= offset) {
+                    result[0] = findNameTokenOfParamTag(offset, getJavadocTS(javac, offset));
+                    
+                    return null;
+                }
+                return super.visitParam(node, p);
+            }
+            @Override public Void visitSee(SeeTree node, Void p) {
+                return super.visitSee(node, p);
+            }
+        }.scan(new DocTreePath(tp, docComment), null);
+        
+        return result[0];
     }
 
-    private static Token<JavadocTokenId> findNameTokenOfParamTag(Tag tag, DocPositions positions, TokenSequence<JavadocTokenId> jdTokenSequence) {
-        if (tag == null || !"@param".equals(tag.name())) { // NOI18N
-            return null;
-        }
-
-        int[] tagSpan = positions.getTagSpan(tag);
+    private static Token<JavadocTokenId> findNameTokenOfParamTag(int startPos, TokenSequence<JavadocTokenId> jdTokenSequence) {
         Token<JavadocTokenId> result = null;
 
-        jdTokenSequence.move(tagSpan[0]);
+        jdTokenSequence.move(startPos);
         if (jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.TAG
                 && jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.OTHER_TEXT
                 && jdTokenSequence.moveNext() && jdTokenSequence.token().id() == JavadocTokenId.IDENT
@@ -509,34 +518,6 @@ public final class JavadocImports {
         }
         return false;
     }
-
-    private static List<JavaReference> findReferences (
-        Tag                     tag,
-        DocPositions            positions,
-        TokenSequence<JavadocTokenId>
-                                jdTokenSequence
-    ) {
-        if (tag == null || !isReferenceTag(tag)) {
-            return null;
-        }
-        int[] tagSpan = positions.getTagSpan(tag);
-        jdTokenSequence.move(tagSpan[0] + (JavadocCompletionUtils.isBlockTag(tag)? 0: 1));
-        if (!jdTokenSequence.moveNext() || jdTokenSequence.token().id() != JavadocTokenId.TAG) {
-            return null;
-        }
-        if (!jdTokenSequence.moveNext()
-                || !(JavadocCompletionUtils.isWhiteSpace(jdTokenSequence.token()) || JavadocCompletionUtils.isLineBreak(jdTokenSequence.token()))
-                || !jdTokenSequence.moveNext()) {
-            return null;
-        }
-        JavaReference reference = JavaReference.resolve (jdTokenSequence, jdTokenSequence.offset(), tagSpan[1]);
-        return reference.getAllReferences ();
-    }
-    
-    private static boolean isReferenceTag(Tag tag) {
-        String tagName = tag.name();
-        return ALL_REF_TAG_NAMES.contains(tagName.intern());
-    }
     
     private static final Set<String> ALL_REF_TAG_NAMES = new HashSet<String>(
             Arrays.asList("@link", "@linkplain", "@value", "@see", "@throws")); // NOI18N
@@ -545,8 +526,19 @@ public final class JavadocImports {
         String tagName = tag.text().toString().intern();
         return tag.id() == JavadocTokenId.TAG && ALL_REF_TAG_NAMES.contains(tagName);
     }
+    
+    private static TokenSequence<JavadocTokenId> getJavadocTS(CompilationInfo javac, int start) {
+        TokenSequence<JavadocTokenId> javadoc = null;
+        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(javac.getTokenHierarchy(), start);
 
-    private static final class UnresolvedImportScanner extends ElementScanner6<Void, Void> {
+        if (ts.moveNext() && ts.token().id() == JavaTokenId.JAVADOC_COMMENT) {
+            javadoc = ts.embedded(JavadocTokenId.language());
+        }
+        
+        return javadoc;
+    }
+
+    private static final class UnresolvedImportScanner extends TreePathScanner<Void, Void> {
         
         private final CompilationInfo javac;
         private Set<String> unresolved = new HashSet<String>();
@@ -554,67 +546,80 @@ public final class JavadocImports {
         public UnresolvedImportScanner(CompilationInfo javac) {
             this.javac = javac;
         }
-        
+
         @Override
-        public Void visitExecutable(ExecutableElement e, Void p) {
-            TypeElement enclosingTypeElement = javac.getElementUtilities().enclosingTypeElement(e);
-            if (enclosingTypeElement != null) {
-                resolveElement(e, enclosingTypeElement);
-            }
-            return super.visitExecutable(e, p);
+        public Void visitClass(ClassTree node, Void p) {
+            resolveElement();
+            return super.visitClass(node, p);
         }
 
         @Override
-        public Void visitType(TypeElement e, Void p) {
-            resolveElement(e, e);
-            return super.visitType(e, p);
+        public Void visitMethod(MethodTree node, Void p) {
+            resolveElement();
+            return super.visitMethod(node, p);
         }
 
         @Override
-        public Void visitVariable(VariableElement e, Void p) {
-            TypeElement enclosingTypeElement = javac.getElementUtilities().enclosingTypeElement(e);
-            if (enclosingTypeElement != null) {
-                resolveElement(e, enclosingTypeElement);
-            }
-            return super.visitVariable(e, p);
+        public Void visitVariable(VariableTree node, Void p) {
+            resolveElement();
+            return super.visitVariable(node, p);
         }
         
-        private void resolveElement(Element el, TypeElement scope) {
-            String jdText = javac.getElements().getDocComment(el);
-            if (jdText != null) {
-                Doc javadoc = javac.getElementUtilities().javaDocFor(el);
-                TokenSequence<JavadocTokenId> jdTokenSequence = JavadocCompletionUtils.findJavadocTokenSequence(javac, null, el);
-                if (jdTokenSequence != null) {
-                    DocPositions positions = DocPositions.get(javac, javadoc, jdTokenSequence);
-                    if (positions != null) {
-                        resolveTags(positions, jdTokenSequence, scope);
-                    }
-                }
-            }
-        }
-        
-        private void resolveTags (
-            DocPositions positions,
-            TokenSequence<JavadocTokenId> jdTokenSequence,
-            TypeElement scope
-        ) {
-            for (Tag tag : positions.getTags()) {
-                List<JavaReference> references = findReferences (tag, positions, jdTokenSequence);
-                if (references != null) {
-                    for (JavaReference reference : references) {
-                        if (reference.fqn != null && reference.fqn.length() > 0) {
-                            String fqn = reference.fqn.toString ();
-                            TypeMirror type = javac.getTreeUtilities ().parseType (fqn, scope);
-                            if (type != null &&
-                                type.getKind () == TypeKind.ERROR
-                            ) {
-                                unresolved.add (fqn);
+        private void resolveElement() {
+            final DocTrees trees = javac.getDocTrees();
+            DocCommentTree dcComment = trees.getDocCommentTree(getCurrentPath());
+            
+            if (dcComment == null) return ;
+            
+            new DocTreePathScanner<Void, Void>() {
+                @Override public Void visitReference(ReferenceTree node, Void p) {
+                    new TreePathScanner<Void, Void>() {
+                        @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                            Element el = trees.getElement(getCurrentPath());
+                            
+                            if (el == null || el.asType().getKind() == TypeKind.ERROR) {
+                                unresolved.add(node.getName().toString());
+                            } else if (el.getKind() == ElementKind.PACKAGE) {
+                                //does the package really exists? (see ComputeImports)
+                                String s = ((PackageElement) el).getQualifiedName().toString();
+                                if (javac.getElements().getPackageElement(s) == null) {
+                                    //probably situation like:
+                                    //Map.Entry e;
+                                    //where Map is not imported
+                                    unresolved.add(node.getName().toString());
+                                }
                             }
+                            return super.visitIdentifier(node, p);
                         }
-                    }
+                        public Void scan(Iterable<? extends TreePath> toAnalyze, Void p) {
+                            for (TreePath tp : toAnalyze) {
+                                scan(tp, p);
+                            }
+                            return null;
+                        }
+                    }.scan(referenceEmbeddedSourceNodes(javac, getCurrentPath()), null);
+                    return super.visitReference(node, p);
                 }
+            }.scan(new DocTreePath(getCurrentPath(), dcComment), null);
+        }
+    }
+    
+    private static Iterable<? extends TreePath> referenceEmbeddedSourceNodes(CompilationInfo info, DocTreePath ref) {
+        List<TreePath> result = new ArrayList<TreePath>();
+        
+        if (info.getTreeUtilities().getReferenceClass(ref) != null) {
+            result.add(new TreePath(ref.getTreePath(), info.getTreeUtilities().getReferenceClass(ref)));
+        }
+        
+        List<? extends Tree> params = info.getTreeUtilities().getReferenceParameters(ref);
+        
+        if (params != null) {
+            for (Tree et : params) {
+                result.add(new TreePath(ref.getTreePath(), et));
             }
         }
         
+        return result;
     }
+    
 }

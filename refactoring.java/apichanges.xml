@@ -49,6 +49,21 @@ made subject to such option by the copyright holder.
         <apidef name="JavaRefactoringAPI">Java Refactoring API</apidef>
     </apidefs>
     <changes>
+        <change id="DocTrees">
+            <api name="JavaRefactoringAPI"/>
+            <summary>RefactoringVisitor has support for visiting DocTrees</summary>
+            <version major="1" minor="45"/>
+            <date day="2" month="5" year="2013"/>
+            <author login="ralphbenjamin"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    The RefactoringVisitor now implements DocTreeVisitor&lt;DocTree, Element&gt;.
+                </p>    
+            </description>
+            <class package="org.netbeans.modules.refactoring.java.spi" name="RefactoringVisitor"/>
+            <issue number="999999"/>
+        </change>
         <change id="JavaWhereUsedSearchOverloaded">
             <api name="JavaRefactoringAPI"/>
             <summary>Added new constant to WhereUsedQueryConstants to search for usages of overloaded methods.</summary>
