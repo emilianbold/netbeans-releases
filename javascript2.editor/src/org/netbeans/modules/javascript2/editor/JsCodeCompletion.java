@@ -102,7 +102,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         this.caseSensitive = ccContext.isCaseSensitive();
         
         ParserResult info = ccContext.getParserResult();
-        int caretOffset = ccContext.getCaretOffset();
+        int caretOffset = ccContext.getParserResult().getSnapshot().getEmbeddedOffset(ccContext.getCaretOffset());
         FileObject fileObject = ccContext.getParserResult().getSnapshot().getSource().getFileObject();
         JsParserResult jsParserResult = (JsParserResult)info;
         CompletionContext context = CompletionContextFinder.findCompletionContext(info, caretOffset);
@@ -285,7 +285,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             return null;
         }
 
-        caretOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
+        //caretOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(info.getSnapshot(), caretOffset);
         if (ts == null) {
             return null;
@@ -500,12 +500,9 @@ class JsCodeCompletion implements CodeCompletionHandler {
             fqn.append(expChain.get(--i));
             fqn.append('.');
         }
-        fqn.append(request.prefix);
-        Collection<? extends IndexResult> indexResults = jsIndex.query(JsIndex.FIELD_FQ_NAME, fqn.toString(), QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
-        for (IndexResult indexResult : indexResults) {
-            IndexedElement indexedElement = IndexedElement.create(indexResult);
+        Collection<IndexedElement> indexResults = jsIndex.getPropertiesWithPrefix(fqn.toString().substring(0, fqn.length() - 1), request.prefix);
+        for (IndexedElement indexedElement : indexResults) {
             if (!indexedElement.isAnonymous()
-                    && indexedElement.getFQN().indexOf('.', fqn.length()) == -1
                     && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
                 addPropertyToMap(request, addedProperties, indexedElement);
             }
@@ -592,8 +589,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             return Collections.<String>emptyList();
         }
 
-        int offset = request.info.getSnapshot().getEmbeddedOffset(request.anchor);
-        ts.move(offset);
+        ts.move(request.anchor);
         if (ts.movePrevious() && (ts.moveNext() || ((ts.offset() + ts.token().length()) == request.result.getSnapshot().getText().length()))) {
             if (ts.token().id() != JsTokenId.OPERATOR_DOT) {
                 ts.movePrevious();

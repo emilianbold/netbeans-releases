@@ -114,6 +114,12 @@ public class JsIndexer extends EmbeddingIndexer {
             for (JsObject property : object.getProperties().values()) {
                 storeObject(property, fqn + '.' + property.getName(), support, indexable);
             }
+            if(object instanceof JsFunction) {
+                // store parameters
+                for (JsObject parameter : ((JsFunction)object).getParameters()) {
+                    storeObject(parameter, fqn + '.' + parameter.getName(), support, indexable);
+                }
+            }
         }
     }
     
