@@ -44,10 +44,23 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
-import com.sun.javadoc.Doc;
-import com.sun.javadoc.ParamTag;
-import com.sun.javadoc.SourcePosition;
-import com.sun.javadoc.Tag;
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocTree;
+import static com.sun.source.doctree.DocTree.Kind.AUTHOR;
+import static com.sun.source.doctree.DocTree.Kind.DEPRECATED;
+import static com.sun.source.doctree.DocTree.Kind.EXCEPTION;
+import static com.sun.source.doctree.DocTree.Kind.PARAM;
+import static com.sun.source.doctree.DocTree.Kind.RETURN;
+import static com.sun.source.doctree.DocTree.Kind.SEE;
+import static com.sun.source.doctree.DocTree.Kind.SERIAL;
+import static com.sun.source.doctree.DocTree.Kind.SERIAL_DATA;
+import static com.sun.source.doctree.DocTree.Kind.SERIAL_FIELD;
+import static com.sun.source.doctree.DocTree.Kind.SINCE;
+import static com.sun.source.doctree.DocTree.Kind.THROWS;
+import static com.sun.source.doctree.DocTree.Kind.UNKNOWN_BLOCK_TAG;
+import static com.sun.source.doctree.DocTree.Kind.VERSION;
+import com.sun.source.doctree.DocTreeVisitor;
+import com.sun.source.doctree.ParamTree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.*;
 import com.sun.source.util.SourcePositions;
@@ -59,7 +72,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
@@ -122,6 +134,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             Javadoc javaDoc,
             Set<ElementHandle<ExecutableElement>> am,
             TreePathHandle refactoringSource) {
+        super(true);
         this.paramInfos = paramInfo;
         this.newModifiers = newModifiers;
         this.returnType = returnType;
@@ -288,6 +301,46 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         return super.visitNewClass(tree, p);
     }
 
+    @Override
+    public DocTree visitDocComment(DocCommentTree node, Element p) {
+        if(javaDoc != Javadoc.UPDATE) {
+            return node;
+        }
+        TreePath path = getCurrentDocPath().getTreePath();
+        Element el = workingCopy.getTrees().getElement(path);
+        if (isMethodMatch(el, p)) {
+            List<? extends DocTree> blockTags = node.getBlockTags();
+            List<DocTree> newTags = new LinkedList<DocTree>();
+            List<ParamTree> oldParams = new LinkedList<ParamTree>();
+            ParamTree fake = new FakaParamTree();
+            int index = 0;
+            for (DocTree docTree : blockTags) {
+                if(docTree.getKind() != DocTree.Kind.PARAM || ((ParamTree) docTree).isTypeParameter()) {
+                    newTags.add(docTree);
+                    if(TagComparator.compareTag(fake, docTree) != TagComparator.HIGHER) {
+                        index++;
+                    }
+                } else {
+                    oldParams.add((ParamTree) docTree);
+                }
+            }
+            for (ParameterInfo parameterInfo : paramInfos) {
+                ParamTree tag;
+                if(parameterInfo.getOriginalIndex() == -1) {
+                    tag = make.Param(false, make.DocIdentifier(parameterInfo.getName()), Collections.EMPTY_LIST);
+                } else {
+                    tag = oldParams.get(parameterInfo.getOriginalIndex());
+                    if(parameterInfo.getName() != null) {
+                        tag = make.Param(false, make.DocIdentifier(parameterInfo.getName()), tag.getDescription());
+                    }
+                }
+                newTags.add(index++, tag);
+            }
+            rewrite(path.getLeaf(), node, make.DocComment(node.getFirstSentence(), node.getBody(), newTags));
+        }
+        return node;
+    }
+    
     /**
      * special treatment for anonymous classes to resolve the proper constructor
      * of extended class instead of the synthetic one.
@@ -573,52 +626,48 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             genutils.copyComments(current, nju, true);
             genutils.copyComments(current, nju, false);
             
-            if(synthConstructor) {
-                Comment comment = null;
-                switch (javaDoc) {
-                    case UPDATE:
-                        comment = ChangeParamsJavaDocTransformer.updateJavadoc((ExecutableElement) el, paramInfos, workingCopy);
-                        List<Comment> comments = workingCopy.getTreeUtilities().getComments(nju, true);
-                        if (comments.isEmpty()) {
-                            comment = null;
-                        } else {
-                            if (comments.get(0).isDocComment()) {
-                                make.removeComment(nju, 0, true);
-                            } else {
-                                comment = null;
-                            }
-                        }
-                        break;
-                    case GENERATE:
-                        String returnTypeString;
-                        Tree returnType = nju.getReturnType();
-                        if (this.returnType == null) {
-                            boolean hasReturn = false;
-                            if (returnType != null && returnType.getKind().equals(Tree.Kind.PRIMITIVE_TYPE)) {
-                                if (!((PrimitiveTypeTree) returnType).getPrimitiveTypeKind().equals(TypeKind.VOID)) {
-                                    hasReturn = true;
-                                }
-                            }
-                            if (hasReturn) {
-                                returnTypeString = returnType.toString();
-                            } else {
-                                returnTypeString = null;
-                            }
-                        } else {
-                            if(this.returnType.equals("void")) {
-                                returnTypeString = null;
-                            } else {
-                                returnTypeString = this.returnType;
-                            }
-                        }
-                        comment = ChangeParamsJavaDocTransformer.generateJavadoc(newParameters, returnTypeString, current);
-                        break;
+            if(javaDoc == Javadoc.GENERATE) {
+                List<DocTree> tags = new LinkedList<DocTree>();
+                // @TypeParam
+                for (TypeParameterTree typeParameterTree : current.getTypeParameters()) {
+                    tags.add(make.Param(true, make.DocIdentifier(typeParameterTree.getName()), Collections.EMPTY_LIST));
                 }
-                if (comment != null) {
-                    make.addComment(nju, comment, true);
+                // @Param
+                for (VariableTree variableTree : newParameters) {
+                    tags.add(make.Param(false, make.DocIdentifier(variableTree.getName()), Collections.singletonList(make.Text("the value of " + variableTree.getName()))));
                 }
+                // @Return
+                String returnTypeString;
+                Tree returnType = nju.getReturnType();
+                if (this.returnType == null) {
+                    boolean hasReturn = false;
+                    if (returnType != null && returnType.getKind().equals(Tree.Kind.PRIMITIVE_TYPE)) {
+                        if (!((PrimitiveTypeTree) returnType).getPrimitiveTypeKind().equals(TypeKind.VOID)) {
+                            hasReturn = true;
+                        }
+                    }
+                    if (hasReturn) {
+                        returnTypeString = returnType.toString();
+                    } else {
+                        returnTypeString = null;
+                    }
+                } else {
+                    if(this.returnType.equals("void")) {
+                        returnTypeString = null;
+                    } else {
+                        returnTypeString = this.returnType;
+                    }
+                }
+                if(returnTypeString != null) {
+                    tags.add(make.DocReturn(Collections.singletonList(make.Text("the " + returnTypeString))));
+                }
+                // @Throw
+                for (ExpressionTree expressionTree : current.getThrows()) {
+                    tags.add(make.Throws(make.Reference(expressionTree, null, null), Collections.EMPTY_LIST));
+                }
+                DocCommentTree newDoc = make.DocComment(Collections.EMPTY_LIST, Collections.EMPTY_LIST, tags);
+                rewrite(synthConstructor? nju : tree, null, newDoc);
             }
-
             rewrite(tree, nju);
         }
     }
@@ -770,5 +819,165 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
         } while(changed);
 
         return expressionTree;
+    }
+
+/**
+     * Orders tags as follows
+     * <ul>
+     * <li>@author (classes and interfaces only, required)</li>
+     * <li>@version (classes and interfaces only, required. See footnote 1)</li>
+     * <li>@param (methods and constructors only)</li>
+     * <li>@return (methods only)</li>
+     * <li>@exception (</li>
+     * <li>@throws is a synonym added in Javadoc 1.2)</li>
+     * <li>@see</li>
+     * <li>@since</li>
+     * <li>@serial (or @serialField or @serialData)</li>
+     * <li>@deprecated (see How and When To Deprecate APIs)</li>
+     * </ul>
+     */
+    private static class TagComparator implements Comparator<DocTree> {
+        
+        private final static int HIGHER = -1;
+        private final static int EQUAL = 0;
+        private final static int LOWER = 1;
+
+        @Override
+        public int compare(DocTree t, DocTree t1) {
+            return compareTag(t, t1);
+        }
+        
+        public static int compareTag(DocTree t, DocTree t1) {
+            if(t.getKind() == t1.getKind()) {
+                if(t.getKind() == DocTree.Kind.PARAM) {
+                    ParamTree p = (ParamTree) t;
+                    ParamTree p1 = (ParamTree) t1;
+                    if(p.isTypeParameter() && !p1.isTypeParameter()) {
+                        return HIGHER;
+                    } else if(!p.isTypeParameter() && p1.isTypeParameter()) {
+                        return LOWER;
+                    }
+                }
+                return EQUAL;
+            }
+            switch(t.getKind()) {
+                case AUTHOR:
+                    return HIGHER;
+                case VERSION:
+                    if(t1.getKind() == DocTree.Kind.AUTHOR) {
+                        return LOWER;
+                    }
+                    return HIGHER;
+                case PARAM:
+                    if(t1.getKind() == DocTree.Kind.AUTHOR
+                            || t1.getKind() == DocTree.Kind.VERSION) {
+                        return LOWER;
+                    }
+                    return HIGHER;
+                case RETURN:
+                    if(t1.getKind() == DocTree.Kind.AUTHOR
+                            || t1.getKind() == DocTree.Kind.VERSION
+                            || t1.getKind() == DocTree.Kind.PARAM) {
+                        return LOWER;
+                    }
+                    return HIGHER;
+                case EXCEPTION:
+                    if(t1.getKind() == DocTree.Kind.AUTHOR
+                            || t1.getKind() == DocTree.Kind.VERSION
+                            || t1.getKind() == DocTree.Kind.PARAM
+                            || t1.getKind() == DocTree.Kind.RETURN) {
+                        return LOWER;
+                    }
+                    return HIGHER;
+                case THROWS:
+                    if(t1.getKind() == DocTree.Kind.AUTHOR
+                            || t1.getKind() == DocTree.Kind.VERSION
+                            || t1.getKind() == DocTree.Kind.PARAM
+                            || t1.getKind() == DocTree.Kind.RETURN
+                            || t1.getKind() == DocTree.Kind.EXCEPTION) {
+                        return LOWER;
+                    }
+                    return HIGHER;
+                case SEE:
+                    if(t1.getKind() == DocTree.Kind.AUTHOR
+                            || t1.getKind() == DocTree.Kind.VERSION
+                            || t1.getKind() == DocTree.Kind.PARAM
+                            || t1.getKind() == DocTree.Kind.RETURN
+                            || t1.getKind() == DocTree.Kind.EXCEPTION
+                            || t1.getKind() == DocTree.Kind.THROWS) {
+                        return LOWER;
+                    }
+                    return HIGHER;
+                case SINCE:
+                    if(t1.getKind() == DocTree.Kind.AUTHOR
+                            || t1.getKind() == DocTree.Kind.VERSION
+                            || t1.getKind() == DocTree.Kind.PARAM
+                            || t1.getKind() == DocTree.Kind.RETURN
+                            || t1.getKind() == DocTree.Kind.EXCEPTION
+                            || t1.getKind() == DocTree.Kind.THROWS
+                            || t1.getKind() == DocTree.Kind.SEE) {
+                        return LOWER;
+                    }
+                    return HIGHER;
+                case SERIAL:
+                case SERIAL_DATA:
+                case SERIAL_FIELD:
+                    if(t1.getKind() == DocTree.Kind.AUTHOR
+                            || t1.getKind() == DocTree.Kind.VERSION
+                            || t1.getKind() == DocTree.Kind.PARAM
+                            || t1.getKind() == DocTree.Kind.RETURN
+                            || t1.getKind() == DocTree.Kind.EXCEPTION
+                            || t1.getKind() == DocTree.Kind.THROWS
+                            || t1.getKind() == DocTree.Kind.SEE
+                            || t1.getKind() == DocTree.Kind.SINCE) {
+                        return LOWER;
+                    }
+                    return HIGHER;
+                case DEPRECATED:
+                    if(t1.getKind() == DocTree.Kind.UNKNOWN_BLOCK_TAG) {
+                        return HIGHER;
+                    }
+                    return LOWER;
+                case UNKNOWN_BLOCK_TAG:
+                    return LOWER;
+            }
+            return LOWER;
+        }
+    }
+
+    private static class FakaParamTree implements ParamTree {
+
+        public FakaParamTree() {
+        }
+
+        @Override
+        public boolean isTypeParameter() {
+            return false;
+        }
+
+        @Override
+        public com.sun.source.doctree.IdentifierTree getName() {
+            return null;
+        }
+
+        @Override
+        public List<? extends DocTree> getDescription() {
+            return null;
+        }
+
+        @Override
+        public String getTagName() {
+            return null;
+        }
+
+        @Override
+        public DocTree.Kind getKind() {
+            return PARAM;
+        }
+
+        @Override
+        public <R, D> R accept(DocTreeVisitor<R, D> visitor, D data) {
+            return null;
+        }
     }
 }
