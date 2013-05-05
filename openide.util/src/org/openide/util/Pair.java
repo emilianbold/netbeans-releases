@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,26 +34,81 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.repository.util;
+package org.openide.util;
 
 /**
- * A simple struct, mainly for returning pairs of values
- * @author Vladimir Kvashin
+ * A type safe pair of two object.
+ * @author Tomas Zezula
+ * @since 8.32
  */
-public class Pair<T1, T2> {
-    
-    public final T1 first;
-    public final T2 second;
-    
-    public Pair(T1 first, T2 second) {
+public final class Pair<First,Second> {
+
+    private final First first;
+    private final Second second;
+
+
+    private Pair(final First first, final Second second) {
         this.first = first;
         this.second = second;
     }
-    
+
+    /**
+     * Returns the first element of the {@link Pair}.
+     * @return the first element.
+     */
+    public First first() {
+        return first;
+    }
+
+    /**
+     * Returns the second element of the {@link Pair}.
+     * @return the second element.
+     */
+    public Second second() {
+        return second;
+    }
+
+    @Override
+    public String toString () {
+        return String.format("Pair[%s,%s]", first,second);  //NOI18N
+    }
+
+    @Override
+    public boolean equals(final Object other) {
+        if (other == this) {
+            return true;
+        }
+        if (!(other instanceof Pair)) {
+            return false;
+        }
+        final Pair<?,?> otherPair = (Pair<?,?>) other;
+        return (first == null ? otherPair.first == null : first.equals(otherPair.first)) &&
+            (second == null ? otherPair.second == null : second.equals(otherPair.second));
+    }
+
+    @Override
+    public int hashCode() {
+        int res = 17;
+        res = res * 31 + (first == null ? 0 : first.hashCode());
+        res = res * 31 + (second == null ? 0 : second.hashCode());
+        return res;
+    }
+
+
+    /**
+     * Creates a new Pair.
+     * @param <First>   the type of the first element
+     * @param <Second>  the type of the second element
+     * @param first     the first element
+     * @param second    the second element
+     * @return  the new {@link Pair} of the first and second elements.
+     */
+    public static <First,Second> Pair<First,Second> of (final First first, final Second second) {
+        return new Pair<First, Second>(first, second);
+    }
 }

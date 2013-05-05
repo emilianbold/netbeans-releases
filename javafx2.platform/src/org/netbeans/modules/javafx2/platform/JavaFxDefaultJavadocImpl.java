@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,32 +34,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.csl.hints.infrastructure;
+package org.netbeans.modules.javafx2.platform;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.java.j2seplatform.spi.J2SEPlatformDefaultJavadoc;
+import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
- *
- * @author Jan Lahoda
+ * Default Javadoc for JavaFX.
+ * @author Tomas Zezula
  */
-public final class Pair<A, B> {
+@ServiceProvider(service = J2SEPlatformDefaultJavadoc.class, position = 200, path="org-netbeans-api-java/platform/j2seplatform/defaultJavadocProviders")
+public final class JavaFxDefaultJavadocImpl implements J2SEPlatformDefaultJavadoc {
 
-    private final A a;
-    private final B b;
+    private static final SpecificationVersion JDK7 = new SpecificationVersion("1.7");   //NOI18N
+    private static final String JFX_JAVADOC = "http://docs.oracle.com/javafx/2/api/";   //NOI18N
 
-    public Pair(A a, B b) {
-        this.a = a;
-        this.b = b;
+    @Override
+    @NonNull
+    public Collection<URI> getDefaultJavadoc(@NonNull final JavaPlatform platform) {
+        final SpecificationVersion spec = platform.getSpecification().getVersion();
+        if (JDK7.compareTo(spec) <= 0) {
+            try {
+                return Collections.singletonList(new URI(JFX_JAVADOC));
+            } catch (URISyntaxException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return Collections.<URI>emptyList();
     }
 
-    public A getA() {
-        return a;
-    }
-
-    public B getB() {
-        return b;
-    }
-
-    public static <A,B> Pair<A,B> of(A a, B b) {
-      return new Pair<A, B>(a, b);
-    } 
 }

@@ -59,7 +59,6 @@ import com.sun.source.util.TreePathScanner;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.netbeans.modules.java.hints.infrastructure.Pair;
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.BinaryTree;
@@ -138,6 +137,7 @@ import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 
 import static com.sun.source.tree.Tree.Kind.*;
+import org.openide.util.Pair;
 
 /**
  *
@@ -899,7 +899,7 @@ public class Utilities {
         
         if (ma == null) return null;
         
-        return new Pair<List<? extends TypeMirror>, List<String>>(ma.parameterTypes, ma.parameterNames);
+        return Pair.<List<? extends TypeMirror>, List<String>>of(ma.parameterTypes, ma.parameterNames);
     }
     
     public static MethodArguments resolveArguments(CompilationInfo info, TreePath invocation, List<? extends ExpressionTree> realArguments, Element target, TypeMirror returnType) {

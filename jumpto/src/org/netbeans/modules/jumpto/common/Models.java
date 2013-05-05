@@ -48,6 +48,7 @@ import java.util.List;
 import javax.swing.AbstractListModel;
 import javax.swing.ListModel;
 import org.netbeans.api.annotations.common.NonNull;
+import org.openide.util.Pair;
 
 /**
  * (copied from org.netbeans.modules.java.source.util.Models

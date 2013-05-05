@@ -103,7 +103,6 @@ import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import org.netbeans.api.annotations.common.StaticResource;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.connections.RemoteClient;
@@ -120,6 +119,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -822,7 +822,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             if (!iterator.hasNext()) {
                 selectionIsAdjusting = false;
             }
-            itemTable.getSelectionModel().addSelectionInterval(pair.first, pair.second);
+            itemTable.getSelectionModel().addSelectionInterval(pair.first(), pair.second());
         }
         selectionIsAdjusting = false;
     }

@@ -97,6 +97,19 @@ public class JUnitOutputListenerProviderTest {
         assertNotNull(t.getComparisonFailure());
         stack = t.getStackTrace();
         assertNotNull(stack);
+
+        t = JUnitOutputListenerProvider.constructTrouble("java.lang.AssertionError", "hello? expected [2] but found [1]",
+	"hello? expected [2] but found [1]\n" +
+"java.lang.AssertionError\n" +
+"	at org.testng.Assert.fail(Assert.java:94)\n" +
+"	at org.testng.Assert.failNotEquals(Assert.java:494)\n" +
+"	at org.testng.Assert.assertEquals(Assert.java:123)\n" +
+"	at org.testng.Assert.assertEquals(Assert.java:370)\n" +
+"	at test.mavenproject1.AppNGTest.testMain(AppNGTest.java:50)\n", true);
+
+        assertNotNull(t.getComparisonFailure());
+        stack = t.getStackTrace();
+        assertNotNull(stack);
         
     }
 

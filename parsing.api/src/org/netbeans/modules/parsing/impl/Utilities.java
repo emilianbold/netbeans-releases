@@ -50,12 +50,12 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.masterfs.providers.ProvidedExtensions;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
-import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.Scheduler;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**

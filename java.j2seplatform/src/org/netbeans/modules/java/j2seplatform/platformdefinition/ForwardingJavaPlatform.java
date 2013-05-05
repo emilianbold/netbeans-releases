@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,29 +34,84 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.java.j2seplatform.platformdefinition;
+
+import java.net.URL;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.Specification;
+import org.openide.filesystems.FileObject;
+
+/**
+ *
+ * @author Tomas Zezula
+ */
+class ForwardingJavaPlatform extends JavaPlatform {
+
+    protected final JavaPlatform delegate;
+
+    ForwardingJavaPlatform(@NonNull final JavaPlatform delegate) {
+        this.delegate = delegate;
+    }
 
 
-package org.netbeans.modules.cnd.asm.model.util;
+    @Override
+    public String getDisplayName() {
+        return delegate.getDisplayName();
+    }
 
-public class Pair<T1, T2> {
-    private final T1 p1; 
-    private final T2 p2; 
-    
-    public Pair(T1 p1, T2 p2) {
-        this.p1 = p1;
-        this.p2 = p2;
+    @Override
+    public Map<String, String> getProperties() {
+        return delegate.getProperties();
     }
-    
-    public T1 getFirst() {
-        return p1;
+
+    @Override
+    public ClassPath getBootstrapLibraries() {
+        return delegate.getBootstrapLibraries();
     }
-    
-    public T2 getSecond() {
-        return p2;
-    }    
-    
-    public static <T1, T2> Pair<T1, T2> getPair(T1 p1, T2 p2) {
-        return new Pair<T1,T2>(p1, p2);
+
+    @Override
+    public ClassPath getStandardLibraries() {
+        return delegate.getStandardLibraries();
     }
+
+    @Override
+    public String getVendor() {
+        return delegate.getVendor();
+    }
+
+    @Override
+    public Specification getSpecification() {
+        return delegate.getSpecification();
+    }
+
+    @Override
+    public Collection<FileObject> getInstallFolders() {
+        return delegate.getInstallFolders();
+    }
+
+    @Override
+    public FileObject findTool(String toolName) {
+        return delegate.findTool(toolName);
+    }
+
+    @Override
+    public ClassPath getSourceFolders() {
+        return delegate.getSourceFolders();
+    }
+
+    @Override
+    public List<URL> getJavadocFolders() {
+        return delegate.getJavadocFolders();
+    }
+
 }

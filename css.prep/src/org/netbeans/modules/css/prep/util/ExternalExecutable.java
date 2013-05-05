@@ -70,8 +70,8 @@ import org.netbeans.api.extexecution.ExternalProcessBuilder;
 import org.netbeans.api.extexecution.input.InputProcessor;
 import org.netbeans.api.extexecution.input.InputProcessors;
 import org.netbeans.api.progress.ProgressUtils;
-import org.netbeans.modules.web.common.api.Pair;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
@@ -126,8 +126,8 @@ public final class ExternalExecutable {
      */
     public ExternalExecutable(String command) {
         Pair<String, List<String>> parsedCommand = parseCommand(command);
-        executable = parsedCommand.getA();
-        parameters = parsedCommand.getB();
+        executable = parsedCommand.first();
+        parameters = parsedCommand.second();
         this.command = command.trim();
     }
 
@@ -143,7 +143,7 @@ public final class ExternalExecutable {
             return Pair.of(tokens[0].trim(), Collections.<String>emptyList());
         }
         Pair<String, List<String>> parsedCommand = Pair.of(tokens[0].trim(), Arrays.asList(Utilities.parseParameters(tokens[1].trim())));
-        LOGGER.log(Level.FINE, "Parameters parsed: {0} {1}", new Object[] {parsedCommand.getA(), parsedCommand.getB()});
+        LOGGER.log(Level.FINE, "Parameters parsed: {0} {1}", new Object[] {parsedCommand.first(), parsedCommand.second()});
         return parsedCommand;
     }
 

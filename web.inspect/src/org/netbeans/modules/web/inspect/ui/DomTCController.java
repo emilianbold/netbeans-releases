@@ -44,12 +44,8 @@ package org.netbeans.modules.web.inspect.ui;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.modules.web.browser.api.Page;
 import org.netbeans.modules.web.browser.api.PageInspector;
-import org.netbeans.modules.web.common.api.DependentFileQuery;
-import org.openide.filesystems.FileObject;
-import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
@@ -62,12 +58,6 @@ import org.openide.windows.WindowManager;
 public class DomTCController implements PropertyChangeListener {
     /** Default instance of this class. */
     private static final DomTCController DEFAULT = new DomTCController();
-    /** The last active file in editor. */
-    private FileObject lastEditorFile;
-    /** Currently inspected page. */
-    private Page currentPageModel;
-    /** Currently inspected file. */
-    private FileObject inspectedFile;
 
     /**
      * Creates a new {@code DOMTCController}.
@@ -76,36 +66,6 @@ public class DomTCController implements PropertyChangeListener {
     private DomTCController() {
         PageInspector inspector = PageInspector.getDefault();
         inspector.addPropertyChangeListener(this);
-        TopComponent.Registry registry = WindowManager.getDefault().getRegistry();
-        registry.addPropertyChangeListener(this);
-        initActiveComponent();
-    }
-
-    /**
-     * Initializes the information about the active editor {@code TopComponent}.
-     */
-    private void initActiveComponent() {
-        EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                WindowManager manager = WindowManager.getDefault();
-                TopComponent.Registry registry = manager.getRegistry();
-                TopComponent active = registry.getActivated();
-                if ((active != null) && manager.isOpenedEditorTopComponent(active)) {
-                    componentActivated(active);
-                } else {
-                    for (Mode mode : manager.getModes()) {
-                        if (manager.isEditorMode(mode)) {
-                            active = mode.getSelectedTopComponent();
-                            if (active != null) {
-                                componentActivated(active);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-        });
     }
 
     /**
@@ -120,68 +80,15 @@ public class DomTCController implements PropertyChangeListener {
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         String propName = evt.getPropertyName();
-        if (TopComponent.Registry.PROP_ACTIVATED.equals(propName)) {
-            TopComponent tc = (TopComponent)evt.getNewValue();
-            componentActivated(tc);
-        } else if (PageInspector.PROP_MODEL.equals(propName)) {
+        if (PageInspector.PROP_MODEL.equals(propName)) {
             pageInspected();
-        } else if (Page.PROP_DOCUMENT.equals(propName)) {
-            documentUpdated();
         }
-    }
-
-    /** The last active editor {@code TopComponent}. */
-    private TopComponent lastTC;
-    private void componentActivated(TopComponent tc) {
-        if (!WindowManager.getDefault().isOpenedEditorTopComponent(tc)) {
-            // Check if lastTC is still valid
-            synchronized (this) {
-                if (lastTC != null && !WindowManager.getDefault().isOpenedEditorTopComponent(lastTC)) {
-                    lastTC = null;
-                    lastEditorFile = null;
-                    updateDomTC0();
-                }
-            }
-            return;
-        }
-        FileObject fob = tc.getLookup().lookup(FileObject.class);
-        synchronized (this) {
-            if (fob == null) {
-                lastTC = null;
-                lastEditorFile = null;
-            } else {
-                lastTC = tc;
-                lastEditorFile = fob;
-            }
-        }
-        updateDomTC();
     }
 
     /**
      * Invoked when {@code PageInspector} starts/stops to inspect a page.
      */
     private void pageInspected() {
-        PageInspector inspector = PageInspector.getDefault();
-        synchronized (this) {
-            if (currentPageModel != null) {
-                currentPageModel.removePropertyChangeListener(this);
-            }
-            currentPageModel = inspector.getPage();
-            if (currentPageModel != null) {
-                currentPageModel.addPropertyChangeListener(this);
-                inspectedFile = Utilities.inspectedFileObject(currentPageModel);
-            }
-        }
-        updateDomTC();
-    }
-
-    /**
-     * Invoked when a document in the inspected tab is (re-)loaded.
-     */
-    private void documentUpdated() {
-        synchronized (this) {
-            inspectedFile = Utilities.inspectedFileObject(currentPageModel);
-        }
         updateDomTC();
     }
 
@@ -209,59 +116,16 @@ public class DomTCController implements PropertyChangeListener {
     private void updateDomTC0() {
         synchronized (this) {
             TopComponentGroup group = WindowManager.getDefault().findTopComponentGroup("DomTree"); // NOI18N
-            TopComponent tc = WindowManager.getDefault().findTopComponent(DomTC.ID);
-            if (currentPageModel != null) {
-                boolean open = false;
-                boolean close = false;
-                boolean useNavigator = false;
-                if (inspectedFile == null) {
-                    open = true;
-                } else {
-                    if (lastEditorFile == null) {
-                        close = true;
-                    } else {
-                        String lastEditorMimeType = lastEditorFile.getMIMEType();
-                        if (Utilities.isStyledMimeType(lastEditorMimeType)) {
-                            if (DependentFileQuery.isDependent(inspectedFile, lastEditorFile)) {
-                                if (Utilities.isMimeTypeSupportedByNavigator(lastEditorMimeType)
-                                        && inspectedFile.equals(lastEditorFile)) {
-                                    close = true;
-                                    useNavigator = true;
-                                } else {
-                                    open = true;
-                                }
-                            } else {
-                                if (Utilities.isServerSideMimeType(lastEditorMimeType)
-                                        && Utilities.isServerSideMimeType(inspectedFile.getMIMEType())
-                                        && FileOwnerQuery.getOwner(inspectedFile) == FileOwnerQuery.getOwner(lastEditorFile)) {
-                                    open = true;
-                                } else {
-                                    close = true;
-                                }
-                            }
-                        } // else {} // no change
-                    }
-                }
-                if (open) {
-                    boolean wasOpened = tc.isOpened();
-                    group.open();
-                    if (!wasOpened && tc.isOpened()) {
-                        tc.requestVisible();
-                    }                    
-                } else if (close) {
-                    if (useNavigator) {
-                        TopComponent navigator = WindowManager.getDefault().findTopComponent("navigatorTC"); // NOI18N
-                        if (navigator != null && navigator.isOpened()) {
-                            // Close DOM Tree view and activate Navigator instead
-                            group.close();
-                            navigator.requestVisible();
-                        }
-                    } else {
-                        group.close();
-                    }
-                }
+            Page inspectedPage = PageInspector.getDefault().getPage();
+            if (inspectedPage == null) {
+                group.close();                
             } else {
-                group.close();
+                TopComponent tc = WindowManager.getDefault().findTopComponent(DomTC.ID);
+                boolean wasOpened = tc.isOpened();
+                group.open();
+                if (!wasOpened && tc.isOpened()) {
+                    tc.requestVisible();
+                }
             }
         }
     }

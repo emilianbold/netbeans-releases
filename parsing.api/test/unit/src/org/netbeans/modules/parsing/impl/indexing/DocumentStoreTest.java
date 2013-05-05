@@ -60,6 +60,7 @@ import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.openide.util.Pair;
 
 /**
  *
@@ -204,9 +205,9 @@ public class DocumentStoreTest extends NbTestCase {
                 createDefaultData(size);
         final long st = System.currentTimeMillis();
         index.store(
-            p.first,
+            p.first(),
             Collections.<String>emptySet(),
-            p.second,
+            p.second(),
             new Convertor<String, Query>() {
                 @Override
                 public Query convert(String p) {
@@ -215,7 +216,7 @@ public class DocumentStoreTest extends NbTestCase {
             },
             true);
         final long et = System.currentTimeMillis();
-        System.out.println(p.first.getClass().getSimpleName() + " : " + (et-st));
+        System.out.println(p.first().getClass().getSimpleName() + " : " + (et-st));
         index.close();
     }
 

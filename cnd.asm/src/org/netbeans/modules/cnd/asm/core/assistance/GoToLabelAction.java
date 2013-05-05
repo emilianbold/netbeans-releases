@@ -47,7 +47,7 @@ package org.netbeans.modules.cnd.asm.core.assistance;
 
 import org.netbeans.modules.cnd.asm.model.AsmState;
 import org.netbeans.modules.cnd.asm.model.lang.AsmElement;
-import org.netbeans.modules.cnd.asm.model.util.Pair;
+import org.openide.util.Pair;
 
 public class GoToLabelAction {
                 
@@ -55,9 +55,9 @@ public class GoToLabelAction {
         Pair<AsmElement, AsmElement> pair = state.resolveLink(pos);
         
         if (pair != null) {
-            return new int[] { pair.getFirst().getStartOffset(), 
-                               pair.getFirst().getEndOffset(), 
-                               pair.getSecond().getStartOffset()
+            return new int[] { pair.first().getStartOffset(),
+                               pair.first().getEndOffset(),
+                               pair.second().getStartOffset()
                              };                        
         } 
         

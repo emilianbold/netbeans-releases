@@ -45,7 +45,7 @@ import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.php.api.util.Pair;
+import org.openide.util.Pair;
 
 public class PhpExecutableTest extends NbTestCase {
 
@@ -56,56 +56,56 @@ public class PhpExecutableTest extends NbTestCase {
     @Test
     public void testParseNullCommand() {
         Pair<String, List<String>> command = PhpExecutable.parseCommand(null);
-        assertEquals("", command.first);
-        assertTrue(command.second.isEmpty());
+        assertEquals("", command.first());
+        assertTrue(command.second().isEmpty());
     }
 
     @Test
     public void testParseEmptyCommand() {
         Pair<String, List<String>> command = PhpExecutable.parseCommand("");
-        assertEquals("", command.first);
-        assertTrue(command.second.isEmpty());
+        assertEquals("", command.first());
+        assertTrue(command.second().isEmpty());
     }
 
     @Test
     public void testParseOnlyCommand() {
         Pair<String, List<String>> command = PhpExecutable.parseCommand("/usr/bin/php");
-        assertEquals("/usr/bin/php", command.first);
-        assertTrue(command.second.isEmpty());
+        assertEquals("/usr/bin/php", command.first());
+        assertTrue(command.second().isEmpty());
     }
 
     @Test
     public void testParseCommandWithParam1() {
         Pair<String, List<String>> command = PhpExecutable.parseCommand("/usr/bin/php --verbose");
-        assertEquals("/usr/bin/php", command.first);
-        assertEquals(1, command.second.size());
-        assertEquals("--verbose", command.second.get(0));
+        assertEquals("/usr/bin/php", command.first());
+        assertEquals(1, command.second().size());
+        assertEquals("--verbose", command.second().get(0));
     }
 
     @Test
     public void testParseCommandWithParam2() {
         Pair<String, List<String>> command = PhpExecutable.parseCommand("/usr/bin/php /verbose");
-        assertEquals("/usr/bin/php", command.first);
-        assertEquals(1, command.second.size());
-        assertEquals("/verbose", command.second.get(0));
+        assertEquals("/usr/bin/php", command.first());
+        assertEquals(1, command.second().size());
+        assertEquals("/verbose", command.second().get(0));
     }
 
     @Test
     public void testParseCommandWithParams1() {
         Pair<String, List<String>> command = PhpExecutable.parseCommand("/usr/bin/php --verbose --version");
-        assertEquals("/usr/bin/php", command.first);
-        assertEquals(2, command.second.size());
-        assertEquals("--verbose", command.second.get(0));
-        assertEquals("--version", command.second.get(1));
+        assertEquals("/usr/bin/php", command.first());
+        assertEquals(2, command.second().size());
+        assertEquals("--verbose", command.second().get(0));
+        assertEquals("--version", command.second().get(1));
     }
 
     @Test
     public void testParseCommandWithParams2() {
         Pair<String, List<String>> command = PhpExecutable.parseCommand("/usr/bin/php /verbose /version");
-        assertEquals("/usr/bin/php", command.first);
-        assertEquals(2, command.second.size());
-        assertEquals("/verbose", command.second.get(0));
-        assertEquals("/version", command.second.get(1));
+        assertEquals("/usr/bin/php", command.first());
+        assertEquals(2, command.second().size());
+        assertEquals("/verbose", command.second().get(0));
+        assertEquals("/version", command.second().get(1));
     }
 
     public void testInfoCommand() {

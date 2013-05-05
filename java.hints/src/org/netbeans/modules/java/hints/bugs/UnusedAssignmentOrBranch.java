@@ -57,7 +57,6 @@ import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
-import org.netbeans.modules.java.hints.infrastructure.Pair;
 import org.netbeans.modules.java.hints.introduce.Flow;
 import org.netbeans.modules.java.hints.introduce.Flow.FlowResult;
 import org.netbeans.spi.java.hints.Hint;
@@ -69,6 +68,7 @@ import org.netbeans.spi.java.hints.Hint.Options;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
@@ -136,7 +136,7 @@ public class UnusedAssignmentOrBranch {
             }
         }.scan(info.getCompilationUnit(), null);
 
-        info.putCachedValue(KEY_COMPUTED_ASSIGNMENTS, result = new Pair<Set<Tree>, Set<Element>>(usedAssignments, usedVariables), CacheClearPolicy.ON_TASK_END);
+        info.putCachedValue(KEY_COMPUTED_ASSIGNMENTS, result = Pair.<Set<Tree>, Set<Element>>of(usedAssignments, usedVariables), CacheClearPolicy.ON_TASK_END);
 
         return result;
     }
@@ -155,8 +155,8 @@ public class UnusedAssignmentOrBranch {
         if (ctx.isCanceled() || computedAssignments == null) return null;
 
         final CompilationInfo info = ctx.getInfo();
-        final Set<Tree> usedAssignments = computedAssignments.getA();
-        final Set<Element> usedVariables = computedAssignments.getB();
+        final Set<Tree> usedAssignments = computedAssignments.first();
+        final Set<Element> usedVariables = computedAssignments.second();
         Element var = info.getTrees().getElement(ctx.getVariables().get("$var"));
         Tree value = ctx.getVariables().get("$value").getLeaf();
 

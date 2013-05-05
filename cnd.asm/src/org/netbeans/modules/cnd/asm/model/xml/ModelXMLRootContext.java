@@ -58,11 +58,11 @@ import java.util.Set;
 import org.xml.sax.Attributes;
 
 import org.netbeans.modules.cnd.asm.model.lang.BitWidth;
-import org.netbeans.modules.cnd.asm.model.util.Pair;
 import org.netbeans.modules.cnd.asm.model.lang.instruction.Instruction;
 import org.netbeans.modules.cnd.asm.model.lang.Register;
 import org.netbeans.modules.cnd.asm.model.lang.instruction.InstructionArgs;
 import static org.netbeans.modules.cnd.asm.model.xml.ModelXMLAttributes.*;
+import org.openide.util.Pair;
 
 public class ModelXMLRootContext implements XMLReaderContext {
         
@@ -181,7 +181,7 @@ public class ModelXMLRootContext implements XMLReaderContext {
                      XMLBaseRegister result = new DefaultXMLBaseRegister(ctx.getName(), ctx.getWidth());
                      Set<Register> children = new HashSet<Register>();
                      for (Pair<String, Integer> pair : ctx.getChildren()) {
-                         XMLBaseRegister res = process(getForName(pair.getFirst())); 
+                         XMLBaseRegister res = process(getForName(pair.first()));
                          children.addAll(res.getChildren());
                          children.add(res);
                          res.setDirectParent(result);
@@ -230,7 +230,7 @@ public class ModelXMLRootContext implements XMLReaderContext {
                 String name = checkForName(attributes, REG_NAME_ATTRIBUTE); 
                 String offset = checkForName(attributes, REG_OFFSET_ATTRIBUTE);
                 
-                children.add(new Pair<String, Integer>(name, Integer.parseInt(offset)));
+                children.add(Pair.<String, Integer>of(name, Integer.parseInt(offset)));
                 return null;
             }
             

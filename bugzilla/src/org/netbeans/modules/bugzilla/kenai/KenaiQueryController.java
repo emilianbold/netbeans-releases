@@ -146,7 +146,7 @@ public class KenaiQueryController extends QueryController {
     }
 
     private boolean checkIssueProduct(BugzillaIssue issue) {
-        String issueProduct = issue.getFieldValue(IssueField.PRODUCT);
+        String issueProduct = issue.getRepositoryFieldValue(IssueField.PRODUCT);
         if(!issueProduct.equals(product)) {
             Confirmation dd = new DialogDescriptor.Confirmation(
                                 NbBundle.getMessage(

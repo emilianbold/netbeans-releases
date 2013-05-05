@@ -45,6 +45,7 @@ import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.openide.util.Lookup;
 
 /**
@@ -61,6 +62,22 @@ public class HtmlExtensions {
         }
         Lookup lookup = MimeLookup.getLookup(mimeType);
         return lookup.lookupAll(HtmlExtension.class);
+    }
+    
+    /**
+     * Determines whether the given HTML source represents a piece of web javascript-html application (Knockout, AngularJS,...).
+     * 
+     * @see HtmlExtension#isApplicationPiece(org.netbeans.modules.html.editor.api.gsf.HtmlParserResult) 
+     * @param result
+     * @return 
+     */
+    public static boolean isApplicationPiece(HtmlParserResult result) {
+        for(HtmlExtension ex : getRegisteredExtensions(result.getSnapshot().getMimeType())) {
+            if(ex.isApplicationPiece(result)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     

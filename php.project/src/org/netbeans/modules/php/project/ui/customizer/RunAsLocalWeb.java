@@ -60,13 +60,13 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.runconfigs.RunConfigLocal;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigLocalValidator;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * @author  Radek Matous, Tomas Mysik
@@ -336,10 +336,10 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
             Pair<String, String> pathMapping = advanced.getPathMapping();
             Pair<String, String> debugProxy = advanced.getDebugProxy();
             RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_URL, advanced.getDebugUrl().name());
-            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, pathMapping.first);
-            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, pathMapping.second);
-            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_HOST, debugProxy.first);
-            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_PORT, debugProxy.second);
+            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, pathMapping.first());
+            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, pathMapping.second());
+            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_HOST, debugProxy.first());
+            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_PORT, debugProxy.second());
         }
     }//GEN-LAST:event_advancedButtonActionPerformed
 

@@ -218,7 +218,23 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         manager.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-//                if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+                if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+                    Object oldO = evt.getOldValue();
+                    if (oldO instanceof Node[]) {
+                        
+                    }
+                    Object newO = evt.getNewValue();
+                    if (newO instanceof Node[]) {
+                        Node[] sel = (Node[]) newO;
+                        if (sel.length > 0) {
+                            ExecutionEventObject.Tree tree = sel[0].getLookup().lookup(ExecutionEventObject.Tree.class);
+                            if (tree != null) {
+                                tree.expandFold();
+                                tree.getStartOffset().scrollTo();
+                            }
+                        }
+                    }
+                }
 //                    Node[] nds = manager.getSelectedNodes();
 //                    if (nds.length > 0) {
 //                        ExecutionEventObject.Tree tree = nds[0].getLookup().lookup(ExecutionEventObject.Tree.class);

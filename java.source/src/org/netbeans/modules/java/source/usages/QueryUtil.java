@@ -59,6 +59,7 @@ import org.netbeans.api.java.source.ClassIndex.SearchScopeType;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl.UsageType;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**

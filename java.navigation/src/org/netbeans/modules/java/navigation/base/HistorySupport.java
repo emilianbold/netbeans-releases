@@ -68,6 +68,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ElementHandle;
 import org.openide.util.Mutex;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.WeakListeners;
 
@@ -181,8 +182,8 @@ public class HistorySupport {
         @Override
         public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
             String toolTipText = null;
-            if (value instanceof Pair && ((Pair)value).second instanceof ElementHandle) {
-                final String fqn =  ((ElementHandle)((Pair)value).second).getQualifiedName();
+            if (value instanceof Pair && ((Pair)value).second() instanceof ElementHandle) {
+                final String fqn =  ((ElementHandle)((Pair)value).second()).getQualifiedName();
                 value = getSimpleName(fqn);
                 toolTipText = fqn;
             }
@@ -291,8 +292,8 @@ public class HistorySupport {
 
         @Override
         public int compare(Pair<URI, ElementHandle<TypeElement>> o1, Pair<URI, ElementHandle<TypeElement>> o2) {
-            final String q1 = o1.second.getQualifiedName();
-            final String q2 = o2.second.getQualifiedName();
+            final String q1 = o1.second().getQualifiedName();
+            final String q2 = o2.second().getQualifiedName();
             final String simpleName1 = getSimpleName(q1);
             final String simpleName2 = getSimpleName(q2);
             int res = simpleName1.compareTo(simpleName2);

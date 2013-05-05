@@ -71,7 +71,7 @@ public final class PhpExecutableValidator {
     public static String validateCommand(@NullAllowed String command, @NullAllowed String executableName) {
         String executable = null;
         if (command != null) {
-            executable = PhpExecutable.parseCommand(command).first;
+            executable = PhpExecutable.parseCommand(command).first();
         }
         if (executableName == null) {
             return FileUtils.validateFile(executable, false);
@@ -86,7 +86,7 @@ public final class PhpExecutableValidator {
      * @return error if it is not valid, {@code null} otherwise
      */
     public static String validateCommand(@NonNull String command, @NonNull ValidationHandler validationHandler) {
-        return validationHandler.validate(PhpExecutable.parseCommand(command).first);
+        return validationHandler.validate(PhpExecutable.parseCommand(command).first());
     }
 
     //~ Inner classes

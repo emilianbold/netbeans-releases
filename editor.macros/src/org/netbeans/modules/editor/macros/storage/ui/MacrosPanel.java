@@ -464,7 +464,12 @@ public class MacrosPanel extends JPanel {
 
         if (DialogDisplayer.getDefault().notify(descriptor)==DialogDescriptor.OK_OPTION) {
             String macroName = panel.getNameValue().trim();
-            return model.createMacro(MimePath.EMPTY, macroName);
+	    final Macro macro = model.createMacro(MimePath.EMPTY, macroName);
+	    sorter.resortAfterModelChange();
+            int sel = sorter.viewIndex(model.getAllMacros().size() - 1);
+            tMacros.getSelectionModel().setSelectionInterval(sel, sel);
+            tMacros.scrollRectToVisible(tMacros.getCellRect(sel, 0, true));
+            return macro;
         }
         return null;
     }

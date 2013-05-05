@@ -58,7 +58,6 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -80,6 +79,11 @@ import org.netbeans.spi.editor.completion.CompletionItem;
  */
 @MimeRegistration(mimeType = "text/html", service = HtmlExtension.class)
 public class KOHtmlExtension extends HtmlExtension {
+
+    @Override
+    public boolean isApplicationPiece(HtmlParserResult result) {
+        return KOModel.getModel(result).containsKnockout();
+    }
 
     @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights(HtmlParserResult result, SchedulerEvent event) {

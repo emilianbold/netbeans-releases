@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,51 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.mylyn.util;
 
-package org.netbeans.modules.java.j2seprofiles;
+import org.eclipse.core.runtime.IProgressMonitor;
 
 /**
- * Just another copy of Pair.
- * @author Tomas Zezula
+ *
+ * @author Ondrej Vrabec
  */
-final class Pair<P,K> {
+public class CancelableProgressMonitor implements IProgressMonitor {
 
-    public final P first;
-    public final K second;
-
-    private Pair (P first, K second) {
-        this.first = first;
-        this.second = second;
-    }
-
-
-    public static <P,K> Pair<P,K> of (P first, K second) {
-        return new Pair<P,K> (first,second);
-    }
-
-
+    private volatile boolean canceled;
+    
     @Override
-    public int hashCode () {
-        int hashCode  = 0;
-        hashCode ^= first == null ? 0 : first.hashCode();
-        hashCode ^= second == null ? 0: second.hashCode();
-        return hashCode;
+    public void beginTask (String string, int i) {
     }
 
     @Override
-    public boolean equals (final Object other) {
-        if (other instanceof Pair) {
-            Pair<?,?> otherPair = (Pair<?,?>) other;
-            return (this.first == null ? otherPair.first == null : this.first.equals(otherPair.first)) &&
-                   (this.second == null ? otherPair.second == null : this.second.equals(otherPair.second));
-        }
-        return false;
+    public void done () {
     }
 
     @Override
-    public String toString () {
-        return String.format("Pair[%s,%s]", first,second);
+    public void internalWorked (double d) {
     }
+
+    @Override
+    public synchronized boolean isCanceled () {
+        return canceled;
+    }
+
+    @Override
+    public synchronized void setCanceled (boolean canceled) {
+        this.canceled = canceled;
+    }
+
+    @Override
+    public void setTaskName (String string) {
+    }
+
+    @Override
+    public void subTask (String string) {
+    }
+
+    @Override
+    public void worked (int i) {
+    }
+    
 }

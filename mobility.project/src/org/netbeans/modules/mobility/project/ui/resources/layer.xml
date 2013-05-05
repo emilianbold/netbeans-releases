@@ -599,8 +599,6 @@ made subject to such option by the copyright holder.
                 <file name="Abilities">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.mobility.project.ui.customizer.Bundle"/>
                     <attr name="customizerPanelClass" newvalue="org.netbeans.modules.mobility.project.ui.customizer.CustomizerAbilities"/>
-                    <attr name="triggerPropertyName" stringvalue="platform.trigger"/>
-                    <attr name="triggerPropertyValue" stringvalue="CLDC"/>
                 </file>
             </folder>
             <folder name="Jad">

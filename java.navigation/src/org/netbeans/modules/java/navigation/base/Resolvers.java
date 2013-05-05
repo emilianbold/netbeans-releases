@@ -63,6 +63,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**

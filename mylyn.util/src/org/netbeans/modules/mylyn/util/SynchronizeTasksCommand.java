@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,47 +37,68 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.api.util;
+package org.netbeans.modules.mylyn.util;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.internal.tasks.core.sync.SynchronizeTasksJob;
+import org.eclipse.mylyn.tasks.core.ITask;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
 
 /**
- * Class representing a pair of values.
+ *
+ * @author Ondrej Vrabec
  */
-public final class Pair<P, K> {
+public class SynchronizeTasksCommand extends BugtrackingCommand {
+    private final SynchronizeTasksJob job;
+    private String stringValue;
+    private final TaskRepository taskRepository;
+    private final Set<ITask> tasks;
+    private final CancelableProgressMonitor monitor;
 
-    public final P first;
-    public final K second;
-
-    private Pair(P first, K second) {
-        this.first = first;
-        this.second = second;
-    }
-
-    public static <P, K> Pair<P, K> of(P first, K second) {
-        return new Pair<P, K>(first, second);
-    }
-
-    @Override
-    public int hashCode() {
-        int hashCode  = 0;
-        hashCode ^= first == null ? 0 : first.hashCode();
-        hashCode ^= second == null ? 0 : second.hashCode();
-        return hashCode;
+    SynchronizeTasksCommand (SynchronizeTasksJob job, TaskRepository taskRepository, Set<ITask> tasks) {
+        this.taskRepository = taskRepository;
+        this.tasks = tasks;
+        this.job = job;
+        this.monitor = new CancelableProgressMonitor();
     }
 
     @Override
-    public boolean equals(final Object other) {
-        if (other instanceof Pair) {
-            Pair<?, ?> otherPair = (Pair) other;
-            return (this.first == null ? otherPair.first == null : this.first.equals(otherPair.first))
-                    && (this.second == null ? otherPair.second == null : this.second.equals(otherPair.second));
+    public void execute () throws CoreException, IOException, MalformedURLException {
+        Logger log = Logger.getLogger(this.getClass().getName());
+        if(log.isLoggable(Level.FINE)) {
+            log.log(
+                Level.FINE, 
+                "executing SynchronizeTasksCommand for tasks {0}:{1}", //NOI18N
+                new Object[] { taskRepository.getUrl(), tasks });
         }
-        return false;
+        
+        job.run(monitor);
     }
 
     @Override
-    public String toString() {
-        return String.format("Pair [%s, %s]", first, second); // NOI18N
+    public void cancel () {
+        monitor.setCanceled(true);
     }
+    
+    @Override
+    public String toString () {
+        if(stringValue == null) {
+            StringBuilder sb = new StringBuilder()
+            .append("Synchronizing tasks ") //NOI18N
+            .append(tasks)
+            .append(",repository=") //NOI18N
+            .append(taskRepository.getUrl())
+            .append("]"); //NOI18N
+            stringValue = sb.toString();
+        }
+        return stringValue;
+    }
+    
 }
