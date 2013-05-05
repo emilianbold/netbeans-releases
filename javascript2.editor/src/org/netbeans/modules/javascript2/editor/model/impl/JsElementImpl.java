@@ -52,6 +52,19 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.ANONYMOUS_OBJECT;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.CONSTRUCTOR;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.FIELD;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.FILE;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.FUNCTION;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.METHOD;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.OBJECT;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.OBJECT_LITERAL;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.PARAMETER;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.PROPERTY;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.PROPERTY_GETTER;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.PROPERTY_SETTER;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.VARIABLE;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -89,41 +102,7 @@ public abstract class JsElementImpl implements JsElement {
            
     @Override
     public ElementKind getKind() {
-        ElementKind result = ElementKind.OTHER;
-        switch (getJSKind()) {
-            case CONSTRUCTOR: 
-                result = ElementKind.CONSTRUCTOR;
-                break;
-            case METHOD:
-            case FUNCTION:
-            case PROPERTY_GETTER:
-            case PROPERTY_SETTER:
-                result = ElementKind.METHOD;
-                break;
-            case OBJECT:
-            case ANONYMOUS_OBJECT:
-            case OBJECT_LITERAL:
-                result = ElementKind.CLASS;
-                break;
-            case PROPERTY:
-                result = ElementKind.FIELD;
-                break;
-            case FILE:
-                result = ElementKind.FILE;
-                break;
-            case PARAMETER:
-                result = ElementKind.PARAMETER;
-                break;
-            case VARIABLE:
-                result = ElementKind.VARIABLE;
-                break;
-            case FIELD:
-                result = ElementKind.FIELD;
-                break;
-            default:
-                break;
-        }
-        return result;
+        return convertJsKindToElementKind(getJSKind());
     }
     
     @Override
@@ -210,5 +189,43 @@ public abstract class JsElementImpl implements JsElement {
             }
         }
         return false;
+    }
+    
+    public static ElementKind convertJsKindToElementKind(Kind jsKind) {
+        ElementKind result = ElementKind.OTHER;
+        switch (jsKind) {
+            case CONSTRUCTOR: 
+                result = ElementKind.CONSTRUCTOR;
+                break;
+            case METHOD:
+            case FUNCTION:
+            case PROPERTY_GETTER:
+            case PROPERTY_SETTER:
+                result = ElementKind.METHOD;
+                break;
+            case OBJECT:
+            case ANONYMOUS_OBJECT:
+            case OBJECT_LITERAL:
+                result = ElementKind.CLASS;
+                break;
+            case PROPERTY:
+                result = ElementKind.FIELD;
+                break;
+            case FILE:
+                result = ElementKind.FILE;
+                break;
+            case PARAMETER:
+                result = ElementKind.PARAMETER;
+                break;
+            case VARIABLE:
+                result = ElementKind.VARIABLE;
+                break;
+            case FIELD:
+                result = ElementKind.FIELD;
+                break;
+            default:
+                break;
+        }
+        return result;
     }
 }
