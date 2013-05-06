@@ -120,7 +120,7 @@ ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalo
 ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/XMLSchema-instance.xsd  W3C (the original at http://www.w3.org/2001/XMLSchema-instance)
 ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/schema-for-xslt20.xsd  W3C (the original at http://www.w3.org/2007/schema-for-xslt20.xsd)
 ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/xml.xsd  W3C (the original at http://www.w3.org/2001/xml.xsd)
-ide/modules/ext/postgresql-9.1-901.jdbc4.jar                          BSD-postgresql
+ide/modules/ext/postgresql-9.2-1002.jdbc4.jar                         BSD-postgresql
 ide/modules/ext/processtreekiller-1.0.1.jar                           MIT
 ide/modules/ext/resolver-1.2.jar                                      Apache-2.0
 ide/modules/ext/saxon9B.jar                                           MPL-1.0
@@ -157,11 +157,11 @@ java/modules/ext/eclipselink/org.eclipse.persistence.jpa.modelgen_2.5.0.v2013040
 java/modules/ext/hibernate                                            LGPL-2.1, incl. BSD, Apache-2.0 (see also Hibernate 3.2.5 at http://hibernate.org)
 java/modules/ext/jaxws22/woodstox-core-asl.jar                        Apache-2.0
 java/modules/ext/jaxws22/stax2-api.jar                                BSD-woodstox
-java/modules/ext/maven/indexer-artifact-5.1.0.jar                     Apache-2.0
-java/modules/ext/maven/indexer-core-5.1.0.jar                         Apache-2.0
+java/modules/ext/maven/indexer-artifact-5.1.1.jar                     Apache-2.0
+java/modules/ext/maven/indexer-core-5.1.1.jar                         Apache-2.0
 java/modules/ext/maven/jdom-1.0.jar                                   Apache-JDOM
-java/modules/ext/maven/lucene-core-3.6.1.jar                          Apache-2.0
-java/modules/ext/maven/lucene-highlighter-3.6.1.jar                   Apache-2.0
+java/modules/ext/maven/lucene-core-3.6.2.jar                          Apache-2.0
+java/modules/ext/maven/lucene-highlighter-3.6.2.jar                   Apache-2.0
 java/modules/ext/maven/maven-dependency-tree-2.0.jar                  Apache-2.0
 java/modules/ext/spring-3.0/spring-aop-3.1.1.RELEASE.jar              Apache-2.0
 java/modules/ext/spring-3.0/spring-asm-3.1.1.RELEASE.jar              Apache-2.0
@@ -3294,7 +3294,7 @@ POSSIBILITY OF SUCH DAMAGE.
 ========================= BSD-postgresql =========================
 
 
-Copyright (c) 1997-2010, PostgreSQL Global Development Group
+Copyright (c) 1997-2011, PostgreSQL Global Development Group
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
