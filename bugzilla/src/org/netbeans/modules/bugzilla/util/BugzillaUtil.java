@@ -191,5 +191,11 @@ public class BugzillaUtil {
     public static void openQuery(BugzillaQuery bugzillaQuery) {
         Bugzilla.getInstance().getBugtrackingFactory().openQuery(getRepository(bugzillaQuery.getRepository()), bugzillaQuery);
     }
+
+    public static boolean isOutgoing (ITask task) {
+        return task.getSynchronizationState() == ITask.SynchronizationState.CONFLICT
+                || task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING
+                || task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW;
+    }
     
 }

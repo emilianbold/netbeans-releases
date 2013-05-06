@@ -222,6 +222,25 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     protected void fireDataChanged() {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
     }
+
+    void deleteTask () {
+        synchronized (MODEL_LOCK) {
+            if (list != null) {
+                model.removeModelListener(list);
+                list = null;
+            }
+            model = null;
+        }
+        getRepository().deleteTask(task);
+    }
+
+    void markNewRead () {
+        task.setAttribute("NetBeans.markedNewRead", "1"); // NOI18N
+    }
+
+    boolean isMarkedNewRead () {
+        return "1".equals(task.getAttribute("NetBeans.markedNewRead")); // NOI18N
+    }
     
     private void fireSeenChanged(boolean wasSeen, boolean seen) {
         support.firePropertyChange(IssueStatusProvider.EVENT_SEEN_CHANGED, wasSeen, seen);
@@ -586,7 +605,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
             Bugzilla.LOG.log(Level.INFO, null, ex);
         }
         boolean needsRefresh = false;
-        if (taskDataState != null) {
+        if (taskDataState != null && !isNew()) {
             for (TaskData taskData : new TaskData[] { 
                 taskDataState.getEditsData(),
                 taskDataState.getLastReadData(),
@@ -710,8 +729,10 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
             handleProductChange(a);
         }
         Bugzilla.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}) ;
-        a.setValue(value);
-        model.attributeChanged(a);
+        if (!value.equals(a.getValue())) {
+            a.setValue(value);
+            model.attributeChanged(a);
+        }
     }
 
     void setFieldValues(IssueField f, List<String> ccs) {
