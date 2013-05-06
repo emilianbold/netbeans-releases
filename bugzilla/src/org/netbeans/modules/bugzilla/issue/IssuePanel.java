@@ -515,7 +515,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         assignedField.setEditable(issue.isNew() || issue.canReassign());
         assignedCombo.setEnabled(assignedField.isEditable());
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
-        if (isNew && force) {
+        if (isNew && force && !issue.isMarkedNewRead()) {
             // this should not be called when reopening task to submit
             if(BugzillaUtil.isNbRepository(issue.getRepository())) {
                 addNetbeansInfo();
@@ -523,6 +523,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             // Preselect the first product
             selectProduct();
             initStatusCombo("NEW"); // NOI18N
+            issue.markNewRead();
         } else {
             String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
             String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
@@ -2408,7 +2409,17 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     }                        
                 }
             }
-            reloadForm(false);
+            if (reloading) {
+                // reload when current refresh of components finishes
+                EventQueue.invokeLater(new Runnable () {
+                    @Override
+                    public void run () {
+                        reloadForm(false);
+                    }
+                });
+            } else {
+                reloadForm(false);
+            }
         }
     }//GEN-LAST:event_productComboActionPerformed
 
@@ -2896,8 +2907,8 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     })
     private void btnDeleteTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteTaskActionPerformed
         if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(),
-                Bundle.MSG_IssuePanel_cancelChanges_message(),
-                Bundle.LBL_IssuePanel_cancelChanges_title(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+                Bundle.MSG_IssuePanel_deleteTask_message(),
+                Bundle.LBL_IssuePanel_deleteTask_title(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
             return;
         }
         Container tc = SwingUtilities.getAncestorOfClass(TopComponent.class, this);
@@ -3273,7 +3284,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             }
             @Override
             public void changedUpdate (DocumentEvent e) {
-                if (!issue.isNew() && !addCommentArea.getText().trim().isEmpty()) {
+                if (!reloading && !issue.isNew() && !addCommentArea.getText().trim().isEmpty()) {
                     issue.addComment(addCommentArea.getText().trim());
                 }
             }
