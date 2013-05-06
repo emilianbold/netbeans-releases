@@ -68,17 +68,30 @@ public class EnumEditor extends PropertyEditorSupport
      */
     private Object[] enumerationValues;
 
+    private boolean unknownToString;
+
     public EnumEditor(Object[] enumerationValues) {
-        this(enumerationValues, true);
+        this(enumerationValues, true, false);
     }
 
     public EnumEditor(Object[] enumerationValues, boolean translate) {
+        this(enumerationValues, translate, false);
+    }
+
+    /**
+     * @param unknownToString false if only the enumerated values can be entered,
+     *        true if also other values can be entered - then they are transformed
+     *        to String representation via toString(), for creating values from
+     *        String the subclass needs to override setAsText method
+     */
+    protected EnumEditor(Object[] enumerationValues, boolean translate, boolean unknownToString) {
         if (translate) {
             translateEnumLabels(enumerationValues);
         }
         this.enumerationValues = enumerationValues;
+        this.unknownToString = unknownToString;
     }
-    
+
     protected Object[] getEnumerationValues() {
         return enumerationValues;
     }
@@ -97,12 +110,18 @@ public class EnumEditor extends PropertyEditorSupport
 
     @Override
     public void setAsText(String str) {
+        setValueFromString(str);
+    }
+
+    protected final boolean setValueFromString(String str) {
         int n = enumerationValues.length / 3;
-        for (int i=0; i < n; i++)
+        for (int i=0; i < n; i++) {
             if (enumerationValues[i*3].toString().equals(str)) {
                 setValue(enumerationValues[i*3 + 1]);
-                break;
+                return true;
             }
+        }
+        return false;
     }
 
     @Override
@@ -114,7 +133,9 @@ public class EnumEditor extends PropertyEditorSupport
             if ((eVal == null && value == null) || (eVal != null && eVal.equals(value)))
                 return enumerationValues[i*3].toString();
         }
-
+        if (unknownToString && value != null) {
+            return value.toString();
+        }
         return enumerationValues.length > 0 ?
                  enumerationValues[0].toString() : null;
     }
@@ -133,9 +154,14 @@ public class EnumEditor extends PropertyEditorSupport
             }
         }
 
-        if (initString == null)
-            initString = enumerationValues.length > 2 ?
-                         (String) enumerationValues[2] : null;
+        if (initString == null) {
+            if (unknownToString && value != null) {
+                initString = value.toString();
+            } else {
+                initString = enumerationValues.length > 2 ?
+                             (String) enumerationValues[2] : null;
+            }
+        }
         if (initString == null)
             return null;
 
