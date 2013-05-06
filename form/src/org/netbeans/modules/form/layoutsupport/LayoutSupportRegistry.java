@@ -352,6 +352,9 @@ public class LayoutSupportRegistry {
                 "javax.swing.BoxLayout", // NOI18N
                 "org.netbeans.modules.form.layoutsupport.delegates.BoxLayoutSupport"); // NOI18N
             layoutToLayoutDelegate.put(
+                "javax.swing.OverlayLayout", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.OverlayLayoutSupport"); // NOI18N
+            layoutToLayoutDelegate.put(
                 "java.awt.GridBagLayout", // NOI18N
                 "org.netbeans.modules.form.layoutsupport.delegates.GridBagLayoutSupport"); // NOI18N
             layoutToLayoutDelegate.put(

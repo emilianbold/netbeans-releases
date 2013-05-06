@@ -1039,6 +1039,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
                 // subcomponents are set after reading from code [for some reason...]
                 visualContainer.initSubComponents(childComponents);
+                if (layoutSupport.getComponentCount() == 0) {
+                    RADVisualComponent[] visualSubComponents = visualContainer.getSubComponents();
+                    if (visualSubComponents.length > 0) {
+                        // no layout code was saved for simply added components, so need to add them now
+                        layoutSupport.addComponents(visualSubComponents, null, -1);
+                    }
+                }
                 if (layoutInitialized) { // successfully initialized - build the primary container
                     try { // some weird problems might occur - see issue 67890
                         layoutSupport.updatePrimaryContainer();
@@ -3496,15 +3503,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         // components code
-        for (int i=0, n=layoutSupport.getComponentCount(); i < n; i++) {
-            code = layoutSupport.getComponentCode(i);
-            if (code != null) {
-                Iterator it = code.getStatementsIterator();
-                while (it.hasNext()) {
-                    saveCodeStatement((CodeStatement) it.next(), buf2, subIndent);
+        if (layoutSupport.hasComponentConstraints()
+                || formModel.getCurrentVersionLevel().ordinal() < FormModel.FormVersion.NB74.ordinal()) {
+            for (int i=0, n=layoutSupport.getComponentCount(); i < n; i++) {
+                code = layoutSupport.getComponentCode(i);
+                if (code != null) {
+                    Iterator it = code.getStatementsIterator();
+                    while (it.hasNext()) {
+                        saveCodeStatement((CodeStatement) it.next(), buf2, subIndent);
+                    }
                 }
             }
-        }
+        } // Otherwise optimizing: don't save lenghty XML for components added via simple add method.
+          // From our standard layouts this applies to OverlayLayout and FlowLayout with alignOnBaseline set.
 
         if (buf2.length() > 0) {
             buf.append(indent);
