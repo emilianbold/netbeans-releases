@@ -48,8 +48,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Query;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.team.ui.util.treelist.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.OpenQueryAction;
@@ -63,16 +64,16 @@ import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
  */
 public class QueryNode extends TaskContainerNode implements Comparable<QueryNode> {
 
-    private final Query query;
+    private final QueryImpl query;
     private JPanel panel;
     private TreeLabel lblName;
     private LinkButton btnChanged;
     private LinkButton btnTotal;
-    private QueryListener queryListener;
-    final Object LOCK = new Object();
+    private final QueryListener queryListener;
+    private final Object LOCK = new Object();
     private TreeLabel lblSeparator;
 
-    public QueryNode(Query query, TreeListNode parent, boolean refresh) {
+    public QueryNode(QueryImpl query, TreeListNode parent, boolean refresh) {
         super(refresh, true, parent, query.getDisplayName());
         this.query = query;
         queryListener = new QueryListener();
@@ -108,18 +109,14 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     }
 
     @Override
-    List<Issue> getTasks() {
-        List<Issue> tasks = Collections.emptyList();
+    public List<IssueImpl> getTasks() {
+        List<IssueImpl> tasks = Collections.emptyList();
         try {
-            tasks = new ArrayList<Issue>(query.getIssues());
+            tasks = new ArrayList<IssueImpl>(query.getIssues());
         } catch (Throwable throwable) {
             handleError(throwable);
         }
         return tasks;
-    }
-
-    @Override
-    void adjustTaskNode(TaskNode taskNode) {
     }
 
     @Override
@@ -135,7 +132,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     }
 
     @Override
-    protected JComponent createComponent(List<Issue> data) {
+    protected JComponent createComponent(List<IssueImpl> data) {
         if (isError()) {
             setError(false);
             return null;
@@ -165,7 +162,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             panel.add(lblSeparator, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
             labels.add(lblSeparator);
 
-            btnChanged = new LinkButton(getChangedString(), new OpenQueryAction(Query.QueryMode.SHOW_NEW_OR_CHANGED, this)); //NOI18N
+            btnChanged = new LinkButton(getChangedString(), new OpenQueryAction(QueryController.QueryMode.SHOW_NEW_OR_CHANGED, this)); //NOI18N
             btnChanged.setVisible(showChanged);
             panel.add(btnChanged, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
             buttons.add(btnChanged);
@@ -189,19 +186,25 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     public Action[] getPopupActions() {
         List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
         QueryNode[] queryNodes = new QueryNode[selectedNodes.size()];
+        boolean justQueries = true;
         for (int i = 0; i < selectedNodes.size(); i++) {
             TreeListNode treeListNode = selectedNodes.get(i);
             if (treeListNode instanceof QueryNode) {
                 queryNodes[i] = (QueryNode) treeListNode;
             } else {
-                return null;
+                justQueries = false;
+                break;
             }
         }
-        List<Action> actions = Actions.getQueryPopupActions(queryNodes);
+        List<Action> actions = new ArrayList<Action>();
+        if (justQueries) {
+            actions.addAll(Actions.getQueryPopupActions(queryNodes));
+        }
+        actions.addAll(Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
         return actions.toArray(new Action[actions.size()]);
     }
 
-    public Query getQuery() {
+    public QueryImpl getQuery() {
         return query;
     }
 
@@ -244,7 +247,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(Query.EVENT_QUERY_ISSUES_CHANGED)) {
+            if (evt.getPropertyName().equals(QueryImpl.EVENT_QUERY_ISSUES_CHANGED)) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

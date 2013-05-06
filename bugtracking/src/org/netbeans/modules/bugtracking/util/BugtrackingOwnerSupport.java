@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugtracking.util;
 
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
@@ -52,8 +52,9 @@ import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.DelegatingConnector;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.ui.selectors.RepositorySelectorBuilder;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -198,7 +199,7 @@ public class BugtrackingOwnerSupport {
                 }
             } catch (IOException ex) {
                 LOG.log(Level.INFO,
-                      " communication with Kenai failed while loading " //NOI18N
+                      " communication with Team Server failed while loading " //NOI18N
                           + "information about bugtracking repository", //NOI18N
                       ex);
                 return null;
@@ -413,15 +414,15 @@ public class BugtrackingOwnerSupport {
         if (attValue instanceof String) {
             RepositoryImpl repository = null;
             String url = (String) attValue;
-            if(BugtrackingUtil.isNbRepository(url)) {
+            if(NBBugzillaUtils.isNbRepository(url)) {
                 File file = FileUtil.toFile(fileObject);
                 if(file != null) {
-                    OwnerInfo ownerInfo = KenaiUtil.getOwnerInfo(file);
+                    OwnerInfo ownerInfo = TeamUtil.getOwnerInfo(file);
                     if(ownerInfo != null) {
-                        repository = APIAccessor.IMPL.getImpl(KenaiUtil.getRepository(url, ownerInfo.getOwner()));
+                        repository = APIAccessor.IMPL.getImpl(TeamUtil.getRepository(url, ownerInfo.getOwner()));
                     }
                     if(repository == null) {
-                        repository = APIAccessor.IMPL.getImpl(KenaiUtil.findNBRepository());
+                        repository = APIAccessor.IMPL.getImpl(TeamUtil.findNBRepository());
                     }
                 }
             }
@@ -429,16 +430,16 @@ public class BugtrackingOwnerSupport {
                 return repository;
             }
             try {
-                repository = APIAccessor.IMPL.getImpl(KenaiUtil.getRepository(url));
+                repository = APIAccessor.IMPL.getImpl(TeamUtil.getRepository(url));
                 if (repository != null) {
                     return repository;
                 }
             } catch (IOException ex) {
-                /* the remote location (URL) denotes a Kenai project */
+                /* the remote location (URL) denotes a Team project */
                 if ("Not Found".equals(ex.getMessage())) {              // NOI18N
                     BugtrackingManager.LOG.log(
                             Level.INFO,
-                            "Kenai project corresponding to URL {0} does not exist.",  // NOI18N
+                            "Team project corresponding to URL {0} does not exist.",  // NOI18N
                             attValue);
                 } else {
                     BugtrackingManager.LOG.throwing(
@@ -453,7 +454,7 @@ public class BugtrackingOwnerSupport {
     }
 
     private RepositoryImpl askUserToSpecifyRepository(RepositoryImpl suggestedRepo) {
-        Collection<RepositoryImpl> repos = BugtrackingUtil.getKnownRepositories(true);
+        Collection<RepositoryImpl> repos = RepositoryRegistry.getInstance().getKnownRepositories(true);
         DelegatingConnector[] connectors = BugtrackingManager.getInstance().getConnectors();
 
         final RepositorySelectorBuilder selectorBuilder = new RepositorySelectorBuilder();

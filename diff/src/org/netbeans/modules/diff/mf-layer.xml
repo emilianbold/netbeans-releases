@@ -51,6 +51,29 @@ made subject to such option by the copyright holder.
           <file name="org-netbeans-modules-diff-DiffAction.instance"/>
           <file name="org-netbeans-modules-diff-PatchAction.instance"/>
       </folder>
+      <folder name="Diff">
+          <file name="toggle-ignore-case-diff-option.instance">
+              <attr bundlevalue="org.netbeans.modules.diff.Bundle#CTL_IgnoreCaseOptionAction" name="displayName"/>
+              <attr name="Name" stringvalue="toggle-ignore-case-diff-option"/>
+              <attr name="preferencesNode" stringvalue="/org/netbeans/modules/diff" />
+              <attr name="preferencesKey" stringvalue="ignoreCase"/>
+              <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.checkbox"/>
+          </file>
+          <file name="toggle-ignore-inner-whitespace-diff-option.instance">
+              <attr bundlevalue="org.netbeans.modules.diff.Bundle#CTL_IgnoreInnerWhitespacesOptionAction" name="displayName"/>
+              <attr name="Name" stringvalue="toggle-ignore-inner-whitespace-diff-option"/>
+              <attr name="preferencesNode" stringvalue="/org/netbeans/modules/diff" />
+              <attr name="preferencesKey" stringvalue="ignoreInnerWhitespace"/>
+              <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.checkbox"/>
+          </file>
+          <file name="toggle-ignore-whitespace-diff-option.instance">
+              <attr bundlevalue="org.netbeans.modules.diff.Bundle#CTL_IgnoreWhitespacesOptionAction" name="displayName"/>
+              <attr name="Name" stringvalue="toggle-ignore-whitespace-diff-option"/>
+              <attr name="preferencesNode" stringvalue="/org/netbeans/modules/diff" />
+              <attr name="preferencesKey" stringvalue="ignoreWhitespace"/>
+              <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.checkbox"/>
+          </file>
+      </folder>
   </folder>
   <folder name="UI">
       <folder name="ToolActions">

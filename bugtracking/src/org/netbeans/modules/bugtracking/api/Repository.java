@@ -69,10 +69,10 @@ public final class Repository {
      * Old and new value are maps of changed doubles: attribute-name / attribute-value.
      * Old value can be null in case the repository is created.
      */
-    public final static String EVENT_ATTRIBUTES_CHANGED = "bugtracking.repository.attributes.changed"; //NOI18N
+    public final static String EVENT_ATTRIBUTES_CHANGED = RepositoryImpl.EVENT_ATTRIBUTES_CHANGED;
 
-    public static final String ATTRIBUTE_URL = "repository.attribute.url"; //NOI18N
-    public static final String ATTRIBUTE_DISPLAY_NAME = "repository.attribute.displayName"; //NOI18N
+    public static final String ATTRIBUTE_URL = RepositoryImpl.ATTRIBUTE_URL;
+    public static final String ATTRIBUTE_DISPLAY_NAME = RepositoryImpl.ATTRIBUTE_DISPLAY_NAME;
 
     private final static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.Repository"); // NOI18N
     

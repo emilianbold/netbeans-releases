@@ -1,0 +1,6 @@
+Name: Tasktop C2C Cloud API
+Version: 1.1.0
+License: Licensed to oracle ?
+OSR: XXX
+Origin: XXX
+Description: Tasktop C2C Cloud API

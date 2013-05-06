@@ -77,7 +77,8 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.util.*;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.OwnerUtils;
 import org.netbeans.modules.bugtracking.util.SaveQueryPanel.QueryNameValidator;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConfig;
@@ -1072,19 +1073,21 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         }
 
         Task post(boolean autoRefresh) {
-            if(task != null) {
-                task.cancel();
+            Task t = task;
+            if (t != null) {
+                t.cancel();
             }
-            task = rp.create(this);
+            task = t = rp.create(this);
             this.autoRefresh = autoRefresh;
-            task.schedule(0);
-            return task;
+            t.schedule(0);
+            return t;
         }
 
         @Override
         public boolean cancel() {
-            if(task != null) {
-                task.cancel();
+            Task t = task;
+            if (t != null) {
+                t.cancel();
                 finnishQuery();
             }
             return true;

@@ -44,6 +44,7 @@ package org.netbeans.modules.bugzilla.issue;
 
 import java.util.List;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.IssueField;
@@ -68,7 +69,7 @@ public class BugzillaIssueNode extends IssueNode<BugzillaIssue> {
     protected Property<?>[] getProperties() {
         return new Property<?>[] {
             new IDProperty(),
-            BugzillaUtil.isNbRepository(getBugzillaIssue().getRepository()) 
+            NBBugzillaUtils.isNbRepository(getBugzillaIssue().getRepository().getUrl()) 
                 ? new IssueTypeProperty()
                 : new SeverityProperty(),
             new PriorityProperty(),

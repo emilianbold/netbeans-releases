@@ -335,7 +335,12 @@ public final class MultiViewPeer implements PropertyChangeListener {
         JComponent jc = el.getToolbarRepresentation();
         assert jc != null : "MultiViewElement " + el.getClass() + " returns null as toolbar component."; //NOI18N
         jc.setOpaque(false);
-        tabs.setInnerToolBar(jc, ((ContextAwareDescription)model.getActiveDescription()).isSplitDescription());
+	boolean isSplitDescription = false;
+	MultiViewDescription desc = model.getActiveDescription();
+	if(desc instanceof ContextAwareDescription) {
+	    isSplitDescription = ((ContextAwareDescription)desc).isSplitDescription();
+	}
+        tabs.setInnerToolBar(jc, isSplitDescription);
         tabs.setToolbarBarVisible(isToolbarVisible());
         if (editorSettingsPreferences != null) {
             editorSettingsPreferences.addPreferenceChangeListener(editorSettingsListener);

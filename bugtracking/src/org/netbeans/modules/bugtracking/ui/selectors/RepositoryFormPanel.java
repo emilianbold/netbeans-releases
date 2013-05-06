@@ -59,8 +59,8 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import static java.lang.Character.MAX_RADIX;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.netbeans.modules.bugtracking.kenai.TeamRepositoryPanel;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.TeamRepositoryPanel;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 
@@ -195,7 +195,7 @@ public class RepositoryFormPanel extends JPanel {
             if (firstTimeUse) {
                 RepositoryInfo info = repositoryImpl.getInfo();
                 Component cmp;
-                if(info != null && KenaiUtil.isKenai(repositoryImpl.getRepository())) {
+                if(info != null && TeamUtil.isFromTeamServer(repositoryImpl.getRepository())) {
                     cmp = new TeamRepositoryPanel(info);
                 } else {
                     cmp = controller.getComponent();

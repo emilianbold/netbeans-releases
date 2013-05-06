@@ -42,9 +42,13 @@
 package org.netbeans.modules.languages.neon.csl;
 
 import org.netbeans.api.lexer.Language;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
+import org.netbeans.modules.languages.neon.completion.NeonCompletionHandler;
 import org.netbeans.modules.languages.neon.lexer.NeonTokenId;
+import org.netbeans.modules.languages.neon.parser.NeonParser;
+import org.netbeans.modules.parsing.spi.Parser;
 
 /**
  *
@@ -67,6 +71,16 @@ public class NeonLanguageConfig extends DefaultLanguageConfig {
     @Override
     public String getLineCommentPrefix() {
         return "#"; //NOI18N
+    }
+
+    @Override
+    public CodeCompletionHandler getCompletionHandler() {
+        return new NeonCompletionHandler();
+    }
+
+    @Override
+    public Parser getParser() {
+        return new NeonParser();
     }
 
 }

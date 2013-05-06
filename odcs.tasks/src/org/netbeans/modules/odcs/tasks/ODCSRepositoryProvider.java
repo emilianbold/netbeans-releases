@@ -45,8 +45,8 @@ import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
@@ -57,7 +57,7 @@ import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
  *
  * @author Tomas Stupka
  */
-public class ODCSRepositoryProvider extends KenaiRepositoryProvider<ODCSRepository, ODCSQuery, ODCSIssue> {
+public class ODCSRepositoryProvider extends TeamRepositoryProvider<ODCSRepository, ODCSQuery, ODCSIssue> {
 
     @Override
     public RepositoryInfo getInfo(ODCSRepository r) {
@@ -129,7 +129,7 @@ public class ODCSRepositoryProvider extends KenaiRepositoryProvider<ODCSReposito
     }
 
     @Override
-    public KenaiProject getKenaiProject(ODCSRepository repository) {
+    public TeamProject getTeamProject(ODCSRepository repository) {
         return repository.getKenaiProject();
     }
     

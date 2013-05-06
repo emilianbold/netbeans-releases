@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 
@@ -63,8 +64,7 @@ public final class Query {
 
     public enum QueryMode {
         SHOW_ALL,
-        SHOW_NEW_OR_CHANGED,
-        EDIT
+        SHOW_NEW_OR_CHANGED
     }
     
     private QueryImpl impl;
@@ -99,7 +99,15 @@ public final class Query {
     }
 
     public void open(QueryMode mode) {
-        impl.open(false, mode);
+        switch(mode) {
+            case SHOW_NEW_OR_CHANGED:
+                impl.open(false, QueryController.QueryMode.SHOW_NEW_OR_CHANGED);
+                break;
+            case SHOW_ALL:
+                impl.open(false, QueryController.QueryMode.SHOW_ALL);
+                break;
+                
+        }
     }
     
     public void remove() {

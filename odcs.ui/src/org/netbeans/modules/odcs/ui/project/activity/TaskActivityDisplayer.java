@@ -90,7 +90,7 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
         gbc.insets = new Insets(0, 0, 0, 5);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.gridheight = GridBagConstraints.REMAINDER;
-        JLabel lblType = new JLabel(activity.getActivity().getActivityType().getPrettyName());
+        JLabel lblType = new JLabel(Utils.getActivityName(activity.getActivity().getActivityType()));
         panel.add(lblType, gbc);
 
         LinkLabel linkDisplayName = new LinkLabel() {
@@ -134,7 +134,7 @@ public class TaskActivityDisplayer extends ActivityDisplayer {
 
     @Override
     public Icon getActivityIcon() {
-        String activityType = activity.getActivity().getActivityType().getPrettyName().toLowerCase();
+        String activityType = Utils.getActivityName(activity.getActivity().getActivityType()).toLowerCase();
         String iconSuffix = activityType.split(" ")[0]; //NOI18N
         ImageIcon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/activity_task_" + iconSuffix + ".png", true); //NOI18N
         if (icon == null) {

@@ -62,7 +62,7 @@ class Support {
     private static Support instance;
     private Map<String, ODCSHandler> handlers = new HashMap<String, ODCSHandler>();
 
-    final HashMap<String, WeakReference<KenaiProjectImpl>> projectsCache = new HashMap<String, WeakReference<KenaiProjectImpl>>();
+    final HashMap<String, WeakReference<TeamProjectImpl>> projectsCache = new HashMap<String, WeakReference<TeamProjectImpl>>();
 
     private Support() {
     }

@@ -127,7 +127,7 @@ public class MylynSupport {
                 taskActivityManager, synchronizationManager);
 
         String storagePath = Places.getUserDirectory().getAbsolutePath()
-                + "/var/tasks/mylyn".replaceAll("/", File.separator); //NOI18N
+                + "/var/tasks/mylyn".replace("/", File.separator); //NOI18N
         taskListStorageFile = new File(storagePath, ITasksCoreConstants.DEFAULT_TASK_LIST_FILE);
         taskDataManager.setDataPath(storagePath);
         taskListWriter = new TaskListExternalizer(repositoryModel, taskRepositoryManager);

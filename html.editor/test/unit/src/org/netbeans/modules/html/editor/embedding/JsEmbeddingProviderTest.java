@@ -43,9 +43,9 @@ package org.netbeans.modules.html.editor.embedding;
 
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HtmlLexerPlugin;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -132,9 +132,12 @@ public class JsEmbeddingProviderTest extends CslTestBase {
     }
 
     private void assertEmbedding(String code, String expectedJsVirtualSource) {
+        assertEmbedding(getDocument(code, "text/html"), expectedJsVirtualSource);
+    }
+    
+    public static void assertEmbedding(Document doc, String expectedJsVirtualSource) {
         try {
-            BaseDocument document = getDocument(code, "text/html");
-            Source source = Source.create(document);
+            Source source = Source.create(doc);
             final AtomicReference<String> jsCodeRef = new AtomicReference<>();
             ParserManager.parse(Collections.singleton(source), new UserTask() {
                 @Override

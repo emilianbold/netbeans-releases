@@ -58,7 +58,7 @@ import javax.swing.Action;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -183,9 +183,9 @@ public class ODCSHandler {
     private QueryHandleImpl createQueryHandle (Query q, boolean needsRefresh) {
         Repository repo = q.getRepository();
         boolean predefined = false;
-        if (KenaiUtil.isKenai(repo)) {
-            boolean needsLogin = KenaiUtil.needsLogin(q);
-            predefined = KenaiUtil.getAllIssuesQuery(repo) == q || KenaiUtil.getMyIssuesQuery(repo) == q;
+        if (TeamUtil.isFromTeamServer(repo)) {
+            boolean needsLogin = TeamUtil.needsLogin(q);
+            predefined = TeamUtil.getAllIssuesQuery(repo) == q || TeamUtil.getMyIssuesQuery(repo) == q;
             if (needsLogin) {
                 return new LoginAwareQueryHandle(q, needsRefresh, predefined);
             }
@@ -258,13 +258,13 @@ public class ODCSHandler {
         return new AbstractAction() {
             @Override
             public void actionPerformed (ActionEvent e) {
-                if (KenaiAccessorImpl.getPasswordAuthentication(server, true) == null) {
+                if (TeamAccessorImpl.getPasswordAuthentication(server, true) == null) {
                     return;
                 }
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run () {
-                        KenaiUtil.openNewQuery(repo, true);
+                        TeamUtil.openNewQuery(repo, true);
                     }
                 });
             }
@@ -275,13 +275,13 @@ public class ODCSHandler {
         return new AbstractAction() {
             @Override
             public void actionPerformed (ActionEvent e) {
-                if (KenaiAccessorImpl.getPasswordAuthentication(server, true) == null) {
+                if (TeamAccessorImpl.getPasswordAuthentication(server, true) == null) {
                     return;
                 }
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run () {
-                        KenaiUtil.createIssue(repo);
+                        TeamUtil.createIssue(repo);
                     }
                 });
             }
@@ -292,7 +292,7 @@ public class ODCSHandler {
         return new AbstractAction() {
             @Override
             public void actionPerformed (ActionEvent e) {
-                if (KenaiAccessorImpl.getPasswordAuthentication(server, true) == null) {
+                if (TeamAccessorImpl.getPasswordAuthentication(server, true) == null) {
                     return;
                 }
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
@@ -340,7 +340,7 @@ public class ODCSHandler {
         public void closeQueries () {
             for (QueryHandle qh : queries) {
                 if (qh instanceof QueryHandleImpl) {
-                    KenaiUtil.closeQuery(((QueryHandleImpl) qh).getQuery());
+                    TeamUtil.closeQuery(((QueryHandleImpl) qh).getQuery());
                 }
             }
             synchronized (projectListeners) {
@@ -352,7 +352,7 @@ public class ODCSHandler {
     }
 
     private String getKenaiUser () {
-        PasswordAuthentication pa = KenaiAccessorImpl.getPasswordAuthentication(server, false);
+        PasswordAuthentication pa = TeamAccessorImpl.getPasswordAuthentication(server, false);
         return pa != null ? pa.getUserName() : null;
     }
 
@@ -402,17 +402,17 @@ public class ODCSHandler {
 
         @Override
         public String getDisplayName () {
-            return super.getDisplayName() + (KenaiAccessorImpl.isLoggedIn(server) ? "" : " " + notLoggedIn); //NOI18N
+            return super.getDisplayName() + (TeamAccessorImpl.isLoggedIn(server) ? "" : " " + notLoggedIn); //NOI18N
         }
 
         @Override
         List<QueryResultHandle> getQueryResults () {
-            return KenaiAccessorImpl.isLoggedIn(server) ? super.getQueryResults() : Collections.EMPTY_LIST;
+            return TeamAccessorImpl.isLoggedIn(server) ? super.getQueryResults() : Collections.EMPTY_LIST;
         }
 
         @Override
         void refreshIfNeeded () {
-            if (!KenaiAccessorImpl.isLoggedIn(server)) {
+            if (!TeamAccessorImpl.isLoggedIn(server)) {
                 return;
             }
             super.refreshIfNeeded();
