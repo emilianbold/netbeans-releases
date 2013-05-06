@@ -30,24 +30,42 @@
  */
 package org.netbeans.modules.editor.java;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.IfTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.spi.editor.bracesmatching.BraceContext;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 import org.netbeans.spi.editor.bracesmatching.support.BracesMatcherSupport;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Vita Stejskal
  */
-public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFactory {
+public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFactory, BracesMatcher.ContextLocator {
 
     private static final char [] PAIRS = new char [] { '(', ')', '[', ']', '{', '}' }; //NOI18N
     private static final JavaTokenId [] PAIR_TOKEN_IDS = new JavaTokenId [] { 
@@ -72,6 +90,17 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
         this.context = context;
     }
     
+    private JavaBracesMatcher(MatcherContext context, int searchOffset) {
+        this(context);
+        this.searchOffset = searchOffset;
+    }
+    
+    private int searchOffset = -1;
+    
+    private int getSearchOffset() {
+        return searchOffset >=0 ? searchOffset : context.getSearchOffset();
+    }
+    
     // -----------------------------------------------------
     // BracesMatcher implementation
     // -----------------------------------------------------
@@ -81,7 +110,7 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
         try {
             int [] origin = BracesMatcherSupport.findChar(
                 context.getDocument(), 
-                context.getSearchOffset(), 
+                getSearchOffset(), 
                 context.getLimitOffset(), 
                 PAIRS
             );
@@ -189,6 +218,7 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
                         counter++;
                     } else if (lookingForId == sq.token().id()) {
                         if (counter == 0) {
+                            matchStart = sq.offset();
                             return new int [] { sq.offset(), sq.offset() + sq.token().length() };
                         } else {
                             counter--;
@@ -202,7 +232,132 @@ public final class JavaBracesMatcher implements BracesMatcher, BracesMatcherFact
             ((AbstractDocument) context.getDocument()).readUnlock();
         }
     }
+    
+    /**
+     * Start of the matched brace/bracket
+     */
+    private int matchStart;
+    
+    /**
+     * Provides better context if the matched counterpart character is the opening curly brace.
+     */
+    @Override
+    public BraceContext findContext(int originOrMatchPosition) {
+        if (backward && matchingChar == '{') {
+            try {
+                return findContextBackwards(originOrMatchPosition);
+            } catch (BadLocationException | IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return null;
+    }
+    
+    public BraceContext findContextBackwards(final int p2) throws BadLocationException, IOException {
+        // sanity check, do not accept anything but the original offset for now.
+        if (p2 != originOffset) {
+            return null;
+        }
+        final int position = matchStart;
+        
+        JavaSource src = JavaSource.forDocument(context.getDocument());
+        if (src == null) {
+            return null;
+        }
+        final BraceContext[] ret = new BraceContext[1];
+        src.runUserActionTask(new Task<CompilationController>() {
+            @Override
+            public void run(CompilationController ctrl) throws Exception {
+                ctrl.toPhase(JavaSource.Phase.PARSED);
+                TreePath path = ctrl.getTreeUtilities().pathFor(position + 1);
+                if (path == null) {
+                    return;
+                }
+                StatementTree block;
+                // unwrap compound statements, so path.getLeaf() can be matched to statement parts below
+                if (path.getLeaf().getKind() == Tree.Kind.BLOCK) {
+                    block = ((StatementTree)path.getLeaf());
+                    path = path.getParentPath();
+                } else {
+                    block = null;
+                }
+                
+                switch (path.getLeaf().getKind()) {
+                    case IF: {
+                        IfTree ifTree = (IfTree)path.getLeaf();
+                        // the path may be the else branch of the if
+                        if (block == ifTree.getElseStatement()) {
+                            // the related region is the if statement up to the 'then' statement
+                            final int[] elseStart = { (int)ctrl.getTrees().getSourcePositions().getStartPosition(
+                                    ctrl.getCompilationUnit(), ifTree.getElseStatement())};
 
+                            // must use lexer to iterate backwards from block start to 'else' keyword. The keyword position
+                            // is not a part of the Tree
+                            context.getDocument().render(new Runnable() {
+                                public void run() {
+                                    TokenHierarchy h = TokenHierarchy.get(context.getDocument());
+                                    TokenSequence seq = h.tokenSequence();
+                                    int off = seq.move(elseStart[0]);
+                                    if (off == 0 && seq.moveNext() && seq.token().id() == JavaTokenId.LBRACE) {
+                                        while (seq.movePrevious()) {
+                                            TokenId id = seq.token().id();
+                                            if (!(id == JavaTokenId.WHITESPACE || id == JavaTokenId.BLOCK_COMMENT ||
+                                                id == JavaTokenId.LINE_COMMENT)) {
+                                                break;
+                                            }
+                                        }
+                                        if (seq.token().id() == JavaTokenId.ELSE) {
+                                            elseStart[0] = seq.offset();
+                                        }
+                                    }
+                                }
+                            });
+                            // the context is the else statement up to the brace position
+                            int ifStart = (int)ctrl.getTrees().getSourcePositions().getStartPosition(
+                                    ctrl.getCompilationUnit(), ifTree);
+                            int ifEnd;
+                            
+                            if (ifTree.getThenStatement().getKind() == Tree.Kind.BLOCK) {
+                                ifEnd = (int)ctrl.getTrees().getSourcePositions().getStartPosition(
+                                    ctrl.getCompilationUnit(), ifTree.getThenStatement());
+                            } else {
+                                ifEnd = (int)ctrl.getTrees().getSourcePositions().getEndPosition(
+                                    ctrl.getCompilationUnit(), ifTree.getCondition());
+                            }
+                            BraceContext rel = BraceContext.create(
+                                    context.getDocument().createPosition(ifStart),
+                                    context.getDocument().createPosition(ifEnd + 1));
+                            ret[0] = rel.createRelated(
+                                    context.getDocument().createPosition(elseStart[0]), 
+                                    context.getDocument().createPosition(position + 1));
+                            return;
+                        }
+                    }
+                    // fall through
+                    case SWITCH:
+                    case WHILE_LOOP: 
+                    case METHOD:
+                    case NEW_CLASS:
+                    case CASE:
+                    {
+                        // take start of the command as the context
+                        long start = ctrl.getTrees().getSourcePositions().getStartPosition(
+                                ctrl.getCompilationUnit(), path.getLeaf());
+                        ret[0] = BraceContext.create(
+                            context.getDocument().createPosition((int)start),
+                            context.getDocument().createPosition(position));
+                        return;
+                    }
+                    default:
+                        return;
+                        
+                }
+            }
+        }, true);
+        
+        return ret[0];
+    }
+    
     // -----------------------------------------------------
     // private implementation
     // -----------------------------------------------------
