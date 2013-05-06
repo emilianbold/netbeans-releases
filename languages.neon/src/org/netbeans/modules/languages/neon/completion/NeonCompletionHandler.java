@@ -44,6 +44,7 @@ package org.netbeans.modules.languages.neon.completion;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,7 +62,9 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.languages.neon.completion.NeonCompletionProposal.CompletionRequest;
 import org.netbeans.modules.languages.neon.lexer.NeonTokenId;
+import org.netbeans.modules.languages.neon.parser.NeonParser.NeonParserResult;
 
 /**
  *
@@ -71,9 +74,30 @@ public class NeonCompletionHandler implements CodeCompletionHandler {
     private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<>(
             Arrays.asList('=', ';', '+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t', '\n'));
 
+    static final Set<NeonElement> SERVICE_CONFIG_OPTS = new HashSet<>();
+    static {
+        SERVICE_CONFIG_OPTS.add(NeonElement.Factory.create("setup", "setup:")); //NOI18N
+        SERVICE_CONFIG_OPTS.add(NeonElement.Factory.create("class", "class: ${Class}")); //NOI18N
+        SERVICE_CONFIG_OPTS.add(NeonElement.Factory.create("arguments", "arguments: [${argument}]")); //NOI18N
+        SERVICE_CONFIG_OPTS.add(NeonElement.Factory.create("factory", "factory: ${Class}::${method}")); //NOI18N
+        SERVICE_CONFIG_OPTS.add(NeonElement.Factory.create("autowired", "autowired: ${no}")); //NOI18N
+    }
+
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
         final List<CompletionProposal> completionProposals = new ArrayList<>();
+        ParserResult parserResult = context.getParserResult();
+        if (parserResult instanceof NeonParserResult) {
+            NeonParserResult neonParserResult = (NeonParserResult) parserResult;
+            CompletionRequest request = new CompletionRequest();
+            int caretOffset = context.getCaretOffset();
+            request.prefix = context.getPrefix();
+            String properPrefix = getPrefix(neonParserResult, caretOffset, true);
+            request.anchorOffset = caretOffset - (properPrefix == null ? 0 : properPrefix.length());
+            request.parserResult = neonParserResult;
+            NeonCompletionContext completionContext = NeonCompletionContextFinder.find(request.parserResult, caretOffset);
+            completionContext.complete(completionProposals, request);
+        }
         return new DefaultCompletionResult(completionProposals, false);
     }
 
@@ -108,7 +132,7 @@ public class NeonCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public String resolveTemplateVariable(String variable, ParserResult info, int caretOffset, String name, Map parameters) {
-        return "";
+        return null;
     }
 
     @Override
@@ -184,7 +208,7 @@ public class NeonCompletionHandler implements CodeCompletionHandler {
         }
 
         private static boolean isValidTokenId(NeonTokenId id) {
-            return NeonTokenId.NEON_LITERAL.equals(id);
+            return NeonTokenId.NEON_LITERAL.equals(id) || NeonTokenId.NEON_BLOCK.equals(id) || NeonTokenId.NEON_VALUED_BLOCK.equals(id);
         }
 
     }

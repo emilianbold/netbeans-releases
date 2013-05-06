@@ -41,107 +41,108 @@
  */
 package org.netbeans.modules.languages.neon.completion;
 
-import java.util.Collections;
 import java.util.Set;
+import javax.swing.ImageIcon;
+import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.languages.neon.parser.NeonParser.NeonParserResult;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface NeonElement extends ElementHandle {
+public abstract class NeonCompletionProposal implements CompletionProposal {
+    private final NeonElement element;
+    private final CompletionRequest request;
 
-    public String getTemplate();
-
-    public static class Factory {
-
-        public static NeonElement create(String name) {
-            return new NeonSimpleElement(name);
-        }
-
-        public static NeonElement create(String name, String template) {
-            return new NeonExtendedElement(name, template);
-        }
-
+    public NeonCompletionProposal(NeonElement element, CompletionRequest request) {
+        this.element = element;
+        this.request = request;
     }
 
-    abstract static class BaseNeonElementItem implements NeonElement {
-        private final String name;
+    @Override
+    public int getAnchorOffset() {
+        return request.anchorOffset;
+    }
 
-        public BaseNeonElementItem(String name) {
-            this.name = name;
+    @Override
+    public ElementHandle getElement() {
+        return element;
+    }
+
+    @Override
+    public String getName() {
+        return element.getName();
+    }
+
+    @Override
+    public String getInsertPrefix() {
+        return element.getName();
+    }
+
+    @Override
+    public String getSortText() {
+        return element.getName();
+    }
+
+    @Override
+    public ImageIcon getIcon() {
+        return null;
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        return element.getModifiers();
+    }
+
+    @Override
+    public boolean isSmart() {
+        return getName().startsWith(request.prefix);
+    }
+
+    @Override
+    public int getSortPrioOverride() {
+        return 0;
+    }
+
+    @Override
+    public String getLhsHtml(HtmlFormatter formatter) {
+        formatter.name(getKind(), true);
+        formatter.appendText(getName());
+        formatter.name(getKind(), false);
+        return formatter.getText();
+    }
+
+    @Override
+    public String getCustomInsertTemplate() {
+        return element.getTemplate();
+    }
+
+    public static class CompletionRequest {
+        public int anchorOffset;
+        public String prefix;
+        public NeonParserResult parserResult;
+    }
+
+    static class ServiceConfigOptCompletionProposal extends NeonCompletionProposal {
+
+        public ServiceConfigOptCompletionProposal(NeonElement serviceDefinitionSwitch, CompletionRequest request) {
+            super(serviceDefinitionSwitch, request);
         }
 
         @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public FileObject getFileObject() {
-            return null;
-        }
-
-        @Override
-        public String getMimeType() {
-            return "";
-        }
-
-        @Override
-        public String getIn() {
-            return "";
+        @NbBundle.Messages("ConfigOptRhs=Config")
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return Bundle.ConfigOptRhs();
         }
 
         @Override
         public ElementKind getKind() {
-            return ElementKind.OTHER;
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return Collections.<Modifier>emptySet();
-        }
-
-        @Override
-        public boolean signatureEquals(ElementHandle handle) {
-            return false;
-        }
-
-        @Override
-        public OffsetRange getOffsetRange(ParserResult result) {
-            return OffsetRange.NONE;
-        }
-
-    }
-
-    static class NeonSimpleElement extends BaseNeonElementItem {
-
-        private NeonSimpleElement(String name) {
-            super(name);
-        }
-
-        @Override
-        public String getTemplate() {
-            return getName();
-        }
-    }
-
-    static class NeonExtendedElement extends BaseNeonElementItem {
-        private final String template;
-
-        private NeonExtendedElement(String name, String template) {
-            super(name);
-            this.template = template;
-        }
-
-        @Override
-        public String getTemplate() {
-            return template;
+            return ElementKind.ATTRIBUTE;
         }
     }
 

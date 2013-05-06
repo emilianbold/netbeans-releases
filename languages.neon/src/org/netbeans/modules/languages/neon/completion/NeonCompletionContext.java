@@ -41,108 +41,41 @@
  */
 package org.netbeans.modules.languages.neon.completion;
 
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.openide.filesystems.FileObject;
+import java.util.List;
+import org.netbeans.modules.csl.api.CompletionProposal;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface NeonElement extends ElementHandle {
+public enum NeonCompletionContext {
 
-    public String getTemplate();
-
-    public static class Factory {
-
-        public static NeonElement create(String name) {
-            return new NeonSimpleElement(name);
-        }
-
-        public static NeonElement create(String name, String template) {
-            return new NeonExtendedElement(name, template);
-        }
-
-    }
-
-    abstract static class BaseNeonElementItem implements NeonElement {
-        private final String name;
-
-        public BaseNeonElementItem(String name) {
-            this.name = name;
-        }
-
+    ALL {
         @Override
-        public String getName() {
-            return name;
+        public void complete(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request) {
+            completeServiceConfigOpts(completionProposals, request);
         }
-
+    },
+    SERVICE_CONFIG_OPTS {
         @Override
-        public FileObject getFileObject() {
-            return null;
+        public void complete(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request) {
+            completeServiceConfigOpts(completionProposals, request);
         }
 
-        @Override
-        public String getMimeType() {
-            return "";
-        }
+    };
 
-        @Override
-        public String getIn() {
-            return "";
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.OTHER;
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return Collections.<Modifier>emptySet();
-        }
-
-        @Override
-        public boolean signatureEquals(ElementHandle handle) {
-            return false;
-        }
-
-        @Override
-        public OffsetRange getOffsetRange(ParserResult result) {
-            return OffsetRange.NONE;
-        }
-
-    }
-
-    static class NeonSimpleElement extends BaseNeonElementItem {
-
-        private NeonSimpleElement(String name) {
-            super(name);
-        }
-
-        @Override
-        public String getTemplate() {
-            return getName();
+    protected void completeServiceConfigOpts(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request) {
+        for (NeonElement serviceConfigOpts : NeonCompletionHandler.SERVICE_CONFIG_OPTS) {
+            if (startsWith(serviceConfigOpts.getName(), request.prefix)) {
+                completionProposals.add(new NeonCompletionProposal.ServiceConfigOptCompletionProposal(serviceConfigOpts, request));
+            }
         }
     }
 
-    static class NeonExtendedElement extends BaseNeonElementItem {
-        private final String template;
+    public abstract void complete(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request);
 
-        private NeonExtendedElement(String name, String template) {
-            super(name);
-            this.template = template;
-        }
-
-        @Override
-        public String getTemplate() {
-            return template;
-        }
+    private static boolean startsWith(String theString, String prefix) {
+        return prefix.length() == 0 ? true : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
 
 }
