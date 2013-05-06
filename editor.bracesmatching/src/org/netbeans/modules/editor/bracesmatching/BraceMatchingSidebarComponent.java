@@ -82,6 +82,7 @@ import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.Coloring;
 import org.netbeans.editor.PopupManager;
@@ -91,6 +92,7 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchy;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyEvent;
 import org.netbeans.modules.editor.lib2.view.ViewHierarchyListener;
+import org.netbeans.spi.editor.bracesmatching.BraceContext;
 import org.openide.text.NbDocument;
 import org.openide.text.NbDocument.CustomEditor;
 import org.openide.util.Exceptions;
@@ -159,6 +161,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements
      */
     private int[]   origin;
     private int[]   matches;
+    private BraceContext braceContext;
     
     private int     lineHeight;
     
@@ -400,6 +403,23 @@ public class BraceMatchingSidebarComponent extends JComponent implements
 
     @Override
     public void matchHighlighted(final MatchEvent evt) {
+        BraceContext ctx = null;
+        if (evt.getLocator() != null) {
+            braceContext = ctx = evt.getLocator().findContext(evt.getOrigin()[0]);
+        }
+        if (ctx == null) {
+            int[] range = findTooltipRange(evt.getOrigin(), evt.getMatches());
+            if (range == null) {
+                return;
+            }
+            try {
+                braceContext = BraceContext.create(
+                        editor.getDocument().createPosition(range[0]),
+                        editor.getDocument().createPosition(range[1]));
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
         SwingUtilities.invokeLater(new Runnable() {
            public void run() {
             if (!isEditorValid()) {
@@ -417,8 +437,7 @@ public class BraceMatchingSidebarComponent extends JComponent implements
     public void matchCleared(MatchEvent evt) {
         SwingUtilities.invokeLater(new Runnable() {
            public void run() {
-            origin = null;
-            matches = null;
+            braceContext = null;
             repaint();
            } 
         });
@@ -489,6 +508,10 @@ public class BraceMatchingSidebarComponent extends JComponent implements
     }
     
     private int[] findTooltipRange() {
+        return findTooltipRange(origin, matches);
+    }
+    
+    private static int[] findTooltipRange(int[] origin, int[] matches) {
         if (origin == null || matches == null) {
             return null;
         }
@@ -526,61 +549,66 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         }
     }
     
-    public JComponent createToolTipView(int start, int end) {
+    public JComponent createToolTipView(int start, int end, int[] suppressRanges) {
         JEditorPane tooltipPane = new JEditorPane();
         EditorKit kit = editorPane.getEditorKit();
         Document doc = editor.getDocument();
-        if (kit != null && doc instanceof NbDocument.CustomEditor) {
-            CustomEditor ed = (NbDocument.CustomEditor)doc;
-            Element lineRootElement = doc.getDefaultRootElement();
-            try {
-                // Start-offset of the fold => line start => position
-                int lineIndex = lineRootElement.getElementIndex(start);
-                Position pos = doc.createPosition(
-                        lineRootElement.getElement(lineIndex).getStartOffset());
-                // DocumentView.START_POSITION_PROPERTY
-                tooltipPane.putClientProperty("document-view-start-position", pos);
-                // End-offset of the fold => line end => position
-                lineIndex = lineRootElement.getElementIndex(end);
-                pos = doc.createPosition(lineRootElement.getElement(lineIndex).getEndOffset());
-                // DocumentView.END_POSITION_PROPERTY
-                tooltipPane.putClientProperty("document-view-end-position", pos);
-                tooltipPane.putClientProperty("document-view-accurate-span", true);
-                // Set the same kit and document
-                tooltipPane.setEditorKit(kit);
-                tooltipPane.setDocument(doc);
-                tooltipPane.setEditable(false);
-                tooltipPane.setFocusable(false);
-                tooltipPane.putClientProperty("nbeditorui.vScrollPolicy", JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-                tooltipPane.putClientProperty("nbeditorui.hScrollPolicy", JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-                tooltipPane.putClientProperty("nbeditorui.selectSidebarLocations", "West");
-                
-                if (matches != null && origin != null) {
-                    tooltipPane.putClientProperty(MATCHED_BRACES, origin);
-                }
-                
-                tooltipPane.addMouseListener(new MouseAdapter() {
+        if (kit == null || !(doc instanceof NbDocument.CustomEditor)) {
+            return null;
+        }
 
-                    @Override
-                    public void mouseEntered(MouseEvent e) {
-                        hideToolTip(false);
-                    }
-                    
-                });
+        CustomEditor ed = (NbDocument.CustomEditor)doc;
+        Element lineRootElement = doc.getDefaultRootElement();
+        try {
+            // Start-offset of the fold => line start => position
+            int lineIndex = lineRootElement.getElementIndex(start);
+            Position pos = doc.createPosition(
+                    lineRootElement.getElement(lineIndex).getStartOffset());
+            // DocumentView.START_POSITION_PROPERTY
+            tooltipPane.putClientProperty("document-view-start-position", pos);
+            // End-offset of the fold => line end => position
+            lineIndex = lineRootElement.getElementIndex(end);
+            pos = doc.createPosition(lineRootElement.getElement(lineIndex).getEndOffset());
+            // DocumentView.END_POSITION_PROPERTY
+            tooltipPane.putClientProperty("document-view-end-position", pos);
+            tooltipPane.putClientProperty("document-view-accurate-span", true);
+            // Set the same kit and document
+            tooltipPane.setEditorKit(kit);
+            tooltipPane.setDocument(doc);
+            tooltipPane.setEditable(false);
+            tooltipPane.setFocusable(false);
+            tooltipPane.putClientProperty("nbeditorui.vScrollPolicy", JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+            tooltipPane.putClientProperty("nbeditorui.hScrollPolicy", JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+            tooltipPane.putClientProperty("nbeditorui.selectSidebarLocations", "West");
 
-            JComponent c = (JComponent)ed.createEditor(tooltipPane);
-                /*
-            c.putClientProperty("tooltip-type", "fold-preview"); // Checked in NbToolTip
-            */
-            Color foreColor = tooltipPane.getForeground();
-            c.setBorder(new LineBorder(foreColor));
-            c.setOpaque(true);
-            
-            //JComponent c2 = new BraceToolTip(editorPane, tooltipPane);
-                return new BraceToolTip(c, tooltipPane);
-            } catch (BadLocationException e) {
-                // => return null
+            if (braceContext != null) {
+                tooltipPane.putClientProperty(MATCHED_BRACES, origin);
             }
+            if (suppressRanges != null) {
+                tooltipPane.putClientProperty("nbeditorui.braces.suppressLines", suppressRanges);
+            }
+
+            tooltipPane.addMouseListener(new MouseAdapter() {
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    hideToolTip(false);
+                }
+
+            });
+
+        JComponent c = (JComponent)ed.createEditor(tooltipPane);
+            /*
+        c.putClientProperty("tooltip-type", "fold-preview"); // Checked in NbToolTip
+        */
+        Color foreColor = tooltipPane.getForeground();
+        c.setBorder(new LineBorder(foreColor));
+        c.setOpaque(true);
+
+        //JComponent c2 = new BraceToolTip(editorPane, tooltipPane);
+            return new BraceToolTip(c, tooltipPane);
+        } catch (BadLocationException e) {
+            // => return null
         }
         return null;
     }
@@ -613,32 +641,60 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         if (!showToolTip) {
             return;
         }
-        int[] range = findTooltipRange();
-        if (range == null) {
+        if (braceContext == null) {
             autoHidden = false;
             tooltipYAnchor = Integer.MAX_VALUE;
             return;
         }
-        
+        int yFrom = braceContext.getStart().getOffset();
+        int yTo = braceContext.getEnd().getOffset();
+        int[] suppress = null;
         // show only iff the 1st line is out of the screen view:
         int contentHeight;
         Rectangle visible = getVisibleRect();
         
         try {
-            int yPos = baseUI.getYFromPos(range[0]);
+            int yPos = baseUI.getYFromPos(yFrom);
             tooltipYAnchor = yPos;
             if (yPos >= visible.y) {
                 autoHidden = true;
                 return;
             }
-            int yPos2 = baseUI.getYFromPos(range[1]);
+            int yPos2 = baseUI.getYFromPos(yTo);
             contentHeight = yPos2 - yPos + lineHeight;
+            if (braceContext.getRelated() != null) {
+                BraceContext rel = braceContext.getRelated();
+                int y1 = baseUI.getYFromPos(rel.getStart().getOffset());
+                int y2 = baseUI.getYFromPos(rel.getEnd().getOffset());
+
+                // only support preceding related segments, for now
+                if (y2 < yFrom) {
+                    // the related content will be displayed
+                    contentHeight += y2 - y1 + lineHeight;
+                    // and finally the suppression line:
+                    contentHeight += lineHeight;
+                    
+                    BaseDocument bdoc = baseUI.getEditorUI().getDocument();
+                    int startAfterRelated = Utilities.getRowStart(bdoc, rel.getEnd().getOffset(), 1);
+                    int startAtContext = Utilities.getRowStart(bdoc, yFrom);
+                    // measure the indent so the view can align the ellipsis 
+                    int indent = Utilities.getRowIndent(bdoc, startAfterRelated);
+                    // suppress the ellipsis if just a single line should be cut 
+                    int nextLine = Utilities.getRowStart(bdoc, startAfterRelated, 1);
+                    if (nextLine < startAtContext) {
+                        suppress = new int[] {
+                            startAfterRelated, startAtContext, indent
+                        };
+                    }
+                    yFrom = rel.getStart().getOffset();
+                }
+            }
         } catch (BadLocationException ex) {
             Exceptions.printStackTrace(ex);
             return;
         }
         
-        JComponent tooltip = createToolTipView(range[0], range[1]);
+        JComponent tooltip = createToolTipView(yFrom, yTo, suppress);
         if (tooltip == null) {
             return;
         }
