@@ -151,8 +151,15 @@ public class ClassPathListCellRenderer extends DefaultListCellRenderer {
                     return item.getLibrary().getDisplayName();
                 }
             case ClassPathSupport.Item.TYPE_CLASSPATH:
-                String name = WELL_KNOWN_PATHS_NAMES.get(CommonProjectUtils.getAntPropertyName(item.getReference()));
-                return name == null ? item.getReference() : name;
+                final String name = WELL_KNOWN_PATHS_NAMES.get(CommonProjectUtils.getAntPropertyName(item.getReference()));
+                if ( item.isBroken() ) {
+                    return NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_MISSING_FILE",
+                        Integer.toHexString(getErrorForeground().getRGB() & 0xffffff),
+                        name == null ? CommonProjectUtils.getAntPropertyName(item.getReference()) : name);
+                } else {
+                    return name == null ? CommonProjectUtils.getAntPropertyName(item.getReference()) : name;
+                }
+                
             case ClassPathSupport.Item.TYPE_ARTIFACT:
                 if ( item.isBroken() ) {
                     return NbBundle.getMessage( ClassPathListCellRenderer.class, "LBL_MISSING_PROJECT",

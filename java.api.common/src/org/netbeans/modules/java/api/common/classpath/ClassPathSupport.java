@@ -182,25 +182,41 @@ public final class ClassPathSupport {
             } else {
                 // Standalone jar or property
                 String eval = evaluator.evaluate( pe[i] );
-                File f = null;
+                boolean valid = false, multi = false;
                 if (eval != null) {
-                    f = antProjectHelper.resolveFile( eval );
-                }                    
-                
+                    final String[] pathElements = PropertyUtils.tokenizePath(eval);
+                    multi = pathElements.length > 1;
+out:                for (int tmp = 0; tmp == 0; tmp++) {
+                        for (String pathElement : pathElements) {
+                            final File f = antProjectHelper.resolveFile( pathElement );
+                            if (!f.exists()) {
+                                break out;
+                            }
+                        }
+                        valid = true;
+                    }
+                }
+
                 String propertyName = CommonProjectUtils.getAntPropertyName(pe[i]);
                 String variableBaseProperty = antProjectHelper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty(propertyName);
                 if (!isVariableBasedReference(variableBaseProperty)) {
                     variableBaseProperty = null;
                 }
-                
-                if ( f == null || !f.exists() ) {
-                    item = Item.createBroken( eval, FileUtil.toFile(antProjectHelper.getProjectDirectory()), pe[i]);
+
+                if (multi) {
+                    if (valid) {
+                        item = Item.create(pe[i]);
+                    } else {
+                        item = Item.createBroken(Item.TYPE_CLASSPATH, pe[i]);
+                    }
+                } else {
+                    if (valid) {
+                        item = Item.create( eval, FileUtil.toFile(antProjectHelper.getProjectDirectory()), pe[i], variableBaseProperty);
+                    } else {
+                        item = Item.createBroken( eval, FileUtil.toFile(antProjectHelper.getProjectDirectory()), pe[i]);
+                    }
+                    item.initSourceAndJavadoc(antProjectHelper);
                 }
-                else {
-                    item = Item.create( eval, FileUtil.toFile(antProjectHelper.getProjectDirectory()), pe[i], variableBaseProperty);
-                }
-                
-                item.initSourceAndJavadoc(antProjectHelper);
             }
             
             items.add( item );
@@ -342,7 +358,7 @@ public final class ClassPathSupport {
         }
         return wellKnownPaths;
     }
-    
+
     public static boolean isVariableBasedReference(String ref) {
         return ref != null && ref.startsWith("${var."); // NOI18N
     }
