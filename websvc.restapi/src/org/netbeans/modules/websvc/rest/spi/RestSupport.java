@@ -487,7 +487,7 @@ public abstract class RestSupport {
      * @throws java.io.IOException
      */
     public WebApp getWebApp() throws IOException {
-        return webXmlUpdater.getWebApp();
+        return webXmlUpdater.findWebApp();
     }
 
     WebXmlUpdater getWebXmlUpdater() {
@@ -634,6 +634,10 @@ public abstract class RestSupport {
             }
         }
         return Collections.emptyList();
+    }
+
+    public boolean hasJerseyServlet() {
+        return WebXmlUpdater.hasRestServletAdaptor(webXmlUpdater.findWebApp());
     }
 
     protected void addJerseySpringJar() throws IOException {
