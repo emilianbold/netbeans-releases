@@ -135,7 +135,7 @@ public class ActiveTaskPanel extends javax.swing.JPanel {
     }
 
     public void setTaskNameText() {
-        btnTaskName.setText(Utils.getTaskPlainDisplayText(taskNode.getTask(), btnTaskName, getMaxTextWidth()));
+        btnTaskName.setText(DashboardUtils.getTaskPlainDisplayText(taskNode.getTask(), btnTaskName, getMaxTextWidth()));
     }
 
     public TaskNode getTaskNode() {

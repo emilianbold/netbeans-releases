@@ -41,8 +41,8 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.EnumSet;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.team.spi.TeamQueryProvider;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.kenai.KenaiRepository;
@@ -53,7 +53,7 @@ import org.netbeans.modules.jira.repository.JiraRepository;
  *
  * @author Tomas Stupka
  */
-public class JiraQueryProvider extends KenaiQueryProvider<JiraQuery, NbJiraIssue> {
+public class JiraQueryProvider extends TeamQueryProvider<JiraQuery, NbJiraIssue> {
 
     @Override
     public String getDisplayName(JiraQuery query) {

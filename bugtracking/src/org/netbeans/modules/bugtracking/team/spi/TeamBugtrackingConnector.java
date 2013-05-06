@@ -39,26 +39,47 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.kenai.spi;
+package org.netbeans.modules.bugtracking.team.spi;
 
-import org.netbeans.modules.bugtracking.spi.QueryProvider;
+import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 
 /**
- *
- * @author Tomas Stupka
+ * Provides Team specific functionality to a {@link BugtrackingConnector}
+ * 
+ * @author tomas
  */
-public abstract class KenaiQueryProvider<Q, I> extends QueryProvider<Q, I> {
+public abstract class TeamBugtrackingConnector extends BugtrackingConnector {
+    
+    public enum BugtrackingType {
+        BUGZILLA,
+        JIRA,
+        ODCS
+    }
+        
+    /**
+     * Creates a {@link Repository} for the given {@link TeamProject}
+     *
+     * @param project
+     * @return
+     */
+    public abstract Repository createRepository(TeamProject project);
     
     /**
-     * Determines if the query needs the user to be logged in to show some
-     * results - e.g. MyIssues queries have no results in case the user is
-     * not loged in
+     * Creates a {@link RepositoryProvider} for the given {@link }
      *
-     * @param query
-     * @return true if login needed, otherwise false
+     * @param project
+     * @return
      */
-    public abstract boolean needsLogin(Q q);
+    public Repository findNBRepository() {
+        return null;
+    }
     
-    public abstract void setOwnerInfo(Q q, OwnerInfo info);
-    
+    /**
+     * Determines the bugtracking type
+     *
+     * @return
+     */
+    public abstract BugtrackingType getType();
 }

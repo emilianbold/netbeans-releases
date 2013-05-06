@@ -713,11 +713,12 @@ public final class AntProjectHelper {
      *             {@link #PROJECT_PROPERTIES_PATH} or {@link #PRIVATE_PROPERTIES_PATH}
      * @return a set of properties
      */
-    public EditableProperties getProperties(final String path) {
-        if (path.equals(AntProjectHelper.PROJECT_XML_PATH) || path.equals(AntProjectHelper.PRIVATE_XML_PATH)) {
+    public EditableProperties getProperties(@NonNull final String path) {
+        if (AntProjectHelper.PROJECT_XML_PATH.equals(path) || AntProjectHelper.PRIVATE_XML_PATH.equals(path)) {
             throw new IllegalArgumentException("Attempt to load properties from a project XML file"); // NOI18N
         }
         return ProjectManager.mutex().readAccess(new Mutex.Action<EditableProperties>() {
+            @Override
             public EditableProperties run() {
                 return properties.getProperties(path);
             }
@@ -740,8 +741,8 @@ public final class AntProjectHelper {
      *             {@link #PROJECT_PROPERTIES_PATH} or {@link #PRIVATE_PROPERTIES_PATH}
      * @param props a set of properties to store, or null to delete any existing properties file there
      */
-    public void putProperties(final String path, final EditableProperties props) {
-        if (path.equals(AntProjectHelper.PROJECT_XML_PATH) || path.equals(AntProjectHelper.PRIVATE_XML_PATH)) {
+    public void putProperties(@NonNull final String path, final EditableProperties props) {
+        if (AntProjectHelper.PROJECT_XML_PATH.equals(path) || AntProjectHelper.PRIVATE_XML_PATH.equals(path)) {
             throw new IllegalArgumentException("Attempt to store properties from a project XML file"); // NOI18N
         }
         ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {

@@ -81,7 +81,7 @@ import org.netbeans.modules.bugtracking.api.Util;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.issuetable.IssueTable;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryController.QueryMode;
 import org.netbeans.modules.bugtracking.util.*;
@@ -672,7 +672,7 @@ public class ODCSQueryController extends QueryController implements ItemListener
     }
 
     private void onWeb() {
-        KenaiProject kp = repository.getLookup().lookup(KenaiProject.class);
+        TeamProject kp = repository.getLookup().lookup(TeamProject.class);
         assert kp != null; // all odcs repositories should come from team support
         if (kp == null) {
             return;

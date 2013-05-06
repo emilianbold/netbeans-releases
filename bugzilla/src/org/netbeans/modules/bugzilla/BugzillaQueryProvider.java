@@ -41,8 +41,8 @@ import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.EnumSet;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.team.spi.TeamQueryProvider;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
@@ -53,7 +53,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
  *
  * @author Tomas Stupka
  */
-public class BugzillaQueryProvider extends KenaiQueryProvider<BugzillaQuery, BugzillaIssue> {
+public class BugzillaQueryProvider extends TeamQueryProvider<BugzillaQuery, BugzillaIssue> {
 
     @Override
     public String getDisplayName(BugzillaQuery query) {

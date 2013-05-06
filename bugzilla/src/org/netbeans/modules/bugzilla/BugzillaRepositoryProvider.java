@@ -41,8 +41,8 @@ import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
 import java.util.List;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
@@ -55,7 +55,7 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Stupka
  */
-public class BugzillaRepositoryProvider extends KenaiRepositoryProvider<BugzillaRepository, BugzillaQuery, BugzillaIssue> {
+public class BugzillaRepositoryProvider extends TeamRepositoryProvider<BugzillaRepository, BugzillaQuery, BugzillaIssue> {
 
     @Override
     public Image getIcon(BugzillaRepository r) {
@@ -129,7 +129,7 @@ public class BugzillaRepositoryProvider extends KenaiRepositoryProvider<Bugzilla
     }
 
     @Override
-    public KenaiProject getKenaiProject(BugzillaRepository repository) {
+    public TeamProject getTeamProject(BugzillaRepository repository) {
         return repository instanceof KenaiRepository ? 
                 ((KenaiRepository)repository).getKenaiProject() :
                 null;

@@ -50,11 +50,11 @@ import java.util.logging.Level;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.OpenTaskAction;
 import org.netbeans.modules.bugtracking.tasks.Category;
-import org.netbeans.modules.bugtracking.tasks.Utils;
+import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 
@@ -64,13 +64,13 @@ import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
  */
 public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
 
-    private Issue task;
+    private IssueImpl task;
     private JPanel panel;
     private TreeLabel lblName;
     private Category category;
     private final TaskListener taskListener;
 
-    public TaskNode(Issue task, TreeListNode parent) {
+    public TaskNode(IssueImpl task, TreeListNode parent) {
         // TODO subtasks, it is not in bugtracking API
         //super(task.hasSubtasks(), parent);
         super(false, parent);
@@ -116,7 +116,7 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
             lblName = new TreeLabel();
             panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
         }
-        lblName.setText(Utils.getTaskDisplayString(task, lblName, rowWidth, DashboardViewer.getInstance().isTaskNodeActive(this), isSelected || hasFocus));
+        lblName.setText(DashboardUtils.getTaskDisplayString(task, lblName, rowWidth, DashboardViewer.getInstance().isTaskNodeActive(this), isSelected || hasFocus));
         lblName.setToolTipText(task.getTooltip());
         lblName.setForeground(foreground);
         return panel;
@@ -143,7 +143,7 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
         return actions.toArray(new Action[actions.size()]);
     }
 
-    public Issue getTask() {
+    public IssueImpl getTask() {
         return task;
     }
 
@@ -175,12 +175,12 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
         }
     }
 
-    private boolean taskEquals(Issue other) {
+    private boolean taskEquals(IssueImpl other) {
         // TODO complete task equals method
         if (task.getStatus() != other.getStatus()) {
             return false;
         }
-        if (!task.getRepository().getId().equalsIgnoreCase(other.getRepository().getId())) {
+        if (!task.getRepositoryImpl().getId().equalsIgnoreCase(other.getRepositoryImpl().getId())) {
             return false;
         }
         if (!task.getID().equalsIgnoreCase(other.getID())) {
@@ -274,7 +274,7 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
     private class TaskListener implements PropertyChangeListener {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
+            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)) {
                 fireContentChanged();
             }
         }

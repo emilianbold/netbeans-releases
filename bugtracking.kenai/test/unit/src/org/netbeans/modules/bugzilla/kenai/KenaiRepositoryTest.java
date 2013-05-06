@@ -57,8 +57,8 @@ import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
@@ -128,17 +128,17 @@ public class KenaiRepositoryTest extends NbTestCase implements TestConstants {
     }
 
     public void testIsKenai() throws Throwable {
-        KenaiProject prj = KenaiUtil.getKenaiProjectForRepository("https://testjava.net/svn/nb-jnet-test~subversion");
+        TeamProject prj = TeamUtil.getTeamProjectForRepository("https://testjava.net/svn/nb-jnet-test~subversion");
         assertNotNull(prj);
 
         BugzillaConnector support = new BugzillaConnector();
         Repository repo = support.createRepository(prj);
         assertNotNull(repo);
-        assertTrue(KenaiUtil.isKenai(repo));
+        assertTrue(TeamUtil.isFromTeamServer(repo));
     }
 
     public void testOneProductAfterConfigurationRefresh() throws Throwable {
-        KenaiProject prj = KenaiUtil.getKenaiProjectForRepository("https://testjava.net/svn/nb-jnet-test~subversion");
+        TeamProject prj = TeamUtil.getTeamProjectForRepository("https://testjava.net/svn/nb-jnet-test~subversion");
         assertNotNull(prj);
 
         BugzillaConnector support = new BugzillaConnector();
@@ -147,7 +147,7 @@ public class KenaiRepositoryTest extends NbTestCase implements TestConstants {
         assertNotNull(repo);
         List<String> products = bugzillaRepository.getConfiguration().getProducts();
         assertEquals(1, products.size());
-        assertTrue(KenaiUtil.isKenai(repo));
+        assertTrue(TeamUtil.isFromTeamServer(repo));
         
         bugzillaRepository.refreshConfiguration();
         products = bugzillaRepository.getConfiguration().getProducts();

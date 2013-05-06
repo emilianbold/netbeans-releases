@@ -363,7 +363,7 @@ public class JiraExecutor {
             }
             @Override
             protected boolean handle() {
-                boolean ret = BugtrackingUtil.editRepository(JiraUtils.getRepository(executor.repository), errroMsg);
+                boolean ret = Jira.getInstance().getBugtrackingFactory().editRepository(JiraUtils.getRepository(executor.repository), errroMsg);
                 if(!ret) {
                     JiraUtils.notifyErrorMessage(NbBundle.getMessage(JiraExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
                 }

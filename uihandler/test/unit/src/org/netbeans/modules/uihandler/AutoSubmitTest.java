@@ -63,6 +63,7 @@ import java.util.zip.GZIPInputStream;
 import javax.swing.SwingUtilities;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.uihandler.api.Activated;
 import org.netbeans.modules.uihandler.api.Deactivated;
 import org.openide.util.NbPreferences;
@@ -109,6 +110,7 @@ public class AutoSubmitTest extends NbTestCase {
      * 
      * @throws Exception 
      */
+    @RandomlyFails // see issue https://netbeans.org/bugzilla/show_bug.cgi?id=229398
     public void testAutoSubmitUILogs() throws Exception {
         // Needs to be call in the thread's context class loader, due to mockup services
         Installer.logDeactivated();

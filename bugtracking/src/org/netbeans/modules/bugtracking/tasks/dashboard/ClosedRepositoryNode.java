@@ -44,13 +44,13 @@ package org.netbeans.modules.bugtracking.tasks.dashboard;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 
 public class ClosedRepositoryNode extends RepositoryNode {
 
-    public ClosedRepositoryNode(Repository repository) {
+    public ClosedRepositoryNode(RepositoryImpl repository) {
         super(repository, false);
     }
 
@@ -69,7 +69,7 @@ public class ClosedRepositoryNode extends RepositoryNode {
     }
 
     @Override
-    Collection<Query> getQueries() {
+    Collection<QueryImpl> getQueries() {
         return Collections.emptyList();
     }
 

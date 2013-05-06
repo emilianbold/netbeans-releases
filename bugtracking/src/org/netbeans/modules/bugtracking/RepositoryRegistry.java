@@ -58,9 +58,11 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.keyring.Keyring;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.TeamRepositories;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.openide.util.NbPreferences;
 
 /**
@@ -147,8 +149,8 @@ public class RepositoryRegistry {
      */
     public void addRepository(RepositoryImpl repository) {
         assert repository != null;
-        if(KenaiUtil.isKenai(repository.getRepository()) && !BugtrackingUtil.isNbRepository(repository.getUrl())) {
-            // we don't store kenai repositories - XXX  shouldn't be even called
+        if(TeamUtil.isFromTeamServer(repository.getRepository()) && !NBBugzillaUtils.isNbRepository(repository.getUrl())) {
+            // we don't store team repositories - XXX  shouldn't be even called
             return;        
         }
         synchronized(REPOSITORIES_LOCK) {
@@ -177,23 +179,35 @@ public class RepositoryRegistry {
     }
     
     /**
-     * Returns all known repositories incl. the Kenai ones
+     * Returns all known repositories incl. the Team ones
      *
-     * @param pingOpenProjects if {@code false}, search only Kenai projects
-     *                          that are currently open in the Kenai dashboard;
-     *                          if {@code true}, search also all Kenai projects
+     * @param pingOpenProjects if {@code false}, search only Team projects
+     *                          that are currently open in the Team dashboard;
+     *                          if {@code true}, search also all Team projects
      *                          currently opened in the IDE
      * @return repositories
      */
     public Collection<RepositoryImpl> getKnownRepositories(boolean pingOpenProjects) {
+        return getKnownRepositories(pingOpenProjects, false);
+    }
+    
+    /**
+     * Returns all known repositories incl. the Team ones
+     *
+     * @param pingOpenProjects if {@code false}, search only Team projects
+     *                          that are currently open in the Team dashboard;
+     *                          if {@code true}, search also all Team projects
+     *                          currently opened in the IDE
+     * @param onlyDashboardOpenProjects
+     * @return repositories
+     */
+    public Collection<RepositoryImpl> getKnownRepositories(boolean pingOpenProjects, boolean onlyDashboardOpenProjects) {
         Collection<RepositoryImpl> otherRepos = getRepositories();
-        Collection<Repository> kenaiRepos = KenaiUtil.getRepositories(pingOpenProjects);
-        List<RepositoryImpl> ret = new ArrayList<RepositoryImpl>(kenaiRepos.size() + otherRepos.size());
+        Collection<RepositoryImpl> teamRepos = TeamRepositories.getInstance().getRepositories(pingOpenProjects, onlyDashboardOpenProjects);
+        
+        List<RepositoryImpl> ret = new ArrayList<RepositoryImpl>(teamRepos.size() + otherRepos.size());
         
         ret.addAll(otherRepos);
-        for (Repository r : kenaiRepos) {
-            ret.add(APIAccessor.IMPL.getImpl(r));
-        }
         
         return ret;
     }
@@ -204,6 +218,7 @@ public class RepositoryRegistry {
      */
     public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.removePropertyChangeListener(listener);
+        TeamRepositories.getInstance().removePropertyChangeListener(listener);
     }
 
     /**
@@ -212,6 +227,7 @@ public class RepositoryRegistry {
      */
     public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
         changeSupport.addPropertyChangeListener(listener);
+        TeamRepositories.getInstance().addPropertyChangeListener(listener);
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////
@@ -391,7 +407,7 @@ public class RepositoryRegistry {
         
         String user;
         char[] password;
-        if(BugtrackingUtil.isNbRepository(url)) {
+        if(NBBugzillaUtils.isNbRepository(url)) {
             user = getBugzillaNBUsername();
             char[] psswdArray = getNBPassword();
             password = psswdArray != null ? psswdArray : new char[0];
