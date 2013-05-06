@@ -25,8 +25,8 @@ FUNCTION MagickCoreGenesis [6:3/72-6:58/127] FunctionImpl SCOPE: $Global$
     SIGNATURE MagickCoreGenesis(const char*,const MagickBooleanType)
     UNIQUE NAME F:MagickCoreGenesis(const char*,const MagickBooleanType)
     PARAMETERS:
-         [6:21/90-6:33/102]  TYPE: const *char TEXT=const char*  [6:21/90-6:26/95]  INIT: null  SCOPE: MagickCoreGenesis 
-         [6:34/103-6:57/126]  TYPE: const MagickBooleanType TEXT=const MagickBooleanType  [6:34/103-6:39/108]  INIT: null  SCOPE: MagickCoreGenesis 
+         [6:21/90-6:33/102]  TYPE: const *char TEXT=const char*  [6:21/90-6:33/102]  INIT: null  SCOPE: MagickCoreGenesis 
+         [6:34/103-6:57/126]  TYPE: const MagickBooleanType TEXT=const MagickBooleanType  [6:34/103-6:57/126]  INIT: null  SCOPE: MagickCoreGenesis 
     RETURNS void TEXT=void  [4:8/38-4:12/42]
 FUNCTION MagickCoreTerminus [7:3/131-7:27/155] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
@@ -50,8 +50,8 @@ FUNCTION MagickCoreGenesis [6:3/72-6:58/127] FunctionImpl SCOPE: $Global$
     SIGNATURE MagickCoreGenesis(const char*,const MagickBooleanType)
     UNIQUE NAME F:MagickCoreGenesis(const char*,const MagickBooleanType)
     PARAMETERS:
-         [6:21/90-6:33/102]  TYPE: const *char TEXT=const char*  [6:21/90-6:26/95]  INIT: null  SCOPE: MagickCoreGenesis 
-         [6:34/103-6:57/126]  TYPE: const MagickBooleanType TEXT=const MagickBooleanType  [6:34/103-6:39/108]  INIT: null  SCOPE: MagickCoreGenesis 
+         [6:21/90-6:33/102]  TYPE: const *char TEXT=const char*  [6:21/90-6:33/102]  INIT: null  SCOPE: MagickCoreGenesis 
+         [6:34/103-6:57/126]  TYPE: const MagickBooleanType TEXT=const MagickBooleanType  [6:34/103-6:57/126]  INIT: null  SCOPE: MagickCoreGenesis 
     RETURNS void TEXT=void  [4:8/38-4:12/42]
 FUNCTION MagickCoreTerminus [7:3/131-7:27/155] FunctionImpl SCOPE: $Global$ 
     DEFINITION: null
