@@ -163,7 +163,7 @@ public class RestResourceGenerator {
 
                     final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
                     try {
-                        restSupport.ensureRestDevelopmentReady();
+                        restSupport.ensureRestDevelopmentReady(RestSupport.RestConfig.IDE);
                     } catch (IOException ex) {
                         ErrorManager.getDefault().notify();
                     }
