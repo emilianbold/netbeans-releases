@@ -516,7 +516,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         assignedCombo.setEnabled(assignedField.isEditable());
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
         if (isNew && force) {
-            if(NBBugzillaUtils.isNbRepository(issue.getRepository().getUrl())) {
+            // this should not be called when reopening task to submit
+            if(BugzillaUtil.isNbRepository(issue.getRepository())) {
                 addNetbeansInfo();
             }
             // Preselect the first product
@@ -558,7 +559,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             reloadField(urlField, IssueField.URL, urlWarning, fieldName(urlLabel));
             reloadField(force, statusWhiteboardField, IssueField.WHITEBOARD, statusWhiteboardWarning, statusWhiteboardLabel);
             reloadField(force, keywordsField, IssueField.KEYWORDS, keywordsWarning, keywordsLabel);
-            reloadField(addCommentArea, IssueField.COMMENT, addCommentLabel, null);
+            if (isNew) {
+                if (addCommentArea.getText().isEmpty()) {
+                    reloadField(addCommentArea, IssueField.DESCRIPTION, addCommentLabel, null);
+                }
+            } else {
+                reloadField(addCommentArea, IssueField.COMMENT, addCommentLabel, null);
+            }
 
             boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
             if (!isNew) {
