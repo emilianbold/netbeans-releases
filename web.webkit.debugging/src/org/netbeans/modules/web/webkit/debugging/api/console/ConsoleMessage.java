@@ -129,6 +129,14 @@ public class ConsoleMessage {
         return stackTrace;
     }
     
+    /**
+     * @since 1.19
+     * @return A list of sub-messages.
+     */
+    public List<ConsoleMessage> getSubMessages() {
+        return Collections.EMPTY_LIST;
+    }
+    
     
     public static final class StackFrame {
 

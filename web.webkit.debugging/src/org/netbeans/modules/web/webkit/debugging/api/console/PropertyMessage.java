@@ -41,63 +41,36 @@
  */
 package org.netbeans.modules.web.webkit.debugging.api.console;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.PropertyDescriptor;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Martin
+ * @author Martin Entlicher
  */
-class RemoteObjectMessage extends ConsoleMessage {
+@NbBundle.Messages({ "# {0} - property name",
+                     "# {1} - property value",
+                     "CTL_Property={0}: {1}"})
+class PropertyMessage extends ConsoleMessage {
     
-    private final RemoteObject ro;
     private final WebKitDebugging webKit;
+    private final PropertyDescriptor pd;
     
-    RemoteObjectMessage(WebKitDebugging webKit, RemoteObject ro) {
-        super(ro.getOwningProperty());
+    PropertyMessage(WebKitDebugging webKit, PropertyDescriptor pd) {
+        super(null);
         this.webKit = webKit;
-        this.ro = ro;
-    }
-
-    @Override
-    public String getType() {
-        return ro.getType().getName();
+        this.pd = pd;
     }
 
     @Override
     public String getText() {
-        if (ro.getType() == RemoteObject.Type.OBJECT) {
-            String className = ro.getClassName();
-            if (className != null &&
-                className.startsWith("HTML") && className.endsWith("Element")) {
-                
-                List<PropertyDescriptor> properties = webKit.getRuntime().getRemoteObjectProperties(ro, true);
-                for (PropertyDescriptor pd : properties) {
-                    if ("outerHTML".equals(pd.getName())) {
-                        return pd.getValue().getValueAsString();
-                    }
-                }
-            }
-            return ro.getDescription();
-        }
-        return ro.getValueAsString();
+        String name = pd.getName();
+        RemoteObject ro = pd.getValue();
+        String value = new RemoteObjectMessage(webKit, ro).getText();
+        return Bundle.CTL_Property(name, value);
     }
-
-    @Override
-    public List<ConsoleMessage> getSubMessages() {
-        if (ro.getType() == RemoteObject.Type.OBJECT) {
-            List<PropertyDescriptor> properties = ro.getProperties();
-            List<ConsoleMessage> propMessages = new ArrayList<ConsoleMessage>(properties.size());
-            for (PropertyDescriptor pd : properties) {
-                propMessages.add(new PropertyMessage(webKit, pd));
-            }
-            return propMessages;
-        } else {
-            return super.getSubMessages();
-        }
-    }
+    
     
 }
