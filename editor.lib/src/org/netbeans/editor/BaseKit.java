@@ -265,6 +265,9 @@ public class BaseKit extends DefaultEditorKit {
     /** Format part of the document text using Indent */
     public static final String formatAction = "format"; // NOI18N
 
+    /** Indent part of the document text using Indent */
+    public static final String indentAction = "indent"; // NOI18N
+
     /** First non-white character on the line */
     public static final String firstNonWhiteAction = "first-non-white"; // NOI18N
 
