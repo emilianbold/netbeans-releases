@@ -39,58 +39,52 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.ios;
+package org.netbeans.modules.cordova.project;
 
 import java.awt.Image;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.ImageUtilities;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
-
 
 /**
  *
  * @author Jan Becicka
  */
-@NbBundle.Messages({
-    "LBL_DeviceDefault=iOS Device",
-    "LBL_SimulatorDefault=iOS Simulator"
-})
-public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory {
-
-    @Override
-    public BrowserFamilyId getBrowserFamilyId() {
-        return BrowserFamilyId.IOS;
-    }
-
-    @Override
-    public Image getIconImage() {
-        return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/apple.png", false);
-    }
+public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory {
 
     @Override
     public boolean canCreateHtmlBrowserImpl() {
         return true;
     }
 
+    @Override
+    public HtmlBrowser.Impl createHtmlBrowserImpl() {
+        return new CordovaBrowser();
+    }
+
+    @Override
+    public BrowserFamilyId getBrowserFamilyId() {
+        return BrowserFamilyId.PHONEGAP;
+    }
+
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
-    public static class EmulatorDefault extends IOSBrowserFactory {
+    public static class IOSDevice extends PhoneGapBrowserFactory {
 
         @Override
-        public String getDisplayName() {
-            return Bundle.LBL_SimulatorDefault();
+        public Image getIconImage() {
+            return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/phonegap.png", false);
         }
 
         @Override
-        public HtmlBrowser.Impl createHtmlBrowserImpl() {
-            return new IOSBrowser(IOSBrowser.Kind.IOS_SIMULATOR_DEFAULT);
+        public String getDisplayName() {
+            return "PhoneGap (iOS Device)";
         }
 
         @Override
         public String getId() {
-            return IOSBrowser.Kind.IOS_SIMULATOR_DEFAULT.toString(); // NOI18N
+            return "ios_1"; // NOI18N
         }
 
         @Override
@@ -100,27 +94,74 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
     }
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
-    public static class DeviceDefault extends IOSBrowserFactory {
+    public static class IOSSimulator extends PhoneGapBrowserFactory {
 
         @Override
-        public String getDisplayName() {
-            return Bundle.LBL_DeviceDefault();
+        public Image getIconImage() {
+            return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/phonegap.png", false);
         }
 
         @Override
-        public HtmlBrowser.Impl createHtmlBrowserImpl() {
-            return new IOSBrowser(IOSBrowser.Kind.IOS_DEVICE_DEFAULT);
+        public String getDisplayName() {
+            return "PhoneGap (iOS Simulator)";
         }
 
         @Override
         public String getId() {
-            return IOSBrowser.Kind.IOS_DEVICE_DEFAULT.toString(); // NOI18N
+            return "ios"; // NOI18N
         }
 
         @Override
         public boolean hasNetBeansIntegration() {
             return true;
         }
-        
+    }
+
+    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
+    public static class AndroidEmulator extends PhoneGapBrowserFactory {
+
+        @Override
+        public Image getIconImage() {
+            return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/phonegap.png", false);
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "PhoneGap (Android Emulator)";
+        }
+
+        @Override
+        public String getId() {
+            return "android"; // NOI18N
+        }
+
+        @Override
+        public boolean hasNetBeansIntegration() {
+            return false;
+        }
+
+        @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
+        public static class AndroidDevice extends PhoneGapBrowserFactory {
+
+            @Override
+            public Image getIconImage() {
+                return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/phonegap.png", false);
+            }
+
+            @Override
+            public String getDisplayName() {
+                return "PhoneGap (Android Device)";
+            }
+
+            @Override
+            public String getId() {
+                return "android_1"; // NOI18N
+            }
+
+            @Override
+            public boolean hasNetBeansIntegration() {
+                return false;
+            }
+        }
     }
 }

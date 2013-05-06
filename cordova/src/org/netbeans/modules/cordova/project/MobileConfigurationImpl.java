@@ -127,7 +127,11 @@ public class MobileConfigurationImpl implements ProjectConfiguration, PropertyPr
     public String putProperty(String prop, String value) {
         return props.put(prop, value);
     }
-    
+
+    public static MobileConfigurationImpl create(Project project, String id) {
+        return create(project, project.getProjectDirectory().getFileObject("nbproject/configs/" + id +".properties"));
+    }
+
     public static MobileConfigurationImpl create(Project proj, FileObject configFile) {
 
         try {

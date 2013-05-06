@@ -46,6 +46,8 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
 import org.netbeans.modules.web.clientproject.api.ClientProjectWizardProvider;
@@ -81,11 +83,10 @@ public class ClientProjectUtilities {
     }
     
     public static String getProperty(Project p, String key) {
-        ProjectConfigurationProvider provider = p.getLookup().lookup(ProjectConfigurationProvider.class);
-        if (provider == null || !(provider.getActiveConfiguration() instanceof MobileConfigurationImpl))
-            return null;
-        MobileConfigurationImpl activeConfiguration = (MobileConfigurationImpl) provider.getActiveConfiguration();
-        return activeConfiguration.getProperty(key);
+        ProjectBrowserProvider provider = p.getLookup().lookup(ProjectBrowserProvider.class);
+        WebBrowser activeConfiguration = provider.getActiveBrowser();
+        MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(p, activeConfiguration.getId());
+        return mobileConfig.getProperty(key);
     }
     
     @TemplateRegistration(folder = "Project/ClientSide",

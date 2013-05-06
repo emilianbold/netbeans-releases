@@ -77,6 +77,9 @@ import static org.netbeans.modules.cordova.PropertyNames.*;
 import org.netbeans.modules.cordova.platforms.CordovaMapping;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitUIManager;
 import org.openide.DialogDescriptor;
@@ -137,27 +140,26 @@ public class CordovaPerformer implements BuildPerformer {
                     ExecutorTask runTarget = ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));
                     if (target.equals(BuildPerformer.RUN_IOS)) {
                         if (runTarget.result() == 0) {
-                            ProjectConfigurationProvider provider = project.getLookup().lookup(ProjectConfigurationProvider.class);
+                            ProjectBrowserProvider provider = project.getLookup().lookup(ProjectBrowserProvider.class);
                             if (provider != null) {
-                                ProjectConfiguration activeConfiguration = provider.getActiveConfiguration();
-                                if (activeConfiguration instanceof MobileConfigurationImpl) {
-                                    Device device = ((MobileConfigurationImpl) activeConfiguration).getDevice();
-                                    CordovaMapping map = (CordovaMapping) Lookup.getDefault().lookup(ServerURLMappingImplementation.class);
-                                    map.setProject(project);
-                                    if (device.isEmulator()) {
+                                WebBrowser activeConfiguration = provider.getActiveBrowser();
+                                MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(project, activeConfiguration.getId());
+                                Device device = mobileConfig.getDevice();
+                                CordovaMapping map = (CordovaMapping) Lookup.getDefault().lookup(ServerURLMappingImplementation.class);
+                                map.setProject(project);
+                                if (device.isEmulator()) {
                                     try {
                                         Thread.sleep(5000);
                                     } catch (InterruptedException ex) {
                                         Exceptions.printStackTrace(ex);
                                     }
-                                    } else {
-                                        DialogDescriptor dd = new DialogDescriptor("Install application using iTunes and tap on it", "Install and Run");
-                                        if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
-                                            return;
-                                        }
+                                } else {
+                                    DialogDescriptor dd = new DialogDescriptor("Install application using iTunes and tap on it", "Install and Run");
+                                    if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
+                                        return;
                                     }
-                                    startDebugging(device, project, null, false);
                                 }
+                                startDebugging(device, project, null, false);
                             }
                         }
                     }
@@ -215,15 +217,15 @@ public class CordovaPerformer implements BuildPerformer {
         props.put(PROP_ENV_DISPLAY, ":0.0");//NOI18N
         props.put(PROP_ANDROID_SDK_HOME, PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation());
 
-        ProjectConfigurationProvider provider = p.getLookup().lookup(ProjectConfigurationProvider.class);
+        ProjectBrowserProvider provider = p.getLookup().lookup(ProjectBrowserProvider.class);
         if (provider != null) {
-            ProjectConfiguration activeConfiguration = provider.getActiveConfiguration();
-            if (activeConfiguration instanceof MobileConfigurationImpl) {
-                props.put(PROP_CONFIG, ((MobileConfigurationImpl) activeConfiguration).getId());
-                ((MobileConfigurationImpl) activeConfiguration).getDevice().addProperties(props);
-            }
+            WebBrowser activeConfiguration = provider.getActiveBrowser();
+            MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(p, activeConfiguration.getId());
+
+            props.put(PROP_CONFIG, mobileConfig.getId());
+            mobileConfig.getDevice().addProperties(props);
         }
-        
+
         return props;
     }
 
