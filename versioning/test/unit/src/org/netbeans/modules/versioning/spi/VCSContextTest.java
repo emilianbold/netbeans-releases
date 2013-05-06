@@ -59,6 +59,7 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  * Versioning SPI unit tests of VCSContext.
@@ -124,6 +125,7 @@ public class VCSContextTest extends NbTestCase {
         assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 1);        
     }
 
+    @RandomlyFails // see issue 229405
     public void testForProjectNodes() throws IOException {
         VCSContext ctx = VCSContext.forNodes(new Node[] { new DummyProjectNode(new File(dataRootDir, "workdir/root")) });
         assertTrue(ctx.getRootFiles().size() == 1);
