@@ -297,9 +297,9 @@ public class SigningPanel extends javax.swing.JPanel implements ActionListener, 
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
                     .addComponent(mixedCodeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(13, 13, 13)
-                .addComponent(labelWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0))
+                .addGap(11, 11, 11)
+                .addComponent(labelWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(3, 3, 3))
         );
 
         selfSign.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SigningPanel.class, "AD_SigningPanel.selfSign.text")); // NOI18N
