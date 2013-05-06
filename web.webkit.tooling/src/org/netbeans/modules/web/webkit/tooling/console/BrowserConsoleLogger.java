@@ -74,9 +74,11 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.windows.FoldHandle;
 import org.openide.windows.IOColorPrint;
 import org.openide.windows.IOColors;
 import org.openide.windows.IOContainer;
+import org.openide.windows.IOFolding;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
@@ -99,6 +101,7 @@ public class BrowserConsoleLogger implements Console.Listener {
     /** The last logged message. */
     private ConsoleMessage lastMessage;
     private Console.InputCallback input;
+    private boolean isFoldingSupported;
     //private Color colorErrBrighter;
     private final AtomicBoolean shownOnError = new AtomicBoolean(false);
     private final RequestProcessor rp = new RequestProcessor(BrowserConsoleLogger.class);
@@ -122,8 +125,14 @@ public class BrowserConsoleLogger implements Console.Listener {
             }
             colorStdBrighter = shiftTowards(colorStd, background);
             //colorErrBrighter = shiftTowards(colorErr, background);
+            Color foreground = UIManager.getDefaults().getColor("nb.output.foreground");    // NOI18N
+            if (foreground == null) {
+                foreground = SystemColor.textText;
+            }
+            IOColors.setColor(io, IOColors.OutputType.INPUT, shiftTowards(foreground, Color.GREEN));
         }
         io.setInputVisible(true);
+        isFoldingSupported = IOFolding.isSupported(io);
         //io.getOut().print(PROMPT);
         Reader r = io.getIn();
         rp.post(new ConsoleReader(r));
@@ -181,12 +190,20 @@ public class BrowserConsoleLogger implements Console.Listener {
     
     private void logMessage(ConsoleMessage msg) throws IOException {
         io.getOut().print("\b\b");
+        Project project = projectContext.lookup(Project.class);
+        logMessage(msg, project);
+        io.getOut().print(PROMPT);
+        boolean isErr = LEVEL_ERROR.equals(msg.getLevel());
+        if (io.isClosed() || (isErr && !shownOnError.getAndSet(true))) {
+            io.select();
+        }
+    }
+    
+    private void logMessage(ConsoleMessage msg, Project project) throws IOException {
         String level = msg.getLevel();
         boolean isErr = LEVEL_ERROR.equals(level);
         String time = getCurrentTime();
 
-        Project project = projectContext.lookup(Project.class);
-        
         String logInfo = createLogInfo(time, level, msg.getSource(), msg.getType());
         OutputWriter ow = isErr ? io.getErr() : io.getOut();
         String lines[] = msg.getText().replace("\r", "").split("\n");
@@ -230,6 +247,10 @@ public class BrowserConsoleLogger implements Console.Listener {
         StringBuilder sb;
         boolean first = true;
         if (doPrintStackTrace && msg.getStackTrace() != null) {
+            FoldHandle fold = null;
+            if (isFoldingSupported) {
+                fold = IOFolding.startFold(io, false);
+            }
             for (ConsoleMessage.StackFrame sf : msg.getStackTrace()) {
                 String indent;
                 if (first) {
@@ -252,6 +273,9 @@ public class BrowserConsoleLogger implements Console.Listener {
                     ow.println(sb.toString());
                 }
             }
+            if (fold != null) {
+                fold.finish();
+            }
         }
         if (first && msg.getURLString() != null && msg.getURLString().length() > 0) {
             ow.print("  at ");
@@ -270,9 +294,18 @@ public class BrowserConsoleLogger implements Console.Listener {
                 ow.println(sb.toString());
             }
         }
-        io.getOut().print(PROMPT);
-        if (io.isClosed() || (isErr && !shownOnError.getAndSet(true))) {
-            io.select();
+        List<ConsoleMessage> subMessages = msg.getSubMessages();
+        if (!subMessages.isEmpty()) {
+            FoldHandle fold = null;
+            if (isFoldingSupported) {
+                fold = IOFolding.startFold(io, false);
+            }
+            for (ConsoleMessage cm : subMessages) {
+                logMessage(cm, project);
+            }
+            if (fold != null) {
+                fold.finish();
+            }
         }
     }
     
