@@ -74,13 +74,6 @@ abstract class AbstractCompletionItem implements CompletionItem {
         this.ctx = ctx;
     }
     
-    protected AbstractCompletionItem(int offset, int len, String text) {
-        this.substOffset = offset;
-        this.length = len;
-        this.text = text;
-        this.ctx = null;
-    }
-    
     protected int getStartOffset() {
         return substOffset;
     }
