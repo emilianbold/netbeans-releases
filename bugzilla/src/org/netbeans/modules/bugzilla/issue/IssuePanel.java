@@ -118,11 +118,11 @@ import javax.swing.text.JTextComponent;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
-import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.*;
 import org.netbeans.modules.bugzilla.Bugzilla;
@@ -383,7 +383,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
                 
         if (issue.isNew()) {
-            if(BugtrackingUtil.isNbRepository(issue.getRepository().getUrl())) {
+            if(NBBugzillaUtils.isNbRepository(issue.getRepository().getUrl())) {
                 ownerInfo = issue.getOwnerInfo();
                 if(ownerInfo == null) {
                     // XXX not sure why we need this - i'm going to keep it for now,
@@ -454,8 +454,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         fieldWarnings.clear();
         fieldErrors.clear();
         reloading = true;
+
         boolean isNew = issue.isNew();
-        boolean showProductCombo = isNew || !(issue.getRepository() instanceof KenaiRepository) || BugzillaUtil.isNbRepository(issue.getRepository());
+        boolean showProductCombo = isNew || !(issue.getRepository() instanceof KenaiRepository) || NBBugzillaUtils.isNbRepository(issue.getRepository().getUrl());
         boolean hasTimeTracking = !isNew && issue.hasTimeTracking();
         GroupLayout layout = (GroupLayout)getLayout();
         if (showProductCombo) {
@@ -468,7 +469,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         productLabel.setLabelFor(isNew ? productCombo : productField);
-        boolean isNetbeans = BugtrackingUtil.isNbRepository(issue.getRepository().getUrl());
+        boolean isNetbeans = NBBugzillaUtils.isNbRepository(issue.getRepository().getUrl());
         if(isNew && isNetbeans) {
             attachLogCheckBox.setVisible(true);
             viewLogButton.setVisible(true);
@@ -515,7 +516,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         assignedCombo.setEnabled(assignedField.isEditable());
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
         if (isNew && force) {
-            if(BugtrackingUtil.isNbRepository(issue.getRepository().getUrl())) {
+            if(NBBugzillaUtils.isNbRepository(issue.getRepository().getUrl())) {
                 addNetbeansInfo();
             }
             // Preselect the first product
@@ -575,7 +576,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     int index = reporter.indexOf('@');
                     String userName = (index == -1) ? reporter : reporter.substring(0,index);
                     String host = ((KenaiRepository) issue.getRepository()).getHost();
-                    JLabel label = KenaiUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, KenaiUtil.getChatLink(issue.getID()));
+                    JLabel label = TeamUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, TeamUtil.getChatLink(issue.getID()));
                     if (label != null) {
                         label.setText(null);
                         ((GroupLayout)getLayout()).replace(reportedStatusLabel, label);
@@ -622,7 +623,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 int index = assignee.indexOf('@');
                 String userName = (index == -1) ? assignee : assignee.substring(0,index);
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                JLabel label = KenaiUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, KenaiUtil.getChatLink(issue.getID()));
+                JLabel label = TeamUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, TeamUtil.getChatLink(issue.getID()));
                 if (label != null) {
                     label.setText(null);
                     ((GroupLayout)getLayout()).replace(assignedToStatusLabel, label);

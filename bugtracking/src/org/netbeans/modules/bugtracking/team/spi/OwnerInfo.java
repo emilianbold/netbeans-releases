@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,18 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.kenai.spi;
 
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
+package org.netbeans.modules.bugtracking.team.spi;
+
+import java.util.List;
 
 /**
- *
+ * Wrapper for a OwnerInfo instance returned by a Kenai Server
+ * 
  * @author Tomas Stupka
+ * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport
  */
-public abstract class KenaiRepositoryProvider<R, Q, I> extends RepositoryProvider<R, Q, I> {
-    public abstract Q getAllIssuesQuery(R repository);
-    public abstract Q getMyIssuesQuery(R repository);
-    public abstract KenaiProject getKenaiProject(R repository);
+public abstract class OwnerInfo {
+
+    /**
+     * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo
+     */
+    public abstract String getOwner();
+
+    /**
+     * @see org.netbeans.modules.kenai.ui.api.NbModuleOwnerSupport.OwnerInfo
+     */
+    public abstract List<String> getExtraData();
+
 }

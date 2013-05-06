@@ -75,9 +75,9 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -117,13 +117,13 @@ public class ODCSRepository implements PropertyChangeListener {
     
     private PropertyChangeSupport support;
     
-    private KenaiProject kenaiProject;
+    private TeamProject kenaiProject;
     
-    public ODCSRepository (KenaiProject kenaiProject) {
+    public ODCSRepository (TeamProject kenaiProject) {
         this(createInfo(kenaiProject.getDisplayName(), kenaiProject.getFeatureLocation())); // use name as id - can't be changed anyway
         assert kenaiProject != null;
         this.kenaiProject = kenaiProject;
-        KenaiUtil.getKenaiAccessor(kenaiProject.getFeatureLocation()).addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
+        TeamUtil.getTeamAccessor(kenaiProject.getFeatureLocation()).addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
     }
     
     public ODCSRepository() {
@@ -168,18 +168,18 @@ public class ODCSRepository implements PropertyChangeListener {
         return TextUtils.encodeURL(url) + ":" + name; //NOI18N
     }
     
-    public KenaiProject getKenaiProject () {
+    public TeamProject getKenaiProject () {
         return kenaiProject;
     }
     
     @Override
     public void propertyChange (PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(KenaiAccessor.PROP_LOGIN)) {
+        if (evt.getPropertyName().equals(TeamAccessor.PROP_LOGIN)) {
 
             String user;
             char[] psswd;
             PasswordAuthentication pa =
-                    KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
+                    TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
             if (pa != null) {
                 user = pa.getUserName();
                 psswd = pa.getPassword();
@@ -194,7 +194,7 @@ public class ODCSRepository implements PropertyChangeListener {
     
 
     public boolean authenticate (String errroMsg) {
-        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
+        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
         if(pa == null) {
             return false;
         }

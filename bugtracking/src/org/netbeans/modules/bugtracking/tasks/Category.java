@@ -46,8 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 
 /**
  *
@@ -56,28 +56,28 @@ import org.netbeans.modules.bugtracking.api.Repository;
 public class Category {
 
     private String name;
-    private List<Issue> tasks;
+    private List<IssueImpl> tasks;
     private boolean loaded;
 
-    public Category(String name, List<Issue> tasks) {
+    public Category(String name, List<IssueImpl> tasks) {
         this(name, tasks, true);
     }
 
     public Category(String name) {
-        this(name, new ArrayList<Issue>(), false);
+        this(name, new ArrayList<IssueImpl>(), false);
     }
 
-    public Category(String name, List<Issue> tasks, boolean loaded) {
+    public Category(String name, List<IssueImpl> tasks, boolean loaded) {
         this.name = name;
         this.tasks = tasks;
         this.loaded = loaded;
     }
 
-    public void removeTask(Issue task) {
+    public void removeTask(IssueImpl task) {
         tasks.remove(task);
     }
 
-    public void addTask(Issue task) {
+    public void addTask(IssueImpl task) {
         tasks.add(task);
     }
 
@@ -89,11 +89,11 @@ public class Category {
         this.name = name;
     }
 
-    public List<Issue> getTasks() {
+    public List<IssueImpl> getTasks() {
         return tasks;
     }
 
-    public void setTasks(List<Issue> tasks) {
+    public void setTasks(List<IssueImpl> tasks) {
         if (!loaded && tasks != null) {
             loaded = true;
         }
@@ -125,23 +125,23 @@ public class Category {
         if (loaded) {
             refreshTasks();
         } else {
-            Utils.loadCategory(this);
+            DashboardUtils.loadCategory(this);
         }
     }
 
     private void refreshTasks() {
-        Map<Repository, List<String>> map = getTasksToRepository(this.getTasks());
-        Set<Repository> repositoryKeys = map.keySet();
-        for (Repository repository : repositoryKeys) {
+        Map<RepositoryImpl, List<String>> map = getTasksToRepository(this.getTasks());
+        Set<RepositoryImpl> repositoryKeys = map.keySet();
+        for (RepositoryImpl repository : repositoryKeys) {
             List<String> ids = map.get(repository);
-            repository.getIssues(ids.toArray(new String[ids.size()]));
+            repository.getIssueImpls(ids.toArray(new String[ids.size()]));
         }
     }
 
-    private Map<Repository, List<String>> getTasksToRepository(List<Issue> tasks) {
-        Map<Repository, List<String>> map = new HashMap<Repository, List<String>>();
-        for (Issue issue : tasks) {
-            Repository repositoryKey = issue.getRepository();
+    private Map<RepositoryImpl, List<String>> getTasksToRepository(List<IssueImpl> tasks) {
+        Map<RepositoryImpl, List<String>> map = new HashMap<RepositoryImpl, List<String>>();
+        for (IssueImpl issue : tasks) {
+            RepositoryImpl repositoryKey = issue.getRepositoryImpl();
             if (map.containsKey(repositoryKey)) {
                 map.get(repositoryKey).add(issue.getID());
             } else {

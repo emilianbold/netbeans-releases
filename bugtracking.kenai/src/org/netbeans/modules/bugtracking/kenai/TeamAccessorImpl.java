@@ -57,9 +57,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import javax.swing.JLabel;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
-import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
+import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
@@ -81,12 +81,12 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProviders({@ServiceProvider(service=org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor.class),
-                                           @ServiceProvider(service=org.netbeans.modules.bugtracking.kenai.KenaiAccessorImpl.class)})
-public class KenaiAccessorImpl extends KenaiAccessor {
+@org.openide.util.lookup.ServiceProviders({@ServiceProvider(service=org.netbeans.modules.bugtracking.team.spi.TeamAccessor.class),
+                                           @ServiceProvider(service=org.netbeans.modules.bugtracking.kenai.TeamAccessorImpl.class)})
+public class TeamAccessorImpl extends TeamAccessor {
 
     private final List<PropertyChangeListener> allKenaiListeners = new ArrayList<PropertyChangeListener>(1);
-    public KenaiAccessorImpl() {
+    public TeamAccessorImpl() {
         super();
         KenaiManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
@@ -113,12 +113,12 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     }
 
     
-    static KenaiAccessorImpl getInstance() {
-        return Lookup.getDefault().lookup(KenaiAccessorImpl.class);
+    static TeamAccessorImpl getInstance() {
+        return Lookup.getDefault().lookup(TeamAccessorImpl.class);
     }
 
     @Override
-    public void logKenaiUsage(Object... parameters) {
+    public void logTeamUsage(Object... parameters) {
         KenaiUIUtils.logKenaiUsage(parameters); 
     }
 
@@ -149,10 +149,10 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     }
 
     @Override
-    public Collection<RepositoryUser> getProjectMembers(org.netbeans.modules.bugtracking.kenai.spi.KenaiProject kp) throws IOException {
-        if(kp instanceof KenaiProjectImpl) {
+    public Collection<RepositoryUser> getProjectMembers(org.netbeans.modules.bugtracking.team.spi.TeamProject kp) throws IOException {
+        if(kp instanceof TeamProjectImpl) {
             List<RepositoryUser> members;
-            KenaiProjectMember[] kenaiMembers = ((KenaiProjectImpl)kp).getProject().getMembers();
+            KenaiProjectMember[] kenaiMembers = ((TeamProjectImpl)kp).getProject().getMembers();
             members = new ArrayList<RepositoryUser>(kenaiMembers.length);
             for (KenaiProjectMember member : kenaiMembers) {
                 KenaiUser user = member.getKenaiUser();
@@ -178,11 +178,11 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     }
 
     @Override
-    public boolean isNetbeansKenaiRegistered() {
+    public boolean isNBTeamServerRegistered() {
         Collection<Kenai> kenais = KenaiManager.getDefault().getKenais();
         for (Kenai kenai : kenais) {
             URL url = kenai.getUrl();
-            if(BugtrackingUtil.isNbRepository(url.toString())) {
+            if(NBBugzillaUtils.isNbRepository(url.toString())) {
                 return true;
             }        
         }
@@ -197,29 +197,29 @@ public class KenaiAccessorImpl extends KenaiAccessor {
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo getOwnerInfo(Node node) {
+    public org.netbeans.modules.bugtracking.team.spi.OwnerInfo getOwnerInfo(Node node) {
         OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(node);
         return ownerInfo != null ? new OwnerInfoImpl(ownerInfo) : null;
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo getOwnerInfo(File file) {
+    public org.netbeans.modules.bugtracking.team.spi.OwnerInfo getOwnerInfo(File file) {
         OwnerInfo ownerInfo = NbModuleOwnerSupport.getInstance().getOwnerInfo(NbModuleOwnerSupport.NB_BUGZILLA_CONFIG, file);
         return ownerInfo != null ? new OwnerInfoImpl(ownerInfo) : null;
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.kenai.spi.KenaiProject[] getDashboardProjects(boolean onlyOpened) {
+    public org.netbeans.modules.bugtracking.team.spi.TeamProject[] getDashboardProjects(boolean onlyOpened) {
         ProjectHandle<KenaiProject>[] handles = KenaiUIUtils.getDashboardProjects(onlyOpened);
         if ((handles == null) || (handles.length == 0)) {
-            return new KenaiProjectImpl[0];
+            return new TeamProjectImpl[0];
         }
 
-        List<KenaiProjectImpl> kenaiProjects = new LinkedList<KenaiProjectImpl>();
+        List<TeamProjectImpl> kenaiProjects = new LinkedList<TeamProjectImpl>();
         for (ProjectHandle<KenaiProject> handle : handles) {
             KenaiProject project = handle.getTeamProject();
             if (project != null) {
-                kenaiProjects.add(KenaiProjectImpl.getInstance(project));
+                kenaiProjects.add(TeamProjectImpl.getInstance(project));
             } else {
                 Support.LOG.log(
                         Level.WARNING,
@@ -227,24 +227,24 @@ public class KenaiAccessorImpl extends KenaiAccessor {
                         new Object[]{handle.getId(), handle.getDisplayName()}); 
             }
         }
-        return kenaiProjects.toArray(new KenaiProjectImpl[kenaiProjects.size()]);
+        return kenaiProjects.toArray(new TeamProjectImpl[kenaiProjects.size()]);
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.kenai.spi.KenaiProject getKenaiProjectForRepository(String url) throws IOException {
+    public org.netbeans.modules.bugtracking.team.spi.TeamProject getTeamProjectForRepository(String url) throws IOException {
         KenaiProject kp = KenaiProject.forRepository(url);
-        return kp != null ? KenaiProjectImpl.getInstance(kp) : null;
+        return kp != null ? TeamProjectImpl.getInstance(kp) : null;
     }
 
     @Override
-    public org.netbeans.modules.bugtracking.kenai.spi.KenaiProject getKenaiProject(String url, String projectName) throws IOException {
+    public org.netbeans.modules.bugtracking.team.spi.TeamProject getTeamProject(String url, String projectName) throws IOException {
         Kenai kenai = getKenai(url);
         if (kenai == null) {
             Support.LOG.log(Level.FINEST, "no kenai for url : [{0}]", url);
             return null;
         }
         KenaiProject kp = kenai.getProject(projectName);
-        return kp != null ? KenaiProjectImpl.getInstance(kp) : null;
+        return kp != null ? TeamProjectImpl.getInstance(kp) : null;
     }
 
     @Override
@@ -366,7 +366,7 @@ public class KenaiAccessorImpl extends KenaiAccessor {
         }
     }
 
-    private class OwnerInfoImpl extends org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo {
+    private class OwnerInfoImpl extends org.netbeans.modules.bugtracking.team.spi.OwnerInfo {
         private final OwnerInfo delegate;
 
         public OwnerInfoImpl(OwnerInfo delegate) {

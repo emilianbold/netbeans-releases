@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.bugtracking.team.spi;
 
-package org.netbeans.modules.bugtracking.kenai.spi;
+import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 
 /**
- * Repository user.
  *
- * @author Jan Stola
+ * @author Tomas Stupka
  */
-public class RepositoryUser {
-    /** User name (login) of the user. */
-    private String userName;
-    /** Full name of the user. */
-    private String fullName;
-
-    /**
-     * Creates new <code>RepositoryUser</code>.
-     *
-     * @param userName user name.
-     * @param fullName full name.
-     */
-    public RepositoryUser(String userName, String fullName) {
-        this.userName = userName;
-        this.fullName = fullName;
-    }
-
-    /**
-     * Returns user name.
-     *
-     * @return user name.
-     */
-    public String getUserName() {
-        return userName;
-    }
-
-    /**
-     * Returns full name.
-     *
-     * @return full name.
-     */
-    public String getFullName() {
-        return fullName;
-    }
-
+public abstract class TeamRepositoryProvider<R, Q, I> extends RepositoryProvider<R, Q, I> {
+    public abstract Q getAllIssuesQuery(R repository);
+    public abstract Q getMyIssuesQuery(R repository);
+    public abstract TeamProject getTeamProject(R repository);
 }

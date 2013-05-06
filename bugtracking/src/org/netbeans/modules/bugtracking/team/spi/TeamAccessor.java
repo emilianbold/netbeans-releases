@@ -40,7 +40,7 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.kenai.spi;
+package org.netbeans.modules.bugtracking.team.spi;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -62,84 +62,84 @@ import org.openide.windows.TopComponent.Registry;
 import org.openide.windows.WindowManager;
 
 /**
- * Implementation provides access to kenai API
+ * Implementation provides access to a particular Team API
  * 
  * @author Tomas Stupka
  */
-public abstract class KenaiAccessor {
+public abstract class TeamAccessor {
 
-    public static final String PROP_LOGIN = "kenai.login.changed";               // NOI18N
-    public static final String PROP_PROJETCS_CHANGED = "kenai.projects.changed"; // NOI18N
+    public static final String PROP_LOGIN = "team.login.changed";               // NOI18N
+    public static final String PROP_PROJETCS_CHANGED = "team.projects.changed"; // NOI18N
 
-    protected KenaiAccessor() {
+    protected TeamAccessor() {
        WindowManager.getDefault().getRegistry().addPropertyChangeListener(new ActivatedTCListener());
     }
 
     /**
-     * Returns the opened projects from the kenai dashboard 
+     * Returns the opened projects from a team dashboard 
      * @return
      */
-    public abstract KenaiProject[] getDashboardProjects(boolean onlyOpened);
+    public abstract TeamProject[] getDashboardProjects(boolean onlyOpened);
 
     /**
-     * Returns a KenaiProject for the given kenai vcs repository url
+     * Returns a TeamProject for the given team vcs repository url
      *
      * @param url
      * @return
      * @throws IOException
      */
-    public abstract KenaiProject getKenaiProjectForRepository(String repositoryUrl) throws IOException;
+    public abstract TeamProject getTeamProjectForRepository(String repositoryUrl) throws IOException;
 
     /**
-     * Returns a KenaiProject for the given kenai url
+     * Returns a TeamProject for the given team url
      * 
-     * @param url a kenai url, might be one of the following:<br>
+     * @param url a team server url, might be one of the following:<br>
      *          <ul>
-     *              <li>kenai host url</li>
-     *              <li>kenai vcs repository url</li>
-     *              <li>kenai issuetracker url</li>
+     *              <li>team host url</li>
+     *              <li>team vcs repository url</li>
+     *              <li>team issuetracker url</li>
      *          </ul>
      * @param projectName
      * @return
      * @throws IOException
      */
-    public abstract KenaiProject getKenaiProject(String url, String projectName) throws IOException;
+    public abstract TeamProject getTeamProject(String url, String projectName) throws IOException;
 
     /**
-     * Determines wheter the given kenai instance is logged or not
+     * Determines whether the given team instance is logged or not
      * @param url
      * @return
      */
     public abstract boolean isLoggedIn(String url);
 
     /**
-     * Opens the kenai login dialog
+     * Opens the team login dialog
      *
      * @return returns true if a login was confirmed
      */
     public abstract boolean showLogin();
 
     /**
-     * Determines wheter the given url belongs to a kenai project or not
+     * Determines whether the given url belongs to a team project or not
      *
      * @param url
-     * @return true if the given url belongs to a kenai project, otherwise false
+     * @return true if the given url belongs to a team project, otherwise false
      */
-    public abstract Collection<RepositoryUser> getProjectMembers(KenaiProject kp) throws IOException;
+    public abstract Collection<RepositoryUser> getProjectMembers(TeamProject kp) throws IOException;
 
     /**
-     * User credentials in the given kenai site
-     * @param url a kenai site url
+     * User credentials in the given team site
+     * @param url a team site url
      * @param forceLogin force a user login in case no credentials are available at the moment
      * @return
      */
     public abstract PasswordAuthentication getPasswordAuthentication(String url, boolean forceLogin);
 
     /**
-     * Returns a ui widget representing the given user on the given kenai site.
+     * Returns a ui widget representing the given user on the given team site.
      *
      * @param userName user
-     * @param host kenai site host
+     * @param host team site host
      * @param chatMessage text will be addded to the chat window in case
      *                    a chat session is activated was the widged
      * @return
@@ -147,10 +147,10 @@ public abstract class KenaiAccessor {
     public abstract JLabel createUserWidget(String userName, String host, String chatMessage);
 
     /**
-     * Determines wheter the netbeans.org kenai site is registered in the IDE or not
+     * Determines whether the netbeans.org team site is registered in the IDE or not
      * @return
      */
-    public abstract boolean isNetbeansKenaiRegistered();
+    public abstract boolean isNBTeamServerRegistered();
 
     /**
      * Returns OwnerInfo for the given file
@@ -167,39 +167,37 @@ public abstract class KenaiAccessor {
     public abstract OwnerInfo getOwnerInfo(Node node);
 
     /**
-     * Logs kenai usage. You should know what you do when calling this.
+     * Logs team server usage. You should know what you do when calling this.
      *
      * @param parameters
      */
-    public abstract void logKenaiUsage(Object... parameters);
+    public abstract void logTeamUsage(Object... parameters);
 
     /**
-     * Registers a listener on a kenai instance with the given url if such is available
+     * Registers a listener on a team server instance with the given url if such is available
      *
      * @param listener
-     * @param kenaiHostUrl
+     * @param teamHostUrl
      */
-    public abstract void addPropertyChangeListener(PropertyChangeListener listener, String kenaiHostUrl);
+    public abstract void addPropertyChangeListener(PropertyChangeListener listener, String teamHostUrl);
 
     /**
-     * Unregisters a listener on a kenai instance with the given url if such is available
+     * Unregisters a listener on a team instance with the given url if such is available
      * @param listener
-     * @param kenaiHostUrl
+     * @param teamHostUrl
      */
-    public abstract void removePropertyChangeListener(PropertyChangeListener listener, String kenaiHostUrl);
+    public abstract void removePropertyChangeListener(PropertyChangeListener listener, String teamHostUrl);
     
     /**
-     * Registers a listener on all kenai instances 
+     * Registers a listener on all team server instances 
      *
      * @param listener
-     * @param kenaiHostUrl
      */
     public abstract void addPropertyChangeListener(PropertyChangeListener listener);
 
     /**
-     * Unregisters a listener on all kenai instance
+     * Unregisters a listener on all team server instance
      * @param listener
-     * @param kenaiHostUrl
      */
     public abstract void removePropertyChangeListener(PropertyChangeListener listener);
 
@@ -214,7 +212,7 @@ public abstract class KenaiAccessor {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             Registry registry = WindowManager.getDefault().getRegistry();
-            if (registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+            if (Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
                 TopComponent tc = registry.getActivated();
                 BugtrackingManager.LOG.log(Level.FINER, "activated TC : {0}", tc); // NOI18N
                 if(tc instanceof QueryTopComponent) {
@@ -227,18 +225,18 @@ public abstract class KenaiAccessor {
                     if(repositoryImpl == null) {
                         return;
                     }
-                    if(!KenaiUtil.isKenai(repositoryImpl.getRepository())) {
+                    if(!TeamUtil.isFromTeamServer(repositoryImpl.getRepository())) {
                         return;
                     }
-                    Query allIssuesQuery = KenaiUtil.getAllIssuesQuery(repositoryImpl.getRepository());
+                    Query allIssuesQuery = TeamUtil.getAllIssuesQuery(repositoryImpl.getRepository());
                     if(allIssuesQuery == null || query != APIAccessor.IMPL.getImpl(allIssuesQuery)) {
                         return; 
                     } 
-                    KenaiProject kenaiProject = KenaiUtil.getKenaiProject(repositoryImpl.getRepository());
-                    if(kenaiProject == null) {
+                    TeamProject teamProject = TeamUtil.getTeamProject(repositoryImpl.getRepository());
+                    if(teamProject == null) {
                         return;
                     }
-                    kenaiProject.fireQueryActivated(query.getQuery());
+                    teamProject.fireQueryActivated(query.getQuery());
                 }
             }
         }

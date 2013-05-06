@@ -46,7 +46,7 @@
  * Created on Oct 14, 2008, 5:08:33 PM
  */
 
-package org.netbeans.modules.bugtracking.kenai;
+package org.netbeans.modules.bugtracking.team;
 
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 

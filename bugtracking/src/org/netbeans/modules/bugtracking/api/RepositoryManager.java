@@ -50,8 +50,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
-import org.netbeans.modules.bugtracking.kenai.KenaiRepositories;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 
 /**
@@ -81,7 +80,6 @@ public final class RepositoryManager {
         registry = RepositoryRegistry.getInstance();
         RepositoryListener l = new RepositoryListener();
         registry.addPropertyChangeListener(l);
-        KenaiRepositories.getInstance().addPropertyChangeListener(l);
     }
     
     /**
@@ -121,8 +119,7 @@ public final class RepositoryManager {
      */
     public Collection<Repository> getRepositories() {
         LinkedList<Repository> ret = new LinkedList<Repository>();
-        ret.addAll(KenaiUtil.getRepositories(false, true));
-        ret.addAll(toRepositories(registry.getRepositories()));
+        ret.addAll(toRepositories(registry.getKnownRepositories(false, true)));
         return Collections.unmodifiableCollection(ret);
     }
     
@@ -135,7 +132,7 @@ public final class RepositoryManager {
      */
     public Collection<Repository> getRepositories(String connectorId) {
         LinkedList<Repository> ret = new LinkedList<Repository>();
-        ret.addAll(KenaiUtil.getRepositories(connectorId, false, true));
+        ret.addAll(TeamUtil.getRepositories(connectorId, false, true));
         ret.addAll(toRepositories(registry.getRepositories(connectorId)));
         return ret;
     }

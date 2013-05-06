@@ -40,44 +40,48 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.odcs.tasks.bridge;
+package org.netbeans.modules.bugtracking.kenai;
 
 import java.lang.ref.WeakReference;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector.BugtrackingType;
-import org.netbeans.modules.odcs.api.ODCSProject;
+import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector.BugtrackingType;
+import org.netbeans.modules.kenai.api.KenaiException;
+import org.netbeans.modules.kenai.api.KenaiFeature;
+import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.api.KenaiService;
+import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 
 /**
  *
  * @author Tomas Stupka
  */
-class KenaiProjectImpl extends org.netbeans.modules.bugtracking.kenai.spi.KenaiProject {
+class TeamProjectImpl extends org.netbeans.modules.bugtracking.team.spi.TeamProject {
 
-    public static String getProjectKey (ODCSProject project) {
-        return project.getServer().getUrl().toString() + ":" + project.getName();
+    public static String getProjectKey(KenaiProject project) {
+        return project.getKenai().getUrl().toString() + ":" + project.getName();
     }
 
-    private ODCSProject project;
+    private KenaiProject project;
+    private BugtrackingType type;
+    private KenaiFeature feature;
 
-    private KenaiProjectImpl (ODCSProject project) {
+    private TeamProjectImpl(KenaiProject project) {
         assert project != null;
         this.project = project;
     }
 
-    public static KenaiProjectImpl getInstance(ODCSProject project) {
+    public static TeamProjectImpl getInstance(KenaiProject project) {
         synchronized (Support.getInstance().projectsCache) {
             String projectKey = getProjectKey(project);
-            WeakReference<KenaiProjectImpl> wr = Support.getInstance().projectsCache.get(projectKey);
-            KenaiProjectImpl result = null;
+            WeakReference<TeamProjectImpl> wr = Support.getInstance().projectsCache.get(projectKey);
+            TeamProjectImpl result = null;
             if (wr == null || (result = wr.get()) == null) {
-                result = new KenaiProjectImpl(project);
-                Support.getInstance().projectsCache.put(getProjectKey(project), new WeakReference<KenaiProjectImpl>(result));
+                result = new TeamProjectImpl(project);
+                Support.getInstance().projectsCache.put(getProjectKey(project), new WeakReference<TeamProjectImpl>(result));
             } else {
                 result = wr.get();
                 result.project = project;
@@ -88,26 +92,25 @@ class KenaiProjectImpl extends org.netbeans.modules.bugtracking.kenai.spi.KenaiP
 
     @Override
     public URL getWebLocation() {
-        try {
-            return new URL(project.getWebUrl());
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(KenaiProjectImpl.class.getName()).log(Level.SEVERE, null, ex);
-            return null;
-        }
+        return project.getWebLocation();
     }
 
     @Override
     public String getFeatureLocation() {
-        return project.getTaskUrl();
+        KenaiFeature f = getFeature();
+        return f != null ? f.getLocation() : null;
     }
 
-    public ODCSProject getProject() {
+    public KenaiProject getProject() {
         return project;
     }
 
     @Override
     public BugtrackingType getType() {
-        return BugtrackingType.ODCS;
+        if (type == null) {
+            setupFeature();
+        }
+        return type;
     }
 
     @Override
@@ -117,12 +120,49 @@ class KenaiProjectImpl extends org.netbeans.modules.bugtracking.kenai.spi.KenaiP
 
     @Override
     public String getDisplayName() {
-        return getName();
+        return project.getDisplayName();
+    }
+
+    private KenaiFeature getFeature() {
+        if(feature == null) {
+            setupFeature();
+        }
+        return feature;
+    }
+
+    private void setupFeature() {
+        try {
+            KenaiFeature[] features = project.getFeatures(Type.ISSUES);
+
+            // XXX check for available connectors and if only one available then
+            // lookup only the relevant bugtracking type
+
+            // look for bugzilla first ...
+            for (KenaiFeature f : features) {
+                if (KenaiService.Names.BUGZILLA.equals(f.getService())) {
+                    type = BugtrackingType.BUGZILLA;
+                    feature = f;
+                    break;
+                }
+            }
+            // ... then jira if no bugzilla found
+            if(type == null) {
+                for (KenaiFeature f : features) {
+                    if (KenaiService.Names.JIRA.equals(f.getService())) {
+                        type = BugtrackingType.JIRA;
+                        feature = f;
+                        break;
+                    }
+                }
+            }
+        } catch (KenaiException kenaiException) {
+            Support.LOG.log(Level.SEVERE, kenaiException.getMessage(), kenaiException);
+        }
     }
 
     @Override
     public void fireQueryActivated(Query query) {
-        ODCSHandler handler = Support.getInstance().getODCSHandler(project.getServer());
+        KenaiHandler handler = Support.getInstance().getKenaiHandler(project.getKenai());
         if(handler == null) {
             return;
         }

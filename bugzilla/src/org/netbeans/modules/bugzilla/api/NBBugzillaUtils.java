@@ -43,14 +43,9 @@
 package org.netbeans.modules.bugzilla.api;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
-import java.util.prefs.Preferences;
-import java.util.regex.Pattern;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -62,8 +57,6 @@ import org.netbeans.modules.bugzilla.util.BugzillaUtil;
  * @author Tomas Stupka
  */
 public class NBBugzillaUtils {
-
-    private static Pattern netbeansUrlPattern = Pattern.compile("(https|http)://(([a-z]|\\d)+\\.)*([a-z]|\\d)*netbeans([a-z]|\\d)*(([a-z]|\\d)*\\.)+org(.*)"); // NOI18N
 
     /**
      * Opens in the IDE the given issue from the netbeans repository
@@ -87,7 +80,7 @@ public class NBBugzillaUtils {
      * @return username
      */
     public static String getNBUsername() {
-        return BugtrackingUtil.getNBUsername();
+        return org.netbeans.modules.bugtracking.util.NBBugzillaUtils.getNBUsername();
     }
 
     /**
@@ -97,7 +90,7 @@ public class NBBugzillaUtils {
      * @return password
      */
     public static char[] getNBPassword() {
-        return BugtrackingUtil.getNBPassword();
+        return org.netbeans.modules.bugtracking.util.NBBugzillaUtils.getNBPassword();
     }
 
     /**
@@ -105,7 +98,7 @@ public class NBBugzillaUtils {
      * Shouldn't be called in awt
      */
     public static void saveNBUsername(String username) {
-        BugtrackingUtil.saveNBUsername(username);
+        org.netbeans.modules.bugtracking.util.NBBugzillaUtils.saveNBUsername(username);
     }
 
     /**
@@ -113,7 +106,7 @@ public class NBBugzillaUtils {
      * Shouldn't be called in awt
      */
     public static void saveNBPassword(char[] password) {
-        BugtrackingUtil.saveNBPassword(password);
+        org.netbeans.modules.bugtracking.util.NBBugzillaUtils.saveNBPassword(password);
     }
 
     /**
@@ -123,15 +116,7 @@ public class NBBugzillaUtils {
      */
     public static boolean isNbRepository(URL url) {
         assert url != null;
-        boolean ret = netbeansUrlPattern.matcher(url.toString()).matches();
-        if(ret) {
-            return true;
-        }
-        String nbUrl = System.getProperty("netbeans.bugzilla.url");  // NOI18N
-        if(nbUrl == null || nbUrl.equals("")) {                      // NOI18N
-            return false;
-        }
-        return url.toString().startsWith(nbUrl);
+        return org.netbeans.modules.bugtracking.util.NBBugzillaUtils.isNbRepository(url.toString());
     }
 
     public static Repository findNBRepository() {

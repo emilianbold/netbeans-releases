@@ -47,8 +47,8 @@ import java.net.URL;
 import java.util.logging.Level;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
+import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
         displayName="#LBL_ConnectorName",
         tooltip="#LBL_ConnectorTooltip"
 )    
-public class BugzillaConnector extends KenaiBugtrackingConnector {
+public class BugzillaConnector extends TeamBugtrackingConnector {
 
     public static final String ID = "org.netbeans.modules.bugzilla";
 
@@ -115,7 +115,7 @@ public class BugzillaConnector extends KenaiBugtrackingConnector {
      ******************************************************************************/
     
     @Override
-    public Repository createRepository(KenaiProject project) {
+    public Repository createRepository(TeamProject project) {
         if(project == null || project.getType() != BugtrackingType.BUGZILLA) {
             return null;
         }
@@ -127,7 +127,7 @@ public class BugzillaConnector extends KenaiBugtrackingConnector {
         return BugzillaUtil.getRepository(repo);
     }
 
-    private KenaiRepository createKenaiRepository(KenaiProject kenaiProject, String displayName, String location) {
+    private KenaiRepository createKenaiRepository(TeamProject kenaiProject, String displayName, String location) {
         final URL loc;
         try {
             loc = new URL(location);

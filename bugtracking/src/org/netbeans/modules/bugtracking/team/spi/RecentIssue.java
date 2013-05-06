@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,16 +37,39 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.kenai.spi;
 
-import org.netbeans.modules.bugtracking.spi.IssueProvider;
+package org.netbeans.modules.bugtracking.team.spi;
+
+import org.netbeans.modules.bugtracking.api.Issue;
 
 /**
+ * Container for a recently opened IssueProvider and it's last open time
  *
  * @author Tomas Stupka
  */
-public abstract class KenaiIssueProvider<I> extends IssueProvider<I> {
-    public abstract void setOwnerInfo(I data, OwnerInfo info);   
+public class RecentIssue {
+    private Issue issue;
+    private long ts;
+    public RecentIssue(Issue issue, long ts) {
+        this.issue = issue;
+        this.ts = ts;
+    }
+
+    /**
+     * Returns a issue
+     * @return
+     */
+    public Issue getIssue() {
+        return issue;
+    }
+
+    /**
+     * Returns the timestamp this issue was the last time opened
+     * @return
+     */
+    public long getTimestamp() {
+        return ts;
+    }
 }
