@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.apt.support;
 
 import java.util.Arrays;
+import java.util.Collections;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.netbeans.modules.cnd.antlr.TokenStream;
@@ -127,6 +128,22 @@ public class APTConditionResolverTest {
         assertEquals(testMacro, Integer.toString(sizeof), value);
     }
 
+    private static final String LONG_VS_UNIT_CHECK_CODE =   "#define BIG_UINT_VALUE (0XFFFFFFFF  )\n" +
+                                                            "#define LONG_VALUE    (0xFFFFFFF0UL)\n" +
+                                                            "#if LONG_VALUE >= BIG_UINT_VALUE\n" +
+                                                            "#error \"LONG_VALUE >= BIG_UINT_VALUE\"\n" +
+                                                            "#endif";
+    @Test
+    public void testLongVsUint() {
+        // #229008 - inaccuracy tests: MySQL project has unresolved includes (#error zzzz)
+        APTFileMacroMap mmap = new APTFileMacroMap(null, Collections.<String>emptyList());
+        TokenStream lexer = APTTokenStreamBuilder.buildTokenStream(LONG_VS_UNIT_CHECK_CODE, APTLanguageSupport.GNU_CPP);
+        APTFile apt = APTBuilder.buildAPT(new DummyFileSystem(), "testLongVsUint", lexer);
+        APTWalker walker = new TestWalker(apt, mmap);
+        walker.visit();
+        assertFalse("failed to evaluate " + LONG_VS_UNIT_CHECK_CODE, walker.isStopped());
+    }
+    
     private static final class TestWalker extends APTAbstractWalker {
 
         public TestWalker(APTFile apt, APTMacroMap macros) {
