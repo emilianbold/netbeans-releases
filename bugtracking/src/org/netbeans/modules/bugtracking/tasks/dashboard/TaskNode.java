@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking.tasks.dashboard;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
@@ -57,12 +58,13 @@ import org.netbeans.modules.bugtracking.tasks.Category;
 import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author jpeska
  */
-public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
+public class TaskNode extends TreeListNode implements Comparable<TaskNode>, Refreshable{
 
     private IssueImpl task;
     private JPanel panel;
@@ -131,15 +133,21 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
     public Action[] getPopupActions() {
         List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
         TaskNode[] taskNodes = new TaskNode[selectedNodes.size()];
+        boolean justTasks = true;
         for (int i = 0; i < selectedNodes.size(); i++) {
             TreeListNode treeListNode = selectedNodes.get(i);
             if (treeListNode instanceof TaskNode) {
                 taskNodes[i] = (TaskNode) treeListNode;
             } else {
-                return null;
+                justTasks = false;
+                break;
             }
         }
-        List<Action> actions = Actions.getTaskPopupActions(taskNodes);
+        List<Action> actions = new ArrayList<Action>();
+        if (justTasks) {
+            actions.addAll(Actions.getTaskPopupActions(taskNodes));
+        }
+        actions.addAll(Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
         return actions.toArray(new Action[actions.size()]);
     }
 
@@ -269,6 +277,16 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode> {
         }
         //compare number suffix
         return compareNumericId(Integer.parseInt(suffix1), Integer.parseInt(suffix2));
+    }
+
+    @Override
+    public void refreshContent() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                task.refresh();
+            }
+        });
     }
     
     private class TaskListener implements PropertyChangeListener {
