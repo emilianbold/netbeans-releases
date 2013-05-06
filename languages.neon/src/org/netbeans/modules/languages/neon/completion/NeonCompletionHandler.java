@@ -50,6 +50,9 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.CodeCompletionContext;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.CodeCompletionResult;
@@ -58,6 +61,7 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.languages.neon.lexer.NeonTokenId;
 
 /**
  *
@@ -85,7 +89,7 @@ public class NeonCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public String getPrefix(ParserResult info, int caretOffset, boolean upToOffset) {
-        return "";
+        return PrefixResolver.create(info, caretOffset, upToOffset).resolve();
     }
 
     @Override
@@ -115,6 +119,74 @@ public class NeonCompletionHandler implements CodeCompletionHandler {
     @Override
     public ParameterInfo parameters(ParserResult info, int caretOffset, CompletionProposal proposal) {
         return ParameterInfo.NONE;
+    }
+
+    private static final class PrefixResolver {
+        private final ParserResult info;
+        private final int offset;
+        private final boolean upToOffset;
+        private String result = "";
+
+        static PrefixResolver create(ParserResult info, int offset, boolean upToOffset) {
+            return new PrefixResolver(info, offset, upToOffset);
+        }
+
+        private PrefixResolver(ParserResult info, int offset, boolean upToOffset) {
+            this.info = info;
+            this.offset = offset;
+            this.upToOffset = upToOffset;
+        }
+
+        String resolve() {
+            TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
+            if (th != null) {
+                processHierarchy(th);
+            }
+            return result;
+        }
+
+        private void processHierarchy(TokenHierarchy<?> th) {
+            TokenSequence<NeonTokenId> tts = th.tokenSequence(NeonTokenId.language());
+            if (tts != null) {
+                processTopSequence(tts);
+            }
+        }
+
+        private void processTopSequence(TokenSequence<NeonTokenId> tts) {
+            tts.move(offset);
+            if (tts.moveNext() || tts.movePrevious()) {
+                processToken(tts);
+            }
+        }
+
+        private void processToken(TokenSequence<NeonTokenId> ts) {
+            if (ts.offset() == offset) {
+                ts.movePrevious();
+            }
+            Token<NeonTokenId> token = ts.token();
+            if (token != null) {
+                processSelectedToken(ts);
+            }
+        }
+
+        private void processSelectedToken(TokenSequence<NeonTokenId> ts) {
+            NeonTokenId id = ts.token().id();
+            if (isValidTokenId(id)) {
+                createResult(ts);
+            }
+        }
+
+        private void createResult(TokenSequence<NeonTokenId> ts) {
+            if (upToOffset) {
+                String text = ts.token().text().toString();
+                result = text.substring(0, offset - ts.offset());
+            }
+        }
+
+        private static boolean isValidTokenId(NeonTokenId id) {
+            return NeonTokenId.NEON_LITERAL.equals(id);
+        }
+
     }
 
 }
