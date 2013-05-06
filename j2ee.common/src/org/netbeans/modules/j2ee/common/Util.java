@@ -52,7 +52,9 @@ import javax.swing.JLabel;
 import java.awt.Container;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -66,6 +68,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTable;
@@ -552,17 +555,17 @@ public class Util {
         String classFilePath = className.replace('.', '/') + ".class"; // NOI18N
         for (File file : classpath) {
             if (file.isFile()) {
-                JarFile jf = new JarFile(file);
+                JarInputStream is = new JarInputStream(new BufferedInputStream(
+                        new FileInputStream(file)), false);
                 try {
-                    Enumeration entries = jf.entries();
-                    while (entries.hasMoreElements()) {
-                        JarEntry entry = (JarEntry) entries.nextElement();
+                    JarEntry entry;
+                    while ((entry = is.getNextJarEntry()) != null) {
                         if (classFilePath.equals(entry.getName())) {
                             return true;
                         }
                     }
                 } finally {
-                    jf.close();
+                    is.close();
                 }
             } else {
                 if (new File(file, classFilePath).exists()) {
