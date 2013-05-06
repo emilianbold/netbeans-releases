@@ -121,7 +121,7 @@ public class WebXmlUpdater {
 
     public void configRestPackages( String... packs ) throws IOException {
         try {
-            addResourceConfigToWebApp("/webresources/*");           // NOI18N
+            addResourceConfigToWebApp();           // NOI18N
             FileObject ddFO = getOrCreateWebXml();
             WebApp webApp = getWebApp();
             if (webApp == null) {
@@ -236,7 +236,7 @@ public class WebXmlUpdater {
         return initParam;
     }
 
-    public void addResourceConfigToWebApp(String resourcePath) throws IOException {
+    public void addResourceConfigToWebApp() throws IOException {
         FileObject ddFO = getOrCreateWebXml();
         WebApp webApp = getWebApp();
         if (webApp == null) {
@@ -278,16 +278,7 @@ public class WebXmlUpdater {
                 needsSave = true;
             }
 
-            String resourcesUrl = resourcePath;
-            if (!resourcePath.startsWith("/")) { //NOI18N
-                resourcesUrl = "/"+resourcePath; //NOI18N
-            }
-            if (resourcesUrl.endsWith("/")) { //NOI18N
-                resourcesUrl = resourcesUrl+"*"; //NOI18N
-            } else if (!resourcesUrl.endsWith("*")) { //NOI18N
-                resourcesUrl = resourcesUrl+"/*"; //NOI18N
-            }
-
+            String resourcesUrl = "/webresources/*";
             ServletMapping sm = getRestServletMapping(webApp);
             if (sm == null) {
                 sm = (ServletMapping) webApp.createBean("ServletMapping"); //NOI18N
