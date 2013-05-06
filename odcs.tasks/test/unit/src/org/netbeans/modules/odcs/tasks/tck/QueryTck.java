@@ -90,7 +90,7 @@ public class QueryTck extends C2CTestBase {
 
     public void testPredefinedQueries() throws Exception {
         for (PredefinedTaskQuery predefinedId : PredefinedTaskQuery.values()) {
-            String name = "Predefined query - " + predefinedId.getLabel();
+            String name = "Predefined query - " + predefinedId;
             IRepositoryQuery query = C2CExtender.getQuery(rc, predefinedId, name, rc.getConnectorKind());
             assertNotNull(query);
             assertEquals(name, query.getSummary());
