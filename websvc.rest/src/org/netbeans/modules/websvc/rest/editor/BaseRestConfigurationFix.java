@@ -86,8 +86,8 @@ abstract class BaseRestConfigurationFix implements Fix {
     @Override
     public ChangeInfo implement() throws Exception {
         RestServicesModel servicesModel = getSupport().getRestServicesModel();
-        Future<Set<String>> future = servicesModel
-                .runReadActionWhenReady(
+        final Set<String> fqns = servicesModel
+                .runReadAction(
                         new MetadataModelAction<RestServicesMetadata, Set<String>>()
                 {
 
@@ -108,7 +108,6 @@ abstract class BaseRestConfigurationFix implements Fix {
                     }
 
                 });
-        final Set<String> fqns = future.get();
         JavaSource javaSource = JavaSource.create(cpInfo);
         final Set<String> packs = new HashSet<String>();
         javaSource.runUserActionTask( new Task<CompilationController>() {

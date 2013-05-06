@@ -49,7 +49,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/JoboperatorAPI.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="200"/>
+                        <attr name="position" intvalue="180"/>
                     </file>
                     <file name="Partition" url="Partition.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/Partition"/>
@@ -58,7 +58,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Partition.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="210"/>
+                        <attr name="position" intvalue="270"/>
                     </file>
                     <file name="Payroll" url="Payroll.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/Payroll"/>
@@ -67,7 +67,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Payroll.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="220"/>
+                        <attr name="position" intvalue="280"/>
                     </file>
                     
                     <!--
@@ -80,7 +80,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Executor.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="230"/>
+                        <attr name="position" intvalue="110"/>
                     </file>
                     <file name="Schedule" url="Schedule.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/Schedule"/>
@@ -89,7 +89,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Schedule.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="240"/>
+                        <attr name="position" intvalue="320"/>
                     </file>
                     <file name="Threads" url="Threads.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/Threads"/>
@@ -98,7 +98,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Threads.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="250"/>
+                        <attr name="position" intvalue="370"/>
                     </file>
                       
                     <!--
@@ -111,7 +111,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/MailConnector.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="260"/>
+                        <attr name="position" intvalue="250"/>
                     </file>
                        
                     <!--
@@ -124,7 +124,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/HelloStatelessEjb.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="270"/>
+                        <attr name="position" intvalue="360"/>
                     </file>
                     <file name="HelloStatelessWar" url="HelloStatelessWar.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/HelloStatelessWar"/>
@@ -133,7 +133,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/HelloStatelessWar.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="280"/>
+                        <attr name="position" intvalue="400"/>
                     </file>
                     <file name="AutomaticTimer" url="AutomaticTimer.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/AutomaticTimer"/>
@@ -142,7 +142,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/AutomaticTimer.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="290"/>
+                        <attr name="position" intvalue="50"/>
                     </file>
                     <file name="EjbEmbedded" url="EjbEmbedded.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/EjbEmbedded"/>
@@ -151,7 +151,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/EjbEmbedded.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="300"/>
+                        <attr name="position" intvalue="80"/>
                     </file>
                     
                     <!--
@@ -164,7 +164,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/BeanValidation.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="310"/>
+                        <attr name="position" intvalue="60"/>
                     </file>
                     <file name="CDIGuess" url="CDIGuess.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/CDIGuess"/>
@@ -173,7 +173,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/CDIGuess.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="320"/>
+                        <attr name="position" intvalue="160"/>
                     </file>
                     <file name="CDIServlet" url="CDIServlet.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/CDIServlet"/>
@@ -191,7 +191,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Events.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="340"/>
+                        <attr name="position" intvalue="100"/>
                     </file>
                     <file name="Interceptors" url="Interceptors.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/Interceptors"/>
@@ -200,7 +200,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Interceptors.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="350"/>
+                        <attr name="position" intvalue="150"/>
                     </file>
                     <file name="Transactional" url="Transactional.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/Transactional"/>
@@ -209,7 +209,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Transactional.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="360"/>
+                        <attr name="position" intvalue="380"/>
                     </file>
                     <file name="TransactionScoped" url="TransactionScoped.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/TransactionScoped"/>
@@ -218,7 +218,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/TransactionScoped.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="370"/>
+                        <attr name="position" intvalue="390"/>
                     </file>
         
                     <!--
@@ -231,7 +231,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/EL.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="380"/>
+                        <attr name="position" intvalue="120"/>
                     </file>
                     
                     <!--
@@ -244,7 +244,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/Contracts.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="390"/>
+                        <attr name="position" intvalue="300"/>
                     </file>
                     <file name="FileUpload" url="FileUpload.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/FileUpload"/>
@@ -253,7 +253,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/FileUpload.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="400"/>
+                        <attr name="position" intvalue="130"/>
                     </file>
                     
                     <!--
@@ -279,7 +279,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/JSONP.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="410"/>
+                        <attr name="position" intvalue="170"/>
                     </file>
                     
                     <!--
@@ -292,7 +292,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/AsyncChat.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="420"/>
+                        <attr name="position" intvalue="30"/>
                     </file>
                     <file name="MessageBoard" url="MessageBoard.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/MessageBoard"/>
@@ -301,7 +301,7 @@
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/MessageBoard.html"/>
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
-                        <attr name="position" intvalue="430"/>
+                        <attr name="position" intvalue="260"/>
                     </file>
                 </folder>
             </folder>

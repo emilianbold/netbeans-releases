@@ -68,13 +68,14 @@ import org.openide.util.RequestProcessor;
 
 
 
-public class HttpMethodsChildren extends ChildFactory<HttpMethodNode> {
+public class HttpMethodsChildren extends ChildFactory<HttpMethodNode> implements PropertyChangeListener {
     
     public HttpMethodsChildren(Project project,RestServicesModel model, 
             String serviceName) {
         this.project = project;
         this.model = model;
         this.serviceName = serviceName;
+        model.addPropertyChangeListener(this);
     }
     
     /* (non-Javadoc)
@@ -83,7 +84,7 @@ public class HttpMethodsChildren extends ChildFactory<HttpMethodNode> {
     @Override
     protected boolean createKeys( final List<HttpMethodNode> keys ) {
         try {
-            model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
+            model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
                 public Void run(RestServicesMetadata metadata) throws IOException {
                     RestServices root = metadata.getRoot();
                     RestServiceDescription desc = root.getRestServiceDescription(
@@ -111,6 +112,13 @@ public class HttpMethodsChildren extends ChildFactory<HttpMethodNode> {
     @Override
     protected Node createNodeForKey( HttpMethodNode node ){
         return node;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (RestServices.PROP_SERVICES.equals(evt.getPropertyName())) {
+            refresh(false);
+        }
     }
             
             

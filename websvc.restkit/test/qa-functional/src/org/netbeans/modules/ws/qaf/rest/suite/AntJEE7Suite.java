@@ -51,7 +51,6 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.ws.qaf.rest.JEE6CRUDTest;
 import org.netbeans.modules.ws.qaf.rest.JEE6PatternsTest;
 import org.netbeans.modules.ws.qaf.rest.JEE6RestCStubsTest;
-import org.netbeans.modules.ws.qaf.rest.JEE6RestNodeTest;
 import org.netbeans.modules.ws.qaf.rest.JEE7FromDBTest;
 
 /**
@@ -97,14 +96,6 @@ public class AntJEE7Suite extends J2eeTestCase {
                 "testCreateSimpleStubs", //NOI18N
                 "testFromWADL", //NOI18N
                 "testCloseProject");
-        conf = conf.addTest(JEE7RestNodeTest.class,
-                "testNodesAfterOpen",
-                "testOpenOnResource",
-                "testOpenOnMethod",
-                "testOpenOnLocator",
-                "testAddMethod",
-                "testRemoveMethod",
-                "testCloseProject");
         return conf.suite();
     }
 
@@ -148,18 +139,6 @@ public class AntJEE7Suite extends J2eeTestCase {
     public static class JEE7RestCStubsTest extends JEE6RestCStubsTest {
 
         public JEE7RestCStubsTest(String name) {
-            super(name);
-        }
-
-        @Override
-        protected JavaEEVersion getJavaEEversion() {
-            return JavaEEVersion.JAVAEE7;
-        }
-    }
-
-    public static class JEE7RestNodeTest extends JEE6RestNodeTest {
-
-        public JEE7RestNodeTest(String name) {
             super(name);
         }
 
