@@ -46,6 +46,8 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.MatchResult;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
@@ -65,7 +67,9 @@ import org.netbeans.modules.web.common.api.LexerUtils;
         mimeType = "text/html",
         targetMimeType = "text/javascript")
 public class JsEmbeddingProvider extends EmbeddingProvider {
-
+    
+    private static final Logger LOGGER = Logger.getLogger(JsEmbeddingProvider.class.getSimpleName());
+    
     private static final String JS_MIMETYPE = "text/javascript"; //NOI18N
     private static final String NETBEANS_IMPORT_FILE = "__netbeans_import__"; // NOI18N
     private boolean cancelled = true;
@@ -89,9 +93,17 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
         TokenSequence<HTMLTokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence(HTMLTokenId.language());
         JsAnalyzerState state = new JsAnalyzerState();
         process(snapshot, tokenSequence, state, embeddings);
-        return embeddings.isEmpty()
-                ? Collections.<Embedding>emptyList()
-                : Collections.singletonList(Embedding.create(embeddings));
+        if(embeddings.isEmpty()) {
+            LOGGER.log(Level.FINE, "No javascript embedding created for source {0}", //NOI18N
+                    snapshot.getSource().toString());
+            return Collections.<Embedding>emptyList();
+        } else {
+            Embedding embedding = Embedding.create(embeddings);
+            LOGGER.log(Level.FINE, "Javascript embedding for source {0}:\n{1}", 
+                    new Object[]{snapshot.getSource().toString(), embedding.getSnapshot().getText().toString()});
+            return Collections.singletonList(embedding);
+            
+        }
     }
 
     @Override

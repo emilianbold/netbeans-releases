@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.angular;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,6 +52,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
@@ -137,7 +139,29 @@ public class AngularJsEmbeddingProviderPlugin  extends JsEmbeddingProviderPlugin
                         JsIndex index = JsIndex.get(fo);
                         Collection<IndexedElement> properties = index.getProperties(value + ".$scope");
                         for (IndexedElement indexedElement : properties) {
-                            sb.append("    var ").append(indexedElement.getName()).append(";\n");
+                            
+                            sb.append("var ");
+                            sb.append(indexedElement.getName());
+                            
+                            switch(indexedElement.getJSKind()) {
+                                case METHOD:
+                                    sb.append(" = function(){}");
+                                    break;
+                                    
+                                default:
+                                    //try to obtain the element type from the stored
+                                    //assignment
+                                    List<TypeUsage> typeUsages = new ArrayList<>(indexedElement.getAssignments());
+                                    if(!typeUsages.isEmpty()) {
+                                        //use the last assignment
+                                        TypeUsage typeUsage = typeUsages.get(typeUsages.size() - 1);
+                                        String type = typeUsage.getType();
+                                        sb.append(" = new ");
+                                        sb.append(type);
+                                        
+                                    }
+                            }
+                            sb.append(";\n");
                         }
                     }
                     embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE)); 
