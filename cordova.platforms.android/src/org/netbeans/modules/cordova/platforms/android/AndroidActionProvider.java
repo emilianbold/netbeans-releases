@@ -50,9 +50,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.Device;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.platforms.PropertyProvider;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -196,9 +196,10 @@ public class AndroidActionProvider implements ActionProvider {
             "ERR_RunAndroidEmulator=Please run Android Emulator.",
             "ERR_Unknown=Unknown Error."})
     static String checkDevices(Project p) {
-        PropertyProvider config = (PropertyProvider) p.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
+        ProjectBrowserProvider provider = p.getLookup().lookup(ProjectBrowserProvider.class);
+        WebBrowser activeConfiguration = provider.getActiveBrowser();
         try {
-            if (Device.DEVICE.equals(config.getProperty(Device.DEVICE_PROP))) { //NOI18N
+            if (activeConfiguration.getId().endsWith("_1")) { //NOI18N
                 for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
                     if (!dev.isEmulator()) {
                         return null;
