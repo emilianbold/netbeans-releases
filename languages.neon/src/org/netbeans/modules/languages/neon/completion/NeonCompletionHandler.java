@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.neon;
+package org.netbeans.modules.languages.neon.completion;
 
 import java.util.ArrayList;
 import java.util.Arrays;
