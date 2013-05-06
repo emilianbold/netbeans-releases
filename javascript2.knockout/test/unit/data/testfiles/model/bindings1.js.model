@@ -6,8 +6,8 @@ ko          : OBJECT ko [ANONYMOUS: false, DECLARED: false - ko, MODIFIERS: PUBL
             # PROPERTIES
             $bindings     : OBJECT $bindings [ANONYMOUS: false, DECLARED: true - $bindings, MODIFIERS: PUBLIC, OBJECT]
                           # PROPERTIES
-                          personAge  : OBJECT personAge [ANONYMOUS: false, DECLARED: false - personAge, MODIFIERS: PUBLIC, PROPERTY]
-                          personName : OBJECT personName [ANONYMOUS: false, DECLARED: false - personName, MODIFIERS: PUBLIC, PROPERTY]
+                          personAge  : OBJECT personAge [ANONYMOUS: false, DECLARED: true - personAge, MODIFIERS: PUBLIC, PROPERTY]
+                          personName : OBJECT personName [ANONYMOUS: false, DECLARED: true - personName, MODIFIERS: PUBLIC, PROPERTY]
             applyBindings : FUNCTION applyBindings [ANONYMOUS: false, DECLARED: false - applyBindings, MODIFIERS: PUBLIC, METHOD]
                           # PARAMETERS
                           OBJECT param [ANONYMOUS: false, DECLARED: true - param, MODIFIERS: PUBLIC, PARAMETER]
