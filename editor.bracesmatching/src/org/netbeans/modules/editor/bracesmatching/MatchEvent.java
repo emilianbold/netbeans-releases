@@ -43,6 +43,7 @@ package org.netbeans.modules.editor.bracesmatching;
 
 import java.util.EventObject;
 import javax.swing.text.JTextComponent;
+import org.netbeans.spi.editor.bracesmatching.BracesMatcher.ContextLocator;
 
 /**
  *
@@ -52,10 +53,16 @@ public class MatchEvent extends EventObject {
     private JTextComponent  component;
     private int[]           origin;
     private int[]           matches;
+    private ContextLocator  locator;
 
-    public MatchEvent(JTextComponent component, Object source) {
+    public MatchEvent(JTextComponent component, ContextLocator locator, Object source) {
         super(source);
         this.component = component;
+        this.locator = locator;
+    }
+    
+    public ContextLocator getLocator() {
+        return locator;
     }
     
     public void setHighlights(int[] origin, int[] matches) {
