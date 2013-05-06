@@ -222,6 +222,17 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     protected void fireDataChanged() {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
     }
+
+    void deleteTask () {
+        synchronized (MODEL_LOCK) {
+            if (list != null) {
+                model.removeModelListener(list);
+                list = null;
+            }
+            model = null;
+        }
+        getRepository().deleteTask(task);
+    }
     
     private void fireSeenChanged(boolean wasSeen, boolean seen) {
         support.firePropertyChange(IssueStatusProvider.EVENT_SEEN_CHANGED, wasSeen, seen);

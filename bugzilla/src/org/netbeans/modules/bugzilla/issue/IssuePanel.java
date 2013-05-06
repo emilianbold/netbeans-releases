@@ -147,6 +147,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -502,16 +503,15 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         refreshButton.setVisible(!isNew);
         separatorLabel.setVisible(!isNew);
         cancelButton.setVisible(!isNew);
+        btnDeleteTask.setVisible(isNew);
         separatorLabel3.setVisible(!isNew);
+        addToCategoryButton.setVisible(!isNew);
+        separatorLabel2.setVisible(!isNew);
         showInBrowserButton.setVisible(!isNew);
-        Border sep2Border = BorderFactory.createLineBorder(Color.BLACK);
-        if (isNew) {
-            int gap = LayoutStyle.getInstance().getPreferredGap(separatorLabel2, reloadButton, LayoutStyle.ComponentPlacement.RELATED, SwingConstants.WEST, null);
-            sep2Border = BorderFactory.createCompoundBorder(
-                    BorderFactory.createEmptyBorder(0,0,0,gap),
-                    sep2Border);
+        if (!isNew) {
+            Border sep2Border = BorderFactory.createLineBorder(Color.BLACK);
+            separatorLabel2.setBorder(sep2Border); // IssueProvider 180431
         }
-        separatorLabel2.setBorder(sep2Border); // IssueProvider 180431
         assignedField.setEditable(issue.isNew() || issue.canReassign());
         assignedCombo.setEnabled(assignedField.isEditable());
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
@@ -1558,6 +1558,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         attachLogCheckBox = new javax.swing.JCheckBox();
         viewLogButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         btnSaveChanges = new javax.swing.JButton();
+        btnDeleteTask = new javax.swing.JButton();
 
         FormListener formListener = new FormListener();
 
@@ -1884,6 +1885,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         btnSaveChanges.setEnabled(false);
         btnSaveChanges.addActionListener(formListener);
 
+        org.openide.awt.Mnemonics.setLocalizedText(btnDeleteTask, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnDeleteTask.text")); // NOI18N
+        btnDeleteTask.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnDeleteTask.TTtext")); // NOI18N
+        btnDeleteTask.addActionListener(formListener);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -2040,6 +2045,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(cancelButton)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                        .addComponent(btnDeleteTask)
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(attachLogCheckBox)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(viewLogButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
@@ -2191,13 +2198,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(submitButton)
                         .addComponent(cancelButton)
-                        .addComponent(btnSaveChanges)))
+                        .addComponent(btnSaveChanges)
+                        .addComponent(btnDeleteTask)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(messagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 2, Short.MAX_VALUE)
+                .addComponent(messagePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 3, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(separator, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(dummyCommentsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 38, Short.MAX_VALUE))
+                .addComponent(dummyCommentsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 37, Short.MAX_VALUE))
         );
 
         layout.linkSize(javax.swing.SwingConstants.VERTICAL, new java.awt.Component[] {refreshButton, reloadButton, separatorLabel, separatorLabel2, separatorLabel3, showInBrowserButton});
@@ -2315,6 +2323,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
             else if (evt.getSource() == assignedCombo) {
                 IssuePanel.this.assignedComboActionPerformed(evt);
+            }
+            else if (evt.getSource() == btnDeleteTask) {
+                IssuePanel.this.btnDeleteTaskActionPerformed(evt);
             }
         }
 
@@ -2879,6 +2890,28 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         });
     }//GEN-LAST:event_btnSaveChangesActionPerformed
 
+    @NbBundle.Messages({
+        "LBL_IssuePanel.deleteTask.title=Delete New Task?",
+        "MSG_IssuePanel.deleteTask.message=Do you want to delete the new task permanently?"
+    })
+    private void btnDeleteTaskActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteTaskActionPerformed
+        if (JOptionPane.YES_OPTION != JOptionPane.showConfirmDialog(WindowManager.getDefault().getMainWindow(),
+                Bundle.MSG_IssuePanel_cancelChanges_message(),
+                Bundle.LBL_IssuePanel_cancelChanges_title(), JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+            return;
+        }
+        Container tc = SwingUtilities.getAncestorOfClass(TopComponent.class, this);
+        if (tc instanceof TopComponent) {
+            ((TopComponent) tc).close();
+        }        
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                issue.deleteTask();
+            }
+        });
+    }//GEN-LAST:event_btnDeleteTaskActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField actualField;
     private javax.swing.JLabel actualLabel;
@@ -2898,6 +2931,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
     private javax.swing.JTextField blocksField;
     private javax.swing.JLabel blocksLabel;
     private javax.swing.JLabel blocksWarning;
+    private javax.swing.JButton btnDeleteTask;
     private javax.swing.JButton btnSaveChanges;
     private javax.swing.JButton cancelButton;
     private javax.swing.JTextField ccField;

@@ -61,6 +61,7 @@ import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.SynchronizeQueryCommand;
 
@@ -127,7 +128,7 @@ public class BugzillaQuery {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_REMOVED, null, null);
     }
 
-    private void fireQueryIssuesChanged() {
+    protected void fireQueryIssuesChanged() {
         support.firePropertyChange(QueryProvider.EVENT_QUERY_ISSUES_CHANGED, null, null);
     }  
     
@@ -489,4 +490,104 @@ public class BugzillaQuery {
         }
         return notifyListeners;
     }    
+    
+    public static class UnsubmittedTasksQuery extends BugzillaQuery implements ITaskListChangeListener {
+
+        private final Set<ITask> tasks = Collections.synchronizedSet(new LinkedHashSet<ITask>());
+        
+        public UnsubmittedTasksQuery (BugzillaRepository repository) {
+            super("Unsubmitted Changes", repository, null, true, false, false);
+            Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run () {
+                    initialize();
+                }
+            });
+        }
+
+        @Override
+        public void containersChanged (Set<TaskContainerDelta> deltas) {
+            // listen on changes on all tasks
+            boolean change = false;
+            for (TaskContainerDelta delta : deltas) {
+                if (delta.getElement() instanceof ITask) {
+                    ITask task = (ITask) delta.getElement();
+                    if (delta.getKind() == TaskContainerDelta.Kind.CONTENT) {
+                        if (getRepository().getTaskRepository().getRepositoryUrl().equals(task.getRepositoryUrl())) {
+                            // the task may change its status
+                            change |= BugzillaUtil.isOutgoing(task) ? tasks.add(task) : tasks.remove(task);
+                        }
+                    } else if (delta.getKind() == TaskContainerDelta.Kind.DELETED) {
+                        // the task was deleted permanently
+                        change |= tasks.remove(task);
+                    } else if (delta.getKind() == TaskContainerDelta.Kind.ADDED
+                            && task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
+                        // task may be added to the unsubmitted category
+                        try {
+                            change |= MylynSupport.getInstance().getUnsubmittedTasks(
+                                    getRepository().getTaskRepository()).contains(task)
+                                    && tasks.add(task);                            
+                        } catch (CoreException ex) {
+                            Bugzilla.LOG.log(Level.INFO, null, ex);
+                        }
+                    }
+                }
+            }
+            if (change) {
+                fireQueryIssuesChanged();
+            }
+        }
+
+        @Override
+        int getSize () {
+            return tasks.size();
+        }
+
+        @Override
+        public boolean contains (String id) {
+            List<ITask> taskList = new ArrayList<ITask>(tasks);
+            for (ITask t : taskList) {
+                if (id.equals(t.getTaskId())) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    
+        @Override
+        public Collection<BugzillaIssue> getIssues(EnumSet<IssueCache.Status> includeStatus) {
+            List<ITask> taskList = new ArrayList<ITask>(tasks);
+
+            List<BugzillaIssue> ret = new ArrayList<BugzillaIssue>();
+            for (ITask task : taskList) {
+                ret.add(getRepository().getIssueForTask(task));
+            }
+            return ret;
+        }
+        
+        @Override
+        boolean refreshIntern (final boolean autoRefresh) {
+            // makes no senses
+            return false;
+        }
+
+        private void initialize () {
+            try {
+                MylynSupport supp = MylynSupport.getInstance();
+                tasks.addAll(supp.getUnsubmittedTasks(getRepository().getTaskRepository()));
+                for (ITask task : supp.getTasks(getRepository().getTaskRepository())) {
+                    if (BugzillaUtil.isOutgoing(task)) {
+                        tasks.add(task);
+                    }
+                }
+                supp.addTaskListListener(this);
+                if (!tasks.isEmpty()) {
+                    fireQueryIssuesChanged();
+                }
+            } catch (CoreException ex) {
+                Bugzilla.LOG.log(Level.INFO, null, ex);
+            }
+        }
+        
+    }
 }

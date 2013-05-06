@@ -239,6 +239,20 @@ public class BugzillaRepository {
         return issue;
     }
 
+    public void deleteTask (ITask task) {
+        assert task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW
+                : "Only new local tasks can be deleted: " + task.getSynchronizationState();
+        if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
+            String id = BugzillaIssue.getID(task);
+            try {
+                MylynSupport.getInstance().deleteTask(task);
+            } catch (CoreException ex) {
+                Bugzilla.LOG.log(Level.INFO, null, ex);
+            }
+            getCache().removeIssue(id);
+        }
+    }
+
     protected Object[] getLookupObjects() {
         return new Object[] { getIssueCache() };
     }
@@ -451,6 +465,11 @@ public class BugzillaRepository {
                 } else {
                     Bugzilla.LOG.log(Level.WARNING, "Couldn''t find query with stored name {0}", queryName); // NOI18N
                 }
+            }
+            if (Boolean.getBoolean("bugzilla.displayUnsubmittedQuery")) {
+                // TODO: should not be a query: this way it's listed in the Team dashboard
+                // either should go to SPI or somewhere in Bugtracking.utils
+                queries.add(new BugzillaQuery.UnsubmittedTasksQuery(this));
             }
         }
         return queries;
@@ -851,6 +870,12 @@ public class BugzillaRepository {
                 }
             }
             return Status.ISSUE_STATUS_UNKNOWN;
+        }
+
+        private void removeIssue (String id) {
+            synchronized (CACHE_LOCK) {
+                issues.remove(id);
+            }
         }
     }
 
