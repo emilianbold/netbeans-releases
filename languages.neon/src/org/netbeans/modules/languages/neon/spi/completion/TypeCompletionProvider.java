@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,18 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.neon.csl;
+package org.netbeans.modules.languages.neon.spi.completion;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.languages.neon.completion.NeonCompletionHandler;
-import org.netbeans.modules.languages.neon.lexer.NeonTokenId;
-import org.netbeans.modules.languages.neon.parser.NeonParser;
-import org.netbeans.modules.parsing.spi.Parser;
+import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
+import org.openide.filesystems.FileObject;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@LanguageRegistration(mimeType = NeonLanguageConfig.MIME_TYPE)
-public class NeonLanguageConfig extends DefaultLanguageConfig {
-    public static final String MIME_TYPE = "text/x-neon"; //NOI18N
-
-    @Override
-    public Language getLexerLanguage() {
-        return NeonTokenId.language();
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "NEON"; //NOI18N
-    }
-
-    @Override
-    public String getLineCommentPrefix() {
-        return "#"; //NOI18N
-    }
-
-    @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        return new NeonCompletionHandler();
-    }
-
-    @Override
-    public Parser getParser() {
-        return new NeonParser();
-    }
-
+public interface TypeCompletionProvider {
+    List<String> complete(@NonNull String prefix, @NonNull FileObject fileObject);
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.neon.csl;
+package org.netbeans.modules.php.editor;
 
-import org.netbeans.api.lexer.Language;
-import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.LanguageRegistration;
-import org.netbeans.modules.languages.neon.completion.NeonCompletionHandler;
-import org.netbeans.modules.languages.neon.lexer.NeonTokenId;
-import org.netbeans.modules.languages.neon.parser.NeonParser;
-import org.netbeans.modules.parsing.spi.Parser;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.openide.filesystems.FileObject;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@LanguageRegistration(mimeType = NeonLanguageConfig.MIME_TYPE)
-public class NeonLanguageConfig extends DefaultLanguageConfig {
-    public static final String MIME_TYPE = "text/x-neon"; //NOI18N
+@ServiceProvider(service = TypeCompletionProvider.class)
+public class PhpTypeCompletionProvider implements TypeCompletionProvider {
 
     @Override
-    public Language getLexerLanguage() {
-        return NeonTokenId.language();
-    }
-
-    @Override
-    public String getDisplayName() {
-        return "NEON"; //NOI18N
-    }
-
-    @Override
-    public String getLineCommentPrefix() {
-        return "#"; //NOI18N
-    }
-
-    @Override
-    public CodeCompletionHandler getCompletionHandler() {
-        return new NeonCompletionHandler();
-    }
-
-    @Override
-    public Parser getParser() {
-        return new NeonParser();
+    public List<String> complete(String prefix, FileObject fileObject) {
+        List<String> result = new ArrayList<>();
+        ElementQuery.Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(fileObject));
+        Set<TypeElement> types = indexQuery.getTypes(NameKind.prefix(prefix));
+        for (TypeElement typeElement : types) {
+            result.add(typeElement.getFullyQualifiedName().toString());
+        }
+        return result;
     }
 
 }
