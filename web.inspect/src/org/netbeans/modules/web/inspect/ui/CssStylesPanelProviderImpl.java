@@ -65,7 +65,6 @@ import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.spi.CssStylesListener;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
 import org.netbeans.modules.web.browser.api.Page;
-import org.netbeans.modules.web.common.api.DependentFileQuery;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.spi.project.ActionProvider;
@@ -203,14 +202,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
         if (EventQueue.isDispatchThread()) {
             PageModel pageModel = PageInspectorImpl.getDefault().getPage();
             FileObject lastRelatedFileObject = getLastRelatedFileObject();
-            FileObject inspectedFileObject = getInspectedFileObject();
-            if (pageModel != null
-                    && (inspectedFileObject == null
-                        || (lastRelatedFileObject != null
-                            && (DependentFileQuery.isDependent(inspectedFileObject, lastRelatedFileObject)
-                                || (FileOwnerQuery.getOwner(inspectedFileObject) == FileOwnerQuery.getOwner(lastRelatedFileObject)
-                                    && Utilities.isServerSideMimeType(inspectedFileObject.getMIMEType())
-                                    && Utilities.isServerSideMimeType(lastRelatedFileObject.getMIMEType())))))) {
+            if (pageModel != null) {
                 removeAll();
                 PageModel.CSSStylesView stylesView = pageModel.getCSSStylesView();
                 add(stylesView.getView(), BorderLayout.CENTER);
@@ -466,17 +458,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
 
         @Override
         public boolean providesContentFor(FileObject file) {
-            if (!MIME_TYPES.contains(file.getMIMEType())) {
-                return false;
-            }
-
-            ActionProvider provider = actionProviderForFileObject(file);
-            if (provider == null) {
-                return false;
-            }
-
-            Lookup context = contextForFileObject(file);
-            return provider.isActionEnabled(ActionProvider.COMMAND_RUN_SINGLE, context);
+            return true;
         }
     }
 
