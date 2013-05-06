@@ -95,6 +95,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private static final String NB61_VERSION = "1.6"; // NOI18N
     private static final String NB65_VERSION = "1.7"; // NOI18N
     private static final String NB71_VERSION = "1.8"; // NOI18N
+    private static final String NB74_VERSION = "1.9"; // NOI18N
 
     // XML elements names
     static final String XML_FORM = "Form"; // NOI18N
@@ -1514,18 +1515,20 @@ public class GandalfPersistenceManager extends PersistenceManager {
             CodeStructure.createStatement(
                             compExp, setBoundsMethod, boundsParams);
 
+            // create add method statement
+            CodeStructure.createStatement(contDelCodeExp,
+                                          getSimpleAddMethod(),
+                                          new CodeExpression[] { compExp });
+
             node = constrAttr.getNamedItem("layer"); // NOI18N
             if (node != null) {
-                String strValue = node.getNodeValue();
-                // create add method statement
-                CodeStructure.createStatement(
-                    contDelCodeExp,
-                    getAddWithConstrMethod(),
-                    new CodeExpression[] { compExp,
-                                           codeStructure.createExpression(
-                                               Integer.TYPE,
-                                               Integer.valueOf(strValue),
-                                               strValue) });
+                Object metacomp = compExp.getOrigin().getMetaObject();
+                if (metacomp instanceof RADVisualComponent) {
+                    Integer layer = (Integer) decodePrimitiveValue(node.getNodeValue(), Integer.class);
+                    if (layer.intValue() != javax.swing.JLayeredPane.DEFAULT_LAYER) {
+                        ((RADVisualComponent)metacomp).setAuxValue(RADVisualComponent.PROP_LAYER, layer);
+                    }
+                }
             }
         }
 
@@ -3519,6 +3522,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
     {
         saveComponent(component, buf, indent);
 
+        if (component.isInLayeredPane()) {
+            formModel.raiseVersionLevel(FormModel.FormVersion.NB74, FormModel.FormVersion.NB74);
+            formModel.setMaxVersionLevel(FormModel.LATEST_VERSION);
+        }
+
         RADVisualContainer container = component.getParentContainer();
         if (container == null || container.getLayoutSupport() == null)
             return;
@@ -3681,29 +3689,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
             return LAYOUT_CARD;
         }
 
-        // constraints of JLayeredPane (must be tested before AbsoluteLayout)
-        if (constr instanceof JLayeredPaneSupport.LayeredConstraints) {
-            int layer =
-                ((JLayeredPaneSupport.LayeredConstraints)constr).getLayer();
-            java.awt.Rectangle r =
-                ((JLayeredPaneSupport.LayeredConstraints)constr).getBounds();
-
-            buf.append(indent);
-            addLeafElementOpenAttr(
-                buf,
-                "JLayeredPaneConstraints", // NOI18N
-                new String[] { "x", "y", "width", "height", // NOI18N
-                               "layer", "position" }, // NOI18N
-                new String[] { Integer.toString(r.x),
-                               Integer.toString(r.y),
-                               Integer.toString(r.width),
-                               Integer.toString(r.height),
-                               Integer.toString(layer),
-                               "-1" }); // NOI18N
-
-            return LAYOUT_JLAYER;
-        }
-
         // constraints of AbsoluteLayout
         if (constr instanceof AbsoluteLayoutSupport.AbsoluteLayoutConstraints) {
             java.awt.Rectangle r =
@@ -3780,6 +3765,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (component == formModel.getTopRADComponent()) {
             auxValues = (auxValues == null) ? new TreeMap<String,Object>() : new TreeMap<String,Object>(auxValues);
             addFormSettings(auxValues);
+        } else if (component.getAuxValue(RADVisualComponent.PROP_LAYER) != null
+                   && (!(component instanceof RADVisualComponent) || !((RADVisualComponent)component).isInLayeredPane())) {
+            // don't save layer value for component that was moved away from JLayeredPane
+            auxValues = new TreeMap<String,Object>(auxValues);
+            auxValues.remove(RADVisualComponent.PROP_LAYER);
         }
         if (auxValues != null && auxValues.size() > 0) {
 //            buf.append("\n"); // NOI18N
@@ -6186,7 +6176,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                || NB60_VERSION.equals(ver)
                || NB61_VERSION.equals(ver)
                || NB65_VERSION.equals(ver)
-               || NB71_VERSION.equals(ver);
+               || NB71_VERSION.equals(ver)
+               || NB74_VERSION.equals(ver);
     }
 
     private static FormModel.FormVersion formVersionForVersionString(String version) {
@@ -6211,7 +6202,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
             if (NB71_VERSION.equals(version)) {
                 return FormModel.FormVersion.NB71;
-        }
+            }
+            if (NB74_VERSION.equals(version)) {
+                return FormModel.FormVersion.NB74;
+            }
         }
         return null;
     }
@@ -6226,6 +6220,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 case NB61: return NB61_VERSION;
                 case NB65: return NB65_VERSION;
                 case NB71: return NB71_VERSION;
+                case NB74: return NB74_VERSION;
             }
         }
         return null;

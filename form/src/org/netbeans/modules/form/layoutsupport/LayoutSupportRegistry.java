@@ -323,9 +323,6 @@ public class LayoutSupportRegistry {
                 "javax.swing.JTabbedPane", // NOI18N
                 "org.netbeans.modules.form.layoutsupport.delegates.JTabbedPaneSupport"); // NOI18N
             containerToLayoutDelegate.put(
-                "javax.swing.JLayeredPane", // NOI18N
-                "org.netbeans.modules.form.layoutsupport.delegates.JLayeredPaneSupport"); // NOI18N
-            containerToLayoutDelegate.put(
                 "javax.swing.JToolBar", // NOI18N
                 "org.netbeans.modules.form.layoutsupport.delegates.JToolBarSupport"); // NOI18N
             containerToLayoutDelegate.put(
