@@ -146,4 +146,23 @@ public abstract class NeonCompletionProposal implements CompletionProposal {
         }
     }
 
+    static class TypeCompletionProposal extends NeonCompletionProposal {
+
+        public TypeCompletionProposal(NeonElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        @NbBundle.Messages("TypeRhs=Type")
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return Bundle.TypeRhs();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.CLASS;
+        }
+
+    }
+
 }

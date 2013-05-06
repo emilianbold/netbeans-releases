@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.languages.neon.completion;
 
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -54,6 +57,7 @@ public enum NeonCompletionContext {
         @Override
         public void complete(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request) {
             completeServiceConfigOpts(completionProposals, request);
+            completeTypes(completionProposals, request);
         }
     },
     SERVICE_CONFIG_OPTS {
@@ -61,13 +65,28 @@ public enum NeonCompletionContext {
         public void complete(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request) {
             completeServiceConfigOpts(completionProposals, request);
         }
-
+    },
+    TYPES {
+        @Override
+        public void complete(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request) {
+            completeTypes(completionProposals, request);
+        }
     };
 
     protected void completeServiceConfigOpts(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request) {
         for (NeonElement serviceConfigOpts : NeonCompletionHandler.SERVICE_CONFIG_OPTS) {
             if (startsWith(serviceConfigOpts.getName(), request.prefix)) {
                 completionProposals.add(new NeonCompletionProposal.ServiceConfigOptCompletionProposal(serviceConfigOpts, request));
+            }
+        }
+    }
+
+    protected void completeTypes(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request) {
+        Collection<? extends TypeCompletionProvider> typeCompletionProviders = Lookup.getDefault().lookupAll(TypeCompletionProvider.class);
+        for (TypeCompletionProvider typeCompletionProvider : typeCompletionProviders) {
+            List<String> types = typeCompletionProvider.complete(request.prefix, request.parserResult.getSnapshot().getSource().getFileObject());
+            for (String typeName : types) {
+                completionProposals.add(new NeonCompletionProposal.TypeCompletionProposal(NeonElement.Factory.createType(typeName), request));
             }
         }
     }

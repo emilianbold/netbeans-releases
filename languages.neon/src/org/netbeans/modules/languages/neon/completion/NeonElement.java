@@ -59,9 +59,14 @@ public interface NeonElement extends ElementHandle {
     public String getTemplate();
 
     public static class Factory {
+        private static final String NAMESPACE_SEPARATOR = "\\"; //NOI18N
 
         public static NeonElement create(String name) {
             return new NeonSimpleElement(name);
+        }
+
+        public static NeonElement createType(String typeName) {
+            return new NeonSimpleElement(typeName.startsWith(NAMESPACE_SEPARATOR) ? typeName.substring(1) : typeName);
         }
 
         public static NeonElement create(String name, String template) {
