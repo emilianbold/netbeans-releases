@@ -353,9 +353,8 @@ private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
                     curLicense = loadLicenseText(foArray[i]);
                     if (curLicense != null) {
                         sw.write("<br>" + MessageFormat.format( // NOI18N
-                            NbBundle.getMessage(ProductInformationPanel.class, "LBL_AddOnCopyright", FONT_SIZE), // NOI18N
-                            new Object[] { curLicense }));
-                        isSomeLicense = true;
+                            NbBundle.getBundle(ProductInformationPanel.class).getString("LBL_AddOnCopyright"), // NOI18N
+                            new Object[] { curLicense, FONT_SIZE }));                        isSomeLicense = true;
                     }
                 }
                 if (isSomeLicense) {
