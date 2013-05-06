@@ -1073,19 +1073,21 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         }
 
         Task post(boolean autoRefresh) {
-            if(task != null) {
-                task.cancel();
+            Task t = task;
+            if (t != null) {
+                t.cancel();
             }
-            task = rp.create(this);
+            task = t = rp.create(this);
             this.autoRefresh = autoRefresh;
-            task.schedule(0);
-            return task;
+            t.schedule(0);
+            return t;
         }
 
         @Override
         public boolean cancel() {
-            if(task != null) {
-                task.cancel();
+            Task t = task;
+            if (t != null) {
+                t.cancel();
                 finnishQuery();
             }
             return true;
