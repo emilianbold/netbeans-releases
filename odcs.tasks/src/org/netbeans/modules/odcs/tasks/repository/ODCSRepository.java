@@ -424,7 +424,7 @@ public class ODCSRepository implements PropertyChangeListener {
         if (predefinedQueries == null) {
             Map<PredefinedTaskQuery, IRepositoryQuery> queries = new EnumMap<PredefinedTaskQuery, IRepositoryQuery>(PredefinedTaskQuery.class);
             for (PredefinedTaskQuery ptq : PredefinedTaskQuery.values()) {
-                RepositoryQuery query = new RepositoryQuery(getTaskRepository().getConnectorKind(), ptq.getLabel());
+                RepositoryQuery query = new RepositoryQuery(getTaskRepository().getConnectorKind(), ODCSUtil.getPredefinedQueryName(ptq));
                 query.setUrl(CloudDevConstants.PREDEFINED_QUERY);
                 query.setAttribute(CloudDevConstants.QUERY_NAME, ptq.toString());        
                 queries.put(ptq, query);

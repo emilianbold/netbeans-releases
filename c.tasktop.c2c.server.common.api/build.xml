@@ -3,7 +3,7 @@
     <import file="../nbbuild/templates/projectized.xml"/>
     <target name="jar">
         <jar jarfile="${cluster}/${module.jar}">
-            <zipfileset src="external/com.tasktop.c2c.server.common.api_1.1.0.20121207-000120.jar" 
+            <zipfileset src="external/com.tasktop.c2c.server.common.api_1.1.0.20130502-000314.jar" 
                    includes="com/tasktop/c2c/server/common/service/domain/**,
                              com/tasktop/c2c/server/common/service/*Exception.*,
                              com/tasktop/c2c/server/common/service/web/ValidationErrors.*,
@@ -19,7 +19,7 @@
                 <attribute name="Require-Bundle" value="org.apache.commons.httpclient;bundle-version=&quot;3.1.0&quot;,
                                                         org.codehaus.jackson.core;bundle-version=&quot;1.7.4&quot;,
                                                         org.codehaus.jackson.mapper;bundle-version=&quot;1.7.4&quot;"/>
-                <attribute name="Bundle-Version" value="1.1.0.20121113-105133"/>
+                <attribute name="Bundle-Version" value="1.1.0.20130502-000314"/>
                 <attribute name="Bundle-ManifestVersion" value="2"/>
                 <attribute name="Bundle-SymbolicName" value="com.tasktop.c2c.server.common.api"/>
             </manifest>
