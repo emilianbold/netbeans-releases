@@ -120,7 +120,6 @@ public class RestServicesNode extends AbstractNode { //implements PropertyChange
         return new Action[] {
                     CommonProjectActions.newFileAction(),
                     SystemAction.get(TestRestServicesAction.class),
-                    SystemAction.get(RestConfigurationAction.class),
                     null,
                     SystemAction.get(FindAction.class),
                     null,

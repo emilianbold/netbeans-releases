@@ -94,17 +94,6 @@ import org.w3c.dom.NodeList;
  */
 public class RestUtils {
    
-    /**
-     *  Makes sure project is ready for REST development.
-     *  @param project project to make REST development ready
-     */
-    public static void ensureRestDevelopmentReady(Project project) throws IOException {
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if (restSupport != null) {
-            restSupport.ensureRestDevelopmentReady();
-        }
-    }
-    
     public static RestSupport getRestSupport(Project project) {
         return project.getLookup().lookup(RestSupport.class);
     }

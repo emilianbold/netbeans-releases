@@ -66,7 +66,7 @@ import org.openide.nodes.Node;
  * @author ads
  *
  */
-class RestServiceChildFactory extends ChildFactory implements PropertyChangeListener {
+class RestServiceChildFactory extends ChildFactory<RestServiceDescription> implements PropertyChangeListener {
     
     private static final Logger LOG = Logger.getLogger( 
             RestServiceChildFactory.class.getName() );
@@ -82,7 +82,7 @@ class RestServiceChildFactory extends ChildFactory implements PropertyChangeList
      * @see org.openide.nodes.ChildFactory#createKeys(java.util.List)
      */
     @Override
-    protected boolean createKeys( final List keys ) {
+    protected boolean createKeys( final List<RestServiceDescription> keys ) {
             
         try {
             RestServicesModel model = getModel();
@@ -120,9 +120,8 @@ class RestServiceChildFactory extends ChildFactory implements PropertyChangeList
      * @see org.openide.nodes.ChildFactory#createNodeForKey(java.lang.Object)
      */
     @Override
-    protected Node createNodeForKey( Object key ) {
-        assert key instanceof RestServiceDescription;
-        return new RestServiceNode(project, getModel(), (RestServiceDescription)key);
+    protected Node createNodeForKey( RestServiceDescription key ) {
+        return new RestServiceNode(project, getModel(), key);
     }
 
     private RestServicesModel getModel() {

@@ -93,29 +93,18 @@ public class PatternResourcesIterator implements WizardDescriptor.ProgressInstan
             Project project = Templates.getProject(wizard);
             
             final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-            String restAppPackage = null;
-            String restAppClass = null;
+            String restAppPackage = (String) wizard.getProperty(WizardProperties.APPLICATION_PACKAGE);
+            String restAppClass = (String) wizard.getProperty(WizardProperties.APPLICATION_CLASS);
             
             pHandle.start();
             
             pHandle.progress(NbBundle.getMessage(PatternResourcesIterator.class,
                     "MSG_EnableRestSupport"));                  // NOI18N     
             
-            Object useJersey = wizard.getProperty(WizardProperties.USE_JERSEY);
-            if ( useJersey != null && useJersey.toString().equals("true")){     // NOI18N 
-                restSupport.enableRestSupport( RestSupport.RestConfig.DD);
-            }
-            else {
-                restAppPackage = (String) wizard
-                        .getProperty(WizardProperties.APPLICATION_PACKAGE);
-                restAppClass = (String) wizard
-                        .getProperty(WizardProperties.APPLICATION_CLASS);
-                if (restAppPackage != null && restAppClass != null) {
-                    restSupport.enableRestSupport(RestSupport.RestConfig.IDE);
-                }
-            }
+            boolean useJersey = Boolean.TRUE.equals(wizard.getProperty(WizardProperties.USE_JERSEY));
             if ( restSupport!= null ){
-                restSupport.ensureRestDevelopmentReady();
+                restSupport.ensureRestDevelopmentReady(useJersey ?
+                        RestSupport.RestConfig.DD : RestSupport.RestConfig.IDE);
             }
             
             FileObject tmpTargetFolder = Templates.getTargetFolder(wizard);
@@ -139,7 +128,7 @@ public class PatternResourcesIterator implements WizardDescriptor.ProgressInstan
                     result.addAll(new GenericResourceGenerator(targetFolder, 
                             bean).generate(pHandle));
                 }
-                if ( restAppPack != null && appClassName!= null ){
+                if (restAppPack != null && appClassName!= null && !useJersey) {
                     FileObject fo = RestUtils.createApplicationConfigClass( restAppPack, appClassName);
                     if (fo != null) {
                         // open generated Application subclass too:

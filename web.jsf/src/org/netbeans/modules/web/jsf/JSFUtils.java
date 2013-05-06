@@ -97,6 +97,7 @@ public class JSFUtils {
     // the name of jstl libraryr
     public static String DEFAULT_JSTL_1_1_NAME = "jstl11";  //NOI18N
 
+    public static final String EJB_STATELESS = "javax.ejb.Stateless"; //NOI18N
     public static final String FACES_EXCEPTION = "javax.faces.FacesException"; //NOI18N
     public static final String JSF_1_2__API_SPECIFIC_CLASS = "javax.faces.application.StateManagerWrapper"; //NOI18N
     public static final String JSF_2_0__API_SPECIFIC_CLASS = "javax.faces.application.ProjectStage"; //NOI18N

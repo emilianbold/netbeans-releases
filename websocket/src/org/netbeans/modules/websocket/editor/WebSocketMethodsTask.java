@@ -175,8 +175,8 @@ public class WebSocketMethodsTask implements CancellableTask<CompilationInfo> {
         Map<String, String> result = new HashMap<String, String>();
         result.put("javax.websocket.OnMessage", "onMessage"); // NOI18N
         result.put("javax.websocket.OnOpen", "onOpen"); // NOI18N
-        result.put("javax.websocket.OnSocketClose", "onClose"); // NOI18N
-        result.put("javax.websocket.OnSocketError", "onError"); // NOI18N
+        result.put("javax.websocket.OnClose", "onClose"); // NOI18N
+        result.put("javax.websocket.OnError", "onError"); // NOI18N
         return result;
     }
 

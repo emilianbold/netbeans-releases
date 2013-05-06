@@ -12,7 +12,6 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
-import org.codehaus.jettison.json.JSONString;
 
 /**
  * REST Web Service
@@ -33,11 +32,11 @@ public class Singleton1Cl {
 
     /**
      * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.Singleton1Cl
-     * @return an instance of org.codehaus.jettison.json.JSONString
+     * @return an instance of java.lang.String
      */
     @GET
     @Produces("application/json")
-    public JSONString getJson() {
+    public String getJson() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
     }
@@ -49,6 +48,6 @@ public class Singleton1Cl {
      */
     @PUT
     @Consumes("application/json")
-    public void putJson(JSONString content) {
+    public void putJson(String content) {
     }
 }

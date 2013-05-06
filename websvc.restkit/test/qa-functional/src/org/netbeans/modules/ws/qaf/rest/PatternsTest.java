@@ -49,6 +49,9 @@ import javax.swing.JCheckBox;
 import junit.framework.Test;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyException;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -253,7 +256,7 @@ public class PatternsTest extends RestTestBase {
         String patternsTypeName = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "Templates/WebServices/RestServicesFromPatterns");
         createNewWSFile(getProject(), patternsTypeName);
         WizardOperator wo = new WizardOperator(patternsTypeName);
-        new JRadioButtonOperator(wo, pattern.ordinal()).changeSelection(true);
+        new JRadioButtonOperator(wo, pattern.toString()).changeSelection(true);
         wo.next();
         wo.stepsWaitSelectedValue("Specify Resource Classes");
         //set resource package
@@ -277,10 +280,12 @@ public class PatternsTest extends RestTestBase {
             }
             //set resource representation class
             if (MimeType.APPLICATION_JSON.equals(mimeType)) {
+                /* not always on classpath - consider usage of javax.json.JsonString
                 jtfo = new JTextFieldOperator(wo, new RCls());
                 jtfo.clickMouse();
                 jtfo.clearText();
                 jtfo.typeText("org.codehaus.jettison.json.JSONString"); //NOI18N
+                */
             } else if (MimeType.TEXT_PLAIN.equals(mimeType)) {
                 new JButtonOperator(wo, pattern.getRepresentationClassSelectIndex()).pushNoBlock();
                 //"Find Type"
@@ -314,10 +319,12 @@ public class PatternsTest extends RestTestBase {
                 jtfo.typeText("/" + name + "ContainerURI"); //NOI18N
                 //set container resource representation class
                 if (MimeType.APPLICATION_JSON.equals(mimeType)) {
+                    /* not always on classpath - consider usage of javax.json.JsonObject
                     jtfo = new JTextFieldOperator(wo, new CRCls());
                     jtfo.clickMouse();
                     jtfo.clearText();
                     jtfo.typeText("org.codehaus.jettison.json.JSONObject"); //NOI18N
+                    */
                 } else if (MimeType.TEXT_PLAIN.equals(mimeType)) {
                     new JButtonOperator(wo, pattern.getContainerRepresentationClassSelectIndex()).pushNoBlock();
                     //"Find Type"
@@ -334,10 +341,7 @@ public class PatternsTest extends RestTestBase {
             new JCheckBoxOperator(useJerseyCheckBox).setSelected(true);
         }
         wo.btFinish().requestFocus();
-        wo.btFinish().pushNoBlock();
-        closeResourcesConfDialog();
-        String progressDialogTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RestServicesFromPatternsProgress");
-        waitDialogClosed(progressDialogTitle);
+        wo.finish();
         Set<File> createdFiles = new HashSet<File>();
         switch (pattern) {
             case Singleton:
@@ -373,11 +377,24 @@ public class PatternsTest extends RestTestBase {
     }
 
     private File getFileFromProject(String fileName) {
-        FileObject fo = getProjectSourceRoot();
-        String location = getRestPackage().replace('.', '/') + "/" + fileName + ".java"; //NOI18N
-        FileObject file = fo.getFileObject(location);
-        assertNotNull(fileName + " not found at " + FileUtil.toFile(fo).getAbsolutePath() + File.separator + location, file); //NOI18N
-        return FileUtil.toFile(file);
+        final FileObject fo = getProjectSourceRoot();
+        final String location = getRestPackage().replace('.', '/') + "/" + fileName + ".java"; //NOI18N
+        try {
+            FileObject file = (FileObject) new Waiter(new Waitable() {
+                @Override
+                public Object actionProduced(Object obj) {
+                    return fo.getFileObject(location);
+                }
+
+                @Override
+                public String getDescription() {
+                    return FileUtil.toFile(fo).getAbsolutePath() + File.separator + location + " exists"; //NOI18N
+                }
+            }).waitAction(null);
+            return FileUtil.toFile(file);
+        } catch (InterruptedException ie) {
+            throw new JemmyException("Interrupted.", ie); //NOI18N
+        }
     }
 
     protected void closeCreatedFiles(Set<File> files) {

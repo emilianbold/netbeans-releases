@@ -273,7 +273,7 @@ public class MetadataModelReadHelper<T, R> {
 
         public void run() {
             try {
-                Future<Void> future = model.runReadActionWhenReady(new MetadataModelAction<T, Void>() {
+                model.runReadAction(new MetadataModelAction<T, Void>() {
                     public Void run(T metadata) throws Exception {
                         state = State.READING_MODEL;
                         fireChange();
@@ -283,8 +283,6 @@ public class MetadataModelReadHelper<T, R> {
                         return null;
                     }
                 });
-                // get any exceptions thrown if the action was run asynchronously
-                future.get();
             } catch (Exception e) {
                 state = State.FINISHED;
                 executionException = new ExecutionException(e.getMessage(), e);

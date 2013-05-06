@@ -82,7 +82,7 @@ public class RestNodeTest extends RestTestBase {
      * view after opening a project
      */
     public void testNodesAfterOpen() {
-        assertEquals("Some node not shown", 5, getRestNode().getChildren().length); //NOI18N
+        assertEquals("Some node not shown", 3, getRestNode().getChildren().length); //NOI18N
         assertEquals("Some method not shown for " + services[0], 3, //NOI18N
                 getMethodsNode(services[0]).getChildren().length); //NOI18N
         assertEquals("Some method not shown for " + services[1], 1, //NOI18N
