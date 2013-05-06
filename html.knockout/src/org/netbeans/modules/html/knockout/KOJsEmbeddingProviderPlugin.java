@@ -59,49 +59,60 @@ import org.netbeans.modules.parsing.api.Snapshot;
 /**
  * Knockout javascript virtual source extension
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org, phejl@netbeans.org
  */
 @MimeRegistration(mimeType = "text/html", service = JsEmbeddingProviderPlugin.class)
 public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
-    private static class StackItem {
-
-        final String tag;
-        int balance;
-
-        public StackItem(String tag) {
-            this.tag = tag;
-            this.balance = 1;
-        }
-    }
+    private TokenSequence<HTMLTokenId> tokenSequence;
+    private Snapshot snapshot;
+    private List<Embedding> embeddings;
     private final Language JS_LANGUAGE;
-
-
-    // FIXME this has to be fixed as we hold a lot of state and the interface is stateless
     private final LinkedList<StackItem> stack;
     private String lastTagOpen = null;
-    private final Map<TokenSequence<HTMLTokenId>, Boolean> initialized = new WeakHashMap<>();
+//    private final Map<TokenSequence<HTMLTokenId>, Boolean> initialized;
 
     public KOJsEmbeddingProviderPlugin() {
         JS_LANGUAGE = Language.find(KOUtils.JAVASCRIPT_MIMETYPE); //NOI18N
         this.stack = new LinkedList();
+//        this.initialized = new WeakHashMap<>();
     }
 
     @Override
-    public boolean processToken(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
-        boolean processed = false;
-        String tokenText = ts.token().text().toString();
+    public boolean startProcessing(Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence, List<Embedding> embeddings) {
+        this.snapshot = snapshot;
+        this.tokenSequence = tokenSequence;
+        this.embeddings = embeddings;
 
-        switch (ts.token().id()) {
+        embeddings.add(snapshot.create("var $root = ko.$bindings;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+        embeddings.add(snapshot.create("var $data = $root;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+        embeddings.add(snapshot.create("var $parent = undefined;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+
+        return true;
+    }
+
+    @Override
+    public void endProcessing() {
+        stack.clear();
+//        initialized.clear();
+        lastTagOpen = null;
+    }
+
+    @Override
+    public boolean processToken() {
+        boolean processed = false;
+        String tokenText = tokenSequence.token().text().toString();
+
+        switch (tokenSequence.token().id()) {
             case TAG_OPEN:
-                Boolean initializedVal = initialized.get(ts);
-                if (initializedVal == null || !initializedVal) {
-                    embeddings.add(snapshot.create("var $root = ko.$bindings;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
-                    embeddings.add(snapshot.create("var $data = $root;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
-                    embeddings.add(snapshot.create("var $parent = undefined;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
-                    initialized.put(ts, Boolean.TRUE);
-                    processed = true;
-                }
+//                Boolean initializedVal = initialized.get(tokenSequence);
+//                if (initializedVal == null || !initializedVal) {
+//                    embeddings.add(snapshot.create("var $root = ko.$bindings;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+//                    embeddings.add(snapshot.create("var $data = $root;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+//                    embeddings.add(snapshot.create("var $parent = undefined;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+//                    initialized.put(tokenSequence, Boolean.TRUE);
+//                    processed = true;
+//                }
                 lastTagOpen = tokenText;
                 StackItem top = stack.peek();
                 if (top != null && top.tag.equals(lastTagOpen)) {
@@ -120,7 +131,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                 }
                 break;
             case VALUE:
-                TokenSequence<KODataBindTokenId> embedded = ts.embedded(KODataBindTokenId.language());
+                TokenSequence<KODataBindTokenId> embedded = tokenSequence.embedded(KODataBindTokenId.language());
                 boolean setData = false;
                 if (embedded != null) {
                     embedded.moveStart();
@@ -152,15 +163,13 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                             for (int i = 0; i < seq.length(); i++) {
                                 if (Character.isWhitespace(seq.charAt(i))) {
                                     emptyLength++;
-                                }
-                                else {
+                                } else {
                                     break;
                                 }
                             }
                             if (emptyLength < seq.length()) {
                                 embeddings.add(snapshot.create(embedded.offset() + emptyLength, embedded.token().length() - emptyLength, KOUtils.JAVASCRIPT_MIMETYPE));
-                            }
-                            else {
+                            } else {
                                 embeddings.add(snapshot.create(embedded.offset(), embedded.token().length(), KOUtils.JAVASCRIPT_MIMETYPE));
                             }
 
@@ -171,5 +180,16 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                 }
         }
         return processed;
+    }
+
+    private static class StackItem {
+
+        final String tag;
+        int balance;
+
+        public StackItem(String tag) {
+            this.tag = tag;
+            this.balance = 1;
+        }
     }
 }

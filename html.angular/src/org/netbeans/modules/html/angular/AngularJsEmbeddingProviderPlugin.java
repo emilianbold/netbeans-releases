@@ -47,7 +47,6 @@ import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
-import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
@@ -55,16 +54,19 @@ import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Petr Pisl
+ * @author Petr Pisl, mfukala@netbeans.org
  */
 @MimeRegistration(mimeType = "text/html", service = JsEmbeddingProviderPlugin.class)
-public class AngularJsEmbeddingProviderPlugin  extends JsEmbeddingProviderPlugin {
+public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
     private static class StackItem {
+
         final String tag;
         int balance;
 
@@ -72,37 +74,49 @@ public class AngularJsEmbeddingProviderPlugin  extends JsEmbeddingProviderPlugin
             this.tag = tag;
             this.balance = 1;
         }
-        
     }
-    private final Language JS_LANGUAGE;
-    
     private final LinkedList<StackItem> stack;
-    
-    private String lastArgument = null;
     private String lastTagOpen = null;
     private boolean processArgumentValue = false;
+    private TokenSequence<HTMLTokenId> tokenSequence;
+    private Snapshot snapshot;
+    private List<Embedding> embeddings;
+    private JsIndex index;
 
     public AngularJsEmbeddingProviderPlugin() {
-        this.JS_LANGUAGE = Language.find(Constants.JAVASCRIPT_MIMETYPE);
         this.stack = new LinkedList();
     }
-    
-    
+
     @Override
-    public boolean processToken(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
+    public boolean startProcessing(Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence, List<Embedding> embeddings) {
+        this.snapshot = snapshot;
+        this.tokenSequence = tokenSequence;
+        this.embeddings = embeddings;
+
+        FileObject file = snapshot.getSource().getFileObject();
+        if (file == null) {
+            return false;
+        }
+
+        this.index = JsIndex.get(file);
+        return true;
+    }
+
+    @Override
+    public boolean processToken() {
         boolean processed = false;
-        String tokenText = ts.token().text().toString();
-        switch(ts.token().id()) {
+        CharSequence tokenText = tokenSequence.token().text();
+        switch (tokenSequence.token().id()) {
             case TAG_OPEN:
-                lastTagOpen = tokenText;
+                lastTagOpen = tokenText.toString();
                 StackItem top = stack.peek();
-                if (top != null && top.tag.equals(lastTagOpen)) {
+                if (top != null && LexerUtils.equals(top.tag, lastTagOpen, false, false)) {
                     top.balance++;
                 }
                 break;
             case TAG_CLOSE:
                 top = stack.peek();
-                if (top != null && top.tag.equals(tokenText)) {
+                if (top != null && LexerUtils.equals(top.tag, tokenText, false, false)) {
                     top.balance--;
                     if (top.balance == 0) {
                         processed = true;
@@ -112,9 +126,7 @@ public class AngularJsEmbeddingProviderPlugin  extends JsEmbeddingProviderPlugin
                 }
                 break;
             case ARGUMENT:
-                String argument = ts.token().text().toString();
-                if (argument.equals("ng-controller")) {
-                     lastArgument = argument;
+                if (LexerUtils.equals("ng-controller", tokenText, false, false)) {
                     processArgumentValue = true;
                 } else {
                     processArgumentValue = false;
@@ -122,49 +134,39 @@ public class AngularJsEmbeddingProviderPlugin  extends JsEmbeddingProviderPlugin
                 break;
             case VALUE:
                 if (processArgumentValue) {
-                    
-                    String value = ts.token().text().toString().trim();
-                    if (value.charAt(0) == '"') {
-                        value = value.substring(1);
-                    }
-                    if (value.charAt(value.length() - 1) == '"') {
-                        value = value.substring(0, value.length() - 1);
-                    }
+                    String value = WebUtils.unquotedValue(tokenText);
                     StringBuilder sb = new StringBuilder();
                     sb.append("(function () { // generated function for scope ");
                     sb.append(value).append("\n");
-                    
-                    FileObject fo = snapshot.getSource().getFileObject();
-                    if (fo != null) {
-                        JsIndex index = JsIndex.get(fo);
-                        Collection<IndexedElement> properties = index.getProperties(value + ".$scope");
-                        for (IndexedElement indexedElement : properties) {
-                            
-                            sb.append("var ");
-                            sb.append(indexedElement.getName());
-                            
-                            switch(indexedElement.getJSKind()) {
-                                case METHOD:
-                                    sb.append(" = function(){}");
-                                    break;
-                                    
-                                default:
-                                    //try to obtain the element type from the stored
-                                    //assignment
-                                    List<TypeUsage> typeUsages = new ArrayList<>(indexedElement.getAssignments());
-                                    if(!typeUsages.isEmpty()) {
-                                        //use the last assignment
-                                        TypeUsage typeUsage = typeUsages.get(typeUsages.size() - 1);
-                                        String type = typeUsage.getType();
-                                        sb.append(" = new ");
-                                        sb.append(type);
-                                        
-                                    }
-                            }
-                            sb.append(";\n");
+
+                    Collection<IndexedElement> properties = index.getProperties(value + ".$scope");
+                    for (IndexedElement indexedElement : properties) {
+
+                        sb.append("var ");
+                        sb.append(indexedElement.getName());
+
+                        switch (indexedElement.getJSKind()) {
+                            case METHOD:
+                                sb.append(" = function(){}");
+                                break;
+
+                            default:
+                                //try to obtain the element type from the stored
+                                //assignment
+                                List<TypeUsage> typeUsages = new ArrayList<>(indexedElement.getAssignments());
+                                if (!typeUsages.isEmpty()) {
+                                    //use the last assignment
+                                    TypeUsage typeUsage = typeUsages.get(typeUsages.size() - 1);
+                                    String type = typeUsage.getType();
+                                    sb.append(" = new ");
+                                    sb.append(type);
+
+                                }
                         }
+                        sb.append(";\n");
                     }
-                    embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE)); 
+
+                    embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
                     processed = true;
                     stack.push(new StackItem(lastTagOpen));
                 }
@@ -173,5 +175,4 @@ public class AngularJsEmbeddingProviderPlugin  extends JsEmbeddingProviderPlugin
         }
         return processed;
     }
-    
 }

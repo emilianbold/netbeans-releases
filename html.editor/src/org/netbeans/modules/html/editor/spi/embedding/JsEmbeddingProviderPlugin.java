@@ -54,6 +54,8 @@ import org.netbeans.modules.parsing.api.Snapshot;
  * The {@link JsEmbeddingProvider} is lexer based so no parser result can be used here.
  * 
  * Register the plugin into mime lookup.
+ * 
+ * TODO: Possibly make the processing parser based. 
  *
  * @since 2.21
  * @author marekfukala
@@ -61,14 +63,37 @@ import org.netbeans.modules.parsing.api.Snapshot;
 public abstract class JsEmbeddingProviderPlugin {
   
     /**
-     * Adds one or more embeddings for the active token of the given token sequence.
+     * Called before the first call to {@link #processToken(org.netbeans.modules.parsing.api.Snapshot, org.netbeans.api.lexer.TokenSequence, java.util.List)}.
+     * 
+     * Clients may initialize resources here.
      * 
      * @param snapshot
      * @param ts
-     * @param embeddings
+     * @param embeddings 
+     * @since 2.28
+     * @return true if this plugin is interested in processing the token sequence, false otherwise.
+     */
+    public abstract boolean startProcessing(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings);
+    
+    /**
+     * Called after the last call to {@link #processToken(org.netbeans.modules.parsing.api.Snapshot, org.netbeans.api.lexer.TokenSequence, java.util.List)}.
+     * 
+     * Clients may release used resources here.
+     * 
+     * @since 2.28
+     */
+    public void endProcessing() {
+    }
+    
+    /**
+     * Adds one or more embeddings for the active token of the given token sequence.
+     * 
+     * The {@link TokenSequence<HTMLTokenId>} passed to the {@link #startProcessing(org.netbeans.modules.parsing.api.Snapshot, org.netbeans.api.lexer.TokenSequence, java.util.List)} method
+     * is properly positioned before calling this method. The client must not call moveNext/Previous() methods on the 
+     * token sequence itself. The client may obtain embedded token sequences and reposition these freely.
      * 
      * @return true if it embedding(s) were created or false if not.
      */
-    public abstract boolean processToken(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings);
+    public abstract boolean processToken();
     
 }

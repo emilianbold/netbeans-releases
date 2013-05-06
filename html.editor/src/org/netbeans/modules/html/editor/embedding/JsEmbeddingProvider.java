@@ -67,42 +67,43 @@ import org.netbeans.modules.web.common.api.LexerUtils;
         mimeType = "text/html",
         targetMimeType = "text/javascript")
 public class JsEmbeddingProvider extends EmbeddingProvider {
-    
+
     private static final Logger LOGGER = Logger.getLogger(JsEmbeddingProvider.class.getSimpleName());
-    
     private static final String JS_MIMETYPE = "text/javascript"; //NOI18N
     private static final String NETBEANS_IMPORT_FILE = "__netbeans_import__"; // NOI18N
     private boolean cancelled = true;
     private final Language JS_LANGUAGE;
+    private final JsEPPluginQuery PLUGINS;
 
     public JsEmbeddingProvider() {
         JS_LANGUAGE = Language.find(JS_MIMETYPE); //NOI18N
+        PLUGINS = JsEPPluginQuery.getDefault();
     }
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
-        if(snapshot.getMimePath().size() > 1) {
+        if (snapshot.getMimePath().size() > 1) {
             //do not create any js embeddings in already embedded html code
             //another js embedding provider for such cases exists in 
             //javascript2.editor module.
             return Collections.emptyList();
         }
-        
+
         cancelled = false; //resume
         List<Embedding> embeddings = new ArrayList<>();
         TokenSequence<HTMLTokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence(HTMLTokenId.language());
         JsAnalyzerState state = new JsAnalyzerState();
         process(snapshot, tokenSequence, state, embeddings);
-        if(embeddings.isEmpty()) {
+        if (embeddings.isEmpty()) {
             LOGGER.log(Level.FINE, "No javascript embedding created for source {0}", //NOI18N
                     snapshot.getSource().toString());
             return Collections.<Embedding>emptyList();
         } else {
             Embedding embedding = Embedding.create(embeddings);
-            LOGGER.log(Level.FINE, "Javascript embedding for source {0}:\n{1}", 
+            LOGGER.log(Level.FINE, "Javascript embedding for source {0}:\n{1}",
                     new Object[]{snapshot.getSource().toString(), embedding.getSnapshot().getText().toString()});
             return Collections.singletonList(embedding);
-            
+
         }
     }
 
@@ -117,49 +118,55 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
     }
 
     private void process(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, JsAnalyzerState state, List<Embedding> embeddings) {
-        ts.moveStart();
+        JsEPPluginQuery.Session session = PLUGINS.createSession();
+        session.startProcessing(snapshot, ts, embeddings);
+        try {
+            ts.moveStart();
 
-        while (ts.moveNext()) {
-            if (cancelled) {
-                embeddings.clear();
-                return;
-            }
-            
-            //plugins
-            if(JsEPPluginQuery.getDefault().processToken(snapshot, ts, embeddings)) {
-                //the plugin already processed the token so we should? not? process it anymore ... that's a question
-                continue;
-            }
+            while (ts.moveNext()) {
+                if (cancelled) {
+                    embeddings.clear();
+                    return;
+                }
 
-            Token<HTMLTokenId> token = ts.token();
-            switch (token.id()) {
-                case SCRIPT:
-                    handleScript(snapshot, ts, state, embeddings);
-                    break;
-                case TAG_OPEN:
-                    handleOpenTag(snapshot, ts, embeddings);
-                    break;
-                case TEXT:
-                    if (state.in_javascript) {
-                        embeddings.add(snapshot.create(ts.offset(), token.length(), JS_MIMETYPE));
-                    }
-                    break;
-                case VALUE_JAVASCRIPT:
-                case VALUE:
-                    handleValue(snapshot, ts, embeddings);
-                    break;
-                case TAG_CLOSE:
-                    if (LexerUtils.equals("script", token.text(), true, true)) {
-                        embeddings.add(snapshot.create("\n", JS_MIMETYPE)); //NOI18N
-                    }
-                    break;
-                case EL_OPEN_DELIMITER:
-                    handleELOpenDelimiter(snapshot, ts, embeddings);
-                    break;
-                default:
-                    state.in_javascript = false;
-                    break;
+                //plugins
+                if (session.processToken()) {
+                    //the plugin already processed the token so we should? not? process it anymore ... that's a question
+                    continue;
+                }
+
+                Token<HTMLTokenId> token = ts.token();
+                switch (token.id()) {
+                    case SCRIPT:
+                        handleScript(snapshot, ts, state, embeddings);
+                        break;
+                    case TAG_OPEN:
+                        handleOpenTag(snapshot, ts, embeddings);
+                        break;
+                    case TEXT:
+                        if (state.in_javascript) {
+                            embeddings.add(snapshot.create(ts.offset(), token.length(), JS_MIMETYPE));
+                        }
+                        break;
+                    case VALUE_JAVASCRIPT:
+                    case VALUE:
+                        handleValue(snapshot, ts, embeddings);
+                        break;
+                    case TAG_CLOSE:
+                        if (LexerUtils.equals("script", token.text(), true, true)) {
+                            embeddings.add(snapshot.create("\n", JS_MIMETYPE)); //NOI18N
+                        }
+                        break;
+                    case EL_OPEN_DELIMITER:
+                        handleELOpenDelimiter(snapshot, ts, embeddings);
+                        break;
+                    default:
+                        state.in_javascript = false;
+                        break;
+                }
             }
+        } finally {
+            session.endProcessing();
         }
     }
 
