@@ -133,7 +133,7 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGap(0, 0, 0)
-                .addComponent(cordovaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 409, Short.MAX_VALUE)
+                .addComponent(cordovaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
                 .addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -155,17 +155,17 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
     private void initControls() {
         initComponents();
         // XXX: should be changed probably:
-        ProjectConfigurationProvider provider = project.getLookup().lookup(ProjectConfigurationProvider.class);
-        boolean isCordovaProject = false;
-        if (provider!=null) {
-            for (Object conf:provider.getConfigurations()) {
-                if (conf instanceof MobileConfigurationImpl) {
-                    isCordovaProject = true;
-                    break;
-                }
-            }
-            
-        }
+//        ProjectConfigurationProvider provider = project.getLookup().lookup(ProjectConfigurationProvider.class);
+//        boolean isCordovaProject = false;
+//        if (provider!=null) {
+//            for (Object conf:provider.getConfigurations()) {
+//                if (conf instanceof MobileConfigurationImpl) {
+//                    isCordovaProject = true;
+//                    break;
+//                }
+//            }
+//            
+//        }
         
 //        createConfigs.setVisible(!isCordovaProject);
 //        createConfigsLabel.setVisible(!isCordovaProject);
