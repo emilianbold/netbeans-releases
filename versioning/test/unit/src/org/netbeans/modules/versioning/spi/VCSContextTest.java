@@ -55,10 +55,12 @@ import org.netbeans.api.project.Project;
 
 import java.io.FileFilter;
 import java.io.File;
+import junit.framework.TestSuite;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
 
 /**
@@ -83,6 +85,15 @@ public class VCSContextTest extends NbTestCase {
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
         System.setProperty("data.root.dir", dataRootDir.getAbsolutePath());
         FileObject fo = FileUtil.toFileObject(getDataDir());
+    }
+    
+    public static TestSuite suite () {
+        TestSuite suite = new NbTestSuite();
+        suite.addTest(new VCSContextTest("testForEmptyNodes"));
+        suite.addTest(new VCSContextTest("testForFileNodes"));
+        suite.addTest(new VCSContextTest("testForProjectNodes"));
+        suite.addTest(new VCSContextTest("testSubstract"));
+        return suite;
     }
 
     public void testForEmptyNodes() {
@@ -125,7 +136,6 @@ public class VCSContextTest extends NbTestCase {
         assertTrue(ctx.computeFiles(new DummyFileDilter()).size() == 1);        
     }
 
-    @RandomlyFails // see issue 229405
     public void testForProjectNodes() throws IOException {
         VCSContext ctx = VCSContext.forNodes(new Node[] { new DummyProjectNode(new File(dataRootDir, "workdir/root")) });
         assertTrue(ctx.getRootFiles().size() == 1);
