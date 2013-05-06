@@ -39,92 +39,81 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.editor.embedding;
+package org.netbeans.modules.html.editor.spi.embedding;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
+import java.util.concurrent.atomic.AtomicReference;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
-import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.html.editor.embedding.JsEmbeddingProviderTest;
 import org.netbeans.modules.parsing.api.Embedding;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.util.Lookup;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
 
 /**
  *
  * @author marekfukala
  */
-public class JsEPPluginQuery {
+public class JsEmbeddingProviderPluginTest extends CslTestBase {
 
-    private static JsEPPluginQuery DEFAULT;
-
-    public static synchronized JsEPPluginQuery getDefault() {
-        if (DEFAULT == null) {
-            DEFAULT = new JsEPPluginQuery();
-        }
-        return DEFAULT;
+    public JsEmbeddingProviderPluginTest(String name) {
+        super(name);
     }
-    private Lookup.Result<JsEmbeddingProviderPlugin> lookupResult;
-    private Collection<? extends JsEmbeddingProviderPlugin> plugins;
-
-    private JsEPPluginQuery() {
-        Lookup lookup = MimeLookup.getLookup("text/html");
-        lookupResult = lookup.lookupResult(JsEmbeddingProviderPlugin.class);
-        lookupResult.addLookupListener(new LookupListener() {
-            @Override
-            public void resultChanged(LookupEvent ev) {
-                refresh();
-            }
-        });
-
-        refresh();
-    }
-
-    private void refresh() {
-        Collection<? extends JsEmbeddingProviderPlugin> allInstances = lookupResult.allInstances();
-        plugins = allInstances;
-    }
-
-    public Session createSession() {
-        return new Session();
-    }
-
-    public class Session {
-
-        private Collection<JsEmbeddingProviderPlugin> activePlugins;
-
-        public Session() {
-            activePlugins = new ArrayList<>();
-        }
-
-//        public void startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
-        public void startProcessing(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
-            for (JsEmbeddingProviderPlugin jsep : plugins) {
-//                if(jsep.startProcessing(parserResult, snapshot, ts, embeddings)) {
-                if(jsep.startProcessing(snapshot, ts, embeddings)) {
-                    activePlugins.add(jsep);
-                }
-            }
-        }
+    
+    public void testPlugin() {
+        BaseDocument document = getDocument("hello", "text/html");
+        JsEmbeddingProviderTest.assertEmbedding(document, "world!");
         
+        assertTrue(TestPlugin.started);
+        assertTrue(TestPlugin.processed);
+        assertTrue(TestPlugin.ended);
+        
+    }
+
+    @MimeRegistration(mimeType = "text/html", service = JsEmbeddingProviderPlugin.class)
+    public static class TestPlugin extends JsEmbeddingProviderPlugin {
+
+        private Snapshot snapshot;
+        private List<Embedding> embeddings;
+        public static boolean started, ended, processed;
+        
+        @Override
+        public boolean startProcessing(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
+            assertNotNull(snapshot);
+            assertNotNull(ts);
+            assertNotNull(embeddings);
+            this.snapshot = snapshot;
+            this.embeddings = embeddings;
+            
+            started = true;
+            return true;
+        }
+
+        @Override
         public boolean processToken() {
-            for (JsEmbeddingProviderPlugin jsep : activePlugins) {
-                if (jsep.processToken()) {
-                    return true;
-                }
+            if(!processed) {
+                embeddings.add(snapshot.create("world!", "text/javascript"));
             }
+            processed = true;
             return false;
         }
 
+        @Override
         public void endProcessing() {
-            for (JsEmbeddingProviderPlugin jsep : activePlugins) {
-                jsep.endProcessing();
-            }
+            ended = true;
         }
+        
     }
+
 }
