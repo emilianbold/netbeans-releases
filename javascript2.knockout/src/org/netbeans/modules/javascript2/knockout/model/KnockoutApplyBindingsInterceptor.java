@@ -117,13 +117,11 @@ public class KnockoutApplyBindingsInterceptor implements FunctionInterceptor {
                 ko.addProperty(BINDINGS_OBJECT, bindings);
             }
 
-//            bindings.addProperty(object.getName(),
-//                    factory.newReference(bindings, object.getName(), OffsetRange.NONE,
-//                    object, false, Collections.<Modifier>emptySet()));
             for (Map.Entry<String, ? extends JsObject> entry : object.getProperties().entrySet()) {
                 if (!entry.getKey().startsWith(GENERATED_FUNCTION_PREFIX) && !entry.getKey().equals("arguments")) { // NOI18N
+                    // need declared true to store it to index
                     bindings.addProperty(entry.getKey(),
-                            factory.newReference(object, entry.getKey(), OffsetRange.NONE, entry.getValue(), false, null));
+                            factory.newReference(object, entry.getKey(), object.getOffsetRange(), entry.getValue(), true, null));
                 }
             }
         }
