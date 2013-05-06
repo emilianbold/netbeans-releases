@@ -79,7 +79,7 @@ public class ClosedCategoryNode extends CategoryNode {
     }
 
     @Override
-    List<IssueImpl> getTasks() {
+    public List<IssueImpl> getTasks() {
         return Collections.emptyList();
     }
 

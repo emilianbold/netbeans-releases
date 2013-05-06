@@ -262,7 +262,7 @@ public class DashboardUtils {
     public static Collection<RepositoryImpl> getRepositories() {
         return RepositoryRegistry.getInstance().getKnownRepositories(false, true);
     }
-    
+
     private static List<IssueImpl> loadTasks(List<TaskEntry> taskEntries) {
         List<IssueImpl> tasks = new ArrayList<IssueImpl>(taskEntries.size());
         Map<String, List<String>> repository2Ids = new HashMap<String, List<String>>();
@@ -296,5 +296,11 @@ public class DashboardUtils {
             }
         }
         return null;
+    }
+
+    public static void setAsSeen(boolean seen, List<IssueImpl> tasks) {
+        for (IssueImpl task : tasks) {
+            task.setSeen(seen);
+        }
     }
 }

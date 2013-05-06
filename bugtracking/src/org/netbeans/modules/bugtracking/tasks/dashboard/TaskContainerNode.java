@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author jpeska
  */
-public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>> {
+public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>> implements Refreshable{
 
     private List<TaskNode> taskNodes;
     private List<TaskNode> filteredTaskNodes;
@@ -88,15 +88,17 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         initPaging();
     }
 
-    abstract List<IssueImpl> getTasks();
-
-    abstract void adjustTaskNode(TaskNode taskNode);
+    public abstract List<IssueImpl> getTasks();
 
     abstract void updateCounts();
 
     abstract boolean isTaskLimited();
 
     abstract void refreshTaskContainer();
+
+    //override if you need to adjust node during updateNodes method
+    void adjustTaskNode(TaskNode taskNode) {
+    }
 
     @Override
     protected List<IssueImpl> load() {
@@ -163,6 +165,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         }
     }
 
+    @Override
     public final void refreshContent() {
         refresh = true;
         initPaging();

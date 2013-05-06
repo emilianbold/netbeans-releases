@@ -44,6 +44,7 @@ package org.netbeans.modules.odcs.tasks.util;
 import com.tasktop.c2c.server.tasks.domain.Iteration;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
+import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
@@ -393,4 +394,25 @@ public class ODCSUtil {
         return date;
     }
 
+    @NbBundle.Messages({"LBL_Mine=Assigned to me",
+                        "LBL_Related=Related to me",
+                        "LBL_Recent=Recently changed",
+                        "LBL_Open=Open tasks",
+                        "LBL_All=All tasks"})
+    public static String getPredefinedQueryName(PredefinedTaskQuery ptq) {
+        switch(ptq) {
+            case ALL:
+                return Bundle.LBL_All();
+            case MINE:              
+                return Bundle.LBL_Mine();
+            case OPEN:              
+                return Bundle.LBL_Open();
+            case RECENT:              
+                return Bundle.LBL_Recent();
+            case RELATED:              
+                return Bundle.LBL_Related();
+            default:
+                throw new IllegalStateException("unexpected PredefinedTaskQuery value [" + ptq + "]"); // NOI18N
+        }
+    }
 }

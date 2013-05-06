@@ -44,13 +44,14 @@ package org.netbeans.modules.bugzilla.query;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.util.*;
 import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.internal.tasks.core.ITaskListChangeListener;
+import org.eclipse.mylyn.internal.tasks.core.TaskContainerDelta;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
@@ -382,8 +383,7 @@ public class BugzillaQuery {
         @Override
         public void taskRemoved (ITask task) {
             issues.remove(task.getTaskId());
-            IssueCache<BugzillaIssue> cache = repository.getIssueCache();
-            BugzillaIssue issue = cache.getIssue(task.getTaskId());
+            BugzillaIssue issue = repository.getIssueForTask(task);
             if (issue != null) {
                 fireNotifyDataRemoved(issue);
             }
@@ -392,23 +392,6 @@ public class BugzillaQuery {
         @Override
         public void taskSynchronized (ITask task) {
             getController().addProgressUnit(BugzillaIssue.getDisplayName(task));
-            updateIssueData(task);
-        }
-
-        private BugzillaIssue updateIssueData (ITask task) {
-            String id = task.getTaskId();
-            BugzillaIssue issue;
-            try {
-                IssueCache<BugzillaIssue> cache = repository.getIssueCache();
-                issue = cache.getIssue(id);
-                if(issue != null) {
-                    issue.setTask(task);
-                }
-                return (BugzillaIssue) cache.setIssueData(id, issue != null ? issue : new BugzillaIssue(task, repository));
-            } catch (IOException ex) {
-                Bugzilla.LOG.log(Level.SEVERE, null, ex);
-                return null;
-            }
         }
 
         private void notifyArchived (Set<String> archivedIssues) {
@@ -427,7 +410,7 @@ public class BugzillaQuery {
         }
 
         private void notifyTable (ITask task) {
-            BugzillaIssue issue = updateIssueData(task);
+            BugzillaIssue issue = repository.getIssueForTask(task);
             if (issue != null) {
                 if (addedIds.add(task.getTaskId())) {
                     fireNotifyDataAdded(issue); // XXX - !!! triggers getIssues()

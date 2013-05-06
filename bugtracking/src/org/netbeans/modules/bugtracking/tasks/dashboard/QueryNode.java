@@ -69,8 +69,8 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     private TreeLabel lblName;
     private LinkButton btnChanged;
     private LinkButton btnTotal;
-    private QueryListener queryListener;
-    final Object LOCK = new Object();
+    private final QueryListener queryListener;
+    private final Object LOCK = new Object();
     private TreeLabel lblSeparator;
 
     public QueryNode(QueryImpl query, TreeListNode parent, boolean refresh) {
@@ -109,7 +109,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     }
 
     @Override
-    List<IssueImpl> getTasks() {
+    public List<IssueImpl> getTasks() {
         List<IssueImpl> tasks = Collections.emptyList();
         try {
             tasks = new ArrayList<IssueImpl>(query.getIssues());
@@ -117,10 +117,6 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             handleError(throwable);
         }
         return tasks;
-    }
-
-    @Override
-    void adjustTaskNode(TaskNode taskNode) {
     }
 
     @Override
@@ -190,15 +186,21 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
     public Action[] getPopupActions() {
         List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
         QueryNode[] queryNodes = new QueryNode[selectedNodes.size()];
+        boolean justQueries = true;
         for (int i = 0; i < selectedNodes.size(); i++) {
             TreeListNode treeListNode = selectedNodes.get(i);
             if (treeListNode instanceof QueryNode) {
                 queryNodes[i] = (QueryNode) treeListNode;
             } else {
-                return null;
+                justQueries = false;
+                break;
             }
         }
-        List<Action> actions = Actions.getQueryPopupActions(queryNodes);
+        List<Action> actions = new ArrayList<Action>();
+        if (justQueries) {
+            actions.addAll(Actions.getQueryPopupActions(queryNodes));
+        }
+        actions.addAll(Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
         return actions.toArray(new Action[actions.size()]);
     }
 

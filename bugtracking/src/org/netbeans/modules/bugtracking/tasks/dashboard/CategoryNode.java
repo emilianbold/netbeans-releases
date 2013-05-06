@@ -91,7 +91,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     }
 
     @Override
-    List<IssueImpl> getTasks() {
+    public List<IssueImpl> getTasks() {
         List<IssueImpl> tasks = Collections.emptyList();
         try {
             tasks = new ArrayList<IssueImpl>(category.getTasks());
@@ -175,7 +175,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
 
             panel.add(new JLabel(), new GridBagConstraints(7, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
-            btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/refresh.png", true), new Actions.RefreshCategoryAction(this)); //NOI18N
+            btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/refresh.png", true), Actions.RefreshAction.createAction(this)); //NOI18N
             btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
             panel.add(btnRefresh, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
         }
@@ -197,7 +197,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
                 closeCategoryAction = new CloseCategoryNodeAction(categoryNodes);
             }
             return closeCategoryAction;
-        } else if (allClosed){
+        } else if (allClosed) {
             if (openCategoryAction == null) {
                 openCategoryAction = new OpenCategoryNodeAction(categoryNodes);
             }
@@ -217,21 +217,26 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     @Override
     public final Action[] getPopupActions() {
         List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
+        boolean justCategories = true;
         CategoryNode[] categoryNodes = new CategoryNode[selectedNodes.size()];
         for (int i = 0; i < selectedNodes.size(); i++) {
             TreeListNode treeListNode = selectedNodes.get(i);
             if (treeListNode instanceof CategoryNode) {
-                categoryNodes[i] = (CategoryNode)treeListNode;
+                categoryNodes[i] = (CategoryNode) treeListNode;
             } else {
-                return null;
+                justCategories = false;
+                break;
             }
         }
         List<Action> actions = new ArrayList<Action>();
-        Action categoryAction = getCategoryAction(categoryNodes);
-        if (categoryAction != null) {
-            actions.add(categoryAction);
+        if (justCategories) {
+            Action categoryAction = getCategoryAction(categoryNodes);
+            if (categoryAction != null) {
+                actions.add(categoryAction);
+            }
+            actions.addAll(Actions.getCategoryPopupActions(categoryNodes));
         }
-        actions.addAll(Actions.getCategoryPopupActions(categoryNodes));
+        actions.addAll(Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
         return actions.toArray(new Action[actions.size()]);
     }
 

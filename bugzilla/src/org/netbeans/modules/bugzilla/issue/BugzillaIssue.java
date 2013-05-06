@@ -307,7 +307,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
 
     public static String getDisplayName (ITask task) {
         return task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW ?
-                NbBundle.getMessage(BugzillaIssue.class, "CTL_NewIssue") : // NOI18N
+                getSummary(task) :
                 NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(task), getSummary(task)}); //NOI18N
     }
     
@@ -498,7 +498,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
      */
     public static String getID (ITask task) {
         if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
-            return null;
+            return "-" + task.getTaskId();
         }
         return task.getTaskId();
     }
@@ -522,12 +522,6 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
 
     public String getSummary() {
         return task.getSummary();
-    }
-
-    // TODO remove later, not needed
-    public void setTask (ITask task) {
-        assert task == this.task;
-        this.task = task;
     }
 
     @Override
@@ -1082,8 +1076,12 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
 
                 SubmitTaskCommand submitCmd;
                 try {
-                    save(model);
-                    submitCmd = MylynSupport.getInstance().getMylynFactory().createSubmitTaskCommand(task, model);
+                    if (saveChanges()) {
+                        submitCmd = MylynSupport.getInstance().getMylynFactory().createSubmitTaskCommand(task, model);
+                    } else {
+                        result[0] = false;
+                        return;
+                    }
                 } catch (CoreException ex) {
                     Bugzilla.LOG.log(Level.WARNING, null, ex);
                     result[0] = false;
@@ -1363,6 +1361,14 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
 
     private void save (NetBeansTaskDataModel model) throws CoreException {
         if (model.isDirty()) {
+            if (isNew()) {
+                String summary = model.getTask().getSummary();
+                String newSummary = getFieldValue(model.getTaskData(), IssueField.SUMMARY);
+                if (!(newSummary.isEmpty() || newSummary.equals(summary))) {
+                    task.setSummary(newSummary);
+                    fireDataChanged();
+                }
+            }
             model.save(null);
             if (controller != null) {
                 controller.modelStateChanged(model.isDirty(), model.isDirty() || !model.getChangedAttributes().isEmpty());
