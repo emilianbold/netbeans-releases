@@ -1088,13 +1088,17 @@ public class OptionsPanel extends JPanel {
                 ("buran" + evt.getPropertyName (), null, null);
         }
     }
-    
+
+    @NbBundle.Messages({"# {0} - name of the category button",
+        "CategoryButton_AccessibleDescription={0} category button. Use the arrow keys to move between top level categories."})
     class CategoryButton extends JLabel implements MouseListener {
         private final CategoryModel.Category category;                
         CategoryButton (final CategoryModel.Category category) {
             super (category.getIcon());
             this.category = category;
             Mnemonics.setLocalizedText (this, category.getCategoryName());
+	    getAccessibleContext().setAccessibleName(category.getCategoryName());
+	    getAccessibleContext().setAccessibleDescription(Bundle.CategoryButton_AccessibleDescription(category.getCategoryName()));
             setDisplayedMnemonic(0);            
             setOpaque (true);
             setVerticalTextPosition (BOTTOM);

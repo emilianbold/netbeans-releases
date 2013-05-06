@@ -48,6 +48,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.io.SyncFailedException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1059,10 +1060,17 @@ public final class OptionsExportModel {
             String rootPath = root.getPath();
             if (filePath.startsWith(rootPath)) {
                 String res = filePath.substring(rootPath.length()).replace(File.separatorChar, '/');
-                FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), res);
-                if (fo != null) {
-                    return fo.getOutputStream();
-                }
+                FileObject fo;
+		try {
+		    fo = FileUtil.createData(FileUtil.getConfigRoot(), res);
+		    if (fo != null) {
+			return fo.getOutputStream();
+		    }
+		} catch (SyncFailedException ex) {
+		    LOGGER.log(Level.INFO, "File already exists: {0}", filePath);  //NOI18N
+		} catch (IOException ex) {
+		    LOGGER.log(Level.INFO, "IOException while getting output stream: {0}", filePath);  //NOI18N
+		}
             }
         }
         return new FileOutputStream(file);
