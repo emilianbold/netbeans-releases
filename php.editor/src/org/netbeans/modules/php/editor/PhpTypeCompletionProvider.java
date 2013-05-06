@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,69 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.php.editor;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import javax.swing.JComponent;
-import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
+import org.netbeans.modules.php.editor.api.ElementQuery;
+import org.netbeans.modules.php.editor.api.ElementQueryFactory;
+import org.netbeans.modules.php.editor.api.NameKind;
+import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author marekfukala
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-
-@NbBundle.Messages({
-    "DocumentView.displayName=Document"
-})
-@ServiceProvider(service=CssStylesPanelProvider.class)
-public class DocumentViewPanelProvider implements CssStylesPanelProvider {
-
-    private static String DOCUMENT_PANEL_ID = "static_document";
-    private static Collection<String> MIME_TYPES = new HashSet(Arrays.asList(new String[]{"text/css", "text/html", "text/xhtml"}));
-    private DocumentViewPanel panel;
-    
-    @Override
-    public String getPanelDisplayName() {
-        return Bundle.DocumentView_displayName();
-    }
+@ServiceProvider(service = TypeCompletionProvider.class)
+public class PhpTypeCompletionProvider implements TypeCompletionProvider {
 
     @Override
-    public JComponent getContent(Lookup lookup) {
-        if(panel == null) {
-            panel = new DocumentViewPanel(lookup);
+    public List<String> complete(String prefix, FileObject fileObject) {
+        List<String> result = new ArrayList<>();
+        ElementQuery.Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(fileObject));
+        Set<TypeElement> types = indexQuery.getTypes(NameKind.prefix(prefix));
+        for (TypeElement typeElement : types) {
+            result.add(typeElement.getFullyQualifiedName().toString());
         }
-        return panel;
-    }
-    
-    @Override
-    public String getPanelID() {
-        return DOCUMENT_PANEL_ID;
+        return result;
     }
 
-    @Override
-    public Lookup getLookup() {
-        return panel.getLookup();
-    }
-
-    @Override
-    public void activated() {
-    }
-
-    @Override
-    public void deactivated() {
-    }
-
-    @Override
-    public boolean providesContentFor(FileObject file) {
-        return (file != null) && MIME_TYPES.contains(file.getMIMEType());
-    }
-    
 }
