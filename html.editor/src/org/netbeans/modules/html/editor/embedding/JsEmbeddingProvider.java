@@ -54,6 +54,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.Utils;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
@@ -67,6 +68,10 @@ import org.netbeans.modules.web.common.api.LexerUtils;
         mimeType = "text/html",
         targetMimeType = "text/javascript")
 public class JsEmbeddingProvider extends EmbeddingProvider {
+//@EmbeddingProvider.Registration(
+//        mimeType = "text/html",
+//        targetMimeType = "text/javascript")
+//public class JsEmbeddingProvider extends ParserBasedEmbeddingProvider<HtmlParserResult> {
 
     private static final Logger LOGGER = Logger.getLogger(JsEmbeddingProvider.class.getSimpleName());
     private static final String JS_MIMETYPE = "text/javascript"; //NOI18N
@@ -79,9 +84,17 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
         JS_LANGUAGE = Language.find(JS_MIMETYPE); //NOI18N
         PLUGINS = JsEPPluginQuery.getDefault();
     }
-
+    
+//    @Override
+//    public Class<? extends Scheduler> getSchedulerClass() {
+//        return null;
+//    }
+//
+//    @Override
+//    public List<Embedding> getEmbeddings(HtmlParserResult result) {
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
+//        Snapshot snapshot = result.getSnapshot();
         if (snapshot.getMimePath().size() > 1) {
             //do not create any js embeddings in already embedded html code
             //another js embedding provider for such cases exists in 
@@ -93,6 +106,8 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
         List<Embedding> embeddings = new ArrayList<>();
         TokenSequence<HTMLTokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence(HTMLTokenId.language());
         JsAnalyzerState state = new JsAnalyzerState();
+        
+//        process(result, snapshot, tokenSequence, state, embeddings);
         process(snapshot, tokenSequence, state, embeddings);
         if (embeddings.isEmpty()) {
             LOGGER.log(Level.FINE, "No javascript embedding created for source {0}", //NOI18N
@@ -117,8 +132,10 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
         cancelled = true;
     }
 
+//    private void process(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> ts, JsAnalyzerState state, List<Embedding> embeddings) {
     private void process(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, JsAnalyzerState state, List<Embedding> embeddings) {
         JsEPPluginQuery.Session session = PLUGINS.createSession();
+//        session.startProcessing(parserResult, snapshot, ts, embeddings);
         session.startProcessing(snapshot, ts, embeddings);
         try {
             ts.moveStart();

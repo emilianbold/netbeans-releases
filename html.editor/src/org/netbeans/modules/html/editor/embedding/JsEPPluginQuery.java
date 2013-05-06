@@ -47,6 +47,7 @@ import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -101,8 +102,10 @@ public class JsEPPluginQuery {
             activePlugins = new ArrayList<>();
         }
 
+//        public void startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
         public void startProcessing(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
             for (JsEmbeddingProviderPlugin jsep : plugins) {
+//                if(jsep.startProcessing(parserResult, snapshot, ts, embeddings)) {
                 if(jsep.startProcessing(snapshot, ts, embeddings)) {
                     activePlugins.add(jsep);
                 }

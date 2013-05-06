@@ -44,6 +44,7 @@ package org.netbeans.modules.html.editor.spi.embedding;
 import java.util.List;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -55,7 +56,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
  * 
  * Register the plugin into mime lookup.
  * 
- * TODO: Possibly make the processing parser based. 
+ * TODO: Possibly make the processing parser based.
  *
  * @since 2.21
  * @author marekfukala
@@ -73,6 +74,7 @@ public abstract class JsEmbeddingProviderPlugin {
      * @since 2.28
      * @return true if this plugin is interested in processing the token sequence, false otherwise.
      */
+//    public abstract boolean startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings);
     public abstract boolean startProcessing(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings);
     
     /**
