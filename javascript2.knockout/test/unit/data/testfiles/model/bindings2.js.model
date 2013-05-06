@@ -29,12 +29,6 @@ ko           : OBJECT ko [ANONYMOUS: false, DECLARED: false - ko, MODIFIERS: PUB
              # PROPERTIES
              $bindings     : OBJECT $bindings [ANONYMOUS: false, DECLARED: true - $bindings, MODIFIERS: PUBLIC, OBJECT]
                            # PROPERTIES
-                           _L4                : FUNCTION _L4 [ANONYMOUS: false, DECLARED: false - _L4, MODIFIERS: PUBLIC, METHOD]
-                                              # RETURN TYPES
-                                              String, RESOLVED: true
-                                              # PROPERTIES
-                                              arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                           arguments          : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                            capitalizeLastName : FUNCTION capitalizeLastName [ANONYMOUS: false, DECLARED: false - capitalizeLastName, MODIFIERS: PROTECTED, METHOD]
                                               # RETURN TYPES
                                               undefined, RESOLVED: true

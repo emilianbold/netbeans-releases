@@ -126,8 +126,7 @@ public class EditCSSRulesNodeAction extends NodeAction {
         }
         Node node = activatedNodes[0];
         SourceElementHandle sourceElementHandle = node.getLookup().lookup(SourceElementHandle.class);
-        return sourceElementHandle != null;
-
+        return sourceElementHandle != null && sourceElementHandle.getFileObject() != null;
     }
 
     @Override
