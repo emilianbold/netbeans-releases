@@ -48,6 +48,7 @@ import org.netbeans.modules.php.api.editor.PhpClass.Method;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.atoum.commands.Atoum;
+import org.netbeans.modules.php.atoum.create.TestCreator;
 import org.netbeans.modules.php.atoum.locate.AtoumTestLocator;
 import org.netbeans.modules.php.atoum.run.TestRunner;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
@@ -128,7 +129,7 @@ public class AtoumTestingProvider implements PhpTestingProvider {
 
     @Override
     public CreateTestsResult createTests(PhpModule phpModule, List<FileObject> files) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return new TestCreator(phpModule).createTests(files);
     }
 
     @Override

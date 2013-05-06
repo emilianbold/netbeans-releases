@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTextField;
-import static junit.framework.Assert.fail;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
@@ -564,7 +563,7 @@ class HTMLElement {
     }
 
     /**
-     * Returns string that is same as returned by {@link HTMLNavigatorOperator#getFocusedElement()
+     * Returns string that is same as returned by {@link DomOperator#getFocusedElement()
      * }
      *
      * @return sample output {@code [root, html, body]body#foo.bar}
@@ -572,10 +571,10 @@ class HTMLElement {
     public String getNavigatorString() {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
-        for (String parent : this.parentsPlain) {
+        for (String parent : this.parents) {
             sb.append(parent).append(", ");
         }
-        sb.append(this.namePlain).append("]").append(this.name);
+        sb.append(this.name).append("]");
         return sb.toString();
     }
 
