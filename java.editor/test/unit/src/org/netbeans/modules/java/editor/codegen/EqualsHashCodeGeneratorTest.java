@@ -607,7 +607,7 @@ public class EqualsHashCodeGeneratorTest extends NbTestCase {
                 copy.toPhase(JavaSource.Phase.RESOLVED);
                 ClassTree clazzTree = (ClassTree) copy.getCompilationUnit().getTypeDecls().get(0);
                 TreePath clazz = new TreePath(new TreePath(copy.getCompilationUnit()), clazzTree);
-                List<VariableElement> vars = new LinkedList<>();
+                List<VariableElement> vars = new LinkedList<VariableElement>();
 
                 for (Tree m : clazzTree.getMembers()) {
                     if (m.getKind() == Kind.VARIABLE) {
