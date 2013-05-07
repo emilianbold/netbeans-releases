@@ -362,6 +362,19 @@ public class VisualReplicator {
 
             setupContainerLayout(metacont, comps, compIds);
         }
+
+        updateLayeredPane(cont, metacomps, comps);
+    }
+
+    private static void updateLayeredPane(Container cont, RADVisualComponent[] metacomps, Component[] comps) {
+        if (cont instanceof JLayeredPane) {
+            JLayeredPane layeredPane = (JLayeredPane) cont;
+            for (int i=0; i < metacomps.length; i++) {
+                RADVisualComponent sub = metacomps[i];
+                int layer = sub.getComponentLayer();
+                layeredPane.setLayer(comps[i], layer);
+            }
+        }
     }
 
     public void updateAddedComponents(ComponentContainer metacont) {
@@ -428,6 +441,10 @@ public class VisualReplicator {
                             new Component[] { (Component) clone },
                             ((RADVisualComponent)metacomp).getComponentIndex());
                     laysup.arrangeContainer(cont, contDelegate);
+                    if (contDelegate instanceof JLayeredPane) {
+                        int layer = ((RADVisualComponent)metacomp).getComponentLayer();
+                        ((JLayeredPane)contDelegate).setLayer((Component)clone, layer);
+                    }
                 }
     //            else { // new layout support
     //                getLayoutBuilder(metacont.getId()).addComponentsToContainer(
@@ -796,6 +813,7 @@ public class VisualReplicator {
                 else { // new layout support
                     setupContainerLayout(metacont, comps, compIds);
                 }
+                updateLayeredPane(cont, metacomps, comps);
             }
         }
         else if (metacomp instanceof RADMenuComponent) {

@@ -371,11 +371,14 @@ made subject to such option by the copyright holder.
             <file name="BoxLayout.palette_item" url="palette/BoxLayout.palette_item">
                 <attr name="position" intvalue="600"/>
             </file>
-            <file name="AbsoluteLayout.palette_item" url="palette/AbsoluteLayout.palette_item">
+            <file name="OverlayLayout.palette_item" url="palette/OverlayLayout.palette_item">
                 <attr name="position" intvalue="700"/>
             </file>
-            <file name="NullLayout.palette_item" url="palette/NullLayout.palette_item">
+            <file name="AbsoluteLayout.palette_item" url="palette/AbsoluteLayout.palette_item">
                 <attr name="position" intvalue="800"/>
+            </file>
+            <file name="NullLayout.palette_item" url="palette/NullLayout.palette_item">
+                <attr name="position" intvalue="900"/>
             </file>
 
             </folder>

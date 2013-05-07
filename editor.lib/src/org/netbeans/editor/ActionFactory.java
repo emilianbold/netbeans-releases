@@ -58,6 +58,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -1568,16 +1569,27 @@ public class ActionFactory {
         }
     }
 
-    @EditorActionRegistration(name = BaseKit.formatAction)
+    @EditorActionRegistrations({
+        @EditorActionRegistration(name = BaseKit.formatAction),
+        @EditorActionRegistration(name = BaseKit.indentAction)
+    })        
     public static class FormatAction extends LocalBaseAction {
 
         static final long serialVersionUID =-7666172828961171865L;
+        
+        private boolean indentOnly;
 
         public FormatAction() {
             super(ABBREV_RESET | MAGIC_POSITION_RESET | UNDO_MERGE_RESET);
             //#54893 putValue ("helpID", FormatAction.class.getName ()); // NOI18N
         }
 
+        @Override
+        protected void actionNameUpdate(String actionName) {
+            super.actionNameUpdate(actionName);
+            this.indentOnly = BaseKit.indentAction.equals(actionName);
+        }
+        
         public void actionPerformed (final ActionEvent evt, final JTextComponent target) {
             if (target != null) {
                 if (!target.isEditable() || !target.isEnabled()) {
@@ -1598,8 +1610,13 @@ public class ActionFactory {
                 ProgressUtils.runOffEventDispatchThread(new Runnable() {
                     public void run() {
                         if (canceled.get()) return;
-                        final Reformat formatter = Reformat.get(doc);
-                        formatter.lock();
+                        final Reformat formatter = indentOnly ? null : Reformat.get(doc);
+                        final Indent indenter = indentOnly ? Indent.get(doc) : null;
+                        if (indentOnly) {
+                            indenter.lock();
+                        } else {
+                            formatter.lock();
+                        }
                         try {
                             if (canceled.get()) return;
                             doc.runAtomicAsUser(new Runnable() {
@@ -1614,8 +1631,18 @@ public class ActionFactory {
                                             startPos = 0;
                                             endPos = doc.getLength();
                                         }
+                                        List<PositionRegion> regions = collectRegions(doc, startPos, endPos);
 
-                                        reformat(formatter, doc, startPos, endPos, canceled);
+                                        if (canceled.get()) return;
+                                        // Once we start formatting, the task can't be canceled
+
+                                        for (PositionRegion region : regions) {
+                                            if (indentOnly) {
+                                                indenter.reindent(region.getStartOffset(), region.getEndOffset());
+                                            } else {
+                                                formatter.reformat(region.getStartOffset(), region.getEndOffset());
+                                            }
+                                        }
                                     } catch (GuardedException e) {
                                         target.getToolkit().beep();
                                     } catch (BadLocationException e) {
@@ -1624,10 +1651,14 @@ public class ActionFactory {
                                 }
                             });
                         } finally {
-                            formatter.unlock();
+                            if (indentOnly) {
+                                indenter.unlock();
+                            } else {
+                                formatter.unlock();
+                            }
                         }
                     }
-                }, NbBundle.getMessage(FormatAction.class, "Format_in_progress"), canceled, false); //NOI18N
+                }, NbBundle.getMessage(FormatAction.class, indentOnly ? "Indent_in_progress" : "Format_in_progress"), canceled, false); //NOI18N
                 } catch (Exception e) {
                     // not sure about this, but was getting j.l.Exception that the operation is too slow - wtf?
                     Logger.getLogger(FormatAction.class.getName()).log(Level.FINE, null, e);
@@ -1639,6 +1670,15 @@ public class ActionFactory {
     }
 
     static void reformat(Reformat formatter, Document doc, int startPos, int endPos, AtomicBoolean canceled) throws BadLocationException {
+        List<PositionRegion> regions = collectRegions(doc, startPos, endPos);
+        if (canceled.get()) return;
+        // Once we start formatting, the task can't be canceled
+        for (PositionRegion region : regions) {
+            formatter.reformat(region.getStartOffset(), region.getEndOffset());
+        }
+    }
+    
+    private static List<PositionRegion> collectRegions(Document doc, int startPos, int endPos) throws BadLocationException {
         final GuardedDocument gdoc = (doc instanceof GuardedDocument)
                 ? (GuardedDocument) doc : null;
 
@@ -1667,14 +1707,8 @@ public class ActionFactory {
             if (gdoc != null) { // adjust to end of current block
                 pos = gdoc.getGuardedBlockChain().adjustToBlockEnd(pos);
             }
-        }
-
-        if (canceled.get()) return;
-        // Once we start formatting, the task can't be canceled
-
-        for (PositionRegion region : regions) {
-            formatter.reformat(region.getStartOffset(), region.getEndOffset());
-        }
+        }        
+        return regions;
     }
     
     @EditorActionRegistrations({

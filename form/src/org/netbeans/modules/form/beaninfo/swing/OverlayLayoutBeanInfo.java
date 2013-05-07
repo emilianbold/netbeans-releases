@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.bracesmatching;
+package org.netbeans.modules.form.beaninfo.swing;
 
-import java.util.EventObject;
-import javax.swing.text.JTextComponent;
-import org.netbeans.spi.editor.bracesmatching.BracesMatcher.ContextLocator;
+import java.beans.BeanDescriptor;
+import java.beans.PropertyDescriptor;
+import java.beans.SimpleBeanInfo;
+import org.openide.util.ImageUtilities;
 
-/**
- *
- * @author sdedic
- */
-public class MatchEvent extends EventObject {
-    private JTextComponent  component;
-    private int[]           origin;
-    private int[]           matches;
-    private ContextLocator  locator;
+public class OverlayLayoutBeanInfo extends SimpleBeanInfo {
+    @Override
+    public BeanDescriptor getBeanDescriptor() {
+        return new BeanDescriptor(javax.swing.OverlayLayout.class);
+    } 
 
-    public MatchEvent(JTextComponent component, ContextLocator locator, Object source) {
-        super(source);
-        this.component = component;
-        this.locator = locator;
-    }
-    
-    public ContextLocator getLocator() {
-        return locator;
-    }
-    
-    public void setHighlights(int[] origin, int[] matches) {
-        this.origin = origin;
-        this.matches = matches;
+    @Override
+    public PropertyDescriptor[] getPropertyDescriptors() {
+        return new PropertyDescriptor[0];
     }
 
-    public JTextComponent getComponent() {
-        return component;
+    @Override
+    public java.awt.Image getIcon(int type) {
+        return ImageUtilities.loadImage("org/netbeans/modules/form/beaninfo/swing/overlayLayout16.gif"); // NOI18N
     }
-
-    public int[] getOrigin() {
-        return origin;
-    }
-
-    public int[] getMatches() {
-        return matches;
-    }
-    
-    
 }

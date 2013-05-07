@@ -46,14 +46,16 @@ package org.netbeans.modules.form;
 
 import java.util.*;
 import java.beans.*;
-import javax.accessibility.*;
+import java.lang.reflect.InvocationTargetException;
 import javax.swing.*;
 import javax.swing.MenuElement;
+import org.netbeans.modules.form.editors.EnumEditor;
 
 import org.openide.nodes.*;
 
 import org.netbeans.modules.form.layoutdesign.*;
 import org.netbeans.modules.form.layoutsupport.*;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -65,6 +67,7 @@ public class RADVisualComponent extends RADComponent {
     private static final String PROP_LAYOUT_COMPONENT_VERTICAL_SIZE = "layoutComponentVerticalSize"; // NOI18N
     private static final String PROP_LAYOUT_COMPONENT_HORIZONTAL_RESIZABLE = "layoutComponentHorizontalResizable"; // NOI18N
     private static final String PROP_LAYOUT_COMPONENT_VERTICAL_RESIZABLE = "layoutComponentVerticalResizable"; // NOI18N
+    static final String PROP_LAYER = "JLayeredPane.layer"; // NOI18N
 
     // -----------------------------------------------------------------------------
     // Private properties
@@ -134,7 +137,7 @@ public class RADVisualComponent extends RADComponent {
 
     /**
      * Returns whether this component is treated specially as a menu component.
-     * Not only it must be of particluar Swing menu class, but must also be used
+     * Not only it must be of particular Swing menu class, but must also be used
      * as a menu, not as normal visual component. Technically it must be either
      * contained in another menu, or be a menu bar of a window.
      * @return whether the component is a menu used in another menu or as menu
@@ -334,6 +337,22 @@ public class RADVisualComponent extends RADComponent {
             };
         }
 
+        if (isInLayeredPane()) {
+            List<Node.Property> l;
+            if (constraintsProperties != null) {
+                l = new ArrayList(constraintsProperties.length+1);
+                l.addAll(Arrays.asList(constraintsProperties));
+            } else {
+                l = new ArrayList(1);
+            }
+
+            Node.Property layerProperty = new LayerProperty();
+            l.add(layerProperty);
+            nameToProperty.put(layerProperty.getName(), layerProperty);
+
+            constraintsProperties = l.toArray(new Node.Property[l.size()]);
+        }
+
         if (constraintsProperties == null) {
             constraintsProperties = NO_PROPERTIES;
             return;
@@ -420,10 +439,78 @@ public class RADVisualComponent extends RADComponent {
         }
     }
 
+    final int getComponentLayer() {
+        Object layer = getAuxValue(PROP_LAYER);
+        return layer instanceof Integer ? ((Integer)layer).intValue() : JLayeredPane.DEFAULT_LAYER;
+    }
+
+    final String getComponentLayerJavaInitCode() {
+        if (isInLayeredPane()) {
+            int layer = getComponentLayer();
+            if (layer != JLayeredPane.DEFAULT_LAYER || RADVisualContainer.isInFreeDesign(this)) {
+                // In free design even JLayeredPane.DEFAULT_LAYER makes sense to be
+                // generated - defines the order of component which is otherwise random.
+                PropertyEditor prEd = new LayerPropertyEditor();
+                prEd.setValue(layer);
+                return prEd.getJavaInitializationString();
+            }
+        }
+        return null;
+    }
+
+    final boolean isInLayeredPane() {
+        RADVisualContainer parent = getParentContainer();
+        return parent != null && parent.getBeanInstance() instanceof JLayeredPane;
+    }
+
+    private abstract class LProperty extends PropertySupport.ReadWrite {
+        LProperty(String name, Class type, String displayName, String shortDescription) {
+            super(name, type, displayName, shortDescription);
+            setValue("canEditAsText", Boolean.TRUE); // NOI18N
+        }
+
+        abstract Object getDefaultValue();
+
+        @Override
+        public boolean supportsDefaultValue() {
+            return true;
+        }
+
+        @Override
+        public void restoreDefaultValue() {
+            try {
+                setValue(getDefaultValue());
+            } catch (IllegalAccessException ex) { // subclasses don't throw anything
+            } catch (InvocationTargetException ex) {
+            }
+        }
+
+        @Override
+        public boolean isDefaultValue() {
+            Object value = null;
+            try {
+                value = getValue();
+            } catch (IllegalAccessException ex) { // subclasses don't throw anything
+            } catch (InvocationTargetException ex) {
+            }
+            return value == null || value.equals(getDefaultValue());
+        }
+
+        @Override
+        public String getHtmlDisplayName() {
+            return isDefaultValue() ? null : "<b>" + getDisplayName(); // NOI18N
+        }
+
+        @Override
+        public boolean canWrite() {
+            return !isReadOnly();
+        }
+    }
+
     /**
      * Preferred size of the component in the layout.
      */
-    private class LayoutComponentSizeProperty extends PropertySupport.ReadWrite {
+    private class LayoutComponentSizeProperty extends LProperty {
         private LayoutComponent component;
         private int dimension;
         
@@ -436,7 +523,6 @@ public class RADVisualComponent extends RADComponent {
             setShortDescription(FormUtils.getBundleString(horizontal ?
                 "HINT_LAYOUT_COMPONENT_HORIZONTAL_SIZE" : "HINT_LAYOUT_COMPONENT_VERTICAL_SIZE")); // NOI18N
             this.dimension = dimension;
-            setValue("canEditAsText", Boolean.TRUE); // NOI18N
         }
 
         private LayoutComponent getComponent() {
@@ -486,67 +572,42 @@ public class RADVisualComponent extends RADComponent {
         }
 
         @Override
-        public boolean supportsDefaultValue() {
-            return true;
+        Object getDefaultValue() {
+            return Integer.valueOf(LayoutConstants.NOT_EXPLICITLY_DEFINED);
         }
-        
-        @Override
-        public void restoreDefaultValue() {
-            setValue(Integer.valueOf(LayoutConstants.NOT_EXPLICITLY_DEFINED));
-        }
-        
-        @Override
-        public boolean isDefaultValue() {
-            return ((Integer)getValue()).intValue() == LayoutConstants.NOT_EXPLICITLY_DEFINED;
-        }
-        
+
         @Override
         public PropertyEditor getPropertyEditor() {
-            return new PropertyEditorSupport() {
-                private String notExplicitelyDefined = FormUtils.getBundleString("VALUE_SizeNotExplicitelyDefined"); // NOI18N
-                
-                @Override
-                public String[] getTags() {
-                    return new String[] {notExplicitelyDefined};
-                }
+            return new LayoutSizePropertyEditor();
+        }
+    }
 
-                @Override
-                public String getAsText() {
-                    Integer value = (Integer)getValue();
-                    if (value.intValue() == LayoutConstants.NOT_EXPLICITLY_DEFINED) {
-                        return notExplicitelyDefined;
-                    } else {
-                        return value.toString();
-                    }
-                }
-
-                @Override
-                public void setAsText(String str) {
-                    if (notExplicitelyDefined.equals(str)) {
-                        setValue(Integer.valueOf(LayoutConstants.NOT_EXPLICITLY_DEFINED));
-                    } else {
-                        try {
-                            int size = Integer.parseInt(str);
-                            if (size < 0) {
-                                throw new IllegalArgumentException();
-                            }
-                            setValue(size);
-                        }  catch (NumberFormatException e) {
-                            throw new IllegalArgumentException();
-                        }
-                    }
-                }
-            };
+    private static class LayoutSizePropertyEditor extends EnumEditor {
+        LayoutSizePropertyEditor() {
+            super(new Object[] {
+                FormUtils.getBundleString("VALUE_SizeNotExplicitelyDefined"), // NOI18N
+                LayoutConstants.NOT_EXPLICITLY_DEFINED,
+                "" // java code string not needed here // NOI18N
+            }, false, true);
         }
 
         @Override
-        public boolean canWrite() {
-            return !isReadOnly();
+        public void setAsText(String str) {
+            if (!setValueFromString(str)) { // something else than Default
+                try {
+                    int size = Integer.parseInt(str);
+                    if (size < 0) {
+                        throw new IllegalArgumentException();
+                    }
+                    setValue(size);
+                }  catch (NumberFormatException e) {
+                    throw new IllegalArgumentException();
+                }
+            }
         }
-    
     }
 
-    class PropertySynchronizer implements PropertyChangeListener {
+    private class PropertySynchronizer implements PropertyChangeListener {
         private String sourcePropertyName;
         private String targetPropertyName;
 
@@ -566,11 +627,11 @@ public class RADVisualComponent extends RADComponent {
             }
         }
     }
-    
+
     /**
      * Property that determines whether the component should be resizable.
      */
-    private class LayoutComponentResizableProperty extends PropertySupport.ReadWrite {
+    private class LayoutComponentResizableProperty extends LProperty {
         private LayoutComponent component;
         private int dimension;
         
@@ -596,7 +657,7 @@ public class RADVisualComponent extends RADComponent {
             }
             return component;
         }
-            
+
         @Override
         public void setValue(Object value) {
             if (!(value instanceof Boolean))
@@ -634,25 +695,73 @@ public class RADVisualComponent extends RADComponent {
         }
 
         @Override
-        public boolean supportsDefaultValue() {
-            return true;
+        Object getDefaultValue() {
+            return Boolean.FALSE;
         }
-        
-        @Override
-        public void restoreDefaultValue() {
-            setValue(Boolean.FALSE);
-        }
-        
-        @Override
-        public boolean isDefaultValue() {
-            return getValue().equals(Boolean.FALSE);
-        }
-
-        @Override
-        public boolean canWrite() {
-            return !isReadOnly();
-        }
-
     }
 
+    /**
+     * Property for specifying layer when the component is in JLayeredPane.
+     */
+    private class LayerProperty extends LProperty {
+        LayerProperty() {
+            super(PROP_LAYER, Integer.TYPE,
+                  NbBundle.getMessage(LayoutSupportManager.class, "PROP_layer"),
+                  NbBundle.getMessage(LayoutSupportManager.class, "HINT_layer"));
+        }
+
+        @Override
+        public Object getValue() {
+            Object value = getAuxValue(PROP_LAYER);
+            if (!(value instanceof Integer)) {
+                value = Integer.valueOf(JLayeredPane.DEFAULT_LAYER);
+            }
+            return value;
+        }
+
+        @Override
+        public void setValue(Object value) {
+            if (!(value instanceof Integer)) {
+                throw new IllegalArgumentException();
+            }
+            Integer oldValue = (Integer) getValue();
+            setAuxValue(PROP_LAYER, value.equals(getDefaultValue()) ? null : value);
+            if (!value.equals(oldValue)) {
+                getNodeReference().firePropertyChangeHelper(getName(), oldValue, value);
+                getFormModel().fireComponentLayoutChanged(RADVisualComponent.this, getName(), oldValue, value);
+            }
+        }
+
+        @Override
+        Object getDefaultValue() {
+            return Integer.valueOf(JLayeredPane.DEFAULT_LAYER);
+        }
+
+        @Override
+        public PropertyEditor getPropertyEditor() {
+            return new LayerPropertyEditor();
+        }
+    }
+
+    private static class LayerPropertyEditor extends EnumEditor {
+        LayerPropertyEditor() {
+            super(new Object[] {
+                "DEFAULT_LAYER", JLayeredPane.DEFAULT_LAYER, "javax.swing.JLayeredPane.DEFAULT_LAYER", // NOI18N
+                "PALETTE_LAYER", JLayeredPane.PALETTE_LAYER, "javax.swing.JLayeredPane.PALETTE_LAYER", // NOI18N
+                "MODAL_LAYER", JLayeredPane.MODAL_LAYER, "javax.swing.JLayeredPane.MODAL_LAYER", // NOI18N
+                "POPUP_LAYER", JLayeredPane.POPUP_LAYER, "javax.swing.JLayeredPane.POPUP_LAYER", // NOI18N
+                "DRAG_LAYER", JLayeredPane.DRAG_LAYER, "javax.swing.JLayeredPane.DRAG_LAYER" // NOI18N
+            }, false, true);
+        }
+
+        @Override
+        public void setAsText(String str) {
+            if (!setValueFromString(str)) { // not one of the known constants
+                try {
+                    setValue(new Integer(Integer.parseInt(str)));
+                } catch (NumberFormatException ex) {
+                }
+            }
+        }
+    }
 }

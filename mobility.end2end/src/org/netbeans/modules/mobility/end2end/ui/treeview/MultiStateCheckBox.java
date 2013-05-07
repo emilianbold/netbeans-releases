@@ -107,6 +107,12 @@ public class MultiStateCheckBox extends JCheckBox {
         }
         
         protected void setState(final State state) {
+            if (!isEnabled()) {
+                other.setArmed(false);
+                setPressed(false);
+                setSelected(false);
+                return;
+            }
             if (state == State.MIXED) {
                 other.setArmed(true);
                 setPressed(true);

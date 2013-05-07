@@ -370,7 +370,6 @@ public class IntroduceParameterTest extends RefactoringTestBase {
                 new File("t/A.java", "package t; public class A {\n"
                 + "    /**\n"
                 + "     * My Test Method\n"
-                + "     * \n"
                 + "     * @param introduced the value of introduced\n"
                 + "     */\n"
                 + "    public static void testMethod(int introduced) {\n"
