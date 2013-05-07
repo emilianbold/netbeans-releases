@@ -43,8 +43,6 @@ package org.netbeans.modules.html.knockout;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.WeakHashMap;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import static org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE;
@@ -52,9 +50,7 @@ import static org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN;
 import static org.netbeans.api.html.lexer.HTMLTokenId.VALUE;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
-import org.netbeans.modules.html.knockout.model.KOModel;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 
@@ -72,12 +68,10 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     private final Language JS_LANGUAGE;
     private final LinkedList<StackItem> stack;
     private String lastTagOpen = null;
-//    private final Map<TokenSequence<HTMLTokenId>, Boolean> initialized;
 
     public KOJsEmbeddingProviderPlugin() {
         JS_LANGUAGE = Language.find(KOUtils.JAVASCRIPT_MIMETYPE); //NOI18N
         this.stack = new LinkedList();
-//        this.initialized = new WeakHashMap<>();
     }
 
     @Override
@@ -102,7 +96,6 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     @Override
     public void endProcessing() {
         stack.clear();
-//        initialized.clear();
         lastTagOpen = null;
     }
 
@@ -113,14 +106,6 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
         switch (tokenSequence.token().id()) {
             case TAG_OPEN:
-//                Boolean initializedVal = initialized.get(tokenSequence);
-//                if (initializedVal == null || !initializedVal) {
-//                    embeddings.add(snapshot.create("var $root = ko.$bindings;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
-//                    embeddings.add(snapshot.create("var $data = $root;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
-//                    embeddings.add(snapshot.create("var $parent = undefined;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
-//                    initialized.put(tokenSequence, Boolean.TRUE);
-//                    processed = true;
-//                }
                 lastTagOpen = tokenText;
                 StackItem top = stack.peek();
                 if (top != null && top.tag.equals(lastTagOpen)) {

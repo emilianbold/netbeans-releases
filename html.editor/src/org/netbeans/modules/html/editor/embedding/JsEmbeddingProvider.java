@@ -262,16 +262,16 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
                     } else if (id == HTMLTokenId.VALUE) {
                         // Found a script src
                         if (foundSrc) {
-                            src = t.toString();
+                            src = t.text().toString();
                         } else {
                             assert foundType;
-                            type = t.toString();
+                            type = t.text().toString();
                         }
                         foundSrc = false;
                         foundType = false;
                     }
                 } else if (id == HTMLTokenId.ARGUMENT) {
-                    String val = t.toString();
+                    String val = t.text().toString();
                     switch (val) {
                         case "src":
                             foundSrc = true;
