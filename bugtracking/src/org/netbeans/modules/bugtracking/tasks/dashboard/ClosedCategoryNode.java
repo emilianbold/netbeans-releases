@@ -79,7 +79,7 @@ public class ClosedCategoryNode extends CategoryNode {
     }
 
     @Override
-    public List<IssueImpl> getTasks() {
+    public List<IssueImpl> getTasks(boolean includingNodeItself) {
         return Collections.emptyList();
     }
 
@@ -93,8 +93,8 @@ public class ClosedCategoryNode extends CategoryNode {
     }
 
     @Override
-    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-        super.configure(component, foreground, background, isSelected, hasFocus);
+    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
+        super.configure(component, foreground, background, isSelected, hasFocus, rowWidth);
         if (panel != null) {
             lblName.setText(DashboardUtils.getCategoryDisplayText(this));
         }

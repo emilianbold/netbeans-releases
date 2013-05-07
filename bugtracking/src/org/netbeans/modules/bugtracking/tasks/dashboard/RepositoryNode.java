@@ -113,7 +113,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
     }
 
     @Override
-    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
         lblName.setText(DashboardUtils.getRepositoryDisplayText(this));
         lblName.setForeground(foreground);
     }

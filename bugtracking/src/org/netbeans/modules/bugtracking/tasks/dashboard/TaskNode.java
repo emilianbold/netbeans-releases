@@ -58,28 +58,28 @@ import org.netbeans.modules.bugtracking.tasks.Category;
 import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
-import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author jpeska
  */
-public class TaskNode extends TreeListNode implements Comparable<TaskNode>, Refreshable{
+public class TaskNode extends TaskContainerNode implements Comparable<TaskNode> {
 
     private IssueImpl task;
     private JPanel panel;
     private TreeLabel lblName;
     private Category category;
     private final TaskListener taskListener;
+    private final Object LOCK = new Object();
 
     public TaskNode(IssueImpl task, TreeListNode parent) {
         // TODO subtasks, it is not in bugtracking API
         //super(task.hasSubtasks(), parent);
-        super(false, parent);
+        super(false, false, parent, DashboardUtils.getTaskAnotatedText(task));
         this.task = task;
         taskListener = new TaskListener();
     }
-    
+
     @Override
     protected void attach() {
         super.attach();
@@ -90,6 +90,57 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode>, Refr
     protected void dispose() {
         super.dispose();
         this.task.removePropertyChangeListener(taskListener);
+    }
+
+    @Override
+    public List<IssueImpl> getTasks(boolean includingNodeItself) {
+        if (includingNodeItself) {
+            List<IssueImpl> l = new ArrayList<IssueImpl>(1);
+            l.add(task);
+            return l;
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    void updateCounts() {
+    }
+
+    @Override
+    boolean isTaskLimited() {
+        return false;
+    }
+
+    @Override
+    void refreshTaskContainer() {
+        task.refresh();
+    }
+
+    @Override
+    protected JComponent createComponent(List<IssueImpl> data) {
+        if (isError()) {
+            setError(false);
+            return null;
+        }
+        updateNodes(data);
+        panel = new JPanel(new GridBagLayout());
+        panel.setOpaque(false);
+        synchronized (LOCK) {
+            labels.clear();
+            buttons.clear();
+
+            lblName = new TreeLabel();
+            panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
+            lblName.setToolTipText(task.getTooltip());
+            labels.add(lblName);
+        }
+        return panel;
+    }
+
+    @Override
+    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
+        super.configure(component, foreground, background, isSelected, hasFocus, rowWidth);
+        lblName.setText(DashboardUtils.getTaskDisplayText(task, lblName, rowWidth, DashboardViewer.getInstance().isTaskNodeActive(this), isSelected || hasFocus));
     }
 
     @Override
@@ -108,20 +159,6 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode>, Refr
 //        Collections.sort(children);
 //        return new ArrayList<TreeListNode>(children);
         return Collections.emptyList();
-    }
-
-    @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
-        if (panel == null) {
-            panel = new JPanel(new GridBagLayout());
-            panel.setOpaque(false);
-            lblName = new TreeLabel();
-            panel.add(lblName, new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 3), 0, 0));
-        }
-        lblName.setText(DashboardUtils.getTaskDisplayString(task, lblName, rowWidth, DashboardViewer.getInstance().isTaskNodeActive(this), isSelected || hasFocus));
-        lblName.setToolTipText(task.getTooltip());
-        lblName.setForeground(foreground);
-        return panel;
     }
 
     @Override
@@ -279,22 +316,13 @@ public class TaskNode extends TreeListNode implements Comparable<TaskNode>, Refr
         return compareNumericId(Integer.parseInt(suffix1), Integer.parseInt(suffix2));
     }
 
-    @Override
-    public void refreshContent() {
-        RequestProcessor.getDefault().post(new Runnable() {
-            @Override
-            public void run() {
-                task.refresh();
-            }
-        });
-    }
-    
     private class TaskListener implements PropertyChangeListener {
+
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)) {
                 fireContentChanged();
             }
         }
-    }    
+    }
 }

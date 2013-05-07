@@ -91,7 +91,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     }
 
     @Override
-    public List<IssueImpl> getTasks() {
+    public List<IssueImpl> getTasks(boolean includingNodeItself) {
         List<IssueImpl> tasks = Collections.emptyList();
         try {
             tasks = new ArrayList<IssueImpl>(category.getTasks());
@@ -118,8 +118,8 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     }
 
     @Override
-    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-        super.configure(component, foreground, background, isSelected, hasFocus);
+    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
+        super.configure(component, foreground, background, isSelected, hasFocus, rowWidth);
         if (panel != null) {
             if (DashboardViewer.getInstance().containsActiveTask(this)) {
                 lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));

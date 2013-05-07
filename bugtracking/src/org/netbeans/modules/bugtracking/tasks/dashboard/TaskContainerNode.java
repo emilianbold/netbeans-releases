@@ -88,7 +88,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         initPaging();
     }
 
-    public abstract List<IssueImpl> getTasks();
+    public abstract List<IssueImpl> getTasks(boolean includingNodeItself);
 
     abstract void updateCounts();
 
@@ -106,7 +106,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
             refreshTaskContainer();
             refresh = false;
         }
-        return getTasks();
+        return getTasks(false);
     }
 
     @Override
@@ -123,7 +123,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
     }
 
     @Override
-    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
         for (JLabel lbl : labels) {
             lbl.setForeground(foreground);
         }
@@ -207,10 +207,10 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
     }
 
     final void updateNodes() {
-        updateNodes(getTasks());
+        updateNodes(getTasks(false));
     }
 
-    final void updateNodes(List<IssueImpl> issues) {
+    final void updateNodes(List<IssueImpl> tasks) {
         synchronized (LOCK) {
             DashboardViewer dashboard = DashboardViewer.getInstance();
             AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
@@ -218,14 +218,14 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
             if (taskListener == null) {
                 taskListener = new TaskListener();
             }
-            taskNodes = new ArrayList<TaskNode>(issues.size());
-            filteredTaskNodes = new ArrayList<TaskNode>(issues.size());
-            for (IssueImpl issue : issues) {
-                issue.addPropertyChangeListener(taskListener);
-                TaskNode taskNode = new TaskNode(issue, this);
+            taskNodes = new ArrayList<TaskNode>(tasks.size());
+            filteredTaskNodes = new ArrayList<TaskNode>(tasks.size());
+            for (IssueImpl task : tasks) {
+                task.addPropertyChangeListener(taskListener);
+                TaskNode taskNode = new TaskNode(task, this);
                 adjustTaskNode(taskNode);
                 taskNodes.add(taskNode);
-                if (appliedFilters.isInFilter(issue)) {
+                if (appliedFilters.isInFilter(task)) {
                     filteredTaskNodes.add(taskNode);
                 }
             }
