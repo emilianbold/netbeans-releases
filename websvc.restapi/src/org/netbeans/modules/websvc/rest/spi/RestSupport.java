@@ -291,6 +291,9 @@ public abstract class RestSupport {
     public synchronized RestServicesModel getRestServicesModel() {
         if (restServicesModel == null) {
             FileObject sourceRoot = MiscUtilities.findSourceRoot(getProject());
+            if (sourceRoot == null) {
+                return null;
+            }
             ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
             if (cpProvider != null) {
                 ClassPath compileCP = cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE);
@@ -487,7 +490,7 @@ public abstract class RestSupport {
      * @throws java.io.IOException
      */
     public WebApp getWebApp() throws IOException {
-        return webXmlUpdater.getWebApp();
+        return webXmlUpdater.findWebApp();
     }
 
     WebXmlUpdater getWebXmlUpdater() {
@@ -634,6 +637,10 @@ public abstract class RestSupport {
             }
         }
         return Collections.emptyList();
+    }
+
+    public boolean hasJerseyServlet() {
+        return WebXmlUpdater.hasRestServletAdaptor(webXmlUpdater.findWebApp());
     }
 
     protected void addJerseySpringJar() throws IOException {

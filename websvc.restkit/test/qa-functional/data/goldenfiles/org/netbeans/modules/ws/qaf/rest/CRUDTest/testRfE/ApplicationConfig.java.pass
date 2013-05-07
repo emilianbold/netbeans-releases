@@ -36,13 +36,13 @@ public class ApplicationConfig extends Application {
      * given list with all resources defined in the project.
      */
     private void addRestResourceClasses(Set<Class<?>> resources) {
-        resources.add(o.n.m.ws.qaf.rest.crud.service.CustomerRESTFacade.class);
-        resources.add(o.n.m.ws.qaf.rest.crud.service.DiscountCodeRESTFacade.class);
-        resources.add(o.n.m.ws.qaf.rest.crud.service.ManufacturerRESTFacade.class);
-        resources.add(o.n.m.ws.qaf.rest.crud.service.MicroMarketRESTFacade.class);
-        resources.add(o.n.m.ws.qaf.rest.crud.service.ProductCodeRESTFacade.class);
-        resources.add(o.n.m.ws.qaf.rest.crud.service.ProductRESTFacade.class);
-        resources.add(o.n.m.ws.qaf.rest.crud.service.PurchaseOrderRESTFacade.class);
+        resources.add(o.n.m.ws.qaf.rest.crud.service.CustomerFacadeREST.class);
+        resources.add(o.n.m.ws.qaf.rest.crud.service.DiscountCodeFacadeREST.class);
+        resources.add(o.n.m.ws.qaf.rest.crud.service.ManufacturerFacadeREST.class);
+        resources.add(o.n.m.ws.qaf.rest.crud.service.MicroMarketFacadeREST.class);
+        resources.add(o.n.m.ws.qaf.rest.crud.service.ProductCodeFacadeREST.class);
+        resources.add(o.n.m.ws.qaf.rest.crud.service.ProductFacadeREST.class);
+        resources.add(o.n.m.ws.qaf.rest.crud.service.PurchaseOrderFacadeREST.class);
     }
     
 }

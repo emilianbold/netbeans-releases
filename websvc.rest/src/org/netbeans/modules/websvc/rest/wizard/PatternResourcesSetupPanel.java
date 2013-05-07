@@ -231,10 +231,16 @@ final class PatternResourcesSetupPanel extends AbstractPanel {
 
                     @Override
                     public void run() {
-                        List<RestApplication> restApplications = restSupport.
-                                getRestApplications();
-                        boolean configured = restApplications != null
-                                && !restApplications.isEmpty();
+                        boolean configured = restSupport.isRestSupportOn();
+                        if (!configured) {
+                            configured = restSupport.hasJerseyServlet();
+                        }
+                        if (!configured) {
+                            List<RestApplication> restApplications = restSupport.
+                                    getRestApplications();
+                            configured = restApplications != null
+                                    && !restApplications.isEmpty();
+                        }
                         configureJaxRsConfigurationPanel(configured, wizard);
                     }
                 }, NbBundle.getMessage(PatternResourcesSetupPanel.class,
