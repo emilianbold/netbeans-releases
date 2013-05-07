@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,70 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cordova.platforms.ios;
- 
-import java.util.logging.Logger;
 
+import com.dd.plist.NSDictionary;
+import com.dd.plist.NSObject;
+import com.dd.plist.XMLPropertyListParser;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+import org.junit.Test;
+import org.xml.sax.SAXException;
 
-public class WebInspectorJNIBinding {
-    
-    private static final Logger LOG = Logger.getLogger(WebInspectorJNIBinding.class.getName());
-    
-    private native void nstart();
+/**
+ *
+ * @author Jan Becicka
+ */
+public class IOSPlatformTest {
 
-    private native void nstop();
-
-    private native String nreceiveMessage(Integer timeout);
-
-    private native void nsendMessage(String xml);
-    
-    private transient int started = 0;
-    
-    private static WebInspectorJNIBinding instance;
-
-    private WebInspectorJNIBinding() {
-        System.loadLibrary("iDeviceNativeBinding");
-    }
-    
-    public static synchronized WebInspectorJNIBinding getDefault() {
-        if (instance==null) {
-            instance = new WebInspectorJNIBinding();
-        }
-        return instance;
+    public IOSPlatformTest() {
     }
 
-    public synchronized void start() {
-        if (started++ < 1) {
-            nstart();
-        } else {
-            LOG.info("WebKit Debugging Service already started");
-        }
+    @Test
+    public void testListing() throws IOException {
+        IOSPlatform platform = new IOSPlatform();
+        System.out.println(platform.getConnectedDevices());
     }
 
-    public synchronized void stop() {
-        if (--started < 1) {
-            nstop();
-        } else {
-            LOG.info("WebKit Debugging Service not started");
-        }
-    }
-
-    public String receiveMessage() {
-        if (started < 1) {
-            LOG.info("WebKit Debugging Service not started");
-            return null;
-        }
-        final String receiveMessage = nreceiveMessage(100);
-        return receiveMessage;
-    }
-
-    public void sendMessage(String message) {
-        if (started < 1) {
-            LOG.info("WebKit Debugging Service not started");
-            return;
-        }
-        nsendMessage(message);
-    }
 }
