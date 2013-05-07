@@ -224,7 +224,7 @@ public final class WebServer {
         private AtomicBoolean stop = new AtomicBoolean(false);
         private ServerSocket sock;
         private int port;
-        private static Map<String, String> mimeTypes = new HashMap<>();
+        private static Map<String, String> mimeTypes = new HashMap<String, String>();
 
         public Server() {
             port = PORT;
