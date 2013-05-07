@@ -749,7 +749,7 @@ public final class ProjectXMLManager {
     /**
      * Replaces all original public packages with the given
      * <code>newPackages</code>. Also removes friend packages if there are any
-     * since those two mutually exclusive.
+     * since those two mutually exclusive. packages ending with .* will be translated to <subpackages> element
      */
     public void replacePublicPackages(Set<String> newPackages) {
         removePublicAndFriends();
@@ -759,9 +759,14 @@ public final class ProjectXMLManager {
 
         insertPublicOrFriend(publicPackagesEl);
 
-            for (String pkg : newPackages) {
-            publicPackagesEl.appendChild(
+        for (String pkg : newPackages) {
+            if (pkg.endsWith(".*")) {
+                publicPackagesEl.appendChild(
+                    createModuleElement(doc, ProjectXMLManager.SUBPACKAGES, pkg.substring(0, pkg.length() - ".*".length())));
+            } else {
+                publicPackagesEl.appendChild(
                     createModuleElement(doc, ProjectXMLManager.PACKAGE, pkg));
+            }
         }
         project.putPrimaryConfigurationData(_confData);
         publicPackages = null; // XXX cleaner would be to listen on changes in helper
@@ -776,7 +781,7 @@ public final class ProjectXMLManager {
      * Replaces all original friends with the given <code>friends</code> with
      * <code>packagesToExpose</code> as exposed packages to those friends. Also
      * removes public packages if there are any since those two are mutually
-     * exclusive.
+     * exclusive. packages ending with .* will be translated to <subpackages> element
      */
     public void replaceFriends(Set<String> friends, Set<String> packagesToExpose) {
         removePublicAndFriends();
@@ -786,8 +791,13 @@ public final class ProjectXMLManager {
         insertPublicOrFriend(friendPackages);
 
         for (String friend : friends) {
-            friendPackages.appendChild(
-                    createModuleElement(doc, ProjectXMLManager.FRIEND, friend));
+            if (friend.endsWith(".*")) {
+                friendPackages.appendChild(
+                    createModuleElement(doc, ProjectXMLManager.SUBPACKAGES, friend.substring(0, friend.length() - ".*".length())));
+            } else {
+                friendPackages.appendChild(
+                    createModuleElement(doc, ProjectXMLManager.PACKAGE, friend));
+            }
         }
         for (String pkg : packagesToExpose) {
             friendPackages.appendChild(

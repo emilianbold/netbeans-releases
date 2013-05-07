@@ -45,23 +45,13 @@ import java.util.Collection;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
- * Provide API for manipulating with project packages.
+ * Provide API for manipulating with project packages. This API is associated with <code>org.netbeans.api.java.queries.AccessibilityQuery</code>.
+ * Packages passed to exportPackageAction method were marked by AccessibilityQuery to be either public or private.
  * @author mkozeny
- * @since 1.47
+ * @since 1.49
  */
 public interface PackageModifierImplementation {
     
-    /**
-     * Returns collection of all available packages to export or to unexport
-     * @return collection of all packages which are possible to export or to unexport
-     */
-    public @NonNull Collection<String> getAllPackages();
-    
-    /**
-     * Returns collection of public packages
-     * @return collection of public packages
-     */
-    public @NonNull Collection<String> getPublicPackages();
     
     /**
      * Do the export or unexport of passed set of packages

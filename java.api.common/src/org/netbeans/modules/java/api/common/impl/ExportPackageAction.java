@@ -47,6 +47,8 @@ import java.util.Collection;
 import java.util.Iterator;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.queries.AccessibilityQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.ant.PackageModifierImplementation;
@@ -68,7 +70,7 @@ import org.openide.util.NbBundle.Messages;
         category = "Project",
         id = "org.netbeans.modules.apisupport.project.ExportPackageAction")
 @ActionRegistration(
-        displayName = "#CTL_ExportPackageAction", lazy = false)
+        displayName = "#CTL_ExportPackageAction", lazy = false, asynchronous = true)
 @ActionReferences({
     @ActionReference(path = "Projects/package/Actions", position = 100),
 })
@@ -104,24 +106,23 @@ public final class ExportPackageAction extends AbstractAction implements Context
                     return new ExportPackageAction.ContextAction();
                 }
             }
-            PackageModifierImplementation pmi = null;
-            if((pmi = project.getLookup().lookup(PackageModifierImplementation.class)) != null) {
-                Collection<String> allPackages = pmi.getAllPackages();
+            PackageModifierImplementation pmi = project.getLookup().lookup(PackageModifierImplementation.class);
+            if(pmi != null) {
                 Collection<String> packagesToExport = new ArrayList<>();
-                String selectedPackageNameIter = "";
-                for(FileObject selectedPkgIter:selectedPackages) {
-                    if(allPackages.contains(
-                            selectedPackageNameIter = selectedPkgIter.getPath()
-                            .substring(project.getProjectDirectory().getPath().length()+5).replace('/', '.'))) {
-                        packagesToExport.add(selectedPackageNameIter);
-                    }
-                }
-                Collection<String> publicPackages = pmi.getPublicPackages();
                 boolean export = false;
-                for(String exportPkgIter:packagesToExport) {
-                    if(!publicPackages.contains(exportPkgIter)) {
-                        export = true;
-                        break;
+                for(FileObject selectedPkgIter : selectedPackages) {
+                    Boolean isPublic = AccessibilityQuery.isPubliclyAccessible(selectedPkgIter);
+                    if (isPublic != null) {
+                        ClassPath cp = ClassPath.getClassPath(selectedPkgIter, ClassPath.SOURCE);
+                        assert cp != null;
+                        String packageName = cp.getResourceName(selectedPkgIter, '.', false);
+                        if (!isPublic) {
+                            export = true;
+                        }
+                        packagesToExport.add(packageName);
+                    }
+                    else {
+                        return new ExportPackageAction.ContextAction();
                     }
                 }
                 return new ExportPackageAction.ContextAction(pmi, packagesToExport, export);
@@ -134,7 +135,6 @@ public final class ExportPackageAction extends AbstractAction implements Context
      * The particular instance of this action for a given package(s).
      */
     private static final class ContextAction extends AbstractAction {
-
         private Collection<String> packagesToExport; 
         private boolean export;
         private PackageModifierImplementation pmi;
@@ -158,7 +158,7 @@ public final class ExportPackageAction extends AbstractAction implements Context
         
         @Override
         public void actionPerformed(ActionEvent evt) {
-            pmi.exportPackageAction(packagesToExport, export);
+            pmi.exportPackageAction(packagesToExport, export); 
         }
         
     }
