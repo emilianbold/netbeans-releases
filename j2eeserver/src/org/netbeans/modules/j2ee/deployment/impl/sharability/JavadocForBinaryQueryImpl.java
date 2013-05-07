@@ -68,7 +68,7 @@ import org.openide.util.ChangeSupport;
  * Implementation of Javadoc query for the library.
  */
 @org.netbeans.api.annotations.common.SuppressWarnings(value="DMI_COLLECTION_OF_URLS", justification="File URLs only")
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class)
+//@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class)
 public class JavadocForBinaryQueryImpl implements JavadocForBinaryQueryImplementation {
 
     private static final String[] CLASSPATH_VOLUMES = new String[] {

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,61 +34,41 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.websvc.rest.nodes;
+package org.netbeans.modules.languages.neon.completion;
 
-import java.io.IOException;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
-import org.openide.util.actions.NodeAction;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
+import org.openide.util.Lookup;
+import org.openide.util.LookupListener;
+import org.openide.util.lookup.Lookups;
 
-public class RestConfigurationAction extends NodeAction  {
+/**
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
+ */
+public class CompletionProviders {
+    public static final String TYPE_COMPLETION_PROVIDER_PATH = "Neon/completion/type"; //NOI18N
+    private static final Lookup.Result<TypeCompletionProvider> TYPE_PROVIDERS = Lookups.forPath(TYPE_COMPLETION_PROVIDER_PATH).lookupResult(TypeCompletionProvider.class);
 
-    public String getName() {
-        return NbBundle.getMessage(RestConfigurationAction.class, "LBL_RestConfigurationAction");
+    private CompletionProviders() {
     }
 
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
+    public static List<TypeCompletionProvider> getTypeProviders() {
+        return new ArrayList<>(TYPE_PROVIDERS.allInstances());
     }
 
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length != 1) {
-            return false;
-        }
-        Project project = activatedNodes[0].getLookup().lookup(Project.class);
-        if ( project== null) {
-            return false;
-        }
-        if (RestUtils.isJavaEE6AndHigher(project)){
-            return false;
-        }
-            
-        return true;
-    }
-    
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        Project project = activatedNodes[0].getLookup().lookup(Project.class);
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if (restSupport != null) {
-            try {
-                restSupport.performRestConfigurationOldWay();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
+    public static void addTypeProviderListener(LookupListener listener) {
+        TYPE_PROVIDERS.addLookupListener(listener);
     }
 
-    @Override
-    public boolean asynchronous() {
-        return true;
+    public static void removeTypeProviderListener(LookupListener listener) {
+        TYPE_PROVIDERS.removeLookupListener(listener);
     }
 
 }
-

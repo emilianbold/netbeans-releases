@@ -110,7 +110,7 @@ public class JaxRsConfigurationPanel extends javax.swing.JPanel implements Chang
             }
         });
     }
-    
+
     /* (non-Javadoc)
      * @see javax.swing.event.ChangeListener#stateChanged(javax.swing.event.ChangeEvent)
      */
@@ -134,8 +134,7 @@ public class JaxRsConfigurationPanel extends javax.swing.JPanel implements Chang
         restAppPackage.setRenderer(PackageView.listRenderer());
         updateSourceGroupPackages();
         
-        Object property = wizard.getProperty( WizardProperties.USE_JERSEY);
-        if ( property!= null && property.toString().equals("true") ){       //
+        if (Boolean.TRUE.equals(wizard.getProperty(WizardProperties.USE_JERSEY))) {
             useJersey.setSelected( true );
         }
         

@@ -43,37 +43,45 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
+<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
     <folder name="Templates">
         <folder name="Project">
             <folder name="Samples">
                 <folder name="PHP">
-                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.samples.Bundle"/>
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.php.samples.Bundle#Templates/Project/Samples/PHP"/>
                     <attr name="position" intvalue="550"/>
                     <file name="TodoList" url="TodoList.zip">
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/samples/icons/TodoList.png"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.samples.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.php.samples.Bundle#Templates/Project/Samples/PHP/TodoList"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/php/samples/icons/TodoList.png"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/TodoList.html"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="position" intvalue="100"/>
                     </file>
                     <file name="RentAFlat-Symfony" url="RentAFlat-Symfony.zip">
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/samples/icons/Rent-a-Flat.png"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.samples.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.php.samples.Bundle#Templates/Project/Samples/PHP/RentAFlat-Symfony"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/php/samples/icons/Rent-a-Flat.png"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/Rent-a-Flat-Symfony.html"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="position" intvalue="200"/>
                     </file>
                     <file name="RentAFlat-Zend" url="RentAFlat-Zend.zip">
-                        <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/samples/icons/Rent-a-Flat.png"/>
-                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.samples.Bundle"/>
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.php.samples.Bundle#Templates/Project/Samples/PHP/RentAFlat-Zend"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/php/samples/icons/Rent-a-Flat.png"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/Rent-a-Flat-Zend.html"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="position" intvalue="300"/>
+                    </file>
+                    <file name="Calculator-PHPUnit" url="Calculator-PHPUnit.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.php.samples.Bundle#Templates/Project/Samples/PHP/Calculator-PHPUnit"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/php/samples/icons/TodoList.png"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/Calculator-PHPUnit.html"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="400"/>
                     </file>
                 </folder>
             </folder>

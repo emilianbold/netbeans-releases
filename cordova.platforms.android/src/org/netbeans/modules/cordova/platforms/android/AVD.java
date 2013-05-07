@@ -156,7 +156,7 @@ public class AVD implements Device {
             String s = ProcessUtils.callProcess(
                     ((AndroidPlatform) getPlatform()).getAdbCommand(), 
                     false, 
-                    5000, 
+                    AndroidPlatform.DEFAULT_TIMEOUT, 
                     isEmulator()?"-d":"-e", 
                     "wait-for-device", 
                     "shell", "am", "start", "-a", "android.intent.action.VIEW", 

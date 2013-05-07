@@ -141,22 +141,29 @@ public class CRUDTest extends RestTestBase {
             jcbo.typeText(getRestPackage() + ".controller"); //NOI18N
         }
         wo.btFinish().requestFocus();
-        wo.btFinish().pushNoBlock();
-        closeResourcesConfDialog();
-        waitForGenerationProgress();
+        wo.btFinish().push();
+        wo.waitClosed();
+        new EventTool().waitNoEvent(1500);
+        waitScanFinished();
 
-        Set<File> files = getFiles(getRestPackage() + ".service"); //NOI18N
-        if (getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
-            files.addAll(getFiles(getRestPackage() + ".controller")); //NOI18N
-            files.addAll(getFiles(getRestPackage() + ".controller.exceptions"));
-        }
-        if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion()) || JavaEEVersion.JAVAEE7.equals(getJavaEEversion())) {
-            // there are no converters in JAVAEE6
-            assertEquals("Some files were not generated", 8, files.size()); //NOI18N
+        String packageName = getRestPackage() + ".service";
+        Set<File> files = getFiles(packageName);
+        Set<File> allFiles = new HashSet<File>(files);
+        if (!getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
+            assertEquals("Missing files in package " + packageName, 9, files.size()); //NOI18N
         } else {
-            assertEquals("Some files were not generated", 18, files.size()); //NOI18N
+            // Java EE 5 -  see http://netbeans.org/bugzilla/show_bug.cgi?id=189723
+            assertEquals("Missing files in package " + packageName, 8, files.size()); //NOI18N
+            packageName = getRestPackage() + ".controller"; //NOI18N
+            files = getFiles(packageName);
+            allFiles.addAll(files);
+            assertEquals("Missing files in package " + packageName, 7, files.size()); //NOI18N
+            packageName = getRestPackage() + ".controller.exceptions"; //NOI18N
+            files = getFiles(packageName);
+            allFiles.addAll(files);
+            assertEquals("Missing files in package " + packageName, 4, files.size()); //NOI18N
         }
-        checkFiles(files);
+        checkFiles(allFiles);
         //make sure all REST services nodes are visible in project log. view
         assertEquals("missing nodes?", 7, getRestNode().getChildren().length);
     }
@@ -217,7 +224,10 @@ public class CRUDTest extends RestTestBase {
         assertEquals("add in available", 7, availableEntities.getModel().getSize()); //NOI18N
         wo.next();
         wo.finish();
-        waitForGenerationProgress();
+        wo.waitClosed();
+        new EventTool().waitNoEvent(1000);
+        waitScanFinished();
+
         Set<File> files = getFilesFromCustomPkg("service", "entity"); //NOI18N
         if (getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
             files.addAll(getFilesFromCustomPkg("controller", "controller.exceptions", "service", "entity")); //NOI18N
@@ -275,7 +285,7 @@ public class CRUDTest extends RestTestBase {
         String title = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.unit.Bundle", "LBL_NewPersistenceUnit");
         WizardOperator wo = new WizardOperator(title);
         new JTextFieldOperator(wo).setText(getProjectName().replace("Mvn", "") + "PU");
-        new JComboBoxOperator(wo, 1).selectItem(1); //NOI18N
+        new JComboBoxOperator(wo, 1).selectItem("jdbc/sample");
         wo.finish();
         new EventTool().waitEvent(2500);
         if (!getProjectType().isAntBasedProject()) {
@@ -367,15 +377,6 @@ public class CRUDTest extends RestTestBase {
             }
         }
         return files;
-    }
-
-    protected void waitForGenerationProgress() {
-        //Generating RESTful Web Services from Entity Classes
-        String restGenTitle = Bundle.getStringTrimmed("org.netbeans.modules.websvc.rest.wizard.Bundle", "LBL_RestSevicicesFromEntitiesProgress");
-        waitDialogClosed(restGenTitle);
-        new EventTool().waitNoEvent(1000);
-        // wait classpath scanning finished
-        waitScanFinished();
     }
 
     /**

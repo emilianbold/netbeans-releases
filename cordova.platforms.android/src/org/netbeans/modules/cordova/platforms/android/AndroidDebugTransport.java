@@ -126,7 +126,7 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
             String s = ProcessUtils.callProcess(
                     ((AndroidPlatform) PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE)).getAdbCommand(), 
                     true, 
-                    5000, 
+                    AndroidPlatform.DEFAULT_TIMEOUT, 
                     "forward", 
                     "tcp:9222", 
                     "localabstract:chrome_devtools_remote"); //NOI18N

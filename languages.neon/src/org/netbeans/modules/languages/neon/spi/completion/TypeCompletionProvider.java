@@ -41,6 +41,10 @@
  */
 package org.netbeans.modules.languages.neon.spi.completion;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
@@ -50,5 +54,14 @@ import org.openide.filesystems.FileObject;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public interface TypeCompletionProvider {
+
     List<String> complete(@NonNull String prefix, @NonNull FileObject fileObject);
+
+    @Retention(RetentionPolicy.SOURCE)
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    public @interface Registration {
+
+        int position() default Integer.MAX_VALUE;
+
+    }
 }

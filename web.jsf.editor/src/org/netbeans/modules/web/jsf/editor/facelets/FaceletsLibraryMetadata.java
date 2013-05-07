@@ -71,7 +71,14 @@ public class FaceletsLibraryMetadata {
     }
 
     public static LibraryMetadata get(String libraryURL){
-        return libMap.get(libraryURL) != null ? libMap.get(libraryURL) : libMap.get(NamespaceUtils.NS_MAPPING.get(libraryURL));
+        LibraryMetadata metadata = libMap.get(libraryURL);
+        if (metadata == null) {
+            String legacyNamespace = NamespaceUtils.NS_MAPPING.get(libraryURL);
+            if (legacyNamespace != null) {
+                metadata = libMap.get(legacyNamespace);
+            }
+        }
+        return metadata;
     }
 
     private static void loadLib(String filePath){

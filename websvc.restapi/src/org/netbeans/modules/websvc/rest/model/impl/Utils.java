@@ -209,7 +209,7 @@ public class Utils {
                 return;
             }
             try {
-                restSupport.ensureRestDevelopmentReady();
+                restSupport.ensureRestDevelopmentReady(RestSupport.RestConfig.IDE);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }

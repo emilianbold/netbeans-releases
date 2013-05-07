@@ -49,26 +49,46 @@ import org.netbeans.modules.php.editor.api.ElementQuery;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@ServiceProvider(service = TypeCompletionProvider.class)
 public class PhpTypeCompletionProvider implements TypeCompletionProvider {
+    private static final PhpTypeCompletionProvider INSTANCE = new PhpTypeCompletionProvider();
+    //@GuardedBy("this")
+    private Set<TypeElement> cachedElements;
+
+    private PhpTypeCompletionProvider() {
+    }
+
+    @TypeCompletionProvider.Registration(position = 100)
+    public static PhpTypeCompletionProvider getInstance() {
+        return INSTANCE;
+    }
 
     @Override
     public List<String> complete(String prefix, FileObject fileObject) {
         List<String> result = new ArrayList<>();
-        ElementQuery.Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(fileObject));
-        Set<TypeElement> types = indexQuery.getTypes(NameKind.prefix(prefix));
-        for (TypeElement typeElement : types) {
+        for (TypeElement typeElement : ElementFilter.forName(NameKind.prefix(prefix)).filter(getElements(fileObject))) {
             result.add(typeElement.getFullyQualifiedName().toString());
         }
         return result;
+    }
+
+    private synchronized Set<TypeElement> getElements(FileObject fileObject) {
+        if (cachedElements == null) {
+            ElementQuery.Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(fileObject));
+            cachedElements = indexQuery.getTypes(NameKind.empty());
+        }
+        return cachedElements;
+    }
+
+    public synchronized void clearCache() {
+        cachedElements = null;
     }
 
 }

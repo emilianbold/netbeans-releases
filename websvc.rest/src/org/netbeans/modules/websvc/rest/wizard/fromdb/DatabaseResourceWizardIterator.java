@@ -281,27 +281,16 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             Set<FileObject> files = getAffectedFiles(generator, helper );
 
             final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-            String restAppPackage = null;
-            String restAppClass = null;
+            String restAppPackage = (String) wizard.getProperty(WizardProperties.APPLICATION_PACKAGE);
+            String restAppClass = (String) wizard.getProperty(WizardProperties.APPLICATION_CLASS);
             
             handle.progress(NbBundle.getMessage(EntityResourcesIterator.class,
                     "MSG_EnableRestSupport"));                  // NOI18N     
             
-            Object useJersey = wizard.getProperty(WizardProperties.USE_JERSEY);
-            if ( useJersey != null && useJersey.toString().equals("true")){     // NOI18N 
-                restSupport.enableRestSupport( RestSupport.RestConfig.DD);
-            }
-            else {
-                restAppPackage = (String) wizard
-                        .getProperty(WizardProperties.APPLICATION_PACKAGE);
-                restAppClass = (String) wizard
-                        .getProperty(WizardProperties.APPLICATION_CLASS);
-                if (restAppPackage != null && restAppClass != null) {
-                    restSupport.enableRestSupport(RestSupport.RestConfig.IDE);
-                }
-            }
+            boolean useJersey = Boolean.TRUE.equals(wizard.getProperty(WizardProperties.USE_JERSEY));
             if ( restSupport!= null ){
-                restSupport.ensureRestDevelopmentReady();
+                restSupport.ensureRestDevelopmentReady(useJersey ?
+                        RestSupport.RestConfig.DD : RestSupport.RestConfig.IDE);
             }
             
             final Set<String> entities = Util.getEntities(project, files);
@@ -345,7 +334,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
                 // create application config class if required
                 final FileObject restAppPack = restAppPackage == null ? null :  
                     SourceGroupSupport.getFolderForPackage(targetSourceGroup, restAppPackage, true);
-                if ( restAppPack != null && restAppClass!= null ){
+                if ( restAppPack != null && restAppClass!= null && !useJersey) {
                     RestUtils.createApplicationConfigClass( restAppPack, restAppClass);
                 }
                 
