@@ -42,9 +42,10 @@
  */
 package org.netbeans.modules.websvc.rest.nodes;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.logging.Level;
@@ -53,26 +54,28 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
+import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 
 /**
  * @author ads
  *
  */
-class RestServiceChildFactory extends ChildFactory {
+class RestServiceChildFactory extends ChildFactory implements PropertyChangeListener {
     
     private static final Logger LOG = Logger.getLogger( 
             RestServiceChildFactory.class.getName() );
-    
-    RestServiceChildFactory( Project project){
+
+    RestServiceChildFactory(Project project, RestSupport restSupport) {
         this.project = project;
+        if (restSupport != null) {
+            restSupport.getRestServicesModel().addPropertyChangeListener(this);
+        }
     }
 
     /* (non-Javadoc)
@@ -85,7 +88,7 @@ class RestServiceChildFactory extends ChildFactory {
             RestServicesModel model = getModel();
             assert model != null : "null model"; // NOI18N
             if (model != null) {
-                model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>()
+                model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>()
                 {
 
                     @Override
@@ -95,8 +98,12 @@ class RestServiceChildFactory extends ChildFactory {
                         RestServiceDescription[] restServiceDescription = 
                             metadata.getRoot().getRestServiceDescription();
                         Arrays.sort(restServiceDescription, COMPARATOR);
-
-                        keys.addAll( Arrays.asList( restServiceDescription ));
+                        for (RestServiceDescription r : restServiceDescription) {
+                            // ignore REST services for which we do not have sources (#216168, #229168):
+                            if (r.getFile() != null) {
+                                keys.add(r);
+                            }
+                        }
                         return null;
                     }
                 });
@@ -124,6 +131,13 @@ class RestServiceChildFactory extends ChildFactory {
             return support.getRestServicesModel();
         }
         return null;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (RestServices.PROP_SERVICES.equals(evt.getPropertyName())) {
+            refresh(false);
+        }
     }
     
     private static class RSDescriptionComparator implements Comparator<RestServiceDescription>{

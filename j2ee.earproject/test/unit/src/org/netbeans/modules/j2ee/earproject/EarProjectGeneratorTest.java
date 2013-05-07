@@ -161,7 +161,7 @@ public class EarProjectGeneratorTest extends NbTestCase {
     public void testCreateProjectJavaEE5() throws Exception {
         File prjDirF = new File(getWorkDir(), "EARProject");
         AntProjectHelper aph = EarProjectGenerator.createProject(prjDirF, "test-project",
-                Profile.JAVA_EE_5, TestUtil.SERVER_URL, "1.5", null, null);
+                Profile.JAVA_EE_5, TestUtil.SERVER_URL, "1.5", null);
         assertNotNull(aph);
         FileObject prjDirFO = aph.getProjectDirectory();
         for (String file : CREATED_FILES) {
@@ -187,7 +187,7 @@ public class EarProjectGeneratorTest extends NbTestCase {
     public void testCreateProjectJ2EE14() throws Exception {
         File prjDirF = new File(getWorkDir(), "EARProject");
         AntProjectHelper aph = EarProjectGenerator.createProject(prjDirF, "test-project",
-                Profile.J2EE_14, TestUtil.SERVER_URL, "1.4", null, null);
+                Profile.J2EE_14, TestUtil.SERVER_URL, "1.4", null);
         assertNotNull(aph);
         FileObject prjDirFO = aph.getProjectDirectory();
         for (String file : CREATED_FILES) {
@@ -208,7 +208,7 @@ public class EarProjectGeneratorTest extends NbTestCase {
         File prjDirF = new File(getWorkDir(), "EARProject");
         AntProjectHelper helper = EarProjectGenerator.importProject(prjDirF, prjDirF,
                 "test-project-ext-src", Profile.JAVA_EE_5, TestUtil.SERVER_URL, null,
-                "1.5", Collections.<FileObject, ModuleType>emptyMap(), null, null);
+                "1.5", Collections.<FileObject, ModuleType>emptyMap(), null);
         assertNotNull(helper);
         FileObject prjDirFO = FileUtil.toFileObject(prjDirF);
         for (String createdFile : CREATED_FILES_EXT_SOURCES) {
@@ -238,7 +238,7 @@ public class EarProjectGeneratorTest extends NbTestCase {
     public void testProjectNameIsSet() throws Exception { // #73930
         File prjDirF = new File(getWorkDir(), "EARProject");
         EarProjectGenerator.createProject(prjDirF, "test-project",
-                Profile.JAVA_EE_5, TestUtil.SERVER_URL, "1.5", null, null);
+                Profile.JAVA_EE_5, TestUtil.SERVER_URL, "1.5", null);
         // test also build
         final File buildXML = new File(prjDirF, "build.xml");
         String projectName = ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<String>() {
@@ -255,7 +255,7 @@ public class EarProjectGeneratorTest extends NbTestCase {
     public void testProjectNameIsEscaped() throws Exception {
         final File prjDirF = new File(getWorkDir(), "EARProject");
         EarProjectGenerator.createProject(prjDirF, "test project",
-                Profile.JAVA_EE_5, TestUtil.SERVER_URL, "1.5", null, null);
+                Profile.JAVA_EE_5, TestUtil.SERVER_URL, "1.5", null);
         // test build.xml
         String buildXmlProjectName = ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<String>() {
             public String run() throws Exception {

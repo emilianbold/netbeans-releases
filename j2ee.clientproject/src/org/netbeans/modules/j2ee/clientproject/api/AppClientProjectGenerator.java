@@ -134,14 +134,14 @@ public class AppClientProjectGenerator {
     public static AntProjectHelper createProject(File dir, final String name, 
             final String mainClass, final String j2eeLevel, 
             final String serverInstanceID) throws IOException {
-        return createProject(dir, name, mainClass, j2eeLevel, serverInstanceID, null, null);
+        return createProject(dir, name, mainClass, j2eeLevel, serverInstanceID, null);
     }
 
     @Deprecated
     public static AntProjectHelper createProject(File dir, final String name, 
             final String mainClass, final String j2eeLevel, 
-            final String serverInstanceID, final String librariesDefinition,
-            final String serverLibraryName) throws IOException {
+            final String serverInstanceID, final String librariesDefinition
+            ) throws IOException {
 
         AppClientProjectCreateData createData = new AppClientProjectCreateData();
         createData.setProjectDir(dir);
@@ -150,7 +150,6 @@ public class AppClientProjectGenerator {
         createData.setJavaEEProfile(Profile.fromPropertiesString(j2eeLevel));
         createData.setServerInstanceID(serverInstanceID);
         createData.setLibrariesDefinition(librariesDefinition);
-        createData.setServerLibraryName(serverLibraryName);
         return createProject(createData);
     }
 
@@ -202,13 +201,10 @@ public class AppClientProjectGenerator {
             DDHelper.createBeansXml(j2eeProfile, confRoot);
         }
         
-        final String realServerLibraryName = configureServerLibrary(createData.getLibrariesDefinition(),
-                serverInstanceID, projectDir, createData.getServerLibraryName() != null);
-        
         final AntProjectHelper h = setupProject(projectDir, name,
                 DEFAULT_SRC_FOLDER, DEFAULT_TEST_FOLDER,
                 null, null, null, mainClass, j2eeProfile,
-                serverInstanceID, createData.getLibrariesDefinition(), realServerLibraryName,
+                serverInstanceID, createData.getLibrariesDefinition(), 
                 createData.skipTests());
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
@@ -263,14 +259,14 @@ public class AppClientProjectGenerator {
             final File libFolder, final String j2eeLevel, final String serverInstanceID) throws IOException {
         
         return importProject(dir, name, sourceFolders, testFolders, confFolder,
-                libFolder, j2eeLevel, serverInstanceID, null, null);
+                libFolder, j2eeLevel, serverInstanceID, null);
     }
 
     @Deprecated
     public static AntProjectHelper importProject(final File dir, final String name,
             final File[] sourceFolders, final File[] testFolders, final File confFolder, 
             final File libFolder, final String j2eeLevel, final String serverInstanceID,
-            final String librariesDefinition, final String serverLibraryName) throws IOException {
+            final String librariesDefinition) throws IOException {
 
         AppClientProjectCreateData createData = new AppClientProjectCreateData();
         createData.setProjectDir(dir);
@@ -282,7 +278,6 @@ public class AppClientProjectGenerator {
         createData.setJavaEEProfile(Profile.fromPropertiesString(j2eeLevel));
         createData.setServerInstanceID(serverInstanceID);
         createData.setLibrariesDefinition(librariesDefinition);
-        createData.setServerLibraryName(serverLibraryName);
         return importProject(createData);
     }
 
@@ -312,13 +307,10 @@ public class AppClientProjectGenerator {
 
         assert sourceFolders != null && testFolders != null: "Package roots can't be null";   //NOI18N
         
-        final String realServerLibraryName = configureServerLibrary(createData.getLibrariesDefinition(),
-                serverInstanceID, projectDir, createData.getServerLibraryName() != null);
-        
         final AntProjectHelper h = setupProject(projectDir, name, null, null,
                 confFolder, createData.getLibFolder(),
                 null, null, j2eeProfile, serverInstanceID, createData.getLibrariesDefinition(), 
-                realServerLibraryName, createData.skipTests());
+                createData.skipTests());
         
         final AppClientProject p = (AppClientProject) ProjectManager.getDefault().findProject(projectDir);
         final ReferenceHelper refHelper = p.getReferenceHelper();
@@ -447,26 +439,6 @@ public class AppClientProjectGenerator {
         SharabilityUtility.makeSureProjectHasCopyLibsLibrary(h, rh);
     }
     
-    private static String configureServerLibrary(final String librariesDefinition,
-            final String serverInstanceId, final FileObject projectDir, final boolean serverLibrary) {
-
-        String serverLibraryName = null;
-        if (librariesDefinition != null && serverLibrary) {
-            try {
-                serverLibraryName = ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<String>() {
-                    public String run() throws Exception {
-                        return SharabilityUtility.findOrCreateLibrary(
-                                PropertyUtils.resolveFile(FileUtil.toFile(projectDir), librariesDefinition),
-                                serverInstanceId).getName();
-                    }
-                });
-            } catch (MutexException ex) {
-                Exceptions.printStackTrace(ex.getException());
-            }
-        }
-        return serverLibraryName;
-    }
-    
     /**
      * Imports an existing Application client project into NetBeans project
      * with a flag to specify whether the project contains java source files
@@ -499,11 +471,11 @@ public class AppClientProjectGenerator {
     private static AntProjectHelper setupProject(FileObject dirFO, String name,
             String srcRoot, String testRoot, File configFiles, File libraries,
             String resources, String mainClass, Profile j2eeProfile,
-            String serverInstanceID, String librariesDefinition, String serverLibraryName,
+            String serverInstanceID, String librariesDefinition, 
             boolean skipTests) throws IOException {
 
         Utils.logUI(NbBundle.getBundle(AppClientProjectGenerator.class), "UI_APP_PROJECT_CREATE_SHARABILITY", // NOI18N
-                new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.valueOf(serverLibraryName != null)});
+                new Object[]{Boolean.valueOf(librariesDefinition != null), Boolean.FALSE});
 
         AntProjectHelper h = ProjectGenerator.createProject(dirFO, AppClientProjectType.TYPE, librariesDefinition);
         final AppClientProject prj = (AppClientProject)ProjectManager.getDefault().findProject(h.getProjectDirectory());
@@ -659,13 +631,8 @@ public class AppClientProjectGenerator {
         ep.setProperty(AppClientProjectProperties.J2EE_PLATFORM, j2eeProfile.toPropertiesString());
         ep.setProperty("manifest.file", "${" +AppClientProjectProperties.META_INF + "}/" + MANIFEST_FILE); // NOI18N
         
-        if (h.isSharableProject() && serverLibraryName != null) {
-            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH,
-                    "${libs." + serverLibraryName + "." + "classpath" + "}"); // NOI18N
-        } else {
-            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, "");
-        }        
-        J2EEProjectProperties.setServerProperties(ep, epPriv, serverLibraryName, null, null, serverInstanceID, j2eeProfile, J2eeModule.Type.CAR);
+        ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, "");
+        J2EEProjectProperties.setServerProperties(ep, epPriv, null, null, serverInstanceID, j2eeProfile, J2eeModule.Type.CAR);
         AppClientProjectProperties.generateExtraServerProperty(epPriv);
 
         String mainClassArgs = j2eePlatform.getToolProperty(J2eePlatform.TOOL_APP_CLIENT_RUNTIME, J2eePlatform.TOOL_PROP_MAIN_CLASS_ARGS);

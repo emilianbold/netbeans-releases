@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,35 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ws.qaf.rest;
+package org.netbeans.modules.web.jsf.editor.facelets;
 
-import junit.framework.Test;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
 
 /**
- * Tests REST node in project logical view
  *
- * Duration of this test suite: aprox. 2min
- *
- * @author lukas
+ * @author Martin Fousek <marfous@netbeans.org>
  */
-public class JEE6RestNodeTest extends RestNodeTest {
+public class FaceletsLibraryMetadataTest extends NbTestCase {
 
-    protected static Server server = Server.GLASSFISH;
-
-    public JEE6RestNodeTest(String name) {
-        super(name, server);
+    public FaceletsLibraryMetadataTest(String name) {
+        super(name);
     }
 
-    @Override
-    protected JavaEEVersion getJavaEEversion() {
-        return JavaEEVersion.JAVAEE6;
+    public void testObtainingLibraryMetadata() {
+        // JSF2.2 namespace
+        LibraryMetadata metadata = FaceletsLibraryMetadata.get("http://xmlns.jcp.org/jsf/html");
+        assertNotNull(metadata);
+
+        // legacy namespace
+        metadata = FaceletsLibraryMetadata.get("http://java.sun.com/jsf/html");
+        assertNotNull(metadata);
+
+        // third party library
+        metadata = FaceletsLibraryMetadata.get("http://primefaces.org/ui");
+        assertNull(metadata);
     }
 
-    /**
-     * Creates suite from particular test cases. You can define order of testcases here.
-     */
-    public static Test suite() {
-        return createAllModulesServerSuite(Server.GLASSFISH, JEE6RestNodeTest.class,
-                "testNodesAfterOpen",
-                "testOpenOnResource",
-                "testOpenOnMethod",
-                "testOpenOnLocator",
-                "testAddMethod",
-                "testRemoveMethod",
-                "testCloseProject");
-    }
 }
