@@ -124,7 +124,10 @@ public class CssStylesTCController implements PropertyChangeListener {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            getCssStylesTC().setContext(file);
+                            CssStylesTC cssStylesTC = getCssStylesTC();
+                            if(cssStylesTC != null) {
+                                cssStylesTC.setContext(file);
+                            }
                         }
                     });
 
