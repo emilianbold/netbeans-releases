@@ -130,7 +130,6 @@ public class ImportAppClientProjectWizardIterator implements WizardDescriptor.Pr
         createData.setJavaEEProfile((Profile) wiz.getProperty(ProjectServerWizardPanel.J2EE_LEVEL));
         createData.setLibrariesDefinition(
                 SharabilityUtility.getLibraryLocation((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SHARED_LIBRARIES)));
-        createData.setServerLibraryName((String) wiz.getProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY));
 
         AntProjectHelper h = AppClientProjectGenerator.importProject(createData);
         

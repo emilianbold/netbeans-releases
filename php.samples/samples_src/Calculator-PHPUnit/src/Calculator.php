@@ -1,7 +1,8 @@
+<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +38,57 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ws.qaf.rest;
-
-import junit.framework.Test;
 
 /**
- * Tests REST node in project logical view
- *
- * Duration of this test suite: aprox. 2min
- *
- * @author lukas
+ * Simple class for our unit tests.
  */
-public class JEE6RestNodeTest extends RestNodeTest {
+class Calculator {
 
-    protected static Server server = Server.GLASSFISH;
-
-    public JEE6RestNodeTest(String name) {
-        super(name, server);
-    }
-
-    @Override
-    protected JavaEEVersion getJavaEEversion() {
-        return JavaEEVersion.JAVAEE6;
+    /**
+     * @assert (0, 0) == 0
+     * @assert (0, 1) == 1
+     * @assert (1, 0) == 1
+     * @assert (1, 1) == 2
+     */
+    public function plus($a, $b) {
+        return $a + $b;
     }
 
     /**
-     * Creates suite from particular test cases. You can define order of testcases here.
+     * @assert (0, 0) == 0
+     * @assert (0, 1) == -1
+     * @assert (1, 0) == 1
+     * @assert (1, 1) == 0
      */
-    public static Test suite() {
-        return createAllModulesServerSuite(Server.GLASSFISH, JEE6RestNodeTest.class,
-                "testNodesAfterOpen",
-                "testOpenOnResource",
-                "testOpenOnMethod",
-                "testOpenOnLocator",
-                "testAddMethod",
-                "testRemoveMethod",
-                "testCloseProject");
+    public function minus($a, $b) {
+        return $a - $b;
     }
+
+    /**
+     * @assert (0, 0) == 0
+     * @assert (0, 1) == 0
+     * @assert (1, 0) == 0
+     * @assert (1, 1) == 1
+     * @assert (3, 2) == 6
+     */
+    public function multiply($a, $b) {
+        return $a * $b;
+    }
+
+    /**
+     * @assert (0, 1) == 0
+     * @assert (1, 1) == 1
+     * @assert (6, 2) == 3
+     */
+    public function divide($a, $b) {
+        if ($b == 0) {
+            throw new InvalidArgumentException('Cannot divide by zero');
+        }
+        return $a / $b;
+    }
+
 }
+
+?>

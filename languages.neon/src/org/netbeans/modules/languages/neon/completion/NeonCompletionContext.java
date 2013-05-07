@@ -45,7 +45,6 @@ import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -82,7 +81,7 @@ public enum NeonCompletionContext {
     }
 
     protected void completeTypes(List<CompletionProposal> completionProposals, NeonCompletionProposal.CompletionRequest request) {
-        Collection<? extends TypeCompletionProvider> typeCompletionProviders = Lookup.getDefault().lookupAll(TypeCompletionProvider.class);
+        Collection<? extends TypeCompletionProvider> typeCompletionProviders = CompletionProviders.getTypeProviders();
         for (TypeCompletionProvider typeCompletionProvider : typeCompletionProviders) {
             List<String> types = typeCompletionProvider.complete(request.prefix, request.parserResult.getSnapshot().getSource().getFileObject());
             for (String typeName : types) {

@@ -134,8 +134,12 @@ public class ViewUpdateCenterAction extends NodeAction {
                             File f = new File(path, "modules"); // NOI18N
                             FileUtil.toFileObject(FileUtil.normalizeFile(f)).refresh();
                         } catch (java.io.IOException ioe) {
-                            needToBeAdmin = true;
-                            displayAdminWarning();
+                            if (!needToBeAdmin) {
+                                needToBeAdmin = true;
+                                displayAdminWarning();
+                            }
+                            Logger.getLogger("glassfish").log(Level.INFO,
+                                    "Cannot start Domain Update Center",ioe); 
                         } catch(Exception ex) {
                             Logger.getLogger("glassfish").log(Level.WARNING, ex.getLocalizedMessage(), ex);
                         }

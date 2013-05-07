@@ -790,12 +790,11 @@ public class Util {
         final Map<String, String> entityNames = new HashMap<String, String>();
         
         //XXX should probably be using MetadataModelReadHelper. needs a progress indicator as well (#113874).
-        try {
             EntityClassScope entityClassScope = EntityClassScope.
                 getEntityClassScope(project.getProjectDirectory());
             MetadataModel<EntityMappingsMetadata> entityMappingsModel = 
                 entityClassScope.getEntityMappingsModel(true);
-            Future<Void> result = entityMappingsModel.runReadActionWhenReady(
+            entityMappingsModel.runReadAction(
                     new MetadataModelAction<EntityMappingsMetadata, Void>() {
 
                 @Override
@@ -806,12 +805,6 @@ public class Util {
                     return null;
                 }
             });
-            result.get();
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
-        }
         return entityNames;
     }
     

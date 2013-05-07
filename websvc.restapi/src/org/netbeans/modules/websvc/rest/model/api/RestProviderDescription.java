@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.websvc.rest.model.api;
 
+import org.openide.filesystems.FileObject;
+
 /**
  *
  */
@@ -48,4 +50,5 @@ public interface RestProviderDescription {
 
     String getClassName();
 
+    FileObject getFile();
 }

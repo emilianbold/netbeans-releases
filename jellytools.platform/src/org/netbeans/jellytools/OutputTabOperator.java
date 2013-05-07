@@ -471,7 +471,7 @@ public class OutputTabOperator extends JComponentOperator {
 
         @Override
         public boolean checkComponent(Component comp) {
-            if (comp.getClass().getName().endsWith("OutputTab") && comp.isShowing()) {  // NOI18N
+            if (comp.getClass().getName().endsWith("OutputTab")) {  // NOI18N
                 return Operator.getDefaultStringComparator().equals(comp.getName(), tabName);
             } else {
                 return false;

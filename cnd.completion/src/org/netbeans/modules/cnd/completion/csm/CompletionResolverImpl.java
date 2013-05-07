@@ -96,6 +96,7 @@ public class CompletionResolverImpl implements CompletionResolver {
     //    public static final int RESOLVE_CLASS_ENUMERATORS       = 1 << 13;
     private int resolveTypes = RESOLVE_NONE;
     private int hideTypes = ~RESOLVE_NONE;
+    private int additionalHideTypes = ~RESOLVE_NONE;
     private CsmFile file;
     private CsmContext context;
     Result result = EMPTY_RESULT;
@@ -162,6 +163,12 @@ public class CompletionResolverImpl implements CompletionResolver {
     public void setResolveTypes(int resolveTypes) {
         this.resolveTypes = resolveTypes;
     }
+    
+    @Override
+    public void setAdditionalHideTypes(int hideTypes) {
+        this.additionalHideTypes = ~hideTypes;
+    }
+    
 
     @Override
     public boolean refresh() {
@@ -197,7 +204,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             System.out.println("context for offset " + offset + " :\n" + context);//NOI18N
         }
         initResolveMask(context, offset, strPrefix, match);
-        this.hideTypes = initHideMask(context, offset, this.resolveTypes, this.queryScope, strPrefix, match, this.inIncludeDirective);
+        this.hideTypes = initHideMask(context, offset, this.resolveTypes, this.queryScope, strPrefix, match, this.inIncludeDirective, this.additionalHideTypes);
         resolveContext(context, offset, strPrefix, match);
         return file != null;
     }
@@ -407,22 +414,29 @@ public class CompletionResolverImpl implements CompletionResolver {
 
                 if (clazz != null) {
                     // get class variables visible in this method
-                    resImpl.classFields = contResolver.getFields(clazz, contextDeclaration, strPrefix, staticContext, match, true, inspectOuterClasses, false);
-                    if (isEnough(strPrefix, match, resImpl.classFields)) {
-                        return true;
+                    if (needClassFields(context, offset)) {
+                        resImpl.classFields = contResolver.getFields(clazz, contextDeclaration, strPrefix, staticContext, match, true, inspectOuterClasses, false);
+                        if (isEnough(strPrefix, match, resImpl.classFields)) {
+                            return true;
+                        }
                     }
 
                     // get class enumerators visible in this method
-                    resImpl.classEnumerators = contResolver.getEnumerators(clazz, contextDeclaration, strPrefix, match, true, inspectOuterClasses, false);
-                    if (isEnough(strPrefix, match, resImpl.classEnumerators)) {
-                        return true;
+                    if (needClassEnumerators(context, offset)) {
+                        resImpl.classEnumerators = contResolver.getEnumerators(clazz, contextDeclaration, strPrefix, match, true, inspectOuterClasses, false);
+                        if (isEnough(strPrefix, match, resImpl.classEnumerators)) {
+                            return true;
+                        }
                     }
 
                     // get class methods visible in this method
-                    resImpl.classMethods = contResolver.getMethods(clazz, contextDeclaration, strPrefix, staticContext, match, true, inspectOuterClasses, false);
-                    if (isEnough(strPrefix, match, resImpl.classMethods)) {
-                        return true;
+                    if (needClassMethods(context, offset)) {
+                        resImpl.classMethods = contResolver.getMethods(clazz, contextDeclaration, strPrefix, staticContext, match, true, inspectOuterClasses, false);
+                        if (isEnough(strPrefix, match, resImpl.classMethods)) {
+                            return true;
+                        }
                     }
+                    
                     if (needNestedClassifiers(context, offset)) {
                         // get class nested classifiers visible in this context
                         resImpl.classesEnumsTypedefs = contResolver.getNestedClassifiers(clazz, contextDeclaration, strPrefix, match, needClasses(context, offset), inspectOuterClasses);
@@ -648,8 +662,9 @@ public class CompletionResolverImpl implements CompletionResolver {
     }
 
     private static int initHideMask(final CsmContext context, final int offset, final int resolveTypes,
-            final QueryScope queryScope, final String strPrefix, boolean match, boolean inIncludeDirective) {
-        int hideTypes = inIncludeDirective ? RESOLVE_MACROS : ~RESOLVE_NONE;
+            final QueryScope queryScope, final String strPrefix, boolean match, boolean inIncludeDirective,
+            final int prevHideTypes) {
+        int hideTypes = inIncludeDirective ? RESOLVE_MACROS : prevHideTypes;
         // do not provide libraries data and global data when just resolve context with empty prefix
         if ((resolveTypes & RESOLVE_CONTEXT) == RESOLVE_CONTEXT && strPrefix.length() == 0) {
             hideTypes &= ~RESOLVE_LIB_ELEMENTS;

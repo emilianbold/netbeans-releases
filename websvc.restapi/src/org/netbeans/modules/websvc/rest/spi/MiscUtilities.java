@@ -301,7 +301,7 @@ public class MiscUtilities {
 
     public static void addInitParam( RestSupport restSupport, String paramName, String value ) {
         try {
-            FileObject ddFO = restSupport.getWebXmlUpdater().getOrCreateWebXml();
+            FileObject ddFO = restSupport.getWebXmlUpdater().getWebXml(false);
             WebApp webApp = restSupport.getWebXmlUpdater().findWebApp();
             if (ddFO == null || webApp == null) {
                 return;

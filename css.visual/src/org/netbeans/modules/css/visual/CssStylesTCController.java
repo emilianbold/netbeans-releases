@@ -83,7 +83,11 @@ public class CssStylesTCController implements PropertyChangeListener {
         reg.addPropertyChangeListener(
                 WeakListeners.propertyChange(this, reg));
         
-        PageInspector.getDefault().addPropertyChangeListener(this);
+        PageInspector pageInspector = PageInspector.getDefault();
+        //can be null if the IDE has weird setup - Lookup.getDefault().lookup(PageInspector.class) returns no instance.
+        if(pageInspector != null) {
+            pageInspector.addPropertyChangeListener(this);
+        }
 
         //called from CssCaretAwareSourceTask constructor when the caret is set to a css source code
         //for the first time, which means if we initialize the window listener now, we won't get the component
@@ -120,7 +124,10 @@ public class CssStylesTCController implements PropertyChangeListener {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            getCssStylesTC().setContext(file);
+                            CssStylesTC cssStylesTC = getCssStylesTC();
+                            if(cssStylesTC != null) {
+                                cssStylesTC.setContext(file);
+                            }
                         }
                     });
 

@@ -176,7 +176,6 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         if (model.getJavaPlatform() != null) {
             createData.setJavaPlatformName(model.getJavaPlatform().getDisplayName());
         }
-        createData.setServerLibraryName(null);
 
         FileObject root = FileUtil.toFileObject(model.getEclipseProjectFolder());
         if (root.getFileObject(webData.webRoot) == null) {

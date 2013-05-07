@@ -167,11 +167,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
     /** Libraries excluded from panel's {@link #jsfLibraries}. Libraries offered as registered in the IDE. */
     private static final Set<String> EXCLUDE_FROM_REGISTERED_LIBS = new HashSet<String>(Arrays.asList(
-            "javaee-web-api-6.0", //NOI18N
-            "javaee-api-6.0", //NOI18N
-            "jsp-compilation", //NOI18N
-            "jsp-compilation-syscp", //NOI18N
-            "javaee-api-5.0")); //NOI18N
+            "jsp-compilation", "jsp-compilation-syscp")); //NOI18N
 
     /**
      * Creates new form JSFConfigurationPanelVisual.
@@ -1843,7 +1839,8 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                     content = library.getContent("classpath"); //NOI18N
                     try {
                         if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION)
-                                && !EXCLUDE_FROM_REGISTERED_LIBS.contains(library.getName())) {
+                                && !EXCLUDE_FROM_REGISTERED_LIBS.contains(library.getName())
+                                && !Util.containsClass(content, JSFUtils.EJB_STATELESS)) {
                             JSFVersion jsfVersion = JSFVersion.forClasspath(content);
                             if (jsfVersion != null) {
                                 jsfLibraries.add(new LibraryItem(library, jsfVersion));

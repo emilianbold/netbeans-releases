@@ -1547,6 +1547,11 @@ abstract public class CsmCompletionQuery {
                                                 CompletionResolver.RESOLVE_LOCAL_CLASSES);
                                     } else {
                                         compResolver.setResolveTypes(CompletionResolver.RESOLVE_CONTEXT);
+                                        if (openingSource) { 
+                                            // Assume that it could not be method because we haven't got unfunished code in this case
+                                            // and there are no parens after current token (otherwise we would be in METHOD_OPEN / METHOD)
+                                            compResolver.setAdditionalHideTypes(CompletionResolver.RESOLVE_CLASS_METHODS);
+                                        }
                                     }
                                     if (resolve(varPos, var, openingSource)) {
                                         if (isConstructor && !var.isEmpty() && !openingSource) {

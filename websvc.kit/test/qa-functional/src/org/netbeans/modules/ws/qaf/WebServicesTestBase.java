@@ -401,7 +401,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                     // open otuput window
                     OutputOperator.invoke();
                     // not display browser on run for Maven projects
-                    if (ProjectType.MAVEN_WEB.equals(getProjectType()) || ProjectType.MAVEN_EJB.equals(getProjectType())) {
+                    if (ProjectType.MAVEN_WEB.equals(getProjectType())) {
                         //Properties
                         String propLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_Properties_Action");
                         new ActionNoBlock(null, propLabel).performPopup(getProjectRootNode());
@@ -498,7 +498,11 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 jcboVersion.selectItem(javaeeVersion.toString());
             } else {
                 // cannot use display name for Maven project
-                if (JavaEEVersion.JAVAEE5.equals(javaeeVersion)) {
+                if (JavaEEVersion.JAVAEE7.equals(javaeeVersion)) {
+                    jcboVersion.selectItem("1.7");
+                } else if (JavaEEVersion.JAVAEE6.equals(javaeeVersion)) {
+                    jcboVersion.selectItem("1.6");
+                } else if (JavaEEVersion.JAVAEE5.equals(javaeeVersion)) {
                     jcboVersion.selectItem("1.5");
                 } else if (JavaEEVersion.J2EE14.equals(javaeeVersion)) {
                     jcboVersion.selectItem("1.4");
@@ -726,7 +730,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         } else {
             //Ant projects
             oto.waitText("(total time: "); //NOI18N
-            if (actionName.contains("clean") && oto.getText().contains("Unable to delete")) {
+            if (actionName.toLowerCase().contains("clean") && oto.getText().contains("Unable to delete")) {
                 // repeat clean if file is locked
                 new EventTool().waitNoEvent(2000);
                 performProjectAction(projectName, actionName);

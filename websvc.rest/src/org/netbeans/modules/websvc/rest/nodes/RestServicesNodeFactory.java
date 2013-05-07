@@ -50,8 +50,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -60,7 +58,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
-import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.model.api.RestServices;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesMetadata;
 import org.netbeans.modules.websvc.rest.model.api.RestServicesModel;
@@ -68,7 +65,6 @@ import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeList;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -100,13 +96,6 @@ public class RestServicesNodeFactory implements NodeFactory {
         private static final String NO_SERVICES = "no_rest_services";   //NOI18N
         private Project project;
         private AtomicReference<String> result = new AtomicReference<String>();
-        private RequestProcessor.Task updateNodeTask =
-                new RequestProcessor("RestServicesNodeFactory-request-processor").create(new Runnable() { //NOI18N
-            @Override
-            public void run() {
-                fireChange();
-            }
-        });
         private RequestProcessor.Task restModelTask =
                 new RequestProcessor("RestServicesModel-request-processor").create(new Runnable() { //NOI18N
             @Override
@@ -114,28 +103,22 @@ public class RestServicesNodeFactory implements NodeFactory {
                 try {
                     RestServicesModel model = getModel();
                     if (model != null) {
-                        final Future<Void> barrier = model.runReadActionWhenReady(new MetadataModelAction<RestServicesMetadata, Void>() {
+                        model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>() {
 
                             @Override
                             public Void run(RestServicesMetadata metadata) throws IOException {
                                 RestServices root = metadata.getRoot();
-
-                                if (root.sizeRestServiceDescription() > 0) {
-                                    result.set(KEY_SERVICES);
-                                } else {
-                                    result.set(NO_SERVICES);
+                                String oldValue;
+                                String newValue = root.sizeRestServiceDescription() > 0 ? KEY_SERVICES : NO_SERVICES;
+                                oldValue = result.getAndSet(newValue);
+                                if (!newValue.equals(oldValue)) {
+                                    fireChange();
                                 }
                                 return null;
                             }
                         });
-                        try {
-                            barrier.get();
-                        } catch (InterruptedException ex) {
-                            Exceptions.printStackTrace(ex);
-                        } catch (ExecutionException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                        fireChange();
+                    } else {
+                        result.set(NO_SERVICES);
                     }
                 } catch (IOException ex) {
                     Logger.getLogger( RestServiceChildFactory.class.getName()).
@@ -151,7 +134,7 @@ public class RestServicesNodeFactory implements NodeFactory {
 
         @Override
         public List<String> keys() {
-            final String keys = result.getAndSet(null);
+            final String keys = result.get();
             if (keys != null) {
                 List<String> tmpResult = new ArrayList<String>();
                 if (KEY_SERVICES.equals(keys)) {
@@ -164,8 +147,12 @@ public class RestServicesNodeFactory implements NodeFactory {
             return Collections.emptyList();
         }
 
-        public RestServicesModel getModel() {
-            RestSupport support = project.getLookup().lookup(RestSupport.class);
+        private RestSupport getRestSupport() {
+            return project.getLookup().lookup(RestSupport.class);
+        }
+
+        private RestServicesModel getModel() {
+            RestSupport support = getRestSupport();
             if (support != null) {
                 return support.getRestServicesModel();
             }
@@ -197,7 +184,7 @@ public class RestServicesNodeFactory implements NodeFactory {
         @Override
         public Node node(String key) {
             if (KEY_SERVICES.equals(key)) {
-                return new RestServicesNode(project);
+                return new RestServicesNode(project, getRestSupport());
             }
             return null;
         }
@@ -220,7 +207,9 @@ public class RestServicesNodeFactory implements NodeFactory {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            updateNodeTask.schedule(100);
+            if (RestServices.PROP_SERVICES.equals(evt.getPropertyName())) {
+                restModelTask.schedule(100);
+            }
         }
     }
 }
