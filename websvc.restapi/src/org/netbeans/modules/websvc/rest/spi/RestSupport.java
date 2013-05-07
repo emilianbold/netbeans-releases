@@ -291,6 +291,9 @@ public abstract class RestSupport {
     public synchronized RestServicesModel getRestServicesModel() {
         if (restServicesModel == null) {
             FileObject sourceRoot = MiscUtilities.findSourceRoot(getProject());
+            if (sourceRoot == null) {
+                return null;
+            }
             ClassPathProvider cpProvider = getProject().getLookup().lookup(ClassPathProvider.class);
             if (cpProvider != null) {
                 ClassPath compileCP = cpProvider.findClassPath(sourceRoot, ClassPath.COMPILE);
