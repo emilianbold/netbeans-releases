@@ -39,40 +39,36 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.neon.processors;
+package org.netbeans.modules.languages.neon.completion;
 
-import java.util.Set;
-import javax.annotation.processing.Processor;
-import javax.annotation.processing.RoundEnvironment;
-import javax.annotation.processing.SupportedAnnotationTypes;
-import javax.annotation.processing.SupportedSourceVersion;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.TypeElement;
-import org.netbeans.modules.languages.neon.completion.CompletionProviders;
+import java.util.ArrayList;
+import java.util.List;
 import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
-import org.openide.filesystems.annotations.LayerGeneratingProcessor;
-import org.openide.filesystems.annotations.LayerGenerationException;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.Lookup;
+import org.openide.util.LookupListener;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@ServiceProvider(service = Processor.class)
-@SupportedSourceVersion(SourceVersion.RELEASE_7)
-@SupportedAnnotationTypes("org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider.Registration")
-public class TypeCompletionProviderProcessor extends LayerGeneratingProcessor {
+public class CompletionProviders {
+    public static final String TYPE_COMPLETION_PROVIDER_PATH = "Neon/completion/type"; //NOI18N
+    private static final Lookup.Result<TypeCompletionProvider> TYPE_PROVIDERS = Lookups.forPath(TYPE_COMPLETION_PROVIDER_PATH).lookupResult(TypeCompletionProvider.class);
 
-    @Override
-    protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
-        for (Element element : roundEnv.getElementsAnnotatedWith(TypeCompletionProvider.Registration.class)) {
-            layer(element)
-                    .instanceFile(CompletionProviders.TYPE_COMPLETION_PROVIDER_PATH, null, TypeCompletionProvider.class)
-                    .intvalue("position", element.getAnnotation(TypeCompletionProvider.Registration.class).position()) //NOI18N
-                    .write();
-        }
-        return true;
+    private CompletionProviders() {
+    }
+
+    public static List<TypeCompletionProvider> getTypeProviders() {
+        return new ArrayList<>(TYPE_PROVIDERS.allInstances());
+    }
+
+    public static void addTypeProviderListener(LookupListener listener) {
+        TYPE_PROVIDERS.addLookupListener(listener);
+    }
+
+    public static void removeTypeProviderListener(LookupListener listener) {
+        TYPE_PROVIDERS.removeLookupListener(listener);
     }
 
 }
