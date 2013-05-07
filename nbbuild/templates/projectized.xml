@@ -98,7 +98,7 @@ This is forbidden as it may lead to accidental usage of JDK 8+ APIs.
 Either run Ant with JDK 7, or set nbjdk.home=&lt;JDK 7 home&gt; in ${user.build.properties}
 (can be set from IDE by opening a module project's Properties dialog and picking the right Java Platform in Libraries).
 You can alternatively set this property in ${.nbbuild.properties} to affect all checkouts on this machine.
-If you are sure you want to build with JDK 6+ anyway, use: -Dpermit.jdk6.builds=true</fail>
+If you are sure you want to build with JDK 8+ anyway, use: -Dpermit.jdk8.builds=true</fail>
     </target>
 
     <target name="-define-custom-javac-task" unless="have-custom-javac-task">
