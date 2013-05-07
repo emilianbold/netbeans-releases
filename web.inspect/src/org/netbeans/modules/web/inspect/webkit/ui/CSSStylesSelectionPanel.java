@@ -72,6 +72,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -101,7 +102,6 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.lib.api.CssColor;
-import org.netbeans.modules.css.visual.api.EditCSSRulesAction;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.Resource;
@@ -163,6 +163,8 @@ public class CSSStylesSelectionPanel extends JPanel {
     private ListView rulePane;
     /** Explorer manager for Style Cascade. */
     private ExplorerManager rulePaneManager;
+    /** Edit CSS Rules action used in rule pane. */
+    private EditCSSRulesAction editCSSRulesAction;
     /** Panel for messages. */
     private JPanel messagePanel;
     /** Label for messages. */
@@ -430,9 +432,10 @@ public class CSSStylesSelectionPanel extends JPanel {
         //add toolbar
         CustomToolbar toolbar = new CustomToolbar();
         final JToggleButton createRuleToggleButton = new JToggleButton();
-        createRuleToggleButton.setAction(EditCSSRulesAction.getDefault());
+        editCSSRulesAction = new EditCSSRulesAction();
+        createRuleToggleButton.setAction(editCSSRulesAction);
         org.openide.awt.Mnemonics.setLocalizedText(createRuleToggleButton, null);
-        createRuleToggleButton.setToolTipText(EditCSSRulesAction.getDefault().getToolTip()); // NOI18N
+        createRuleToggleButton.setToolTipText((String)editCSSRulesAction.getValue(Action.NAME));
         createRuleToggleButton.setFocusable(false);
         createRuleToggleButton.addActionListener(new java.awt.event.ActionListener() {
             @Override
@@ -584,7 +587,7 @@ public class CSSStylesSelectionPanel extends JPanel {
      * @param keepSelection if {@code true} then an attempt to keep the current
      * selection is made, otherwise the selection is cleared.
      */
-    void updateContentImpl(final WebKitPageModel pageModel, final boolean keepSelection) {
+    void updateContentImpl(final WebKitPageModel pageModel, final boolean keepSelection) {        
         if (!EventQueue.isDispatchThread()) {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -597,6 +600,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         inspectedNode = null;
         if (pageModel == null) {
             setDummyRoots();
+            editCSSRulesAction.setActiveNode(null);
         } else {
             List<Node> selection = pageModel.getSelectedNodes();
             int selectionSize = 0;
@@ -651,6 +655,7 @@ public class CSSStylesSelectionPanel extends JPanel {
                     showLabel("CSSStylesSelectionPanel.noElementSelected"); // NOI18N
                 }
             }
+            editCSSRulesAction.setActiveNode((selectionSize == 1) ? knownNode : null);
         }
         revalidate();
         repaint();
