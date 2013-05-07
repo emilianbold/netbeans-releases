@@ -47,9 +47,9 @@ import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector.BugtrackingType;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
+import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector;
+import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector.BugtrackingType;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.jira.repository.JiraRepository;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
         displayName="#LBL_ConnectorName",
         tooltip="#LBL_ConnectorTooltip"
 )    
-public class JiraConnector extends KenaiBugtrackingConnector {
+public class JiraConnector extends TeamBugtrackingConnector {
 
     private static final Logger LOG = Logger.getLogger("org.netbeans.modules.jira.JiraConnector");  //  NOI18N
     private JiraIssueFinder issueFinder;
@@ -125,7 +125,7 @@ public class JiraConnector extends KenaiBugtrackingConnector {
      ******************************************************************************/
     
     @Override
-    public Repository createRepository(KenaiProject project) {
+    public Repository createRepository(TeamProject project) {
         if(project == null || project.getType() != BugtrackingType.JIRA) {
             return null;
         }

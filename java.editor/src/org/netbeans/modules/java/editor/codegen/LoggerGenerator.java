@@ -47,12 +47,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -69,13 +69,11 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.Scope;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
-import org.netbeans.api.java.source.CodeStyle;
 
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
@@ -88,7 +86,6 @@ import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.xml.sax.ext.DeclHandler;
 
 /**
  *
@@ -162,8 +159,9 @@ public class LoggerGenerator implements CodeGenerator {
                         } else {
                             ClassTree cls = (ClassTree) path.getLeaf();
                             CodeStyle cs = CodeStyle.getDefault(component.getDocument());
-                            List<String> names = Utilities.varNamesSuggestions(null, "LOG", null, copy.getTypes(), copy.getElements(), e.getEnclosedElements(), true, cs.getStaticFieldNamePrefix(), cs.getStaticFieldNameSuffix(), cs.preferLongerNames());
-                            VariableTree var = createLoggerField(copy.getTreeMaker(), cls, names.size() > 0 ? names.get(0) : "LOG"); //NOI18N
+                            Set<Modifier> mods = EnumSet.of(Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+                            List<String> names = Utilities.varNamesSuggestions(null, ElementKind.FIELD, mods, "LOG", null, copy.getTypes(), copy.getElements(), e.getEnclosedElements(), cs);
+                            VariableTree var = createLoggerField(copy.getTreeMaker(), cls, names.size() > 0 ? names.get(0) : "LOG", mods); //NOI18N
                             copy.rewrite(cls, GeneratorUtils.insertClassMembers(copy, cls, Collections.singletonList(var), caretOffset));
                         }
                     }
@@ -175,8 +173,7 @@ public class LoggerGenerator implements CodeGenerator {
         }
     }
 
-    private static VariableTree createLoggerField(TreeMaker make, ClassTree cls, CharSequence name) {
-        Set<Modifier> mods = EnumSet.of(Modifier.PRIVATE, Modifier.STATIC, Modifier.FINAL);
+    private static VariableTree createLoggerField(TreeMaker make, ClassTree cls, CharSequence name, Set<Modifier> mods) {
         ModifiersTree modifiers = make.Modifiers(mods, Collections.<AnnotationTree>emptyList());
         final List<ExpressionTree> none = Collections.<ExpressionTree>emptyList();
         IdentifierTree className = make.Identifier(cls.getSimpleName());

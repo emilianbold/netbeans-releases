@@ -70,11 +70,13 @@ public class CordovaPanel extends javax.swing.JPanel {
             ext.setEnabled(phoneGapCheckBox.isSelected());
         update();
         platformsPane.setVisible(false);
+        platformSetup.setVisible(false);
     }
 
     public CordovaPanel() {
         this(null);
         platformsPane.setVisible(true);
+        platformSetup.setVisible(true);
     }
     
     public void setControlsEnabled(boolean enabled) {
@@ -89,7 +91,6 @@ public class CordovaPanel extends javax.swing.JPanel {
     }    
     
     public void update() {
-        platformSetup.setVisible(CordovaPlatform.getDefault().getSdkLocation() == null);
         androidTarget.setVisible(false);
         iosTarget.setVisible(false);
         androidTargetCombo.setVisible(false);

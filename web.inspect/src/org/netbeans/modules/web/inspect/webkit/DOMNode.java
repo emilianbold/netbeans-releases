@@ -62,6 +62,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * DOM node.
@@ -108,12 +109,13 @@ public class DOMNode extends AbstractNode {
      */
     private static Lookup lookupFor(WebKitPageModel model, Node node) {
         Lookup lookup;
+        Project project = model.getProject();
+        DOMSourceElementHandle handle = new DOMSourceElementHandle(node, project);
         String documentURL = node.getDocumentURL();
         if (documentURL == null) {
-            lookup = Lookups.fixed(node);
+            lookup = Lookups.fixed(node, handle);
         } else {
-            Project project = model.getProject();
-            lookup = Lookups.fixed(node, new Resource(project, documentURL));
+            lookup = Lookups.fixed(node, handle, new Resource(project, documentURL));
         }
         return lookup;
     }
@@ -278,7 +280,8 @@ public class DOMNode extends AbstractNode {
         actions.add(SystemAction.get(GoToNodeSourceAction.class));
         for (Action action : org.openide.util.Utilities.actionsForPath(ACTIONS_PATH)) {
             if (action instanceof ContextAwareAction) {
-                action = ((ContextAwareAction)action).createContextAwareInstance(getLookup());
+                Lookup lookup = new ProxyLookup(Lookups.fixed(this), getLookup());
+                action = ((ContextAwareAction)action).createContextAwareInstance(lookup);
             }
             actions.add(action);
         }

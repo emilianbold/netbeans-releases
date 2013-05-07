@@ -169,6 +169,7 @@ public class TopLoggingTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails // see issue #229403
     public void testLogOneLine() throws Exception {
         Logger.getLogger(TopLoggingTest.class.getName()).log(Level.INFO, "First visible message");
 
@@ -188,6 +189,7 @@ public class TopLoggingTest extends NbTestCase {
 
     }
 
+    @RandomlyFails // see issue #229403
     public void testComposesMessagesAsynchronously() throws Exception {
         LogRecord r = new LogRecord(Level.INFO, "First visible message: {0}");
         ForbiddenToString f = new ForbiddenToString();
@@ -252,6 +254,8 @@ public class TopLoggingTest extends NbTestCase {
             fail("There shall be One, Two, Three text in the log:\n" + disk);
         }
     }
+    
+    @RandomlyFails // see issue #229403
     public void testLogMultiLineIsPrintedWithoutTheWarningPrefix() throws Exception {
         Logger.getLogger(TopLoggingTest.class.getName()).log(Level.WARNING, "Some info");
         Logger.getLogger(TopLoggingTest.class.getName()).log(Level.INFO, "Second msg\nand its second line");

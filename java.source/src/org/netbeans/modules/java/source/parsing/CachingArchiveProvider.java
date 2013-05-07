@@ -58,11 +58,11 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Utilities;
 
 
@@ -197,7 +197,7 @@ public final class CachingArchiveProvider {
         }
         synchronized (this) {
             final Pair<File,String> res = mapJarToCtSym(f, root);
-            return res.second != null;
+            return res.second() != null;
         }
 
     }
@@ -233,8 +233,8 @@ public final class CachingArchiveProvider {
                 if (f.isFile()) {
                     final Pair<File,String> resolved = mapJarToCtSym(f, root);
                     return new CachingArchive(
-                            resolved.first,
-                            resolved.second,
+                            resolved.first(),
+                            resolved.second(),
                             cacheFile);
                 }
                 else {

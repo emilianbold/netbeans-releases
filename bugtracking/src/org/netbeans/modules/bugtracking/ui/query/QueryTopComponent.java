@@ -84,13 +84,14 @@ import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.util.NoContentPanel;
 import org.netbeans.modules.bugtracking.util.RepositoryComboSupport;
 import org.openide.awt.Mnemonics;
@@ -489,8 +490,8 @@ public final class QueryTopComponent extends TopComponent
                         return;
                     }
 
-                    if(context != null && BugtrackingUtil.isNbRepository(repo.getUrl())) {
-                        OwnerInfo ownerInfo = KenaiUtil.getOwnerInfo(context);
+                    if(context != null && NBBugzillaUtils.isNbRepository(repo.getUrl())) {
+                        OwnerInfo ownerInfo = TeamUtil.getOwnerInfo(context);
                         if(ownerInfo != null) {
                             query.setContext(ownerInfo);
                         }

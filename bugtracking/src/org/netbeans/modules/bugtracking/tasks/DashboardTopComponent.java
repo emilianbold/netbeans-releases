@@ -67,8 +67,8 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
 import org.openide.awt.ActionReferences;
@@ -97,19 +97,19 @@ preferredID = "DashboardTopComponent")
 public final class DashboardTopComponent extends TopComponent {
 
     private static DashboardTopComponent instance;
-    private ComponentAdapter componentAdapter;
-    private JComponent dashboardComponent;
+    private final ComponentAdapter componentAdapter;
+    private final JComponent dashboardComponent;
     private FilterDocumentListener filterListener;
     private CategoryNameDocumentListener categoryNameListener;
-    private Timer filterTimer;
+    private final Timer filterTimer;
     private ActiveTaskPanel activeTaskPanel;
     private final GridBagConstraints activeTaskConstrains;
     private FilterPanel filterPanel;
     private DisplayTextTaskFilter displayTextTaskFilter = null;
     private CategoryNamePanel categoryNamePanel;
     private NotifyDescriptor categoryNameDialog;
-    private DashboardActiveListener dashboardSelectionListener;
-    private Timer dashboardRefreshTime;
+    private final DashboardActiveListener dashboardSelectionListener;
+    private final Timer dashboardRefreshTime;
     private final DashboardRefresher refresher;
     private final DashboardViewer dashboard;
 
@@ -125,7 +125,7 @@ public final class DashboardTopComponent extends TopComponent {
         }
         dashboard = DashboardViewer.getInstance();
         dashboardComponent = dashboard.getComponent();
-        dashboardRefreshTime = new Timer(20000, new RefreshTimerListener());
+        dashboardRefreshTime = new Timer(10000, new RefreshTimerListener());
         dashboardSelectionListener = new DashboardActiveListener();
         activeTaskConstrains = new GridBagConstraints(0, 1, 2, 1, 1.0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(0, 3, 0, 0), 0, 0);
         componentAdapter = new ComponentAdapter() {
@@ -146,7 +146,7 @@ public final class DashboardTopComponent extends TopComponent {
                 }
             }
         };
-        this.getActionMap().put(Utils.getFindActionMapKey(), filterAction);
+        this.getActionMap().put(DashboardUtils.getFindActionMapKey(), filterAction);
     }
 
     public static synchronized DashboardTopComponent getDefault() {
@@ -222,7 +222,7 @@ public final class DashboardTopComponent extends TopComponent {
         add(filterPanel, new GridBagConstraints(0, 3, 2, 1, 1.0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(0, 1, 0, 0), 0, 0));
 
         add(dashboardComponent, new GridBagConstraints(0, 5, 2, 1, 1.0, 0.8, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(1, 1, 0, 0), 0, 0));
-        RepositoryManager.getInstance().addPropertChangeListener(dashboard);
+        RepositoryRegistry.getInstance().addPropertyChangeListener(dashboard);
 
         addComponentListener(componentAdapter);
         DashboardSettings.getInstance().addPropertyChangedListener(dashboard);
@@ -241,7 +241,7 @@ public final class DashboardTopComponent extends TopComponent {
     @Override
     protected void componentClosed() {
         filterPanel.removeDocumentListener(filterListener);
-        RepositoryManager.getInstance().removePropertChangeListener(dashboard);
+        RepositoryRegistry.getInstance().removePropertyChangeListener(dashboard);
         DashboardSettings.getInstance().removePropertyChangedListener(dashboard);
         filterPanel.clear();
         dashboard.clearFilters();
@@ -310,7 +310,7 @@ public final class DashboardTopComponent extends TopComponent {
         return confirm;
     }
 
-    public void addTask(Issue issue) {
+    public void addTask(IssueImpl issue) {
         addTask(new TaskNode(issue, null));
     }
     
@@ -440,6 +440,7 @@ public final class DashboardTopComponent extends TopComponent {
             if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
                 if (DashboardTopComponent.this == TopComponent.getRegistry().getActivated()) {
                     refresher.setDashboardBusy(true);
+                    dashboardRefreshTime.stop();
                 } else {
                     dashboardRefreshTime.restart();
                 }

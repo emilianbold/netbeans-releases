@@ -52,4 +52,17 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         </folder>
     </folder>
 
+    <folder name="Templates">
+        <folder name="Scripting">
+            <folder name="Tests">
+                <file name="AtoumTest.php" url="nbresloc:/org/netbeans/modules/php/atoum/ui/resources/AtoumTest.php">
+                    <attr name="displayName" bundlevalue="org.netbeans.modules.php.atoum.resources.Bundle#Templates/Scripting/Tests/AtoumTest.php"/>
+                    <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                    <attr name="template" boolvalue="true"/>
+                    <attr name="position" intvalue="2000"/>
+                </file>
+            </folder>
+        </folder>
+    </folder>
+
 </filesystem>

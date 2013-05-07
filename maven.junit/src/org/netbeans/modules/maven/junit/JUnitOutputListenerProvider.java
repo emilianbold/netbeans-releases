@@ -321,6 +321,7 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
     }
 
     private static final Pattern COMPARISON_PATTERN = Pattern.compile(".*expected:<(.*)> but was:<(.*)>$"); //NOI18N
+    private static final Pattern COMPARISON_PATTERN_AFTER_65 = Pattern.compile(".*expected \\[(.*)\\] but found \\[(.*)\\]$"); //NOI18N
 
     static Trouble constructTrouble(@NonNull String type, @NullAllowed String message, @NullAllowed String text, boolean error) {
         Trouble t = new Trouble(error);
@@ -328,7 +329,12 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
             Matcher match = COMPARISON_PATTERN.matcher(message);
             if (match.matches()) {
                 t.setComparisonFailure(new Trouble.ComparisonFailure(match.group(1), match.group(2)));
-            }
+            } else {
+		match = COMPARISON_PATTERN_AFTER_65.matcher(message);
+		if (match.matches()) {
+		    t.setComparisonFailure(new Trouble.ComparisonFailure(match.group(1), match.group(2)));
+		}
+	    }
         }
         if (text != null) {
             String[] strs = StringUtils.split(text, "\n");

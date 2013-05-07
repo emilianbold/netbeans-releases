@@ -47,7 +47,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
@@ -68,6 +67,8 @@ public class KnockoutApplyBindingsInterceptor implements FunctionInterceptor {
     private static final String GLOBAL_KO_OBJECT = "ko"; // NOI18N
 
     private static final String BINDINGS_OBJECT = "$bindings"; // NOI18N
+
+    private static final String GENERATED_FUNCTION_PREFIX = "_L"; //NOI18N
 
     @Override
     public Pattern getNamePattern() {
@@ -116,12 +117,12 @@ public class KnockoutApplyBindingsInterceptor implements FunctionInterceptor {
                 ko.addProperty(BINDINGS_OBJECT, bindings);
             }
 
-//            bindings.addProperty(object.getName(),
-//                    factory.newReference(bindings, object.getName(), OffsetRange.NONE,
-//                    object, false, Collections.<Modifier>emptySet()));
             for (Map.Entry<String, ? extends JsObject> entry : object.getProperties().entrySet()) {
-                bindings.addProperty(entry.getKey(),
-                        factory.newReference(object, entry.getKey(), OffsetRange.NONE, entry.getValue(), false, null));
+                if (!entry.getKey().startsWith(GENERATED_FUNCTION_PREFIX) && !entry.getKey().equals("arguments")) { // NOI18N
+                    // need declared true to store it to index
+                    bindings.addProperty(entry.getKey(),
+                            factory.newReference(object, entry.getKey(), object.getOffsetRange(), entry.getValue(), true, null));
+                }
             }
         }
     }

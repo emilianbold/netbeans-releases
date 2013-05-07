@@ -37,7 +37,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.34</specification-version>
+                        <specification-version>1.49</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -45,7 +45,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.10</specification-version>
+                        <specification-version>1.19</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -69,7 +69,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.36</specification-version>
+                        <specification-version>1.39</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

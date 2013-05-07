@@ -78,11 +78,11 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.platform.JavaPlatformProvider;
 import org.netbeans.modules.java.source.ElementHandleAccessor;
 import org.netbeans.modules.java.source.parsing.FileObjects;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Pair;
 import org.openide.util.Utilities;
 
 /**
@@ -214,7 +214,7 @@ public class ProfileSupportTest extends NbTestCase {
                 public int compare(
                         Pair<ElementHandle<TypeElement>, SourceLevelQuery.Profile> o1,
                         Pair<ElementHandle<TypeElement>, SourceLevelQuery.Profile> o2) {
-                    return o1.first.getBinaryName().compareTo(o2.first.getBinaryName());
+                    return o1.first().getBinaryName().compareTo(o2.first().getBinaryName());
                 }
             });
         }
@@ -352,8 +352,8 @@ public class ProfileSupportTest extends NbTestCase {
 
 
             JP(Pair<File,URL> p) {
-                this.home = FileUtil.toFileObject(p.first);
-                this.boot = ClassPathSupport.createClassPath(p.second);
+                this.home = FileUtil.toFileObject(p.first());
+                this.boot = ClassPathSupport.createClassPath(p.second());
             }
 
 

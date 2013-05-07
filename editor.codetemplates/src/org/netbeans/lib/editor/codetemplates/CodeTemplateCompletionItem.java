@@ -53,8 +53,9 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
@@ -62,9 +63,9 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 /**
  * Code template completion result item.
@@ -76,11 +77,13 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     private static ImageIcon icon;
     
     private final CodeTemplate codeTemplate;
+    private final boolean abbrevBased;
     
     private String rightText;
     
-    public CodeTemplateCompletionItem(CodeTemplate codeTemplate) {
+    public CodeTemplateCompletionItem(CodeTemplate codeTemplate, boolean abbrevBased) {
         this.codeTemplate = codeTemplate;
+        this.abbrevBased = abbrevBased;
     }
     
     private String getLeftText() {
@@ -114,11 +117,19 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
         // Remove the typed part
         Document doc = component.getDocument();
         int caretOffset = component.getSelectionStart();
-        int initMatchLen = getInitialMatchLength(doc, caretOffset, codeTemplate.getParametrizedText());
-        if (initMatchLen > 0) {
+        int prefixLength = 0;
+        try {
+            String ident = Utilities.getIdentifierBefore((BaseDocument)doc, caretOffset);
+            if (ident != null) {
+                prefixLength = ident.length();
+            }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        if (prefixLength > 0) {
             try {
                 // Remove the typed prefix
-                doc.remove(caretOffset - initMatchLen, initMatchLen);
+                doc.remove(caretOffset - prefixLength, prefixLength);
             } catch (BadLocationException ble) {
             }
         }
@@ -131,24 +142,6 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     public boolean instantSubstitution(JTextComponent component) {
         // defaultAction(component);
         return false;
-    }
-    
-    public static int getInitialMatchLength(Document doc, int caretOffset, String text) {
-        int matchLength = Math.min(text.length(), caretOffset);
-        CharSequence docText = DocumentUtilities.getText((org.netbeans.editor.BaseDocument)doc);
-        while (matchLength > 0) {
-            int i;
-            for (i = 1; i < matchLength; i++) {
-                if (docText.charAt(caretOffset - i) != text.charAt(matchLength - i)) {
-                    break;
-                }
-            }
-            if (i == matchLength) {
-                break;
-            }
-            matchLength--;
-        }
-        return matchLength;
     }
     
     public CompletionTask createDocumentationTask() {
@@ -168,6 +161,9 @@ public final class CodeTemplateCompletionItem implements CompletionItem {
     }
 
     public CharSequence getInsertPrefix() {
+        if (abbrevBased) {
+            return codeTemplate.getAbbreviation();
+        }
         String insertPrefix = codeTemplate.getParametrizedText();
         int dollarIndex = insertPrefix.indexOf("${"); // NOI18N
         if (dollarIndex >= 0) {

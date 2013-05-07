@@ -88,7 +88,7 @@ import javax.swing.text.DefaultCaret;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
@@ -170,8 +170,10 @@ public class CommentsPanel extends JPanel {
         DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT);
         String creationTxt = issue.getFieldValue(IssueField.CREATION);
         try {
-            Date creation = dateTimeFormat.parse(creationTxt);
-            creationTxt = format.format(creation);
+            if (!creationTxt.isEmpty()) {
+                Date creation = dateTimeFormat.parse(creationTxt);
+                creationTxt = format.format(creation);
+            }
         } catch (ParseException pex) {
             Bugzilla.LOG.log(Level.INFO, null, pex);
         }
@@ -258,7 +260,7 @@ public class CommentsPanel extends JPanel {
             int index = author.indexOf('@'); // NOI18N
             String userName = (index == -1) ? author : author.substring(0,index);
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            stateLabel = KenaiUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, KenaiUtil.getChatLink(issue.getID()));
+            stateLabel = TeamUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, TeamUtil.getChatLink(issue.getID()));
             if (stateLabel != null) {
                 stateLabel.setText(null);
             }

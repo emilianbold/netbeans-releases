@@ -50,9 +50,9 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.php.api.util.Pair;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Cancellable;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**

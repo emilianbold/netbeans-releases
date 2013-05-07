@@ -176,6 +176,13 @@ public class TableSorter extends AbstractTableModel {
             tableHeader.repaint();
         }
     }
+    /**
+     * Sorts the table after the model has changed. The current sort column and
+     * direction is used.
+     */
+    public final void resortAfterModelChange() {
+	sortingStatusChanged();
+    }
 
     public void setSortingStatus(int column, int status) {
         Directive directive = getDirective(column);
@@ -241,6 +248,10 @@ public class TableSorter extends AbstractTableModel {
 
     public int modelIndex(int viewIndex) {
         return getViewToModel()[viewIndex].modelIndex;
+    }
+    
+    public int viewIndex(int modelIndex) {
+        return getModelToView()[modelIndex];
     }
 
     private int[] getModelToView() {

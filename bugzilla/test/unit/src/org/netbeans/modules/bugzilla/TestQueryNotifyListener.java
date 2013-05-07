@@ -66,8 +66,11 @@ public class TestQueryNotifyListener implements QueryNotifyListener {
     public void started() {
         started = true;
     }
-    public void notifyData(BugzillaIssue issue) {
+    public void notifyDataAdded (BugzillaIssue issue) {
         issues.add(issue);
+    }
+    public void notifyDataRemoved (BugzillaIssue issue) {
+        issues.remove(issue);
     }
     public void finished() {
         finished = true;

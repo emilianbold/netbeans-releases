@@ -50,9 +50,9 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.tasks.Category;
-import org.netbeans.modules.bugtracking.tasks.Utils;
+import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 
@@ -79,7 +79,7 @@ public class ClosedCategoryNode extends CategoryNode {
     }
 
     @Override
-    List<Issue> getTasks() {
+    public List<IssueImpl> getTasks(boolean includingNodeItself) {
         return Collections.emptyList();
     }
 
@@ -93,15 +93,15 @@ public class ClosedCategoryNode extends CategoryNode {
     }
 
     @Override
-    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-        super.configure(component, foreground, background, isSelected, hasFocus);
+    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
+        super.configure(component, foreground, background, isSelected, hasFocus, rowWidth);
         if (panel != null) {
-            lblName.setText(Utils.getCategoryDisplayText(this));
+            lblName.setText(DashboardUtils.getCategoryDisplayText(this));
         }
     }
 
     @Override
-    protected JComponent createComponent(List<Issue> data) {
+    protected JComponent createComponent(List<IssueImpl> data) {
         panel = new JPanel(new GridBagLayout());
         panel.setOpaque(false);
         synchronized (LOCK) {
@@ -112,7 +112,7 @@ public class ClosedCategoryNode extends CategoryNode {
             final JLabel iconLabel = new JLabel(getIcon()); //NOI18N
             iconLabel.setEnabled(false);
             panel.add(iconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-            lblName = new TreeLabel(Utils.getCategoryDisplayText(this));
+            lblName = new TreeLabel(DashboardUtils.getCategoryDisplayText(this));
             labels.add(lblName);
             panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
             panel.add(new JLabel(), new GridBagConstraints(7, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));

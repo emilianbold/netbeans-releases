@@ -93,14 +93,15 @@ public class OccurrencesFinderImpl extends OccurrencesFinder<JsParserResult> {
             cancelled = false;
             return ;
         }
-        Set<OffsetRange> ranges = findOccurrenceRanges(result, caretPosition);
+        int offset = result.getSnapshot().getEmbeddedOffset(caretPosition);
+        Set<OffsetRange> ranges = findOccurrenceRanges(result, offset);
         range2Attribs = new HashMap<OffsetRange, ColoringAttributes>();
         if(cancelled) {
             cancelled = false;
             return ;
         }
         for (OffsetRange offsetRange : ranges) {
-            range2Attribs.put(offsetRange, ColoringAttributes.MARK_OCCURRENCES);
+            range2Attribs.put(ModelUtils.documentOffsetRange(result, offsetRange.getStart(), offsetRange.getEnd()), ColoringAttributes.MARK_OCCURRENCES);
         }
     }
 

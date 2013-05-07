@@ -53,25 +53,32 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.TreeMap;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFileChooser;
+import javax.swing.KeyStroke;
+import org.netbeans.core.options.keymap.api.KeyStrokeUtils;
 import org.netbeans.core.options.keymap.api.ShortcutAction;
 import org.netbeans.core.options.keymap.spi.KeymapManager;
 import org.netbeans.modules.options.keymap.XMLStorage.Attribs;
 import org.openide.ErrorManager;
+import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.WindowManager;
 
 public class ExportShortcutsAction {
@@ -157,7 +164,7 @@ public class ExportShortcutsAction {
         {putValue (Action.NAME, loc ("CTL_Export_Shortcuts_to_HTML_Action"));}
         
         public void actionPerformed (ActionEvent e) {
-            exportShortcutsToHTML ();
+            exportShortcutsOfAllProfilesToHTML ();
         }
     };
     
@@ -167,13 +174,24 @@ public class ExportShortcutsAction {
 
     
     // helper methods ..........................................................
+    public static void exportShortcutsOfProfileToHTML (String profile) {
+	final boolean showSystemSpecificShortcuts = true;
+	exportShortcutsToHTML(new KeymapModel(), Arrays.asList(profile), showSystemSpecificShortcuts);
+    }
+
+    private static void exportShortcutsOfAllProfilesToHTML () {
+	KeymapModel keymapModel = new KeymapModel ();
+	List<String> allProfiles = keymapModel.getProfiles ();
+	final boolean showSystemSpecificShortcuts = false;
+	exportShortcutsToHTML(keymapModel, allProfiles, showSystemSpecificShortcuts);
+    }
     
-    private static void exportShortcutsToHTML () {
+    
+    private static void exportShortcutsToHTML (KeymapModel keymapModel, Collection<String> profiles, boolean displayHumanReadibleShortcuts) {
         // read all shortcuts to keymaps
-        KeymapModel keymapModel = new KeymapModel ();
         Map<String, Map<ShortcutAction, Set<String>>> keymaps = 
                 new TreeMap<String, Map<ShortcutAction, Set<String>>> ();
-        for (String profile: keymapModel.getProfiles ()) {
+        for (String profile: profiles) {
             keymaps.put (
                 profile,
                 keymapModel.getKeymap (profile)
@@ -208,7 +226,7 @@ public class ExportShortcutsAction {
             }
             
             // print body of table
-            exportShortcutsToHTML2 (keymapModel, sb, keymaps);
+            exportShortcutsToHTML2 (keymapModel, sb, keymaps, displayHumanReadibleShortcuts);
             
             XMLStorage.generateFolderEnd (sb, "table", "    ");
             XMLStorage.generateFolderEnd (sb, "body", "  ");
@@ -219,16 +237,21 @@ public class ExportShortcutsAction {
                 "shortcuts.html"
             );
             FileLock fileLock = fo.lock ();
-            try {
-                OutputStream outputStream = fo.getOutputStream (fileLock);
-                OutputStreamWriter writer = new OutputStreamWriter (outputStream);
+            try (OutputStream outputStream = fo.getOutputStream (fileLock);
+                OutputStreamWriter writer = new OutputStreamWriter (outputStream)){
                 writer.write (sb.toString ());
                 writer.close ();
-            } catch (IOException ex) {
+
+		if (fo.canRead() && displayHumanReadibleShortcuts) {
+		    //open generated HTML in external browser
+		    HtmlBrowser.URLDisplayer.getDefault().showURLExternal(fo.toURL());
+		}
+	    } catch (IOException ex) {
                 ErrorManager.getDefault ().notify (ex);
             } finally {
                 fileLock.releaseLock ();
             }
+	    
         } catch (IOException ex) {
             ErrorManager.getDefault ().notify (ex);
         }
@@ -240,7 +263,8 @@ public class ExportShortcutsAction {
     private static void exportShortcutsToHTML2 (
         KeymapModel keymapModel, 
         StringBuffer sb,
-        Map<String, Map<ShortcutAction, Set<String>>> keymaps
+        Map<String, Map<ShortcutAction, Set<String>>> keymaps, 
+	boolean displayHumanReadibleShortcuts
     ) {
         List<String> categories = new ArrayList<String> (keymapModel.getActionCategories ());
         Collections.<String>sort (categories);
@@ -260,7 +284,7 @@ public class ExportShortcutsAction {
             XMLStorage.generateFolderEnd (sb, "tr", "      ");
             
             // print body of one category
-            exportShortcutsToHTML3 (sb, keymapModel, category, keymaps);
+            exportShortcutsToHTML3 (sb, keymapModel, category, keymaps, displayHumanReadibleShortcuts);
         }
     }
 
@@ -271,7 +295,8 @@ public class ExportShortcutsAction {
         StringBuffer sb, 
         KeymapModel keymapModel, 
         String category,
-        Map<String, Map<ShortcutAction, Set<String>>> keymaps
+        Map<String, Map<ShortcutAction, Set<String>>> keymaps, 
+	boolean displayHumanReadibleShortcuts
     ) {
         Set<ShortcutAction> actions = keymapModel.getActions (category);
 
@@ -301,7 +326,7 @@ public class ExportShortcutsAction {
                 Set<String> shortcuts = keymap.get (action);
 
                 XMLStorage.generateFolderStart (sb, "td", attribs, "        ");
-                printShortcuts (shortcuts, sb);
+                printShortcuts (shortcuts, sb, displayHumanReadibleShortcuts);
                 XMLStorage.generateFolderEnd (sb, "td", "        ");
             }
             
@@ -309,7 +334,7 @@ public class ExportShortcutsAction {
         }
     }
     
-    private static void printShortcuts (Set<String> shortcuts, StringBuffer sb) {
+    private static void printShortcuts (Set<String> shortcuts, StringBuffer sb, boolean displayHumanReadibleShortcuts) {
         if (shortcuts == null) {
             sb.append ('-');
             return;
@@ -317,9 +342,43 @@ public class ExportShortcutsAction {
         Iterator<String> it = shortcuts.iterator ();
         while (it.hasNext ()) {
             String shortcut = it.next ();
-            sb.append (shortcut);
+	    if (displayHumanReadibleShortcuts) {
+		//show system specific shortcuts like CTRL-SHIFT-ALT
+		sb.append (portableRepresentationToShortcut(shortcut));
+	    } else {
+		//default: show portable shortcuts like D-O
+		sb.append (shortcut);
+	    }
             if (it.hasNext ()) sb.append (", ");
         }
+    }
+    
+    /**
+     * Converts the portable shortcut representation to a human-readable shortcut
+     * @param portable portable representation (the storage format for shortcuts)
+     * @return human-readable string
+     */
+    static String portableRepresentationToShortcut(String portable) {
+        assert portable != null : "The parameter must not be null"; //NOI18N
+
+        StringBuilder buf = new StringBuilder();
+        String delimiter = " "; //NOI18N
+
+        for(StringTokenizer st = new StringTokenizer(portable, delimiter); st.hasMoreTokens();) { //NOI18N
+            String ks = st.nextToken().trim();
+
+            KeyStroke keyStroke = Utilities.stringToKey(ks);
+
+            if (keyStroke != null) {
+                buf.append(KeyStrokeUtils.getKeyStrokeAsText(keyStroke));
+                if (st.hasMoreTokens())
+                    buf.append(' ');
+            } else {
+                return null;
+            }
+        }
+
+        return buf.toString();
     }
     
     private static void generateLayersXML (

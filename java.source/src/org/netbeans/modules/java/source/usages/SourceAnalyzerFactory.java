@@ -85,6 +85,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -443,7 +444,7 @@ public final class SourceAnalyzerFactory {
                     final String classNameType = className + DocumentUtil.encodeKind(ElementKind.CLASS);
                     final Pair<String,String> name = Pair.<String,String>of(classNameType, null);
                     for (Pair<Symbol,ClassIndexImpl.UsageType> usage : packageAnnotations) {
-                        addUsage(usage.first, name, p, usage.second);
+                        addUsage(usage.first(), name, p, usage.second());
                     }
                     for (CharSequence ident : packageAnnotationIdents) {
                         addIdent(name, ident, p, false);
@@ -641,7 +642,7 @@ public final class SourceAnalyzerFactory {
                                 crossedTopLevel = true;
                             }
                         } else {
-                            resourceName = activeClass.peek().second;
+                            resourceName = activeClass.peek().second();
                         }
                         name = Pair.<String,String>of(classNameType, resourceName);
                         nameFrom = 2;
@@ -663,7 +664,7 @@ public final class SourceAnalyzerFactory {
                 if (className != null) {
                     if (topLevel) {
                         if (topLevels != null) {
-                            topLevels.add (Pair.<String,String>of(className, name.second));
+                            topLevels.add (Pair.<String,String>of(className, name.second()));
                         }
                         try {
                             addAndClearImports(name, p);
@@ -937,8 +938,8 @@ public final class SourceAnalyzerFactory {
         private UsagesData<String> getData (@NonNull final Pair<String,String>owner, @NonNull final Map<Pair<String,String>, UsagesData<String>> map) {
             UsagesData<String> data = map.get(owner);
             if (data == null) {
-                if (owner.first.charAt(owner.first.length()-2) == '.') {    //NOI18N
-                    throw new IllegalArgumentException(owner.first);
+                if (owner.first().charAt(owner.first().length()-2) == '.') {    //NOI18N
+                    throw new IllegalArgumentException(owner.first());
                 }
                 data = new UsagesData<String> (CONVERTOR);
                 map.put(owner,data);

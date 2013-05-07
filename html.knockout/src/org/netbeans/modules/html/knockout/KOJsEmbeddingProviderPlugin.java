@@ -41,43 +41,130 @@
  */
 package org.netbeans.modules.html.knockout;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.WeakHashMap;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
+import static org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE;
+import static org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN;
+import static org.netbeans.api.html.lexer.HTMLTokenId.VALUE;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
+import org.netbeans.modules.html.knockout.model.KOModel;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  * Knockout javascript virtual source extension
  *
- * @author marekfukala
+ * @author mfukala@netbeans.org, phejl@netbeans.org
  */
 @MimeRegistration(mimeType = "text/html", service = JsEmbeddingProviderPlugin.class)
 public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
+    private TokenSequence<HTMLTokenId> tokenSequence;
+    private Snapshot snapshot;
+    private List<Embedding> embeddings;
     private final Language JS_LANGUAGE;
+    private final LinkedList<StackItem> stack;
+    private String lastTagOpen = null;
+//    private final Map<TokenSequence<HTMLTokenId>, Boolean> initialized;
 
     public KOJsEmbeddingProviderPlugin() {
         JS_LANGUAGE = Language.find(KOUtils.JAVASCRIPT_MIMETYPE); //NOI18N
+        this.stack = new LinkedList();
+//        this.initialized = new WeakHashMap<>();
     }
 
     @Override
-    public boolean processToken(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
+//    public boolean startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence, List<Embedding> embeddings) {
+    public boolean startProcessing(Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence, List<Embedding> embeddings) {
+        this.snapshot = snapshot;
+        this.tokenSequence = tokenSequence;
+        this.embeddings = embeddings;
+
+//        KOModel model = KOModel.getModel(parserResult);
+//        if(!model.containsKnockout()) {
+//            return false;
+//        }
+        
+        embeddings.add(snapshot.create("var $root = ko.$bindings;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+        embeddings.add(snapshot.create("var $data = $root;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+        embeddings.add(snapshot.create("var $parent = undefined;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+
+        return true;
+    }
+
+    @Override
+    public void endProcessing() {
+        stack.clear();
+//        initialized.clear();
+        lastTagOpen = null;
+    }
+
+    @Override
+    public boolean processToken() {
         boolean processed = false;
-        switch (ts.token().id()) {
+        String tokenText = tokenSequence.token().text().toString();
+
+        switch (tokenSequence.token().id()) {
+            case TAG_OPEN:
+//                Boolean initializedVal = initialized.get(tokenSequence);
+//                if (initializedVal == null || !initializedVal) {
+//                    embeddings.add(snapshot.create("var $root = ko.$bindings;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+//                    embeddings.add(snapshot.create("var $data = $root;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+//                    embeddings.add(snapshot.create("var $parent = undefined;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+//                    initialized.put(tokenSequence, Boolean.TRUE);
+//                    processed = true;
+//                }
+                lastTagOpen = tokenText;
+                StackItem top = stack.peek();
+                if (top != null && top.tag.equals(lastTagOpen)) {
+                    top.balance++;
+                }
+                break;
+            case TAG_CLOSE:
+                top = stack.peek();
+                if (top != null && top.tag.equals(tokenText)) {
+                    top.balance--;
+                    if (top.balance == 0) {
+                        processed = true;
+                        stack.pop();
+                        embeddings.add(snapshot.create("});\n", KOUtils.JAVASCRIPT_MIMETYPE));  //NOI18N
+                    }
+                }
+                break;
             case VALUE:
-                TokenSequence<KODataBindTokenId> embedded = ts.embedded(KODataBindTokenId.language());
+                TokenSequence<KODataBindTokenId> embedded = tokenSequence.embedded(KODataBindTokenId.language());
+                boolean setData = false;
                 if (embedded != null) {
                     embedded.moveStart();
                     while (embedded.moveNext()) {
+                        if (embedded.token().id() == KODataBindTokenId.KEY) {
+                            if ("with".equals(embedded.token().text().toString()) // NOI18N
+                                    || "foreach".equals(embedded.token().text().toString())) { // NOI18N
+                                embeddings.add(snapshot.create("(function(){\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                                embeddings.add(snapshot.create("var $parent = $data;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                                stack.push(new StackItem(lastTagOpen));
+                                setData = true;
+                            }
+                        }
+                        if (embedded.token().id() == KODataBindTokenId.VALUE) {
+                            if (setData) {
+                                embeddings.add(snapshot.create("var $data = (", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                                embeddings.add(snapshot.create(embedded.offset(), embedded.token().length(), KOUtils.JAVASCRIPT_MIMETYPE));
+                                embeddings.add(snapshot.create(");\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                                setData = false;
+                            }
+                        }
                         if (embedded.embedded(JS_LANGUAGE) != null) {
                             processed = true;
                             //has javascript embedding
                             embeddings.add(snapshot.create("(function(){\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
-                            embeddings.add(snapshot.create("ko.$bindings.", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
 
                             CharSequence seq = embedded.token().text();
                             int emptyLength = 0;
@@ -94,11 +181,23 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                                 embeddings.add(snapshot.create(embedded.offset(), embedded.token().length(), KOUtils.JAVASCRIPT_MIMETYPE));
                             }
 
-                            embeddings.add(snapshot.create("\n});\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                            embeddings.add(snapshot.create(";\n});\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
                         }
                     }
+                    break;
                 }
         }
         return processed;
+    }
+
+    private static class StackItem {
+
+        final String tag;
+        int balance;
+
+        public StackItem(String tag) {
+            this.tag = tag;
+            this.balance = 1;
+        }
     }
 }

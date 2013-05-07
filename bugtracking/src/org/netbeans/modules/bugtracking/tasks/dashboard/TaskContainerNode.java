@@ -52,7 +52,8 @@ import java.util.logging.Level;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.team.ui.util.treelist.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.filter.AppliedFilters;
 import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
@@ -65,7 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author jpeska
  */
-public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
+public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>> implements Refreshable{
 
     private List<TaskNode> taskNodes;
     private List<TaskNode> filteredTaskNodes;
@@ -87,9 +88,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         initPaging();
     }
 
-    abstract List<Issue> getTasks();
-
-    abstract void adjustTaskNode(TaskNode taskNode);
+    public abstract List<IssueImpl> getTasks(boolean includingNodeItself);
 
     abstract void updateCounts();
 
@@ -97,13 +96,17 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
 
     abstract void refreshTaskContainer();
 
+    //override if you need to adjust node during updateNodes method
+    void adjustTaskNode(TaskNode taskNode) {
+    }
+
     @Override
-    protected List<Issue> load() {
+    protected List<IssueImpl> load() {
         if (refresh) {
             refreshTaskContainer();
             refresh = false;
         }
-        return getTasks();
+        return getTasks(false);
     }
 
     @Override
@@ -120,7 +123,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     }
 
     @Override
-    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
         for (JLabel lbl : labels) {
             lbl.setForeground(foreground);
         }
@@ -162,6 +165,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         }
     }
 
+    @Override
     public final void refreshContent() {
         refresh = true;
         initPaging();
@@ -188,7 +192,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
         synchronized (LOCK) {
             int count = 0;
             for (TaskNode taskNode : filteredTaskNodes) {
-                if (taskNode.getTask().getStatus() != Issue.Status.SEEN) {
+                if (taskNode.getTask().getStatus() != IssueStatusProvider.Status.SEEN) {
                     count++;
                 }
             }
@@ -203,10 +207,10 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
     }
 
     final void updateNodes() {
-        updateNodes(getTasks());
+        updateNodes(getTasks(false));
     }
 
-    final void updateNodes(List<Issue> issues) {
+    final void updateNodes(List<IssueImpl> tasks) {
         synchronized (LOCK) {
             DashboardViewer dashboard = DashboardViewer.getInstance();
             AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
@@ -214,14 +218,14 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
             if (taskListener == null) {
                 taskListener = new TaskListener();
             }
-            taskNodes = new ArrayList<TaskNode>(issues.size());
-            filteredTaskNodes = new ArrayList<TaskNode>(issues.size());
-            for (Issue issue : issues) {
-                issue.addPropertyChangeListener(taskListener);
-                TaskNode taskNode = new TaskNode(issue, this);
+            taskNodes = new ArrayList<TaskNode>(tasks.size());
+            filteredTaskNodes = new ArrayList<TaskNode>(tasks.size());
+            for (IssueImpl task : tasks) {
+                task.addPropertyChangeListener(taskListener);
+                TaskNode taskNode = new TaskNode(task, this);
                 adjustTaskNode(taskNode);
                 taskNodes.add(taskNode);
-                if (appliedFilters.isInFilter(issue)) {
+                if (appliedFilters.isInFilter(task)) {
                     filteredTaskNodes.add(taskNode);
                 }
             }
@@ -322,7 +326,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<Issue>> {
 
         @Override
         public void propertyChange(final PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(Issue.EVENT_ISSUE_REFRESHED)) {
+            if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)) {
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {

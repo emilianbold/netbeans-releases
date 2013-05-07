@@ -121,7 +121,7 @@ public class ExecutionEventObject {
         private IOPosition.Position startOffset;
         private IOPosition.Position endOffset;
         private FoldHandle foldHandle;
-        private FoldHandle nestedFoldHandle;
+        private FoldHandle innerOutputFoldHandle;
 
         public Tree(ExecutionEventObject current, ExecutionEventObject.Tree parent) {
             this.startEvent = current;
@@ -173,7 +173,26 @@ public class ExecutionEventObject {
          * @param io InputOutput the output is written to.
          */
         public void startFold(InputOutput io) {
-            this.foldHandle = IOFolding.startFold(io, true);
+            assert foldHandle == null;
+            ExecutionEventObject.Tree parentProject = findParentNodeOfType(ExecutionEvent.Type.MojoStarted);
+            if (parentProject != null) {
+                //in forked environment..
+                assert parentProject.foldHandle != null;
+                this.foldHandle = parentProject.foldHandle.startFold(true);
+                return;
+            }
+            
+            parentProject = findParentNodeOfType(ExecutionEvent.Type.ProjectStarted);
+            if (parentProject == null) {
+                
+                this.foldHandle = IOFolding.startFold(io, true);
+            } else {
+                if (parentProject.foldHandle == null) {
+                    parentProject.startFold(io);
+                }
+                assert parentProject.foldHandle != null;
+                this.foldHandle = parentProject.foldHandle.startFold(true);
+            }
         }
 
         /**
@@ -182,9 +201,9 @@ public class ExecutionEventObject {
          */
         public void finishFold() {
             if (foldHandle != null) {
-                finishNestedFold();
+                finishInnerOutputFold();
                 foldHandle.finish();
-                foldHandle = null;
+//                foldHandle = null;
             }
         }
 
@@ -193,30 +212,44 @@ public class ExecutionEventObject {
          * stacktrace folds in the exec tree. If a nested fold already exists,
          * it will be finished before starting new fold.
          */
-        public void startNestedFold() {
+        public void startInnerOutputFold(InputOutput io) {
+            if (innerOutputFoldHandle != null) {
+                innerOutputFoldHandle.finish();
+            }
             if (foldHandle != null) {
-                if (nestedFoldHandle != null) {
-                    nestedFoldHandle.finish();
-                }
-                nestedFoldHandle = foldHandle.startFold(true);
+                innerOutputFoldHandle = foldHandle.startFold(true);
+            } else {
+                innerOutputFoldHandle = IOFolding.startFold(io, true);
             }
         }
 
         /**
-         * Finish current nested fold created with {@link #startNestedFold()}.
+         * Finish current nested fold created with {@link #startInnerOutputFold()}.
          */
-        public void finishNestedFold() {
-            if (nestedFoldHandle != null) {
-                nestedFoldHandle.finish();
-                nestedFoldHandle = null;
+        public void finishInnerOutputFold() {
+            if (innerOutputFoldHandle != null) {
+                innerOutputFoldHandle.finish();
+                innerOutputFoldHandle = null;
             }
         }
 
         /**
          * Check whether a nested fold exists.
          */
-        public boolean hasNestedFold() {
-            return nestedFoldHandle != null;
+        public boolean hasInnerOutputFold() {
+            return innerOutputFoldHandle != null;
+        }
+
+        public void collapseFold() {
+            if (foldHandle != null) {
+                foldHandle.setExpanded(false);
+            }
+        }
+
+        public void expandFold() {
+            if (foldHandle != null) {
+                foldHandle.setExpanded(true);
+            }
         }
     }
     

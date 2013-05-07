@@ -43,8 +43,6 @@
  */
 package org.netbeans.modules.javafx2.project;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -52,9 +50,7 @@ import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
-import javax.swing.JComponent;
 import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -62,8 +58,6 @@ import javax.swing.text.Document;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.queries.CollocationQuery;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
@@ -83,17 +77,12 @@ import org.openide.util.*;
  * @author Anton Chechel
  * @author Petr Somol
  */
-public class PanelOptionsVisual extends SettingsPanel implements TaskListener, PropertyChangeListener, DocumentListener {
+public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeListener, DocumentListener {
 
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
 
     private static boolean lastMainClassCheck = true; // XXX Store somewhere
-
-    private volatile RequestProcessor.Task task = null;
-    private DetectPlatformTask detectPlatformTask;
-    boolean detectPlatformTaskPerformed = false;
-    private ProgressHandle      progressHandle;
-    
+   
     private final WizardType type;
     private PanelConfigureProject panel;
     
@@ -112,8 +101,6 @@ public class PanelOptionsVisual extends SettingsPanel implements TaskListener, P
         this.panel = panel;
         this.type = type;
 
-        detectPlatformTask = new DetectPlatformTask();
-        
         preInitComponents();
         initComponents();
         postInitComponents();
@@ -667,11 +654,7 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
 
     @Override
     boolean valid(WizardDescriptor settings) {
-        if (task != null) {
-            setBottomPanelAreaVisible(false);
-            return false;
-        }
-        if (task == null && detectPlatformTaskPerformed && !JavaFXPlatformUtils.isJavaFXEnabled(getSelectedPlatform())) {
+        if (!JavaFXPlatformUtils.isJavaFXEnabled(getSelectedPlatform())) {
             setBottomPanelAreaVisible(false);
             settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                 NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.notFXPlatform")); // NOI18N
@@ -721,9 +704,6 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
 
     @Override
     synchronized void read(WizardDescriptor d) {
-        if (task == null) {
-            checkPlatforms();
-        }
     }
 
     @Override
@@ -803,54 +783,6 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
         isPreloaderNameValid = !JavaFXProjectWizardIterator.isIllegalProjectName(name);
         panel.fireChangeEvent();
     }
-
-    private void checkPlatforms() {
-        if (!JavaFXPlatformUtils.isThereAnyJavaFXPlatform()) {
-            task = RequestProcessor.getDefault().create(detectPlatformTask);
-            task.addTaskListener(this);
-            progressPanel.setVisible (true);
-            progressLabel.setVisible (true);
-            
-            progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(PanelOptionsVisual.class,"TXT_SetupFXPlatformProgress")); // NOI18N
-            progressPanel.removeAll();
-            progressPanel.setLayout (new GridBagLayout ());
-            GridBagConstraints c = new GridBagConstraints ();
-            c.gridx = c.gridy = GridBagConstraints.RELATIVE;
-            c.gridheight = c.gridwidth = GridBagConstraints.REMAINDER;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.weightx = 1.0;
-            JComponent pc = ProgressHandleFactory.createProgressComponent(this.progressHandle);
-            ((GridBagLayout)progressPanel.getLayout ()).setConstraints(pc,c);
-            progressPanel.add (pc);
-            progressHandle.start();
-            
-            task.schedule(0);
-        }
-    }
-
-    @Override
-    public synchronized void taskFinished(Task task) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                assert progressHandle != null;
-                progressHandle.finish();
-                progressPanel.setVisible(false);
-                progressLabel.setVisible(false);
-                JavaPlatform platform = detectPlatformTask.getPlatform();
-                if (platform != null) {
-                    platformComboBox.setModel(platformsModel);
-                    // select javafx platform
-                    selectJavaFXEnabledPlatform();
-                }
-                detectPlatformTaskPerformed = true;
-                panel.fireChangeEvent();
-            }
-        });
-        this.task.removeTaskListener(this);
-        this.task = null;
-    }
     
     private class JavaPlatformChangeListener implements PropertyChangeListener {
         @Override
@@ -859,21 +791,4 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
         }
     }
     
-    private class DetectPlatformTask implements Runnable {
-        private JavaPlatform platform = null;
-
-        public JavaPlatform getPlatform() {
-            return platform;
-        }
-
-        @Override
-        public void run() {
-            try {
-                platform = JavaFXPlatformUtils.createDefaultJavaFXPlatform();
-            } catch (Exception ex) {
-                LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ex); // NOI18N
-            }
-        }
-    }
-
 }

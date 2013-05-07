@@ -210,6 +210,18 @@ public class HtmlExtension {
     }
     
     /**
+     * Determines whether the given HTML source represents a piece of web javascript-html application (Knockout, AngularJS,...).
+     * 
+     * TODO: Possibly refactor out along with isCustomXXX() and getCustomXXX() methods to some separate HTML/JS framework API/SPI.
+     * 
+     * @since 2.26
+     * @return true if the html source is a piece a the web application.
+     */
+    public boolean isApplicationPiece(HtmlParserResult result) {
+        return false;
+    }
+    
+    /**
      * Context object for code completion related stuff.
      */
     public static class CompletionContext {

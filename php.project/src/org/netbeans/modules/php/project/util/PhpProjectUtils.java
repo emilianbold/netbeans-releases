@@ -60,7 +60,6 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.editor.indent.api.Reformat;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpSources;
@@ -83,6 +82,7 @@ import org.openide.text.Line;
 import org.openide.text.Line.Set;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.UserQuestionException;
 
 /**

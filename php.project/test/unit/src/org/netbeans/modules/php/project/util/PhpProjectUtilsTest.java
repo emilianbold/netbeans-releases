@@ -50,7 +50,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import static org.junit.Assert.*;
-import org.netbeans.modules.php.api.util.Pair;
+import org.openide.util.Pair;
 
 public class PhpProjectUtilsTest extends NbTestCase {
 

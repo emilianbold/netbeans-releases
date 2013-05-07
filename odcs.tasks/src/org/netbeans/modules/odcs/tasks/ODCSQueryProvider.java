@@ -44,8 +44,8 @@ package org.netbeans.modules.odcs.tasks;
 import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiQueryProvider;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.team.spi.TeamQueryProvider;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
@@ -55,7 +55,7 @@ import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
  *
  * @author Tomas Stupka
  */
-public class ODCSQueryProvider extends KenaiQueryProvider<ODCSQuery, ODCSIssue> {
+public class ODCSQueryProvider extends TeamQueryProvider<ODCSQuery, ODCSIssue> {
 
     @Override
     public String getDisplayName(ODCSQuery q) {

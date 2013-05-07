@@ -188,6 +188,7 @@ public class BatchSearchTest extends NbTestCase {
         assertEquals(golden, snipets);
     }
 
+    @RandomlyFails
     public void testBatchSearchNotIndexed() throws Exception {
         writeFilesAndWaitForScan(src1,
                                  new File("test/Test1.java", "package test; public class Test1 { private void test() { java.io.File f = null; f.isDirectory(); } }"),

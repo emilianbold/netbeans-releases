@@ -108,6 +108,7 @@ public class FmtNaming extends javax.swing.JPanel implements Runnable {
     public FmtNaming() {
         initComponents();
         preferLongerNamesCheckBox.putClientProperty(OPTION_ID, preferLongerNames);
+        preferLongerNamesCheckBox.setVisible(false);
         isForBooleanGettersCheckBox.putClientProperty(OPTION_ID, useIsForBooleanGetters);
         fieldPrefixField.putClientProperty(OPTION_ID, fieldNamePrefix);
         fieldSuffixField.putClientProperty(OPTION_ID, fieldNameSuffix);

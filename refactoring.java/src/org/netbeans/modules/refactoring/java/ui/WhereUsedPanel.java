@@ -57,11 +57,11 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.refactoring.api.Scope;
-import org.netbeans.modules.refactoring.java.Pair;
 import org.netbeans.modules.refactoring.spi.ui.CustomRefactoringPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.Pair;
 import org.openide.util.lookup.Lookups;
 
 

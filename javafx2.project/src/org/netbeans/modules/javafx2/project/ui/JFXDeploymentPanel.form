@@ -249,10 +249,14 @@
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
               <ResourceString bundle="org/netbeans/modules/javafx2/project/ui/Bundle.properties" key="JFXDeploymentPanel.warningSigning.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
+            <Property name="preferredSize" type="java.awt.Dimension" editor="org.netbeans.beaninfo.editors.DimensionEditor">
+              <Dimension value="[526, 25]"/>
+            </Property>
+            <Property name="verticalTextPosition" type="int" value="1"/>
           </Properties>
           <Constraints>
             <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
-              <GridBagConstraints gridX="0" gridY="5" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="1" insetsTop="0" insetsLeft="36" insetsBottom="0" insetsRight="0" anchor="23" weightX="0.1" weightY="0.0"/>
+              <GridBagConstraints gridX="0" gridY="5" gridWidth="0" gridHeight="1" fill="2" ipadX="0" ipadY="1" insetsTop="0" insetsLeft="36" insetsBottom="9" insetsRight="0" anchor="23" weightX="0.1" weightY="0.0"/>
             </Constraint>
           </Constraints>
         </Component>

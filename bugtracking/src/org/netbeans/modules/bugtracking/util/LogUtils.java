@@ -50,7 +50,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 
 /**
@@ -80,7 +80,7 @@ public final class LogUtils {
      *  <li>connector name : String
      *  <li>query name : String
      *  <li>issues count : Integer
-     *  <li>is a kenai query : Boolean
+     *  <li>is a team server query : Boolean
      *  <li>is a automatic refresh : Boolean
      * </ol>
      */
@@ -90,14 +90,14 @@ public final class LogUtils {
 
     private static Set<String> loggedParams; // to avoid logging same params more than once in a session
 
-    public static void logQueryEvent(String connector, String name, int count, boolean isKenai, boolean isAutoRefresh) {
+    public static void logQueryEvent(String connector, String name, int count, boolean isFromTeamServer, boolean isAutoRefresh) {
         name = obfuscateQueryName(name);
-        logBugtrackingEvents(USG_BUGTRACKING_QUERY, new Object[] {connector, name, count, isKenai, isAutoRefresh} );
+        logBugtrackingEvents(USG_BUGTRACKING_QUERY, new Object[] {connector, name, count, isFromTeamServer, isAutoRefresh} );
     }
 
-    public static void logAutoRefreshEvent(String connector, String queryName, boolean isKenai, boolean on) {
+    public static void logAutoRefreshEvent(String connector, String queryName, boolean isFromTeamServer, boolean on) {
         queryName = obfuscateQueryName(queryName);
-        logBugtrackingEvents(USG_BUGTRACKING_AUTOMATIC_REFRESH, new Object[] {connector, queryName, isKenai, on} );
+        logBugtrackingEvents(USG_BUGTRACKING_AUTOMATIC_REFRESH, new Object[] {connector, queryName, isFromTeamServer, on} );
     }
     
     public static synchronized void logBugtrackingUsage(Repository repository, String operation) {
@@ -108,9 +108,9 @@ public final class LogUtils {
         if (btType == null) {
             return;
         }
-        // log Kenai usage
-        if (KenaiUtil.isKenai(repository)) {
-            KenaiUtil.logKenaiUsage(repository.getUrl(), "ISSUE_TRACKING", btType); //NOI18N
+        // log tema usage
+        if (TeamUtil.isFromTeamServer(repository)) {
+            TeamUtil.logTeamUsage(repository.getUrl(), "ISSUE_TRACKING", btType); //NOI18N
         }
         if (operation == null) {
             return;

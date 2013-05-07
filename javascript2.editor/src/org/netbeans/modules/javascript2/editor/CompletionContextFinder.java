@@ -73,7 +73,7 @@ public class CompletionContextFinder {
     );
         
     @NonNull
-    static CompletionContext findCompletionContext(ParserResult info, int caretOffset){
+    static CompletionContext findCompletionContext(ParserResult info, int offset){
         TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
         if (th == null) {
             return CompletionContext.NONE;
@@ -83,7 +83,6 @@ public class CompletionContextFinder {
             return CompletionContext.NONE;
         }
         
-        int offset = info.getSnapshot().getEmbeddedOffset(caretOffset);
         ts.move(offset);
         
         if (!ts.moveNext() && !ts.movePrevious()){

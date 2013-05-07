@@ -127,21 +127,18 @@ is the proper place.
         <change id="api-package-modification">
             <api name="java-api-common"/>
             <summary>New API <code>PackageModificationImplementation</code></summary>
-            <version major="1" minor="47"/>
+            <version major="1" minor="49"/>
             <date day="10" month="4" year="2013"/>
             <author login="mkozeny"/>
             <compatibility semantic="compatible" source="compatible" binary="compatible"/>
             <description>
                 <p>
-                    Added new API <code>PackageModificationImplementation</code>, which provides methods
-                    for getting all available packages (<code>getPackagesToExport</code>)
-                    and all public packages (<code>getPublicPackages</code>),
-                    (un)exporting them (<code>exportPackageAction</code>).
-                    This API is used by <code>ExportPackageAction</code> located in non-public package <code>org.netbeans.modules.java.api.common.impl</code>
-                    which is action implemented for exporting package(s) from NetBeans Module Project.
+                    Added new API <code>PackageModificationImplementation</code> which serves as backend for action to set given package as public or private.
+                    Only applies on packages/folders that are handled by <code>AccessibilityQuery</code> (a non null result is returned from the query) that are in projects
+                    providing this interface's implementation in project lookup.
                 </p>
             </description>
-            <issue number="202329"/>
+            <issue number="228409"/>
         </change>
         <change id="jre-profiles">
             <api name="java-api-common"/>

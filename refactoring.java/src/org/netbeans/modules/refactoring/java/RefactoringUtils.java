@@ -819,29 +819,6 @@ public class RefactoringUtils {
         return path;
     }
 
-    /**
-     * Copies javadoc from
-     * <code>elm</code> to newly created
-     * <code>tree</code>.
-     *
-     * @param elm element containing some javadoc
-     * @param tree newly created tree where the javadoc should be copied to
-     * @param wc working copy where the tree belongs to
-     * @deprecated should copy all comments
-     */
-    public static void copyJavadoc(Element elm, Tree tree, WorkingCopy wc) {
-        TreeMaker make = wc.getTreeMaker();
-        String jdtxt = wc.getElements().getDocComment(elm);
-        if (jdtxt != null) {
-            make.addComment(tree, Comment.create(Comment.Style.JAVADOC, -1, -1, -1, jdtxt), true);
-        }
-    }
-
-    private static String getString(String key) {
-        return NbBundle.getMessage(RefactoringUtils.class, key);
-    }
-
-
     //XXX: copied from SourceUtils.addImports. Ideally, should be on one place only:
     public static CompilationUnitTree addImports(CompilationUnitTree cut, List<String> toImport, TreeMaker make)
             throws IOException {

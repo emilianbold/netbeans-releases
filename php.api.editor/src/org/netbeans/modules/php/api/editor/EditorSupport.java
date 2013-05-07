@@ -43,8 +43,8 @@
 package org.netbeans.modules.php.api.editor;
 
 import java.util.Collection;
-import org.netbeans.modules.php.api.util.Pair;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Pair;
 
 /**
  * Helper editor class that can be found in the default lookup.

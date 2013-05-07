@@ -106,7 +106,6 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.parsing.DocPositionRegion;
 import org.netbeans.modules.java.source.parsing.JavaFileObjectProvider;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.lucene.IndexFactory;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Index;
@@ -140,6 +139,7 @@ import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 /**
  *
  * @author Tomas Zezula

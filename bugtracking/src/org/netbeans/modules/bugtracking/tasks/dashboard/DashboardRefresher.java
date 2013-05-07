@@ -43,12 +43,11 @@ package org.netbeans.modules.bugtracking.tasks.dashboard;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.tasks.Category;
 import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
 import org.openide.util.RequestProcessor;
@@ -117,19 +116,19 @@ public class DashboardRefresher {
         this.dashboardBusy = dashboardBusy;
         if (!dashboardBusy && refreshWaiting) {
             refreshWaiting = false;
-            refreshDashboard.run();
+            refreshDashboard.schedule(0);
         }
     }
 
     private void refresh() {
-        List<Repository> repositories = DashboardViewer.getInstance().getRepositories(false);
+        List<RepositoryImpl> repositories = DashboardViewer.getInstance().getRepositories(false);
         List<Category> categories = DashboardViewer.getInstance().getCategories(false);
-        List<Issue> changedTasks = new ArrayList<Issue>();
-        for (Repository repository : repositories) {
-            for (Query query : repository.getQueries()) {
+        List<IssueImpl> changedTasks = new ArrayList<IssueImpl>();
+        for (RepositoryImpl<?, ?, ?> repository : repositories) {
+            for (QueryImpl query : repository.getQueries()) {
                 Collection<TaskContainer> oldTasks = getTaskContainers(query.getIssues());
                 query.refresh();
-                Collection<Issue> newTasks = query.getIssues();
+                Collection<IssueImpl> newTasks = query.getIssues();
                 changedTasks.addAll(getChangedTasks(oldTasks, newTasks));
             }
         }
@@ -137,36 +136,36 @@ public class DashboardRefresher {
         for (Category category : categories) {
             Collection<TaskContainer> oldTasks = getTaskContainers(category.getTasks());
             category.refresh();
-            List<Issue> newTasks = category.getTasks();
+            List<IssueImpl> newTasks = category.getTasks();
             changedTasks.addAll(getChangedTasks(oldTasks, newTasks));
         }
 
     }
 
-    private List<Issue> getChangedTasks(Collection<TaskContainer> oldTasks, Collection<Issue> newTasks) {
-        List<Issue> changedTask = new ArrayList<Issue>();
-        for (Issue newTask : newTasks) {
+    private List<IssueImpl> getChangedTasks(Collection<TaskContainer> oldTasks, Collection<IssueImpl> newTasks) {
+        List<IssueImpl> changedTask = new ArrayList<IssueImpl>();
+        for (IssueImpl newIssueImpl : newTasks) {
             boolean isChanged = true;
             for (TaskContainer oldTask : oldTasks) {
-                if (newTask.getID().equals(oldTask.id) && newTask.getRepository().getId().equals(oldTask.idRepository)) {
-                    if (newTask.getStatus().equals(oldTask.status)) {
+                if (newIssueImpl.getID().equals(oldTask.id) && newIssueImpl.getRepositoryImpl().getId().equals(oldTask.idRepository)) {
+                    if (newIssueImpl.getStatus().equals(oldTask.status)) {
                         isChanged = false;
                     }
                     break;
                 }
             }
             if (isChanged) {
-                changedTask.add(newTask);
+                changedTask.add(newIssueImpl);
             }
         }
 
         return changedTask;
     }
     
-    private List<TaskContainer> getTaskContainers(Collection<Issue> tasks) {
+    private List<TaskContainer> getTaskContainers(Collection<IssueImpl> tasks) {
         List<TaskContainer> containers = new ArrayList<TaskContainer>(tasks.size());
-        for (Issue task : tasks) {
-            containers.add(new TaskContainer(task));
+        for (IssueImpl issueImpl : tasks) {
+            containers.add(new TaskContainer(issueImpl));
         }
         return containers;
     }
@@ -174,11 +173,11 @@ public class DashboardRefresher {
     private static class TaskContainer {
         private final String id;
         private final String idRepository;
-        private final Issue.Status status;
+        private final IssueStatusProvider.Status status;
 
-        public TaskContainer(Issue issue) {
+        public TaskContainer(IssueImpl issue) {
             this.id = issue.getID();
-            this.idRepository = issue.getRepository().getId();
+            this.idRepository = issue.getRepositoryImpl().getId();
             this.status = issue.getStatus();
         }
     }

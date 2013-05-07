@@ -107,6 +107,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -188,7 +189,7 @@ public class ProfilesAnalyzer implements Analyzer {
                     filterForRoot = Pair.<Set<FileObject>,Set<FileObject>>of(new HashSet<FileObject>(), new HashSet<FileObject>());
                     filter.put(ownerRoot, filterForRoot);
                 }
-                filterForRoot.first.add(f);
+                filterForRoot.first().add(f);
             }
         }
         for (FileObject f : scope.getFiles()) {
@@ -200,7 +201,7 @@ public class ProfilesAnalyzer implements Analyzer {
                     filterForRoot = Pair.<Set<FileObject>,Set<FileObject>>of(new HashSet<FileObject>(), new HashSet<FileObject>());
                     filter.put(ownerRoot, filterForRoot);
                 }
-                filterForRoot.second.add(f);
+                filterForRoot.second().add(f);
             }
         }
         final ProfileProvider pp = new ProfileProvider(context);
@@ -249,13 +250,13 @@ public class ProfilesAnalyzer implements Analyzer {
                     if (canceled.get()) {
                         break;
                     }
-                    final URI rootURI = violationsPair.first.first;
-                    final Set<Project> projects = submittedBinaries.remove(violationsPair.first);
+                    final URI rootURI = violationsPair.first().first();
+                    final Set<Project> projects = submittedBinaries.remove(violationsPair.first());
                     final boolean binary = projects != null;
                     if (!binary) {
                         submittedSources.remove(rootURI);
                     }
-                    final Collection<? extends ProfileSupport.Violation> violations = violationsPair.second;
+                    final Collection<? extends ProfileSupport.Violation> violations = violationsPair.second();
                     if (violations.isEmpty()) {
                         continue;
                     }
@@ -526,10 +527,10 @@ nextCpE:for (ClassPath.Entry e : cp.entries()) {
         if (filter == null) {
             return true;
         }
-        if (filter.second.contains(source)) {
+        if (filter.second().contains(source)) {
             return true;
         }
-        for (FileObject folder : filter.first) {
+        for (FileObject folder : filter.first()) {
             if (folder.equals(source.getParent())) {
                 return true;
             }            

@@ -484,6 +484,8 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         actionsTable = new KeymapTable();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
         filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
+        btnPrintAsHTML = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JSeparator();
 
         lProfile.setLabelFor(cbProfile);
         org.openide.awt.Mnemonics.setLocalizedText(lProfile, org.openide.util.NbBundle.getMessage(KeymapPanel.class, "CTL_Keymap_Name")); // NOI18N
@@ -550,6 +552,16 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
 
         actionsView.add(jScrollPane1, "actions");
 
+        org.openide.awt.Mnemonics.setLocalizedText(btnPrintAsHTML, org.openide.util.NbBundle.getMessage(KeymapPanel.class, "KeymapPanel.btnPrintAsHTML.text")); // NOI18N
+        btnPrintAsHTML.setToolTipText(org.openide.util.NbBundle.getMessage(KeymapPanel.class, "KeymapPanel.btnPrintAsHTML.toolTipText")); // NOI18N
+        btnPrintAsHTML.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPrintAsHTMLActionPerformed(evt);
+            }
+        });
+
+        jSeparator1.setOrientation(javax.swing.SwingConstants.VERTICAL);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -558,17 +570,20 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
                                 .addComponent(spShortcuts, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(83, 83, 83)
-                                .addComponent(filler1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(0, 0, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(filler1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
                                 .addComponent(lProfile)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(cbProfile, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnPrintAsHTML)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 2, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(manageButton))))
                     .addGroup(layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
@@ -595,7 +610,9 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lProfile)
                     .addComponent(cbProfile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(manageButton))
+                    .addComponent(manageButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnPrintAsHTML)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(18, 18, 18)
@@ -642,15 +659,23 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
         searchPopup.show();
 }//GEN-LAST:event_moreButtonActionPerformed
 
+    private void btnPrintAsHTMLActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPrintAsHTMLActionPerformed
+	if (getMutableModel().getCurrentProfile()!=null){
+	    ExportShortcutsAction.exportShortcutsOfProfileToHTML(getMutableModel().getCurrentProfile());
+	}        
+    }//GEN-LAST:event_btnPrintAsHTMLActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JProgressBar actionProgress;
     private javax.swing.JTable actionsTable;
     private javax.swing.JPanel actionsView;
+    private javax.swing.JButton btnPrintAsHTML;
     private javax.swing.JComboBox cbProfile;
     private javax.swing.Box.Filler filler1;
     private javax.swing.Box.Filler filler2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JLabel lProfile;
     private javax.swing.JList liShortcuts;
     private javax.swing.JButton manageButton;

@@ -123,7 +123,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.LinkButton;
@@ -2226,7 +2226,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     
     
     private void showInBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showInBrowserButtonActionPerformed
-        KenaiProject kp = issue.getRepository().getLookup().lookup(KenaiProject.class);
+        TeamProject kp = issue.getRepository().getLookup().lookup(TeamProject.class);
         assert kp != null; // all odcs repositories hould come from team support
         if (kp == null) {
             return;

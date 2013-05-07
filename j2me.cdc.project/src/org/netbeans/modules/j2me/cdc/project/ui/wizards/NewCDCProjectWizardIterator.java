@@ -263,6 +263,8 @@ public class NewCDCProjectWizardIterator implements TemplateWizard.Iterator {
                 generatePlatformProperties(cdcplatform, activeDevice, activeProfile, ep); // NOI18N
                 ep.setProperty(DefaultPropertiesDescriptor.JAVAC_SOURCE, classVersion != null ? classVersion : "1.2"); // NOI18N
                 ep.setProperty(DefaultPropertiesDescriptor.JAVAC_TARGET, classVersion != null ? classVersion : "1.2"); // NOI18N
+                // bug #200832 - CDC projects have CLDC abilities.
+                ep.put(DefaultPropertiesDescriptor.ABILITIES, ""); // NOI18
                 helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
             } else {
                 throw new IllegalArgumentException("No CDC platform installed");// NOI18N

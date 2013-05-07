@@ -55,7 +55,6 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.AnnotatedType;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
@@ -334,11 +333,6 @@ implements ElementVisitor<Boolean,Void>, TypeVisitor<Boolean,Void> {
         return false;
     }
 
-    @Override
-    public Boolean visitAnnotated(AnnotatedType t, Void p) {
-        return t.getUnderlyingType().accept(this, p);
-    }
-    
     private boolean isVisible(Element... arr) {
         return isVisible(Arrays.asList(arr));
     }

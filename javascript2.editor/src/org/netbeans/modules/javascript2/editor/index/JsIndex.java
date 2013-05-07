@@ -78,6 +78,8 @@ public class JsIndex {
     public static final String FIELD_PARAMETERS = "param"; //NOI18N
     public static final String FIELD_FLAG = "flag"; //NOI18N
 
+    private static final String PROPERTIES_PATTERN = "\\.[^\\.]*[^" + IndexedElement.PARAMETER_POSTFIX + "]";
+    
     @org.netbeans.api.annotations.common.SuppressWarnings("MS_MUTABLE_ARRAY")
     public static final String[] TERMS_BASIC_INFO = new String[] { FIELD_BASE_NAME, FIELD_FQ_NAME, FIELD_OFFSET, FIELD_RETURN_TYPES, FIELD_PARAMETERS, FIELD_FLAG, FIELD_ASSIGNMENS};
 
@@ -203,7 +205,7 @@ public class JsIndex {
                 }
             }
             // find properties of the fqn
-            String pattern = escapeRegExp(fqn) + "\\.[^\\.]*"; //NOI18N
+            String pattern = escapeRegExp(fqn) + PROPERTIES_PATTERN; //NOI18N
             results = query(
                     JsIndex.FIELD_FQ_NAME, pattern, QuerySupport.Kind.REGEXP, TERMS_BASIC_INFO); //NOI18N
             for (IndexResult indexResult : results) {

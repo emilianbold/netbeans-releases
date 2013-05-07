@@ -55,10 +55,13 @@ import org.netbeans.api.project.Project;
 
 import java.io.FileFilter;
 import java.io.File;
+import junit.framework.TestSuite;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.spi.queries.SharabilityQueryImplementation;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  * Versioning SPI unit tests of VCSContext.
@@ -82,6 +85,15 @@ public class VCSContextTest extends NbTestCase {
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
         System.setProperty("data.root.dir", dataRootDir.getAbsolutePath());
         FileObject fo = FileUtil.toFileObject(getDataDir());
+    }
+    
+    public static TestSuite suite () {
+        TestSuite suite = new NbTestSuite();
+        suite.addTest(new VCSContextTest("testForEmptyNodes"));
+        suite.addTest(new VCSContextTest("testForFileNodes"));
+        suite.addTest(new VCSContextTest("testForProjectNodes"));
+        suite.addTest(new VCSContextTest("testSubstract"));
+        return suite;
     }
 
     public void testForEmptyNodes() {

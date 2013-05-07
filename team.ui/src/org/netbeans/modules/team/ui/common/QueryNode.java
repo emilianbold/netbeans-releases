@@ -107,7 +107,7 @@ public class QueryNode<S extends TeamServer, P> extends AsynchronousNode<List<Qu
     }
 
     @Override
-    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
         synchronized( LOCK ) {
             for( JLabel lbl : labels ) {
                 lbl.setForeground(foreground);

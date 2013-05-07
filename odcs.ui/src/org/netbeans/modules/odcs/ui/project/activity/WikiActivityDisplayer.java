@@ -69,7 +69,7 @@ public class WikiActivityDisplayer extends ActivityDisplayer {
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.anchor = GridBagConstraints.WEST;
         gbc.gridheight = GridBagConstraints.REMAINDER;
-        panel.add(new JLabel(activity.getActivity().getActivityType().getLabel()), gbc);
+        panel.add(new JLabel(Utils.getActivityName(activity.getActivity().getActivityType())), gbc);
 
         gbc.insets = new Insets(0, 5, 0, 0);
         LinkLabel linkPage = new LinkLabel(activity.getActivity().getPage().getPath()) {

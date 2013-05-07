@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.Work;
 import org.openide.filesystems.FileEvent;
+import org.openide.util.Pair;
 
 /**
  *
@@ -123,14 +124,14 @@ class FileEventLog implements Runnable {
         if (myChanges != null) {
             for (Map<String,Pair<FileOp,Work>> changesInRoot : myChanges.values()) {
                 for (Pair<FileOp,Work> desc : changesInRoot.values()) {
-                    if (desc.first == FileOp.DELETE) {
-                        if (!seenDelete.containsKey(desc.second)) {
-                            first.add(desc.second);
-                            seenDelete.put(desc.second, desc.second);
+                    if (desc.first() == FileOp.DELETE) {
+                        if (!seenDelete.containsKey(desc.second())) {
+                            first.add(desc.second());
+                            seenDelete.put(desc.second(), desc.second());
                         }
                     }
                     else {
-                        rest.add(desc.second);
+                        rest.add(desc.second());
                     }
                 }
             }

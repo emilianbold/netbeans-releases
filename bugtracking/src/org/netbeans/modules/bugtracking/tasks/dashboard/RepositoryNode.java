@@ -53,14 +53,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import javax.swing.*;
-import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.QueryImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.CloseRepositoryNodeAction;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.CreateTaskAction;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.OpenRepositoryNodeAction;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.CreateQueryAction;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.QuickSearchAction;
-import org.netbeans.modules.bugtracking.tasks.Utils;
+import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
 import org.netbeans.modules.team.ui.util.treelist.AsynchronousNode;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
@@ -71,9 +71,9 @@ import org.openide.util.NbBundle;
  *
  * @author jpeska
  */
-public class RepositoryNode extends AsynchronousNode<Collection<Query>> implements Comparable<RepositoryNode> {
+public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> implements Comparable<RepositoryNode>, Refreshable {
 
-    private final Repository repository;
+    private final RepositoryImpl repository;
     private List<QueryNode> queryNodes;
     private List<QueryNode> filteredQueryNodes;
     private boolean refresh;
@@ -89,20 +89,20 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
     private Map<String, QueryNode> queryNodesMap;
     private RepositoryListener repositoryListener;
 
-    public RepositoryNode(Repository repository) {
+    public RepositoryNode(RepositoryImpl repository) {
         this(repository, true);
     }
 
-    public RepositoryNode(Repository repository, boolean opened) {
+    public RepositoryNode(RepositoryImpl repository, boolean opened) {
         super(opened, null, repository.getDisplayName());
         this.repository = repository;
         this.refresh = false;
         queryNodesMap = new HashMap<String, QueryNode>();
         repositoryListener = new RepositoryListener();
     }
- 
+
     @Override
-    protected Collection<Query> load() {
+    protected Collection<QueryImpl> load() {
         if (refresh && queryNodes != null) {
             for (QueryNode queryNode : queryNodes) {
                 queryNode.refreshContent();
@@ -113,13 +113,13 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
     }
 
     @Override
-    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus) {
-        lblName.setText(Utils.getRepositoryDisplayText(this));
+    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
+        lblName.setText(DashboardUtils.getRepositoryDisplayText(this));
         lblName.setForeground(foreground);
     }
 
     @Override
-    protected JComponent createComponent(Collection<Query> data) {
+    protected JComponent createComponent(Collection<QueryImpl> data) {
         if (isOpened()) {
             updateNodes(data);
             setExpanded(true);
@@ -136,7 +136,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
         panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
         panel.add(new JLabel(), new GridBagConstraints(2, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
         if (isOpened()) {
-            btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/refresh.png", true), new Actions.RefreshRepositoryAction(this)); //NOI18N
+            btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/refresh.png", true), Actions.RefreshAction.createAction(this)); //NOI18N
             btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
             panel.add(btnRefresh, new GridBagConstraints(9, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
 
@@ -147,7 +147,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
             btnAddQuery = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/add_query.png", true), new CreateQueryAction(this)); //NOI18N
             btnAddQuery.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_CreateQuery")); //NOI18N
             panel.add(btnAddQuery, new GridBagConstraints(7, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
-            
+
             btnCreateTask = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/add_task.png", true), new CreateTaskAction(this)); //NOI18N
             btnCreateTask.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_CreateTask")); //NOI18N
             panel.add(btnCreateTask, new GridBagConstraints(6, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
@@ -194,11 +194,11 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
         updateNodes(getQueries());
     }
 
-    private void updateNodes(Collection<Query> queries) {
+    private void updateNodes(Collection<QueryImpl> queries) {
         synchronized (LOCK) {
             queryNodes = new ArrayList<QueryNode>();
             filteredQueryNodes = new ArrayList<QueryNode>();
-            for (Query query : queries) {
+            for (QueryImpl query : queries) {
                 QueryNode queryNode = queryNodesMap.get(query.getDisplayName());
                 if (queryNode == null) {
                     queryNode = new QueryNode(query, this, true);
@@ -213,7 +213,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
         }
     }
 
-    public final Repository getRepository() {
+    public final RepositoryImpl getRepository() {
         return repository;
     }
 
@@ -225,20 +225,26 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
     public final Action[] getPopupActions() {
         List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
         RepositoryNode[] repositoryNodes = new RepositoryNode[selectedNodes.size()];
+        boolean justRepositories = true;
         for (int i = 0; i < selectedNodes.size(); i++) {
             TreeListNode treeListNode = selectedNodes.get(i);
             if (treeListNode instanceof RepositoryNode) {
                 repositoryNodes[i] = (RepositoryNode) treeListNode;
             } else {
-                return null;
+                justRepositories = false;
+                break;
             }
         }
         List<Action> actions = new ArrayList<Action>();
-        Action repositoryAction = getRepositoryAction(repositoryNodes);
-        if (repositoryAction != null) {
-            actions.add(repositoryAction);
+        if (justRepositories) {
+            Action repositoryAction = getRepositoryAction(repositoryNodes);
+            if (repositoryAction != null) {
+                actions.add(repositoryAction);
+            }
+            actions.addAll(Actions.getRepositoryPopupActions(repositoryNodes));
         }
-        actions.addAll(Actions.getRepositoryPopupActions(repositoryNodes));
+
+        actions.addAll(Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
         return actions.toArray(new Action[actions.size()]);
     }
 
@@ -329,7 +335,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
         refreshChildren();
     }
 
-    Collection<Query> getQueries() {
+    Collection<QueryImpl> getQueries() {
         return repository.getQueries();
     }
 
@@ -337,6 +343,7 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
         return ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/remote_repo.png", true);
     }
 
+    @Override
     public void refreshContent() {
         refresh = true;
         refresh();
@@ -346,12 +353,12 @@ public class RepositoryNode extends AsynchronousNode<Collection<Query>> implemen
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(Repository.EVENT_QUERY_LIST_CHANGED)) {
+            if (evt.getPropertyName().equals(RepositoryImpl.EVENT_QUERY_LIST_CHANGED)) {
                 updateContent();
-            } else if (evt.getPropertyName().equals(Repository.EVENT_ATTRIBUTES_CHANGED)) {
+            } else if (evt.getPropertyName().equals(RepositoryImpl.EVENT_ATTRIBUTES_CHANGED)) {
                 if (evt.getNewValue() instanceof Map) {
                     Map<String, String> attributes = (Map<String, String>) evt.getNewValue();
-                    String displayName = attributes.get(Repository.ATTRIBUTE_DISPLAY_NAME);
+                    String displayName = attributes.get(RepositoryImpl.ATTRIBUTE_DISPLAY_NAME);
                     if (displayName != null && !displayName.isEmpty()) {
                         if (lblName != null) {
                             lblName.setText(displayName);

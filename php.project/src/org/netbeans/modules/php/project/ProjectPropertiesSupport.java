@@ -52,7 +52,6 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpInterpreter;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties;
 import org.netbeans.modules.php.project.api.PhpOptions;
@@ -65,6 +64,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * Helper class for getting <b>all</b> the properties of a PHP project.

@@ -360,29 +360,6 @@ public class ProfilesPanel extends javax.swing.JPanel {
         return buf.toString();
     }
 
-    private static String portableRepresentationToShortcut(String portable) {
-        assert portable != null : "The parameter must not be null"; //NOI18N
-
-        StringBuilder buf = new StringBuilder();
-        String delimiter = " "; //NOI18N
-
-        for(StringTokenizer st = new StringTokenizer(portable, delimiter); st.hasMoreTokens();) { //NOI18N
-            String ks = st.nextToken().trim();
-
-            KeyStroke keyStroke = Utilities.stringToKey(ks);
-
-            if (keyStroke != null) {
-                buf.append(KeyStrokeUtils.getKeyStrokeAsText(keyStroke));
-                if (st.hasMoreTokens())
-                    buf.append(' ');
-            } else {
-                return null;
-            }
-        }
-
-        return buf.toString();
-    }
-
     private static JFileChooser getFileChooser() {
         final JFileChooser chooser = new JFileChooser();
         XMLFileFilter filter = new XMLFileFilter();
@@ -425,7 +402,7 @@ public class ProfilesPanel extends javax.swing.JPanel {
                         NamedNodeMap attrs = childList.item(j).getAttributes();
                         if (attrs != null) {
                             String sc = attrs.item(0).getNodeValue();
-                            shortcuts.add(portableRepresentationToShortcut(sc));
+                            shortcuts.add(ExportShortcutsAction.portableRepresentationToShortcut(sc));
                         }
                     }
                     if (sca == null) {

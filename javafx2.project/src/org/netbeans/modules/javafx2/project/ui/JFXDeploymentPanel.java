@@ -387,6 +387,8 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
         warningSigning.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/javafx2/project/ui/resources/info.png"))); // NOI18N
         warningSigning.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.warningSigning.text")); // NOI18N
+        warningSigning.setPreferredSize(new java.awt.Dimension(526, 25));
+        warningSigning.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -395,7 +397,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.ipady = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
         gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 36, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 36, 9, 0);
         panelBottom.add(warningSigning, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(buttonSigning, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.buttonSigning.text")); // NOI18N

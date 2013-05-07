@@ -87,7 +87,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
-import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdaterTestSupport;
 import org.netbeans.modules.parsing.impl.indexing.Util;
@@ -107,6 +106,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  *
@@ -244,7 +244,7 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
             start_b.countDown();
             start_a.await();
             SourceAccessor.getINSTANCE().getCache(src).invalidate();
-            TaskProcessor.removePhaseCompletionTasks(Collections.<SchedulerTask>singleton(tasks.iterator().next().first), src);
+            TaskProcessor.removePhaseCompletionTasks(Collections.<SchedulerTask>singleton(tasks.iterator().next().first()), src);
         }
         end.countDown();
     }

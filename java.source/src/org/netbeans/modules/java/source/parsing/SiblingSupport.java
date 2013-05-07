@@ -47,7 +47,7 @@ import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.java.source.usages.Pair;
+import org.openide.util.Pair;
 
 /**
  *
@@ -81,7 +81,7 @@ public final class SiblingSupport implements SiblingSource {
         } else {
             LOG.log(Level.FINE, "Poped sibling: {0} size: {1}", new Object[] {removed, siblings.size()});     //NOI18N
         }
-        return removed.first;
+        return removed.first();
     }
 
     @Override
@@ -104,10 +104,10 @@ public final class SiblingSupport implements SiblingSource {
                 Level.FINER,
                 "Returns sibling: {0} in source root? {1}",    //NOI18N
                 new Object[] {
-                    result.first,
-                    result.second
+                    result.first(),
+                    result.second()
                 });
-            return result.first;
+            return result.first();
         }
 
         @Override
@@ -119,7 +119,7 @@ public final class SiblingSupport implements SiblingSource {
 
         @Override
         public boolean isInSourceRoot() {
-            return siblings.peek().second;
+            return siblings.peek().second();
         }
     }
 
