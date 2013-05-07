@@ -63,7 +63,6 @@ public final class WebProjectCreateData {
     private Profile javaEEProfile;
     private String sourceLevel;
     private String javaPlatformName;
-    private String serverLibraryName;
     
     //only for create project
     private String contextPath;
@@ -400,14 +399,6 @@ public final class WebProjectCreateData {
 
     public void setLibrariesDefinition(String librariesDefinition) {
         this.librariesDefinition = librariesDefinition;
-    }
-
-    public String getServerLibraryName() {
-        return serverLibraryName;
-    }
-
-    public void setServerLibraryName(String serverLibraryName) {
-        this.serverLibraryName = serverLibraryName;
     }
 
     public boolean isWebXmlRequired() {

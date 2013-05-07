@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,61 +34,38 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.websvc.rest.nodes;
+package org.netbeans.modules.web.jsf.editor.facelets;
 
-import java.io.IOException;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
-import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
-import org.openide.util.actions.NodeAction;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
 
-public class RestConfigurationAction extends NodeAction  {
+/**
+ *
+ * @author Martin Fousek <marfous@netbeans.org>
+ */
+public class FaceletsLibraryMetadataTest extends NbTestCase {
 
-    public String getName() {
-        return NbBundle.getMessage(RestConfigurationAction.class, "LBL_RestConfigurationAction");
+    public FaceletsLibraryMetadataTest(String name) {
+        super(name);
     }
 
-    public HelpCtx getHelpCtx() {
-        return HelpCtx.DEFAULT_HELP;
-    }
+    public void testObtainingLibraryMetadata() {
+        // JSF2.2 namespace
+        LibraryMetadata metadata = FaceletsLibraryMetadata.get("http://xmlns.jcp.org/jsf/html");
+        assertNotNull(metadata);
 
-    protected boolean enable(Node[] activatedNodes) {
-        if (activatedNodes.length != 1) {
-            return false;
-        }
-        Project project = activatedNodes[0].getLookup().lookup(Project.class);
-        if ( project== null) {
-            return false;
-        }
-        if (RestUtils.isJavaEE6AndHigher(project)){
-            return false;
-        }
-            
-        return true;
-    }
-    
-    @Override
-    protected void performAction(Node[] activatedNodes) {
-        Project project = activatedNodes[0].getLookup().lookup(Project.class);
-        RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        if (restSupport != null) {
-            try {
-                restSupport.performRestConfigurationOldWay();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
+        // legacy namespace
+        metadata = FaceletsLibraryMetadata.get("http://java.sun.com/jsf/html");
+        assertNotNull(metadata);
 
-    @Override
-    public boolean asynchronous() {
-        return true;
+        // third party library
+        metadata = FaceletsLibraryMetadata.get("http://primefaces.org/ui");
+        assertNull(metadata);
     }
 
 }
-

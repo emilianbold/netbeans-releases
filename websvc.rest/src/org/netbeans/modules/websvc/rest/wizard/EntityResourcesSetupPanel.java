@@ -170,29 +170,26 @@ public final class EntityResourcesSetupPanel extends AbstractPanel {
         public void read( final WizardDescriptor wizard ) {
             mainPanel.read(wizard);
             Project project = Templates.getProject(wizard);
-            final RestSupport restSupport = project.getLookup().
-                    lookup(RestSupport.class);
-            boolean hasSpringSupport = restSupport.hasSpringSupport();
-            boolean showJaxRsCustomizer = restSupport.isEESpecWithJaxRS() || restSupport.hasJersey2(true);
+            final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
             // TODO: for Jersey2 I temporarily disable Spring support:
-            if ( hasSpringSupport && !restSupport.hasJersey2(true)) {
-                wizard.putProperty( WizardProperties.USE_JERSEY, true);
+            if (restSupport.hasSpringSupport() && !restSupport.hasJersey2(true)) {
+                wizard.putProperty(WizardProperties.USE_JERSEY, true);
             }
             if (jaxRsConfigurationPanel != null) {
-                if (!showJaxRsCustomizer || hasSpringSupport
-                        || restSupport.isRestSupportOn())
-                {
-                    remove(jaxRsConfigurationPanel);
-                    jaxRsConfigurationPanel = null;
-                }
                 ScanDialog.runWhenScanFinished(new Runnable() {
 
                     @Override
                     public void run() {
-                        List<RestApplication> restApplications = restSupport.
-                                getRestApplications();
-                        boolean configured = restApplications != null
-                                && !restApplications.isEmpty();
+                        boolean configured = restSupport.isRestSupportOn();
+                        if (!configured) {
+                            configured = restSupport.hasJerseyServlet();
+                        }
+                        if (!configured) {
+                            List<RestApplication> restApplications = restSupport.
+                                    getRestApplications();
+                            configured = restApplications != null
+                                    && !restApplications.isEmpty();
+                        }
                         configureJaxRsConfigurationPanel(configured, wizard);
                     }
                 }, NbBundle.getMessage(PatternResourcesSetupPanel.class,

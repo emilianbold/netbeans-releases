@@ -311,11 +311,9 @@ public final class EarProject implements Project, AntProjectListener {
                         public Void run() {
                             EditableProperties ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
                             EditableProperties projectProps = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                            if (!J2EEProjectProperties.isUsingServerLibrary(projectProps, EarProjectProperties.J2EE_PLATFORM_CLASSPATH)) {
                                 Map<String, String> roots = J2EEProjectProperties.extractPlatformLibrariesRoot(platform);
                                 String classpath = J2EEProjectProperties.toClasspathString(platform.getClasspathEntries(), roots);
                                 ep.setProperty(J2EEProjectProperties.J2EE_PLATFORM_CLASSPATH, classpath);
-                            }
                             helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, ep);
                             try {
                                 ProjectManager.getDefault().saveProject(EarProject.this);

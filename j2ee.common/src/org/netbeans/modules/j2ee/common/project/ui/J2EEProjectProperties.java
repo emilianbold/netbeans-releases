@@ -114,36 +114,10 @@ public final class J2EEProjectProperties {
     }
             
     
-    /**
-     * Returns <code>true</code> if the server library is used for j2ee instead
-     * of the classpath pointing to the server installation.
-     *
-     * @param projectProperties project properties
-     * @param j2eePlatformClasspathProperty name of the classpath property
-     * @return <code>true</code> if the server library is used for j2ee instead
-     *             of the classpath pointing to the server installation
-     */
-    public static boolean isUsingServerLibrary(EditableProperties projectProperties, String j2eePlatformClasspathProperty) {
-        String value = projectProperties.getProperty(j2eePlatformClasspathProperty);
-        return (value != null && !"".equals(value.trim())
-                && value.indexOf(J2EE_SERVER_HOME) == -1
-                && value.indexOf(J2EE_DOMAIN_HOME) == -1
-                && value.indexOf(J2EE_MIDDLEWARE_HOME) == -1);
-    }
-
-    /**
-     * Server is using server library if it is on the classpath or if certain property is presented in project,properties.
-     */
-    public static boolean isUsingServerLibrary(EditableProperties projectProperties, String j2eePlatformClasspathProperty,
-            Iterable<ClassPathSupport.Item> items) {
-        return isUsingServerLibrary(projectProperties, j2eePlatformClasspathProperty) ||
-                (items !=null && !getServerLibraries(items).isEmpty());
-    }
-
     public static void setServerProperties(EditableProperties ep, EditableProperties epPriv,
-            String serverLibraryName, ClassPathSupport cs, Iterable<ClassPathSupport.Item> items,
+            ClassPathSupport cs, Iterable<ClassPathSupport.Item> items,
             String serverInstanceID, Profile j2eeProfile, J2eeModule.Type moduleType) {
-        setServerProperties(null, ep, epPriv, serverLibraryName, cs, items, serverInstanceID, j2eeProfile, moduleType);
+        setServerProperties(null, ep, epPriv, cs, items, serverInstanceID, j2eeProfile, moduleType);
     }
 
     /**
@@ -176,7 +150,7 @@ public final class J2EEProjectProperties {
      * Sets all server related properties.
      */
     public static void setServerProperties(Project project, EditableProperties ep, EditableProperties epPriv,
-            String serverLibraryName, ClassPathSupport cs, Iterable<ClassPathSupport.Item> items,
+            ClassPathSupport cs, Iterable<ClassPathSupport.Item> items,
             String serverInstanceID, Profile j2eeProfile, J2eeModule.Type moduleType) {
         Deployment deployment = Deployment.getDefault();
         String serverType = deployment.getServerID(serverInstanceID);
@@ -193,16 +167,6 @@ public final class J2EEProjectProperties {
         // set *always* private server properties:
         epPriv.setProperty(J2EE_SERVER_INSTANCE, serverInstanceID);
 
-        // different properties are set for server library:
-        if (serverLibraryName != null || isUsingServerLibrary(ep, J2EE_PLATFORM_CLASSPATH, items)) {
-            if (cs != null) {
-                // use data from model (called eg. from project properties customizer)
-                setSharableServerPropertiesFromModel(ep, epPriv, cs, items);
-            } else if (serverLibraryName != null) {
-                // init data for given sever library name (called eg. from project wizard instantiation)
-                setSharableServerProperties(ep, epPriv, serverLibraryName);
-            }
-        } else {
             Map<String, String> roots = extractPlatformLibrariesRoot(j2eePlatform);
             if (roots != null) {
                 // path will be relative and therefore stored in project.properties:
@@ -211,7 +175,6 @@ public final class J2EEProjectProperties {
                 // store absolute paths in private.properties:
                 setLocalServerProperties(project, ep, epPriv, j2eePlatform, null);
             }
-        }
 
         // set j2ee.platform.jsr109 support
         if (j2eePlatform.isToolSupported(J2eePlatform.TOOL_JSR109)) {
@@ -281,80 +244,10 @@ public final class J2EEProjectProperties {
         }
         callback.registerJ2eePlatformListener(j2eePlatform);
 
-        setServerProperties(proj, projectProps, privateProps, null, cs, items, newServInstID, profile, moduleType);
+        setServerProperties(proj, projectProps, privateProps, cs, items, newServInstID, profile, moduleType);
 
         // ant deployment support
         createDeploymentScript(proj.getProjectDirectory(), projectProps, privateProps, newServInstID, moduleType);
-    }
-
-    public static void setSharableServerProperties(EditableProperties ep, EditableProperties epPriv, String serverLibraryName) {
-        Parameters.notNull("serverLibraryName", serverLibraryName);
-
-        // project properties will point to the library:
-        ep.setProperty(J2EE_PLATFORM_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "classpath" + "}"); //NOI18N
-        ep.setProperty(J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "embeddableejb" + "}"); //NOI18N
-        
-        ep.setProperty(J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "wscompile" + "}"); //NOI18N
-        ep.setProperty(J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "wsimport" + "}"); //NOI18N
-        ep.setProperty(J2EE_PLATFORM_WSGEN_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "wsgenerate" + "}"); //NOI18N
-        ep.setProperty(J2EE_PLATFORM_WSIT_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "wsinterop" + "}"); //NOI18N
-        ep.setProperty(J2EE_PLATFORM_JWSDP_CLASSPATH,
-                "${libs." + serverLibraryName + "." + "wsjwsdp" + "}"); //NOI18N
-
-        // should not be necessary: make sure private properties are empty:
-        removeServerClasspathProperties(epPriv);
-    }
-
-    private static List<ClassPathSupport.Item> getServerLibraries(Iterable<ClassPathSupport.Item> items) {
-        List<ClassPathSupport.Item> serverItems = new ArrayList<ClassPathSupport.Item>();
-        for (ClassPathSupport.Item item : items) {
-            if (item.getType() == ClassPathSupport.Item.TYPE_LIBRARY
-                    && !item.isBroken()
-                    && item.getLibrary().getType().equals(J2eePlatform.LIBRARY_TYPE)) {
-                serverItems.add(ClassPathSupport.Item.create(item.getLibrary(), null));
-            }
-        }
-        return serverItems;
-    }
-
-    private static void setSharableServerPropertiesFromModel(EditableProperties ep, EditableProperties epPriv,
-            ClassPathSupport cs, Iterable<ClassPathSupport.Item> items) {
-        Parameters.notNull("cs", cs);
-        Parameters.notNull("items", items);
-        List<ClassPathSupport.Item> serverItems = getServerLibraries(items);
-        if (serverItems.isEmpty()) {
-            return;
-        }
-        ep.setProperty(J2EE_PLATFORM_CLASSPATH, cs.encodeToStrings(serverItems, null, "classpath")); // NOI18N
-        removeReferences(serverItems);
-        ep.setProperty(J2EE_PLATFORM_WSCOMPILE_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wscompile")); // NOI18N
-        removeReferences(serverItems);
-        ep.setProperty(J2EE_PLATFORM_WSGEN_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsgenerate")); // NOI18N
-        removeReferences(serverItems);
-        ep.setProperty(J2EE_PLATFORM_WSIMPORT_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsimport")); // NOI18N
-        removeReferences(serverItems);
-        ep.setProperty(J2EE_PLATFORM_WSIT_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsinterop")); // NOI18N
-        removeReferences(serverItems);
-        ep.setProperty(J2EE_PLATFORM_JWSDP_CLASSPATH,
-                cs.encodeToStrings(serverItems, null, "wsjwsdp")); // NOI18N
-        // private properties must be empty:
-        removeServerClasspathProperties(epPriv);
-    }
-
-    private static void removeReferences(Iterable<ClassPathSupport.Item> items) {
-        for (ClassPathSupport.Item item : items) {
-            item.setReference(null);
-        }
     }
 
     private static void removeServerClasspathProperties(EditableProperties ep) {

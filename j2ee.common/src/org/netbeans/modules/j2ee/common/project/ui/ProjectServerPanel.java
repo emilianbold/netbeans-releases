@@ -603,7 +603,6 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         d.putProperty(ProjectServerWizardPanel.CDI, Boolean.valueOf(cdiCheckbox.isVisible() ? cdiCheckbox.isSelected() :
                 j2ee != null && Util.isAtLeastJavaEE7Web(j2ee) ? Boolean.TRUE : false));
         d.putProperty(ProjectServerWizardPanel.SOURCE_LEVEL, getSourceLevel(d, serverInstanceId, j2ee));
-        d.putProperty(ProjectServerWizardPanel.WIZARD_SERVER_LIBRARY, getServerLibraryName());
     }
     
     private String getSourceLevel(WizardDescriptor d, String serverInstanceId, Profile j2ee) {
@@ -783,6 +782,9 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
         } else if (serversModel.getSize() > 0) {
             // set the first item
             serversModel.setSelectedItem(serversModel.getElementAt(0));
+        }
+        if (j2eeSpecComboBox.getModel().getSize() > 0) {
+            j2eeSpecComboBox.setSelectedIndex(0);
         }
     }
     

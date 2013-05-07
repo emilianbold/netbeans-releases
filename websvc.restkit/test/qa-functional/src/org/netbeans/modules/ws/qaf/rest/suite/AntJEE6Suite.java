@@ -47,7 +47,6 @@ import org.netbeans.modules.ws.qaf.rest.JEE6CRUDTest;
 import org.netbeans.modules.ws.qaf.rest.JEE6FromDBTest;
 import org.netbeans.modules.ws.qaf.rest.JEE6PatternsTest;
 import org.netbeans.modules.ws.qaf.rest.JEE6RestCStubsTest;
-import org.netbeans.modules.ws.qaf.rest.JEE6RestNodeTest;
 import org.netbeans.modules.ws.qaf.rest.RestSamplesTest;
 
 /**
@@ -63,7 +62,6 @@ public class AntJEE6Suite extends J2eeTestCase {
     public static Test suite() {
         // This "nicely recursive" implementation is due to limitations in J2eeTestCase API
         return addServerTests(Server.GLASSFISH,
-                addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
                 addServerTests(Server.GLASSFISH,
@@ -93,17 +91,11 @@ public class AntJEE6Suite extends J2eeTestCase {
                 "testWizard", //NOI18N
                 "testCreateSimpleStubs", //NOI18N
                 "testFromWADL", //NOI18N
-                "testCloseProject"), JEE6RestNodeTest.class,
-                "testNodesAfterOpen",
-                "testOpenOnResource",
-                "testOpenOnMethod",
-                "testOpenOnLocator",
-                "testAddMethod",
-                "testRemoveMethod",
                 "testCloseProject"), RestSamplesTest.class,
                 "testHelloWorldSample", //NOI18N
                 "testCustomerDBSample", //NOI18N
-                "testCustomerDBSpringSample", //NOI18N
+                // sample temporarily hidden until bug 228684 is fixed
+                //"testCustomerDBSpringSample", //NOI18N
                 "testMessageBoardSample").enableModules(".*").clusters(".*").suite();
     }
 }
