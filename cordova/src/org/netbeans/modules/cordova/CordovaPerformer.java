@@ -76,6 +76,7 @@ import org.openide.util.lookup.ServiceProvider;
 import static org.netbeans.modules.cordova.PropertyNames.*;
 import org.netbeans.modules.cordova.platforms.CordovaMapping;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
+import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
@@ -231,6 +232,7 @@ public class CordovaPerformer implements BuildPerformer {
 
     private void generateBuildScripts(Project project) {
         try {
+            MobileProjectExtender.createMobileConfigs(project.getProjectDirectory());
             Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
             int version = preferences.getInt(PROP_BUILD_SCRIPT_VERSION, 0);
 

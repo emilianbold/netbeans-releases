@@ -47,12 +47,14 @@ import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -67,14 +69,13 @@ import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.*;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
 import org.netbeans.modules.bugzilla.query.QueryController;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
@@ -105,7 +106,7 @@ public class BugzillaRepository {
     private TaskRepository taskRepository;
     private BugzillaRepositoryController controller;
     private Set<BugzillaQuery> queries = null;
-    private IssueCache<BugzillaIssue> cache;
+    private Cache cache;
     private BugzillaExecutor executor;
     private Image icon;
     private BugzillaConfiguration bc;
@@ -121,6 +122,7 @@ public class BugzillaRepository {
     private Lookup lookup;
     
     private final Object RC_LOCK = new Object();
+    private final Object CACHE_LOCK = new Object();
 
     public BugzillaRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -196,7 +198,7 @@ public class BugzillaRepository {
         ITask task;
         try {
             task = MylynSupport.getInstance().getMylynFactory().createTask(taskRepository, new TaskMapping(product, component));
-            return new BugzillaIssue(task, this);
+            return getIssueForTask(task);
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.WARNING, null, ex);
             return null;
@@ -220,6 +222,35 @@ public class BugzillaRepository {
             lookup = Lookups.fixed(getLookupObjects());
         }
         return lookup;
+    }
+    
+    public BugzillaIssue getIssueForTask (ITask task) {
+        BugzillaIssue issue = null;
+        if (task != null) {
+            synchronized (CACHE_LOCK) {
+                String taskId = BugzillaIssue.getID(task);
+                Cache issueCache = getCache();
+                issue = issueCache.getIssue(taskId);
+                if (issue == null) {
+                    issue = issueCache.setIssueData(taskId, new BugzillaIssue(task, this));
+                }
+            }
+        }
+        return issue;
+    }
+
+    public void deleteTask (ITask task) {
+        assert task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW
+                : "Only new local tasks can be deleted: " + task.getSynchronizationState();
+        if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
+            String id = BugzillaIssue.getID(task);
+            try {
+                MylynSupport.getInstance().deleteTask(task);
+            } catch (CoreException ex) {
+                Bugzilla.LOG.log(Level.INFO, null, ex);
+            }
+            getCache().removeIssue(id);
+        }
     }
 
     protected Object[] getLookupObjects() {
@@ -270,7 +301,10 @@ public class BugzillaRepository {
             MylynSupport supp = MylynSupport.getInstance();
             Set<String> unknownTasks = new HashSet<String>(ids.length);
             for (String id : ids) {
-                BugzillaIssue issue = findIssueForTask(supp.getTask(getTaskRepository().getUrl(), id));
+                BugzillaIssue issue = findUnsubmitted(id);
+                if (issue == null) {
+                    issue = getIssueForTask(supp.getTask(getTaskRepository().getUrl(), id));
+                }
                 if (issue == null) {
                     // must go online
                     unknownTasks.add(id);
@@ -283,7 +317,7 @@ public class BugzillaRepository {
                         .createGetRepositoryTasksCommand(taskRepository, unknownTasks);
                 getExecutor().execute(cmd, true);
                 for (ITask task : cmd.getTasks()) {
-                    BugzillaIssue issue = findIssueForTask(task);
+                    BugzillaIssue issue = getIssueForTask(task);
                     if (issue != null) {
                         ret.add(issue);
                     }
@@ -297,8 +331,10 @@ public class BugzillaRepository {
     
     public BugzillaIssue getIssue(final String id) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-
-        BugzillaIssue issue = findIssueForTask(BugzillaUtil.getTask(this, id, true));
+        BugzillaIssue issue = findUnsubmitted(id);
+        if (issue == null) {
+            issue = getIssueForTask(BugzillaUtil.getTask(this, id, true));
+        }
         return issue;
     }
 
@@ -312,7 +348,7 @@ public class BugzillaRepository {
         final List<BugzillaIssue> issues = new ArrayList<BugzillaIssue>();
 
         if(keywords.length == 1 && isInteger(keywords[0])) {
-            BugzillaIssue issue = findIssueForTask(BugzillaUtil.getTask(this, keywords[0], false));
+            BugzillaIssue issue = getIssueForTask(BugzillaUtil.getTask(this, keywords[0], false));
             if (issue != null) {
                 issues.add(issue);
             }
@@ -352,7 +388,7 @@ public class BugzillaRepository {
                     .createSimpleQueryCommand(taskRepository, iquery);
             getExecutor().execute(cmd, false);
             for (ITask task : cmd.getTasks()) {
-                BugzillaIssue issue = findIssueForTask(task);
+                BugzillaIssue issue = getIssueForTask(task);
                 if (issue != null) {
                     issues.add(issue);
                 }
@@ -376,10 +412,16 @@ public class BugzillaRepository {
     }
 
     public IssueCache<BugzillaIssue> getIssueCache() {
-        if(cache == null) {
-            cache = new Cache();
+        return getCache();
+    }
+    
+    private Cache getCache () {
+        synchronized (CACHE_LOCK) {
+            if(cache == null) {
+                cache = new Cache();
+            }
+            return cache;
         }
-        return cache;
     }
 
     public void removeQuery(BugzillaQuery query) {        
@@ -423,6 +465,11 @@ public class BugzillaRepository {
                 } else {
                     Bugzilla.LOG.log(Level.WARNING, "Couldn''t find query with stored name {0}", queryName); // NOI18N
                 }
+            }
+            if (Boolean.getBoolean("bugzilla.displayUnsubmittedQuery")) {
+                // TODO: should not be a query: this way it's listed in the Team dashboard
+                // either should go to SPI or somewhere in Bugtracking.utils
+                queries.add(new BugzillaQuery.UnsubmittedTasksQuery(this));
             }
         }
         return queries;
@@ -530,7 +577,7 @@ public class BugzillaRepository {
     }
 
     public boolean authenticate(String errroMsg) {
-        return BugtrackingUtil.editRepository(BugzillaUtil.getRepository(this), errroMsg);
+        return Bugzilla.getInstance().getBugtrackingFactory().editRepository(BugzillaUtil.getRepository(this), errroMsg);
     }
 
     /**
@@ -551,7 +598,7 @@ public class BugzillaRepository {
         }
         if(BugzillaUtil.isNbRepository(this)) {
             if(nodes != null && nodes.length > 0) {
-                OwnerInfo ownerInfo = KenaiUtil.getOwnerInfo(nodes[0]);
+                OwnerInfo ownerInfo = TeamUtil.getOwnerInfo(nodes[0]);
                 if(ownerInfo != null /*&& ownerInfo.getOwner().equals(product)*/ ) {
                     return ownerInfo;
                 }
@@ -752,21 +799,17 @@ public class BugzillaRepository {
         return new QueryParameter[] {};
     }
 
-    private BugzillaIssue findIssueForTask (ITask task) {
-        BugzillaIssue issue = null;
-        if (task != null) {
-            try {
-                IssueCache<BugzillaIssue> cache = getIssueCache();
-                issue = cache.getIssue(task.getTaskId());
-                if (issue != null) {
-                    issue.setTask(task);
+    private BugzillaIssue findUnsubmitted (String id) {
+        try {
+            for (ITask task : MylynSupport.getInstance().getUnsubmittedTasks(taskRepository)) {
+                if (id.equals("-" + task.getTaskId())) {
+                    return getIssueForTask(task);
                 }
-                issue = cache.setIssueData(task.getTaskId(), issue != null ? issue : new BugzillaIssue(task, this));
-            } catch (IOException ex) {
-                Bugzilla.LOG.log(Level.INFO, null, ex);
             }
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.INFO, null, ex);
         }
-        return issue;
+        return null;
     }
 
     private static class TaskMapping extends org.eclipse.mylyn.tasks.core.TaskMapping {
@@ -790,8 +833,49 @@ public class BugzillaRepository {
     }
 
     private class Cache extends IssueCache<BugzillaIssue> {
+        
+        private final Map<String, Reference<BugzillaIssue>> issues = new HashMap<String, Reference<BugzillaIssue>>();
+        
         Cache() {
             super(BugzillaRepository.this.getUrl(), new IssueAccessorImpl());
+        }
+
+        @Override
+        public BugzillaIssue getIssue (String id) {
+            synchronized (CACHE_LOCK) {
+                Reference<BugzillaIssue> issueRef = issues.get(id);
+                return issueRef == null ? null : issueRef.get();
+            }
+        }
+
+        @Override
+        public BugzillaIssue setIssueData (String id, BugzillaIssue issue) {
+            synchronized (CACHE_LOCK) {
+                issues.put(id, new SoftReference<BugzillaIssue>(issue));
+            }
+            return issue;
+        }
+
+        @Override
+        public Status getStatus (String id) {
+            BugzillaIssue issue = getIssue(id);
+            if (issue != null) {
+                switch (issue.getStatus()) {
+                    case MODIFIED:
+                        return Status.ISSUE_STATUS_MODIFIED;
+                    case NEW:
+                        return Status.ISSUE_STATUS_NEW;
+                    case SEEN:
+                        return Status.ISSUE_STATUS_SEEN;
+                }
+            }
+            return Status.ISSUE_STATUS_UNKNOWN;
+        }
+
+        private void removeIssue (String id) {
+            synchronized (CACHE_LOCK) {
+                issues.remove(id);
+            }
         }
     }
 

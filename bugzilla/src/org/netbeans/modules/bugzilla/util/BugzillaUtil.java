@@ -51,7 +51,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -157,19 +157,19 @@ public class BugzillaUtil {
      * @return true if the given repository is the netbenas bugzilla, otherwise false
      */
     public static boolean isNbRepository(BugzillaRepository repo) {
-        return BugtrackingUtil.isNbRepository(repo.getUrl());
+        return NBBugzillaUtils.isNbRepository(repo.getUrl());
     }
 
     public static boolean showQAContact(BugzillaRepository repo) {
-        return isNbRepository(repo) || !(repo instanceof KenaiRepository);
+        return NBBugzillaUtils.isNbRepository(repo.getUrl()) || !(repo instanceof KenaiRepository);
     }
 
     public static boolean showStatusWhiteboard(BugzillaRepository repo) {
-        return isNbRepository(repo) || !(repo instanceof KenaiRepository);
+        return NBBugzillaUtils.isNbRepository(repo.getUrl()) || !(repo instanceof KenaiRepository);
     }
 
     public static boolean showIssueType(BugzillaRepository repo) {
-        return isNbRepository(repo);
+        return NBBugzillaUtils.isNbRepository(repo.getUrl());
     }
 
     public static Repository getRepository(BugzillaRepository bugzillaRepository) {
@@ -190,6 +190,12 @@ public class BugzillaUtil {
     
     public static void openQuery(BugzillaQuery bugzillaQuery) {
         Bugzilla.getInstance().getBugtrackingFactory().openQuery(getRepository(bugzillaQuery.getRepository()), bugzillaQuery);
+    }
+
+    public static boolean isOutgoing (ITask task) {
+        return task.getSynchronizationState() == ITask.SynchronizationState.CONFLICT
+                || task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING
+                || task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW;
     }
     
 }

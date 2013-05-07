@@ -54,6 +54,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
@@ -81,7 +82,7 @@ public class JsCompletionItem implements CompletionProposal {
     
     @Override
     public int getAnchorOffset() {
-        return request.anchor;
+        return LexUtilities.getLexerOffset((JsParserResult)request.info, request.anchor);
     }
 
     @Override

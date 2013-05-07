@@ -103,7 +103,7 @@ public class ProcessUtils {
         }
         inputStreamReader.close();
         if (avdString.toString().isEmpty()) {
-            LOGGER.severe("No output when executing " + executable);
+            LOGGER.severe("No output when executing " + executable + " " + Arrays.toString(parameters));
         }
         return avdString.toString();
     }

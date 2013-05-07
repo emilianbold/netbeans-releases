@@ -1399,15 +1399,20 @@ public class AstRenderer {
                     
                     if (scope != null) {
                         // Find first namespace scope to add elaborated forwards in it
-                        NamespaceImpl targetScope = findClosestNamespace(scope);                        
+                        NamespaceImpl targetScope = findClosestNamespace(scope);  
+                        
                         MutableDeclarationsContainer currentNamespaceDefinition = null; 
                         
                         if (targetScope != null) {
                             if (targetScope.isGlobal()) {
                                 currentNamespaceDefinition = null;
                                 targetScope = null;
-                            } else {
-                                currentNamespaceDefinition = (MutableDeclarationsContainer) getLast(targetScope.getDefinitions());
+                            } else {                                
+                                currentNamespaceDefinition = (MutableDeclarationsContainer) getContainingNamespaceDefinition(
+                                        targetScope.getDefinitions(),
+                                        file,
+                                        OffsetableBase.getStartOffset(tokenTypeStart)
+                                );                                
                             }
                         }
                         
@@ -1716,14 +1721,23 @@ public class AstRenderer {
                 }
                 if (!hasVariables && functionParameter) {
                     // unnamed parameter
-                    processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false, cfdi);
+                    processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, functionParameter, cfdi);
                 }
                 if (createForwardClass) {
                     NamespaceImpl targetScope = findClosestNamespace(scope);             
                     
-                    // Sometimes namespaceContainer and container2 (NamespaceImpl and NamespaceDefinitionImpl for example) are both null, 
-                    // so let's just get last definition from namespace
-                    CsmNamespaceDefinition currentNamespaceDefinition = targetScope != null ? getLast(targetScope.getDefinitions()) : null; 
+                    CsmNamespaceDefinition currentNamespaceDefinition = null;
+                    
+                    // ast is a FakeAST with type CSM_GENERIC_DECLARATION
+                    // 
+                    
+                    if (targetScope != null) {
+                        currentNamespaceDefinition = getContainingNamespaceDefinition(
+                                targetScope.getDefinitions(),
+                                file,
+                                OffsetableBase.getStartOffset(ast)
+                        );
+                    }
                     
                     ClassForwardDeclarationImpl.create(ast, file, targetScope, (MutableDeclarationsContainer) currentNamespaceDefinition, !isRenderingLocalContext());
                 }
@@ -2293,13 +2307,17 @@ public class AstRenderer {
         return (scope instanceof NamespaceImpl) ? (NamespaceImpl) scope : null;
     }    
     
-    private static <T> T getLast(Collection<T> collection) {
-        T value = null;
-        Iterator<T> iter = collection.iterator();
-        while (iter.hasNext()) {
-            value = iter.next();
+    private static CsmNamespaceDefinition getContainingNamespaceDefinition(Collection<CsmNamespaceDefinition> collection, CsmFile file, int offset) {
+        Iterator<CsmNamespaceDefinition> iter = collection.iterator();
+        while (iter.hasNext()) {            
+            CsmNamespaceDefinition ns = iter.next();
+            if (file.getAbsolutePath().equals(ns.getContainingFile().getAbsolutePath())) {
+                if (ns.getStartOffset() <= offset && ns.getEndOffset() > offset) {
+                    return ns;
+                }
+            }
         }
-        return value;
+        return null;
     }
     
     private static boolean isBeingParsed(CsmFile file) {

@@ -45,12 +45,10 @@ package org.netbeans.modules.bugzilla.repository;
 import java.util.Collection;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.bugtracking.api.Util;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
-import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.NbBundle;
 
@@ -67,7 +65,7 @@ public class NBRepositorySupport extends BugzillaRepository {
     private static NBRepositorySupport instance;
     private BugzillaRepository bugzillaRepository;
     private Repository nbRepository;
-    private boolean isKenai;
+    private boolean isTeam;
 
     private NBRepositorySupport() {}
     
@@ -93,43 +91,43 @@ public class NBRepositorySupport extends BugzillaRepository {
         Collection<Repository> repos;
         if(nbRepository != null) {
             // check if repository wasn't removed since the last time it was used
-            if(!isKenai) {
+            if(!isTeam) {
                 repos = RepositoryManager.getInstance().getRepositories(BugzillaConnector.ID);
                 boolean registered = false;
                 for (Repository repo : repos) {
-                    if(BugtrackingUtil.isNbRepository(repo.getUrl())) {
+                    if(NBBugzillaUtils.isNbRepository(repo.getUrl())) {
                         registered = true;
                         break;
                     }
                 }
                 if(!registered) {
-                    KenaiUtil.addRepository(nbRepository);
+                    TeamUtil.addRepository(nbRepository);
                 }
             }
             return nbRepository;
         }
         repos = RepositoryManager.getInstance().getRepositories(BugzillaConnector.ID);
         for (Repository repo : repos) {
-            if(BugtrackingUtil.isNbRepository(repo.getUrl())) {
+            if(NBBugzillaUtils.isNbRepository(repo.getUrl())) {
                 nbRepository = repo;
                 return repo;
             }
         }
 
-        if(KenaiUtil.isNetbeansKenaiRegistered()) {
-            isKenai = true;
-            // there is a nb kenai registered in the ide
+        if(TeamUtil.isNBTeamServerRegistered()) {
+            isTeam = true;
+            // there is a nb team server registered in the ide
             // create a new repo but _do not register_ in services
             nbRepository = createRepositoryIntern(); // XXX for now we keep a repository for each
-                                                     //     nb kenai project. there will be no need
+                                                     //     nb team project. there will be no need
                                                      //     to create a new instance as soon as we will
                                                      //     have only one repository instance for all
-                                                     //     kenai projects. see also issue #177578
+                                                     //     team projects. see also issue #177578
         }
 
         if(nbRepository == null) {                              // no nb repo yet ...
             nbRepository = createRepositoryIntern();            // ... create ...
-            KenaiUtil.addRepository(nbRepository); // ... and register in services/issue tracking
+            TeamUtil.addRepository(nbRepository); // ... and register in services/issue tracking
         } 
 
         return nbRepository;

@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.bugtracking.tasks.filter;
 
-import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.IssueImpl;
 
 /**
  *
  * @author jpeska
  */
-public class DisplayTextTaskFilter implements DashboardFilter<Issue> {
+public class DisplayTextTaskFilter implements DashboardFilter<IssueImpl> {
 
     private String summaryParam;
 
@@ -56,7 +56,7 @@ public class DisplayTextTaskFilter implements DashboardFilter<Issue> {
     }
 
     @Override
-    public boolean isInFilter(Issue task) {
+    public boolean isInFilter(IssueImpl task) {
         return task.getDisplayName().toLowerCase().contains(summaryParam.toLowerCase().trim());
     }
 

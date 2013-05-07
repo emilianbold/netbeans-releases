@@ -99,7 +99,7 @@ public class DocumentViewPanelProvider implements CssStylesPanelProvider {
 
     @Override
     public boolean providesContentFor(FileObject file) {
-        return MIME_TYPES.contains(file.getMIMEType());
+        return (file != null) && MIME_TYPES.contains(file.getMIMEType());
     }
     
 }

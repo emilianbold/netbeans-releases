@@ -51,8 +51,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.*;
 
 
@@ -65,6 +65,18 @@ import org.netbeans.modules.bugtracking.spi.*;
 public final class RepositoryImpl<R, Q, I> {
 
     private final static Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.Repository"); // NOI18N
+    
+    public final static String EVENT_QUERY_LIST_CHANGED = RepositoryProvider.EVENT_QUERY_LIST_CHANGED;
+    
+    /**
+     * RepositoryProvider's attributes have changed, e.g. name, url, etc.
+     * Old and new value are maps of changed doubles: attribute-name / attribute-value.
+     * Old value can be null in case the repository is created.
+     */
+    public final static String EVENT_ATTRIBUTES_CHANGED = "bugtracking.repository.attributes.changed"; //NOI18N
+
+    public static final String ATTRIBUTE_URL = "repository.attribute.url"; //NOI18N
+    public static final String ATTRIBUTE_DISPLAY_NAME = "repository.attribute.displayName"; //NOI18N
     
     private final PropertyChangeSupport support;
         
@@ -251,7 +263,7 @@ public final class RepositoryImpl<R, Q, I> {
             newAttributes.remove(equalAttribute);
         }
         if (!newAttributes.isEmpty()) {
-            support.firePropertyChange(new java.beans.PropertyChangeEvent(this, Repository.EVENT_ATTRIBUTES_CHANGED, oldAttributes, newAttributes));
+            support.firePropertyChange(new java.beans.PropertyChangeEvent(this, EVENT_ATTRIBUTES_CHANGED, oldAttributes, newAttributes));
         }        
     }
     
@@ -266,8 +278,8 @@ public final class RepositoryImpl<R, Q, I> {
         HashMap<String, Object> attributes = new HashMap<String, Object>(2);
         // XXX add more if requested
         if(getInfo() != null) {
-            attributes.put(Repository.ATTRIBUTE_DISPLAY_NAME, getDisplayName());
-            attributes.put(Repository.ATTRIBUTE_URL, getUrl());
+            attributes.put(ATTRIBUTE_DISPLAY_NAME, getDisplayName());
+            attributes.put(ATTRIBUTE_URL, getUrl());
         }
         return attributes;
     }
@@ -301,22 +313,22 @@ public final class RepositoryImpl<R, Q, I> {
     }
 
     public Query getAllIssuesQuery() {
-        assert KenaiRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
-        Q q = ((KenaiRepositoryProvider<R, Q, I>) repositoryProvider).getAllIssuesQuery(r);
+        assert TeamRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
+        Q q = ((TeamRepositoryProvider<R, Q, I>) repositoryProvider).getAllIssuesQuery(r);
         QueryImpl queryImpl = getQuery(q);
         return queryImpl != null ? queryImpl.getQuery() : null;
     }
 
     public Query getMyIssuesQuery() {
-        assert KenaiRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
-        Q q = ((KenaiRepositoryProvider<R, Q, I>) repositoryProvider).getMyIssuesQuery(r);
+        assert TeamRepositoryProvider.class.isAssignableFrom(repositoryProvider.getClass());
+        Q q = ((TeamRepositoryProvider<R, Q, I>) repositoryProvider).getMyIssuesQuery(r);
         QueryImpl queryImpl = getQuery(q);
         return queryImpl != null ? queryImpl.getQuery() : null;
     }
 
-    public KenaiProject getKenaiProject() {
-        return repositoryProvider instanceof KenaiRepositoryProvider ?
-                    ((KenaiRepositoryProvider<R, Q, I>)repositoryProvider).getKenaiProject(r) :
+    public TeamProject getTeamProject() {
+        return repositoryProvider instanceof TeamRepositoryProvider ?
+                    ((TeamRepositoryProvider<R, Q, I>)repositoryProvider).getTeamProject(r) :
                     null;
     }
     

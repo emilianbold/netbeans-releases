@@ -8,7 +8,7 @@
            <public-packages/>
            <class-path-extension>
                <runtime-relative-path>com-tasktop-c2c-server-tasks-api.jar</runtime-relative-path>
-                <binary-origin>external/com.tasktop.c2c.server.tasks.api_1.1.0.20121207-000120.jar</binary-origin>
+                <binary-origin>external/com.tasktop.c2c.server.tasks.api_1.1.0.20130502-000314.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

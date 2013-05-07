@@ -49,18 +49,20 @@ import java.util.Map;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
-import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.api.Query.QueryMode;
-import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.api.RepositoryManager;
-import org.netbeans.modules.bugtracking.api.Util;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.netbeans.modules.bugtracking.spi.QueryController;
 import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
 import org.netbeans.modules.bugtracking.tasks.dashboard.CategoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.tasks.dashboard.QueryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.RepositoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
-import org.netbeans.modules.bugtracking.tasks.Utils;
+import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
+import org.netbeans.modules.bugtracking.tasks.dashboard.Refreshable;
+import org.netbeans.modules.bugtracking.tasks.dashboard.TaskContainerNode;
+import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
+import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -73,6 +75,85 @@ public class Actions {
 
     public static final KeyStroke REFRESH_KEY = KeyStroke.getKeyStroke("F5"); //NOI18N
     public static final KeyStroke DELETE_KEY = KeyStroke.getKeyStroke("DELETE"); //NOI18N
+
+    public static List<Action> getDefaultActions(TreeListNode... nodes) {
+        List<Action> actions = new ArrayList<Action>();
+        Action markSeen = MarkSeenAction.createAction(nodes);
+        if (markSeen != null) {
+            actions.add(markSeen);
+        }
+
+        Action refresh = RefreshAction.createAction(nodes);
+        if (refresh != null) {
+            actions.add(refresh);
+        }
+        return actions;
+    }
+
+    public static class RefreshAction extends AbstractAction {
+
+        private final List<Refreshable> nodes;
+
+        private RefreshAction(List<Refreshable> nodes) {
+            super(NbBundle.getMessage(Actions.class, "CTL_Refresh"));
+            putValue(ACCELERATOR_KEY, REFRESH_KEY);
+            this.nodes = nodes;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            for (Refreshable refreshableNode : nodes) {
+                refreshableNode.refreshContent();
+            }
+        }
+
+        public static RefreshAction createAction(TreeListNode... nodes) {
+            List<Refreshable> refreshables = new ArrayList<Refreshable>();
+            for (TreeListNode n : nodes) {
+                if (n instanceof Refreshable) {
+                    refreshables.add((Refreshable) n);
+                } else {
+                    return null;
+                }
+            }
+            return new RefreshAction(refreshables);
+        }
+    }
+
+    public static class MarkSeenAction extends AbstractAction {
+
+        private final boolean setAsSeen;
+        private final List<IssueImpl> tasks;
+
+        private MarkSeenAction(boolean setAsSeen, List<IssueImpl> tasks) {
+            super(setAsSeen ? NbBundle.getMessage(Actions.class, "CTL_MarkSeen") : NbBundle.getMessage(Actions.class, "CTL_MarkUnseen"));
+            this.setAsSeen = setAsSeen;
+            this.tasks = tasks;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            DashboardUtils.setAsSeen(setAsSeen, tasks);
+        }
+
+        static MarkSeenAction createAction(TreeListNode... nodes) {
+            List<IssueImpl> tasks = new ArrayList<IssueImpl>();
+            for (TreeListNode n : nodes) {
+                if (n instanceof TaskContainerNode) {
+                    tasks.addAll(((TaskContainerNode) n).getTasks());
+                } else {
+                    return null;
+                }
+            }
+            boolean setAsSeen = false;
+            for (IssueImpl issue : tasks) {
+                if (!issue.getStatus().equals(IssueStatusProvider.Status.SEEN)) {
+                    setAsSeen = true;
+                }
+            }
+            return new MarkSeenAction(setAsSeen, tasks);
+        }
+    }
 
     public static List<Action> getTaskPopupActions(TaskNode... taskNodes) {
         List<Action> actions = new ArrayList<Action>();
@@ -94,7 +175,6 @@ public class Actions {
         actions.add(new SetCategoryAction(taskNodes));
         actions.add(new ScheduleTaskAction(taskNodes));
         actions.add(new NotificationTaskAction(taskNodes));
-        actions.add(new RefreshTaskAction(taskNodes));
         return actions;
     }
 
@@ -133,26 +213,6 @@ public class Actions {
         @Override
         public boolean isEnabled() {
             return false;
-        }
-    }
-
-    public static class RefreshTaskAction extends TaskAction {
-
-        public RefreshTaskAction(TaskNode... taskNodes) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Refresh"), taskNodes); //NOI18N
-            putValue(ACCELERATOR_KEY, REFRESH_KEY);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                @Override
-                public void run() {
-                    for (TaskNode taskNode : getTaskNodes()) {
-                        taskNode.getTask().refresh();
-                    }
-                }
-            });
         }
     }
 
@@ -206,7 +266,7 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (RepositoryNode repositoryNode : getRepositoryNodes()) {
-                Util.createNewIssue(repositoryNode.getRepository());
+                IssueAction.createIssue(repositoryNode.getRepository());
             }
         }
     }
@@ -232,7 +292,7 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (TaskNode taskNode : getTaskNodes()) {
-                Util.openIssue(taskNode.getTask().getRepository(), taskNode.getTask().getID());
+                IssueAction.openIssue(taskNode.getTask().getRepositoryImpl(), taskNode.getTask().getID());
             }
         }
     }
@@ -243,7 +303,6 @@ public class Actions {
         actions.add(new DeleteCategoryAction(categoryNodes));
         actions.add(new RenameCategoryAction(categoryNodes));
         actions.add(new NotificationCategoryAction(categoryNodes));
-        actions.add(new RefreshCategoryAction(categoryNodes));
         return actions;
     }
 
@@ -280,21 +339,6 @@ public class Actions {
         @Override
         public boolean isEnabled() {
             return false;
-        }
-    }
-
-    public static class RefreshCategoryAction extends CategoryAction {
-
-        public RefreshCategoryAction(CategoryNode... categoryNodes) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Refresh"), categoryNodes); //NOI18N
-            putValue(ACCELERATOR_KEY, REFRESH_KEY);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            for (CategoryNode categoryNode : getCategoryNodes()) {
-                categoryNode.refreshContent();
-            }
         }
     }
 
@@ -370,7 +414,6 @@ public class Actions {
     public static List<Action> getRepositoryPopupActions(RepositoryNode... repositoryNodes) {
         List<Action> actions = new ArrayList<Action>();
         actions.add(new RemoveRepositoryAction(repositoryNodes));
-        actions.add(new RefreshRepositoryAction(repositoryNodes));
         actions.add(new PropertiesRepositoryAction(repositoryNodes));
 
         actions.add(null);
@@ -399,21 +442,6 @@ public class Actions {
         }
     }
 
-    public static class RefreshRepositoryAction extends RepositoryAction {
-
-        public RefreshRepositoryAction(RepositoryNode... repositoryNodes) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Refresh"), repositoryNodes); //NOI18N
-            putValue(ACCELERATOR_KEY, REFRESH_KEY);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            for (RepositoryNode repositoryNode : getRepositoryNodes()) {
-                repositoryNode.refreshContent();
-            }
-        }
-    }
-
     private static class PropertiesRepositoryAction extends RepositoryAction {
 
         public PropertiesRepositoryAction(RepositoryNode... repositoryNodes) {
@@ -422,8 +450,7 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            Repository repository = getRepositoryNodes()[0].getRepository();
-            repository.edit();
+            BugtrackingUtil.editRepository(getRepositoryNodes()[0].getRepository(), null);
         }
 
         @Override
@@ -460,7 +487,7 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            RepositoryManager.getInstance().createRepository();
+            BugtrackingUtil.createRepository(false);
         }
     }
 
@@ -488,7 +515,7 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (RepositoryNode repositoryNode : getRepositoryNodes()) {
-                Util.createNewQuery(repositoryNode.getRepository());
+                org.netbeans.modules.bugtracking.ui.query.QueryAction.openQuery(null, repositoryNode.getRepository());
             }
         }
     }
@@ -502,7 +529,7 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (RepositoryNode repositoryNode : getRepositoryNodes()) {
-                Utils.quickSearchTask(repositoryNode.getRepository());
+                DashboardUtils.quickSearchTask(repositoryNode.getRepository());
             }
         }
 
@@ -519,7 +546,6 @@ public class Actions {
         actions.add(new OpenQueryAction(queryNodes));
         actions.add(new DeleteQueryAction(queryNodes));
         actions.add(new NotificationQueryAction(queryNodes));
-        actions.add(new RefreshQueryAction(queryNodes));
         return actions;
     }
 
@@ -547,21 +573,6 @@ public class Actions {
         }
     }
 
-    public static class RefreshQueryAction extends QueryAction {
-
-        public RefreshQueryAction(QueryNode... queryNodes) {
-            super(NbBundle.getMessage(Actions.class, "CTL_Refresh"), queryNodes); //NOI18N
-            putValue(ACCELERATOR_KEY, REFRESH_KEY);
-        }
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            for (QueryNode queryNode : getQueryNodes()) {
-                queryNode.refreshContent();
-            }
-        }
-    }
-
     private static class NotificationQueryAction extends QueryAction {
 
         public NotificationQueryAction(QueryNode... queryNodes) {
@@ -581,13 +592,13 @@ public class Actions {
 
     public static class OpenQueryAction extends QueryAction {
 
-        private QueryMode mode;
+        private QueryController.QueryMode mode;
 
         public OpenQueryAction(QueryNode... queryNodes) {
-            this(Query.QueryMode.SHOW_ALL, queryNodes);
+            this(QueryController.QueryMode.SHOW_ALL, queryNodes);
         }
 
-        public OpenQueryAction(QueryMode mode, QueryNode... queryNodes) {
+        public OpenQueryAction(QueryController.QueryMode mode, QueryNode... queryNodes) {
             super(NbBundle.getMessage(OpenQueryAction.class, "CTL_Open"), queryNodes); //NOI18N
             this.mode = mode;
         }
@@ -595,7 +606,7 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             for (QueryNode queryNode : getQueryNodes()) {
-                queryNode.getQuery().open(mode);
+                queryNode.getQuery().open(false, mode);
             }
         }
     }
@@ -625,7 +636,7 @@ public class Actions {
                     action = new Actions.DeleteCategoryAction(value.toArray(new CategoryNode[value.size()]));
                 } else if (key.equals(QueryNode.class.getName())) {
                     action = new Actions.DeleteQueryAction(value.toArray(new QueryNode[value.size()]));
-                } else if (key.equals(TaskNode.class.getName())) {
+                } else {
                     action = new Actions.RemoveTaskAction(value.toArray(new TaskNode[value.size()]));
                 }
                 action.actionPerformed(e);
@@ -649,28 +660,10 @@ public class Actions {
         @Override
         public void actionPerformed(ActionEvent e) {
             List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
-            for (TreeListNode treeListNode : selectedNodes) {
-                if (treeListNode instanceof RepositoryNode) {
-                    new Actions.RefreshRepositoryAction((RepositoryNode) treeListNode).actionPerformed(e);
-                } else if (treeListNode instanceof CategoryNode) {
-                    new Actions.RefreshCategoryAction((CategoryNode) treeListNode).actionPerformed(e);
-                } else if (treeListNode instanceof QueryNode) {
-                    new Actions.RefreshQueryAction((QueryNode) treeListNode).actionPerformed(e);
-                } else if (treeListNode instanceof TaskNode) {
-                    new Actions.RefreshTaskAction(((TaskNode) treeListNode)).actionPerformed(e);
-                }
+            RefreshAction refresh = RefreshAction.createAction(selectedNodes.toArray(new TreeListNode[selectedNodes.size()]));
+            if (refresh != null) {
+                refresh.actionPerformed(e);
             }
-        }
-
-        @Override
-        public boolean isEnabled() {
-            List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
-            for (TreeListNode treeListNodes : selectedNodes) {
-                if (treeListNodes instanceof RepositoryNode || treeListNodes instanceof CategoryNode || treeListNodes instanceof QueryNode || treeListNodes instanceof TaskNode) {
-                    return true;
-                }
-            }
-            return false;
         }
     }
 }

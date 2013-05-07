@@ -46,14 +46,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.*;
-import org.netbeans.modules.bugtracking.api.Issue;
+import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.team.ui.util.treelist.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.CloseCategoryNodeAction;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.OpenCategoryNodeAction;
 import org.netbeans.modules.bugtracking.tasks.Category;
 import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
-import org.netbeans.modules.bugtracking.tasks.Utils;
+import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;
@@ -91,10 +91,10 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     }
 
     @Override
-    List<Issue> getTasks() {
-        List<Issue> tasks = Collections.emptyList();
+    public List<IssueImpl> getTasks() {
+        List<IssueImpl> tasks = Collections.emptyList();
         try {
-            tasks = new ArrayList<Issue>(category.getTasks());
+            tasks = new ArrayList<IssueImpl>(category.getTasks());
         } catch (Throwable throwable) {
             handleError(throwable);
         }
@@ -126,12 +126,12 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
             } else {
                 lblName.setFont(lblName.getFont().deriveFont(Font.PLAIN));
             }
-            lblName.setText(Utils.getCategoryDisplayText(this));
+            lblName.setText(DashboardUtils.getCategoryDisplayText(this));
         }
     }
 
     @Override
-    protected JComponent createComponent(List<Issue> data) {
+    protected JComponent createComponent(List<IssueImpl> data) {
         if (isError()) {
             setError(false);
             return null;
@@ -146,7 +146,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
             final JLabel iconLabel = new JLabel(getIcon()); //NOI18N
             panel.add(iconLabel, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
-            lblName = new TreeLabel(Utils.getCategoryDisplayText(this));
+            lblName = new TreeLabel(DashboardUtils.getCategoryDisplayText(this));
             panel.add(lblName, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
             labels.add(lblName);
 
@@ -175,7 +175,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
 
             panel.add(new JLabel(), new GridBagConstraints(7, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
 
-            btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/refresh.png", true), new Actions.RefreshCategoryAction(this)); //NOI18N
+            btnRefresh = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/refresh.png", true), Actions.RefreshAction.createAction(this)); //NOI18N
             btnRefresh.setToolTipText(NbBundle.getMessage(CategoryNode.class, "LBL_Refresh")); //NOI18N
             panel.add(btnRefresh, new GridBagConstraints(8, 0, 1, 1, 0.0, 0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0, 3, 0, 0), 0, 0));
         }
@@ -197,7 +197,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
                 closeCategoryAction = new CloseCategoryNodeAction(categoryNodes);
             }
             return closeCategoryAction;
-        } else if (allClosed){
+        } else if (allClosed) {
             if (openCategoryAction == null) {
                 openCategoryAction = new OpenCategoryNodeAction(categoryNodes);
             }
@@ -217,21 +217,26 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     @Override
     public final Action[] getPopupActions() {
         List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
+        boolean justCategories = true;
         CategoryNode[] categoryNodes = new CategoryNode[selectedNodes.size()];
         for (int i = 0; i < selectedNodes.size(); i++) {
             TreeListNode treeListNode = selectedNodes.get(i);
             if (treeListNode instanceof CategoryNode) {
-                categoryNodes[i] = (CategoryNode)treeListNode;
+                categoryNodes[i] = (CategoryNode) treeListNode;
             } else {
-                return null;
+                justCategories = false;
+                break;
             }
         }
         List<Action> actions = new ArrayList<Action>();
-        Action categoryAction = getCategoryAction(categoryNodes);
-        if (categoryAction != null) {
-            actions.add(categoryAction);
+        if (justCategories) {
+            Action categoryAction = getCategoryAction(categoryNodes);
+            if (categoryAction != null) {
+                actions.add(categoryAction);
+            }
+            actions.addAll(Actions.getCategoryPopupActions(categoryNodes));
         }
-        actions.addAll(Actions.getCategoryPopupActions(categoryNodes));
+        actions.addAll(Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
         return actions.toArray(new Action[actions.size()]);
     }
 
@@ -286,7 +291,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
         return category.getName();
     }
 
-    int indexOf(Issue task) {
+    int indexOf(IssueImpl task) {
         for (int i = 0; i < getTaskNodes().size(); i++) {
             TaskNode taskNode = getTaskNodes().get(i);
             if (taskNode.getTask().equals(task)) {

@@ -117,7 +117,8 @@ options {
         try {
             str = remSuffix(str);
             if (str.length() > 1 && str.charAt(0) == '0') {
-                if (str.charAt(1) == 'x') {
+                char secondChar = str.charAt(1);
+                if (secondChar == 'x' || secondChar == 'X') {
                     // hex
                     val = new BigInteger(str.substring(2), 16);
                 } else {

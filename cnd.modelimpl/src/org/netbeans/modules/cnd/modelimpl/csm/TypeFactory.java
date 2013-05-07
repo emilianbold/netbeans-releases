@@ -224,7 +224,7 @@ public class TypeFactory {
             ((TypeFunPtrImpl)type).init(ast, inFunctionParameters, inTypedef);
             functionPointerType = true;
         } else {
-            type = new TypeImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast));
+            type = new TypeImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
         }
 
         // TODO: pass extra parameters to the constructor insdead of calling methods!!!

@@ -111,19 +111,11 @@ public class WebXmlUpdater {
         return null;
     }
 
-    public WebApp getWebApp() throws IOException {
-        FileObject fo = getOrCreateWebXml();
-        if (fo != null) {
-            return DDProvider.getDefault().getDDRoot(fo);
-        }
-        return null;
-    }
-
     public void configRestPackages( String... packs ) throws IOException {
         try {
-            addResourceConfigToWebApp("/webresources/*");           // NOI18N
-            FileObject ddFO = getOrCreateWebXml();
-            WebApp webApp = getWebApp();
+            addResourceConfigToWebApp();           // NOI18N
+            FileObject ddFO = getWebXml(false);
+            WebApp webApp = findWebApp();
             if (webApp == null) {
                 return;
             }
@@ -236,9 +228,9 @@ public class WebXmlUpdater {
         return initParam;
     }
 
-    public void addResourceConfigToWebApp(String resourcePath) throws IOException {
-        FileObject ddFO = getOrCreateWebXml();
-        WebApp webApp = getWebApp();
+    public void addResourceConfigToWebApp() throws IOException {
+        FileObject ddFO = getWebXml(true);
+        WebApp webApp = findWebApp();
         if (webApp == null) {
             return;
         }
@@ -278,16 +270,7 @@ public class WebXmlUpdater {
                 needsSave = true;
             }
 
-            String resourcesUrl = resourcePath;
-            if (!resourcePath.startsWith("/")) { //NOI18N
-                resourcesUrl = "/"+resourcePath; //NOI18N
-            }
-            if (resourcesUrl.endsWith("/")) { //NOI18N
-                resourcesUrl = resourcesUrl+"*"; //NOI18N
-            } else if (!resourcesUrl.endsWith("*")) { //NOI18N
-                resourcesUrl = resourcesUrl+"/*"; //NOI18N
-            }
-
+            String resourcesUrl = "/webresources/*";
             ServletMapping sm = getRestServletMapping(webApp);
             if (sm == null) {
                 sm = (ServletMapping) webApp.createBean("ServletMapping"); //NOI18N
@@ -367,11 +350,11 @@ public class WebXmlUpdater {
 //        return null;
 //    }
 //
-    public FileObject getOrCreateWebXml() throws IOException {
+    public FileObject getWebXml(boolean createWebXmlIfMissing) throws IOException {
         WebModule wm = WebModule.getWebModule(restSupport.getProject().getProjectDirectory());
         if (wm != null) {
             FileObject ddFo = wm.getDeploymentDescriptor();
-            if (ddFo == null) {
+            if (ddFo == null && createWebXmlIfMissing) {
                 FileObject webInf = wm.getWebInf();
                 if (webInf == null) {
                     FileObject docBase = wm.getDocumentBase();

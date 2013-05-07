@@ -45,10 +45,10 @@ import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.GroupLayout;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.IssueQuickSearch;
-import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
+import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,19 +58,17 @@ import org.openide.util.NbBundle;
 public class QuickSearchPanel extends javax.swing.JPanel {
 
     private List<Category> categories;
-    private final IssueQuickSearch quickIssueSearch;
-    private final Repository repository;
+    private final QuickSearchComboBar quickIssueSearch;
 
     /**
      * Creates new form QuickSearchPanel
      */
-    public QuickSearchPanel(Repository repository) {
-        this.repository = repository;
+    public QuickSearchPanel(RepositoryImpl repositoryImpl) {
         initComponents();
-        quickIssueSearch = new IssueQuickSearch(this);
+        quickIssueSearch = new QuickSearchComboBar(this);
         GroupLayout layout = (GroupLayout) this.getLayout();
-        quickIssueSearch.setRepository(repository);
-        layout.replace(placeholderTask, quickIssueSearch.getComponent());
+        quickIssueSearch.setRepository(repositoryImpl);
+        layout.replace(placeholderTask, quickIssueSearch);
     }
 
     private DefaultComboBoxModel getCategoryModel() {
@@ -173,8 +171,8 @@ public class QuickSearchPanel extends javax.swing.JPanel {
         }
     }
 
-    public Issue getSelectedTask() {
-        return quickIssueSearch.getIssue();
+    public IssueImpl getSelectedTask() {
+        return quickIssueSearch.getIssueImpl();
     }
 
 }

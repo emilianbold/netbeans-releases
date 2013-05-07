@@ -47,7 +47,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.26</specification-version>
+                        <specification-version>2.28</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -122,6 +122,10 @@
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.html.parser</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.javascript2.editor</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>

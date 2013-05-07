@@ -43,13 +43,12 @@
  */
 package org.netbeans.modules.css.visual;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.css.visual.api.CssStylesTC;
+import org.netbeans.modules.web.browser.api.Page;
+import org.netbeans.modules.web.browser.api.PageInspector;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
@@ -59,17 +58,14 @@ import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
 
 /**
+ * Class responsible for management (for example, opening and closing) of CSS Styles view.
  *
  * @author mfukala@netbeans.org
+ * @author Jan Stola
  */
 public class CssStylesTCController implements PropertyChangeListener {
 
     private static final RequestProcessor RP = new RequestProcessor(CssStylesTCController.class);
-    
-    /**
-     * Which mimetypes should cause the CssStyles window to be activated.
-     */
-    private static final Set<String> SUPPORTED_MIMES = new HashSet<String>(Arrays.asList("text/css", "text/html", "text/xhtml", "text/x-jsp", "text/x-php5")); //NOI18N
     
     private static CssStylesTCController STATIC_INSTANCE;
     
@@ -80,14 +76,18 @@ public class CssStylesTCController implements PropertyChangeListener {
         }
     }
     
-    private TopComponent activeCssContentTC = null;
-
     public CssStylesTCController() {
         //register a weak property change listener to the window manager registry
         //XXX is the weak listener really necessary? Is the registry ever GCed?
         Registry reg = WindowManager.getDefault().getRegistry();
         reg.addPropertyChangeListener(
                 WeakListeners.propertyChange(this, reg));
+        
+        PageInspector pageInspector = PageInspector.getDefault();
+        //can be null if the IDE has weird setup - Lookup.getDefault().lookup(PageInspector.class) returns no instance.
+        if(pageInspector != null) {
+            pageInspector.addPropertyChangeListener(this);
+        }
 
         //called from CssCaretAwareSourceTask constructor when the caret is set to a css source code
         //for the first time, which means if we initialize the window listener now, we won't get the component
@@ -101,7 +101,8 @@ public class CssStylesTCController implements PropertyChangeListener {
 
     @Override
     public final void propertyChange(PropertyChangeEvent evt) {
-        if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
+        String propName = evt.getPropertyName();
+        if (TopComponent.Registry.PROP_ACTIVATED.equals(propName)) {
 
             final TopComponent activated = (TopComponent) evt.getNewValue();
 
@@ -119,25 +120,13 @@ public class CssStylesTCController implements PropertyChangeListener {
 
                     //slow IO, do not run in EDT
                     final FileObject file = getFileObject(activated);
-                    final boolean supported = file != null && isSupportedFileType(file);
 
-                    SwingUtilities.invokeLater(new Runnable() {
+                    EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            
-                            if (supported) {
-                                //editor with supported file has been opened
-                                openCssStyles(activated, file);
-                            } else {
-                                //some foreign editor activated
-                                //1. disable the content of the css styles window as the window group close (#2) 
-                                //doesn't work if user opens the window manually
-                                getCssStylesTC().setUnsupportedContext(file);
-                                
-                                //2. close the css styles window group
-                                if (activeCssContentTC != null) {
-                                    closeCssStyles();
-                                }
+                            CssStylesTC cssStylesTC = getCssStylesTC();
+                            if(cssStylesTC != null) {
+                                cssStylesTC.setContext(file);
                             }
                         }
                     });
@@ -145,34 +134,27 @@ public class CssStylesTCController implements PropertyChangeListener {
                 }
             });
 
-        } else if (activeCssContentTC != null && TopComponent.Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
-            TopComponent closedTC = (TopComponent) evt.getNewValue();
-            if (closedTC == activeCssContentTC) {
-                closeCssStyles();
-            }
+        } else if (PageInspector.PROP_MODEL.equals(propName)) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    Page page = PageInspector.getDefault().getPage();
+                    TopComponentGroup group = getCssStylesTCGroup();
+                    if (page == null) {
+                        group.close();
+                    } else {
+                        group.open();
+                    }
+                }
+            });
         }
     }
-    
-    private boolean isSupportedFileType(FileObject fob) {
-        return SUPPORTED_MIMES.contains(fob.getMIMEType());
-    }
-    
+
     private FileObject getFileObject(TopComponent tc) {
         if (tc == null) {
             return null;
         }
         return tc.getLookup().lookup(FileObject.class);
-    }
-
-    private void openCssStyles(TopComponent tc, FileObject file) {
-        this.activeCssContentTC = tc;
-        getCssStylesTC().setContext(file);
-        getCssStylesTCGroup().open();
-    }
-
-    private void closeCssStyles() {
-        this.activeCssContentTC = null;
-        getCssStylesTCGroup().close();
     }
 
     private CssStylesTC getCssStylesTC() {

@@ -43,7 +43,7 @@
 package org.netbeans.modules.jira.repository;
 
 import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
-import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
 import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.User;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter;
@@ -75,7 +75,6 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
@@ -655,7 +654,7 @@ public class JiraRepository {
     }
     
     public boolean authenticate(String errroMsg) {
-        return BugtrackingUtil.editRepository(JiraUtils.getRepository(this), errroMsg);
+        return Jira.getInstance().getBugtrackingFactory().editRepository(JiraUtils.getRepository(this), errroMsg);
     }
 
     private RequestProcessor getRefreshProcessor() {

@@ -94,9 +94,10 @@ import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.util.PatchUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.commands.AddAttachmentCommand;
@@ -221,6 +222,25 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     protected void fireDataChanged() {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
     }
+
+    void deleteTask () {
+        synchronized (MODEL_LOCK) {
+            if (list != null) {
+                model.removeModelListener(list);
+                list = null;
+            }
+            model = null;
+        }
+        getRepository().deleteTask(task);
+    }
+
+    void markNewRead () {
+        task.setAttribute("NetBeans.markedNewRead", "1"); // NOI18N
+    }
+
+    boolean isMarkedNewRead () {
+        return "1".equals(task.getAttribute("NetBeans.markedNewRead")); // NOI18N
+    }
     
     private void fireSeenChanged(boolean wasSeen, boolean seen) {
         support.firePropertyChange(IssueStatusProvider.EVENT_SEEN_CHANGED, wasSeen, seen);
@@ -306,7 +326,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
 
     public static String getDisplayName (ITask task) {
         return task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW ?
-                NbBundle.getMessage(BugzillaIssue.class, "CTL_NewIssue") : // NOI18N
+                getSummary(task) :
                 NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(task), getSummary(task)}); //NOI18N
     }
     
@@ -341,7 +361,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
             ret.add(new ColumnDescriptor<String>(IssueNode.LABEL_NAME_SUMMARY, String.class,
                                               loc.getString("CTL_Issue_Summary_Title"),           // NOI18N
                                               loc.getString("CTL_Issue_Summary_Desc")));          // NOI18N
-            ret.add(BugzillaUtil.isNbRepository(repository)
+            ret.add(NBBugzillaUtils.isNbRepository(repository.getUrl())
                                         ?
                                               new ColumnDescriptor<String>(LABEL_NAME_ISSUE_TYPE, String.class,
                                               loc.getString("CTL_Issue_Issue_Type_Title"),        // NOI18N
@@ -497,7 +517,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
      */
     public static String getID (ITask task) {
         if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
-            return null;
+            return "-" + task.getTaskId();
         }
         return task.getTaskId();
     }
@@ -521,12 +541,6 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
 
     public String getSummary() {
         return task.getSummary();
-    }
-
-    // TODO remove later, not needed
-    public void setTask (ITask task) {
-        assert task == this.task;
-        this.task = task;
     }
 
     @Override
@@ -591,7 +605,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
             Bugzilla.LOG.log(Level.INFO, null, ex);
         }
         boolean needsRefresh = false;
-        if (taskDataState != null) {
+        if (taskDataState != null && !isNew()) {
             for (TaskData taskData : new TaskData[] { 
                 taskDataState.getEditsData(),
                 taskDataState.getLastReadData(),
@@ -715,8 +729,10 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
             handleProductChange(a);
         }
         Bugzilla.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}) ;
-        a.setValue(value);
-        model.attributeChanged(a);
+        if (!value.equals(a.getValue())) {
+            a.setValue(value);
+            model.attributeChanged(a);
+        }
     }
 
     void setFieldValues(IssueField f, List<String> ccs) {
@@ -1081,8 +1097,12 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
 
                 SubmitTaskCommand submitCmd;
                 try {
-                    save(model);
-                    submitCmd = MylynSupport.getInstance().getMylynFactory().createSubmitTaskCommand(task, model);
+                    if (saveChanges()) {
+                        submitCmd = MylynSupport.getInstance().getMylynFactory().createSubmitTaskCommand(task, model);
+                    } else {
+                        result[0] = false;
+                        return;
+                    }
                 } catch (CoreException ex) {
                     Bugzilla.LOG.log(Level.WARNING, null, ex);
                     result[0] = false;
@@ -1362,6 +1382,14 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
 
     private void save (NetBeansTaskDataModel model) throws CoreException {
         if (model.isDirty()) {
+            if (isNew()) {
+                String summary = model.getTask().getSummary();
+                String newSummary = getFieldValue(model.getTaskData(), IssueField.SUMMARY);
+                if (!(newSummary.isEmpty() || newSummary.equals(summary))) {
+                    task.setSummary(newSummary);
+                    fireDataChanged();
+                }
+            }
             model.save(null);
             if (controller != null) {
                 controller.modelStateChanged(model.isDirty(), model.isDirty() || !model.getChangedAttributes().isEmpty());

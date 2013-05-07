@@ -67,8 +67,8 @@ import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.bugtracking.api.Issue;
-import org.netbeans.modules.bugtracking.api.RepositoryManager;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
 import org.openide.awt.ActionReferences;
@@ -146,7 +146,7 @@ public final class DashboardTopComponent extends TopComponent {
                 }
             }
         };
-        this.getActionMap().put(Utils.getFindActionMapKey(), filterAction);
+        this.getActionMap().put(DashboardUtils.getFindActionMapKey(), filterAction);
     }
 
     public static synchronized DashboardTopComponent getDefault() {
@@ -222,7 +222,7 @@ public final class DashboardTopComponent extends TopComponent {
         add(filterPanel, new GridBagConstraints(0, 3, 2, 1, 1.0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(0, 1, 0, 0), 0, 0));
 
         add(dashboardComponent, new GridBagConstraints(0, 5, 2, 1, 1.0, 0.8, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(1, 1, 0, 0), 0, 0));
-        RepositoryManager.getInstance().addPropertChangeListener(dashboard);
+        RepositoryRegistry.getInstance().addPropertyChangeListener(dashboard);
 
         addComponentListener(componentAdapter);
         DashboardSettings.getInstance().addPropertyChangedListener(dashboard);
@@ -241,7 +241,7 @@ public final class DashboardTopComponent extends TopComponent {
     @Override
     protected void componentClosed() {
         filterPanel.removeDocumentListener(filterListener);
-        RepositoryManager.getInstance().removePropertChangeListener(dashboard);
+        RepositoryRegistry.getInstance().removePropertyChangeListener(dashboard);
         DashboardSettings.getInstance().removePropertyChangedListener(dashboard);
         filterPanel.clear();
         dashboard.clearFilters();
@@ -310,7 +310,7 @@ public final class DashboardTopComponent extends TopComponent {
         return confirm;
     }
 
-    public void addTask(Issue issue) {
+    public void addTask(IssueImpl issue) {
         addTask(new TaskNode(issue, null));
     }
     
