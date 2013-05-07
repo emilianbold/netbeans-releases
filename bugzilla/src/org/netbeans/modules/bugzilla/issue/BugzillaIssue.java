@@ -112,6 +112,7 @@ import org.netbeans.modules.mylyn.util.NetBeansTaskDataModel;
 import org.netbeans.modules.mylyn.util.SubmitTaskCommand;
 import org.netbeans.modules.mylyn.util.SynchronizeTasksCommand;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
@@ -1084,6 +1085,9 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         }
     }
 
+    @NbBundle.Messages({
+        "# {0} - task id and summary", "MSG_BugzillaIssue.statusBar.submitted=Task {0} submitted."
+    })
     boolean submitAndRefresh() {
         final boolean[] result = new boolean[1];
         runWithModelLoaded(new Runnable() {
@@ -1142,10 +1146,11 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
                     result[0] = false;
                     return;
                 }
+                StatusDisplayer.getDefault().setStatusText(Bundle.MSG_BugzillaIssue_statusBar_submitted(
+                        getDisplayName()));
 
                 setUpToDate(true);
                 result[0] = true;
-                return;
             }
             
         });
