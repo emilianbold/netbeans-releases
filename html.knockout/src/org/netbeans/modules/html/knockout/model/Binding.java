@@ -45,9 +45,9 @@ import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * KO binding types.
- * 
+ *
  * http://knockoutjs.com/documentation/introduction.html
- * 
+ *
  * TODO add metadata for the bindings
  *
  * @author marekfukala
@@ -61,13 +61,11 @@ public enum Binding {
     css,
     style,
     attr,
-    
     //control flow
     foreach,
     _if, //real name is "IF"
     ifnot,
     with,
-    
     //fields
     click,
     event,
@@ -80,20 +78,28 @@ public enum Binding {
     options,
     selectedOptions,
     uniqueName,
-    
     //rendering
     template;
-    
+    private static final String DOC_URL_BASE = "http://knockoutjs.com/documentation/"; //NOI18N
+    private static final String DOC_URL_POSTFIX = "-binding.html"; //NOI18N
+
     /**
      * Gets the binding name.
-     * 
+     *
      * Use this instead of {@link #name()}.
-     * 
+     *
      * @return name of the KO binding.
      */
     @NonNull
     public String getName() {
         return name().charAt(0) == '_' ? name().substring(1) : name();
     }
-    
+
+    public String getExternalDocumentationURL() {
+        return new StringBuilder()
+                .append(DOC_URL_BASE)
+                .append(getName())
+                .append(DOC_URL_POSTFIX)
+                .toString();
+    }
 }

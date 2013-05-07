@@ -191,7 +191,7 @@ public class KOHtmlExtension extends HtmlExtension {
         for (Binding b : Binding.values()) {
             String bindingName = b.getName();
             if (LexerUtils.startsWith(bindingName, prefix, true, false)) {
-                items.add(new KOBindingCompletionItem(bindingName, offset));
+                items.add(new KOBindingCompletionItem(b, offset));
             }
         }
         return items;
