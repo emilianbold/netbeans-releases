@@ -264,7 +264,6 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
     private static final String[] JAXRS_LIBRARIES_31 =
              {"jackson-core-asl", "jackson-jaxrs", "jackson-mapper-asl", "jersey-client", "jersey-core", JERSEY_GF_SERVER, "jersey-json", "jersey-multipart", "jettison", "mimepull"}; //NOI18N
 
-    private static final String SERVER_LIBRARY_TYPE = "serverlibrary"; // NOI18N
     private static final String JAVA_EE_6_LIB = "Java-EE-GlassFish-v3"; // NOI18N
     private static final String JAVA_EE_5_LIB = "Java-EE-GlassFish-v3-Prelude"; // NOI18N
 
@@ -318,7 +317,7 @@ public class JavaEEServerModuleFactory implements GlassfishModuleFactory {
                 }
             }
         }
-        return addLibrary(name, SERVER_LIBRARY_TYPE, libraryList, docList,
+        return addLibrary(name, libraryList, docList,
                 NbBundle.getMessage(JavaEEServerModuleFactory.class, "DNAME_GF_JAVA_EE_IMPL"), // NOI18N
                 NbBundle.getMessage(JavaEEServerModuleFactory.class, "DESC_GF_JAVA_EE_IMPL")); // NOI18N
     }

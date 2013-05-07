@@ -56,7 +56,7 @@ public class RESTResourcesView {
     public static Node createRESTResourcesView(Project prj) {
         RestSupport support = prj.getLookup().lookup(RestSupport.class);
         if (support != null) {
-            return new RestServicesNode(prj);
+            return new RestServicesNode(prj, support);
         }
         return null;
     }

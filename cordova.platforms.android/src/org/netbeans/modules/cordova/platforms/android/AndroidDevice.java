@@ -97,7 +97,7 @@ public class AndroidDevice implements Device {
             ProcessUtils.callProcess(
                     ((AndroidPlatform) getPlatform()).getAdbCommand(), 
                     true,
-                    5000,
+                    AndroidPlatform.DEFAULT_TIMEOUT,
                     isEmulator() ? "-e" : "-d", 
                     "wait-for-device", 
                     "shell", 
@@ -110,7 +110,7 @@ public class AndroidDevice implements Device {
             ProcessUtils.callProcess(
                     ((AndroidPlatform) getPlatform()).getAdbCommand(), 
                     true, 
-                    5000,
+                    AndroidPlatform.DEFAULT_TIMEOUT,
                     isEmulator() ? "-e" : "-d", 
                     "wait-for-device", 
                     "shell", 

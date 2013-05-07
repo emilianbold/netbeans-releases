@@ -1721,7 +1721,7 @@ public class AstRenderer {
                 }
                 if (!hasVariables && functionParameter) {
                     // unnamed parameter
-                    processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false, cfdi);
+                    processVariable(ast, ptrOperator, ast, typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, functionParameter, cfdi);
                 }
                 if (createForwardClass) {
                     NamespaceImpl targetScope = findClosestNamespace(scope);             

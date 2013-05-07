@@ -86,30 +86,30 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
         MACROS.add(LatteElement.Factory.createMacro("if", "true", "if ${true}")); //NOI18N
         MACROS.add(LatteElement.Factory.create("else")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("elseif", "true", "elseif ${true}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("ifset", "$var", "ifset $${var}")); //NOI18N
+        MACROS.add(LatteElement.Factory.createMacro("ifset", "$var", "ifset ${var}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("ifset", "#block", "ifset #${block}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("elseifset", "$var", "elseifset $${var}")); //NOI18N
+        MACROS.add(LatteElement.Factory.createMacro("elseifset", "$var", "elseifset ${var}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("ifCurrent", "Presenter:action", "ifCurrent ${Presenter}:${action}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("for", "init; cond; exec", "for ${init}; ${cond}; ${exec}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("foreach", "$array as $item", "foreach $${array} as $${item}")); //NOI18N
+        MACROS.add(LatteElement.Factory.createMacro("foreach", "$array as $item", "foreach ${array} as ${item}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("while", "true", "while ${true}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("include", "'file.latte'", "include '${file.latte}'")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("include", "#block", "include #{block}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("extends", "'file.latte'", "extends '${file.latte}'")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("layout", "'file.latte'", "layout '${file.latte}'")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("control", "name", "control ${name}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("cache", "$key", "cache $${key}")); //NOI18N
+        MACROS.add(LatteElement.Factory.createMacro("cache", "$key", "cache ${key}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("snippet", "$name", "snippet ${name}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("block", "#name", "block #${name}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("define", "#name", "define #${name}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("includeblock", "'file.latte'", "includeblock '${file.latte}'")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("contentType", "$type", "contentType $${type}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("status", "$code", "status $${code}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("capture", "$var", "capture $${var}")); //NOI18N
+        MACROS.add(LatteElement.Factory.createMacro("contentType", "$type", "contentType ${type}")); //NOI18N
+        MACROS.add(LatteElement.Factory.createMacro("status", "$code", "status ${code}")); //NOI18N
+        MACROS.add(LatteElement.Factory.createMacro("capture", "$var", "capture ${var}")); //NOI18N
         MACROS.add(LatteElement.Factory.create("assign")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("default", "$name = $value", "default $${name} = ${value}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("var", "$name = $value", "var $${name} = ${value}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("dump", "$var", "dump $${var}")); //NOI18N
+        MACROS.add(LatteElement.Factory.createMacro("default", "$name = $value", "default ${name} = ${value}")); //NOI18N
+        MACROS.add(LatteElement.Factory.createMacro("var", "$name = $value", "var ${name} = ${value}")); //NOI18N
+        MACROS.add(LatteElement.Factory.createMacro("dump", "$var", "dump ${var}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("syntax", "mode", "syntax ${mode}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("use", "Class", "use ${Class}")); //NOI18N
         MACROS.add(LatteElement.Factory.createMacro("form", "$name", "form ${name}")); //NOI18N

@@ -138,13 +138,13 @@
 ==============================================================
 'ostream', tokenID=identifier, offset=2588 [67:29/2588-67:36/2595]
 --OWNER:
-    TYPE &$unresolved$::ostream TEXT=ostream&  [67:29/2588-67:36/2595] ReferencesTestCase/system.h
+    TYPE &$unresolved$::ostream TEXT=ostream&  [67:29/2588-67:37/2596] ReferencesTestCase/system.h
 --RESOLVED TO:
     null
 ==============================================================
 'System', tokenID=identifier, offset=2604 [67:45/2604-67:51/2610]
 --OWNER:
-    VARIABLE  [67:39/2598-67:52/2611] ReferencesTestCase/system.h  TYPE: const &System TEXT=const System&  [67:39/2598-67:44/2603]  INIT: null  SCOPE: operator << 
+    TYPE const &System TEXT=const System&  [67:39/2598-67:52/2611] ReferencesTestCase/system.h
 --RESOLVED TO:
     CLASS System [52:1/2246-68:2/2615] ReferencesTestCase/system.h
 ==============================================================

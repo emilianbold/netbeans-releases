@@ -95,25 +95,14 @@ public class EntityResourcesIterator implements WizardDescriptor.ProgressInstant
     public Set instantiate(ProgressHandle pHandle) throws IOException {
         final Project project = Templates.getProject(wizard);
 
-        String restAppPackage = null;
-        String restAppClass = null;
+        String restAppPackage = (String) wizard.getProperty(WizardProperties.APPLICATION_PACKAGE);
+        String restAppClass = (String) wizard.getProperty(WizardProperties.APPLICATION_CLASS);
         
         final RestSupport restSupport = project.getLookup().lookup(RestSupport.class);
-        Object useJersey = wizard.getProperty(WizardProperties.USE_JERSEY);
-        if ( useJersey != null && useJersey.toString().equals("true")){     // NOI18N 
-            restSupport.enableRestSupport( RestSupport.RestConfig.DD);
-        }
-        else {
-            restAppPackage = (String) wizard
-                    .getProperty(WizardProperties.APPLICATION_PACKAGE);
-            restAppClass = (String) wizard
-                    .getProperty(WizardProperties.APPLICATION_CLASS);
-            if (restAppPackage != null && restAppClass != null) {
-                restSupport.enableRestSupport(RestSupport.RestConfig.IDE);
-            }
-        }
+        boolean useJersey = Boolean.TRUE.equals(wizard.getProperty(WizardProperties.USE_JERSEY));
         if ( restSupport!= null ){
-            restSupport.ensureRestDevelopmentReady();
+            restSupport.ensureRestDevelopmentReady(useJersey ?
+                    RestSupport.RestConfig.DD : RestSupport.RestConfig.IDE);
         }
 
         FileObject targetFolder = Templates.getTargetFolder(wizard);
@@ -157,7 +146,7 @@ public class EntityResourcesIterator implements WizardDescriptor.ProgressInstant
             FileUtil.createFolder(targetFolder, restAppPackage.replace('.', '/'));
         final String appClassName = restAppClass;
         try {
-            if ( restAppPack != null && appClassName!= null ){
+            if ( restAppPack != null && appClassName!= null && !useJersey) {
                 RestUtils.createApplicationConfigClass( restAppPack, appClassName);
             }
             RestUtils.disableRestServicesChangeListner(project);

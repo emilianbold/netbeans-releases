@@ -52,12 +52,14 @@ import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WildcardTree;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
@@ -66,6 +68,7 @@ import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
@@ -140,43 +143,65 @@ public class ApplicationSubclassGenerator {
 
     private void doReconfigure() throws IOException {
         RestApplicationModel restAppModel = restSupport.getRestApplicationsModel();
-        if (restAppModel != null) {
-            try {
-                restAppModel.runReadAction(
-                        new MetadataModelAction<RestApplications, Void>() {
+        RestServicesModel model = restSupport.getRestServicesModel();
+        String clazz = null;
+        Collection<String> classNames = Collections.EMPTY_LIST;
+        try {
+            clazz = restAppModel.runReadAction(
+                    new MetadataModelAction<RestApplications, String>() {
+                @Override
+                public String run(final RestApplications metadata)
+                        throws IOException {
+                    List<RestApplication> applications =
+                            metadata.getRestApplications();
+                    if (applications != null
+                            && !applications.isEmpty()) {
+                        RestApplication application =
+                                applications.get(0);
+                        String clazz = application.
+                                getApplicationClass();
+                        return clazz;
+                    }
+                    return null;
+                }
+            });
 
-                            @Override
-                            public Void run(final RestApplications metadata)
-                                    throws IOException
-                            {
-                                List<RestApplication> applications =
-                                        metadata.getRestApplications();
-                                if ( applications!= null &&
-                                        !applications.isEmpty())
-                                {
-                                    RestApplication application =
-                                            applications.get(0);
-                                    String clazz = application.
-                                            getApplicationClass();
-                                    reconfigApplicationClass(clazz);
-                                }
-                                return null;
-                            }
-                        });
-            }
-                catch (MetadataModelException ex) {
-                Logger.getLogger(RestSupport.class.getName()).log(
-                        Level.INFO, ex.getLocalizedMessage(), ex);
-            }
+            classNames = model.runReadAction(new MetadataModelAction<RestServicesMetadata, Collection<String>>() {
+                @Override
+                public Collection<String> run(RestServicesMetadata metadata) throws Exception {
+                    Collection<String> classes = new TreeSet<String>();
+                    RestServices services = metadata.getRoot();
+                    for (RestServiceDescription description : services.getRestServiceDescription()) {
+                        // ignore REST services for which we do not have sources (#216168, #229168):
+                        if (description.getFile() != null) {
+                            classes.add(description.getClassName());
+                        }
+                    }
+                    for (RestProviderDescription provider : services.getProviders()) {
+                        // ignore REST providers for which we do not have sources (#216168, #229168):
+                        if (provider.getFile() != null) {
+                            classes.add(provider.getClassName());
+                        }
+                    }
+                    return classes;
+                }
+            });
+
+        } catch (MetadataModelException ex) {
+            Logger.getLogger(RestSupport.class.getName()).log(
+                    Level.INFO, ex.getLocalizedMessage(), ex);
+        }
+        if (clazz != null) {
+            reconfigApplicationClass(clazz, classNames);
         }
     }
 
-    protected void reconfigApplicationClass( String appClassFqn ) throws IOException{
+    protected void reconfigApplicationClass(String appClassFqn, final Collection<String> classNames) throws IOException{
         JavaSource javaSource = MiscPrivateUtilities.getJavaSourceFromClassName(restSupport.getProject(), appClassFqn);
         if ( javaSource == null ){
             return;
         }
-        javaSource.runModificationTask( new Task<WorkingCopy>() {
+        ModificationResult res = javaSource.runModificationTask( new Task<WorkingCopy>() {
 
             @Override
             public void run(WorkingCopy workingCopy) throws Exception {
@@ -211,14 +236,14 @@ public class ApplicationSubclassGenerator {
                             // as part of EE7 upgrade:
                             modified = removeResourcesMethod( restResources,
                                     maker, modified);
-                            modified = createMethodsOlderVersion(
+                            modified = createMethodsOlderVersion(classNames,
                                     maker, modified, workingCopy);
                         } else {
                             if (restResources2 != null) {
                                 modified = removeResourcesMethod( restResources2,
                                         maker, modified);
                             }
-                            modified = createMethods(getClasses,
+                            modified = createMethods(classNames, getClasses,
                                     maker, modified , restResources2 == null,
                                     workingCopy);
                         }
@@ -228,7 +253,9 @@ public class ApplicationSubclassGenerator {
                 }
             }
 
-        }).commit();
+        });
+        res.commit();
+
         Collection<FileObject> files = javaSource.getFileObjects();
         if ( files.isEmpty() ){
             return;
@@ -249,7 +276,7 @@ public class ApplicationSubclassGenerator {
         return maker.removeClassMember(modified, restResources);
     }
 
-    private ClassTree createMethods( MethodTree getClasses,
+    private ClassTree createMethods(Collection<String> classNames, MethodTree getClasses,
             TreeMaker maker,ClassTree modified, boolean addComment,
             CompilationController controller) throws IOException
     {
@@ -276,7 +303,7 @@ public class ApplicationSubclassGenerator {
             modified = maker.addClassMember(modified, methodTree);
         }
         StringBuilder builder = new StringBuilder();
-        collectRestResources(builder, controller, false);
+        collectRestResources(classNames, builder, controller, false);
         ModifiersTree modifiersTree = maker.Modifiers(EnumSet
                 .of(Modifier.PRIVATE));
         VariableTree newParam = maker.Variable(
@@ -300,7 +327,7 @@ public class ApplicationSubclassGenerator {
         return modified;
     }
 
-    private ClassTree createMethodsOlderVersion(
+    private ClassTree createMethodsOlderVersion(Collection<String> classNames,
             TreeMaker maker,ClassTree modified,
             CompilationController controller) throws IOException
     {
@@ -313,7 +340,7 @@ public class ApplicationSubclassGenerator {
                 maker.QualIdent(Set.class.getCanonicalName()),
                 Collections.singletonList(wildClass));
         StringBuilder builder = new StringBuilder();
-        collectRestResources(builder, controller, true);
+        collectRestResources(classNames, builder, controller, true);
         ModifiersTree modifiersTree = maker.Modifiers(EnumSet
                 .of(Modifier.PRIVATE));
         MethodTree methodTree = maker.Method(modifiersTree,
@@ -340,65 +367,32 @@ public class ApplicationSubclassGenerator {
         return builder.toString();
     }
 
-    private void collectRestResources( final StringBuilder builder ,
+    private void collectRestResources( Collection<String> classes, final StringBuilder builder ,
             final CompilationController controller, final boolean oldVersion) throws IOException
     {
-        RestServicesModel model = restSupport.getRestServicesModel();
-        try {
-            model.runReadAction(new MetadataModelAction<RestServicesMetadata, Void>()
-            {
-
-                @Override
-                public Void run( RestServicesMetadata metadata )
-                        throws Exception
-                {
-                    builder.append('{');
-                    if (oldVersion) {
-                        builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
-                    }
-                    RestServices services = metadata.getRoot();
-                    for (RestServiceDescription description : services.getRestServiceDescription()){
-                        handleResource(controller, description.getClassName(), builder);
-                    }
-                    for (RestProviderDescription provider : services.getProviders()){
-                        handleResource(controller, provider.getClassName(), builder);
-                    }
-                    if (oldVersion) {
-                        if (restSupport.hasJersey2(true)) {
-                            builder.append(getJersey2JSONFeature());
-                        } else {
-                            builder.append(getJacksonProviderSnippet());
-                        }
-                    }
-                    if (oldVersion) {
-                        builder.append("return resources;");                // NOI18N
-                    }
-                    builder.append('}');
-                    return null;
-                }
-
-            });
+        builder.append('{');
+        if (oldVersion) {
+            builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
         }
-        catch (MetadataModelException e) {
-            Logger.getLogger(RestSupport.class.getName()).log(Level.INFO,
-                    e.getLocalizedMessage(), e);
+        for (String clazz : classes) {
+            handleResource(controller, clazz, builder);
         }
-    }
-
-    private boolean handleResource(CompilationController controller, String className, StringBuilder builder) throws IllegalArgumentException {
-        // Fix for BZ#216168
-        TypeElement typeElement = controller.getElements().getTypeElement(className);
-        if (typeElement != null) {
-            FileObject file = SourceUtils.getFile(ElementHandle.
-                    create(typeElement), controller.getClasspathInfo());
-            if (file == null) {
-                return false;
+        if (oldVersion) {
+            if (restSupport.hasJersey2(true)) {
+                builder.append(getJersey2JSONFeature());
+            } else {
+                builder.append(getJacksonProviderSnippet());
             }
         }
+        if (oldVersion) {
+            builder.append("return resources;");                // NOI18N
+        }
+        builder.append('}');
+    }
+    private void handleResource(CompilationController controller, String className, StringBuilder builder) throws IllegalArgumentException {
         builder.append("resources.add(");       // NOI18N
         builder.append( className );
         builder.append(".class);");             // NOI18N
-        return true;
     }
 
     private String getJacksonProviderSnippet(){

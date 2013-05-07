@@ -44,15 +44,12 @@ package org.netbeans.modules.ws.qaf.rest;
 import java.io.File;
 import java.io.IOException;
 import java.util.Set;
-import javax.swing.JDialog;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.WizardOperator;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
-import org.netbeans.jemmy.operators.JDialogOperator;
 
 /**
  * Tests for New REST web services from Database wizard
@@ -94,20 +91,23 @@ public class FromDBTest extends CRUDTest {
         jcbo.clearText();
         jcbo.typeText(getRestPackage() + ".service"); //NOI18N
         wo.btFinish().pushNoBlock();
-        closeResourcesConfDialog();
         String generationTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "TXT_EntityClassesGeneration");
         waitDialogClosed(generationTitle, 180000); // wait 3 minutes
         new EventTool().waitNoEvent(1500);
         waitScanFinished();
-        Set<File> files = getFiles(getRestPackage() + ".service"); //NOI18N
-        if (getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) { // see http://netbeans.org/bugzilla/show_bug.cgi?id=189723
-            files.addAll(getFiles("controller")); //NOI18N
-            files.addAll(getFiles("controller.exceptions")); //NOI18N
-        }
-        if (JavaEEVersion.JAVAEE6.equals(getJavaEEversion()) || JavaEEVersion.JAVAEE7.equals(getJavaEEversion())) {
-            assertEquals("Some files were not generated", 8, files.size()); //NOI18N
+        String packageName = getRestPackage() + ".service";
+        Set<File> files = getFiles(packageName);
+        if (!getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) { // see http://netbeans.org/bugzilla/show_bug.cgi?id=189723
+            assertEquals("Missing files in package " + packageName, 9, files.size()); //NOI18N
         } else {
-            assertEquals("Some files were not generated", 18, files.size()); //NOI18N
+            // Java EE 5 - see http://netbeans.org/bugzilla/show_bug.cgi?id=189723
+            assertEquals("Missing files in package " + packageName, 8, files.size()); //NOI18N
+            packageName = getRestPackage() + ".controller"; //NOI18N
+            files = getFiles(packageName);
+            assertEquals("Missing files in package " + packageName, 7, files.size()); //NOI18N
+            packageName = getRestPackage() + ".controller.exceptions"; //NOI18N
+            files = getFiles(packageName);
+            assertEquals("Missing files in package " + packageName, 4, files.size()); //NOI18N
         }
         //make sure all REST services nodes are visible in project log. view
         assertEquals("missing nodes?", 7, getRestNode().getChildren().length);

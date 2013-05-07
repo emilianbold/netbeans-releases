@@ -102,12 +102,9 @@ class RestConfigHint extends BaseRestConfigurationFix  {
     @Override
     public ChangeInfo implement() throws Exception {
         if ( isJersey ){
-            getSupport().enableRestSupport(RestSupport.RestConfig.DD);
-            getSupport().ensureRestDevelopmentReady();
-        }
-        else {
-            getSupport().enableRestSupport(RestSupport.RestConfig.IDE);
-            getSupport().ensureRestDevelopmentReady();
+            getSupport().ensureRestDevelopmentReady(RestSupport.RestConfig.DD);
+        } else {
+            getSupport().ensureRestDevelopmentReady(RestSupport.RestConfig.IDE);
             // XXX : package and Application class is subject to configure via UI
             SourceGroup[] groups = ProjectUtils.getSources(getProject()).getSourceGroups(
                     JavaProjectConstants.SOURCES_TYPE_JAVA);

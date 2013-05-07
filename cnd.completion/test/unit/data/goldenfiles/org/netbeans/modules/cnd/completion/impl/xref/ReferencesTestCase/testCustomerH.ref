@@ -90,13 +90,13 @@
 ==============================================================
 'ostream', tokenID=identifier, offset=2446 [59:37/2446-59:44/2453]
 --OWNER:
-    TYPE &$unresolved$::ostream TEXT=ostream&  [59:37/2446-59:44/2453] ReferencesTestCase/customer.h
+    TYPE &$unresolved$::ostream TEXT=ostream&  [59:37/2446-59:45/2454] ReferencesTestCase/customer.h
 --RESOLVED TO:
     null
 ==============================================================
 'Customer', tokenID=identifier, offset=2462 [59:53/2462-59:61/2470]
 --OWNER:
-    VARIABLE  [59:47/2456-59:62/2471] ReferencesTestCase/customer.h  TYPE: const &Customer TEXT=const Customer&  [59:47/2456-59:52/2461]  INIT: null  SCOPE: operator << 
+    TYPE const &Customer TEXT=const Customer&  [59:47/2456-59:62/2471] ReferencesTestCase/customer.h
 --RESOLVED TO:
     CLASS Customer [49:1/2191-60:2/2475] ReferencesTestCase/customer.h
 ==============================================================

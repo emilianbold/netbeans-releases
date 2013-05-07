@@ -56,7 +56,7 @@ public class WebInspectorJNIBinding {
 
     private native void nsendMessage(String xml);
     
-    private boolean started = false;
+    private transient int started = 0;
     
     private static WebInspectorJNIBinding instance;
 
@@ -72,25 +72,23 @@ public class WebInspectorJNIBinding {
     }
 
     public synchronized void start() {
-        if (!started) {
+        if (started++ < 1) {
             nstart();
-            started = true;
         } else {
             LOG.info("WebKit Debugging Service already started");
         }
     }
 
     public synchronized void stop() {
-        if (started) {
+        if (--started < 1) {
             nstop();
-            started = false;
         } else {
             LOG.info("WebKit Debugging Service not started");
         }
     }
 
     public String receiveMessage() {
-        if (!started) {
+        if (started < 1) {
             LOG.info("WebKit Debugging Service not started");
             return null;
         }
@@ -99,7 +97,7 @@ public class WebInspectorJNIBinding {
     }
 
     public void sendMessage(String message) {
-        if (!started) {
+        if (started < 1) {
             LOG.info("WebKit Debugging Service not started");
             return;
         }

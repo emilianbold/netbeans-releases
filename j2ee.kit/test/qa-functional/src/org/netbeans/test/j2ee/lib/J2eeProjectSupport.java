@@ -221,7 +221,7 @@ public class J2eeProjectSupport {
                     if (params == null) {
                         params = new String[]{DEFAULT_J2EE_LEVEL, getGlassFishServerInstanceID(), null};
                     }
-                    EarProjectGenerator.createProject(projectDir, name, Profile.J2EE_14, params[1], params[2], null, null);
+                    EarProjectGenerator.createProject(projectDir, name, Profile.J2EE_14, params[1], params[2], null);
                     break;
                 default:
                     throw new IllegalArgumentException("Invalid project type.");
