@@ -1077,6 +1077,15 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("iz_223966_overloads_template_spec.cpp", 15, 7, "iz_223966_overloads_template_spec.cpp", 9, 1);
     }    
     
+    public void testBug224062() throws Exception {
+        // Bug 224062 - Instead of a class his constructor is defined
+        performTest("bug224062.cpp", 16, 42, "bug224062.cpp", 11, 1);
+        performTest("bug224062.cpp", 20, 26, "bug224062.cpp", 11, 1);
+        performTest("bug224062.cpp", 22, 42, "bug224062.cpp", 11, 1);
+        performTest("bug224062.cpp", 25, 22, "bug224062.cpp", 11, 1);
+        performTest("bug224062.cpp", 25, 62, "bug224062.cpp", 14, 3);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

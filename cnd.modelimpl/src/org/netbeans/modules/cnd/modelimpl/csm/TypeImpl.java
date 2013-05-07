@@ -277,8 +277,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
      /*TypeImpl(AST ast, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
         this(null, pointerDepth, reference, arrayDepth, ast, file, null);
      }*/
-
+    
     public static int getEndOffset(AST node) {
+        return getEndOffset(node, false);
+    }
+
+    public static int getEndOffset(AST node, boolean greedy) {
         AST ast = node;
         if( ast == null ) {
             return 0;
@@ -286,18 +290,18 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         if (isTypeDefAST(ast)) {
             return OffsetableBase.getEndOffset(ast);
         }
-        ast = getLastNode(ast);
+        ast = getLastNode(ast, greedy);
         if( ast instanceof CsmAST ) {
             return ((CsmAST) ast).getEndOffset();
         }
         return OffsetableBase.getEndOffset(node);
     }
 
-    private static AST getLastNode(AST first) {
+    private static AST getLastNode(AST first, boolean greedy) {
         AST last = first;
-        if(last != null) {
+        if(last != null) {            
             for( AST token = last.getNextSibling(); token != null; token = token.getNextSibling() ) {
-                switch( token.getType() ) {
+                switch( token.getType() ) {                    
                     case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
                     case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
                     case CPPTokenTypes.CSM_QUALIFIED_ID:
@@ -306,6 +310,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                     default:
                         last = token;
                 }
+            }
+            if (greedy) {
+                return AstUtil.getLastChildRecursively(last);
             }
         }
         return null;
