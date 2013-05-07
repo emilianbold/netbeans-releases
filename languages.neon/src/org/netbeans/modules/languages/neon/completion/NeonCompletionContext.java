@@ -46,7 +46,6 @@ import java.util.List;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.languages.neon.processors.TypeCompletionProviderProcessor;
 import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
-import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
 /**
