@@ -783,6 +783,9 @@ private void serverLibraryCheckboxActionPerformed(java.awt.event.ActionEvent evt
             // set the first item
             serversModel.setSelectedItem(serversModel.getElementAt(0));
         }
+        if (j2eeSpecComboBox.getModel().getSize() > 0) {
+            j2eeSpecComboBox.setSelectedIndex(0);
+        }
     }
     
     private Profile getSelectedJ2eeProfile() {
