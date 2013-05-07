@@ -791,17 +791,17 @@ public final class ProjectXMLManager {
         insertPublicOrFriend(friendPackages);
 
         for (String friend : friends) {
-            if (friend.endsWith(".*")) {
                 friendPackages.appendChild(
-                    createModuleElement(doc, ProjectXMLManager.SUBPACKAGES, friend.substring(0, friend.length() - ".*".length())));
-            } else {
-                friendPackages.appendChild(
-                    createModuleElement(doc, ProjectXMLManager.PACKAGE, friend));
-            }
+                    createModuleElement(doc, ProjectXMLManager.FRIEND, friend));
         }
         for (String pkg : packagesToExpose) {
-            friendPackages.appendChild(
+            if (pkg.endsWith(".*")) {
+                friendPackages.appendChild(
+                    createModuleElement(doc, ProjectXMLManager.SUBPACKAGES, pkg.substring(0, pkg.length() - ".*".length())));
+            } else {
+                friendPackages.appendChild(
                     createModuleElement(doc, ProjectXMLManager.PACKAGE, pkg));
+            }
         }
         project.putPrimaryConfigurationData(_confData);
         publicPackages = null;
