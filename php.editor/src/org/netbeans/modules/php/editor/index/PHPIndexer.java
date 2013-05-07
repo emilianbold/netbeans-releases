@@ -67,6 +67,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexDocument;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexingSupport;
 import org.netbeans.modules.php.api.util.FileUtils;
 import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
+import org.netbeans.modules.php.editor.PhpTypeCompletionProvider;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.elements.IndexQueryImpl;
@@ -237,6 +238,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
                 }
             }
             IndexQueryImpl.clearNamespaceCache();
+            PhpTypeCompletionProvider.getInstance().clearCache();
             List<IndexDocument> documents = new LinkedList<IndexDocument>();
             IndexingSupport support = IndexingSupport.getInstance(context);
             Model model = r.getModel(Type.COMMON);
