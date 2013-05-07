@@ -116,7 +116,7 @@ public class DashboardRefresher {
         this.dashboardBusy = dashboardBusy;
         if (!dashboardBusy && refreshWaiting) {
             refreshWaiting = false;
-            refreshDashboard.run();
+            refreshDashboard.schedule(0);
         }
     }
 
