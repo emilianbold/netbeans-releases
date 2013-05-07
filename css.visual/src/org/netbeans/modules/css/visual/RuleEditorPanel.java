@@ -587,6 +587,7 @@ public class RuleEditorPanel extends JPanel {
         titleLabel.setToolTipText(null);
         titleLabel.setEnabled(true);
 
+        messageLabel.setText(null);
     }
 
     public void setNoRuleState() {
@@ -601,7 +602,13 @@ public class RuleEditorPanel extends JPanel {
         titleLabel.setToolTipText(Bundle.titleLabel_tooltip_no_selected_rule());
         titleLabel.setEnabled(false);
         
+        messageLabel.setText(null);
+        
         node.fireContextChanged(false);
+    }
+
+    public void setMessage(String message) {
+        messageLabel.setText(message);
     }
 
     public void setDeclarationInfo(PropertyDeclaration declaration, DeclarationInfo declarationInfo) {
@@ -648,6 +655,7 @@ public class RuleEditorPanel extends JPanel {
         northEastPanel = new javax.swing.JPanel();
         northWestPanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
+        messageLabel = new javax.swing.JLabel();
 
         cancelFilterLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/css/visual/resources/cancel.png"))); // NOI18N
         cancelFilterLabel.setText(org.openide.util.NbBundle.getMessage(RuleEditorPanel.class, "RuleEditorPanel.cancelFilterLabel.text")); // NOI18N
@@ -701,6 +709,9 @@ public class RuleEditorPanel extends JPanel {
 
         northPanel.add(northWestPanel, java.awt.BorderLayout.CENTER);
 
+        messageLabel.setForeground(new java.awt.Color(255, 0, 0));
+        northPanel.add(messageLabel, java.awt.BorderLayout.PAGE_END);
+
         add(northPanel, java.awt.BorderLayout.NORTH);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -748,6 +759,7 @@ public class RuleEditorPanel extends JPanel {
     private javax.swing.JToggleButton createPropertyToggleButton;
     private javax.swing.JTextField filterTextField;
     private javax.swing.JToggleButton filterToggleButton;
+    private javax.swing.JLabel messageLabel;
     private javax.swing.JPanel northEastPanel;
     private javax.swing.JPanel northPanel;
     private javax.swing.JPanel northWestPanel;
