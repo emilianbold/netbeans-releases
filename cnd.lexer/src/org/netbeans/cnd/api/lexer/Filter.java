@@ -65,7 +65,7 @@ import org.netbeans.api.lexer.TokenId;
  */
 public final class Filter<T extends TokenId> {
 
-    private Map<CharSequence, T> filter = new HashMap<CharSequence, T>();
+    private final Map<CharSequence, T> filter = new HashMap<CharSequence, T>();
 
     /*package*/ Filter() {
         
