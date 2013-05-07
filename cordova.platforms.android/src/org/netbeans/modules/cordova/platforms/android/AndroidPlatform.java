@@ -77,6 +77,8 @@ import org.openide.util.lookup.ServiceProvider;
 public class AndroidPlatform implements MobilePlatform {
     
     private static String ANDROID_SDK_ROOT_PREF = "android.sdk.home"; //NOI18N
+    
+    public static int DEFAULT_TIMEOUT = 30000;
 
     private transient final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
     
@@ -117,7 +119,7 @@ public class AndroidPlatform implements MobilePlatform {
     @Override
     public Collection<Device> getVirtualDevices() throws IOException {
         assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getAndroidCommand(), true, 5000, "list", "avd"); //NOI18N
+        String avdString = ProcessUtils.callProcess(getAndroidCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "list", "avd"); //NOI18N
         return AVD.parse(avdString);
     }
     
@@ -179,14 +181,14 @@ public class AndroidPlatform implements MobilePlatform {
     @Override
     public Collection<org.netbeans.modules.cordova.platforms.Device> getConnectedDevices() throws IOException {
         //assert !SwingUtilities.isEventDispatchThread();
-        String avdString = ProcessUtils.callProcess(getAdbCommand(), true, 5000, "devices"); //NOI18N
+        String avdString = ProcessUtils.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "devices"); //NOI18N
         Collection<org.netbeans.modules.cordova.platforms.Device> devices = AndroidDevice.parse(avdString);
         if (devices.isEmpty()) {
             //maybe adb is just down. try to restart adb
-            ProcessUtils.callProcess(getAdbCommand(), true, 5000, "kill-server"); //NOI18N
-            ProcessUtils.callProcess(getAdbCommand(), true, 5000, "start-server"); //NOI18N
+            ProcessUtils.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "kill-server"); //NOI18N
+            ProcessUtils.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "start-server"); //NOI18N
         }
-        avdString = ProcessUtils.callProcess(getAdbCommand(), true, 5000, "devices"); //NOI18N
+        avdString = ProcessUtils.callProcess(getAdbCommand(), true, AndroidPlatform.DEFAULT_TIMEOUT, "devices"); //NOI18N
         devices = AndroidDevice.parse(avdString);
         return devices;
     }

@@ -59,6 +59,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 
 /**
@@ -86,6 +87,7 @@ public class JsEmbeddingProviderPluginTest extends CslTestBase {
 
         private Snapshot snapshot;
         private List<Embedding> embeddings;
+        private TokenSequence<HTMLTokenId> ts;
         public static boolean started, ended, processed;
         
         @Override
@@ -95,6 +97,7 @@ public class JsEmbeddingProviderPluginTest extends CslTestBase {
             assertNotNull(embeddings);
             this.snapshot = snapshot;
             this.embeddings = embeddings;
+            this.ts = ts;
             
             started = true;
             return true;
@@ -103,7 +106,9 @@ public class JsEmbeddingProviderPluginTest extends CslTestBase {
         @Override
         public boolean processToken() {
             if(!processed) {
-                embeddings.add(snapshot.create("world!", "text/javascript"));
+                if(LexerUtils.equals("hello", ts.token().text() , false, false)) {
+                    embeddings.add(snapshot.create("world!", "text/javascript"));
+                }
             }
             processed = true;
             return false;

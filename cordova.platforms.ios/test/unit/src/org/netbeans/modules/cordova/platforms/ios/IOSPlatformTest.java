@@ -39,29 +39,32 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.neon.spi.completion;
+package org.netbeans.modules.cordova.platforms.ios;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.util.List;
-import org.netbeans.api.annotations.common.NonNull;
-import org.openide.filesystems.FileObject;
+import com.dd.plist.NSDictionary;
+import com.dd.plist.NSObject;
+import com.dd.plist.XMLPropertyListParser;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPathExpressionException;
+import org.junit.Test;
+import org.xml.sax.SAXException;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Jan Becicka
  */
-public interface TypeCompletionProvider {
+public class IOSPlatformTest {
 
-    List<String> complete(@NonNull String prefix, @NonNull FileObject fileObject);
-
-    @Retention(RetentionPolicy.SOURCE)
-    @Target({ElementType.TYPE, ElementType.METHOD})
-    public @interface Registration {
-
-        int position() default Integer.MAX_VALUE;
-
+    public IOSPlatformTest() {
     }
+
+    @Test
+    public void testListing() throws IOException {
+        IOSPlatform platform = new IOSPlatform();
+        System.out.println(platform.getConnectedDevices());
+    }
+
 }

@@ -39,29 +39,39 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.neon.spi.completion;
+package org.netbeans.modules.html.angular;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.util.List;
-import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
+import org.netbeans.modules.html.editor.embedding.JsEmbeddingProviderTest;
+import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
 import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author marekfukala
  */
-public interface TypeCompletionProvider {
-
-    List<String> complete(@NonNull String prefix, @NonNull FileObject fileObject);
-
-    @Retention(RetentionPolicy.SOURCE)
-    @Target({ElementType.TYPE, ElementType.METHOD})
-    public @interface Registration {
-
-        int position() default Integer.MAX_VALUE;
-
+public class AngularJsEmbeddingProviderPluginTest extends CslTestBase {
+    
+    public AngularJsEmbeddingProviderPluginTest(String testName) {
+        super(testName);
     }
+
+    @Override
+    protected DefaultLanguageConfig getPreferredLanguage() {
+        return new HtmlLanguage();
+    }
+
+    @Override
+    protected String getPreferredMimeType() {
+        return "text/html";
+    }
+    
+    public void testNgControllerFound() {
+        FileObject index = getTestFile("angularTestProject/public_html/index.html");
+        BaseDocument document = getDocument(index);
+        JsEmbeddingProviderTest.assertEmbedding(document, "");
+    }
+    
 }

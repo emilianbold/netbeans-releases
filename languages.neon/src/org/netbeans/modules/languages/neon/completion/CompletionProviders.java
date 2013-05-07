@@ -39,29 +39,36 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.neon.spi.completion;
+package org.netbeans.modules.languages.neon.completion;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.api.annotations.common.NonNull;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
+import org.openide.util.Lookup;
+import org.openide.util.LookupListener;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface TypeCompletionProvider {
+public class CompletionProviders {
+    public static final String TYPE_COMPLETION_PROVIDER_PATH = "Neon/completion/type"; //NOI18N
+    private static final Lookup.Result<TypeCompletionProvider> TYPE_PROVIDERS = Lookups.forPath(TYPE_COMPLETION_PROVIDER_PATH).lookupResult(TypeCompletionProvider.class);
 
-    List<String> complete(@NonNull String prefix, @NonNull FileObject fileObject);
-
-    @Retention(RetentionPolicy.SOURCE)
-    @Target({ElementType.TYPE, ElementType.METHOD})
-    public @interface Registration {
-
-        int position() default Integer.MAX_VALUE;
-
+    private CompletionProviders() {
     }
+
+    public static List<TypeCompletionProvider> getTypeProviders() {
+        return new ArrayList<>(TYPE_PROVIDERS.allInstances());
+    }
+
+    public static void addTypeProviderListener(LookupListener listener) {
+        TYPE_PROVIDERS.addLookupListener(listener);
+    }
+
+    public static void removeTypeProviderListener(LookupListener listener) {
+        TYPE_PROVIDERS.removeLookupListener(listener);
+    }
+
 }

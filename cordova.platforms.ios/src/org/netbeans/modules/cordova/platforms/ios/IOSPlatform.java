@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.Properties;
 import org.netbeans.modules.cordova.platforms.Device;
 import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
@@ -131,10 +132,17 @@ public class IOSPlatform implements MobilePlatform {
     }
 
     @Override
-    public Collection<Device> getConnectedDevices() throws IOException {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public Collection<? extends Device> getConnectedDevices() throws IOException {
+        final WebInspectorJNIBinding inspector = WebInspectorJNIBinding.getDefault();
+        try {
+            inspector.start();
+            inspector.stop();
+            return Collections.singleton(IOSDevice.CONNECTED);
+        } catch (IllegalStateException ex) {
+            return Collections.emptyList();
+        }
     }
-
+    
     @Override
     public SDK getPrefferedTarget() {
         if (Utilities.isMac()) {
