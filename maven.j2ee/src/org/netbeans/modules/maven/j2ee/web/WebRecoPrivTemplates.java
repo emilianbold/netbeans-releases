@@ -98,7 +98,9 @@ public class WebRecoPrivTemplates implements RecommendedTemplates, PrivilegedTem
         "ejb-types",            // NOI18N
         "ejb-types-server",     // NOI18N
         "ejb-types_3_0",        // NOI18N
-        "ejb-types_3_1"         // NOI18N
+        "ejb-types_3_1",        // NOI18N
+        "ejb-types_3_1_full",   // NOI18N
+        "ejb-deployment-descriptor", // NOI18N
     };
 
     private static final String[] WEB_TYPES_EJB_LITE = new String[] {
@@ -106,6 +108,14 @@ public class WebRecoPrivTemplates implements RecommendedTemplates, PrivilegedTem
         "ejb-types_3_0",            // NOI18N
         "ejb-types_3_1",            // NOI18N
         "ejb-deployment-descriptor" // NOI18N
+    };
+
+    private static final String[] WEB_TYPES_EJB32_LITE = new String[] {
+        "ejb-types",            // NOI18N
+        "ejb-types_3_0",        // NOI18N
+        "ejb-types_3_1",        // NOI18N
+        "ejb-types_3_2",        // NOI18N
+        "ejb-deployment-descriptor", // NOI18N
     };
 
     
@@ -142,6 +152,10 @@ public class WebRecoPrivTemplates implements RecommendedTemplates, PrivilegedTem
     private static final String[] WEB_PRIVILEGED_NAMES_EE6_WEB = new String[] {
         "Templates/J2EE/Session"  // NOI18N
     };
+
+    private static final String[] WEB_PRIVILEGED_NAMES_EE7_WEB = new String[] {
+        "Templates/J2EE/TimerSession"   // NOI18N
+    };
     
     @Override
     public String[] getRecommendedTypes() {
@@ -155,10 +169,11 @@ public class WebRecoPrivTemplates implements RecommendedTemplates, PrivilegedTem
                 ArrayList<String> toRet = new ArrayList<String>(Arrays.asList(WEB_TYPES_6));
                 J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
                 if (cap != null) {
-                    if (cap.isEjb31Supported()) {
+                    if (cap.isEjb31Supported() || isServerSupportingEJB31()) {
                         toRet.addAll(Arrays.asList(WEB_TYPES_EJB));
-                    }
-                    if (cap.isEjb31LiteSupported()) {
+                    } else if (cap.isEjb32LiteSupported()) {
+                        toRet.addAll(Arrays.asList(WEB_TYPES_EJB32_LITE));
+                    } else if (cap.isEjb31LiteSupported()) {
                         toRet.addAll(Arrays.asList(WEB_TYPES_EJB_LITE));
                     }
                 }
@@ -180,16 +195,28 @@ public class WebRecoPrivTemplates implements RecommendedTemplates, PrivilegedTem
                 ArrayList<String> toRet = new ArrayList<String>(Arrays.asList(WEB_PRIVILEGED_NAMES_6));
                 J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
                 if (cap != null) {
-                    if (cap.isEjb31Supported()) {
+                    if (cap.isEjb31Supported() || isServerSupportingEJB31()) {
                         toRet.addAll(Arrays.asList(WEB_PRIVILEGED_NAMES_EE6_FULL));
                     }
                     if (cap.isEjb31LiteSupported()) {
                         toRet.addAll(Arrays.asList(WEB_PRIVILEGED_NAMES_EE6_WEB));
+                    }
+                    if (cap.isEjb32LiteSupported()) {
+                        toRet.addAll(Arrays.asList(WEB_PRIVILEGED_NAMES_EE7_WEB));
                     }
                 }
                 return toRet.toArray(new String[0]);
             }
         }
         return WEB_PRIVILEGED_NAMES;
+    }
+
+    private boolean isServerSupportingEJB31() {
+        if (Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_6_FULL) ||
+            Util.getSupportedProfiles(project).contains(Profile.JAVA_EE_7_FULL)) {
+
+            return true;
+        }
+        return false;
     }
 }
