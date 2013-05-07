@@ -1436,6 +1436,16 @@ public class FlowTest extends NbTestCase {
                                    "i");
     }
     
+    public void test229306() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private static int countCreated = 0;\n" +
+                                   "    private final int ID = ++countCreated;\n" +
+                                   "}\n",
+                                   false,
+                                   "ID");//TODO: ID actually already is final - should or should not be on the list?
+    }
+    
     private void performFinalCandidatesTest(String code, boolean allowErrors, String... finalCandidates) throws Exception {
         prepareTest(code, allowErrors);
 
