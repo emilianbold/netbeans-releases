@@ -217,7 +217,9 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             return false;
         }
         final QueryNode other = (QueryNode) obj;
-        //TODO complete query equals method
+        if (!query.getRepositoryImpl().getId().equals(other.query.getRepositoryImpl().getId())) {
+            return false;
+        }
         return query.getDisplayName().equalsIgnoreCase(other.query.getDisplayName());
     }
 
