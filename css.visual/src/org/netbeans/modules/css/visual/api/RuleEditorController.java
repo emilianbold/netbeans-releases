@@ -209,6 +209,20 @@ public final class RuleEditorController {
             }
         });
     }
+
+    /**
+     * Sets a message that should be displayed in the editor.
+     * 
+     * @param message message to display.
+     */
+    public void setMessage(final String message) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                peer.setMessage(message);
+            }
+        });        
+    }
     
     /**
      * Sets the {@link ViewMode} of the rule editor. 

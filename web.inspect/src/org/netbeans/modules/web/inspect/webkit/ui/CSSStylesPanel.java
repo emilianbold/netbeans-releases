@@ -95,6 +95,7 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -434,6 +435,9 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                             controller.setModel(sourceModel);
                             controller.setRule(modelRule);
                             if (ruleInfo != null) {
+                                if (ruleInfo.getMetaSourceFile() != null) {
+                                    controller.setMessage(NbBundle.getMessage(CSSStylesPanel.class, "CSSStylesPanel.generatedRule")); // NOI18N
+                                }
                                 List<String> active = new ArrayList<String>();
                                 Declarations decls = modelRule.getDeclarations();
                                 if (decls != null) {
