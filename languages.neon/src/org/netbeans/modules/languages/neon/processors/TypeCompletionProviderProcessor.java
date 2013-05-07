@@ -39,29 +39,40 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.languages.neon.spi.completion;
+package org.netbeans.modules.languages.neon.processors;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.util.List;
-import org.netbeans.api.annotations.common.NonNull;
-import org.openide.filesystems.FileObject;
+import java.util.Set;
+import javax.annotation.processing.Processor;
+import javax.annotation.processing.RoundEnvironment;
+import javax.annotation.processing.SupportedAnnotationTypes;
+import javax.annotation.processing.SupportedSourceVersion;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
+import org.openide.filesystems.annotations.LayerGeneratingProcessor;
+import org.openide.filesystems.annotations.LayerGenerationException;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface TypeCompletionProvider {
+@ServiceProvider(service = Processor.class)
+@SupportedSourceVersion(SourceVersion.RELEASE_7)
+@SupportedAnnotationTypes("org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider.Registration")
+public class TypeCompletionProviderProcessor extends LayerGeneratingProcessor {
+    public static final String TYPE_COMPLETION_PROVIDER_PATH = "Neon/completion/type"; //NOI18N
 
-    List<String> complete(@NonNull String prefix, @NonNull FileObject fileObject);
-
-    @Retention(RetentionPolicy.SOURCE)
-    @Target({ElementType.TYPE, ElementType.METHOD})
-    public @interface Registration {
-
-        int position() default Integer.MAX_VALUE;
-
+    @Override
+    protected boolean handleProcess(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) throws LayerGenerationException {
+        for (Element element : roundEnv.getElementsAnnotatedWith(TypeCompletionProvider.Registration.class)) {
+            layer(element)
+                    .instanceFile(TYPE_COMPLETION_PROVIDER_PATH, null, TypeCompletionProvider.class)
+                    .intvalue("position", element.getAnnotation(TypeCompletionProvider.Registration.class).position()) //NOI18N
+                    .write();
+        }
+        return true;
     }
+
 }

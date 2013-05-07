@@ -51,14 +51,21 @@ import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-@ServiceProvider(service = TypeCompletionProvider.class)
 public class PhpTypeCompletionProvider implements TypeCompletionProvider {
+    private static final PhpTypeCompletionProvider INSTANCE = new PhpTypeCompletionProvider();
+
+    private PhpTypeCompletionProvider() {
+    }
+
+    @TypeCompletionProvider.Registration(position = 100)
+    public static PhpTypeCompletionProvider getInstance() {
+        return INSTANCE;
+    }
 
     @Override
     public List<String> complete(String prefix, FileObject fileObject) {
