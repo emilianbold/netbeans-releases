@@ -52,7 +52,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.parsing.impl.indexing.ClusteredIndexables;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
-import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex2;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.openide.util.Exceptions;
@@ -72,8 +72,8 @@ public final class DocumentBasedIndexManager {
     @org.netbeans.api.annotations.common.SuppressWarnings(
     value="DMI_COLLECTION_OF_URLS",
     justification="URLs have never host part")
-    private final Map<URL, Pair<DocumentIndex.Transactional, DocumentIndexCache>> indexes =
-            new HashMap<URL, Pair<DocumentIndex.Transactional, DocumentIndexCache>> ();
+    private final Map<URL, Pair<DocumentIndex2.Transactional, DocumentIndexCache>> indexes =
+            new HashMap<URL, Pair<DocumentIndex2.Transactional, DocumentIndexCache>> ();
     //@GuardedBy("this")
     private boolean closed;
 
@@ -98,13 +98,13 @@ public final class DocumentBasedIndexManager {
    @org.netbeans.api.annotations.common.SuppressWarnings(
     value="DMI_COLLECTION_OF_URLS",
     justification="URLs have never host part")
-    public synchronized DocumentIndex.Transactional getIndex (final URL root, final Mode mode) throws IOException {
+    public synchronized DocumentIndex2.Transactional getIndex (final URL root, final Mode mode) throws IOException {
         assert root != null;
         assert PathRegistry.noHostPart(root) : root;
         if (closed) {
             return null;
         }
-        Pair<DocumentIndex.Transactional, DocumentIndexCache> li = indexes.get(root);
+        Pair<DocumentIndex2.Transactional, DocumentIndexCache> li = indexes.get(root);
         if (li == null) {
             try {
                 switch (mode) {
@@ -113,8 +113,8 @@ public final class DocumentBasedIndexManager {
                         final File file = Utilities.toFile(root.toURI());
                         file.mkdir();
                         final DocumentIndexCache cache = ClusteredIndexables.createDocumentIndexCache();
-                        final DocumentIndex.Transactional index = IndexManager.createTransactionalDocumentIndex(file, cache);
-                        li = Pair.<DocumentIndex.Transactional, DocumentIndexCache>of(index, cache);
+                        final DocumentIndex2.Transactional index = (DocumentIndex2.Transactional) IndexManager.createTransactionalDocumentIndex(file, cache);
+                        li = Pair.<DocumentIndex2.Transactional, DocumentIndexCache>of(index, cache);
 
                         indexes.put(root,li);
                         break;
@@ -125,8 +125,8 @@ public final class DocumentBasedIndexManager {
                         String[] children;
                         if (file.isDirectory() && (children=file.list())!= null && children.length > 0) {
                             final DocumentIndexCache cache = ClusteredIndexables.createDocumentIndexCache();
-                            final DocumentIndex.Transactional index = IndexManager.createTransactionalDocumentIndex(file, cache);
-                            li = Pair.<DocumentIndex.Transactional, DocumentIndexCache>of(index, cache);
+                            final DocumentIndex2.Transactional index = (DocumentIndex2.Transactional) IndexManager.createTransactionalDocumentIndex(file, cache);
+                            li = Pair.<DocumentIndex2.Transactional, DocumentIndexCache>of(index, cache);
                             indexes.put(root,li);
                         }
                         break;
@@ -141,14 +141,14 @@ public final class DocumentBasedIndexManager {
 
    @CheckForNull
    public synchronized DocumentIndexCache getCache(@NonNull final URL root) {
-       final Pair<DocumentIndex.Transactional, DocumentIndexCache> entry = indexes.get(root);
+       final Pair<DocumentIndex2.Transactional, DocumentIndexCache> entry = indexes.get(root);
        return entry == null ? null : entry.second();
    }
 
    @CheckForNull
-   public synchronized DocumentIndex.Transactional getIndex(@NonNull final DocumentIndexCache cache) {
+   public synchronized DocumentIndex2.Transactional getIndex(@NonNull final DocumentIndexCache cache) {
        Parameters.notNull("cache", cache);  //NOI18N
-       for (Pair<DocumentIndex.Transactional,DocumentIndexCache> e : indexes.values()) {
+       for (Pair<DocumentIndex2.Transactional,DocumentIndexCache> e : indexes.values()) {
            if (cache.equals(e.second())) {
                return e.first();
            }
@@ -161,7 +161,7 @@ public final class DocumentBasedIndexManager {
            return;
        }
        closed = true;
-       for (Pair<DocumentIndex.Transactional, DocumentIndexCache> index : indexes.values()) {
+       for (Pair<DocumentIndex2.Transactional, DocumentIndexCache> index : indexes.values()) {
            try {
             index.first().close();
            } catch (IOException ioe) {
