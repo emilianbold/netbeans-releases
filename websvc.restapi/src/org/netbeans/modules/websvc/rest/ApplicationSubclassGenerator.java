@@ -389,7 +389,6 @@ public class ApplicationSubclassGenerator {
         }
         builder.append('}');
     }
-
     private void handleResource(CompilationController controller, String className, StringBuilder builder) throws IllegalArgumentException {
         builder.append("resources.add(");       // NOI18N
         builder.append( className );
