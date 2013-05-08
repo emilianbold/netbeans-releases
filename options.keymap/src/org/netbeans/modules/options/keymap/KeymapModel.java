@@ -745,6 +745,16 @@ public class KeymapModel {
         return name == null ? keymapDisplayName : name;
     }
     
+    String getProfileName(String id) {
+        Map<String, String> m = getProfilesMap();
+        for (Map.Entry<String, String> e :m.entrySet()) {
+            if (e.getValue().equals(id)) {
+                return e.getKey();
+            }
+        }
+        return null;
+    }
+    
     static final Object LOCK = new String("Keymap lock");
 
     /**

@@ -733,15 +733,14 @@ public class NbEditorKit extends ExtKit implements Callable {
                 target = null;
             }
             if (kit == null) return;
-            
-            FoldHierarchy h = FoldHierarchy.get(target);
-            if (!h.isActive()) {
-                return;
-            }
+                
             boolean foldingEnabled = false;
             if (target != null) {
-                Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(target)).lookup(Preferences.class);
-                foldingEnabled = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, EditorPreferencesDefaults.defaultCodeFoldingEnable);
+                FoldHierarchy h = FoldHierarchy.get(target);
+                if (h.isActive()) {
+                    Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(target)).lookup(Preferences.class);
+                    foldingEnabled = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, EditorPreferencesDefaults.defaultCodeFoldingEnable);
+                }
             }
             
             Action a = kit.getActionByName(actionName);

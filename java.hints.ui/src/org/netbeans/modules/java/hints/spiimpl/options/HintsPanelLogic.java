@@ -217,7 +217,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     synchronized void setOverlayPreferences(HintsSettings settings) {
         applyChanges();
         this.originalSettings = settings != null ? settings : HintsSettings.getGlobalSettings();
-        this.writableSettings = new WritableSettings(settings);
+        this.writableSettings = new WritableSettings(originalSettings);
         valueChanged(null);
         errorTree.repaint();
     }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.bracesmatching;
+package org.netbeans.modules.parsing.lucene.support;
 
-import java.util.EventObject;
-import javax.swing.text.JTextComponent;
-import org.netbeans.spi.editor.bracesmatching.BracesMatcher.ContextLocator;
+import java.io.IOException;
+import java.util.Collection;
+import org.apache.lucene.search.Query;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 
 /**
- *
- * @author sdedic
+ * Document based index allowing arbitrary Lucene Query.
+ * @author Tomas Zezula
+ * @since 2.24
  */
-public class MatchEvent extends EventObject {
-    private JTextComponent  component;
-    private int[]           origin;
-    private int[]           matches;
-    private ContextLocator  locator;
+public interface DocumentIndex2 extends DocumentIndex {
 
-    public MatchEvent(JTextComponent component, ContextLocator locator, Object source) {
-        super(source);
-        this.component = component;
-        this.locator = locator;
-    }
-    
-    public ContextLocator getLocator() {
-        return locator;
-    }
-    
-    public void setHighlights(int[] origin, int[] matches) {
-        this.origin = origin;
-        this.matches = matches;
-    }
+    /**
+     * Performs the Lucene query on the index.
+     * @param query to perform
+     * @param fieldsToLoad  fields to load into returned document
+     * @return  the Collection of {@link IndexDocument} matching the query.
+     * @throws IOException  in case of IO error.
+     * @throws InterruptedException if the search is interrupted.
+     */
+    @NonNull
+    public  <T> Collection<? extends T> query (
+            @NonNull Query query,
+            @NonNull Convertor<? super IndexDocument, ? extends T> convertor,
+            @NullAllowed String... fieldsToLoad) throws IOException, InterruptedException;
 
-    public JTextComponent getComponent() {
-        return component;
+    /**
+     * Transactional {@link DocumentIndex2}.
+     */
+    public interface  Transactional extends DocumentIndex2, DocumentIndex.Transactional {
     }
-
-    public int[] getOrigin() {
-        return origin;
-    }
-
-    public int[] getMatches() {
-        return matches;
-    }
-    
-    
 }

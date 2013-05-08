@@ -44,6 +44,7 @@
 package org.netbeans.spi.editor.bracesmatching;
 
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Position;
 
 /**
  * The common interface for all matchers. Implementations of this interface
@@ -168,4 +169,24 @@ public interface BracesMatcher {
      * @throws javax.swing.text.BadLocationException If a document operation fails.
      */
     public int [] findMatches() throws InterruptedException, BadLocationException;
+    
+    /**
+     * Mixin interface, which provides context ranges for brace matches.
+     * The interface is expected to be implemented on the {@link BracesMatcher} instances
+     * produced by {@link BracesMatcherFactory}. If implemented, the infrastructure may
+     * call the method to obtain additional context for display along with brace highlight. 
+     * See the {@link BraceContext} for more information.
+     */
+    public interface ContextLocator {
+        /**
+         * Obtains context for the given text position. At this moment, only start offset
+         * of the origin will be passed in, but the implementation should be prepared to
+         * handle (or ignore) each of the starting offsets reported by {@link #findOrigin()} or 
+         * {@link #findMatches()}.
+         * 
+         * @param originOrMatchPosition position of 'origin' or 'match' brace
+         * @return context information or {@code null} if the context cannot be provided.
+         */
+        public BraceContext findContext(int originOrMatchPosition);
+    }
 }

@@ -1131,6 +1131,9 @@ public class MetaComponentCreator {
                 // LayoutManager -> find LayoutSupportDelegate for it
                 layoutDelegate = LayoutSupportRegistry.getRegistry(formModel)
                                      .createSupportForLayout(layoutClass);
+                if (javax.swing.OverlayLayout.class.equals(layoutClass)) {
+                    formModel.raiseVersionLevel(FormModel.FormVersion.NB74, FormModel.FormVersion.NB74);
+                }
             }
             else if (LayoutSupportDelegate.class.isAssignableFrom(layoutClass)) {
                 // LayoutSupportDelegate -> use it directly

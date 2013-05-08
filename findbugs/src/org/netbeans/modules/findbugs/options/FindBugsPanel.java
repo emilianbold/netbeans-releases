@@ -349,6 +349,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         jSplitPane1.setRightComponent(jPanel1);
 
         org.openide.awt.Mnemonics.setLocalizedText(runInEditor, org.openide.util.NbBundle.getMessage(FindBugsPanel.class, "FindBugsPanel.runInEditor.text")); // NOI18N
+        runInEditor.setToolTipText(org.openide.util.NbBundle.getMessage(FindBugsPanel.class, "TP_RunInEditor")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(customPlugins, org.openide.util.NbBundle.getMessage(FindBugsPanel.class, "FindBugsPanel.customPlugins.text")); // NOI18N
         customPlugins.addActionListener(new java.awt.event.ActionListener() {
