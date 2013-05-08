@@ -80,6 +80,8 @@ public class IndexingSupportTest extends NbTestCase {
     private FileObject cache;
     private FileObject f1;
     private FileObject f2;
+    private FileObject f3;
+    private FileObject f4;
 
     public IndexingSupportTest (final String name) {
         super (name);
@@ -100,6 +102,10 @@ public class IndexingSupportTest extends NbTestCase {
         assert f1 != null;
         f2 = FileUtil.createData(root,"folder/b.foo");
         assert f2 != null;
+        f3 = FileUtil.createData(root,"folder/c.foo");
+        assert f3 != null;
+        f4 = FileUtil.createData(root,"folder/c.foo");
+        assert f4 != null;
         FileUtil.setMIMEType("foo", MIME);  //NOI18N
     }
 
@@ -222,6 +228,180 @@ public class IndexingSupportTest extends NbTestCase {
         assertEquals("Object", ir[1].getValue("class"));
         assertEquals("java.lang", ir[1].getValue("package"));
         assertEquals("true", ir[1].getValue("flag"));
+    }
+
+
+    public void testIndexingQuerySupport2 () throws Exception {
+        // index
+        final Context ctx = SPIAccessor.getInstance().createContext(
+                CacheFolder.getDataFolder(root.toURL()),
+                root.toURL(),
+                "fooIndexer",
+                1,
+                null,
+                false,
+                false,
+                false,
+                SuspendSupport.NOP,
+                null,
+                null);
+        assertNotNull(ctx);
+        final Indexable i1 = SPIAccessor.getInstance().create(new FileObjectIndexable(root, f1));
+        final IndexingSupport is = IndexingSupport.getInstance(ctx);
+        assertNotNull(is);
+        IndexDocument doc1 = is.createDocument(i1);
+        assertNotNull(doc1);
+        doc1.addPair("class", "String", true, true);
+        doc1.addPair("package", "java.lang", true, true);
+        is.addDocument(doc1);
+        final Indexable i2 = SPIAccessor.getInstance().create(new FileObjectIndexable(root, f2));
+        IndexDocument doc2 = is.createDocument(i2);
+        assertNotNull(doc2);
+        doc2.addPair("class", "Object", true, true);
+        doc2.addPair("package", "java.lang", true, true);
+        doc2.addPair("flag", "true", true, true);
+        is.addDocument(doc2);
+        SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder()).store(true);
+
+        // query
+        QuerySupport qs = QuerySupport.forRoots("fooIndexer", 1, root);
+        Collection<? extends IndexResult> result = qs.getQueryFactory().field("class", "String", QuerySupport.Kind.EXACT).execute("class", "package");
+        assertEquals(1, result.size());
+        assertEquals("String", result.iterator().next().getValue("class"));
+        assertEquals("java.lang", result.iterator().next().getValue("package"));
+        assertEquals(f1, result.iterator().next().getFile());
+        assertEquals(f1.getURL(), result.iterator().next().getUrl());
+        result = qs.getQueryFactory().field("class", "Str", QuerySupport.Kind.PREFIX).execute("class", "package");
+        assertEquals(1, result.size());
+        assertEquals("String", result.iterator().next().getValue("class"));
+        assertEquals("java.lang", result.iterator().next().getValue("package"));
+        result = qs.getQueryFactory().field("class", "S.*g", QuerySupport.Kind.REGEXP).execute("class", "package");
+        assertEquals(1, result.size());
+        assertEquals("String", result.iterator().next().getValue("class"));
+        assertEquals("java.lang", result.iterator().next().getValue("package"));
+        result = qs.getQueryFactory().field("class", "S", QuerySupport.Kind.CAMEL_CASE).execute("class", "package");
+        assertEquals(1, result.size());
+        assertEquals("String", result.iterator().next().getValue("class"));
+        assertEquals("java.lang", result.iterator().next().getValue("package"));
+        result = qs.getQueryFactory().field("class", "", QuerySupport.Kind.PREFIX).execute("class", "package");
+        assertEquals(2, result.size());
+        IndexResult[] ir = new IndexResult[2];
+        ir = result.toArray(ir);
+        assertEquals("String", ir[0].getValue("class"));
+        assertEquals("java.lang", ir[0].getValue("package"));
+        assertEquals("Object", ir[1].getValue("class"));
+        assertEquals("java.lang", ir[1].getValue("package"));
+        result = qs.getQueryFactory().field("class", "F", QuerySupport.Kind.PREFIX).execute("class", "package");
+        assertEquals(0, result.size());
+
+        // search for documents that contain field called 'flag'
+        result = qs.getQueryFactory().field("flag", "", QuerySupport.Kind.PREFIX).execute();
+        assertEquals(1, result.size());
+        assertEquals("Object", result.iterator().next().getValue("class"));
+        assertEquals("java.lang", result.iterator().next().getValue("package"));
+        assertEquals("true", result.iterator().next().getValue("flag"));
+
+        // search for all documents
+        result = qs.getQueryFactory().field("", "", QuerySupport.Kind.PREFIX).execute();
+        assertEquals(2, result.size());
+        ir = new IndexResult[2];
+        ir = result.toArray(ir);
+        assertEquals("String", ir[0].getValue("class"));
+        assertEquals("java.lang", ir[0].getValue("package"));
+        assertNull(ir[0].getValue("flag"));
+        assertEquals("Object", ir[1].getValue("class"));
+        assertEquals("java.lang", ir[1].getValue("package"));
+        assertEquals("true", ir[1].getValue("flag"));
+    }
+
+    public void testIndexingQuerySupport3 () throws Exception {
+        // index
+        final Context ctx = SPIAccessor.getInstance().createContext(
+                CacheFolder.getDataFolder(root.toURL()),
+                root.toURL(),
+                "fooIndexer",
+                1,
+                null,
+                false,
+                false,
+                false,
+                SuspendSupport.NOP,
+                null,
+                null);
+        assertNotNull(ctx);
+        final Indexable i1 = SPIAccessor.getInstance().create(new FileObjectIndexable(root, f1));
+        final IndexingSupport is = IndexingSupport.getInstance(ctx);
+        assertNotNull(is);
+        IndexDocument doc1 = is.createDocument(i1);
+        assertNotNull(doc1);
+        doc1.addPair("class", "String", true, true);
+        doc1.addPair("package", "java.lang", true, true);
+        is.addDocument(doc1);
+        final Indexable i2 = SPIAccessor.getInstance().create(new FileObjectIndexable(root, f2));
+        IndexDocument doc2 = is.createDocument(i2);
+        assertNotNull(doc2);
+        doc2.addPair("class", "Object", true, true);
+        doc2.addPair("package", "java.lang", true, true);
+        is.addDocument(doc2);
+        final Indexable i3 = SPIAccessor.getInstance().create(new FileObjectIndexable(root, f3));
+        IndexDocument doc3 = is.createDocument(i3);
+        assertNotNull(doc3);
+        doc3.addPair("class", "Object", true, true);
+        doc3.addPair("package", "org.omg.CORBA", true, true);
+        is.addDocument(doc3);
+        final Indexable i4 = SPIAccessor.getInstance().create(new FileObjectIndexable(root, f4));
+        IndexDocument doc4 = is.createDocument(i3);
+        assertNotNull(doc4);
+        doc4.addPair("class", "Integer", true, true);
+        doc4.addPair("package", "java.lang", true, true);
+        is.addDocument(doc4);
+        SPIAccessor.getInstance().getIndexFactory(ctx).getIndex(ctx.getIndexFolder()).store(true);
+
+        // query
+        QuerySupport qs = QuerySupport.forRoots("fooIndexer", 1, root);
+        Collection<? extends IndexResult> result = qs.getQueryFactory().field("class", "Object", QuerySupport.Kind.EXACT).execute("class", "package");
+        assertEquals(2, result.size());
+        IndexResult[] ir = result.toArray(new IndexResult[2]);
+        assertEquals("Object", ir[0].getValue("class"));
+        assertEquals("java.lang", ir[0].getValue("package"));
+        assertEquals("Object", ir[1].getValue("class"));
+        assertEquals("org.omg.CORBA", ir[1].getValue("package"));
+        result = qs.getQueryFactory().
+                and(
+                    qs.getQueryFactory().field("class", "Object", QuerySupport.Kind.EXACT),
+                    qs.getQueryFactory().field("package", "org.omg.CORBA", QuerySupport.Kind.EXACT)).execute("class", "package");
+        assertEquals(1, result.size());
+        ir = result.toArray(new IndexResult[1]);
+        assertEquals("Object", ir[0].getValue("class"));        
+        assertEquals("org.omg.CORBA", ir[0].getValue("package"));
+        result = qs.getQueryFactory().
+                and(
+                    qs.getQueryFactory().field("package", "java.lang", QuerySupport.Kind.EXACT),
+                    qs.getQueryFactory().or(
+                        qs.getQueryFactory().field("class", "String", QuerySupport.Kind.EXACT),
+                        qs.getQueryFactory().field("class", "Integer", QuerySupport.Kind.EXACT))
+                ).execute("class", "package");
+        assertEquals(2, result.size());
+        ir = result.toArray(new IndexResult[2]);
+        assertEquals("String", ir[0].getValue("class"));
+        assertEquals("java.lang", ir[0].getValue("package"));
+        assertEquals("Integer", ir[1].getValue("class"));
+        assertEquals("java.lang", ir[1].getValue("package"));
+        result = qs.getQueryFactory().
+                or(
+                    qs.getQueryFactory().and(
+                        qs.getQueryFactory().field("package", "java.lang", QuerySupport.Kind.EXACT),
+                        qs.getQueryFactory().field("class", "String", QuerySupport.Kind.EXACT)),
+                    qs.getQueryFactory().and(
+                        qs.getQueryFactory().field("package", "java.lang", QuerySupport.Kind.EXACT),
+                        qs.getQueryFactory().field("class", "Integer", QuerySupport.Kind.EXACT))
+                ).execute("class", "package");
+        assertEquals(2, result.size());
+        ir = result.toArray(new IndexResult[2]);
+        assertEquals("String", ir[0].getValue("class"));
+        assertEquals("java.lang", ir[0].getValue("package"));
+        assertEquals("Integer", ir[1].getValue("class"));
+        assertEquals("java.lang", ir[1].getValue("package"));  
     }
 
     public void testQuerySupportCaching() throws Exception {

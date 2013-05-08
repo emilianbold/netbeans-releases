@@ -210,6 +210,9 @@ public class PopupManager {
                 if (rp!=null){
                     bounds = SwingUtilities.convertRectangle(textComponent, bounds,
                         rp.getLayeredPane());
+                    if (bounds.y < 0) {
+                        bounds.y = 0;
+                    }
                 }
 
                 if (horizontalBounds == ScrollBarBounds){

@@ -393,9 +393,11 @@ public class JFXProjectGenerator {
         Element nameEl = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
-        final Element explicitPlatformEl = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); //NOI18N
-        explicitPlatformEl.setAttribute("explicit-source-supported", "true");   //NOI18N
-        data.appendChild(explicitPlatformEl);
+        if (!isDefaultPlatform(platformName)) {
+            final Element explicitPlatformEl = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); //NOI18N
+            explicitPlatformEl.setAttribute("explicit-source-supported", "true");   //NOI18N
+            data.appendChild(explicitPlatformEl);
+        }
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots");  //NOI18N
@@ -635,6 +637,11 @@ public class JFXProjectGenerator {
         logRecord = new LogRecord(Level.INFO, action.getSpecificLogMessage());
         logRecord.setLoggerName(logger.getName());
         logger.log(logRecord);
+    }
+
+    private static boolean isDefaultPlatform(@NonNull final String platformName) {
+        Parameters.notNull("platformName", platformName);   //NOI18N
+        return platformName.equals(JavaPlatform.getDefault().getProperties().get("platform.ant.name")); //NOI18N
     }
 
     private static void copyRequiredLibraries(AntProjectHelper h, ReferenceHelper rh) throws IOException {

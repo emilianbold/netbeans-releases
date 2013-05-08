@@ -46,8 +46,11 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.*;
+import org.apache.lucene.search.Query;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
+import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex2;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.Index.Status;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
@@ -77,7 +80,7 @@ public class TestIndexFactoryImpl implements IndexFactoryImpl {
         }
 
         public @Override LayeredDocumentIndex createIndex(Context ctx) throws IOException {
-            DocumentIndex.Transactional ii = delegate.createIndex(ctx);
+            DocumentIndex2.Transactional ii = delegate.createIndex(ctx);
             Reference<LayeredDocumentIndex> ttiRef = indexImpls.get(ii);
             LayeredDocumentIndex lii = ttiRef != null ? ttiRef.get() : null;
             
@@ -112,9 +115,9 @@ public class TestIndexFactoryImpl implements IndexFactoryImpl {
         private final Map<DocumentIndex, Reference<TestIndexImpl>> testImpls = new WeakHashMap<DocumentIndex, Reference<TestIndexImpl>>();
         private final Map<DocumentIndex, Reference<LayeredDocumentIndex>> indexImpls = new WeakHashMap<DocumentIndex, Reference<LayeredDocumentIndex>>();
 
-    public static final class TestIndexImpl implements DocumentIndex.Transactional {
+    public static final class TestIndexImpl implements DocumentIndex2.Transactional {
 
-        public TestIndexImpl(DocumentIndex.Transactional original) {
+        public TestIndexImpl(DocumentIndex2.Transactional original) {
             this.original = original;
         }
 
@@ -186,6 +189,11 @@ public class TestIndexFactoryImpl implements IndexFactoryImpl {
         }
 
         @Override
+        public <T> Collection<? extends T> query(Query query, Convertor<? super IndexDocument, ? extends T> convertor, String... fieldsToLoad) throws IOException, InterruptedException {
+            return original.query(query, convertor, fieldsToLoad);
+        }
+
+        @Override
         public Collection<? extends IndexDocument> findByPrimaryKey(String primaryKeyValue, QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {
             return original.findByPrimaryKey(primaryKeyValue, kind, fieldsToLoad);
         }                
@@ -212,7 +220,7 @@ public class TestIndexFactoryImpl implements IndexFactoryImpl {
         // private implementation
         // --------------------------------------------------------------------
 
-        private final DocumentIndex.Transactional original;
+        private final DocumentIndex2.Transactional original;
         public Map<String, List<TestIndexDocumentImpl>> documents = new HashMap<String, List<TestIndexDocumentImpl>>();
         
     } // End of TestIndexImpl class

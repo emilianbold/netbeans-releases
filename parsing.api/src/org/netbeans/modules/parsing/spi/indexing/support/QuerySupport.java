@@ -47,6 +47,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -56,12 +57,15 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.lucene.search.BooleanClause;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -82,8 +86,10 @@ import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
 import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
-import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.Convertor;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex2;
 import org.netbeans.modules.parsing.lucene.support.Index;
+import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -319,79 +325,17 @@ public final class QuerySupport {
         Parameters.notNull("fieldName", fieldName); //NOI18N
         Parameters.notNull("fieldValue", fieldValue); //NOI18N
         Parameters.notNull("kind", kind); //NOI18N
-        try {
-            return Utilities.runPriorityIO(new Callable<Collection<? extends IndexResult>>() {
+        return getQueryFactory().field(fieldName, fieldValue, kind).execute(fieldsToLoad);
+    }
 
-                @Override
-                public Collection<? extends IndexResult> call() throws Exception {
-                    Iterable<? extends Pair<URL, LayeredDocumentIndex>> indices = indexerQuery.getIndices(roots);
-                    // check if there are stale indices
-                    for (Pair<URL, LayeredDocumentIndex> pair : indices) {
-                        final LayeredDocumentIndex index = pair.second();
-                        final Collection<? extends String> staleFiles = index.getDirtyKeys();
-                        final boolean scanningThread = RunWhenScanFinishedSupport.isScanningThread();
-                        LOG.log(
-                            Level.FINE,
-                            "Index: {0}, staleFiles: {1}, scanning thread: {2}",  //NOI18N
-                            new Object[]{
-                                index,
-                                staleFiles,
-                                scanningThread
-                            });
-                        if (!staleFiles.isEmpty() && !scanningThread) {
-                            final URL root = pair.first();
-                            LinkedList<URL> list = new LinkedList<URL>();
-                            for (String staleFile : staleFiles) {
-                                try {
-                                    list.add(Util.resolveUrl(root, staleFile, false));
-                                } catch (MalformedURLException ex) {
-                                    LOG.log(Level.WARNING, null, ex);
-                                }
-                            }
-                            TransientUpdateSupport.setTransientUpdate(true);
-                            try {
-                                RepositoryUpdater.getDefault().enforcedFileListUpdate(root,list);
-                            } finally {
-                                TransientUpdateSupport.setTransientUpdate(false);
-                            }
-                        }
-                    }
-                    final List<IndexResult> result = new LinkedList<IndexResult>();
-                    for (Pair<URL, LayeredDocumentIndex> pair : indices) {
-                        final DocumentIndex index = pair.second();
-                        final URL root = pair.first();
-                        final Collection<? extends org.netbeans.modules.parsing.lucene.support.IndexDocument> pr = index.query(
-                                fieldName,
-                                fieldValue,
-                                translateQueryKind(kind),
-                                fieldsToLoad);
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.fine("query(\"" + fieldName + "\", \"" + fieldValue + "\", " + kind + ", " + printFiledToLoad(fieldsToLoad) + ") invoked at " + getClass().getSimpleName() + "@" + Integer.toHexString(System.identityHashCode(this)) + "[indexer=" + indexerQuery.getIndexerId() + "]:"); //NOI18N
-                            for (org.netbeans.modules.parsing.lucene.support.IndexDocument idi : pr) {
-                                LOG.fine(" " + idi); //NOI18N
-                            }
-                            LOG.fine("----"); //NOI18N
-                        }
-                        for (org.netbeans.modules.parsing.lucene.support.IndexDocument di : pr) {
-                            result.add(new IndexResult(di, root));
-                        }
-                    }
-                    return result;
-                }
-            });
-        } catch (Index.IndexClosedException ice) {
-            if (Installer.isClosed()) {
-                return Collections.<IndexResult>emptySet();
-            } else {
-                throw ice;
-            }
-        } catch (IOException ioe) {
-            throw ioe;
-        } catch (RuntimeException re) {
-            throw re;
-        } catch (Exception ex) {
-            throw new IOException(ex);
-        }
+   /**
+    * Returns the factory for creating composite queries.
+    * @return the {@link QuerySupport.Query.Factory}
+    * @since 1.66
+    */
+    @NonNull
+    public Query.Factory getQueryFactory() {
+        return new Query.Factory(this);
     }
 
     /**
@@ -431,6 +375,192 @@ public final class QuerySupport {
         CASE_INSENSITIVE_REGEXP,
 
         CASE_INSENSITIVE_CAMEL_CASE;
+    }
+
+    /**
+     * An index query.
+     * @since 1.66
+     */
+    public static final class Query {
+
+        private final QuerySupport qs;
+        private final org.apache.lucene.search.Query queryImpl;
+
+        private Query(
+            @NonNull final QuerySupport qs,
+            @NonNull final org.apache.lucene.search.Query queryImpl) {
+            assert qs != null;
+            assert queryImpl != null;
+            this.qs = qs;
+            this.queryImpl = queryImpl;
+        }
+
+        /**
+         * Factory for an index queries.
+         */
+        public static final class Factory {
+
+            private final QuerySupport qs;
+
+            private Factory(@NonNull final QuerySupport qs) {
+                assert qs != null;
+                this.qs = qs;
+            }
+
+            /**
+             * Creates a query for required field value.
+             * @param fieldName the name of the tested field
+             * @param fieldValue the required value of the tested field
+             * @param kind the kind of the query
+             * @return the newly created query
+             */
+            @NonNull
+            public Query field(
+                @NonNull final String fieldName,
+                @NonNull final String fieldValue,
+                @NonNull final Kind kind) {
+                Parameters.notNull("fieldName", fieldName); //NOI18N
+                Parameters.notNull("fieldValue", fieldValue);   //NOI18N
+                Parameters.notNull("kind", kind);   //NOI18N
+                return new Query(
+                    qs,
+                    Queries.createQuery(
+                        fieldName,
+                        fieldName,
+                        fieldValue,
+                        translateQueryKind(kind)));
+            }
+
+            /**
+             * Creates a boolean AND query.
+             * @param queries the queries to compose into the AND query
+             * @return the newly created AND query
+             */
+            @NonNull
+            public Query and(@NonNull final Query...queries) {
+                Parameters.notNull("queries", queries);     //NOI18N
+                final org.apache.lucene.search.BooleanQuery bq = new org.apache.lucene.search.BooleanQuery();
+                for (Query q : queries) {
+                    bq.add(new BooleanClause(q.queryImpl, org.apache.lucene.search.BooleanClause.Occur.MUST));
+                }
+                return new Query(
+                    qs,
+                    bq);
+            }
+
+            /**
+             * Creates a boolean OR query.
+             * @param queries the queries to compose into the OR query
+             * @return the newly created OR query
+             */
+            @NonNull
+            public Query or(@NonNull final Query...queries) {
+                Parameters.notNull("queries", queries);     //NOI18N
+                final org.apache.lucene.search.BooleanQuery bq = new org.apache.lucene.search.BooleanQuery();
+                for (Query q : queries) {
+                    bq.add(new BooleanClause(q.queryImpl, org.apache.lucene.search.BooleanClause.Occur.SHOULD));
+                }
+                return new Query(
+                    qs,
+                    bq);
+            }
+        }
+
+        /**
+         * Executes the query.
+         * @param fieldsToLoad the filter for fields to be loaded into the {@link IndexResult}s
+         * @return the {@link Collection} of {@link IndexResult} matching the {@link QuerySupport.Query}
+         * @throws IOException in case of IO error.
+         */
+        @NonNull
+        public Collection<? extends IndexResult> execute(@NullAllowed final String... fieldsToLoad) throws IOException {
+            try {
+            return Utilities.runPriorityIO(new Callable<Collection<? extends IndexResult>>() {
+                @Override
+                public Collection<? extends IndexResult> call() throws Exception {
+                    Iterable<? extends Pair<URL, LayeredDocumentIndex>> indices = qs.indexerQuery.getIndices(qs.roots);
+                    // check if there are stale indices
+                    for (Pair<URL, LayeredDocumentIndex> pair : indices) {
+                        final LayeredDocumentIndex index = pair.second();
+                        final Collection<? extends String> staleFiles = index.getDirtyKeys();
+                        final boolean scanningThread = RunWhenScanFinishedSupport.isScanningThread();
+                        LOG.log(
+                            Level.FINE,
+                            "Index: {0}, staleFiles: {1}, scanning thread: {2}",  //NOI18N
+                            new Object[]{
+                                index,
+                                staleFiles,
+                                scanningThread
+                            });
+                        if (!staleFiles.isEmpty() && !scanningThread) {
+                            final URL root = pair.first();
+                            LinkedList<URL> list = new LinkedList<URL>();
+                            for (String staleFile : staleFiles) {
+                                try {
+                                    list.add(Util.resolveUrl(root, staleFile, false));
+                                } catch (MalformedURLException ex) {
+                                    LOG.log(Level.WARNING, null, ex);
+                                }
+                            }
+                            TransientUpdateSupport.setTransientUpdate(true);
+                            try {
+                                RepositoryUpdater.getDefault().enforcedFileListUpdate(root,list);
+                            } finally {
+                                TransientUpdateSupport.setTransientUpdate(false);
+                            }
+                        }
+                    }
+                    final Queue<IndexResult> result = new ArrayDeque<IndexResult>();
+                    for (Pair<URL, LayeredDocumentIndex> pair : indices) {
+                        final DocumentIndex2 index = pair.second();
+                        final URL root = pair.first();
+                        final Collection<? extends IndexResult> pr =
+                                index.query(
+                                    queryImpl,
+                                    new DocumentToResultConvertor(root),
+                                    fieldsToLoad);
+                        result.addAll(pr);  //TODO: Perf: Replace by ProxyCollection
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.log(
+                                Level.FINE, "{0} (loading fields {1}) invoked at {2}@{3}[indexer={4}]:",    //NOI18N
+                                new Object[]{
+                                    this,
+                                    printFiledToLoad(fieldsToLoad),
+                                    qs.getClass().getSimpleName(),
+                                    Integer.toHexString(System.identityHashCode(qs)),
+                                    qs.indexerQuery.getIndexerId()});
+                            for (IndexResult idi : pr) {
+                                LOG.log(Level.FINE, " {0}", idi); //NOI18N
+                            }
+                            LOG.fine("----"); //NOI18N
+                        }                        
+                    }
+                    return result;
+                }
+            });
+        } catch (Index.IndexClosedException ice) {
+            if (Installer.isClosed()) {
+                return Collections.<IndexResult>emptySet();
+            } else {
+                throw ice;
+            }
+        } catch (IOException ioe) {
+            throw ioe;
+        } catch (RuntimeException re) {
+            throw re;
+        } catch (Exception ex) {
+            throw new IOException(ex);
+        }
+            
+        }
+
+        @NonNull
+        @Override
+        public String toString() {
+            return String.format(
+                "QuerySupport.Query[%s]",   //NOI18N
+                queryImpl);
+        }        
     }
 
     // ------------------------------------------------------------------------
@@ -720,4 +850,22 @@ public final class QuerySupport {
             return null;
         }        
     } // End of IndexerQuery class
+
+    private static final class DocumentToResultConvertor implements Convertor<IndexDocument, IndexResult> {
+
+        private final URL root;
+
+        DocumentToResultConvertor(@NonNull final URL root) {
+            this.root = root;
+        }
+
+        @Override
+        @CheckForNull
+        public IndexResult convert(@NullAllowed final IndexDocument p) {
+            return p == null ?
+                null :
+                new IndexResult(p, root);
+        }
+
+    }
 }

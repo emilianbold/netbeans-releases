@@ -616,12 +616,16 @@ public class RADComponent {
      * @param value new value of the aux property or null to remove it
      */
     public void setAuxValue(String key, Object value) {
-        if (auxValues == null) {
-            if (value == null)
-                return;
-            auxValues = new TreeMap<String,Object>();
+        if (value == null) {
+            if (auxValues != null) {
+                auxValues.remove(key);
+            }
+        } else {
+            if (auxValues == null) {
+                auxValues = new TreeMap<String,Object>();
+            }
+            auxValues.put(key, value);
         }
-        auxValues.put(key, value);
     }
 
     /** Allows to obtain an auxiliary value for specified aux property name.

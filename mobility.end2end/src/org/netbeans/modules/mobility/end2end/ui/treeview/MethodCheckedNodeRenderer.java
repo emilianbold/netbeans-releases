@@ -78,7 +78,6 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
     private static final Color selectionForeground = UIManager.getColor("Tree.selectionForeground"); //NOI18N
     private static final Color selectionBackground = UIManager.getColor("Tree.selectionBackground"); //NOI18N
     private static final Color textForeground = UIManager.getColor("Tree.textForeground"); //NOI18N
-    private final CardLayout layout;
 
     /** Creates new form MethodCheckedNodeRenderer */
     public MethodCheckedNodeRenderer() {
@@ -89,8 +88,6 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
         initComponents();
         Boolean booleanValue = (Boolean) UIManager.get("Tree.drawsFocusBorderAroundIcon"); //NOI18N
         setFocusPainted((booleanValue != null) && (booleanValue.booleanValue()));
-        jPanel2.setPreferredSize(jCheckBox1.getSize());
-        layout = (CardLayout) jPanel1.getLayout();
     }
  
     public Component getTreeCellRendererComponent(final JTree tree, final Object value, final boolean selected, final boolean expanded, final boolean leaf, final int row, final boolean hasFocus) {
@@ -130,7 +127,7 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
     }
     
     public void setForeground(final Color selection, final Color text) {
-        if (jCheckBox1 == null || jLabel1 == null || jPanel1 == null) {
+        if (jCheckBox1 == null || jLabel1 == null) {
             return;
         }
         jCheckBox1.setForeground(text);
@@ -139,11 +136,10 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
     }
 
     public void setBackground(final Color selection, final Color text) {
-        if (jCheckBox1 == null || jLabel1 == null || jPanel1 == null) {
+        if (jCheckBox1 == null || jLabel1 == null) {
             return;
         }
         jCheckBox1.setBackground(text);
-        jPanel2.setBackground(text);
         jLabel1.setBackground(selection);
         super.setBackground(selection);
     }
@@ -172,8 +168,12 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
         jLabel1.setIcon(icon);
     }
 
-    public void setEnabled(final boolean enabled) {
-        layout.show(jPanel1, new Boolean(enabled).toString());
+    @Override
+    public void setEnabled(final boolean enabled) {        
+        jCheckBox1.setEnabled(enabled);
+        if (!enabled) {            
+            jCheckBox1.setState(MultiStateCheckBox.State.UNSELECTED);
+        }
     }
 
     public void addItemListener(final ItemListener itemListener) {
@@ -192,38 +192,17 @@ public class MethodCheckedNodeRenderer extends JPanel implements TreeCellRendere
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
         jCheckBox1 = new org.netbeans.modules.mobility.end2end.ui.treeview.MultiStateCheckBox();
-        jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
 
         setLayout(new java.awt.BorderLayout(5, 0));
 
-        jPanel1.setLayout(new java.awt.CardLayout());
-
         jCheckBox1.setBorder(null);
-        jPanel1.add(jCheckBox1, "true");
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 395, Short.MAX_VALUE)
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
-
-        jPanel1.add(jPanel2, "false");
-
-        add(jPanel1, java.awt.BorderLayout.CENTER);
+        add(jCheckBox1, java.awt.BorderLayout.WEST);
         add(jLabel1, java.awt.BorderLayout.EAST);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.netbeans.modules.mobility.end2end.ui.treeview.MultiStateCheckBox jCheckBox1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     // End of variables declaration//GEN-END:variables
 }
