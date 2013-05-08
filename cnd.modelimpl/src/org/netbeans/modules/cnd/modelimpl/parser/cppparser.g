@@ -2049,6 +2049,7 @@ builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old
         | LITERAL__Imaginary    {ts |= tsIMAGINARY;}
         | LITERAL_bit           {ts |= tsBOOL;}
         | LITERAL__BUILT_IN_TYPE__ {ts |= tsOTHER;}
+        | LITERAL___builtin_va_list {ts |= tsOTHER;}
         | literal_decltype LPAREN expression RPAREN {ts |= tsOTHER;}
 
     ;

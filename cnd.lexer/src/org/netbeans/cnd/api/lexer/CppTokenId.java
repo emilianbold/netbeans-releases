@@ -170,6 +170,7 @@ public enum CppTokenId implements TokenId {
     WHILE("while", "keyword-directive"), // NOI18N
     __ATTRIBUTE__("__attribute__", "keyword"), // gcc // NOI18N
     __ATTRIBUTE("__attribute", "keyword"), // gcc // NOI18N
+    __BUILTIN_VA_LIST("__builtin_va_list", "keyword"), // NOI18N
     _BOOL("_Bool", "keyword"), // C // NOI18N
     _CDECL("_cdecl", "keyword"), // g++ // NOI18N
     __CDECL("__cdecl", "keyword"), // g++ // NOI18N
