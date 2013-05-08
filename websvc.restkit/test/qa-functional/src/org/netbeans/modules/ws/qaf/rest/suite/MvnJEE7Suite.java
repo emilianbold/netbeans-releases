@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.ws.qaf.rest.suite;
 
+import java.io.File;
+import java.util.Set;
 import junit.framework.Test;
+import org.netbeans.jellytools.EditorOperator;
 import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.junit.NbModuleSuite;
@@ -124,6 +127,21 @@ public class MvnJEE7Suite extends J2eeTestCase {
         @Override
         protected JavaEEVersion getJavaEEversion() {
             return JavaEEVersion.JAVAEE7;
+        }
+        
+
+        @Override
+        protected void closeCreatedFiles(Set<File> files) {
+            for (File f : files) {
+                // remove annotation just to have one set of golden files for all EE levels
+                EditorOperator eo = new EditorOperator(f.getName());
+                eo.setCaretPosition("RequestScoped", true);
+                eo.deleteLine(eo.getLineNumber());
+                eo.setCaretPosition("@RequestScoped", true);
+                eo.deleteLine(eo.getLineNumber());
+                eo.save();
+                eo.close();
+            }
         }
     }
 }
