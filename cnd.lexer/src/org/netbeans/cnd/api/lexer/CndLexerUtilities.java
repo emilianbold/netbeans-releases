@@ -393,6 +393,7 @@ public final class CndLexerUtilities {
             case __INLINE:
             case __INLINE__:
             case INT:
+            case __BUILTIN_VA_LIST:
             case LONG:
             case MUTABLE:
             case REGISTER:
@@ -634,6 +635,7 @@ public final class CndLexerUtilities {
         CppTokenId[] ids = new CppTokenId[]{
             CppTokenId.AUTO,
             CppTokenId.BREAK,
+            CppTokenId.__BUILTIN_VA_LIST,
             CppTokenId.CASE,
             CppTokenId.CHAR,
             CppTokenId.CONST,
@@ -666,6 +668,7 @@ public final class CndLexerUtilities {
             CppTokenId.VOLATILE,
             CppTokenId.WHILE,};
         addToFilter(ids, filterToModify);
+ //       filterToModify.addPrefixedMatch("__builtin_", CppTokenId.BUILT_IN_TYPE);
     }
 
     private static void addCppOnlyKeywords(Filter<CppTokenId> filterToModify) {
