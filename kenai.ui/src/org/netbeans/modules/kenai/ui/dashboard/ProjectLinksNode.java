@@ -93,7 +93,7 @@ public class ProjectLinksNode extends AsynchronousNode<MessagingHandle> implemen
     }
 
     @Override
-    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+    protected void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
         if( panel == component ) {
             synchronized( LOCK ) {
                 for( JLabel lbl : labels ) {

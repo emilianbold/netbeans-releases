@@ -97,19 +97,19 @@ preferredID = "DashboardTopComponent")
 public final class DashboardTopComponent extends TopComponent {
 
     private static DashboardTopComponent instance;
-    private ComponentAdapter componentAdapter;
-    private JComponent dashboardComponent;
+    private final ComponentAdapter componentAdapter;
+    private final JComponent dashboardComponent;
     private FilterDocumentListener filterListener;
     private CategoryNameDocumentListener categoryNameListener;
-    private Timer filterTimer;
+    private final Timer filterTimer;
     private ActiveTaskPanel activeTaskPanel;
     private final GridBagConstraints activeTaskConstrains;
     private FilterPanel filterPanel;
     private DisplayTextTaskFilter displayTextTaskFilter = null;
     private CategoryNamePanel categoryNamePanel;
     private NotifyDescriptor categoryNameDialog;
-    private DashboardActiveListener dashboardSelectionListener;
-    private Timer dashboardRefreshTime;
+    private final DashboardActiveListener dashboardSelectionListener;
+    private final Timer dashboardRefreshTime;
     private final DashboardRefresher refresher;
     private final DashboardViewer dashboard;
 
@@ -125,7 +125,7 @@ public final class DashboardTopComponent extends TopComponent {
         }
         dashboard = DashboardViewer.getInstance();
         dashboardComponent = dashboard.getComponent();
-        dashboardRefreshTime = new Timer(20000, new RefreshTimerListener());
+        dashboardRefreshTime = new Timer(10000, new RefreshTimerListener());
         dashboardSelectionListener = new DashboardActiveListener();
         activeTaskConstrains = new GridBagConstraints(0, 1, 2, 1, 1.0, 0, GridBagConstraints.NORTH, GridBagConstraints.HORIZONTAL, new Insets(0, 3, 0, 0), 0, 0);
         componentAdapter = new ComponentAdapter() {
@@ -440,6 +440,7 @@ public final class DashboardTopComponent extends TopComponent {
             if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
                 if (DashboardTopComponent.this == TopComponent.getRegistry().getActivated()) {
                     refresher.setDashboardBusy(true);
+                    dashboardRefreshTime.stop();
                 } else {
                     dashboardRefreshTime.restart();
                 }

@@ -46,8 +46,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -120,7 +122,14 @@ public class Category {
         final Category other = (Category) obj;
         return name.equalsIgnoreCase(other.name);
     }
-    
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 29 * hash + (this.name != null ? this.name.hashCode() : 0);
+        return hash;
+    }
+
     public void refresh(){
         if (loaded) {
             refreshTasks();

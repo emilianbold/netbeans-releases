@@ -50,6 +50,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
@@ -59,6 +60,7 @@ import org.eclipse.mylyn.internal.tasks.core.LocalRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryModel;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.internal.tasks.core.TaskActivityManager;
+import org.eclipse.mylyn.internal.tasks.core.TaskContainerDelta;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
 import org.eclipse.mylyn.internal.tasks.core.data.ITaskDataManagerListener;
@@ -78,6 +80,7 @@ import org.eclipse.mylyn.tasks.core.data.ITaskDataWorkingCopy;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.openide.modules.Places;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -98,6 +101,9 @@ public class MylynSupport {
     private boolean taskListInitialized;
     private MylynFactory factory;
     private static final Logger LOG = Logger.getLogger(MylynSupport.class.getName());
+    private ITaskListChangeListener taskListListener;
+    private static final String PROP_REPOSITORY_CREATION_TIME = "repository.creation.time_"; //NOI18N
+    private IRepositoryListener taskRepositoryManagerListener;
 
     public static synchronized MylynSupport getInstance () {
         if (instance == null) {
@@ -131,6 +137,7 @@ public class MylynSupport {
         taskListStorageFile = new File(storagePath, ITasksCoreConstants.DEFAULT_TASK_LIST_FILE);
         taskDataManager.setDataPath(storagePath);
         taskListWriter = new TaskListExternalizer(repositoryModel, taskRepositoryManager);
+        attachListeners();
     }
 
     /**
@@ -407,5 +414,74 @@ public class MylynSupport {
                 throw new CoreException(new Status(ex.getStatus().getSeverity(), ex.getStatus().getPlugin(), "Cannot persist tasklist"));
             }
         }
+    }
+    
+    private Preferences getPreferences() {
+        return NbPreferences.forModule(MylynSupport.class);
+    }
+
+    private void attachListeners () {
+        taskRepositoryManager.addListener(taskRepositoryManagerListener = new IRepositoryListener() {
+            @Override
+            public void repositoryAdded (TaskRepository repository) {
+                getRepositoryCreationTime(repository.getRepositoryUrl());
+            }
+
+            @Override
+            public void repositoryRemoved (TaskRepository repository) {
+                setRepositoryCreationTime(repository.getRepositoryUrl(), -1);
+            }
+
+            @Override
+            public void repositorySettingsChanged (TaskRepository repository) {
+            }
+
+            @Override
+            public void repositoryUrlChanged (TaskRepository repository, String oldUrl) {
+                setRepositoryCreationTime(repository.getRepositoryUrl(), getRepositoryCreationTime(oldUrl));
+                setRepositoryCreationTime(oldUrl, -1);
+            }
+        });
+        taskList.addChangeListener(taskListListener = new ITaskListChangeListener() {
+            @Override
+            public void containersChanged (Set<TaskContainerDelta> deltas) {
+                for (TaskContainerDelta delta : deltas) {
+                    if (delta.getElement() instanceof ITask) {
+                        // task added to the tasklist
+                        // new tasks (incoming_new) created long ago in the past
+                        // should be marked as uptodate so when a repository is registener in the IDE
+                        // it is not all green. Only fresh new tasks are relevant to the user
+                        ITask task = (ITask) delta.getElement();
+                        if (task.getSynchronizationState() == ITask.SynchronizationState.INCOMING_NEW
+                                && task.getCreationDate() != null) {
+                            TaskRepository repository = taskRepositoryManager.getRepository(task.getConnectorKind(), task.getRepositoryUrl());
+                            if (repository != null) {
+                                long time = getRepositoryCreationTime(repository.getRepositoryUrl());
+                                if (task.getCreationDate().getTime() < time) {
+                                    markTaskSeen(task, true);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    private void setRepositoryCreationTime (String repositoryUrl, long time) {
+        if (time == -1) {
+            getPreferences().remove(PROP_REPOSITORY_CREATION_TIME + repositoryUrl);
+        } else {
+            getPreferences().putLong(PROP_REPOSITORY_CREATION_TIME + repositoryUrl, time);
+        }
+    }
+
+    private long getRepositoryCreationTime (String repositoryUrl) {
+        long time = getPreferences().getLong(PROP_REPOSITORY_CREATION_TIME + repositoryUrl, -1);
+        if (time == -1) {
+            time = System.currentTimeMillis();
+            setRepositoryCreationTime(repositoryUrl, time);
+        }
+        return time;
     }
 }

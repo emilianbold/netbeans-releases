@@ -110,13 +110,12 @@ public class DashboardUtils {
         return displayName;
     }
 
-    public static String getTaskPlainDisplayText(IssueImpl issueImpl, JComponent component, int maxWidth) {
-        return computeFitText(component, maxWidth, issueImpl.getID() + " - " + issueImpl.getSummary(), false);
+    public static String getTaskPlainDisplayText(IssueImpl task, JComponent component, int maxWidth) {
+        return computeFitText(component, maxWidth, getTaskDisplayName(task), false);
     }
 
-    public static String getTaskDisplayString(IssueImpl task, JComponent component, int maxWidth, boolean active, boolean hasFocus) {
-        String displayName;
-        String fitText = computeFitText(component, maxWidth, task.getID() + " - " + task.getSummary(), active); //NOI18N
+    public static String getTaskDisplayText(IssueImpl task, JComponent component, int maxWidth, boolean active, boolean hasFocus) {
+        String fitText = computeFitText(component, maxWidth, getTaskDisplayName(task), active); //NOI18N
 
         String activeText = active ? BOLD_START_SUBSTITUTE + fitText + BOLD_END_SUBSTITUTE : getFilterBoldText(fitText); //NOI18N
 
@@ -128,15 +127,7 @@ public class DashboardUtils {
         if (task.isFinished()) {
             activeText = "<strike>" + activeText + "</strike>"; //NOI18N
         }
-        IssueStatusProvider.Status status = task.getStatus();
-        if (status == IssueStatusProvider.Status.NEW && !hasFocus) {
-            displayName = "<html><font color=\"green\">" + activeText + "</font></html>"; //NOI18N
-        } else if (status == IssueStatusProvider.Status.MODIFIED && !hasFocus) {
-            displayName = "<html><font color=\"blue\">" + activeText + "</font></html>"; //NOI18N
-        } else {
-            displayName = "<html>" + activeText + "</html>"; //NOI18N
-        }
-        return displayName;
+        return getTaskAnotatedText(activeText, task.getStatus(), hasFocus);
     }
 
     public static String computeFitText(JComponent component, int maxWidth, String text, boolean bold) {
@@ -172,6 +163,29 @@ public class DashboardUtils {
             }
         }
         return text;
+    }
+
+    public static String getTaskAnotatedText(IssueImpl task) {
+        return getTaskAnotatedText(getTaskDisplayName(task), task.getStatus(), false);
+    }
+
+    private static String getTaskAnotatedText(String text, IssueStatusProvider.Status status, boolean hasFocus) {
+        if (status == IssueStatusProvider.Status.NEW && !hasFocus) {
+            text = "<html><font color=\"green\">" + text + "</font></html>"; //NOI18N
+        } else if (status == IssueStatusProvider.Status.MODIFIED && !hasFocus) {
+            text = "<html><font color=\"blue\">" + text + "</font></html>"; //NOI18N
+        } else {
+            text = "<html>" + text + "</html>"; //NOI18N
+        }
+        return text;
+    }
+
+    private static String getTaskDisplayName(IssueImpl task) {
+        String displayName = task.getDisplayName();
+        if (displayName.startsWith("#")) {
+            displayName = displayName.replaceFirst("#", "");
+        }
+        return displayName;
     }
 
     private static String getFilterBoldText(String fitText) {

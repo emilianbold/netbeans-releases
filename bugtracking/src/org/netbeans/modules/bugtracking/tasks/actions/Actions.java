@@ -140,7 +140,7 @@ public class Actions {
             List<IssueImpl> tasks = new ArrayList<IssueImpl>();
             for (TreeListNode n : nodes) {
                 if (n instanceof TaskContainerNode) {
-                    tasks.addAll(((TaskContainerNode) n).getTasks());
+                    tasks.addAll(((TaskContainerNode) n).getTasks(true));
                 } else {
                     return null;
                 }
@@ -173,8 +173,8 @@ public class Actions {
             actions.add(new RemoveTaskAction(taskNodes));
         }
         actions.add(new SetCategoryAction(taskNodes));
-        actions.add(new ScheduleTaskAction(taskNodes));
-        actions.add(new NotificationTaskAction(taskNodes));
+        //actions.add(new ScheduleTaskAction(taskNodes));
+        //actions.add(new NotificationTaskAction(taskNodes));
         return actions;
     }
 
@@ -302,7 +302,7 @@ public class Actions {
         List<Action> actions = new ArrayList<Action>();
         actions.add(new DeleteCategoryAction(categoryNodes));
         actions.add(new RenameCategoryAction(categoryNodes));
-        actions.add(new NotificationCategoryAction(categoryNodes));
+        //actions.add(new NotificationCategoryAction(categoryNodes));
         return actions;
     }
 
@@ -545,7 +545,7 @@ public class Actions {
         List<Action> actions = new ArrayList<Action>();
         actions.add(new OpenQueryAction(queryNodes));
         actions.add(new DeleteQueryAction(queryNodes));
-        actions.add(new NotificationQueryAction(queryNodes));
+        //actions.add(new NotificationQueryAction(queryNodes));
         return actions;
     }
 
