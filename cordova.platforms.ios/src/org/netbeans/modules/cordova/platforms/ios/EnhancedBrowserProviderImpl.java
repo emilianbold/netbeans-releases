@@ -55,9 +55,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  */
 @ProjectServiceProvider(
        projectTypes = {
-           @LookupProvider.Registration.ProjectType(id = "org-netbeans-modules-web-clientproject"),
-           @LookupProvider.Registration.ProjectType(id = "org-netbeans-modules-php-phpproject"),
-           @LookupProvider.Registration.ProjectType(id = "org-netbeans-modules-web-project")
+           @LookupProvider.Registration.ProjectType(id = "org-netbeans-modules-web-clientproject")
        },
        service = ClientProjectEnhancedBrowserProvider.class)
 public class EnhancedBrowserProviderImpl implements ClientProjectEnhancedBrowserProvider {
