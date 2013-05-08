@@ -140,8 +140,6 @@ public interface CompletionResolver {
      * specify what to resolve by this resolver
      */
     public void setResolveTypes(int resolveTypes);
-    
-    public void setAdditionalHideTypes(int hideTypes);
 
     public QueryScope setResolveScope(QueryScope queryScope);
     /**
