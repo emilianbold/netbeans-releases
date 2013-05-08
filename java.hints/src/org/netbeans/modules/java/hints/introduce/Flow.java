@@ -621,8 +621,7 @@ public class Flow {
                     }
                 }
 
-                if (isConstructor) {
-                    assert p != null;
+                if (isConstructor && p != null/*IntroduceHint may bypass visitClass - TODO: test in FlowTest missing for this*/) {
                     if (p.first) {
                         finalCandidates.addAll(definitellyAssignedOnce);
                     } else {
