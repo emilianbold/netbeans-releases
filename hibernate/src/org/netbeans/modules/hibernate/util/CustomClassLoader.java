@@ -94,8 +94,8 @@ public class CustomClassLoader extends URLClassLoader {
        // logger.info("Load class request : " + name);
         if(name == null) {
             throw new IllegalArgumentException("class name cannot be null");
-        } else if(name.indexOf("NestedExc")>-1){
-            System.out.println("NESTED: "+name);
+        } else if(name.startsWith("javax.validation")){
+            throw new ClassNotFoundException("validation isn't supported by nb hibernate support.");//NOI18N, see #229347, support is removed even if present on classpath
         }
         Class clazz = findLoadedClass(name);
         if (clazz != null) {
@@ -118,7 +118,6 @@ public class CustomClassLoader extends URLClassLoader {
                 packageName.startsWith("org.apache.commons.collections") ||
                 packageName.startsWith("net.sf.ehcache") ||
                 packageName.startsWith("org.netbeans"))) {
-        //    logger.info("loading " + name + " from super class loader " + Thread.currentThread().getContextClassLoader().getParent().getClass().getName());
             clazz = super.loadClass(name, b);
         }
         if (clazz != null) {
