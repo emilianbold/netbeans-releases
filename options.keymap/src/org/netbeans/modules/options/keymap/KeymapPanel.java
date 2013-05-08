@@ -104,6 +104,8 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
 
     private JPopupMenu popup = new JPopupMenu();
 
+    private boolean ignoreActionEvents;
+    
     //search fields
     private Popup searchPopup;
     private SpecialkeyPanel specialkeyList;
@@ -404,11 +406,14 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
 
 
     private void refreshProfileCombo() {
+        ignoreActionEvents = true;
         String currentProfile = getMutableModel().getCurrentProfile();
         List keymaps = getMutableModel().getProfiles();
         ComboBoxModel model = new DefaultComboBoxModel(keymaps.toArray());
+        currentProfile = getMutableModel().getProfileDisplayName(currentProfile);
         cbProfile.setModel(model);
         cbProfile.setSelectedItem(currentProfile);
+        ignoreActionEvents = false;
     }
 
     private void stopCurrentCellEditing() {
@@ -607,12 +612,13 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lProfile)
-                    .addComponent(cbProfile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(manageButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(btnPrintAsHTML)
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(manageButton, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                        .addComponent(lProfile)
+                        .addComponent(cbProfile, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(btnPrintAsHTML)))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(18, 18, 18)
@@ -774,6 +780,9 @@ public class KeymapPanel extends javax.swing.JPanel implements ActionListener, P
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        if (ignoreActionEvents) {
+            return;
+        }
         Object source = e.getSource();
 
         if (source == cbProfile) {

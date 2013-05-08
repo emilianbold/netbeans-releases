@@ -327,7 +327,7 @@ public class ChangeParamsTransformer extends RefactoringVisitor {
             for (ParameterInfo parameterInfo : paramInfos) {
                 ParamTree tag;
                 if(parameterInfo.getOriginalIndex() == -1) {
-                    tag = make.Param(false, make.DocIdentifier(parameterInfo.getName()), Collections.EMPTY_LIST);
+                    tag = make.Param(false, make.DocIdentifier(parameterInfo.getName()), Collections.singletonList(make.Text("the value of " + parameterInfo.getName())));
                 } else {
                     tag = oldParams.get(parameterInfo.getOriginalIndex());
                     if(parameterInfo.getName() != null) {

@@ -404,6 +404,7 @@ abstract class WeakListenerImpl implements java.util.EventListener {
                 if (proxyConstructor == null) {
                     Class<?> proxyClass = Proxy.getProxyClass(c.getClassLoader(), c);
                     proxyConstructor = proxyClass.getConstructor(InvocationHandler.class);
+                    proxyConstructor.setAccessible(true);
                     constructors.put(c, new SoftReference<Constructor<?>>(proxyConstructor));
                 }
 

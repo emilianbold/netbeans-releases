@@ -79,9 +79,10 @@ public class FormModel
         NB60, // since NB 6.0 beta1, form file version 1.5
         NB61, // since NB 6.1 milestone 2, form file version 1.6
         NB65, // since NB 6.5 milestone 1, form file version 1.7
-        NB71 // since NB 7.1, form file version 1.8
+        NB71, // since NB 7.1, form file version 1.8
+        NB74 // since NB 7.4, form file version 1.9
     }
-    final static FormVersion LATEST_VERSION = FormVersion.NB71;
+    final static FormVersion LATEST_VERSION = FormVersion.NB74;
 
     private FormVersion currentVersionLevel;
     private FormVersion lastConfirmedVersionLevel;
@@ -187,7 +188,7 @@ public class FormModel
 
     /**
      * Requires the form version to be at least 'minVersion'. If the actual
-     * version is lower, it is upgraded to 'upgradeTo'. If the upgrad exceeds
+     * version is lower, it is upgraded to 'upgradeTo'. If the upgrade exceeds
      * the maximum version level set for this form (roughly corresponding
      * to the NB version in which the form was created) a confirmation message
      * is shown to the user later (see FormEditor.checkFormVersionUpgrade).

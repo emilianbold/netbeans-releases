@@ -31,6 +31,7 @@
 package org.netbeans.modules.editor.bracesmatching;
 
 import javax.swing.text.Document;
+import org.netbeans.modules.editor.lib2.view.EditorViewFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
 
 /**
@@ -61,4 +62,8 @@ public abstract class SpiAccessor {
     }
 
     public abstract MatcherContext createCaretContext(Document document, int offset, boolean backward, int lookahead);
+    
+    static {
+        EditorViewFactory.registerFactory(new SkipLinesViewFactory.Factory());
+    }
 }

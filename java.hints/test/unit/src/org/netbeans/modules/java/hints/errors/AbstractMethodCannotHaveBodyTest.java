@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.editor.bracesmatching;
 
-import java.util.EventObject;
-import javax.swing.text.JTextComponent;
-import org.netbeans.spi.editor.bracesmatching.BracesMatcher.ContextLocator;
+package org.netbeans.modules.java.hints.errors;
+
+import org.netbeans.modules.java.hints.infrastructure.ErrorHintsTestBase;
 
 /**
  *
- * @author sdedic
+ * @author lahvac
  */
-public class MatchEvent extends EventObject {
-    private JTextComponent  component;
-    private int[]           origin;
-    private int[]           matches;
-    private ContextLocator  locator;
-
-    public MatchEvent(JTextComponent component, ContextLocator locator, Object source) {
-        super(source);
-        this.component = component;
-        this.locator = locator;
+public class AbstractMethodCannotHaveBodyTest extends ErrorHintsTestBase {
+    
+    public AbstractMethodCannotHaveBodyTest(String name) {
+        super(name, AbstractMethodCannotHaveBody.class);
     }
     
-    public ContextLocator getLocator() {
-        return locator;
+    public void testRemoveAbstract() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public abstract class Test {\n" +
+                       "    public abstract void test() {}\n" +
+                       "}\n",
+                       -1,
+                       Bundle.FIX_AbstractMethodCannotHaveBodyRemoveAbstract(),
+                       ("package test;\n" +
+                        "public abstract class Test {\n" +
+                        "    public void test() {}\n" +
+                        "}\n").replaceAll("\\s+", " "));
     }
     
-    public void setHighlights(int[] origin, int[] matches) {
-        this.origin = origin;
-        this.matches = matches;
+    public void testRemoveBody() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public abstract class Test {\n" +
+                       "    public abstract void test() {}\n" +
+                       "}\n",
+                       -1,
+                       Bundle.FIX_AbstractMethodCannotHaveBodyRemoveBody(),
+                       ("package test;\n" +
+                        "public abstract class Test {\n" +
+                        "    public abstract void test();\n" +
+                        "}\n").replaceAll("\\s+", " "));
     }
-
-    public JTextComponent getComponent() {
-        return component;
-    }
-
-    public int[] getOrigin() {
-        return origin;
-    }
-
-    public int[] getMatches() {
-        return matches;
-    }
-    
     
 }
