@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.web.jsf.wizards;
 
-import java.awt.Component;
-import java.io.InputStream;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -70,25 +68,30 @@ public class TemplatePanel implements WizardDescriptor.Panel, WizardDescriptor.F
         this.wizard = wizard;
         component = null;
     }
-    
-    public Component getComponent() {
+
+    @Override
+    public TemplatePanelVisual getComponent() {
         if (component == null)
             component = new TemplatePanelVisual();
         
         return component;
     }
-    
+
+    @Override
     public HelpCtx getHelp() {
         return new HelpCtx(TemplatePanel.class);
     }
-    
+
+    @Override
     public void readSettings(Object settings) {
         wizard = (WizardDescriptor) settings;
     }
-    
+
+    @Override
     public void storeSettings(Object settings) {
     }
-    
+
+    @Override
     public boolean isValid() {
         Project project = Templates.getProject(wizard);
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
@@ -110,33 +113,36 @@ public class TemplatePanel implements WizardDescriptor.Panel, WizardDescriptor.F
         return true;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
     }
 
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
-    
-    InputStream getTemplate(){
-        getComponent();
-        return component.getTemplate();
-    }
-    
-    InputStream getDefaultCSS(){
-        getComponent();
-        return component.getDefaultCSS();
-    }
-    
-    InputStream getLayoutCSS(){
-        getComponent();
-        return component.getLayoutCSS();
-    }
-    
-    String getLayoutFileName(){
-        getComponent();
-        return component.getLayoutFileName();
-    }
+
+//    InputStream getTemplate(){
+//        getComponent();
+//        return component.getTemplate();
+//    }
+//
+//    InputStream getDefaultCSS(){
+//        getComponent();
+//        return component.getDefaultCSS();
+//    }
+//
+//    InputStream getLayoutCSS(){
+//        getComponent();
+//        return component.getLayoutCSS();
+//    }
+//
+//    String getLayoutFileName(){
+//        getComponent();
+//        return component.getLayoutFileName();
+//    }
 }
