@@ -84,6 +84,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.jumpto.SearchHistory;
 import org.netbeans.modules.jumpto.type.UiOptions;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
@@ -537,26 +538,17 @@ public class GoToPanel extends javax.swing.JPanel {
                 
         // ListSelectionListener -----------------------------------------------
         
-        public void valueChanged(ListSelectionEvent ev) {
+        @Override
+        public void valueChanged(@NonNull final ListSelectionEvent ev) {
             // got "Not computed yet" text sometimes
-            Object obj = dialog.matchesList.getSelectedValue();
-            
+            final Object obj = dialog.matchesList.getSelectedValue();
             if (obj instanceof SymbolDescriptor) {
-                SymbolDescriptor selectedValue = ((SymbolDescriptor) obj);
-                if ( selectedValue != null ) {
-                    String fileName = "";
-                    FileObject fo = selectedValue.getFileObject();
-                    if (fo != null) {
-                        fileName = FileUtil.getFileDisplayName(fo);
-                    }
-                    dialog.jTextFieldLocation.setText(fileName);
-                }
-                else {
-                    dialog.jTextFieldLocation.setText("");
-                }
+                final SymbolDescriptor selectedValue = ((SymbolDescriptor) obj);
+                final String fileName = selectedValue.getFileDisplayPath();
+                dialog.jTextFieldLocation.setText(fileName);
             } else {
-                dialog.jTextFieldLocation.setText("");
-         }
+                dialog.jTextFieldLocation.setText("");  //NOI18N
+            }
         }
         
         private void update() {
