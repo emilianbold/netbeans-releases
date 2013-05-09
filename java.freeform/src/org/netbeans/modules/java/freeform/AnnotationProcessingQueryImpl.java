@@ -147,7 +147,7 @@ class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplemen
             final Map<FileObject,R> added = new HashMap<FileObject, R>();
             final Map<FileObject,R> retained = new HashMap<FileObject, R>();
 
-            final Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
+            final Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_LASTEST, true);
             if (java != null) {
                 for (Element compilationUnit : XMLUtil.findSubElements(java)) {
                     assert compilationUnit.getLocalName().equals("compilation-unit") : compilationUnit;
@@ -281,8 +281,8 @@ class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplemen
             if (ap != null) {
                 for (Element e : XMLUtil.findSubElements(ap)) {
                     if (e.getLocalName().equals(EL_PROCESSOR_OPTION)) {
-                        final Element keyElement = XMLUtil.findElement(e, "key", JavaProjectNature.NS_JAVA_3);  //NOI18N
-                        final Element valueElement = XMLUtil.findElement(e, "value", JavaProjectNature.NS_JAVA_3);  //NOI18N
+                        final Element keyElement = XMLUtil.findElement(e, "key", JavaProjectNature.NS_JAVA_LASTEST);  //NOI18N
+                        final Element valueElement = XMLUtil.findElement(e, "value", JavaProjectNature.NS_JAVA_LASTEST);  //NOI18N
                         if (keyElement == null || valueElement == null) {
                             continue;
                         }
@@ -322,7 +322,7 @@ class AnnotationProcessingQueryImpl implements AnnotationProcessingQueryImplemen
         }
 
         private Element findAP(final Element cu) {
-            return cu == null ? null : XMLUtil.findElement(cu, AnnotationProcessingQueryImpl.EL_ANNOTATION_PROCESSING, JavaProjectNature.NS_JAVA_3);
+            return cu == null ? null : XMLUtil.findElement(cu, AnnotationProcessingQueryImpl.EL_ANNOTATION_PROCESSING, JavaProjectNature.NS_JAVA_LASTEST);
         }
 
     }

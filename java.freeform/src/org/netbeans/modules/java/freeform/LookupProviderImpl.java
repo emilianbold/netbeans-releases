@@ -147,26 +147,19 @@ public class LookupProviderImpl implements LookupProvider {
         public Element getConfigurationFragment(String elementName, String namespace, boolean shared) {
             if (elementName.equals(JavaProjectNature.EL_JAVA) && shared) {
                 Element nue = null;
-                if (namespace.equals(JavaProjectNature.NS_JAVA_3)) {
-                    nue = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
-                    if (nue == null) {
-                        Element old = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
-                        if (old != null) {
-                            nue = upgradeSchema(old);
-                        } else {
-                            old = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
-                            if (old != null) {
-                                nue = upgradeSchema(old);
+                for (int nsIndex = 0; nsIndex < JavaProjectNature.JAVA_NAMESPACES.length; nsIndex++) {
+                    if (namespace.equals(JavaProjectNature.JAVA_NAMESPACES[nsIndex])) {
+                        for (int nsLookup = nsIndex; nsLookup < JavaProjectNature.JAVA_NAMESPACES.length; nsLookup++) {
+                            nue = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.JAVA_NAMESPACES[nsLookup], true);
+                            if (nue != null) {
+                                if (nsLookup != nsIndex) {
+                                    nue = upgradeSchema(nue, JavaProjectNature.JAVA_NAMESPACES[nsIndex]);
+                                }
+                                break;
                             }
                         }
-                    }
-                } else if (namespace.equals(JavaProjectNature.NS_JAVA_2)) {
-                    nue = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
-                    if (nue == null) {
-                        Element old = delegate.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
-                        if (old != null) {
-                            nue = upgradeSchema(old, JavaProjectNature.NS_JAVA_2);
-                        }
+                        
+                        break;
                     }
                 }
                 return nue;
@@ -183,10 +176,6 @@ public class LookupProviderImpl implements LookupProvider {
             return delegate.removeConfigurationFragment(elementName, namespace, shared);
         }
         
-    }
-
-    static Element upgradeSchema(Element old) {
-        return upgradeSchema(old, JavaProjectNature.NS_JAVA_3);
     }
 
     static Element upgradeSchema(final Element old, final String to) {

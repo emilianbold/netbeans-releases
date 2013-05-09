@@ -539,7 +539,7 @@ public class NPECheck {
             Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), node.getExpression()));
 
             if (isVariableElement(e) && (variable2State.get(e) == null || !variable2State.get(e).isNotNull()) && !not) {
-                variable2State.put((VariableElement) e, State.NOT_NULL);
+                variable2State.put((VariableElement) e, State.NOT_NULL_HYPOTHETICAL);
             }
             
             return null;
