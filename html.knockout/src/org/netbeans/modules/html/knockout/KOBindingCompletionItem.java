@@ -82,6 +82,11 @@ public class KOBindingCompletionItem extends HtmlCompletionItem {
     }
 
     @Override
+    protected String getSubstituteText() {
+        return new StringBuilder().append(binding.getName()).append(": ").toString();
+    }
+    
+    @Override
     public URL getHelpURL() {
         try {
             return new URL(binding.getExternalDocumentationURL());
@@ -171,7 +176,7 @@ public class KOBindingCompletionItem extends HtmlCompletionItem {
         InputStream is = url.openStream();
         byte buffer[] = new byte[1000];
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int count = 0;
+        int count;
         do {
             count = is.read(buffer);
             if (count > 0) {
