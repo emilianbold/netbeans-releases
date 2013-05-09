@@ -63,6 +63,7 @@ import org.eclipse.mylyn.internal.tasks.core.TaskActivityManager;
 import org.eclipse.mylyn.internal.tasks.core.TaskContainerDelta;
 import org.eclipse.mylyn.internal.tasks.core.TaskList;
 import org.eclipse.mylyn.internal.tasks.core.TaskRepositoryManager;
+import org.eclipse.mylyn.internal.tasks.core.UnmatchedTaskContainer;
 import org.eclipse.mylyn.internal.tasks.core.data.ITaskDataManagerListener;
 import org.eclipse.mylyn.internal.tasks.core.data.SynchronizationManger;
 import org.eclipse.mylyn.internal.tasks.core.data.TaskDataDiff;
@@ -104,6 +105,7 @@ public class MylynSupport {
     private ITaskListChangeListener taskListListener;
     private static final String PROP_REPOSITORY_CREATION_TIME = "repository.creation.time_"; //NOI18N
     private IRepositoryListener taskRepositoryManagerListener;
+    private static final String ATTR_TASK_INCOMING_NEW = "NetBeans.task.unseen"; //NOI18N
 
     public static synchronized MylynSupport getInstance () {
         if (instance == null) {
@@ -178,7 +180,7 @@ public class MylynSupport {
 
     // TODO auto-saving
     public void save () throws CoreException {
-        persist();
+        persist(false);
     }
 
     /**
@@ -190,6 +192,7 @@ public class MylynSupport {
      */
     public NetBeansTaskDataModel getTaskDataModel (ITask task)  {
         assert taskListInitialized;
+        task.setAttribute(ATTR_TASK_INCOMING_NEW, null);
         TaskRepository taskRepository = getTaskRepositoryFor(task);
         try {
             ITaskDataWorkingCopy workingCopy = taskDataManager.getWorkingCopy(task);
@@ -299,6 +302,7 @@ public class MylynSupport {
 
     public void markTaskSeen (ITask task, boolean seen) {
         taskDataManager.setTaskRead(task, seen);
+        task.setAttribute(ATTR_TASK_INCOMING_NEW, null);
     }
 
     /**
@@ -404,9 +408,23 @@ public class MylynSupport {
         }
     }
 
-    synchronized void persist() throws CoreException {
+    synchronized void persist (boolean removeUnseenOrphanedTasks) throws CoreException {
         if (taskListInitialized) {
             try {
+                if (removeUnseenOrphanedTasks) {
+                    Set<ITask> orphanedUnseenTasks = new HashSet<ITask>();
+                    for (UnmatchedTaskContainer cont : taskList.getUnmatchedContainers()) {
+                        for (ITask task : cont.getChildren()) {
+                            if (task.getSynchronizationState() == ITask.SynchronizationState.INCOMING_NEW
+                                    || Boolean.TRUE.toString().equals(task.getAttribute(ATTR_TASK_INCOMING_NEW))) {
+                                orphanedUnseenTasks.add(task);
+                            }
+                        }
+                    }
+                    for (ITask taskToDelete : orphanedUnseenTasks) {
+                        deleteTask(taskToDelete);
+                    }
+                }
                 taskListStorageFile.getParentFile().mkdirs();
                 taskListWriter.writeTaskList(taskList, taskListStorageFile);
             } catch (CoreException ex) {
@@ -459,6 +477,7 @@ public class MylynSupport {
                                 long time = getRepositoryCreationTime(repository.getRepositoryUrl());
                                 if (task.getCreationDate().getTime() < time) {
                                     markTaskSeen(task, true);
+                                    task.setAttribute(ATTR_TASK_INCOMING_NEW, Boolean.TRUE.toString());
                                 }
                             }
                         }
