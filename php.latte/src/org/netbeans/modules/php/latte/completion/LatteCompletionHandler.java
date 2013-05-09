@@ -194,7 +194,11 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public String document(ParserResult info, ElementHandle element) {
-        return "Not implemented yet.";
+        String result = null;
+        if (element instanceof LatteElement) {
+            result = ((LatteElement) element).getDocumentationText();
+        }
+        return result;
     }
 
     @Override
