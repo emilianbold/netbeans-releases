@@ -509,7 +509,9 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
       GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
       GraphicsDevice[] gs = ge.getScreenDevices();
 
-      if (gs.length == 0) return new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+      if (gs.length == 0 || gs.length == 1) {
+          return new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
+      }
 
       for (int j = 0; j < gs.length; j++) {
           GraphicsDevice gd = gs[j];
