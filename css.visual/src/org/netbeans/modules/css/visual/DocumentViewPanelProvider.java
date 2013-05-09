@@ -91,10 +91,12 @@ public class DocumentViewPanelProvider implements CssStylesPanelProvider {
 
     @Override
     public void activated() {
+        panel.activated();
     }
 
     @Override
     public void deactivated() {
+        panel.deactivated();
     }
 
     @Override
