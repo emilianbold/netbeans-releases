@@ -68,19 +68,19 @@ public interface LatteElement extends ElementHandle {
     public static class Factory {
 
         public static LatteElement create(String name) {
-            return new LatteElementSimple(name, new LatteDocumentation.DummyDocumentation(name, "Not implemented yet."));
+            return new LatteElementSimple(name, LatteDocumentation.Factory.createFromBundle(name, name));
         }
 
         public static LatteElement create(String name, List<Parameter> parameters) {
-            return new LatteElementExtended(name, parameters, new LatteDocumentation.DummyDocumentation(name, "Not implemented yet."));
+            return new LatteElementExtended(name, parameters, LatteDocumentation.Factory.createFromBundle(name, name));
         }
 
         public static LatteElement create(String name, String customTemplate) {
-            return new LatteElementExtended(name, Collections.<Parameter>emptyList(), customTemplate, new LatteDocumentation.DummyDocumentation(name, "Not implemented yet."));
+            return new LatteElementExtended(name, Collections.<Parameter>emptyList(), customTemplate, LatteDocumentation.Factory.createFromBundle(name, name));
         }
 
         public static LatteElement createMacro(String name, String macroParameter, String customTemplate) {
-            return new LatteElementExtended(name, Arrays.asList(new Parameter[] {new MacroParameter(macroParameter)}), customTemplate, new LatteDocumentation.DummyDocumentation(name, "Not implemented yet."));
+            return new LatteElementExtended(name, Arrays.asList(new Parameter[] {new MacroParameter(macroParameter)}), customTemplate, LatteDocumentation.Factory.createFromBundle(name, name));
         }
 
     }

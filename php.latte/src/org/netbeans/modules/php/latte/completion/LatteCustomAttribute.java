@@ -78,7 +78,7 @@ public class LatteCustomAttribute implements CustomAttribute {
 
     @Override
     public HelpItem getHelp() {
-        return new HelpItemImpl(new LatteDocumentation.DummyDocumentation(name, "Not implemented yet."));
+        return new HelpItemImpl(LatteDocumentation.Factory.createFromBundle(name, name));
     }
 
     private static final class HelpItemImpl implements HelpItem {

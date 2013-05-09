@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.php.latte.completion;
 
+import java.util.MissingResourceException;
+import org.openide.util.NbBundle;
+
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
@@ -67,6 +70,21 @@ public interface LatteDocumentation {
         @Override
         public String getContent() {
             return content;
+        }
+    }
+
+    public static final class Factory {
+
+        @NbBundle.Messages("NoDoc=No documentation.")
+        public static LatteDocumentation createFromBundle(String bundleKey, String itemName) {
+            assert bundleKey != null;
+            String content;
+            try {
+                content = NbBundle.getMessage(Factory.class, bundleKey);
+            } catch (MissingResourceException ex) {
+                content = Bundle.NoDoc();
+            }
+            return new LatteDocumentation.DummyDocumentation(itemName, content);
         }
     }
 
