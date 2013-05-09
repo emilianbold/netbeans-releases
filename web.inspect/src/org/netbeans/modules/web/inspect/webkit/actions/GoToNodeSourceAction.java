@@ -80,6 +80,9 @@ public class GoToNodeSourceAction extends NodeAction  {
                 .getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
         Resource resource = getNodeOrigin(selection);
         FileObject fob = resource.toFileObject();
+        if (fob == null) {
+            return;
+        }
         try {
             Source source = Source.create(fob);
             ParserManager.parse(Collections.singleton(source), new GoToNodeTask(node, fob));
