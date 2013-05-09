@@ -62,10 +62,10 @@ public class MavenWebProjectValidation extends WebProjectValidation {
     public static final String[] TESTS = {
         "testNewMavenWebProject",
         "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
-        "testCleanAndBuildProject", "testRunProject", "testRunJSP",
-        "testRunServlet", "testCreateTLD", "testCreateTagHandler",
-        "testRunTag", "testNewHTML", "testRunHTML",
+        "testCreateTLD", "testCreateTagHandler", "testNewHTML",
         "testNewSegment", "testNewDocument",
+        "testCleanAndBuildProject", "testRunProject", "testRunJSP",
+        "testViewServlet", "testRunServlet", "testRunTag", "testRunHTML",
         "testFinish"
     };
 
