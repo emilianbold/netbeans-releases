@@ -56,4 +56,7 @@ public class KOUtils {
     public static final String KO_DATA_BIND_ATTR_NAME = "data-bind"; //NOI18N
     
     public static final Color KO_COLOR = Color.red.darker();
+    
+    
+    
 }

@@ -97,6 +97,7 @@ final public class Settings {
         ext2commentsDefault.put( "H", new ExtensionIdentifier("H", new CommentTags( "//", "/*", "*/"))); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2commentsDefault.put( "HPP", new ExtensionIdentifier("HPP", new CommentTags( "//", "/*", "*/"))); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2commentsDefault.put( "HTML", new ExtensionIdentifier("HTML", new CommentTags( "<!--", "-->"))); //NOI18N //NOI18N //NOI18N
+        ext2commentsDefault.put( "XHTML", new ExtensionIdentifier("XHTML", new CommentTags( "<!--", "-->"))); //NOI18N //NOI18N //NOI18N
         ext2commentsDefault.put( "HTM", new ExtensionIdentifier("HTM", new CommentTags( "<!--", "-->"))); //NOI18N //NOI18N //NOI18N
         ext2commentsDefault.put( "XML", new ExtensionIdentifier("XML", new CommentTags( "<!--", "-->"))); //NOI18N //NOI18N //NOI18N
         ext2commentsDefault.put( "JSP", new ExtensionIdentifier("JSP", new CommentTags( "<%--", "--%>"))); //NOI18N //NOI18N //NOI18N
@@ -109,6 +110,7 @@ final public class Settings {
         ext2commentsDefault.put( "GROOVY", new ExtensionIdentifier("GROOVY", new CommentTags( "//", "/*", "*/"))); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2commentsDefault.put( "FX", new ExtensionIdentifier("FX", new CommentTags( "//", "/*", "*/"))); //NOI18N //NOI18N //NOI18N //NOI18N
         ext2commentsDefault.put( "TWIG", new ExtensionIdentifier("TWIG", new CommentTags( "{#", "#}"))); //NOI18N //NOI18N //NOI18N
+        ext2commentsDefault.put( "TPL", new ExtensionIdentifier("TPL", new CommentTags( "{*", "*}"))); //NOI18N //NOI18N //NOI18N
         
         mime2commentsDefault.put( "text/x-java", new MimeIdentifier("text/x-java", "Java Files", new CommentTags( "//", "/*", "*/"))); //NOI18N //NOI18N //NOI18N //NOI18N
         mime2commentsDefault.put( "text/html", new MimeIdentifier("text/html", "HTML Files", new CommentTags( "<!--", "-->"))); //NOI18N //NOI18N //NOI18N
@@ -122,6 +124,7 @@ final public class Settings {
         mime2commentsDefault.put( "text/x-ruby", new MimeIdentifier("text/x-ruby", "Ruby Files", new CommentTags("#"))); //NOI18N //NOI18N
         mime2commentsDefault.put( "text/x-php5", new MimeIdentifier("text/x-php", "PHP Files", new CommentTags( "//", "/*", "*/"))); //NOI18N //NOI18N //NOI18N //NOI18N
         mime2commentsDefault.put( "text/sh", new MimeIdentifier("text/sh", "", new CommentTags("#"))); //NOI18N //NOI18N
+        mime2commentsDefault.put( "text/x-sql", new MimeIdentifier("text/x-sql", "SQL Files", new CommentTags( "--", "/*", "*/"))); //NOI18N //NOI18N //NOI18N //NOI18N
 
 
         String encodedMime = getPreferences().get(MIME_IDENTIFIERS, "");

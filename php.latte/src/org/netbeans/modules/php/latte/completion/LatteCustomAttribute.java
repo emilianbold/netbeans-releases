@@ -55,7 +55,6 @@ import org.netbeans.modules.html.editor.lib.api.HelpResolver;
  */
 public class LatteCustomAttribute implements CustomAttribute {
     private static final Logger LOGGER = Logger.getLogger(LatteCustomAttribute.class.getName());
-    private static final String DOCUMENTATION_URL = "http://doc.nette.org/en/"; //NOI18N
     private final String name;
 
     public LatteCustomAttribute(String name) {
@@ -79,33 +78,41 @@ public class LatteCustomAttribute implements CustomAttribute {
 
     @Override
     public HelpItem getHelp() {
-        return new HelpItem() {
+        return new HelpItemImpl(LatteDocumentation.Factory.createFromBundle(name, name));
+    }
 
-            @Override
-            public String getHelpHeader() {
-                return new StringBuilder().append("<h2>").append(getName()).append("</h2>").toString(); //NOI18N
-            }
+    private static final class HelpItemImpl implements HelpItem {
+        private static final String DOCUMENTATION_URL = "http://doc.nette.org/en/"; //NOI18N
+        private final LatteDocumentation documentation;
 
-            @Override
-            public String getHelpContent() {
-                return "Not implemented yet.";
-            }
+        public HelpItemImpl(LatteDocumentation documentation) {
+            this.documentation = documentation;
+        }
 
-            @Override
-            public URL getHelpURL() {
-                try {
-                    return new URL(DOCUMENTATION_URL);
-                } catch (MalformedURLException ex) {
-                    LOGGER.log(Level.FINE, null, ex);
-                    return null;
-                }
-            }
+        @Override
+        public String getHelpHeader() {
+            return documentation.getHeader();
+        }
 
-            @Override
-            public HelpResolver getHelpResolver() {
+        @Override
+        public String getHelpContent() {
+            return documentation.getContent();
+        }
+
+        @Override
+        public URL getHelpURL() {
+            try {
+                return new URL(DOCUMENTATION_URL);
+            } catch (MalformedURLException ex) {
+                LOGGER.log(Level.FINE, null, ex);
                 return null;
             }
-        };
+        }
+
+        @Override
+        public HelpResolver getHelpResolver() {
+            return null;
+        }
     }
 
 }

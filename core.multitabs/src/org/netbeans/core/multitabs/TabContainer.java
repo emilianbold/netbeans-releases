@@ -89,7 +89,6 @@ public final class TabContainer extends JPanel implements Tabbed.Accessor, Chang
                 throw new IllegalArgumentException( "Invalid orientation: " + orientation ); //NOI18N
         }
         stateChanged( null );
-        tabDisplayer.getModel().addChangeListener( this );
     }
     
     @Override
@@ -100,8 +99,8 @@ public final class TabContainer extends JPanel implements Tabbed.Accessor, Chang
     @Override
     public void stateChanged( ChangeEvent e ) {
         TopComponent tc = tabbedImpl.getSelectedTopComponent();
-        layout.showComponent( tc, tcPanel );
         if( tc != null ) {
+            layout.showComponent( tc, tcPanel );
             tc.requestFocusInWindow();
         }
 
@@ -115,4 +114,9 @@ public final class TabContainer extends JPanel implements Tabbed.Accessor, Chang
         return displayer;
     }
 
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        stateChanged( null );
+    }
 }

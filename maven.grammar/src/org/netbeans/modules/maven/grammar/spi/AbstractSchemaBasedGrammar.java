@@ -404,7 +404,7 @@ public abstract class AbstractSchemaBasedGrammar implements GrammarQuery {
                         schemaParent = findNonTypedContent(el);
                     }
                 } else {
-                    System.err.println("cannot find element=" + str); //NOI18N
+                    //System.err.println("cannot find element=" + str); //NOI18N
                 }                
             }
         }

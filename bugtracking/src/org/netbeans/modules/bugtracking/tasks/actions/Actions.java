@@ -528,15 +528,14 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            for (RepositoryNode repositoryNode : getRepositoryNodes()) {
-                DashboardUtils.quickSearchTask(repositoryNode.getRepository());
-            }
+            RepositoryNode repositoryNode = getRepositoryNodes()[0];
+            DashboardUtils.quickSearchTask(repositoryNode.getRepository());
         }
 
         @Override
         public boolean isEnabled() {
             boolean parentEnabled = super.isEnabled();
-            return parentEnabled ? getRepositoryNodes().length == 1 : parentEnabled;
+            return parentEnabled && getRepositoryNodes().length == 1;
         }
     }
     //</editor-fold>

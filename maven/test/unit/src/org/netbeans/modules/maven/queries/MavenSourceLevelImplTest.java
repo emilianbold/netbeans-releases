@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.maven.queries;
 
+import java.util.regex.Matcher;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
@@ -194,4 +196,13 @@ public class MavenSourceLevelImplTest extends NbTestCase {
         assertEquals("1.6", r.getSourceLevel());
     }
 
+    public void testPattern() throws Exception {
+        assertTrue(MavenSourceLevelImpl.PROFILE.matcher("-profile compact1").find());
+        assertTrue(MavenSourceLevelImpl.PROFILE.matcher("    -profile compact1    ").find());
+        assertFalse(MavenSourceLevelImpl.PROFILE.matcher("-profile compact4").find());
+        
+        Matcher m = MavenSourceLevelImpl.PROFILE.matcher("-Xlint -profile compact1 -Xdebug");
+        assertTrue(m.find());
+        assertEquals("compact1", m.group(1));
+    }
 }

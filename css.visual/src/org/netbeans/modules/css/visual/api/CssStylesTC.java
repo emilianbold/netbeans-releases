@@ -105,6 +105,7 @@ public final class CssStylesTC extends TopComponent {
         associateLookup(cssStylesPanel.getLookup());
         setContext(null);
         setToolTipText(Bundle.HINT_CssStylesTC());
+        setTitle(null);
     }
 
     private void setContent(JComponent component) {
@@ -118,7 +119,6 @@ public final class CssStylesTC extends TopComponent {
     }
 
     public void setContext(FileObject file) {
-        setFileNameInTitle(file);
         setContent(cssStylesPanel);
 
         cssStylesPanel.setContext(file);
@@ -141,9 +141,14 @@ public final class CssStylesTC extends TopComponent {
         return cssStylesPanel.getRuleEditorController();
     }
 
-    private void setFileNameInTitle(FileObject file) {
-        String fileName = file == null ? "" : file.getNameExt() + " - ";
-        setName(Bundle.CTL_CssStylesTC_title(fileName));
+    /**
+     * Sets the title of this view.
+     * 
+     * @param title new title of this view.
+     */
+    public void setTitle(String title) {
+        String name = (title == null) ? "" : (title + " - "); // NOI18N
+        setName(Bundle.CTL_CssStylesTC_title(name));
     }
 
     @Override
