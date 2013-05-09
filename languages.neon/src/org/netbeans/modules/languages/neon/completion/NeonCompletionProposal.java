@@ -153,9 +153,8 @@ public abstract class NeonCompletionProposal implements CompletionProposal {
         }
 
         @Override
-        @NbBundle.Messages("TypeRhs=Type")
         public String getRhsHtml(HtmlFormatter formatter) {
-            return Bundle.TypeRhs();
+            return ((NeonElement) getElement()).getTemplate();
         }
 
         @Override
