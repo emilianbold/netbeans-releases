@@ -49,6 +49,7 @@
  */
 package org.netbeans.modules.mobility.editor.pub;
 
+import java.awt.EventQueue;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
@@ -73,8 +74,8 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
-import org.netbeans.core.spi.multiview.MultiViewElement;
-import org.netbeans.core.spi.multiview.text.MultiViewEditorElement;
+import org.netbeans.core.api.multiview.MultiViewHandler;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
 import org.netbeans.mobility.antext.preprocessor.PreprocessorException;
 import org.netbeans.modules.mobility.editor.DocumentPreprocessor;
@@ -94,10 +95,11 @@ import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
-import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
-import org.openide.windows.TopComponent;
+import org.openide.windows.CloneableTopComponent;
+import org.openide.windows.Mode;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -419,6 +421,46 @@ public class J2MEDataObject extends MultiDataObject {
         public @Override
         boolean close(boolean ask) {
             return super.close(ask);
+        }
+
+        @Override
+        protected boolean asynchronousOpen() {
+            return false;
+        }
+
+        @Override
+        public void open() {
+            if (EventQueue.isDispatchThread()) {
+                openInAWT();
+            } else {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        openInAWT();
+                    }
+                });
+            }
+        }
+
+        private void openInAWT() {
+            super.open();
+            CloneableTopComponent topComponent = openCloneableTopComponent();
+            topComponent.requestActive();
+            MultiViewHandler handler = MultiViews.findMultiViewHandler(topComponent);
+            if (handler != null) {
+                handler.requestActive(handler.getPerspectives()[0]);
+            }
+        }
+
+        @Override
+        protected CloneableEditorSupport.Pane createPane() {
+            CloneableTopComponent mvtc = MultiViews.createCloneableMultiView(MIME_TYPE, getDataObject());
+
+            Mode editorMode = WindowManager.getDefault().findMode(CloneableEditorSupport.EDITOR_MODE);
+            if (editorMode != null) {
+                editorMode.dockInto(mvtc);
+            }
+            return (CloneableEditorSupport.Pane) mvtc;
         }
     }
 }
