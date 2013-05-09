@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
@@ -66,7 +67,6 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
@@ -120,6 +120,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -137,7 +138,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     private final BugzillaRepository repository;
 
     private IssueController controller;
-    private IssueNode node;
+    private BugzillaIssueNode node;
     private OwnerInfo info;
 
     static final String LABEL_NAME_ID           = "bugzilla.issue.id";          // NOI18N
@@ -195,6 +196,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     private NetBeansTaskDataModel model;
     private static final Object MODEL_LOCK = new Object();
     private TaskDataModelListener list;
+    private final Task repositoryTaskDataLoaderTask;
 
     public BugzillaIssue (ITask task, BugzillaRepository repo) {
         this.task = task;
@@ -202,6 +204,12 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         this.repositoryDataRef = new SoftReference<TaskData>(null);
         support = new PropertyChangeSupport(this);
         syncState = task.getSynchronizationState();
+        repositoryTaskDataLoaderTask = Bugzilla.getInstance().getRequestProcessor().create(new Runnable() {
+            @Override
+            public void run () {
+                loadRepositoryTaskData();
+            }
+        });
         updateRecentChanges();
         MylynSupport mylynSupp = MylynSupport.getInstance();
         // should be a weak listener
@@ -458,6 +466,10 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         if(node == null) {
             node = createNode();
         }
+        if (!EventQueue.isDispatchThread()) {
+            // loads repository task data from disk
+            getRepositoryTaskData();
+        }
         return node;
     }
 
@@ -564,7 +576,9 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
                 Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
                     @Override
                     public void run() {
-                        ((BugzillaIssueNode)getNode()).fireDataChanged();
+                        if (node != null) {
+                            node.fireDataChanged();
+                        }
                         fireDataChanged();
                         refreshViewData(false);
                     }
@@ -647,25 +661,52 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     }
 
     private TaskData getRepositoryTaskData () {
-        MylynSupport mylynSupp = MylynSupport.getInstance();
         TaskData taskData = repositoryDataRef.get();
         if (taskData == null) {
-            try {
-                TaskDataState taskDataState = mylynSupp.getTaskDataState(task);
-                if (taskDataState != null) {
-                    taskData = taskDataState.getRepositoryData();
-                    repositoryDataRef = new SoftReference<TaskData>(taskData);
-                }
-            } catch (CoreException ex) {
-                Bugzilla.LOG.log(Level.WARNING, null, ex);
+            if (EventQueue.isDispatchThread()) {
+                repositoryTaskDataLoaderTask.schedule(100);
+            } else {
+                return loadRepositoryTaskData();
             }
         }
         return taskData;
     }
 
+    private TaskData loadRepositoryTaskData () {
+        // this method is time consuming
+        assert !EventQueue.isDispatchThread();
+        TaskData td = repositoryDataRef.get();
+        if (td != null) {
+            return td;
+        }
+        try {
+            MylynSupport mylynSupp = MylynSupport.getInstance();
+            TaskDataState taskDataState = mylynSupp.getTaskDataState(task);
+            if (taskDataState != null) {
+                td = taskDataState.getRepositoryData();
+                repositoryDataRef = new SoftReference<TaskData>(td);
+                if (node != null) {
+                    node.fireDataChanged();
+                }
+            }
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+        }
+        return null;
+    }
+
     public String getRepositoryFieldValue (IssueField f) {
         NetBeansTaskDataModel m = model;
-        return getFieldValue(m == null ? getRepositoryTaskData() : m.getRepositoryTaskData(), f);
+        TaskData td;
+        if (m == null) {
+            td = getRepositoryTaskData();
+            if (td == null) {
+                return "..."; //NOI18N
+            }
+        } else {
+            td = m.getRepositoryTaskData();
+        }
+        return getFieldValue(td, f);
     }
     
     String getFieldValue(IssueField f) {
@@ -808,7 +849,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         return FIELD_STATUS_UPTODATE;
     }
 
-    private IssueNode createNode() {
+    private BugzillaIssueNode createNode() {
         return new BugzillaIssueNode(this);
     }
 
@@ -957,7 +998,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     }
 
     public void addAttachment(File file, final String comment, final String desc, String contentType, final boolean patch) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         final FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(file);
         if (contentType == null) {
             file = FileUtil.normalizeFile(file);
@@ -1001,7 +1042,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
 
     // XXX carefull - implicit refresh
     public void addComment (final String comment, final boolean close) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         if(comment == null && !close) {
             return;
         }
@@ -1094,7 +1135,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
 
             @Override
             public void run () {
-                assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+                assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
                 prepareSubmit();
                 final boolean wasNew = isNew();
@@ -1195,13 +1236,13 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     }
     
     public boolean refresh() {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         return refresh(false);
     }
 
     private boolean refresh (boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
         assert task != null;
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
             Bugzilla.LOG.log(Level.FINE, "refreshing issue #{0}", task.getTaskId());
             SynchronizeTasksCommand cmd = MylynSupport.getInstance().getMylynFactory().createSynchronizeTasksCommand(
@@ -1620,7 +1661,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
 
         @Override
         public void getAttachementData(final OutputStream os) {
-            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N            
+            assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N            
             repository.getExecutor().execute(new GetAttachmentCommand(repository, id, os));
         }
 

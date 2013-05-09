@@ -60,6 +60,7 @@ import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.LogUtils;
+import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.mylyn.util.MylynSupport;
@@ -242,7 +243,8 @@ public class BugzillaQuery {
                             repository.getIssueCache().storeQueryIssues(getStoredQueryName(), issues.toArray(new String[issues.size()]));
                             repository.getIssueCache().storeArchivedQueryIssues(getStoredQueryName(), archivedIssues.toArray(new String[archivedIssues.size()]));
                         }
-                        list.notifyArchived(archivedIssues);
+                        list.notifyIssues(issues);
+                        list.notifyIssues(archivedIssues);
 
                         // but what about the archived issues?
                         // they should be refreshed as well, but do we really care about them ?
@@ -386,16 +388,15 @@ public class BugzillaQuery {
         @Override
         public void taskAdded (ITask task) {
             issues.add(task.getTaskId());
-            notifyTable(task);
+            // when issue table or task dashboard is able to handle deltas
+            // fire an event from here
         }
 
         @Override
         public void taskRemoved (ITask task) {
             issues.remove(task.getTaskId());
-            BugzillaIssue issue = repository.getIssueForTask(task);
-            if (issue != null) {
-                fireNotifyDataRemoved(issue);
-            }
+            // when issue table or task dashboard is able to handle removals
+            // fire an event from here
         }
 
         @Override
@@ -403,11 +404,11 @@ public class BugzillaQuery {
             getController().addProgressUnit(BugzillaIssue.getDisplayName(task));
         }
 
-        private void notifyArchived (Set<String> archivedIssues) {
+        private void notifyIssues (Set<String> issues) {
             // this is due to the archived issues
             MylynSupport supp = MylynSupport.getInstance();
             try {
-                for (String taskId : archivedIssues) {
+                for (String taskId : issues) {
                     ITask task = supp.getTask(repository.getUrl(), taskId);
                     if (task != null) {
                         notifyTable(task);
