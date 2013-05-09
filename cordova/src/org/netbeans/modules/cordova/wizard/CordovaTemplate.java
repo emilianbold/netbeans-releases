@@ -59,6 +59,9 @@ import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
 import org.netbeans.modules.cordova.project.CordovaPanel;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.WizardDescriptor;
@@ -73,6 +76,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -210,6 +214,8 @@ public class CordovaTemplate implements SiteTemplateImplementation {
                 
                 Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
                 preferences.put("phonegap", "true");
+                setPhoneGapBrowser(project);
+                
                 if (panel != null) {
                     
                     try {
@@ -234,6 +240,25 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         @Override
         public void initialize(WizardDescriptor wizardDescriptor) {
             wizardDescriptor.putProperty("SITE_TEMPLATE", Lookup.getDefault().lookup(CordovaTemplate.class));
+        }
+
+        public static void setPhoneGapBrowser(final Project project) throws IOException, IllegalArgumentException {
+            ProjectBrowserProvider browserProvider = project.getLookup().lookup(ProjectBrowserProvider.class);
+            for (WebBrowser browser:browserProvider.getBrowsers()) {
+                if (browser.getBrowserFamily() == BrowserFamilyId.PHONEGAP) {
+                    if (Utilities.isMac()) {
+                        if (browser.getId().equals("ios")) {
+                            browserProvider.setActiveBrowser(browser);
+                            break;
+                        }
+                    } else {
+                        if (browser.getId().equals("android_1")) {
+                            browserProvider.setActiveBrowser(browser);
+                            break;
+                        }
+                    }
+                }
+            }
         }
     }
 
