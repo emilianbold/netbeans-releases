@@ -198,6 +198,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     private static final Object MODEL_LOCK = new Object();
     private TaskDataModelListener list;
     private final Task repositoryTaskDataLoaderTask;
+    private boolean readPending;
 
     public BugzillaIssue (ITask task, BugzillaRepository repo) {
         this.task = task;
@@ -279,13 +280,17 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
             public void run () {
                 if (task.getSynchronizationState() == ITask.SynchronizationState.INCOMING_NEW) {
                     // mark as seen so no fields are highlighted
-                    setUpToDate(true);
+                    setUpToDate(true, false);
                 }
                 // clear upon close
                 synchronized (MODEL_LOCK) {
+                    if (readPending) {
+                        // make sure remote changes are not lost and still highlighted in the editor
+                        setUpToDate(false, false);
+                    }
                     model = MylynSupport.getInstance().getTaskDataModel(task);
+                    model.addModelListener(list);
                 }
-                model.addModelListener(list);
                 ensureConfigurationUptodate();
                 refreshViewData(true);
             }
@@ -308,6 +313,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
                 m.removeModelListener(list);
                 list = null;
             }
+            readPending = false;
             Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
                 @Override
                 public void run () {
@@ -1197,7 +1203,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
                 StatusDisplayer.getDefault().setStatusText(Bundle.MSG_BugzillaIssue_statusBar_submitted(
                         getDisplayName()));
 
-                setUpToDate(true);
+                setUpToDate(true, false);
                 result[0] = true;
             }
             
@@ -1322,8 +1328,20 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         return null;
     }
 
-    public void setUpToDate(boolean seen) {
-        MylynSupport.getInstance().markTaskSeen(task, seen);
+    public void setUpToDate (boolean seen) {
+        setUpToDate(seen, true);
+    }
+
+    private void setUpToDate (boolean seen, boolean markReadPending) {
+        synchronized (MODEL_LOCK) {
+            if (markReadPending) {
+                readPending |= syncState == ITask.SynchronizationState.INCOMING
+                    || syncState == ITask.SynchronizationState.CONFLICT;
+            } else {
+                readPending = false;
+            }
+            MylynSupport.getInstance().markTaskSeen(task, seen);
+        }
     }
 
     private boolean updateRecentChanges () {
