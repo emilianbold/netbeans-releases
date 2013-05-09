@@ -61,23 +61,28 @@ import org.tigris.subversion.svnclientadapter.*;
  */
 public class ConflictResolvedAction extends ContextAction {
     
+    @Override
     protected String getBaseName(Node[] activatedNodes) {
         return "resolve";  // NOI18N
     }
 
+    @Override
     protected int getFileEnabledStatus() {
         return FileInformation.STATUS_VERSIONED_CONFLICT;
     }
 
+    @Override
     protected int getDirectoryEnabledStatus() {
         return 0;
     }
 
+    @Override
     protected void performContextAction(Node[] nodes) {
         final Context ctx = getContext(nodes);
         final File[] files = ctx.getFiles();
 
         ProgressSupport support = new ContextAction.ProgressSupport(this, nodes, ctx) {
+            @Override
             public void perform() {
 
                 SvnClient client = null;
