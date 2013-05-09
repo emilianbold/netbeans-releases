@@ -41,77 +41,32 @@
  */
 package org.netbeans.modules.php.latte.completion;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
-import org.netbeans.modules.html.editor.lib.api.HelpItem;
-import org.netbeans.modules.html.editor.lib.api.HelpResolver;
-
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteCustomAttribute implements CustomAttribute {
-    private static final Logger LOGGER = Logger.getLogger(LatteCustomAttribute.class.getName());
-    private final String name;
+public interface LatteDocumentation {
 
-    public LatteCustomAttribute(String name) {
-        this.name = name;
-    }
+    String getHeader();
+    String getContent();
 
-    @Override
-    public String getName() {
-        return name;
-    }
+    public static final class DummyDocumentation implements LatteDocumentation {
+        private final String header;
+        private final String content;
 
-    @Override
-    public boolean isRequired() {
-        return false;
-    }
-
-    @Override
-    public boolean isValueRequired() {
-        return false;
-    }
-
-    @Override
-    public HelpItem getHelp() {
-        return new HelpItemImpl(new LatteDocumentation.DummyDocumentation(name, "Not implemented yet."));
-    }
-
-    private static final class HelpItemImpl implements HelpItem {
-        private static final String DOCUMENTATION_URL = "http://doc.nette.org/en/"; //NOI18N
-        private final LatteDocumentation documentation;
-
-        public HelpItemImpl(LatteDocumentation documentation) {
-            this.documentation = documentation;
+        public DummyDocumentation(String header, String content) {
+            this.header = header;
+            this.content = content;
         }
 
         @Override
-        public String getHelpHeader() {
-            return documentation.getHeader();
+        public String getHeader() {
+            return new StringBuilder().append("<h2>").append(header).append("</h2>").toString();
         }
 
         @Override
-        public String getHelpContent() {
-            return documentation.getContent();
-        }
-
-        @Override
-        public URL getHelpURL() {
-            try {
-                return new URL(DOCUMENTATION_URL);
-            } catch (MalformedURLException ex) {
-                LOGGER.log(Level.FINE, null, ex);
-                return null;
-            }
-        }
-
-        @Override
-        public HelpResolver getHelpResolver() {
-            return null;
+        public String getContent() {
+            return content;
         }
     }
 
