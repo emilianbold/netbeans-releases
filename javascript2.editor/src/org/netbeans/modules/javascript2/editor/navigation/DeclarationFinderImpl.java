@@ -95,8 +95,18 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             if (assignments == null || assignments.isEmpty()) {
                 FileObject fo = object.getFileObject();
                 if (object.isDeclared()) {
+                    
                     if (fo != null) {
-                        return new DeclarationLocation(fo, object.getDeclarationName().getOffsetRange().getStart());
+                        if (fo.equals(snapshot.getSource().getFileObject())) {
+                            int docOffset = LexUtilities.getLexerOffset(jsResult, object.getDeclarationName().getOffsetRange().getStart());
+                            if (docOffset > -1) {
+                                return new DeclarationLocation(fo, docOffset);
+                            }
+                        } else {
+                            // TODO we need to solve to translating model offsets to the doc offset for other files?
+                            return new DeclarationLocation(fo, object.getDeclarationName().getOffsetRange().getStart());
+                        }
+                        
                     }
                 } else {
                     Collection<? extends IndexResult> items = JsIndex.get(fo).findFQN(object.getFullyQualifiedName());
