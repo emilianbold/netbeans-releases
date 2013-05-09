@@ -260,7 +260,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
 
         buttonGroup1.add(radioOrderByName);
         radioOrderByName.setSelected(true);
-        org.openide.awt.Mnemonics.setLocalizedText(radioOrderByName, "name");
+        org.openide.awt.Mnemonics.setLocalizedText(radioOrderByName, "&name");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
@@ -269,7 +269,7 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         add(radioOrderByName, gridBagConstraints);
 
         buttonGroup1.add(radioOrderByUsage);
-        org.openide.awt.Mnemonics.setLocalizedText(radioOrderByUsage, "recent usage");
+        org.openide.awt.Mnemonics.setLocalizedText(radioOrderByUsage, "&recent usage");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;

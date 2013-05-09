@@ -319,6 +319,10 @@ public class ExportZIP extends JPanel {
 
     private boolean zipFieldDefault = true;
 
+    private void onRadioButtonChange() {
+	otherButton.setEnabled(otherRadio.isSelected());
+    }
+
     private ExportZIP() {
         initComponents();
         projectCombo.setRenderer(new ProjectCellRenderer());
@@ -348,6 +352,7 @@ public class ExportZIP extends JPanel {
             }
             @Override public void changedUpdate(DocumentEvent e) {}
         });
+	onRadioButtonChange();
     }
     
     private File root() {
@@ -498,10 +503,12 @@ public class ExportZIP extends JPanel {
 
     private void projectRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_projectRadioActionPerformed
         defaultZipField();
+	onRadioButtonChange();
     }//GEN-LAST:event_projectRadioActionPerformed
 
     private void otherRadioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_otherRadioActionPerformed
         defaultZipField();
+	onRadioButtonChange();
     }//GEN-LAST:event_otherRadioActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

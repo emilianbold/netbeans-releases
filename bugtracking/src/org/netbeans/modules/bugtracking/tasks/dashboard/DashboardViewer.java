@@ -237,13 +237,13 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    void setSelection(Collection<TaskNode> toSelect) {
-        for (TaskNode taskNode : toSelect) {
-            TreeListNode parent = taskNode.getParent();
-            if (!parent.isExpanded()) {
+    public void setSelection(Collection<? extends TreeListNode> toSelect) {
+        for (TreeListNode node : toSelect) {
+            TreeListNode parent = node.getParent();
+            if (parent != null && !parent.isExpanded()) {
                 parent.setExpanded(true);
             }
-            treeList.setSelectedValue(taskNode, true);
+            treeList.setSelectedValue(node, true);
         }
     }
 
