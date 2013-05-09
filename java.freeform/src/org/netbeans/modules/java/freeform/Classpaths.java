@@ -193,7 +193,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             }
         }
         // Need to create it.
-        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
+        Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_LASTEST, true);
         if (java == null) {
             return null;
         }
@@ -258,7 +258,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
             for (String type : TYPES) {
                 _registeredClasspaths.put(type, new HashSet<ClassPath>());
             }
-            Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
+            Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_LASTEST, true);
             if (java == null) {
                 return;
             }
@@ -490,9 +490,9 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
     }
 
     private List<URL> createProcessorClasspath(Element compilationUnitEl) {
-        final Element ap = XMLUtil.findElement(compilationUnitEl, AnnotationProcessingQueryImpl.EL_ANNOTATION_PROCESSING, JavaProjectNature.NS_JAVA_3);
+        final Element ap = XMLUtil.findElement(compilationUnitEl, AnnotationProcessingQueryImpl.EL_ANNOTATION_PROCESSING, JavaProjectNature.NS_JAVA_LASTEST);
         if (ap != null) {
-            final Element path = XMLUtil.findElement(ap, AnnotationProcessingQueryImpl.EL_PROCESSOR_PATH, JavaProjectNature.NS_JAVA_3);
+            final Element path = XMLUtil.findElement(ap, AnnotationProcessingQueryImpl.EL_PROCESSOR_PATH, JavaProjectNature.NS_JAVA_LASTEST);
             if (path != null) {
                 return createClasspath(path);
             }
@@ -573,7 +573,7 @@ final class Classpaths implements ClassPathProvider, AntProjectListener, Propert
         }
         
         private Element findCompilationUnit() {
-            Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
+            Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_LASTEST, true);
             if (java == null) {
                 return null;
             }

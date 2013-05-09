@@ -151,6 +151,7 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
         sourceLevel.addItem(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_JDK15")); // NOI18N
         sourceLevel.addItem(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_JDK16")); // NOI18N
         sourceLevel.addItem(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_JDK17")); // NOI18N
+        sourceLevel.addItem(NbBundle.getMessage(SourceFoldersPanel.class, "LBL_SourceFoldersPanel_JDK18")); // NOI18N
     }
     
     private void updateButtons() {
@@ -185,6 +186,8 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
             sourceLevel.setSelectedIndex(3);
         } else if (sourceLevelValue.equals("1.7")) { // NOI18N
             sourceLevel.setSelectedIndex(4);
+        } else if (sourceLevelValue.equals("1.8")) { // NOI18N
+            sourceLevel.setSelectedIndex(5);
         }else {
             // user specified some other value in project.xml
             sourceLevel.addItem(sourceLevelValue);
@@ -204,6 +207,7 @@ public class SourceFoldersPanel extends JPanel implements HelpCtx.Provider, List
             case 2: return "1.5"; // NOI18N
             case 3: return "1.6"; // NOI18N
             case 4: return "1.7"; // NOI18N
+            case 5: return "1.8"; // NOI18N
             default: return null;
         }
     }

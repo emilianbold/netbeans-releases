@@ -75,6 +75,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.w3c.dom.Element;
 import org.netbeans.modules.ant.freeform.FreeformProjectGenerator;
+import org.netbeans.modules.java.freeform.JavaProjectGenerator.JavaCompilationUnit;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -718,7 +719,7 @@ public class JavaProjectGeneratorTest extends NbTestCase {
         
         // check that all data are correctly persisted
         
-        List units = new ArrayList();
+        List<JavaCompilationUnit> units = new ArrayList();
         JavaProjectGenerator.JavaCompilationUnit cu = new JavaProjectGenerator.JavaCompilationUnit();
         cu.packageRoots = new ArrayList();
         cu.packageRoots.add("pkgroot1");
@@ -813,6 +814,13 @@ public class JavaProjectGeneratorTest extends NbTestCase {
             new String[]{"package-root"}, 
             new String[]{"foo-package-root"});
         ProjectManager.getDefault().saveAllProjects();
+        
+        //update to /4:
+        units = JavaProjectGenerator.getJavaCompilationUnits(helper, aux);
+        units.iterator().next().sourceLevel = "1.8";
+        JavaProjectGenerator.putJavaCompilationUnits(helper, aux, units);
+        assertNull("Java compilation units were not saved correctly",  aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true));
+        assertNotNull("Java compilation units were not saved correctly",  aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_4, true));
     }
 
     public void testCompilationUnitUpgrades() throws Exception {

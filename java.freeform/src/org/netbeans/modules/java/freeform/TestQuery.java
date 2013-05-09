@@ -118,11 +118,11 @@ final class TestQuery implements MultipleRootsUnitTestForSourceQueryImplementati
     private URL[][] findSourcesAndTests() {
         List<URL> sources = new ArrayList<URL>();
         List<URL> tests = new ArrayList<URL>();
-        Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
+        Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_LASTEST, true);
         if (data != null) {
             for (Element cu : XMLUtil.findSubElements(data)) {
                 assert cu.getLocalName().equals("compilation-unit") : cu;
-                boolean isTests = XMLUtil.findElement(cu, "unit-tests", JavaProjectNature.NS_JAVA_3) != null; // NOI18N
+                boolean isTests = XMLUtil.findElement(cu, "unit-tests", JavaProjectNature.NS_JAVA_LASTEST) != null; // NOI18N
                 for (Element pr : XMLUtil.findSubElements(cu)) {
                     if (pr.getLocalName().equals("package-root")) { // NOI18N
                         String rawtext = XMLUtil.findText(pr);
