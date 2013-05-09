@@ -42,6 +42,12 @@
 package org.netbeans.modules.html.knockout;
 
 import java.awt.Color;
+import java.io.IOException;
+import java.lang.ref.WeakReference;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
@@ -52,6 +58,12 @@ import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
  */
 public class KOAttributeCompletionItem extends HtmlCompletionItem.Attribute {
 
+    private static final String DOC_URL = "http://knockoutjs.com/documentation/binding-syntax.html"; //NOI18N
+    
+    private static WeakReference<String> HELP_CACHE = new WeakReference<>(null);
+    
+    private static final String CANNOT_LOAD_HELP = Bundle.cannot_load_help();
+    
     private boolean isInKnockoutFile;
     
     public KOAttributeCompletionItem(CustomAttribute ca, int offset, boolean isInKnockoutFile) {
@@ -78,7 +90,38 @@ public class KOAttributeCompletionItem extends HtmlCompletionItem.Attribute {
 
     @Override
     public boolean hasHelp() {
-        return true;
+        return isInKnockoutFile; //do not show KO's help  for generic data-bind attribute outside KO app
+    }
+    
+       @Override
+    public URL getHelpURL() {
+        try {
+            return new URL(DOC_URL);
+        } catch (MalformedURLException ex) {
+            Logger.getLogger(KOBindingCompletionItem.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return null;
+    }
+
+    @Override
+    public String getHelp() {
+        String helpContent = HELP_CACHE.get();
+        if(helpContent != null) {
+            return helpContent;
+        }
+        try {
+            URL url = getHelpURL();
+            if(url == null) {
+                return CANNOT_LOAD_HELP;
+            } else {
+                helpContent = HelpSupport.getKnockoutDocumentationContent(HelpSupport.loadURLContent(url));
+                HELP_CACHE = new WeakReference<>(helpContent);
+                return helpContent;
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(KOBindingCompletionItem.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        return CANNOT_LOAD_HELP;
     }
     
 }
