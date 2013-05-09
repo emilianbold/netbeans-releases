@@ -115,7 +115,9 @@ public class ConflictResolvedAction extends ContextAction {
             protected void perform() {
                 try {
                     SvnClient client = Subversion.getInstance().getClient(file);
-                    ConflictResolvedAction.perform(file, client);
+                    if (client != null) {
+                        ConflictResolvedAction.perform(file, client);
+                    }
                 } catch (SVNClientException ex){
                     annotate(ex);
                 }
