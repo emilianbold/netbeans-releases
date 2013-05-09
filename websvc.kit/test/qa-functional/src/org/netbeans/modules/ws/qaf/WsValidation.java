@@ -738,6 +738,9 @@ public class WsValidation extends WebServicesTestBase {
             assertFalse("offending @HandlerChain", //NOI18N
                     eo.contains("@HandlerChain(file = \"" + handlerCfg.getName() + "\")")); //NOI18N
             assertFalse(handlerCfg.exists());
+        } else {
+            boolean isAnt = getProjectType().isAntBasedProject();
+            waitForWsImport(isAnt ? "wsimport-client-clean" : "wsimport", isAnt); //NOI18N
         }
     }
 
