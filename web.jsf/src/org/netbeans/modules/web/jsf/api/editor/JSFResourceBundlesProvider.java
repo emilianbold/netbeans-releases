@@ -82,6 +82,10 @@ public class JSFResourceBundlesProvider {
                     List<ResourceBundle> result = new ArrayList<ResourceBundle>();
                     for (Application application : applications) {
                         for (org.netbeans.modules.web.jsf.api.facesmodel.ResourceBundle bundle : application.getResourceBundles()) {
+                            if (bundle.getBaseName() == null) {
+                                continue;
+                            }
+
                             List<FileObject> files = new ArrayList<FileObject>();
                             for (SourceGroup sourceGroup : SourceGroups.getJavaSourceGroups(project)) {
                                 int lastDot = bundle.getBaseName().lastIndexOf("."); //NOI18N
@@ -90,7 +94,7 @@ public class JSFResourceBundlesProvider {
                                         : bundle.getBaseName().replace(".", "/").substring(0, lastDot); //NOI18N
                                 String bundleName = bundle.getBaseName().substring(lastDot + 1);
                                 FileObject fileObject = sourceGroup.getRootFolder().getFileObject(parentPkg);
-                                if (fileObject.isValid() && fileObject.isFolder()) {
+                                if (fileObject != null && fileObject.isValid() && fileObject.isFolder()) {
                                     for (FileObject fo : fileObject.getChildren()) {
                                         if (fo.getName().startsWith(bundleName) && "properties".equals(fo.getExt())) { //NOI18N
                                             files.add(fo);

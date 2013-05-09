@@ -83,7 +83,8 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
             }
         };
         
-        iOSPanel.setEnabled(Utilities.isMac());
+        identityTextField.setEnabled(Utilities.isMac());
+        provisioningCombo.setEnabled(Utilities.isMac());
     }
 
     /**

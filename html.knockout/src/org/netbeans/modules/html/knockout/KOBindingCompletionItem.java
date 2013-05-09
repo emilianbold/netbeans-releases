@@ -68,7 +68,6 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  *
  * @author marekfukala
  */
-@NbBundle.Messages("cannot_load_help=Cannot load help.")
 public class KOBindingCompletionItem extends HtmlCompletionItem {
     
     private static final Map<Binding, String> HELP_CACHE = new WeakHashMap<>();
@@ -81,6 +80,11 @@ public class KOBindingCompletionItem extends HtmlCompletionItem {
         this.binding = binding;
     }
 
+    @Override
+    protected String getSubstituteText() {
+        return new StringBuilder().append(binding.getName()).append(": ").toString();
+    }
+    
     @Override
     public URL getHelpURL() {
         try {
@@ -102,7 +106,7 @@ public class KOBindingCompletionItem extends HtmlCompletionItem {
             if(url == null) {
                 return CANNOT_LOAD_HELP;
             } else {
-                helpContent = filterContent(loadContent(url));
+                helpContent = HelpSupport.getKnockoutDocumentationContent(HelpSupport.loadURLContent(url));
                 HELP_CACHE.put(binding, helpContent);
                 return helpContent;
             }
@@ -117,71 +121,5 @@ public class KOBindingCompletionItem extends HtmlCompletionItem {
         return true;
     }
 
-    /*
-     * Finds the "content" section of the KO binding documentation.
-     */
-    private String filterContent(String content) {
-        int stripFrom = 0;
-        int stripTo = content.length();
-        HtmlSource source = new HtmlSource(content);
-        Iterator<Element> elementsIterator = SyntaxAnalyzer.create(source).elementsIterator();
-        
-        boolean inContent = false;
-        int depth = 0;
-        elements: while (elementsIterator.hasNext()) {
-            Element element = elementsIterator.next();
-            switch (element.type()) {
-                case OPEN_TAG:
-                    OpenTag ot = (OpenTag) element;
-                    if (LexerUtils.equals("div", ot.name(), true, true)) { //NOI18N
-                        org.netbeans.modules.html.editor.lib.api.elements.Attribute attribute = ot.getAttribute("class"); //NOI18N
-                        if (attribute != null) {
-                            CharSequence unquotedValue = attribute.unquotedValue();
-                            if (unquotedValue != null && LexerUtils.equals("content", unquotedValue, true, true)) { //NOI18N
-                                //found the page content
-                                stripFrom = element.to();
-                                inContent = true;
-                            }
-                        }
-                    }
-                    if(inContent) {
-                        depth++;
-                    }
-                    break;
-                case CLOSE_TAG:
-                    if(inContent) {
-                        depth--;
-                        if(depth == 0) {
-                            //end of the content
-                            stripTo = element.from();
-                            break elements;
-                        }
-                    }
-                    break;
-            }
-        }
-        
-        return content.substring(stripFrom, stripTo);
-    }
-
-    private String loadContent(URL url) throws IOException {
-        if (url == null) {
-            return null;
-        }
-        InputStream is = url.openStream();
-        byte buffer[] = new byte[1000];
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int count = 0;
-        do {
-            count = is.read(buffer);
-            if (count > 0) {
-                baos.write(buffer, 0, count);
-            }
-        } while (count > 0);
-
-        is.close();
-        String content = baos.toString();
-        baos.close();
-        return content;
-    }
+  
 }

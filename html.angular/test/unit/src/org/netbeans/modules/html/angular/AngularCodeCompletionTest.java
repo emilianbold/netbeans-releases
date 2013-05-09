@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,71 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.html.angular;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import javax.swing.JComponent;
-import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.javascript2.editor.JsCodeComplationBase;
+import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
+import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author marekfukala
+ * @author Petr Pisl
  */
+public class AngularCodeCompletionTest extends JsCodeComplationBase {
 
-@NbBundle.Messages({
-    "DocumentView.displayName=Document"
-})
-@ServiceProvider(service=CssStylesPanelProvider.class)
-public class DocumentViewPanelProvider implements CssStylesPanelProvider {
-
-    private static String DOCUMENT_PANEL_ID = "static_document";
-    private static Collection<String> MIME_TYPES = new HashSet(Arrays.asList(new String[]{"text/css", "text/html", "text/xhtml"}));
-    private DocumentViewPanel panel;
-    
-    @Override
-    public String getPanelDisplayName() {
-        return Bundle.DocumentView_displayName();
+    public AngularCodeCompletionTest(String testName) {
+        super(testName);
     }
-
-    @Override
-    public JComponent getContent(Lookup lookup) {
-        if(panel == null) {
-            panel = new DocumentViewPanel(lookup);
-        }
-        return panel;
+    
+    public void testControllersProperty_01() throws Exception {
+        checkCompletion("completion/simpleController/index.html", "                    {{or^}}", false);
     }
     
     @Override
-    public String getPanelID() {
-        return DOCUMENT_PANEL_ID;
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<FileObject>(/*ClasspathProviderImplAccessor.getJsStubs()*/);
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/completion/simpleController")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
     }
-
-    @Override
-    public Lookup getLookup() {
-        return panel.getLookup();
-    }
-
-    @Override
-    public void activated() {
-        panel.activated();
-    }
-
-    @Override
-    public void deactivated() {
-        panel.deactivated();
-    }
-
-    @Override
-    public boolean providesContentFor(FileObject file) {
-        return (file != null) && MIME_TYPES.contains(file.getMIMEType());
-    }
-    
 }
