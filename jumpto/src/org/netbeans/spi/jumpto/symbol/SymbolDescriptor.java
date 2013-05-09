@@ -43,7 +43,9 @@
 package org.netbeans.spi.jumpto.symbol;
 
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * A SymbolDescriptor describes a symbol for display in the Go To Symbol dialog.
@@ -116,5 +118,22 @@ public abstract class SymbolDescriptor {
      * Open the type declaration in the editor. 
      */
     public abstract void open();
+
+    /**
+    * Returns a display name of the path to the file containing the symbol.
+    * Default implementation uses {@code FileUtil.getFileDisplayName(getFileObject()) }
+    * Could be overridden if a more efficient way could be provided.
+    * Threading: This method is invoked in the EDT.
+    *
+    * @return The string representation of the path of the associated file.
+    * @since 1.36
+    */
+    @NonNull
+    public String getFileDisplayPath() {
+       final FileObject fo = getFileObject();
+       return fo == null ?
+           "" : // NOI18N
+           FileUtil.getFileDisplayName(fo);
+    }
 
 }

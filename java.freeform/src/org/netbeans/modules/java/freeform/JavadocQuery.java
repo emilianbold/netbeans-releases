@@ -75,7 +75,7 @@ final class JavadocQuery implements JavadocForBinaryQueryImplementation {
     }
 
     public JavadocForBinaryQuery.Result findJavadoc(URL binaryRoot) {
-        Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
+        Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_LASTEST, true);
         if (data != null) {
             for (Element cu : XMLUtil.findSubElements(data)) {
                 assert cu.getLocalName().equals("compilation-unit") : cu;

@@ -542,26 +542,17 @@ public class GoToPanel extends javax.swing.JPanel {
         
         // ListSelectionListener -----------------------------------------------
         
-        public void valueChanged(ListSelectionEvent ev) {
+        @Override
+        public void valueChanged(@NonNull final ListSelectionEvent ev) {
             // got "Not computed yet" text sometimes
-            Object obj = dialog.matchesList.getSelectedValue();
-            
+            final Object obj = dialog.matchesList.getSelectedValue();
             if (obj instanceof TypeDescriptor) {
-                TypeDescriptor selectedValue = ((TypeDescriptor) obj);
-                if ( selectedValue != null ) {
-                    String fileName = "";
-                    FileObject fo = selectedValue.getFileObject();
-                    if (fo != null) {
-                        fileName = FileUtil.getFileDisplayName(fo);
-                    }
-                    dialog.jTextFieldLocation.setText(fileName);
-                }
-                else {
-                    dialog.jTextFieldLocation.setText("");
-                }
+                final TypeDescriptor selectedValue = (TypeDescriptor) obj;
+                final String fileName = selectedValue.getFileDisplayPath();
+                dialog.jTextFieldLocation.setText(fileName);
             } else {
-                dialog.jTextFieldLocation.setText("");
-         }
+                dialog.jTextFieldLocation.setText("");      //NOI18N
+            }
         }
         
         private void update() {

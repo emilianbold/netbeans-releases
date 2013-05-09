@@ -73,6 +73,18 @@ public class JavaProjectNatureTest extends NbTestCase {
     public void testUpgradeSchema1to3() throws Exception {
         upgradeSchemaTestImpl(JavaProjectNature.NS_JAVA_1, JavaProjectNature.NS_JAVA_3);
     }
+    
+    public void testUpgradeSchema1to4() throws Exception {
+        upgradeSchemaTestImpl(JavaProjectNature.NS_JAVA_1, JavaProjectNature.NS_JAVA_4);
+    }
+    
+    public void testUpgradeSchema2to4() throws Exception {
+        upgradeSchemaTestImpl(JavaProjectNature.NS_JAVA_2, JavaProjectNature.NS_JAVA_4);
+    }
+    
+    public void testUpgradeSchema3to4() throws Exception {
+        upgradeSchemaTestImpl(JavaProjectNature.NS_JAVA_3, JavaProjectNature.NS_JAVA_4);
+    }
 
     private void upgradeSchemaTestImpl(String from, String to) throws Exception {
         // Formatting has to be the same as Xerces' formatter produces for this test to pass:

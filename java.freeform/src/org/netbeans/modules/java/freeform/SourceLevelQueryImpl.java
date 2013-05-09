@@ -134,7 +134,7 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation2, Ant
                     return Collections.unmodifiableMap(new HashMap<FileObject,R>(sourceLevels));
                 }
             }
-            Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
+            Element java = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_LASTEST, true);
             if (java != null) {
                 for (Element compilationUnitEl : XMLUtil.findSubElements(java)) {
                     assert compilationUnitEl.getLocalName().equals("compilation-unit") : compilationUnitEl;
@@ -172,7 +172,7 @@ final class SourceLevelQueryImpl implements SourceLevelQueryImplementation2, Ant
      * Get the source level indicated in a compilation unit (or null if none is indicated).
      */
     private String getLevel(Element compilationUnitEl) {
-        Element sourceLevelEl = XMLUtil.findElement(compilationUnitEl, "source-level", JavaProjectNature.NS_JAVA_3);
+        Element sourceLevelEl = XMLUtil.findElement(compilationUnitEl, "source-level", JavaProjectNature.NS_JAVA_LASTEST);
         if (sourceLevelEl != null) {
             return XMLUtil.findText(sourceLevelEl);
         } else {
