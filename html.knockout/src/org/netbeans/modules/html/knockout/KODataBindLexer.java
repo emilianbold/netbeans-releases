@@ -179,6 +179,7 @@ public class KODataBindLexer implements Lexer<KODataBindTokenId> {
                         //stay
                     } else {
                         //error
+                        state = State.INIT;
                         return tokenFactory.createToken(KODataBindTokenId.ERROR);
                     }
                     break;
