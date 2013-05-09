@@ -62,11 +62,12 @@ import java.util.zip.ZipInputStream;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
 import static org.netbeans.modules.cordova.wizard.Bundle.*;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -209,7 +210,10 @@ public class PhoneGapSampleIterator implements ProgressInstantiatingIterator<Wiz
         map.put("js/libs/Cordova-2.5.0/cordova-2.5.0.js", "js/libs/Cordova-" + CordovaPlatform.getDefault().getVersion() + "/cordova-" + CordovaPlatform.getDefault().getVersion() + ".js" );
         replaceTokens(projectFolder, map2 , "public_html/index.html"); // NOI18N
 
-        ProjectChooser.setProjectsFolder(FileUtil.toFile(targetFolder));
+        final Project project = FileOwnerQuery.getOwner(projectFolder);
+        CordovaTemplate.CordovaExtender.setPhoneGapBrowser(project);
+        CordovaPerformer.getDefault().createPlatforms(project);
+        
         return Collections.singleton(projectFolder);
     }
 
