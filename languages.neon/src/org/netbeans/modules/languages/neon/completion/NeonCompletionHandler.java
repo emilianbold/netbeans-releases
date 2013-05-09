@@ -118,7 +118,7 @@ public class NeonCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public QueryType getAutoQuery(JTextComponent component, String typedText) {
-        QueryType result = QueryType.ALL_COMPLETION;
+        QueryType result = QueryType.NONE;
         if (typedText.length() == 0) {
             result = QueryType.NONE;
         } else {
