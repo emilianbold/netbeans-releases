@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.clientproject.browser;
+package org.netbeans.modules.web.browser.ui.picker;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -50,7 +50,6 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -64,14 +63,10 @@ import javax.swing.JSeparator;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.core.ui.list.ListItem;
-import org.netbeans.core.ui.list.SelectionList;
-import org.netbeans.core.ui.list.SelectionListFactory;
-import org.netbeans.core.ui.list.SelectionModel;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
-import org.openide.util.Exceptions;
+import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -80,15 +75,28 @@ import org.openide.util.NbBundle;
  * 
  * @author S. Aubrecht
  */
-class BrowserMenu implements ChangeListener {
+public class BrowserMenu implements ChangeListener {
 
     private final ProjectBrowserProvider browserProvider;
+    private final Collection<WebBrowser> browsers;
     private final SelectionListFactory factory;
     private final SelectionModel selModel;
     private JPopupMenu popup;
+    private WebBrowser selectedBrowser;
+    private final ChangeSupport changeSupport = new ChangeSupport( this );
 
-    public BrowserMenu( ProjectBrowserProvider browserProvider ) {
-        this.browserProvider = browserProvider;
+    public BrowserMenu( ProjectBrowserProvider provider ) {
+        this( provider.getBrowsers(), provider.getActiveBrowser(), provider );
+    }
+
+    public BrowserMenu( Collection<WebBrowser> browsers, WebBrowser selectedBrowser ) {
+        this( browsers, selectedBrowser, null );
+    }
+
+    private BrowserMenu( Collection<WebBrowser> browsers, WebBrowser selectedBrowser, ProjectBrowserProvider provider ) {
+        this.browsers = browsers;
+        this.browserProvider = provider;
+        this.selectedBrowser = selectedBrowser;
         factory = SelectionListFactory.create();
         selModel = factory.getSelectionModel();
     }
@@ -106,13 +114,12 @@ class BrowserMenu implements ChangeListener {
     private void fillContent( JPanel contentPanel ) {
         contentPanel.setLayout( new GridBagLayout() );
 
-        WebBrowser activeBrowser = browserProvider.getActiveBrowser();
-        Collection<WebBrowser> browsers = browserProvider.getBrowsers();
-        ArrayList<ListItemImpl> defaultItems = new ArrayList<ListItemImpl>( browsers.size() );
-        ArrayList<ListItemImpl> mobileItems = new ArrayList<ListItemImpl>( browsers.size() );
-        ArrayList<ListItemImpl> phoneGapItems = new ArrayList<ListItemImpl>( browsers.size() );
+        WebBrowser activeBrowser = selectedBrowser;
+        ArrayList<ListItemImpl> defaultItems = new ArrayList<>( browsers.size() );
+        ArrayList<ListItemImpl> mobileItems = new ArrayList<>( browsers.size() );
+        ArrayList<ListItemImpl> phoneGapItems = new ArrayList<>( browsers.size() );
         ListItem selItem = null;
-        for( WebBrowser browser : browserProvider.getBrowsers() ) {
+        for( WebBrowser browser : browsers ) {
             ListItemImpl item = new ListItemImpl( browser );
             if( null != activeBrowser && activeBrowser.getId().equals( browser.getId() ) ) {
                 selItem = item;
@@ -125,7 +132,6 @@ class BrowserMenu implements ChangeListener {
                 defaultItems.add( item );
             }
         }
-
 
         addSection( contentPanel, defaultItems, NbBundle.getMessage(BrowserMenu.class, "Header_BROWSER"), 0, null );
         addSection( contentPanel, mobileItems, NbBundle.getMessage(BrowserMenu.class, "Header_MOBILE"), 2, null );
@@ -155,21 +161,16 @@ class BrowserMenu implements ChangeListener {
         ListItem selItem = selModel.getSelectedItem();
         if( null == selItem )
             return;
-        try {
-            popup.setVisible( false );
-            browserProvider.setActiveBrowser( ((ListItemImpl)selItem).browser );
-        } catch( IllegalArgumentException ex ) {
-            Exceptions.printStackTrace( ex );
-        } catch( IOException ex ) {
-            Exceptions.printStackTrace( ex );
-        }
+        popup.setVisible( false );
+        selectedBrowser = ((ListItemImpl)selItem).browser;
+        changeSupport.fireChange();
     }
 
     private JComponent createList( List<ListItemImpl> items, boolean nbIntegrationOnly ) {
         if( items.isEmpty() )
             return null;
 
-        ArrayList<ListItemImpl> filteredItems = new ArrayList<ListItemImpl>( items.size() );
+        ArrayList<ListItemImpl> filteredItems = new ArrayList<>( items.size() );
         for( ListItemImpl li : items ) {
             if( li.browser.hasNetBeansIntegration() == nbIntegrationOnly ) {
                 filteredItems.add( li );
@@ -220,7 +221,7 @@ class BrowserMenu implements ChangeListener {
     }
 
     private JComponent createConfigureButton() {
-        if( !browserProvider.hasCustomizer() )
+        if( null == browserProvider || !browserProvider.hasCustomizer() )
             return null;
         JButton button = new JButton(NbBundle.getMessage(BrowserMenu.class, "Ctl_ConfigurePhoneGap"));
         button.addActionListener( new ActionListener() {
@@ -262,5 +263,17 @@ class BrowserMenu implements ChangeListener {
         public String getText() {
             return browser.getName();
         }
+    }
+
+    public void addChangeListener( ChangeListener listener ) {
+        changeSupport.addChangeListener( listener );
+    }
+
+    public void removeChangeListener( ChangeListener listener ) {
+        changeSupport.removeChangeListener( listener );
+    }
+
+    public WebBrowser getSelectedBrowser() {
+        return selectedBrowser;
     }
 }

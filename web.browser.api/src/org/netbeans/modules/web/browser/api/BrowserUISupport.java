@@ -51,12 +51,14 @@ import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.ImageIcon;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.web.browser.ui.picker.BrowserCombo;
 
 /**
  * Support for web browser selection in the UI.
@@ -172,6 +174,20 @@ public final class BrowserUISupport {
     public static WebBrowser getBrowser(@NonNull String browserId) {
         assert browserId != null;
         return findWebBrowserById(browserId);
+    }
+
+    /**
+     * Creates combo box listing all available browsers. The combo box has a special
+     * drop-down list that uses the same multi-column layout as <code>BrowserPickerPopup</code>
+     * @param selectedBrowserId browser identifier, can be {@code null} if e.g. not set yet
+     * @param showIDEGlobalBrowserOption show "IDE's Default Browser" option
+     * @param includePhoneGap show PhoneGap browser
+     * @return Combo box for browser selection.
+     * @see BrowserPickerPopup
+     */
+    public static JComboBox createBrowserPickerComboBox( @NullAllowed String selectedBrowserId,
+            boolean showIDEGlobalBrowserOption, boolean includePhoneGap ) {
+        return new BrowserCombo( selectedBrowserId, showIDEGlobalBrowserOption, includePhoneGap );
     }
 
     private static WebBrowser findWebBrowserById(String id) {

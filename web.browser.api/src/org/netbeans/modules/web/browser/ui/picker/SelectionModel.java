@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.core.ui.list;
+package org.netbeans.modules.web.browser.ui.picker;
 
 import java.util.ArrayList;
 import javax.swing.SwingUtilities;
@@ -52,10 +52,10 @@ import org.openide.util.ChangeSupport;
  *
  * @author S. Aubrecht
  */
-public final class SelectionModel {
+final class SelectionModel {
 
     private final ListSelectionListener selectionListener;
-    private final ArrayList<SelectionList> lists = new ArrayList<SelectionList>( 10 );
+    private final ArrayList<SelectionList> lists = new ArrayList<>( 10 );
     private final ChangeSupport changeSupport = new ChangeSupport( this );
 
     SelectionModel() {
