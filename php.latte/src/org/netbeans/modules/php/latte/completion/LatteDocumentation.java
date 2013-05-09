@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,71 +37,55 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
+package org.netbeans.modules.php.latte.completion;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import javax.swing.JComponent;
-import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+import java.util.MissingResourceException;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
  *
- * @author marekfukala
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
+public interface LatteDocumentation {
 
-@NbBundle.Messages({
-    "DocumentView.displayName=Document"
-})
-@ServiceProvider(service=CssStylesPanelProvider.class)
-public class DocumentViewPanelProvider implements CssStylesPanelProvider {
+    String getHeader();
+    String getContent();
 
-    private static String DOCUMENT_PANEL_ID = "static_document";
-    private static Collection<String> MIME_TYPES = new HashSet(Arrays.asList(new String[]{"text/css", "text/html", "text/xhtml"}));
-    private DocumentViewPanel panel;
-    
-    @Override
-    public String getPanelDisplayName() {
-        return Bundle.DocumentView_displayName();
-    }
+    public static final class DummyDocumentation implements LatteDocumentation {
+        private final String itemName;
+        private final String content;
 
-    @Override
-    public JComponent getContent(Lookup lookup) {
-        if(panel == null) {
-            panel = new DocumentViewPanel(lookup);
+        public DummyDocumentation(String itemName, String content) {
+            this.itemName = itemName;
+            this.content = content;
         }
-        return panel;
-    }
-    
-    @Override
-    public String getPanelID() {
-        return DOCUMENT_PANEL_ID;
+
+        @Override
+        public String getHeader() {
+            return new StringBuilder().append("<h2>").append(itemName).append("</h2>").toString(); //NOI18N
+        }
+
+        @Override
+        public String getContent() {
+            return content;
+        }
     }
 
-    @Override
-    public Lookup getLookup() {
-        return panel.getLookup();
+    public static final class Factory {
+
+        @NbBundle.Messages("NoDoc=No documentation.")
+        public static LatteDocumentation createFromBundle(String bundleKey, String itemName) {
+            assert bundleKey != null;
+            String content;
+            try {
+                content = NbBundle.getMessage(Factory.class, bundleKey);
+            } catch (MissingResourceException ex) {
+                content = Bundle.NoDoc();
+            }
+            return new LatteDocumentation.DummyDocumentation(itemName, content);
+        }
     }
 
-    @Override
-    public void activated() {
-        panel.activated();
-    }
-
-    @Override
-    public void deactivated() {
-        panel.deactivated();
-    }
-
-    @Override
-    public boolean providesContentFor(FileObject file) {
-        return (file != null) && MIME_TYPES.contains(file.getMIMEType());
-    }
-    
 }

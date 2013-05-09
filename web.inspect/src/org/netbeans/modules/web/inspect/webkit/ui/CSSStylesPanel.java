@@ -99,6 +99,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -197,6 +198,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
             contentUpdateInProgress = keepSelection;
             nodeLookup.setPageModel(pageModel);
             selectionPanel.updateContent(pageModel, keepSelection);
+            updateTitle();
         } finally {
             // Ugly hack that ensures that contentUpdateInProgress
             // is not set to false before the update of Document
@@ -291,6 +293,28 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         });
     }
 
+    /**
+     * Updates the title of the enclosing view.
+     */
+    void updateTitle() {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (active) {
+                    PageModel page = pageModel;
+                    String title = null; // NOI18N
+                    if (page != null) {
+                        List<? extends Node> nodes = page.getSelectedNodes();
+                        if (nodes.size() == 1) {
+                            title = nodes.get(0).getDisplayName();
+                        }
+                    }
+                    TopComponent tc = WindowManager.getDefault().findTopComponent("CssStylesTC"); // NOI18N
+                    ((CssStylesTC)tc).setTitle(title);
+                }
+            }
+        });
+    }
     
     @Override
     public JComponent getView() {
@@ -305,6 +329,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     @Override
     public void activated() {
         active = true;
+        updateTitle();
         updateRulesEditor();
     }
 
@@ -325,6 +350,8 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                 updatePageModel();
             } else if (PageModel.PROP_DOCUMENT.equals(propName)) {
                 updateContent(false);
+            } else if (PageModel.PROP_SELECTED_NODES.equals(propName)) {
+                updateTitle();
             }
         }
 
