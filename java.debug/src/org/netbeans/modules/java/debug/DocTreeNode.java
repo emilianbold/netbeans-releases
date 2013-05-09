@@ -46,7 +46,7 @@ import com.sun.source.doctree.DocTree;
 import com.sun.source.doctree.ReferenceTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.util.DocTreePathScanner;
+import com.sun.source.util.DocTreePath;
 import com.sun.source.util.DocTreeScanner;
 import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
@@ -76,29 +76,29 @@ public class DocTreeNode extends AbstractNode implements OffsetProvider {
         setDisplayName(tree.getKind() + ":" + tree.toString());
     }
     
-    private static List<Node> children(final CompilationInfo info, final TreePath declaration, final DocCommentTree docComment, DocTree tree) {
+    private static List<Node> children(final CompilationInfo info, final TreePath declaration, final DocCommentTree docComment, final DocTree tree) {
         final List<Node> result = new ArrayList<Node>();
         
-        tree.accept(new DocTreePathScanner<Void, Void>() {
+        tree.accept(new DocTreeScanner<Void, Void>() {
             @Override public Void scan(DocTree node, Void p) {
                 result.add(new DocTreeNode(info, declaration, docComment, node));
                 return null;
             }
             @Override
             public Void visitReference(ReferenceTree node, Void p) {
-                result.add(TreeNode.nodeForElement(info, ((DocTrees) info.getTrees()).getElement(getCurrentPath())));
-                ExpressionTree classReference = info.getTreeUtilities().getReferenceClass(getCurrentPath());
+                DocTreePath currentPath = new DocTreePath(new DocTreePath(declaration, docComment), tree);
+                result.add(TreeNode.nodeForElement(info, ((DocTrees) info.getTrees()).getElement(currentPath)));
+                ExpressionTree classReference = info.getTreeUtilities().getReferenceClass(currentPath);
                 if (classReference != null) {
                     result.add(TreeNode.getTree(info, new TreePath(declaration, classReference), /*TODO: cancel*/new AtomicBoolean()));
                 }
-                List<? extends Tree> methodParameters = info.getTreeUtilities().getReferenceParameters(getCurrentPath());
+                List<? extends Tree> methodParameters = info.getTreeUtilities().getReferenceParameters(currentPath);
                 if (methodParameters != null) {
                     for (Tree param : methodParameters) {
                         result.add(TreeNode.getTree(info, new TreePath(declaration, param), /*TODO: cancel*/new AtomicBoolean()));
                     }
                 }
-                super.visitReference(node, p);
-                return null;
+                return super.visitReference(node, p);
             }
         }, null);
         
