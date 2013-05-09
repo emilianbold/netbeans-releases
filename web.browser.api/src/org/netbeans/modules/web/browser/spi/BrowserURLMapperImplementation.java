@@ -39,72 +39,54 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova;
+package org.netbeans.modules.web.browser.spi;
 
-import org.netbeans.modules.cordova.platforms.CordovaMapping;
-import java.net.MalformedURLException;
 import java.net.URL;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.project.ClientProjectUtilities;
-import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
+ * An SPI which allows browser to indicate that given server URL needs to be
+ * converted into a browser specific URL before opening. For example Chrome browser
+ * in Android device needs to use IP address instead of localhost address; this
+ * method allows the browser to return mapping which expresses for example that
+ * any server URL starting with text "http://localhost:1234/" needs to be
+ * converted into browser URL starting with "http://192.168.0.1/".
  *
- * @author Jan Becicka
+ * Project's ServerURLMappingImplementation implementations should check whether
+ * project's currently selected browser provides this feature and perform URL
+ * translation. That way any client of ServerURLMapping gets the target URL.
  */
-public class CordovaMappingImpl implements ServerURLMappingImplementation, CordovaMapping {
+public interface BrowserURLMapperImplementation {
 
-    private String url;
-    private Project p;
-    
-    @Override
-    public void setBaseUrl(String url) {
-        if (url==null) {
-            this.url = null;
-        } else {
-            this.url = url.substring(0, url.lastIndexOf("/www/") + "/www/".length()).replaceAll("file:///", "file:/").replaceAll("file:/", "file:///");
+    /**
+     * Return mapping description if given URL representing given project file
+     * from given project should be translated.
+     * @return can return null if no mapping is suitable for given params
+     */
+    @CheckForNull BrowserURLMapper toBrowser(Project p, FileObject projectFile, URL serverURL);
+
+    /**
+     * Description of mapping from server URL to browser URL.
+     */
+    public static final class BrowserURLMapper {
+        private String serverURLRoot;
+        private String browserURLRoot;
+
+        public BrowserURLMapper(String serverURLRoot, String browserURLRoot) {
+            this.serverURLRoot = serverURLRoot;
+            this.browserURLRoot = browserURLRoot;
         }
-    }
-    
-    @Override
-    public void setProject(Project p) {
-        this. p = p;
-    }
-    
-    @Override
-    public URL toServer(int projectContext, FileObject projectFile) {
-        if (url == null || p == null) {
-            return null;
+
+        public String getServerURLRoot() {
+            return serverURLRoot;
         }
-        
-        String rel = projectFile.getPath();
-        String name = ClientProjectUtilities.getSiteRoot(p).getNameExt();
-        rel = rel.substring(rel.lastIndexOf(name) +  name.length() + 1 );
-        try {
-            return new URL(url+rel);
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
+
+        public String getBrowserURLRoot() {
+            return browserURLRoot;
         }
-        return null;
+
     }
 
-    @Override
-    public FileObject fromServer(int projectContext, URL serverURL) {
-        if (url == null ||p == null ) {
-            return null;
-        }
-        String url2 = url.replaceAll("file:///", "file:/");
-        final String serverUrl2 = serverURL.toExternalForm().replaceAll("file:///", "file:/");
-        if (serverUrl2.startsWith(url2)) {
-            final String relPath = serverUrl2.substring(url2.length());
-            FileObject fileObject = ClientProjectUtilities.getSiteRoot(p).getFileObject(relPath);
-            return fileObject;
-        }
-        return null;
-    }
-    
 }

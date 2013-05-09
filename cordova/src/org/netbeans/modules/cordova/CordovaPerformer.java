@@ -65,8 +65,6 @@ import org.netbeans.modules.web.common.api.WebServer;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.spi.Factory;
-import org.netbeans.spi.project.ProjectConfiguration;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -74,14 +72,12 @@ import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import static org.netbeans.modules.cordova.PropertyNames.*;
-import org.netbeans.modules.cordova.platforms.CordovaMapping;
+import org.netbeans.modules.cordova.platforms.BrowserURLMapperImpl;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
-import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
-import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitUIManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -146,8 +142,9 @@ public class CordovaPerformer implements BuildPerformer {
                                 WebBrowser activeConfiguration = provider.getActiveBrowser();
                                 MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(project, activeConfiguration.getId());
                                 Device device = mobileConfig.getDevice();
-                                CordovaMapping map = (CordovaMapping) Lookup.getDefault().lookup(ServerURLMappingImplementation.class);
-                                map.setProject(project);
+//                                CordovaMapping map = (CordovaMapping) Lookup.getDefault().lookup(ServerURLMappingImplementation.class);
+//                                map.setProject(project);
+                                BrowserURLMapperImpl.DEFAULT.setSiteRoot(ClientProjectUtilities.getSiteRoot(project));
                                 if (device.isEmulator()) {
                                     try {
                                         Thread.sleep(5000);
@@ -391,9 +388,11 @@ public class CordovaPerformer implements BuildPerformer {
             webKitDebugging = null;
             PageInspector.getDefault().inspectPage(Lookup.EMPTY);
         } finally {
-            CordovaMapping map = Lookup.getDefault().lookup(CordovaMapping.class);
-            map.setBaseUrl(null);
-            map.setProject(null);
+//            CordovaMapping map = Lookup.getDefault().lookup(CordovaMapping.class);
+//            map.setBaseUrl(null);
+//            map.setProject(null);
+            BrowserURLMapperImpl.DEFAULT.setBrowserUrl(null);
+            BrowserURLMapperImpl.DEFAULT.setSiteRoot(null);
         }
     }
 

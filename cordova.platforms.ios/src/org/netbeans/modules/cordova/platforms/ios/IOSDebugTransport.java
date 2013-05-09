@@ -60,9 +60,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.netbeans.modules.cordova.platforms.BrowserURLMapperImpl;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
-import org.netbeans.modules.cordova.platforms.CordovaMapping;
 import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
@@ -295,8 +295,9 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 if (getConnectionURL()==null) {
                     //auto setup for phonegap. There is always on tab
                     setBaseUrl(url.toString());
-                    CordovaMapping mapping = Lookup.getDefault().lookup(CordovaMapping.class);
-                    mapping.setBaseUrl(url.toString());
+//                    CordovaMapping mapping = Lookup.getDefault().lookup(CordovaMapping.class);
+//                    mapping.setBaseUrl(url.toString());
+                    BrowserURLMapperImpl.DEFAULT.setBrowserUrl(url.toString());
                     
                 }
                 map.put(s, new TabDescriptor(url.toString(), title.toString(), identifier.toString()));

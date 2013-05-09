@@ -98,6 +98,11 @@ public abstract class BaseClientSideDevelopmentSupport implements
         if (projectRootURL != null && !projectRootURL.contains(".") && !projectRootURL.endsWith("/")) {
             projectRootURL += "/";
         }
+        // let browser update URL if necessary:
+        WebBrowser browser = getWebBrowser();
+        if (browser != null) {
+            urlToOpenInBrowser = browser.toBrowserURL(project, context, urlToOpenInBrowser);
+        }
         BrowserSupport bs = getBrowserSupport();
         if (bs != null) {
             bs.load(urlToOpenInBrowser, context);
@@ -115,7 +120,12 @@ public abstract class BaseClientSideDevelopmentSupport implements
         String relPath = FileUtil.getRelativePath(webDocumentRoot, projectFile);
         relPath = applyServletPattern(relPath);
         try {
-            return new URL(projectRootURL + relPath);
+            URL u = new URL(projectRootURL + relPath);
+            WebBrowser browser = getWebBrowser();
+            if (browser != null) {
+                u = browser.toBrowserURL(project, projectFile, u);
+            }
+            return u;
         } catch (MalformedURLException ex) {
             Exceptions.printStackTrace(ex);
             return null;
@@ -127,6 +137,10 @@ public abstract class BaseClientSideDevelopmentSupport implements
         init();
         if (projectRootURL == null || webDocumentRoot == null) {
             return null;
+        }
+        WebBrowser browser = getWebBrowser();
+        if (browser != null) {
+            serverURL = browser.fromBrowserURL(project, serverURL);
         }
         String u = WebUtils.urlToString(serverURL);
         if (u.startsWith(projectRootURL)) {
@@ -217,12 +231,7 @@ public abstract class BaseClientSideDevelopmentSupport implements
             return browserSupport;
         }
         browserSupportInitialized = true;
-        String selectedBrowser = getBrowserID();
-        if (selectedBrowser == null) {
-            browserSupport = null;
-            return null;
-        }
-        WebBrowser browser = BrowserUISupport.getBrowser(selectedBrowser);
+        WebBrowser browser = getWebBrowser();
         if (browser == null) {
             browserSupport = null;
             return null;
@@ -231,9 +240,13 @@ public abstract class BaseClientSideDevelopmentSupport implements
         return browserSupport;
     }
 
-    /*
-     * EASEL support --> Move to web.common together with almost identical Web Project implementation
-     */
+    @CheckForNull private WebBrowser getWebBrowser() {
+        String selectedBrowser = getBrowserID();
+        if (selectedBrowser == null) {
+            return null;
+        }
+        return BrowserUISupport.getBrowser(selectedBrowser);
+    }
     
     private final List<String> servletURLPatterns = new CopyOnWriteArrayList<String>();
     private final List<String> welcomeFiles = new CopyOnWriteArrayList<String>();

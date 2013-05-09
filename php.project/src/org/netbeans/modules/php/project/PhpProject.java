@@ -1187,7 +1187,12 @@ public final class PhpProject implements Project {
                 return null;
             }
             try {
-                return new URL(projectRootUrl + relPath);
+                URL u = new URL(projectRootUrl + relPath);
+                WebBrowser browser = getWebBrowser();
+                if (browser != null) {
+                    u = browser.toBrowserURL(project, projectFile, u);
+                }
+                return u;
             } catch (MalformedURLException ex) {
                 return null;
             }
@@ -1202,6 +1207,10 @@ public final class PhpProject implements Project {
             FileObject webRoot = project.getWebRootDirectory();
             if (webRoot == null) {
                 return null;
+            }
+            WebBrowser browser = getWebBrowser();
+            if (browser != null) {
+                serverURL = browser.fromBrowserURL(project, serverURL);
             }
             String url = CommandUtils.urlToString(serverURL, true);
             if (url.startsWith(projectRootUrl)) {
@@ -1226,6 +1235,11 @@ public final class PhpProject implements Project {
         }
 
         public void showFileUrl(URL url, FileObject file) {
+            // let browser update URL if necessary:
+            WebBrowser browser = getWebBrowser();
+            if (browser != null) {
+                url = browser.toBrowserURL(project, file, url);
+            }
             BrowserSupport support = getBrowserSupport();
             if (support != null) {
                 support.load(url, file);
@@ -1315,18 +1329,21 @@ public final class PhpProject implements Project {
                 return browserSupport;
             }
             browserSupportInitialized = true;
-            initBrowser();
-            if (browserId == null) {
-                browserSupport = null;
-                return null;
-            }
-            WebBrowser browser = BrowserUISupport.getBrowser(browserId);
+            WebBrowser browser = getWebBrowser();
             if (browser == null) {
                 browserSupport = null;
                 return null;
             }
             browserSupport = BrowserSupport.create(browser);
             return browserSupport;
+        }
+
+        private WebBrowser getWebBrowser() {
+            initBrowser();
+            if (browserId == null) {
+                return null;
+            }
+            return BrowserUISupport.getBrowser(browserId);
         }
 
     }

@@ -42,7 +42,10 @@
 package org.netbeans.modules.cordova.platforms.ios;
 
 import java.awt.Image;
+import org.netbeans.modules.cordova.platforms.BrowserURLMapperImpl;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
+import org.netbeans.modules.web.browser.spi.BrowserURLMapperProvider;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.ImageUtilities;
@@ -58,7 +61,7 @@ import org.openide.util.lookup.ServiceProvider;
     "LBL_DeviceDefault=iOS Device",
     "LBL_SimulatorDefault=iOS Simulator"
 })
-public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory {
+public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory, BrowserURLMapperProvider {
 
     @Override
     public BrowserFamilyId getBrowserFamilyId() {
@@ -73,6 +76,11 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
     @Override
     public boolean canCreateHtmlBrowserImpl() {
         return true;
+    }
+
+    @Override
+    public BrowserURLMapperImplementation getBrowserURLMapper() {
+        return BrowserURLMapperImpl.DEFAULT;
     }
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
