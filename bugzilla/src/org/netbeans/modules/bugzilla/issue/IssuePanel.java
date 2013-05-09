@@ -516,6 +516,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         assignedCombo.setEnabled(assignedField.isEditable());
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
         if (isNew && force && !issue.isMarkedNewRead()) {
+            issue.markNewRead();
             // this should not be called when reopening task to submit
             if(BugzillaUtil.isNbRepository(issue.getRepository())) {
                 addNetbeansInfo();
@@ -523,7 +524,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             // Preselect the first product
             selectProduct();
             initStatusCombo("NEW"); // NOI18N
-            issue.markNewRead();
         } else {
             String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
             String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
@@ -784,7 +784,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (value == null) {
             return false;
         }
-        combo.setSelectedItem(value);
+        if (!value.equals(combo.getSelectedItem())) {
+            combo.setSelectedItem(value);
+        }
         if (forceInModel && !value.equals("") && !value.equals(combo.getSelectedItem())) { // NOI18N
             // Reload of server attributes is needed - workarounding it
             ComboBoxModel model = combo.getModel();
