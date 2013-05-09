@@ -147,7 +147,10 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     StringBuilder sb = new StringBuilder();
                     sb.append("(function () { // generated function for scope ");
                     sb.append(value).append("\n");
-
+                    embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
+                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, value.length(), Constants.JAVASCRIPT_MIMETYPE));
+                    sb = new StringBuilder();
+                    sb.append("();\n");
                     Collection<IndexedElement> properties = index.getProperties(value + ".$scope");
                     for (IndexedElement indexedElement : properties) {
 
