@@ -62,6 +62,7 @@ import java.awt.EventQueue;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
@@ -185,6 +186,14 @@ public class HtmlCompletionItem implements CompletionItem {
             }
         }
 
+    }
+    
+    /**
+     * @since 2.30
+     * @return 
+     */
+    public int getAnchorOffset() {
+        return substitutionOffset;
     }
 
     protected int getMoveBackLength() {
@@ -755,7 +764,7 @@ public class HtmlCompletionItem implements CompletionItem {
                 Method method = clz.getDeclaredMethod("repaintCompletionView"); //NOI18N
                 method.setAccessible(true);
                 method.invoke(completion);
-            } catch (Exception e) {
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
                 //ignore
             }
         }

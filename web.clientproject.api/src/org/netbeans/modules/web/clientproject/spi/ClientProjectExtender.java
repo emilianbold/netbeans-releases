@@ -47,13 +47,26 @@ import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
 
 /**
- * Instances to be registered in Lookup
+ * Extender interface to extend behavior of new HTML5 Project Wizard.
+ * Instances to be registered via @ServiceProvider.
  * @author Jan Becicka
  */
 public interface ClientProjectExtender {
 
     /**
-     * Creates Wizard Descriptor Panels which can be added to New Client Project
+     * Initialize new HTML5 Project.
+     * @param wizardDescriptor corresponding WizardDescriptor
+     */
+    public void initialize(WizardDescriptor wizardDescriptor);
+
+    /**
+     * Creates additional Wizard Descriptor Panels, which will be added before default HTML5 Project Wizard Panels.
+     * @return
+     */
+    @NonNull
+    public Panel<WizardDescriptor>[] createInitPanels();
+    /**
+     * Creates additional Wizard Descriptor Panels, which will be added after default HTML5 Projezt Wizard panels.
      * Wizard.
      * @return 
      */
@@ -67,5 +80,5 @@ public interface ClientProjectExtender {
      * @param libsPath 
      */
     public void apply(FileObject projectRoot, FileObject siteRoot, String libsPath);
-    
+
 }

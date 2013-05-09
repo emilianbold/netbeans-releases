@@ -413,10 +413,12 @@ public class MavenProjectSupport {
 
             if (applicationXML == null) {
                 String j2eeVersion = readJ2eeVersion(project);
-                try {
-                    DDHelper.createApplicationXml(Profile.fromPropertiesString(j2eeVersion), metaInf, true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                if (j2eeVersion != null) {
+                    try {
+                        DDHelper.createApplicationXml(Profile.fromPropertiesString(j2eeVersion), metaInf, true);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
         }

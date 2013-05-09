@@ -343,7 +343,7 @@ public class DDHelper {
             try {
                 // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
                 if (toDir.getFileObject(toFile) != null) {
-                    throw new IllegalStateException("file "+toFile+" already exists in "+toDir);
+                    return; // #229533, #189768: The file already exists in the file system --> Simply do nothing
                 }
                 FileObject xml = FileUtil.createData(toDir, toFile);
                 String content = readResource(DDHelper.class.getResourceAsStream(fromFile));

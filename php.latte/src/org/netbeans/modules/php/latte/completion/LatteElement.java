@@ -63,32 +63,35 @@ public interface LatteElement extends ElementHandle {
 
     public void formatParameters(HtmlFormatter formatter);
 
+    public String getDocumentationText();
+
     public static class Factory {
 
         public static LatteElement create(String name) {
-            return new LatteElementSimple(name);
+            return new LatteElementSimple(name, LatteDocumentation.Factory.createFromBundle(name, name));
         }
 
         public static LatteElement create(String name, List<Parameter> parameters) {
-            return new LatteElementExtended(name, parameters);
+            return new LatteElementExtended(name, parameters, LatteDocumentation.Factory.createFromBundle(name, name));
         }
 
         public static LatteElement create(String name, String customTemplate) {
-            return new LatteElementExtended(name, Collections.<Parameter>emptyList(), customTemplate);
+            return new LatteElementExtended(name, Collections.<Parameter>emptyList(), customTemplate, LatteDocumentation.Factory.createFromBundle(name, name));
         }
 
         public static LatteElement createMacro(String name, String macroParameter, String customTemplate) {
-            return new LatteElementExtended(name, Arrays.asList(new Parameter[] {new MacroParameter(macroParameter)}), customTemplate);
+            return new LatteElementExtended(name, Arrays.asList(new Parameter[] {new MacroParameter(macroParameter)}), customTemplate, LatteDocumentation.Factory.createFromBundle(name, name));
         }
 
     }
 
     abstract static class BaseLatteElementItem implements LatteElement {
-
         private final String name;
+        private final LatteDocumentation documentation;
 
-        public BaseLatteElementItem(String name) {
+        public BaseLatteElementItem(String name, LatteDocumentation documentation) {
             this.name = name;
+            this.documentation = documentation;
         }
 
         @Override
@@ -131,12 +134,17 @@ public interface LatteElement extends ElementHandle {
             return OffsetRange.NONE;
         }
 
+        @Override
+        public String getDocumentationText() {
+            return documentation.getHeader() + documentation.getContent();
+        }
+
     }
 
     static class LatteElementSimple extends BaseLatteElementItem {
 
-        public LatteElementSimple(String name) {
-            super(name);
+        public LatteElementSimple(String name, LatteDocumentation documentation) {
+            super(name, documentation);
         }
 
         @Override
@@ -154,12 +162,12 @@ public interface LatteElement extends ElementHandle {
         private final List<Parameter> parameters;
         private final String customTemplate;
 
-        public LatteElementExtended(String name, List<Parameter> parameters) {
-            this(name, parameters, null);
+        public LatteElementExtended(String name, List<Parameter> parameters, LatteDocumentation documentation) {
+            this(name, parameters, null, documentation);
         }
 
-        public LatteElementExtended(String name, List<Parameter> parameters, String customTemplate) {
-            super(name);
+        public LatteElementExtended(String name, List<Parameter> parameters, String customTemplate, LatteDocumentation documentation) {
+            super(name, documentation);
             this.parameters = parameters;
             this.customTemplate = customTemplate;
         }

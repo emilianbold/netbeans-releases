@@ -74,6 +74,7 @@ public class CordovaSetupPanel implements WizardDescriptor.Panel<WizardDescripto
     public JComponent getComponent() {
         if (panel == null) {
             panel = controller.getComponent(Lookup.EMPTY);
+            panel.setName(NbBundle.getMessage(CordovaSetupPanel.class, "LBL_MobilePlatformsSetup"));//NOI18N
             controller.update();
         }
         return panel;
@@ -98,6 +99,7 @@ public class CordovaSetupPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public void readSettings(WizardDescriptor descriptor) {
+        this.myDescriptor=descriptor;
         descriptor.putProperty("NewProjectWizard_Title", NbBundle.getMessage(
                 SamplePanel.class, "TTL_SamplePanel"));         // NOI18N
     }

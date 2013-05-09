@@ -595,10 +595,41 @@ public class HtmlCompletionQuery extends UserTask {
                     }
 
                     HtmlExtension.CompletionContext context = new HtmlExtension.CompletionContext(parserResult, offset, astOffset, anchor, prefix, itemText, node, argName, quotationChar != null);
+                    List<CompletionItem> extensionsItems = new ArrayList<>();
                     for (HtmlExtension e : HtmlExtensions.getRegisteredExtensions(sourceMimetype)) {
-                        result.addAll(e.completeAttributeValue(context));
+                        extensionsItems.addAll(e.completeAttributeValue(context));
                     }
+                    
+                    if(!extensionsItems.isEmpty()) {
+                        if(result.isEmpty()) {
+                            //try to set the anchor properly
+                            //only if:
+                            //1) the instances are only HtmlCompletionItem-s
+                            //2) the instances have the same anchor
+                            //3) the common completion have no results (result.isEmpty())
+                            boolean fails = false;
+                            int itemsAnchor = -1;
 
+                            for(CompletionItem ci : extensionsItems) {
+                                if(!(ci instanceof HtmlCompletionItem)) {
+                                    fails = true;
+                                    break;
+                                } else {
+                                    int itemAnchor = ((HtmlCompletionItem)ci).getAnchorOffset();
+                                    if(itemsAnchor == -1) {
+                                        itemsAnchor = itemAnchor;
+                                    } else if (itemsAnchor != itemAnchor) {
+                                        fails = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            if(!fails) {
+                                anchor = itemsAnchor;
+                            }
+                        }
+                        result.addAll(extensionsItems);
+                    }
                 }
             }
         }

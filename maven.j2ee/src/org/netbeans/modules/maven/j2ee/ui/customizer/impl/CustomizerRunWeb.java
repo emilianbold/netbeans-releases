@@ -103,7 +103,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
 
         initValues();
         initServerModel(serverCBox, serverLabel, J2eeModule.Type.WAR);
-        initVersionModel(javaeeVersionCBox, javaeeVersionLabel);
+        initVersionModel(javaeeVersionCBox, javaeeVersionLabel, J2eeModule.Type.WAR);
         initDeployOnSave(jCheckBoxDeployOnSave, dosDescription);
         initBrowser();
     }

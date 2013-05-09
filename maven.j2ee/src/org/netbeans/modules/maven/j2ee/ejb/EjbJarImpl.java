@@ -97,7 +97,10 @@ public class EjbJarImpl extends BaseEEModuleImpl implements EjbJarImplementation
         //try to apply the hint if it exists.
         String version = MavenProjectSupport.readJ2eeVersion(project);
         if (version != null) {
-            return Profile.fromPropertiesString(version);
+            Profile profile = Profile.fromPropertiesString(version);
+            if (profile != null) { // It can happen: #229535
+                return profile;
+            }
         }
         String ver = getModuleVersion();
         if (EjbJar.VERSION_2_1.equals(ver)) {
@@ -109,7 +112,7 @@ public class EjbJarImpl extends BaseEEModuleImpl implements EjbJarImplementation
         if (EjbJar.VERSION_3_1.equals(ver)) {
             return Profile.JAVA_EE_6_FULL;
         }
-        return Profile.J2EE_14;
+        return Profile.JAVA_EE_5;
     }
     
     @Override
