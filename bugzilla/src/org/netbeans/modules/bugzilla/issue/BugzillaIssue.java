@@ -242,6 +242,9 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
             }
             model = null;
         }
+        MylynSupport mylynSupp = MylynSupport.getInstance();
+        mylynSupp.removeTaskDataListener(this);
+        mylynSupp.removeTaskListListener(this);
         getRepository().deleteTask(task);
     }
 
