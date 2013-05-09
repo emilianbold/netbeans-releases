@@ -45,7 +45,9 @@
 package org.netbeans.spi.jumpto.type;
 
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  * A TypeDescriptor describes a type for display in the Go To Type dialog.
@@ -144,4 +146,21 @@ public abstract class TypeDescriptor {
      *   in Ruby. It might be more convenient
      */
     public abstract void open();
+
+   /**
+    * Returns a display name of the path to the file containing the type.
+    * Default implementation uses {@code FileUtil.getFileDisplayName(getFileObject()) }
+    * Could be overridden if a more efficient way could be provided.
+    * Threading: This method is invoked in the EDT.
+    *
+    * @return The string representation of the path of the associated file.
+    * @since 1.36
+    */
+    @NonNull
+    public String getFileDisplayPath() {
+       final FileObject fo = getFileObject();
+       return fo == null ?
+           "" : // NOI18N
+           FileUtil.getFileDisplayName(fo);
+    }
 }

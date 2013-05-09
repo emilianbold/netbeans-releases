@@ -268,11 +268,8 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
 	    // and cached in the standard TOOL_TIP_TEXT_KEY property
 	    String text = (String) getClientProperty(TOOL_TIP_TEXT_KEY);
 	    if( text == null ) {
-                if( td != null ) {
-                    FileObject fo = td.getFileObject();
-                    if (fo != null) {
-                        text = FileUtil.getFileDisplayName(fo);
-                    }
+                if( td != null ) {                    
+                    text = td.getFileDisplayPath();
                 }
                 putClientProperty(TOOL_TIP_TEXT_KEY, text);
 	    }
@@ -425,10 +422,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                 setProjectName(jlPrj, td.getProjectName());
                 jlPrj.setIcon(td.getProjectIcon());
 		rendererComponent.setDescriptor(td);
-                FileObject fo = td.getFileObject();
-                if (fo != null) {
-                    rendererComponent.setToolTipText( FileUtil.getFileDisplayName(fo));
-                }
+                rendererComponent.setToolTipText(td.getFileDisplayPath());
                 LOG.fine("  Time in paint " + (System.currentTimeMillis() - time) + " ms.");
             }
             else {

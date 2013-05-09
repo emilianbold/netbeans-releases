@@ -76,8 +76,7 @@ public class GoToSymbolProvider implements SearchProvider {
         local.run();
         
         for (SymbolDescriptor td : local.getTypes()) {
-            FileObject fo = td.getFileObject();
-            String displayHint = fo == null ? null : fo.getPath(); 
+            String displayHint = td.getFileDisplayPath();
             String htmlDisplayName = escapeLtGt(td.getSymbolName()) + " " + NbBundle.getMessage(GoToSymbolAction.class, "MSG_DeclaredIn",escapeLtGt(td.getOwnerName()));
             if (!response.addResult(new GoToSymbolCommand(td),
                                     htmlDisplayName,

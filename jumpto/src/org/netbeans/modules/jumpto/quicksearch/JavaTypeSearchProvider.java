@@ -78,8 +78,7 @@ public class JavaTypeSearchProvider implements SearchProvider {
         }
         
         for (TypeDescriptor td : newWorker.getTypes()) {
-            FileObject fo = td.getFileObject();
-            String displayHint = fo == null ? null : fo.getPath(); // #150654
+            String displayHint = td.getFileDisplayPath();
             String htmlDisplayName = td.getSimpleName() + td.getContextName();
             if (!response.addResult(new GoToTypeCommand(td),
                                     htmlDisplayName,

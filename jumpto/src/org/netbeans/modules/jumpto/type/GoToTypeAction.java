@@ -637,10 +637,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
 	    String text = (String) getClientProperty(TOOL_TIP_TEXT_KEY);
 	    if( text == null ) {
                 if( td != null ) {
-                    FileObject fo = td.getFileObject();
-                    if (fo != null) {
-                        text = FileUtil.getFileDisplayName(fo);
-                    }
+                    text = td.getFileDisplayPath();
                 }
                 putClientProperty(TOOL_TIP_TEXT_KEY, text);
 	    }
