@@ -54,17 +54,17 @@ public interface LatteDocumentation {
     String getContent();
 
     public static final class DummyDocumentation implements LatteDocumentation {
-        private final String header;
+        private final String itemName;
         private final String content;
 
-        public DummyDocumentation(String header, String content) {
-            this.header = header;
+        public DummyDocumentation(String itemName, String content) {
+            this.itemName = itemName;
             this.content = content;
         }
 
         @Override
         public String getHeader() {
-            return new StringBuilder().append("<h2>").append(header).append("</h2>").toString(); //NOI18N
+            return new StringBuilder().append("<h2>").append(itemName).append("</h2>").toString(); //NOI18N
         }
 
         @Override
