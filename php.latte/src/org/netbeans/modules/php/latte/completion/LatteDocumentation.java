@@ -61,7 +61,7 @@ public interface LatteDocumentation {
 
         @Override
         public String getHeader() {
-            return new StringBuilder().append("<h2>").append(header).append("</h2>").toString();
+            return new StringBuilder().append("<h2>").append(header).append("</h2>").toString(); //NOI18N
         }
 
         @Override
