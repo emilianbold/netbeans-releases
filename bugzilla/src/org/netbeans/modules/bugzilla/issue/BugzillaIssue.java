@@ -132,6 +132,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     public static final String RESOLVE_FIXED = "FIXED";                                                         // NOI18N
     public static final String RESOLVE_DUPLICATE = "DUPLICATE";                                                 // NOI18N
     public static final String VCSHOOK_BUGZILLA_FIELD = "netbeans.vcshook.bugzilla.";                           // NOI18N
+    public static final String ATTR_NEW_UNREAD = "NetBeans.bugzilla.markedNewUnread"; //NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");            // NOI18N
 
     private Reference<TaskData> repositoryDataRef;
@@ -244,11 +245,11 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     }
 
     void markNewRead () {
-        task.setAttribute("NetBeans.markedNewRead", "1"); // NOI18N
+        task.setAttribute(ATTR_NEW_UNREAD, null);
     }
 
-    boolean isMarkedNewRead () {
-        return "1".equals(task.getAttribute("NetBeans.markedNewRead")); // NOI18N
+    boolean isMarkedNewUnread () {
+        return isNew() && Boolean.TRUE.toString().equals(task.getAttribute(ATTR_NEW_UNREAD));
     }
     
     private void fireSeenChanged(boolean wasSeen, boolean seen) {
@@ -299,8 +300,9 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getID()});
     }
 
-    void closed() {
+    void closed () {
         final NetBeansTaskDataModel m = model;
+        final boolean markedAsNewUnread = isMarkedNewUnread();
         if (m != null) {
             if (list != null) {
                 m.removeModelListener(list);
@@ -309,16 +311,21 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
             Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
                 @Override
                 public void run () {
-                    synchronized (MODEL_LOCK) {
-                        if (model == m) {
-                            model = null;
+                    if (markedAsNewUnread) {
+                        // was not modified by user and not yet saved
+                        deleteTask();
+                    } else {
+                        synchronized (MODEL_LOCK) {
+                            if (model == m) {
+                                model = null;
+                            }
                         }
-                    }
-                    if (m.isDirty()) {
-                        try {
-                            save(m);
-                        } catch (CoreException ex) {
-                            Bugzilla.LOG.log(Level.WARNING, null, ex);
+                        if (m.isDirty()) {
+                            try {
+                                save(m);
+                            } catch (CoreException ex) {
+                                Bugzilla.LOG.log(Level.WARNING, null, ex);
+                            }
                         }
                     }
                 }
@@ -1427,6 +1434,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     }
 
     private void save (NetBeansTaskDataModel model) throws CoreException {
+        markNewRead();
         if (model.isDirty()) {
             if (isNew()) {
                 String summary = model.getTask().getSummary();

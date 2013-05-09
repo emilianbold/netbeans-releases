@@ -358,7 +358,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                         return;
                     }
                     if(issue != null) {
-                        if(controller != null) issuePanel.remove(controller.getComponent());
+                        if(controller != null) {
+                            issuePanel.remove(controller.getComponent());
+                            controller.closed();
+                        }
                         issue.removePropertyChangeListener(IssueTopComponent.this);
                     }
                     issue = repo.createNewIssue();

@@ -303,6 +303,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run () {
+                if (!reloading && isDirty && issue.isMarkedNewUnread()) {
+                    issue.markNewRead();
+                }
                 btnSaveChanges.setEnabled(isDirty);
                 if (!isDirty) {
                     unsavedFields.clear();
@@ -515,8 +518,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         assignedField.setEditable(issue.isNew() || issue.canReassign());
         assignedCombo.setEnabled(assignedField.isEditable());
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
-        if (isNew && force && !issue.isMarkedNewRead()) {
-            issue.markNewRead();
+        if (isNew && force && issue.isMarkedNewUnread()) {
             // this should not be called when reopening task to submit
             if(BugzillaUtil.isNbRepository(issue.getRepository())) {
                 addNetbeansInfo();
