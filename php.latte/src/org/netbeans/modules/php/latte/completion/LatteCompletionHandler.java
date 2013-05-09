@@ -280,7 +280,7 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
 
         private void processTopSequence(TokenSequence<LatteTopTokenId> tts) {
             tts.move(offset);
-            if (tts.moveNext()) {
+            if (tts.moveNext() || tts.movePrevious()) {
                 TokenSequence<LatteMarkupTokenId> embedded = tts.embedded(LatteMarkupTokenId.language());
                 if (embedded == null && tts.movePrevious()) {
                     embedded = tts.embedded(LatteMarkupTokenId.language());
