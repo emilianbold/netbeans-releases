@@ -62,6 +62,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.visual.api.CssStylesTC;
 import org.netbeans.modules.css.visual.spi.CssStylesListener;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
 import org.netbeans.modules.web.browser.api.Page;
@@ -80,6 +81,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.util.lookup.ServiceProvider;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * CSS Styles view.
@@ -292,7 +295,15 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
 
     void activateView() {
         active = true;
-        if (currentPageModel != null) {
+        if (currentPageModel == null) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    TopComponent tc = WindowManager.getDefault().findTopComponent("CssStylesTC"); // NOI18N
+                    ((CssStylesTC)tc).setTitle(null);
+                }
+            });
+        } else {
             currentPageModel.getCSSStylesView().activated();
         }
     }
