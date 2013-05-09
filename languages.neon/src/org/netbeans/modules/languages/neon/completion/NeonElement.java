@@ -66,7 +66,9 @@ public interface NeonElement extends ElementHandle {
         }
 
         public static NeonElement createType(String typeName) {
-            return new NeonSimpleElement(typeName.startsWith(NAMESPACE_SEPARATOR) ? typeName.substring(1) : typeName);
+            String[] nameParts = typeName.split("\\" + NAMESPACE_SEPARATOR); //NOI18N
+            String unqualifiedName = nameParts[nameParts.length - 1];
+            return new NeonExtendedElement(unqualifiedName, typeName.startsWith(NAMESPACE_SEPARATOR) ? typeName.substring(1) : typeName);
         }
 
         public static NeonElement create(String name, String template) {

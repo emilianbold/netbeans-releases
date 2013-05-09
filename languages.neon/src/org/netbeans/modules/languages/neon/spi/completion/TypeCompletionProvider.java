@@ -45,7 +45,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-import java.util.List;
+import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 
@@ -55,7 +55,7 @@ import org.openide.filesystems.FileObject;
  */
 public interface TypeCompletionProvider {
 
-    List<String> complete(@NonNull String prefix, @NonNull FileObject fileObject);
+    Set<String> complete(@NonNull String prefix, @NonNull FileObject fileObject);
 
     @Retention(RetentionPolicy.SOURCE)
     @Target({ElementType.TYPE, ElementType.METHOD})

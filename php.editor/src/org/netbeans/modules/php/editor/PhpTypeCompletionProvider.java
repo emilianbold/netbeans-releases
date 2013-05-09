@@ -41,8 +41,7 @@
  */
 package org.netbeans.modules.php.editor;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.languages.neon.spi.completion.TypeCompletionProvider;
 import org.netbeans.modules.php.editor.api.ElementQuery;
@@ -71,8 +70,8 @@ public class PhpTypeCompletionProvider implements TypeCompletionProvider {
     }
 
     @Override
-    public List<String> complete(String prefix, FileObject fileObject) {
-        List<String> result = new ArrayList<>();
+    public Set<String> complete(String prefix, FileObject fileObject) {
+        Set<String> result = new HashSet<>();
         for (TypeElement typeElement : ElementFilter.forName(NameKind.prefix(prefix)).filter(getElements(fileObject))) {
             result.add(typeElement.getFullyQualifiedName().toString());
         }
