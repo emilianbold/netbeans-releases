@@ -122,6 +122,7 @@ final public class Settings {
         mime2commentsDefault.put( "text/x-ruby", new MimeIdentifier("text/x-ruby", "Ruby Files", new CommentTags("#"))); //NOI18N //NOI18N
         mime2commentsDefault.put( "text/x-php5", new MimeIdentifier("text/x-php", "PHP Files", new CommentTags( "//", "/*", "*/"))); //NOI18N //NOI18N //NOI18N //NOI18N
         mime2commentsDefault.put( "text/sh", new MimeIdentifier("text/sh", "", new CommentTags("#"))); //NOI18N //NOI18N
+        mime2commentsDefault.put( "text/x-sql", new MimeIdentifier("text/x-sql", "SQL Files", new CommentTags( "--", "/*", "*/"))); //NOI18N //NOI18N //NOI18N //NOI18N
 
 
         String encodedMime = getPreferences().get(MIME_IDENTIFIERS, "");
