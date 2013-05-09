@@ -39,21 +39,60 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.core.ui.list;
+package org.netbeans.modules.web.browser.api;
 
-import javax.swing.Icon;
+import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
+import org.netbeans.modules.web.browser.ui.picker.BrowserMenu;
 
 /**
+ * Popup menu listing all available browsers in several columns. A ChangeEvent is
+ * fired when the browser selection changed.
  *
  * @author S. Aubrecht
  */
-public abstract class ListItem {
+public final class BrowserPickerPopup {
 
-    public abstract Icon getIcon();
+    private final BrowserMenu menu;
 
-    public abstract String getText();
+    private BrowserPickerPopup( BrowserMenu menu ) {
+        this.menu = menu;
+    }
 
-    public boolean isEnabled() {
-        return true;
+    /**
+     * Creates a new browser picker menu.
+     * @param provider Project provider listing the browser.
+     * @return New browser menu.
+     */
+    public static BrowserPickerPopup create( ProjectBrowserProvider provider ) {
+        return new BrowserPickerPopup( new BrowserMenu( provider ) );
+    }
+
+    /**
+     * Shows the popup menu at given location.
+     * @param invoker
+     * @param x
+     * @param y
+     * @see JPopupMenu#show(java.awt.Component, int, int)
+     */
+    public void show( JComponent invoker, int x, int y ) {
+        menu.show( invoker, x, y );
+    }
+
+    /**
+     * @return Currently selected browser or null.
+     */
+    public WebBrowser getSelectedBrowser() {
+        return menu.getSelectedBrowser();
+    }
+
+    public void addChangeListener( ChangeListener changeListener ) {
+        menu.addChangeListener( changeListener );
+    }
+
+    public void removeChangeListener( ChangeListener changeListener ) {
+        menu.removeChangeListener( changeListener );
     }
 }

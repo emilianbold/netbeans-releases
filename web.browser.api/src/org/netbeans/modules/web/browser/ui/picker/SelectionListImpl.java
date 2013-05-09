@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.core.ui.list;
+package org.netbeans.modules.web.browser.ui.picker;
 
 import java.awt.Color;
 import java.awt.Rectangle;

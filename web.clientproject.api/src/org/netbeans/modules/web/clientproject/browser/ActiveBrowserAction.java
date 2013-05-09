@@ -45,12 +45,12 @@ import java.awt.Component;
 import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
-import java.awt.image.BufferedImage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -63,18 +63,18 @@ import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
-import javax.swing.event.PopupMenuEvent;
-import javax.swing.event.PopupMenuListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.web.browser.api.BrowserPickerPopup;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.spi.project.ActionProvider;
@@ -262,8 +262,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         button.setAction(new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                BrowserMenu menu = new BrowserMenu(getBrowserProvider());
-                menu.show( button, 0, button.getHeight() );
+                showBrowserPickerPopup( button );
             }
         });
         button.setDisabledIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-disabled.png"))));
@@ -357,7 +356,30 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
             ImageUtilities.loadImage("org/openide/awt/resources/arrow.png"), 28, 10);
     }
 
-
+    private void showBrowserPickerPopup( JButton invoker ) {
+        final ProjectBrowserProvider provider = getBrowserProvider();
+        if( null == provider )
+            return;
+        final BrowserPickerPopup popup = BrowserPickerPopup.create( provider );
+        final ChangeListener changeListener = new ChangeListener() {
+            @Override
+            public void stateChanged( ChangeEvent e ) {
+                popup.removeChangeListener( this );
+                WebBrowser selBrowser = popup.getSelectedBrowser();
+                if( null != selBrowser ) {
+                    try {
+                        provider.setActiveBrowser( selBrowser );
+                    } catch( IllegalArgumentException ex ) {
+                        Exceptions.printStackTrace( ex );
+                    } catch( IOException ex ) {
+                        Exceptions.printStackTrace( ex );
+                    }
+                }
+            }
+        };
+        popup.addChangeListener( changeListener );
+        popup.show( invoker, 0, invoker.getHeight() );
+    }
 
     // XXX: copy&pasted from project.ui.actions.LookupSensitiveAction.LastActivatedWindowLookup
     /**
