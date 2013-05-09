@@ -128,4 +128,13 @@ public class MobileProjectExtender implements ClientProjectExtender {
             ConfigUtils.createConfigFile(projectRoot, PlatformManager.ANDROID_TYPE, androidd);//NOI18N
         }
     }
+
+    @Override
+    public Panel<WizardDescriptor>[] createInitPanels() {
+        return new Panel[0];
+    }
+
+    @Override
+    public void initialize(WizardDescriptor wizardDescriptor) {
+    }
 }

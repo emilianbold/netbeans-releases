@@ -45,6 +45,7 @@ import java.awt.EventQueue;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
@@ -84,6 +85,11 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.AsynchronousVal
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
         asynchError = false;
+        SiteTemplateImplementation template = (SiteTemplateImplementation) wizardDescriptor.getProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE);
+        if (template!=null) {
+            getComponent().preSelectSiteTemplate(template);
+        }
+        
     }
 
     @Override

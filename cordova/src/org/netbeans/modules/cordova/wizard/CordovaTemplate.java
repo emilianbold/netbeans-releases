@@ -154,6 +154,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
 
         private boolean enabled;
         private CordovaWizardPanel panel;
+        private CordovaSetupPanel initPanel;
 
         /**
          * Get the value of enabled
@@ -177,6 +178,14 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         @Override
         public Panel<WizardDescriptor>[] createWizardPanels() {
             return new Panel[]{panel=new CordovaWizardPanel(this)};
+        }
+        
+        @Override
+        public Panel<WizardDescriptor>[] createInitPanels() {
+            if (CordovaPlatform.getDefault().isReady()) {
+                return new Panel[0];
+            }
+            return new Panel[]{initPanel=new CordovaSetupPanel(null)};
         }
 
         @Override
@@ -222,6 +231,10 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             }
         }
 
+        @Override
+        public void initialize(WizardDescriptor wizardDescriptor) {
+            wizardDescriptor.putProperty("SITE_TEMPLATE", Lookup.getDefault().lookup(CordovaTemplate.class));
+        }
     }
 
     private static class CordovaWizardPanel implements Panel<WizardDescriptor>, PropertyChangeListener  {
