@@ -54,6 +54,7 @@ import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
+import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -164,7 +165,19 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
 
                         switch (indexedElement.getJSKind()) {
                             case METHOD:
-                                sb.append(" = function(){}");
+                                IndexedElement.FunctionIndexedElement function = (IndexedElement.FunctionIndexedElement)indexedElement;
+                                sb.append(" = function(");
+                                boolean first = true;
+                                for (String param : function.getParameters().keySet()) {
+                                    if (!first) {
+                                        sb.append(", ");
+                                    } else {
+                                        first = false;
+                                    }
+                                    sb.append(param);
+                                }
+                                
+                                sb.append("){}");
                                 break;
 
                             default:
@@ -177,6 +190,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                                     String type = typeUsage.getType();
                                     sb.append(" = new ");
                                     sb.append(type);
+                                    sb.append("()");
 
                                 }
                         }
