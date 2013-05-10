@@ -190,11 +190,7 @@ public class WebKitPageModel extends PageModel {
         return webKit;
     }
 
-    /**
-     * Returns the owner project of the inspected page.
-     * 
-     * @return the owner project of the inspected page.
-     */
+    @Override
     public Project getProject() {
         return project;
     }

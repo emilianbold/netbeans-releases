@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.List;
 import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.Page;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -161,6 +162,13 @@ public abstract class PageModel extends Page {
      * @return CSS Styles view for this page.
      */
     public abstract CSSStylesView getCSSStylesView();
+
+    /**
+     * Returns the owner project of this page.
+     * 
+     * @return the owner project of this page.
+     */
+    public abstract Project getProject();
 
     /**
      * Disposes this page model.
