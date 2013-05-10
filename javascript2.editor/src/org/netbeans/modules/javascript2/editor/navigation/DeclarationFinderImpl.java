@@ -79,12 +79,13 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
         JsParserResult jsResult = (JsParserResult)info;
         Model model = jsResult.getModel();
+        int offset = info.getSnapshot().getEmbeddedOffset(caretOffset);
         OccurrencesSupport os = model.getOccurrencesSupport();
-        Occurrence occurrence = os.getOccurrence(caretOffset);
+        Occurrence occurrence = os.getOccurrence(offset);
         if (occurrence != null) {
             JsObject object = occurrence.getDeclarations().iterator().next();
             JsObject parent = object.getParent();
-            Collection<? extends TypeUsage> assignments = (parent == null) ? null : parent.getAssignmentForOffset(caretOffset);
+            Collection<? extends TypeUsage> assignments = (parent == null) ? null : parent.getAssignmentForOffset(offset);
             if (assignments != null && assignments.isEmpty()) {
                 assignments = parent.getAssignments();
             }
@@ -94,8 +95,18 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             if (assignments == null || assignments.isEmpty()) {
                 FileObject fo = object.getFileObject();
                 if (object.isDeclared()) {
+                    
                     if (fo != null) {
-                        return new DeclarationLocation(fo, object.getDeclarationName().getOffsetRange().getStart());
+                        if (fo.equals(snapshot.getSource().getFileObject())) {
+                            int docOffset = LexUtilities.getLexerOffset(jsResult, object.getDeclarationName().getOffsetRange().getStart());
+                            if (docOffset > -1) {
+                                return new DeclarationLocation(fo, docOffset);
+                            }
+                        } else {
+                            // TODO we need to solve to translating model offsets to the doc offset for other files?
+                            return new DeclarationLocation(fo, object.getDeclarationName().getOffsetRange().getStart());
+                        }
+                        
                     }
                 } else {
                     Collection<? extends IndexResult> items = JsIndex.get(fo).findFQN(object.getFullyQualifiedName());
@@ -108,7 +119,7 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             } else {  
                 TokenSequence ts = LexUtilities.getJsTokenSequence(snapshot, caretOffset);
                 if (ts != null) {
-                    ts.move(snapshot.getEmbeddedOffset(caretOffset));
+                    ts.move(offset);
                     if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
                         String propertyName = ts.token().text().toString();
                         for (Type type : assignments) {

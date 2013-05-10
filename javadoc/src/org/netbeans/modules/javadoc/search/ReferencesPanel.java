@@ -139,7 +139,7 @@ public class ReferencesPanel extends javax.swing.JPanel implements Runnable, Lis
         synchronized (LOCK) {
 
             ItemDesc[] modelItems;
-            if (data.isEmpty()) {
+            if (data == null || data.isEmpty()) {
                 modelItems = new ItemDesc[] { ItemDesc.noItem() };
             } else {
                 modelItems = new ItemDesc[data.size()];

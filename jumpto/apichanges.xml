@@ -108,6 +108,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="TypeDescriptor-fileDisplayPath">
+            <api name="general"/>
+            <summary>Added <code>TypeDescriptor.getFileDisplayPath</code> and <code>SymbolDescriptor.getFileDisplayPath</code> methods to return display path of the file.</summary>
+            <version major="1" minor="36"/>
+            <date day="9" month="5" year="2012"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes">
+            </compatibility>
+            <description>
+                Added <code>TypeDescriptor.getFileDisplayPath</code> and <code>SymbolDescriptor.getFileDisplayPath</code> methods to
+                return a display path of the file. The default implementation just delegates to <code>FileUtil.getFileDisplayName</code> but it can
+                be overriden by more effective implementation when possible.
+            </description>
+            <class package="org.netbeans.spi.jumpto.type" name="TypeDescriptor"/>
+            <class package="org.netbeans.spi.jumpto.symbol" name="SymbolDescriptor"/>
+            <issue number="225453"/>
+        </change>
         <change id="FileDescriptor-fileDisplayPath">
             <api name="general"/>
             <summary>Added <code>FileDescriptor.getFileDisplayPath</code> method to return display path of the file.</summary>

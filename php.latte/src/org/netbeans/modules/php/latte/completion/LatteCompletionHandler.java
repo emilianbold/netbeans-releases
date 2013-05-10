@@ -76,7 +76,7 @@ import org.netbeans.modules.php.latte.utils.LatteLexerUtils;
  */
 public class LatteCompletionHandler implements CodeCompletionHandler {
     private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<>(
-            Arrays.asList('=', ';', '+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t', '\n'));
+            Arrays.asList('=', ';', '+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t', '\n', '$'));
     static final Set<LatteElement> MACROS = new HashSet<>();
     static {
         MACROS.add(LatteElement.Factory.createMacro("link", "Presenter:action", "link ${Presenter}:${action}")); //NOI18N
@@ -226,6 +226,14 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
                 TokenSequence<? extends LatteMarkupTokenId> ts = LatteLexerUtils.getLatteMarkupTokenSequence(document, offset);
                 if (ts == null) {
                     result = QueryType.STOP;
+                } else {
+                    ts.move(offset);
+                    if (ts.moveNext() || ts.movePrevious()) {
+                        Token<? extends LatteMarkupTokenId> token = ts.token();
+                        if (token != null && token.id() == LatteMarkupTokenId.T_VARIABLE) {
+                            result = QueryType.STOP;
+                        }
+                    }
                 }
             }
         }
@@ -280,7 +288,7 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
 
         private void processTopSequence(TokenSequence<LatteTopTokenId> tts) {
             tts.move(offset);
-            if (tts.moveNext()) {
+            if (tts.moveNext() || tts.movePrevious()) {
                 TokenSequence<LatteMarkupTokenId> embedded = tts.embedded(LatteMarkupTokenId.language());
                 if (embedded == null && tts.movePrevious()) {
                     embedded = tts.embedded(LatteMarkupTokenId.language());

@@ -48,19 +48,15 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import java.awt.*;
 import java.awt.event.*;
-import java.beans.BeanInfo;
 import java.io.IOException;
 import java.text.Collator;
 import java.util.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.*;
-import javax.lang.model.type.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.plaf.UIResource;
-import javax.swing.plaf.metal.MetalIconFactory;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.*;
@@ -1159,36 +1155,6 @@ public class MoveMembersPanel extends javax.swing.JPanel implements CustomRefact
             } else {
                 return null;
             }
-        }
-    }
-
-    private static class JCheckBoxIcon implements Icon {
-
-        private final JPanel delegate;
-
-        public JCheckBoxIcon(boolean selected, Dimension dimension) {
-            this.delegate = new JPanel(new BorderLayout(), false);
-            this.delegate.setSize(dimension);
-            this.delegate.setBorder(null);
-            this.delegate.add(new JCheckBox(null, null, selected), BorderLayout.CENTER);
-            this.delegate.addNotify();
-            this.delegate.validate();
-        }
-
-        @Override
-        public void paintIcon(Component c, Graphics g, int x, int y) {
-            g.translate(x, y);
-            delegate.paintAll(g);
-        }
-
-        @Override
-        public int getIconWidth() {
-            return delegate.getWidth();
-        }
-
-        @Override
-        public int getIconHeight() {
-            return delegate.getHeight();
         }
     }
 }

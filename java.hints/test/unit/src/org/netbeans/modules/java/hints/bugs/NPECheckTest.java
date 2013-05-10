@@ -1243,6 +1243,20 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings("3:12-3:23:verifier:ERR_NotNull");
     }
     
+    public void testInstanceOf229540() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private void test(@NullAllowed Object node) {\n" +
+                       "        System.err.println(node instanceof String);\n" +
+                       "        if (node != null);\n" +
+                       "    }\n" +
+                       "    @interface NullAllowed {}\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)

@@ -72,6 +72,14 @@ public class JavaProjectNature implements ProjectNature {
     public static final String NS_JAVA_1 = "http://www.netbeans.org/ns/freeform-project-java/1"; // NOI18N
     public static final String NS_JAVA_2 = "http://www.netbeans.org/ns/freeform-project-java/2"; // NOI18N
     public static final String NS_JAVA_3 = "http://www.netbeans.org/ns/freeform-project-java/3"; //NOI18N
+    public static final String NS_JAVA_4 = "http://www.netbeans.org/ns/freeform-project-java/4"; //NOI18N
+    public static final String NS_JAVA_LASTEST = NS_JAVA_4;
+    public static final String[] JAVA_NAMESPACES = {
+        NS_JAVA_4,
+        NS_JAVA_3,
+        NS_JAVA_2,
+        NS_JAVA_1
+    };
     public static final String EL_JAVA = "java-data"; // NOI18N
     public static final String STYLE_PACKAGES = "packages"; // NOI18N
     
@@ -99,7 +107,13 @@ public class JavaProjectNature implements ProjectNature {
         return PackageView.findPath(root, target);
     }
 
-    
+    public static boolean namespaceAtLeast(String nsToTest, String expected) {
+        for (String ns : JAVA_NAMESPACES) {
+            if (ns.equals(nsToTest)) return true;
+            if (ns.equals(expected)) return false;
+        }
+        return false;//???
+    }
 
     private static class SourceGroupImpl implements  SourceGroup {
 
