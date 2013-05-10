@@ -66,10 +66,10 @@ import org.openide.util.NbBundle;
  *
  * @author S. Aubrecht
  */
-public class QueryListNode<S extends TeamServer, P> extends SectionNode {
-    private final DashboardProvider<S, P> dashboard;
+public class QueryListNode<P> extends SectionNode {
+    private final DashboardProvider<P> dashboard;
 
-    public QueryListNode( ProjectNode parent, DashboardProvider<S, P> dashboard) {
+    public QueryListNode( ProjectNode parent, DashboardProvider<P> dashboard) {
         super( NbBundle.getMessage(QueryListNode.class, "LBL_Issues"), parent, ProjectHandle.PROP_QUERY_LIST ); //NOI18N
         this.dashboard = dashboard;
     }

@@ -64,15 +64,15 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-public class OpenFavoritesNode<S extends TeamServer, P> extends LeafNode {
+public class OpenFavoritesNode<P> extends LeafNode {
 
     private final SourceHandle src;
 
     private JPanel panel;
     private LinkButton btn;
-    private final DashboardProvider<S, P> dashboard;
+    private final DashboardProvider<P> dashboard;
 
-    public OpenFavoritesNode(SourceHandle src, TreeListNode parent, DashboardProvider<S, P> dashboard ) {
+    public OpenFavoritesNode(SourceHandle src, TreeListNode parent, DashboardProvider<P> dashboard ) {
         super( parent );
         this.src=src;
         this.dashboard = dashboard;

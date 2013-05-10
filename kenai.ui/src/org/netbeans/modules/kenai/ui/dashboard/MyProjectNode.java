@@ -114,7 +114,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
     private TreeLabel rightPar;
     private TreeLabel leftPar;
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
-    private final DefaultDashboard<KenaiServer, KenaiProject> dashboard;
+    private final DefaultDashboard<KenaiProject> dashboard;
 
     public MyProjectNode( final ProjectHandle<KenaiProject> project ) {
         super( null );

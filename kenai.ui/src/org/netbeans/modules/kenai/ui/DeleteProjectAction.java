@@ -62,7 +62,7 @@ import org.openide.windows.WindowManager;
 public class DeleteProjectAction extends AbstractAction {
 
     private ProjectHandle<KenaiProject> project;
-    private final DefaultDashboard<KenaiServer, KenaiProject> dashboard;
+    private final DefaultDashboard<KenaiProject> dashboard;
 
     public DeleteProjectAction(ProjectHandle<KenaiProject> project) {
         super(org.openide.util.NbBundle.getMessage(DeleteProjectAction.class, "CTL_DeleteProject"));

@@ -83,11 +83,11 @@ public final class KenaiServer implements TeamServer {
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
     private final PropertyChangeListener kenaiListener;
 
-    private DefaultDashboard<KenaiServer, KenaiProject> dashboard;
+    private DefaultDashboard<KenaiProject> dashboard;
     
     private KenaiServer (Kenai kenai) {
         this.kenai = kenai;
-        dashboard = new DefaultDashboard<KenaiServer, KenaiProject>(this, new DashboardProviderImpl(this));
+        dashboard = new DefaultDashboard<KenaiProject>(this, new DashboardProviderImpl(this));
         kenai.addPropertyChangeListener(WeakListeners.propertyChange(l=new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
@@ -129,7 +129,7 @@ public final class KenaiServer implements TeamServer {
         });        
     }
 
-    public DefaultDashboard<KenaiServer, KenaiProject> getDashboard() {
+    public DefaultDashboard<KenaiProject> getDashboard() {
         return dashboard;
     }
     
@@ -145,11 +145,11 @@ public final class KenaiServer implements TeamServer {
         return serverUi;
     }
     
-    public static DefaultDashboard<KenaiServer, KenaiProject> getDashboard(ProjectHandle<KenaiProject> pHandle) {
+    public static DefaultDashboard<KenaiProject> getDashboard(ProjectHandle<KenaiProject> pHandle) {
         return getDashboard(pHandle.getTeamProject().getKenai());
     }
     
-    public static DefaultDashboard<KenaiServer, KenaiProject> getDashboard(Kenai kenai) {
+    public static DefaultDashboard<KenaiProject> getDashboard(Kenai kenai) {
         KenaiServer server = forKenai(kenai);
         return server.getDashboard();
     }

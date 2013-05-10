@@ -112,9 +112,9 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     private TreeLabel leftPar;
     private TreeLabel delim;
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
-    private final DefaultDashboard<ODCSUiServer, ODCSProject> dashboard;
+    private final DefaultDashboard<ODCSProject> dashboard;
 
-    public MyProjectNode( final ProjectHandle<ODCSProject> project, final DefaultDashboard<ODCSUiServer, ODCSProject> dashboard) {
+    public MyProjectNode( final ProjectHandle<ODCSProject> project, final DefaultDashboard<ODCSProject> dashboard) {
         super( null );
         if (project==null) {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N

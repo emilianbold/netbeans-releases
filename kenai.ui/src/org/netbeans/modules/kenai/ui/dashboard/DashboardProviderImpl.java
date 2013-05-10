@@ -77,7 +77,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author tomas
  */
-public class DashboardProviderImpl extends DashboardProvider<KenaiServer, KenaiProject> {
+public class DashboardProviderImpl extends DashboardProvider<KenaiProject> {
     
     private final KenaiServer server;
     private static final RequestProcessor RP = new RequestProcessor("Kenai logout", 5); //NOI18N
@@ -161,7 +161,7 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiServer, KenaiP
     }            
 
     @Override
-    public ProjectAccessor<KenaiServer, KenaiProject> getProjectAccessor() {
+    public ProjectAccessor<KenaiProject> getProjectAccessor() {
         return ProjectAccessorImpl.getDefault();
     }
 
@@ -200,11 +200,6 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiServer, KenaiP
     @Override
     public Collection<ProjectHandle<KenaiProject>> getMyProjects() {
         return server.getMyProjects();
-    }
-
-    @Override
-    public KenaiServer forProject(ProjectHandle<KenaiProject> project) {
-        return KenaiServer.forKenai(project.getTeamProject().getKenai());
     }
     
 }

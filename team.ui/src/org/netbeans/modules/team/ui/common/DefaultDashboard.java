@@ -82,7 +82,7 @@ import org.openide.windows.TopComponent;
  * @author S. Aubrecht, Tomas Stupka
  */
 @NbBundle.Messages("A11Y_TeamProjects=Team Projects")
-public final class DefaultDashboard<S extends TeamServer, P> {
+public final class DefaultDashboard<P> {
 
     /**
      * Name of the property that will be fired when some change in opened projects
@@ -140,10 +140,10 @@ public final class DefaultDashboard<S extends TeamServer, P> {
 
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     private PropertyChangeListener serverListener;
-    private S server;
-    private final DashboardProvider<S, P> dashboardProvider;
+    private TeamServer server;
+    private final DashboardProvider<P> dashboardProvider;
 
-    public DefaultDashboard(S server, DashboardProvider<S, P> dashboardProvider) {
+    public DefaultDashboard(TeamServer server, DashboardProvider<P> dashboardProvider) {
         this.dashboardProvider = dashboardProvider;
         dashboardComponent = new JScrollPane() {
             @Override
@@ -226,7 +226,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
      * currently visible team instance
      * @return
      */
-    public S getServer() {
+    public TeamServer getServer() {
         return server;
     }
 
@@ -251,7 +251,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         return memberProjects.contains(m);
     }
 
-    private void setServer(S server) {
+    private void setServer(TeamServer server) {
         this.server = server;
         refreshNonMemberProjects();
         if (server==null) {
@@ -371,11 +371,8 @@ public final class DefaultDashboard<S extends TeamServer, P> {
      * @param project
      * @param isMemberProject
      */
-    public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {
-        
-        // XXX this is the only usecase of .getTeamServer!
-        // maybe if we could get rid of it the whole spi would get significantly simplier to deal with!
-        TeamUIUtils.setSelectedServer(dashboardProvider.forProject(project));
+    public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {        
+        TeamUIUtils.setSelectedServer(server);
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
@@ -868,7 +865,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         }
     }
 
-    public DashboardProvider<S, P> getDashboardProvider() {
+    public DashboardProvider<P> getDashboardProvider() {
         return dashboardProvider;
     }
 
@@ -897,7 +894,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
                 @Override
                 public void run() {
                     ArrayList<ProjectHandle> projects = new ArrayList<ProjectHandle>(projectIds.size());
-                    ProjectAccessor<S, P> accessor = dashboardProvider.getProjectAccessor();
+                    ProjectAccessor<P> accessor = dashboardProvider.getProjectAccessor();
                     boolean err = false;
                     for( String id : projectIds ) {
                         ProjectHandle handle = accessor.getNonMemberProject(server, id, forceRefresh);
@@ -962,7 +959,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
             Runnable r = new Runnable() {
                 @Override
                 public void run() {
-                    ProjectAccessor<S, P> accessor = dashboardProvider.getProjectAccessor();
+                    ProjectAccessor<P> accessor = dashboardProvider.getProjectAccessor();
                     List<ProjectHandle<P>> l = accessor.getMemberProjects(server, user, forceRefresh);
                     res[0] = l == null ? null : new ArrayList<ProjectHandle<P>>( l );
                 }

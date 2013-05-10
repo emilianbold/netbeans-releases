@@ -70,7 +70,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-public class DashboardProviderImpl extends DashboardProvider<ODCSUiServer, ODCSProject> {
+public class DashboardProviderImpl extends DashboardProvider<ODCSProject> {
 
     private final ODCSUiServer server;
     private ProjectAccessorImpl projectAccessor;
@@ -172,10 +172,4 @@ public class DashboardProviderImpl extends DashboardProvider<ODCSUiServer, ODCSP
         return null;
     }
 
-    @Override
-    public ODCSUiServer forProject(ProjectHandle<ODCSProject> project) {
-//        return server; // should be save as long as there is one dashboardprovider for each dashboard
-        return ((ProjectHandleImpl) project).getTeamServer();
-    }
-    
 }

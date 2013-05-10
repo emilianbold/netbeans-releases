@@ -146,7 +146,7 @@ public class KenaiPopupActionsProvider implements PopupMenuProvider {
                         if (kp != null) {
                             if (kp.getFeatures(Type.ISSUES).length > 0) {
                                 final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
+                                final DefaultDashboard<KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
                                 SwingUtilities.invokeLater( new Runnable() {
                                     @Override
                                     public void run() {
@@ -194,7 +194,7 @@ public class KenaiPopupActionsProvider implements PopupMenuProvider {
                         if (kp != null) {
                             if (kp.getFeatures(Type.ISSUES).length > 0) {
                                 final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
+                                final DefaultDashboard<KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
                                 SwingUtilities.invokeLater( new Runnable() {
                                     @Override
                                     public void run() {
@@ -250,7 +250,7 @@ public class KenaiPopupActionsProvider implements PopupMenuProvider {
                         final KenaiProject kp = getActualKenaiProject(getKenaiProjectName(proj, repositoryUrl), repositoryUrl);
                         if (kp != null) {
                             final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                            final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
+                            final DefaultDashboard<KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
                             SwingUtilities.invokeLater( new Runnable() {
                                 @Override
                                 public void run() {
