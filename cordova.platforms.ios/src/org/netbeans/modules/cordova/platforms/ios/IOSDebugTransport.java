@@ -81,6 +81,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
     private RequestProcessor.Task socketListener;
     private volatile boolean keepGoing = true;
     private Tabs tabs = new IOSDebugTransport.Tabs();
+    private final Object init = new Object();
 
     public IOSDebugTransport() {
         setBundleIdentifier("com.apple.mobilesafari");
@@ -123,6 +124,16 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
         NSObject object = readData();
         if (object == null) {
             return;
+        }
+
+        if ((object instanceof NSDictionary)) {
+            NSString selector = (NSString) ((NSDictionary) object).objectForKey("__selector");
+            if (selector!=null && selector.toString().equals("_rpc_applicationConnected:")) {
+                synchronized(init) {
+                    init.notify();
+                }
+            }
+            
         }
         //System.out.println("receiving " + object.toXMLPropertyList());
         JSONObject jmessage = extractResponse(object);
@@ -255,6 +266,12 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
 
     protected void sendInitCommands() throws Exception {
         sendCommand(getCommand("setConnectionKey", false));
+        if (getConnectionURL() == null && "iOS Simulator".equals(getConnectionName())) {
+            //phonegap
+            synchronized (init) {
+                init.wait();
+            }
+        }
         sendCommand(getCommand("connectToApp", false));
         sendCommand(getCommand("setSenderKey", true));
     }
