@@ -49,6 +49,7 @@ import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.concurrent.TimeUnit;
 import org.json.simple.JSONObject;
 import org.openide.util.Exceptions;
 
@@ -127,7 +128,15 @@ public class SimulatorDebugTransport extends IOSDebugTransport {
         if (socket != null && (socket.isConnected() || !socket.isClosed())) {
             socket.close();
         }
-        socket = new Socket(LOCALHOST_IPV6, port);
-   }
+        for (long stop = System.nanoTime() + TimeUnit.MINUTES.toNanos(2); stop > System.nanoTime();) {
+            try {
+                socket = new Socket(LOCALHOST_IPV6, port);
+                break;
+            } catch (java.net.ConnectException ex) {
+                Thread.sleep(5000);
+                continue;
+            }
+        }
+    }
     
 }

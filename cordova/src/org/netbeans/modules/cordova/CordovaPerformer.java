@@ -145,13 +145,7 @@ public class CordovaPerformer implements BuildPerformer {
 //                                CordovaMapping map = (CordovaMapping) Lookup.getDefault().lookup(ServerURLMappingImplementation.class);
 //                                map.setProject(project);
                                 BrowserURLMapperImpl.DEFAULT.setSiteRoot(ClientProjectUtilities.getSiteRoot(project));
-                                if (device.isEmulator()) {
-                                    try {
-                                        Thread.sleep(5000);
-                                    } catch (InterruptedException ex) {
-                                        Exceptions.printStackTrace(ex);
-                                    }
-                                } else {
+                                if (!device.isEmulator()) {
                                     DialogDescriptor dd = new DialogDescriptor("Install application using iTunes and tap on it", "Install and Run");
                                     if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
                                         return;
