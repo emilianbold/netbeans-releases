@@ -278,6 +278,15 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.PersistenceClientIterator"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/jsp16.gif"/>
             </file>
+            <file name="ResourceLibraryContract">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.web.jsf.wizards.Bundle#Templates/JSF/ResourceLibraryContract"/>
+                <attr name="position" intvalue="380"/>
+                <attr name="templateCategory" stringvalue="jsf-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/ResourceLibraryContract.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.ResourceLibraryIterator"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/web/jsf/resources/jsp16.gif"/>
+            </file>
         </folder>
         <folder name="Persistence">
             <file name="JsfFromDB" url="templates/dummy.template">
