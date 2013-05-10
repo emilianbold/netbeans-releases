@@ -171,6 +171,13 @@ public abstract class PageModel extends Page {
     public abstract Project getProject();
 
     /**
+     * Returns the context of this page.
+     * 
+     * @return the context of this page.
+     */
+    public abstract Lookup getPageContext();
+
+    /**
      * Disposes this page model.
      */
     protected abstract void dispose();
