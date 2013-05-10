@@ -43,47 +43,47 @@
 package org.netbeans.lib.uihandler;
 
 /**
- * The implementation will provide access to netbeans.org specific bagzilla
- * functionality. Additionaly, methods are available to share the nb username
- * and password between the bugzilla and exeption reporter modules.
+ * The implementation will provide access to a bug tracking
+ * functionality. Additionally, methods are available to share the username
+ * and password between the bug tracking and exception reporter modules.
  *
  *
  * @author Tomas Stupka
  */
-public abstract class NBBugzillaAccessor {
+public abstract class BugTrackingAccessor {
 
     /**
-     * Opens in the IDE the given issue from netbeans.org/bugzilla
+     * Opens in the IDE the given issue from bug tracking system.
      *
      * @param issueID issue identifier
      */
     public abstract void openIssue(String issueID);
 
     /**
-     * Returns the netbeans.org username
+     * Returns the bug tracking username
      * Shouldn't be called in awt
      *
      * @return username
      */
-    public abstract String getNBUsername();
+    public abstract String getUsername();
 
     /**
-     * Returns the netbeans.org password
+     * Returns the bug tracking password
      * Shouldn't be called in awt
      *
      * @return password
      */
-    public abstract char[] getNBPassword();
+    public abstract char[] getPassword();
 
     /**
-     * Save the given username as a netbeans.org username.
+     * Save the given username as a bug tracking username.
      * Shouldn't be called in awt
      */
-    public abstract void saveNBUsername(String username);
+    public abstract void saveUsername(String username);
 
     /**
-     * Saves the given value as a netbeans.org password
+     * Saves the given value as a bug tracking password
      * Shouldn't be called in awt
      */
-    public abstract void saveNBPassword(char[] password);
+    public abstract void savePassword(char[] password);
 }

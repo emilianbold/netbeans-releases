@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugzilla.exceptionreporter;
 
-import org.netbeans.lib.uihandler.NBBugzillaAccessor;
+import org.netbeans.lib.uihandler.BugTrackingAccessor;
 import org.netbeans.modules.bugzilla.api.NBBugzillaUtils;
 import org.openide.util.RequestProcessor;
 
@@ -50,8 +50,8 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.lib.uihandler.NBBugzillaAccessor.class)
-public class NBBugzillaAccessorImpl extends NBBugzillaAccessor {
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.lib.uihandler.BugTrackingAccessor.class)
+public class NBBugzillaAccessorImpl extends BugTrackingAccessor {
 
     private RequestProcessor rp;
 
@@ -66,22 +66,22 @@ public class NBBugzillaAccessorImpl extends NBBugzillaAccessor {
     }
 
     @Override
-    public String getNBUsername() {
+    public String getUsername() {
         return NBBugzillaUtils.getNBUsername();
     }
 
     @Override
-    public char[] getNBPassword() {
+    public char[] getPassword() {
         return NBBugzillaUtils.getNBPassword();
     }
 
     @Override
-    public void saveNBUsername(String username) {
+    public void saveUsername(String username) {
         NBBugzillaUtils.saveNBUsername(username);
     }
 
     @Override
-    public void saveNBPassword(char[] password) {
+    public void savePassword(char[] password) {
         NBBugzillaUtils.saveNBPassword(password);
     }
 

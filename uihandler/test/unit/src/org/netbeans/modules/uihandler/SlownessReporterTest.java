@@ -55,6 +55,8 @@ import static org.junit.Assert.*;
  */
 public class SlownessReporterTest extends NbTestCase {
     
+    private static final String TEST_LOGGER = Installer.UI_LOGGER_NAME + ".test"; // NOI18N
+    
     private long now;
 
     public SlownessReporterTest(String name) {
@@ -80,17 +82,17 @@ public class SlownessReporterTest extends NbTestCase {
         Object[] params = new Object[]{null, null, null, null, "undo"};
         rec.setMillis(now - SlownessReporter.LATEST_ACTION_LIMIT/2);
         rec.setParameters(params);
-        Logger.getLogger("org.netbeans.ui.test").log(rec);
+        Logger.getLogger(TEST_LOGGER).log(rec);
         LogRecord rec2 = new LogRecord(Level.FINE, "UI_ACTION_EDITOR");
         params = new Object[]{null, null, null, null, "redo"};
         rec2.setMillis(now - SlownessReporter.LATEST_ACTION_LIMIT/5);
         rec2.setParameters(params);
-        Logger.getLogger("org.netbeans.ui.test").log(rec2);
+        Logger.getLogger(TEST_LOGGER).log(rec2);
         LogRecord rec3 = new LogRecord(Level.FINE, "SOME OTHER LOG");
         params = new Object[]{null, null, null, null, "redo"};
         rec3.setMillis(now - SlownessReporter.LATEST_ACTION_LIMIT/10);
         rec3.setParameters(params);
-        Logger.getLogger("org.netbeans.ui.test").log(rec3);
+        Logger.getLogger(TEST_LOGGER).log(rec3);
     }
 
     @Test
@@ -110,7 +112,7 @@ public class SlownessReporterTest extends NbTestCase {
     @Test
     public void testGetIdeStartup() {
         SlownessReporter reporter = new SlownessReporter();
-        Logger.getLogger("org.netbeans.ui.test").log(new LogRecord(Level.CONFIG, Installer.IDE_STARTUP));
+        Logger.getLogger(TEST_LOGGER).log(new LogRecord(Level.CONFIG, Installer.IDE_STARTUP));
         String latestAction = reporter.getLatestAction(100L, now);
         assertNotNull(latestAction);
         assertEquals(NbBundle.getMessage(SlownessReporter.class, "IDE_STARTUP"), latestAction);

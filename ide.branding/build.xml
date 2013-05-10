@@ -111,5 +111,11 @@ Portions Copyright 2001-2002 Vincent Brabant, Maxym Mykhalchuk.
       <branding name="nb"/>
     </locjar>
 
+    <locjar warnMissingDir="true"
+      basedir="uihandler/src"
+      jarfile="${cluster}/modules/org-netbeans-modules-uihandler.jar">
+      <branding name="nb"/>
+    </locjar>
+
   </target>
 </project>

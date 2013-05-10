@@ -34,16 +34,33 @@ package org.netbeans.lib.uihandler;
 
 /** A callback interface of a decorated representation of LogRecord.
  * Should be passed into {@link LogRecords#decorate} and will receive
- * appropriate callbacks.
+ * appropriate call-backs.
  *
  * @since 1.13
  */
 public interface Decorable {
+    
+    /**
+     * Set the name.
+     * @param n the name of the log record
+     */
     public void setName(String n);
 
+    /**
+     * Set the display name.
+     * @param n the display name of the log record
+     */
     public void setDisplayName(String n);
 
+    /**
+     * Set the icon base.
+     * @param base the icon base, including the extension, of the log record
+     */
     public void setIconBaseWithExtension(String base);
 
-    public void setShortDescription(String format);
+    /**
+     * Set the short description.
+     * @param shortDescription the short description of the log record
+     */
+    public void setShortDescription(String shortDescription);
 }

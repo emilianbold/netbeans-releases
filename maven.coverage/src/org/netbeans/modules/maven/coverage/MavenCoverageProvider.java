@@ -46,7 +46,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,6 +71,7 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Pair;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -87,6 +90,7 @@ public final class MavenCoverageProvider implements CoverageProvider {
     private static final Logger LOG = Logger.getLogger(MavenCoverageProvider.class.getName());
 
     private final Project p;
+    private Map<String, MavenSummary> summaryCache;
 
     public MavenCoverageProvider(Project p) {
         this.p = p;
@@ -169,23 +173,17 @@ public final class MavenCoverageProvider implements CoverageProvider {
         }
     }
 
-    private @NullAllowed org.w3c.dom.Document report;
-
     public @Override synchronized void clear() {
         File r = report();
         if (r != null && r.isFile() && r.delete()) {
-            report = null;
+            summaryCache = null;
             CoverageManager.INSTANCE.resultsUpdated(p, MavenCoverageProvider.this);
         }
     }
 
     private FileChangeListener listener;
 
-    private @CheckForNull synchronized org.w3c.dom.Document parse() {
-        if (report != null) {
-            LOG.fine("cached report");
-            return (org.w3c.dom.Document) report.cloneNode(true);
-        }
+    private @CheckForNull Pair<File, org.w3c.dom.Document> parse() {
         File r = report();
         if (r == null) {
             LOG.fine("undefined report location");
@@ -204,7 +202,9 @@ public final class MavenCoverageProvider implements CoverageProvider {
                     fire();
                 }
                 private void fire() {
-                    report = null;
+                    synchronized (MavenCoverageProvider.this) {
+                        summaryCache = null;
+                    }
                     CoverageManager.INSTANCE.resultsUpdated(p, MavenCoverageProvider.this);
                 }
             };
@@ -220,19 +220,19 @@ public final class MavenCoverageProvider implements CoverageProvider {
             return null;
         }
         try {
-            report = XMLUtil.parse(new InputSource(r.toURI().toString()), true, false, XMLUtil.defaultErrorHandler(), new EntityResolver() {
-                public @Override InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-                    if (systemId.equals("http://cobertura.sourceforge.net/xml/coverage-04.dtd")) {
-                        return new InputSource(MavenCoverageProvider.class.getResourceAsStream("coverage-04.dtd")); // NOI18N
-                    } else if (publicId.equals("-//JACOCO//DTD Report 1.0//EN")) {
-                        return new InputSource(MavenCoverageProvider.class.getResourceAsStream("jacoco-1.0.dtd"));
-                    } else {
-                        return null;
-                    }
-                }
-            });
+            org.w3c.dom.Document report = XMLUtil.parse(new InputSource(r.toURI().toString()), true, false, XMLUtil.defaultErrorHandler(), new EntityResolver() {
+                                     public @Override InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
+                                         if (systemId.equals("http://cobertura.sourceforge.net/xml/coverage-04.dtd")) {
+                                             return new InputSource(MavenCoverageProvider.class.getResourceAsStream("coverage-04.dtd")); // NOI18N
+                                         } else if (publicId.equals("-//JACOCO//DTD Report 1.0//EN")) {
+                                             return new InputSource(MavenCoverageProvider.class.getResourceAsStream("jacoco-1.0.dtd"));
+                                         } else {
+                                             return null;
+                                         }
+                                     }
+                                 });
             LOG.log(Level.FINE, "parsed {0}", r);
-            return (org.w3c.dom.Document) report.cloneNode(true);
+            return Pair.of(r, report);
         } catch (/*IO,SAX*/Exception x) {
             LOG.log(Level.INFO, "Could not parse " + r, x);
             return null;
@@ -245,10 +245,6 @@ public final class MavenCoverageProvider implements CoverageProvider {
     }
     
     public @Override FileCoverageDetails getDetails(final FileObject fo, final Document doc) {
-        org.w3c.dom.Document r = parse();
-        if (r == null) {
-            return null;
-        }
         FileObject src = src();
         if (src == null) {
             return null;
@@ -257,77 +253,20 @@ public final class MavenCoverageProvider implements CoverageProvider {
         if (path == null) {
             return null;
         }
-        final boolean jacoco = hasPlugin(GROUP_JOCOCO, ARTIFACT_JOCOCO);
-        final List<Element> lines = new ArrayList<Element>();
-        String name = null;
-        NodeList nl = r.getElementsByTagName(jacoco ? "sourcefile" : "class"); // NOI18N
-        for (int i = 0; i < nl.getLength(); i++) {
-            final Element clazz = (Element) nl.item(i);
-            if (jacoco) {
-                if ((((Element) clazz.getParentNode()).getAttribute("name") + '/' + clazz.getAttribute("name")).equals(path)) {
-                    for (Element line : XMLUtil.findSubElements(clazz)) {
-                        if (line.getTagName().equals("line")) {
-                            lines.add(line);
-                        }
-                    }
-                    if (name == null) {
-                        name = path.replaceFirst("[.]java$", "").replace('/', '.');
-                    }
-                }
-            } else {
-                if (clazz.getAttribute("filename").equals(path)) {
-                    Element linesE = XMLUtil.findElement(clazz, "lines", null); // NOI18
-                    if (linesE != null) {
-                        lines.addAll(XMLUtil.findSubElements(linesE));
-                    }
-                    if (name == null) {
-                        name = clazz.getAttribute("name");
-                    }
-                }
+        MavenDetails det = null;
+        synchronized (this) {
+            MavenSummary summ = summaryCache != null ? summaryCache.get(path) : null;
+            if (summ != null) {
+                det = summ.getDetails();
+                //we have to set the linecount here, as the entire line span is not apparent from the parsed xml, giving strange results then.
+                det.lineCount = doc.getDefaultRootElement().getElementCount();
             }
         }
-        if (name == null) {
-            return null; // no match
-        }
-        final String _name = name;
-        return new FileCoverageDetails() {
-            public @Override FileObject getFile() {
-                return fo;
-            }
-            public @Override int getLineCount() {
-                return doc.getDefaultRootElement().getElementCount();
-            }
-            public @Override boolean hasHitCounts() {
-                return true;
-            }
-            public @Override long lastUpdated() {
-                File r = report();
-                return r != null ? r.lastModified() : 0;
-            }
-            public @Override FileCoverageSummary getSummary() {
-                return summaryOf(fo, _name, lines, jacoco);
-            }
-            private Integer find(int lineNo) {
-                for (Element line : lines) {
-                    if (line.getAttribute(jacoco ? "nr" : "number").equals(String.valueOf(lineNo + 1))) { // NOI18N
-                        return Integer.valueOf(line.getAttribute(jacoco ? "ci" : "hits")); // NOI18N
-                    }
-                }
-                return null;
-            }
-            public @Override CoverageType getType(int lineNo) {
-                Integer count = find(lineNo);
-                return count == null ? CoverageType.INFERRED : count == 0 ? CoverageType.NOT_COVERED : CoverageType.COVERED;
-            }
-            public @Override int getHitCount(int lineNo) {
-                Integer count = find(lineNo);
-                return count == null ? 0 : count;
-            }
-        };
+        return det;
     }
 
     public @Override List<FileCoverageSummary> getResults() {
-        org.w3c.dom.Document r = parse();
+        Pair<File, org.w3c.dom.Document> r = parse();
         if (r == null) {
             return null;
         }
@@ -336,8 +275,9 @@ public final class MavenCoverageProvider implements CoverageProvider {
             return null;
         }
         List<FileCoverageSummary> summs = new ArrayList<FileCoverageSummary>();
+        Map<String, MavenSummary> summaries = new HashMap<String, MavenSummary>();
         boolean jacoco = hasPlugin(GROUP_JOCOCO, ARTIFACT_JOCOCO);
-        NodeList nl = r.getElementsByTagName(jacoco ? "sourcefile" : "class"); // NOI18N
+        NodeList nl = r.second().getElementsByTagName(jacoco ? "sourcefile" : "class"); // NOI18N
         for (int i = 0; i < nl.getLength(); i++) {
             Element clazz = (Element) nl.item(i);
             String filename;
@@ -363,22 +303,35 @@ public final class MavenCoverageProvider implements CoverageProvider {
             if (java == null) {
                 continue;
             }
-            summs.add(summaryOf(java, name, lines, jacoco));
+            final MavenSummary summar = summaryOf(java, name, lines, jacoco, r.first().lastModified());
+            summaries.put(filename, summar);
+            summs.add(summar);
+        }
+        synchronized (this) {
+            summaryCache = summaries;
         }
         return summs;
     }
     
-    private FileCoverageSummary summaryOf(FileObject java, String name, List<Element> lines, boolean jacoco) {
+    private MavenSummary summaryOf(FileObject java, String name, List<Element> lines, boolean jacoco, long lastUpdated) {
         // Not really the total number of lines in the file at all, but close enough - the ones Cobertura recorded.
         int lineCount = 0;
         int executedLineCount = 0;
+        int maxLine = 0;
+        Map<Integer, Integer> detLines = new HashMap<Integer, Integer>();
         for (Element line : lines) {
             lineCount++;
-            if (!line.getAttribute(jacoco ? "ci" : "hits").equals("0")) {
+            String attr = line.getAttribute(jacoco ? "ci" : "hits");
+            String num = line.getAttribute(jacoco ? "nr" : "number");
+            detLines.put(Integer.valueOf(num) - 1,Integer.valueOf(attr));
+            maxLine = Math.max(maxLine, Integer.valueOf(num) - 1);
+            if (!attr.equals("0")) {
                 executedLineCount++;
             }
         }
-        return new FileCoverageSummary(java, name, lineCount, executedLineCount, 0, 0); // NOI18N
+        MavenDetails det = new MavenDetails(java, lastUpdated, Math.max(lineCount, maxLine), detLines);
+        MavenSummary s = new MavenSummary(java, name, det, executedLineCount);
+        return s;
     }
 
     public @Override String getTestAllAction() {
@@ -386,4 +339,78 @@ public final class MavenCoverageProvider implements CoverageProvider {
         // XXX and Test button runs COMMAND_TEST_SINGLE on file, which is not good here; cf. CoverageSideBar.testOne
     }
 
+    private static class MavenSummary extends FileCoverageSummary {
+        private final MavenDetails details;
+
+        public MavenSummary(FileObject file, String displayName, MavenDetails details, int executedLineCount) {
+            super(file, displayName, details.getLineCount(), executedLineCount, 0, 0);
+            this.details = details;
+            details.setSummary(this);
+        }
+        
+        MavenDetails getDetails() {
+            return details;
+        }
+        
+    }
+    
+    private static class MavenDetails implements FileCoverageDetails {
+        private final FileObject fileObject;
+        private final long lastUpdated;
+        private FileCoverageSummary summary;
+        private final Map<Integer, Integer> lineHitCounts;
+        int lineCount;
+
+        public MavenDetails(FileObject fileObject, long lastUpdated, int lineCount, Map<Integer, Integer> lineHitCounts) {
+            this.fileObject = fileObject;
+            this.lastUpdated = lastUpdated;
+            this.lineHitCounts = lineHitCounts;
+            this.lineCount = lineCount;
+        }
+        
+        
+        @Override
+        public FileObject getFile() {
+            return fileObject;
+        }
+
+        @Override
+        public int getLineCount() {
+            return lineCount;
+        }
+
+        @Override
+        public boolean hasHitCounts() {
+            return true;
+        }
+
+        @Override
+        public long lastUpdated() {
+            return lastUpdated;
+        }
+
+        @Override
+        public FileCoverageSummary getSummary() {
+            return summary;
+        }
+        public void setSummary(FileCoverageSummary summary) {
+            this.summary = summary;
+        }
+
+        @Override
+        public CoverageType getType(int lineNo) {
+            Integer count = lineHitCounts.get(lineNo);
+            return count == null ? CoverageType.INFERRED : count == 0 ? CoverageType.NOT_COVERED : CoverageType.COVERED;
+        }
+
+        @Override
+        public int getHitCount(int lineNo) {
+            Integer ret = lineHitCounts.get(lineNo);
+            if (ret == null) {
+                return 0;
+            }
+            return ret;
+        }
+    
+    }
 }

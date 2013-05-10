@@ -43,11 +43,11 @@ import org.openide.util.NbBundle;
  *
  * @author Jaroslav Tulach
  */
-public final class Decorations {
+final class Decorations {
     
     private static final SimpleFormatter FORMATTER = new SimpleFormatter();
     
-    public static void decorate(LogRecord r, Decorable d) {
+    static void decorate(LogRecord r, Decorable d) {
         if (r.getMessage() == null) {
             d.setName("Seq: " + r.getSequenceNumber());
         } else {

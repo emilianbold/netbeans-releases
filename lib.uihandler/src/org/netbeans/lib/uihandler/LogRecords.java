@@ -87,6 +87,12 @@ public final class LogRecords {
         Decorations.decorate(r, d);
     }
     
+    /**
+     * Writhe log record to an output stream.
+     * @param os the output stream
+     * @param rec the log record
+     * @throws IOException when an I/O error occurs.
+     */
     public static void write(OutputStream os, LogRecord rec) throws IOException {           
         String formated = FORMATTER.format(rec);
         byte[] arr = formated.getBytes("utf-8");
@@ -139,6 +145,12 @@ public final class LogRecords {
 
     }
 
+    /**
+     * Scan log records stored in a file.
+     * @param f the file to read log records from
+     * @param h handler that gets the log records
+     * @throws IOException when an I/O error occurs.
+     */
     public static void scan(File f, Handler h) throws IOException {
         HandlerDelegate hd = new HandlerDelegate(h);
         InputStream is = null;
@@ -173,6 +185,12 @@ public final class LogRecords {
         }
     }
     
+    /**
+     * Scan log records from an input stream.
+     * @param is the input stream to read log records from
+     * @param h handler that gets the log records
+     * @throws IOException when an I/O error occurs.
+     */
     public static void scan(InputStream is, Handler h) throws IOException {
         List<LogRecord> errorLogRecords = new ArrayList<LogRecord>();
         try {
