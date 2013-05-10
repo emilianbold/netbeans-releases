@@ -2461,9 +2461,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         final boolean isNew = issue.isNew();
-        if (isNew) {
-//            storeFieldValue(IssueField.DESCRIPTION, addCommentArea);
-        }
         String submitMessage;
         if (isNew) {
             submitMessage = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitNewMessage"); // NOI18N
