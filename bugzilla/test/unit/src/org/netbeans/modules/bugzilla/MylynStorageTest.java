@@ -57,6 +57,7 @@ import java.util.logging.Level;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertSame;
 import static junit.framework.Assert.assertTrue;
 import junit.framework.Test;
@@ -633,12 +634,19 @@ public class MylynStorageTest extends NbTestCase {
             if (t == task || controller.getOpenedTasks().contains(t)) {
                 assertEquals(ITask.SynchronizationState.SYNCHRONIZED, t.getSynchronizationState());
             } else {
-                assertEquals(ITask.SynchronizationState.INCOMING_NEW, t.getSynchronizationState());
+                if (t.getSynchronizationState() == ITask.SynchronizationState.SYNCHRONIZED) {
+                    // prehistoric tasks are marked as synchronized
+                    // but have a specific flag
+                    assertEquals("true", t.getAttribute("NetBeans.task.unseen"));
+                } else {
+                    assertEquals(ITask.SynchronizationState.INCOMING_NEW, t.getSynchronizationState());
+                }
                 DummyEditorPage p = new DummyEditorPage(t);
                 p.open();
                 p.assertOpened();
                 p.close();
                 assertEquals(ITask.SynchronizationState.SYNCHRONIZED, t.getSynchronizationState());
+                assertNull(t.getAttribute("NetBeans.task.unseen"));
             }
         }
         controller.forget();
