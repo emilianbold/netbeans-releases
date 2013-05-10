@@ -198,6 +198,7 @@ public class BugzillaRepository {
         ITask task;
         try {
             task = MylynSupport.getInstance().getMylynFactory().createTask(taskRepository, new TaskMapping(product, component));
+            task.setAttribute(BugzillaIssue.ATTR_NEW_UNREAD, Boolean.TRUE.toString());
             return getIssueForTask(task);
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.WARNING, null, ex);

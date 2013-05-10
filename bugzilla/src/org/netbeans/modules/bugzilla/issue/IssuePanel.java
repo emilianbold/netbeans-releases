@@ -303,6 +303,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run () {
+                if (!reloading && isDirty && issue.isMarkedNewUnread()) {
+                    issue.markNewRead();
+                }
                 btnSaveChanges.setEnabled(isDirty);
                 if (!isDirty) {
                     unsavedFields.clear();
@@ -515,7 +518,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         assignedField.setEditable(issue.isNew() || issue.canReassign());
         assignedCombo.setEnabled(assignedField.isEditable());
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
-        if (isNew && force && !issue.isMarkedNewRead()) {
+        if (isNew && force && issue.isMarkedNewUnread()) {
             // this should not be called when reopening task to submit
             if(BugzillaUtil.isNbRepository(issue.getRepository())) {
                 addNetbeansInfo();
@@ -523,7 +526,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             // Preselect the first product
             selectProduct();
             initStatusCombo("NEW"); // NOI18N
-            issue.markNewRead();
         } else {
             String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
             String headerTxt = MessageFormat.format(format, issue.getID(), issue.getSummary());
@@ -784,7 +786,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         if (value == null) {
             return false;
         }
-        combo.setSelectedItem(value);
+        if (!value.equals(combo.getSelectedItem())) {
+            combo.setSelectedItem(value);
+        }
         if (forceInModel && !value.equals("") && !value.equals(combo.getSelectedItem())) { // NOI18N
             // Reload of server attributes is needed - workarounding it
             ComboBoxModel model = combo.getModel();
@@ -2457,9 +2461,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
 
     private void submitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_submitButtonActionPerformed
         final boolean isNew = issue.isNew();
-        if (isNew) {
-//            storeFieldValue(IssueField.DESCRIPTION, addCommentArea);
-        }
         String submitMessage;
         if (isNew) {
             submitMessage = NbBundle.getMessage(IssuePanel.class, "IssuePanel.submitNewMessage"); // NOI18N

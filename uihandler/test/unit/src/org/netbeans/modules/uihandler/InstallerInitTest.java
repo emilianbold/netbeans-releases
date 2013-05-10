@@ -131,7 +131,7 @@ public class InstallerInitTest extends NbTestCase {
 
     public void testGenerateEnoughLogsExit() throws Exception {
         LogRecord r = new LogRecord(Level.INFO, "MSG_SOMETHING");
-        r.setLoggerName("org.netbeans.ui.anything");
+        r.setLoggerName(Installer.UI_LOGGER_NAME + ".anything");
 
         String utf8 = 
             "<html><head>" +
@@ -146,7 +146,7 @@ public class InstallerInitTest extends NbTestCase {
         MemoryURL.registerURL("memory://start.html", is);
         
         for (int i = 0; i < 1500; i++) {
-            Logger.getLogger("org.netbeans.ui.anything").log(r);
+            Logger.getLogger(Installer.UI_LOGGER_NAME + ".anything").log(r);
         }
         assertEquals("full buffer", 1000, InstallerTest.getLogsSize());
         

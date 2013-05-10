@@ -59,9 +59,11 @@ class UserPasswordPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        passwordLabel.setLabelFor(userPasswordField);
         org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, org.openide.util.NbBundle.getMessage(UserPasswordPanel.class, "UserPasswordPanel.passwordLabel.text")); // NOI18N
         passwordLabel.setToolTipText(org.openide.util.NbBundle.getMessage(UserPasswordPanel.class, "UserPasswordPanel.passwordLabel.toolTipText")); // NOI18N
 
+        userLabel.setLabelFor(userTextField);
         org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(UserPasswordPanel.class, "UserPasswordPanel.userLabel.text")); // NOI18N
         userLabel.setToolTipText(org.openide.util.NbBundle.getMessage(UserPasswordPanel.class, "UserPasswordPanel.userLabel.toolTipText")); // NOI18N
 

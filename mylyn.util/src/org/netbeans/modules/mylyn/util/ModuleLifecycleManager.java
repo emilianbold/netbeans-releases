@@ -54,7 +54,7 @@ public class ModuleLifecycleManager extends ModuleInstall {
     @Override
     public boolean closing() {
         try {
-            MylynSupport.getInstance().persist();
+            MylynSupport.getInstance().finish();
         } catch (Exception ex) {
             
         }

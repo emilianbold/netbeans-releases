@@ -79,6 +79,7 @@ import org.openide.util.NbBundle;
  */
 public class AddOrRemoveFinalModifier implements ErrorRule<Void> {
 
+    private final String id;
     private final Type type;
     private final String errorCode;
     private final String displayName;
@@ -91,7 +92,8 @@ public class AddOrRemoveFinalModifier implements ErrorRule<Void> {
      * http://hg.netbeans.org/main/nb-javac/raw-file/tip/src/share/classes/com/sun/tools/javac/resources/compiler.properties
      * for possible codes
      */
-    private AddOrRemoveFinalModifier(String errorCode, String displayName, String description, String fixDescription, Type type) {
+    private AddOrRemoveFinalModifier(String id, String errorCode, String displayName, String description, String fixDescription, Type type) {
+        this.id = id;
         this.errorCode = errorCode;
         this.displayName = displayName;
         this.description = description;
@@ -105,7 +107,7 @@ public class AddOrRemoveFinalModifier implements ErrorRule<Void> {
         "# {0} - variable name",
         "FIX_RemoveFinalModifierFromVariable=Remove \"final\" modifier from variable \"{0}\""})
     public static AddOrRemoveFinalModifier createRemoveFinalFromVariable() {
-        return new AddOrRemoveFinalModifier("compiler.err.cant.assign.val.to.final.var", Bundle.DN_RemoveFinalModifierFromVariable(), Bundle.DESC_RemoveFinalModifierFromVariable(), "FIX_RemoveFinalModifierFromVariable", Type.REMOVE);
+        return new AddOrRemoveFinalModifier(AddOrRemoveFinalModifier.class.getName() + ".var", "compiler.err.cant.assign.val.to.final.var", Bundle.DN_RemoveFinalModifierFromVariable(), Bundle.DESC_RemoveFinalModifierFromVariable(), "FIX_RemoveFinalModifierFromVariable", Type.REMOVE);
     }
     
     @NbBundle.Messages({
@@ -114,7 +116,7 @@ public class AddOrRemoveFinalModifier implements ErrorRule<Void> {
         "# {0} - parameter name",
         "FIX_RemoveFinalModifierFromParameter=Remove \"final\" modifier from parameter \"{0}\""})
     public static AddOrRemoveFinalModifier createRemoveFinalFromParameter() {
-        return new AddOrRemoveFinalModifier("compiler.err.final.parameter.may.not.be.assigned", Bundle.DN_RemoveFinalModifierFromParameter(), Bundle.DESC_RemoveFinalModifierFromParameter(), "FIX_RemoveFinalModifierFromParameter", Type.REMOVE);
+        return new AddOrRemoveFinalModifier(AddOrRemoveFinalModifier.class.getName() + ".param", "compiler.err.final.parameter.may.not.be.assigned", Bundle.DN_RemoveFinalModifierFromParameter(), Bundle.DESC_RemoveFinalModifierFromParameter(), "FIX_RemoveFinalModifierFromParameter", Type.REMOVE);
     }
 
     @NbBundle.Messages({
@@ -123,7 +125,7 @@ public class AddOrRemoveFinalModifier implements ErrorRule<Void> {
         "# {0} - variable or parameter name",
         "FIX_MakeVariableFinal=Add \"final\" modifier to \"{0}\""})
     public static AddOrRemoveFinalModifier createAddFinalModifier() {
-        return new AddOrRemoveFinalModifier("compiler.err.local.var.accessed.from.icls.needs.final", Bundle.DN_MakeVariableFinal(), Bundle.DESC_MakeVariableFinal(), "FIX_MakeVariableFinal", Type.ADD);
+        return new AddOrRemoveFinalModifier("org.netbeans.modules.java.hints.errors.MakeVariableFinal", "compiler.err.local.var.accessed.from.icls.needs.final", Bundle.DN_MakeVariableFinal(), Bundle.DESC_MakeVariableFinal(), "FIX_MakeVariableFinal", Type.ADD);
     }
 
     public Set<String> getCodes() {
@@ -149,7 +151,7 @@ public class AddOrRemoveFinalModifier implements ErrorRule<Void> {
     }
 
     public String getId() {
-        return AddOrRemoveFinalModifier.class.getName();
+        return id;
     }
 
     @Override

@@ -77,7 +77,7 @@ public class EnabledModulesCollectorTest extends NbTestCase {
 
     public void testSetOfEnabledModulesIsListed() {
         // just log something
-        Logger.getLogger("org.netbeans.ui.empty").warning("say anything");
+        Logger.getLogger(Installer.UI_LOGGER_NAME + ".empty").warning("say anything");
 
         Installer.logDeactivated();
         assertTrue("ok", installer.closing());

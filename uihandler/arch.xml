@@ -111,13 +111,29 @@ made subject to such option by the copyright holder.
             </p>
             
             <p>
-                <api name="org.netbeans.ui" group="logger" category="devel" type="export">
+                <api name="UI_LOGGER_NAME" group="logger" category="devel" type="export">
                     The info about various UI events in the system is collected thru
                     listening on 
                     <a href="@JDK@/java/util/logging/LogRecord.html">log records</a> send to
                     <a href="@JDK@/java/util/logging/Logger.html">
-                        Logger.getLogger("org.netbeans.ui")
-                    </a>. Any code in the system can get instance of this logger
+                        Logger.getLogger(UI_LOGGER_NAME_VALUE)
+                    </a>, where UI_LOGGER_NAME_VALUE is a value of UI_LOGGER_NAME
+                    resource bundle key, defining the name of the UI usage logger.
+                    Any code in the system can get instance of this logger
+                    or any child logger and send useful informations to it. 
+                    At the end of the session the last few hundereds events
+                    is taken and displayed to the user for further processing.
+                </api>
+                <api name="METRICS_LOGGER_NAME" group="logger" category="devel" type="export">
+                    The info about various UI events in the system is collected thru
+                    listening on 
+                    <a href="@JDK@/java/util/logging/LogRecord.html">log records</a> send to
+                    <a href="@JDK@/java/util/logging/Logger.html">
+                        Logger.getLogger(METRICS_LOGGER_NAME_VALUE)
+                    </a>, where METRICS_LOGGER_NAME_VALUE is a value of
+                    METRICS_LOGGER_NAME resource bundle key, defining the name
+                    of the metrics logger.
+                    Any code in the system can get instance of this logger
                     or any child logger and send useful informations to it. 
                     At the end of the session the last few hundereds events
                     is taken and displayed to the user for further processing.
@@ -139,7 +155,19 @@ made subject to such option by the copyright holder.
                     There is a key in the <code>org.netbeans.modules.uihandler.Bundle</code>
                     that specifies the location of the page on a server one shall
                     query and display to the user when the module is about the
-                    submit data for analysis.
+                    submit usage data for analysis.
+                </api>
+                <api name="METRICS_URL" group="property" category="private" type="export">
+                    There is a key in the <code>org.netbeans.modules.uihandler.Bundle</code>
+                    that specifies the location of the page on a server one shall
+                    query and display to the user when the module is about the
+                    submit metrics data for analysis.
+                </api>
+                <api name="ERROR_URL" group="property" category="private" type="export">
+                    There is a key in the <code>org.netbeans.modules.uihandler.Bundle</code>
+                    that specifies the location of the page on a server one shall
+                    query and display to the user when the module is about the
+                    submit an error report.
                 </api>
                 <api name="WelcomePageContent" group="java.io.File" category="friend" type="export">
                     The page pointed by <code>WELCOME_URL</code> can contain
@@ -177,9 +205,11 @@ made subject to such option by the copyright holder.
             <p>
                 To feed own data about special UI gestures one can just create own
                 <a href="@JDK@/java/util/logging/Logger.html">
-                    Logger.getLogger("org.netbeans.ui.ownname")
-                </a> and send own log records to it. The format of the log
-                messages shall follow the one described by the
+                    Logger.getLogger(UI_LOGGER_NAME_VALUE+".ownname")
+                </a> and send own log records to it.
+                UI_LOGGER_NAME_VALUE is a value of UI_LOGGER_NAME
+                resource bundle key, defining the name of the logger.
+                The format of the log messages shall follow the one described by the
                 <a href="@org-openide-util@/org/openide/util/doc-files/logging.html">
                     structured logging 
                 </a> document, e.g. the 
@@ -293,9 +323,105 @@ made subject to such option by the copyright holder.
         </question>
 -->
     <answer id="compat-i18n">
-        <p>
-            XXX no answer for compat-i18n
-        </p>
+            There are several resource bundle keys related to branding.
+            These are:
+            <ul>
+                <li>
+                    <code>userNameURL</code> - The URL used to report Exception
+                    reporter results, the user name is appended to the URL.
+                </li>
+                <li>
+                    <code>userIdURL</code> - The URL used to report by user identity,
+                    when user name is not defined. The user identity is appended
+                    to the URL.
+                </li>
+                <li>
+                    <code>ReportPanel.loginField.AccessibleContext.accessibleName</code> -
+                    The accessible name of the application's user name field
+                </li>
+                <li>
+                    <code>ReportPanel.loginField.AccessibleContext.accessibleDescription</code> -
+                    The accessible description of the application's user name field
+                </li>
+                <li>
+                    <code>REGISTRATION_URL</code> - The URL to register a new user
+                </li>
+                <li>
+                    <code>ReportPanel.jLabel11.text</code> - A label next to the
+                    application's user name field
+                </li>
+                <li>
+                    <code>ReportPanel.jPasswordField1.AccessibleContext.accessibleDescription</code> -
+                    The accessible description of the application's user password field
+                </li>
+                <li>
+                    <code>no_data_found</code> - Description text about
+                    a connection problem.
+                </li>
+                <li>
+                    <code>METRICS_LOGGER_NAME</code> - The logger name of metrics
+                    logging.
+                </li>
+                <li>
+                    <code>UI_LOGGER_NAME</code> - The logger name of UI usages
+                    logging.
+                </li>
+                <li>
+                    <code>UI_PERFORMANCE_LOGGER_NAME</code> - The logger name
+                    of performance-related logging.
+                </li>
+                <li>
+                    <code>UI_USER_CONFIGURATION</code> - Text of a configuration
+                    log message. Following three keys are used to provide the
+                    application version:
+                    <ul>
+                        <li>
+                            <code>ApplicationVersionResourceBundle</code> -
+                            A resource bundle the application version is read from
+                        </li>
+                        <li>
+                            <code>ApplicationVersionResourceKey</code> -
+                            A key with the application version number
+                        </li>
+                        <li>
+                            <code>ApplicationVersionSysPropertyResourceArg</code> -
+                            A system property, that is used as an argument to the
+                            application version number key
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <code>WELCOME_URL</code> - The URL with the welcome text
+                </li>
+                <li>
+                    <code>METRICS_URL</code> - The URL to upload metrics logs to
+                </li>
+                <li>
+                    <code>ERROR_URL</code> - The URL to upload errors to
+                </li>
+                <li>
+                    <code>CHECKING_SERVER_URL</code> - The URL to authenticate
+                    the user with password
+                </li>
+                <li>
+                    <code>LOG_FILE</code> - The application's log file relative
+                    to the user directory
+                </li>
+                <li>
+                    <code>MSG_ConnetionFailedReport</code> - This message is
+                    displayed when connection to the server fails.
+                </li>
+                <li>
+                    <code>LBL_BottomText1</code>, <code>LBL_BottomText2</code>,
+                    <code>LBL_BottomText3</code> - Text displayed on the usage
+                    statistics dialog.
+                </li>
+                <li>
+                    <code>METRICS_INFO_URL</code> - This URL is displayed in
+                    a browser to provide more information about the metrics
+                    usage tracking.
+                </li>
+            </ul>
     </answer>
     
     
@@ -491,7 +617,7 @@ made subject to such option by the copyright holder.
             and registering <a href="@TOP@/org/netbeans/modules/uihandler/api/Deactivated.html">callback interfaces</a> 
             provided by its API. Or the modules do not need to depend on this module at all,
             and just generate <a href="@JDK@/java/util/logging/LogRecord.html">log records</a>
-            to the <code>org.netbeans.ui.someloggername</code> log. These records are 
+            to the <code>UI_LOGGER_NAME_VALUE+".someloggername"</code> logger. These records are 
             then going to be consumed by this module, if enabled.
         </p>
     </answer>
@@ -716,7 +842,7 @@ made subject to such option by the copyright holder.
 -->
     <answer id="exec-property">
         <p>
-            <api name="org.netbeans.ui.MSG_USER_CONFIGURATION" group="logger" category="devel" type="export">
+            <api name="MSG_USER_CONFIGURATION" group="logger" category="devel" type="export">
                 Before the results are submitted one more LogRecord is added. This LogRecord message is
                 set to <code>MSG_USER_CONFIGURATION</code> . Four upto six parameters are added.
                 Four common parameters are added always before sending logger info and two error 
@@ -725,7 +851,7 @@ made subject to such option by the copyright holder.
                 <ul title="common parameters">
                     <li>Operating system name, version and architecture</li>
                     <li>Virtual machine name and version</li>
-                    <li>NetBeans version and build number</li>
+                    <li>Application version and build number</li>
                     <li>User name</li>
                 </ul>
                 <ul title="error parameters">

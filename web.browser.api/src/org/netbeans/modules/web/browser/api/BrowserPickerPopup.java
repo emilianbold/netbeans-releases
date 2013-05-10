@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,53 +37,62 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.web.browser.api;
 
-package org.netbeans.lib.uihandler;
+import javax.swing.JComponent;
+import javax.swing.JPopupMenu;
+import javax.swing.event.ChangeListener;
+import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
+import org.netbeans.modules.web.browser.ui.picker.BrowserMenu;
 
 /**
- * The implementation will provide access to netbeans.org specific bagzilla
- * functionality. Additionaly, methods are available to share the nb username
- * and password between the bugzilla and exeption reporter modules.
+ * Popup menu listing all available browsers in several columns. A ChangeEvent is
+ * fired when the browser selection changed.
  *
- *
- * @author Tomas Stupka
+ * @author S. Aubrecht
  */
-public abstract class NBBugzillaAccessor {
+public final class BrowserPickerPopup {
+
+    private final BrowserMenu menu;
+
+    private BrowserPickerPopup( BrowserMenu menu ) {
+        this.menu = menu;
+    }
 
     /**
-     * Opens in the IDE the given issue from netbeans.org/bugzilla
-     *
-     * @param issueID issue identifier
+     * Creates a new browser picker menu.
+     * @param provider Project provider listing the browser.
+     * @return New browser menu.
      */
-    public abstract void openIssue(String issueID);
+    public static BrowserPickerPopup create( ProjectBrowserProvider provider ) {
+        return new BrowserPickerPopup( new BrowserMenu( provider ) );
+    }
 
     /**
-     * Returns the netbeans.org username
-     * Shouldn't be called in awt
-     *
-     * @return username
+     * Shows the popup menu at given location.
+     * @param invoker
+     * @param x
+     * @param y
+     * @see JPopupMenu#show(java.awt.Component, int, int)
      */
-    public abstract String getNBUsername();
+    public void show( JComponent invoker, int x, int y ) {
+        menu.show( invoker, x, y );
+    }
 
     /**
-     * Returns the netbeans.org password
-     * Shouldn't be called in awt
-     *
-     * @return password
+     * @return Currently selected browser or null.
      */
-    public abstract char[] getNBPassword();
+    public WebBrowser getSelectedBrowser() {
+        return menu.getSelectedBrowser();
+    }
 
-    /**
-     * Save the given username as a netbeans.org username.
-     * Shouldn't be called in awt
-     */
-    public abstract void saveNBUsername(String username);
+    public void addChangeListener( ChangeListener changeListener ) {
+        menu.addChangeListener( changeListener );
+    }
 
-    /**
-     * Saves the given value as a netbeans.org password
-     * Shouldn't be called in awt
-     */
-    public abstract void saveNBPassword(char[] password);
+    public void removeChangeListener( ChangeListener changeListener ) {
+        menu.removeChangeListener( changeListener );
+    }
 }

@@ -69,6 +69,6 @@ public class ScreenSize {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         params.add(ge.getScreenDevices().length);
         log.setParameters(params.toArray());
-        Logger.getLogger("org.netbeans.ui").log(log);
+        Logger.getLogger(Installer.UI_LOGGER_NAME).log(log);
     }
 }

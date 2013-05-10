@@ -39,45 +39,67 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.core.ui.list;
 
-import java.awt.Component;
-import javax.swing.BorderFactory;
-import javax.swing.DefaultListCellRenderer;
-import javax.swing.JList;
-import javax.swing.border.Border;
+package org.netbeans.modules.csl.core;
+
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.spi.tasklist.PushTaskScanner;
+import org.netbeans.spi.tasklist.TaskScanningScope;
+import org.openide.util.NbBundle;
+
+import static org.netbeans.modules.csl.core.Bundle.*;
 
 /**
- *
- * @author S. Aubrecht
+ * This class provides access to tasklist settings. The settings are only available
+ * to push scanners, so this 'push scanner' is a singleton, which can be queried for 
+ * settings, but really does not push any tasks to the tasklist. 
+ * <p/>
+ * Be aware that the scope can change to null at any time.
+ * @author sdedic
  */
-class RendererImpl extends DefaultListCellRenderer {
-
-    private final static Border emptyBorder = BorderFactory.createEmptyBorder( 5, 5, 5, 5 );
-
-    public RendererImpl() {
-        setIconTextGap( 5 );
+@NbBundle.Messages({
+    "DN_tlIndexerName=Hints-based tasks",
+    "DESC_tlIndexerName=Tasks provided by language hints"
+})
+class TasklistStateBackdoor extends PushTaskScanner {
+    private static final TasklistStateBackdoor INSTANCE = new TasklistStateBackdoor();
+    
+    private volatile TaskScanningScope scope;
+    private volatile Callback callback;
+    
+    TasklistStateBackdoor() {
+        super(DN_tlIndexerName(), DESC_tlIndexerName(), null);
+    }
+    
+    static TasklistStateBackdoor getInstance() {
+        return INSTANCE;
+    }
+    
+    boolean isCurrentEditorScope() {
+        Callback c = this.callback;
+        return c != null && c.isCurrentEditorScope();
+    }
+    
+    boolean isObserved() {
+        Callback c = this.callback;
+        return c != null && c.isObserved();
+    }
+    
+    TaskScanningScope getScope() {
+        return scope;
     }
     
     @Override
-    public Component getListCellRendererComponent( JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
-        setBorder( null );
-        if( list instanceof SelectionListImpl ) {
-            isSelected |= index == ((SelectionListImpl)list).getMouseOverRow();
+    public void setScope(TaskScanningScope scope, Callback callback) {
+        this.callback = callback;
+        if (scope == null) {
+            return;
         }
-        super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus ); //To change body of generated methods, choose Tools | Templates.
-        if( value instanceof ListItem ) {
-            ListItem item = ( ListItem ) value;
-            setText( item.getText() );
-            setIcon( item.getIcon() );
+        this.scope = scope;
+        if (!callback.isObserved() || callback.isCurrentEditorScope()) {
+            return;
         }
-        Border b = getBorder();
-        if( null == b ) {
-            setBorder( b );
-        } else {
-            setBorder( BorderFactory.createCompoundBorder( b, emptyBorder ) );
-        }
-        return this;
+        IndexingManager.getDefault().refreshAllIndices(TLIndexerFactory.INDEXER_NAME);
+        
     }
-
 }

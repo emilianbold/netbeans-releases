@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,33 +37,53 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
-package org.netbeans.core.ui.list;
 
+package org.netbeans.lib.uihandler;
 
 /**
+ * The implementation will provide access to a bug tracking
+ * functionality. Additionally, methods are available to share the username
+ * and password between the bug tracking and exception reporter modules.
  *
- * @author S. Aubrecht
+ *
+ * @author Tomas Stupka
  */
-public final class SelectionListFactory {
+public abstract class BugTrackingAccessor {
 
-    private final SelectionModel selectionModel = new SelectionModel();
+    /**
+     * Opens in the IDE the given issue from bug tracking system.
+     *
+     * @param issueID issue identifier
+     */
+    public abstract void openIssue(String issueID);
 
-    private SelectionListFactory() {
-    }
+    /**
+     * Returns the bug tracking username
+     * Shouldn't be called in awt
+     *
+     * @return username
+     */
+    public abstract String getUsername();
 
-    public static SelectionListFactory create() {
-        return new SelectionListFactory();
-    }
+    /**
+     * Returns the bug tracking password
+     * Shouldn't be called in awt
+     *
+     * @return password
+     */
+    public abstract char[] getPassword();
 
-    public SelectionList createSelectionList() {
-        SelectionList res = new SelectionList();
-        selectionModel.add( res );
-        return res;
-    }
+    /**
+     * Save the given username as a bug tracking username.
+     * Shouldn't be called in awt
+     */
+    public abstract void saveUsername(String username);
 
-    public SelectionModel getSelectionModel() {
-        return selectionModel;
-    }
+    /**
+     * Saves the given value as a bug tracking password
+     * Shouldn't be called in awt
+     */
+    public abstract void savePassword(char[] password);
 }

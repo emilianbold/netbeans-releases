@@ -46,7 +46,7 @@ package org.netbeans.modules.exceptions;
 import java.awt.EventQueue;
 import java.util.prefs.Preferences;
 import org.netbeans.api.keyring.Keyring;
-import org.netbeans.lib.uihandler.NBBugzillaAccessor;
+import org.netbeans.lib.uihandler.BugTrackingAccessor;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -62,7 +62,7 @@ public class ExceptionsSettings {
     private static final String passwdKey = "exceptionreporter"; // NOI18N
     private static final String guestProp = "Guest";
     private static final String rememberProp = "RememberPasswd";
-    private final NBBugzillaAccessor nba;
+    private final BugTrackingAccessor nba;
     private String userName;
     private char[] passwd;
     private boolean changed = false;
@@ -70,10 +70,10 @@ public class ExceptionsSettings {
     /** Creates a new instance of ExceptionsSettings */
     public ExceptionsSettings() {
         assert !EventQueue.isDispatchThread();
-        nba = Lookup.getDefault().lookup(NBBugzillaAccessor.class);
+        nba = Lookup.getDefault().lookup(BugTrackingAccessor.class);
         if (nba != null) {
-            userName = nba.getNBUsername();
-            passwd = nba.getNBPassword();
+            userName = nba.getUsername();
+            passwd = nba.getPassword();
         } else {
             userName = prefs().get(userProp, "");
             String old = prefs().get(passwdProp, null);
@@ -100,8 +100,8 @@ public class ExceptionsSettings {
             return;
         }
         if (nba != null){
-            nba.saveNBUsername(userName);
-            nba.saveNBPassword(passwd);
+            nba.saveUsername(userName);
+            nba.savePassword(passwd);
         }else{
             prefs().put(userProp, userName);
             Keyring.save(passwdKey, passwd,

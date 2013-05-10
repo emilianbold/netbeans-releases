@@ -130,10 +130,10 @@ public class LogFileIsKeptAtSizeOf1000Test extends NbTestCase {
         
         for (int repeat = 0; repeat < 10; repeat++) {
             LogRecord r = new LogRecord(Level.INFO, "MSG_SOMETHING");
-            r.setLoggerName("org.netbeans.ui.anything");
+            r.setLoggerName(Installer.UI_LOGGER_NAME + ".anything");
 
             for (int i = 0; i < 1500; i++) {
-                Logger.getLogger("org.netbeans.ui.anything").log(r);
+                Logger.getLogger(Installer.UI_LOGGER_NAME + ".anything").log(r);
             }
             assertEquals("full buffer", 1000, InstallerTest.getLogsSize());
 

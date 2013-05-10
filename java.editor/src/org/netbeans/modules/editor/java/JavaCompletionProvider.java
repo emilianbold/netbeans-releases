@@ -3578,7 +3578,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }                
             } else {
                 String subwordsPattern = null;
-                if (!env.isCamelCasePrefix() && Utilities.isSubwordSensitive()) {
+                if (prefix != null && !env.isCamelCasePrefix() && Utilities.isSubwordSensitive()) {
                     subwordsPattern = Utilities.createSubwordsPattern(prefix);
                 }
                 ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
@@ -3606,7 +3606,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             Scope scope = env.getScope();
             if (prefix != null && prefix.length() > 2 && baseType.getTypeArguments().isEmpty()) {
                 String subwordsPattern = null;
-                if (!env.isCamelCasePrefix() && Utilities.isSubwordSensitive()) {
+                if (prefix != null && !env.isCamelCasePrefix() && Utilities.isSubwordSensitive()) {
                     subwordsPattern = Utilities.createSubwordsPattern(prefix);
                 }
                 ClassIndex.NameKind kind = env.isCamelCasePrefix() ?

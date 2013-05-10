@@ -124,6 +124,8 @@ public class FmtOptions {
     public static final String classMembersOrder = "classMembersOrder"; //NOI18N
     public static final String sortMembersByVisibility = "sortMembersByVisibility"; //NOI18N
     public static final String visibilityOrder = "visibilityOrder"; //NOI18N
+    public static final String keepGettersAndSettersTogether = "keepGettersAndSettersTogether"; //NOI18N
+    public static final String sortMembersInGroups = "sortMembersInGroups"; //NOI18N
     public static final String classMemberInsertionPoint = "classMemberInsertionPoint"; //NOI18N
     
     public static final String classDeclBracePlacement = "classDeclBracePlacement"; //NOI18N
@@ -406,6 +408,8 @@ public class FmtOptions {
             { classMembersOrder, "STATIC FIELD;STATIC_INIT;STATIC METHOD;FIELD;INSTANCE_INIT;CONSTRUCTOR;METHOD;STATIC CLASS;CLASS"}, //NOI18N
             { sortMembersByVisibility, FALSE}, //NOI18N
             { visibilityOrder, "PUBLIC;PRIVATE;PROTECTED;DEFAULT"}, //NOI18N
+            { keepGettersAndSettersTogether, FALSE}, //NOI18N
+            { sortMembersInGroups, FALSE}, //NOI18N
             { classMemberInsertionPoint, IP_CARET},
 
             { classDeclBracePlacement, BP_SAME_LINE}, //NOI18N
@@ -610,6 +614,7 @@ public class FmtOptions {
         private static final ComboItem  insertionPoint[] = new ComboItem[] {
                 new ComboItem( InsertionPoint.LAST_IN_CATEGORY.name(), "LBL_ip_LAST_IN_CATEGORY" ), // NOI18N
                 new ComboItem( InsertionPoint.FIRST_IN_CATEGORY.name(), "LBL_ip_FIRST_IN_CATEGORY" ), // NOI18N
+                new ComboItem( InsertionPoint.ORDERED_IN_CATEGORY.name(), "LBL_ip_ORDERED_IN_CATEGORY" ), // NOI18N
                 new ComboItem( InsertionPoint.CARET_LOCATION.name(), "LBL_ip_CARET_LOCATION" ) // NOI18N
             };
         

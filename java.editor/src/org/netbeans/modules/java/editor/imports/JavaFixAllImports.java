@@ -287,10 +287,19 @@ public class JavaFixAllImports {
             List<Element> unfilteredVars = notFilteredCandidates.get(key);
             List<Element> filteredVars = filteredCandidates.get(key);
 
+
             shouldShowImportsPanel |= unfilteredVars.size() > 1;
 
             if (!unfilteredVars.isEmpty()) {
-                data.variants[index] = new CandidateDescription[unfilteredVars.size()];
+                boolean staticImports = true;
+                for (Element e : unfilteredVars) {
+                    if (e.getKind().isClass() || e.getKind().isInterface()) {
+                        staticImports = false;
+                    }
+                }
+                shouldShowImportsPanel |= staticImports;
+                
+                data.variants[index] = new CandidateDescription[staticImports ? unfilteredVars.size() + 1 : unfilteredVars.size()];
 
                 int i = -1;
                 int minImportanceLevel = Integer.MAX_VALUE;
@@ -321,6 +330,12 @@ public class JavaFixAllImports {
                         data.defaults[index] = data.variants[index][i];
                         minImportanceLevel = level;
                     }
+                }
+
+                if (staticImports) {
+                    data.variants[index][++i] = new CandidateDescription(NbBundle.getMessage(JavaFixAllImports.class, "FixDupImportStmts_DoNotImport"), //NOI18N
+                                                                         ImageUtilities.loadImageIcon("org/netbeans/modules/java/editor/resources/error-glyph.gif", false), //NOI18N
+                                                                         null);
                 }
             } else {
                 data.variants[index] = new CandidateDescription[1];

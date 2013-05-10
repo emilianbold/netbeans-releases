@@ -39,21 +39,45 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.core.ui.list;
+package org.netbeans.modules.web.browser.ui.picker;
 
-import javax.swing.Icon;
+import java.awt.Component;
+import javax.swing.BorderFactory;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JList;
+import javax.swing.border.Border;
 
 /**
  *
  * @author S. Aubrecht
  */
-public abstract class ListItem {
+class RendererImpl extends DefaultListCellRenderer {
 
-    public abstract Icon getIcon();
+    private final static Border emptyBorder = BorderFactory.createEmptyBorder( 5, 5, 5, 5 );
 
-    public abstract String getText();
-
-    public boolean isEnabled() {
-        return true;
+    public RendererImpl() {
+        setIconTextGap( 5 );
     }
+    
+    @Override
+    public Component getListCellRendererComponent( JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus ) {
+        setBorder( null );
+        if( list instanceof SelectionListImpl ) {
+            isSelected |= index == ((SelectionListImpl)list).getMouseOverRow();
+        }
+        super.getListCellRendererComponent( list, value, index, isSelected, cellHasFocus ); //To change body of generated methods, choose Tools | Templates.
+        if( value instanceof ListItem ) {
+            ListItem item = ( ListItem ) value;
+            setText( item.getText() );
+            setIcon( item.getIcon() );
+        }
+        Border b = getBorder();
+        if( null == b ) {
+            setBorder( b );
+        } else {
+            setBorder( BorderFactory.createCompoundBorder( b, emptyBorder ) );
+        }
+        return this;
+    }
+
 }
