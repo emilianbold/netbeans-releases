@@ -163,6 +163,14 @@ public class CRUDTest extends RestTestBase {
             allFiles.addAll(files);
             assertEquals("Missing files in package " + packageName, 4, files.size()); //NOI18N
         }
+        // ignore ApplicationConfig because it is different across EE levels and is generated asynchronously
+        File appConfigFile = null;
+        for (File file : allFiles) {
+            if (file.getName().contains("ApplicationConfig")) {
+                appConfigFile = file;
+            }
+        }
+        allFiles.remove(appConfigFile);
         checkFiles(allFiles);
         //make sure all REST services nodes are visible in project log. view
         assertEquals("missing nodes?", 7, getRestNode().getChildren().length);
