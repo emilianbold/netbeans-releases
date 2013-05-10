@@ -60,7 +60,6 @@ import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.LogUtils;
-import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.mylyn.util.MylynSupport;
@@ -338,10 +337,6 @@ public class BugzillaQuery {
     }
     
     public Collection<BugzillaIssue> getIssues() {
-        return getIssues(IssueCache.ISSUE_STATUS_ALL);
-    }
-    
-    public Collection<BugzillaIssue> getIssues(EnumSet<IssueCache.Status> includeStatus) {
         if (issues == null) {
             return Collections.emptyList();
         }
@@ -353,9 +348,9 @@ public class BugzillaQuery {
         IssueCache<BugzillaIssue> cache = repository.getIssueCache();
         List<BugzillaIssue> ret = new ArrayList<BugzillaIssue>();
         for (String id : ids) {
-            IssueCache.Status status = getIssueStatus(id);
-            if(includeStatus.contains(status)) {
-                ret.add(cache.getIssue(id));
+            BugzillaIssue issue = cache.getIssue(id);
+            if (issue != null) {
+                ret.add(issue);
             }
         }
         return ret;
@@ -564,7 +559,7 @@ public class BugzillaQuery {
         }
     
         @Override
-        public Collection<BugzillaIssue> getIssues(EnumSet<IssueCache.Status> includeStatus) {
+        public Collection<BugzillaIssue> getIssues () {
             List<ITask> taskList = new ArrayList<ITask>(tasks);
 
             List<BugzillaIssue> ret = new ArrayList<BugzillaIssue>();

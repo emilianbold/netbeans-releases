@@ -780,7 +780,11 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         }
         TaskData taskData = model.getTaskData();
         TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
-        if(a == null) {
+        if (a == null) {
+            if (f == IssueField.REASSIGN_TO_DEFAULT) {
+                setOperation(BugzillaOperation.reassignbycomponent);
+                return;
+            }
             a = new TaskAttribute(taskData.getRoot(), f.getKey());
         }
         if(f == IssueField.PRODUCT) {
@@ -936,18 +940,8 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
                         taskData.getRoot().getMappedAttribute(BugzillaOperation.reassignbycomponent.getInputId()) != null :
                         false;
         } else {
-            boolean before4 = installedVersion != null ? installedVersion.compareMajorMinorOnly(BugzillaVersion.BUGZILLA_4_0) < 0 : false;
             TaskAttribute ta = taskData.getRoot().getAttribute(BugzillaAttribute.SET_DEFAULT_ASSIGNEE.getKey()); 
-            if(before4) {
-                return ta != null;
-            } else {
-                BugzillaAttribute key = BugzillaAttribute.SET_DEFAULT_ASSIGNEE;
-                TaskAttribute operationAttribute = taskData.getRoot().createAttribute(key.getKey());
-                operationAttribute.getMetaData().defaults().setReadOnly(key.isReadOnly()).setKind(key.getKind()).setLabel(key.toString()).setType(key.getType());
-                operationAttribute.setValue("0"); // NOI18N
-                model.attributeChanged(operationAttribute);
-                return true;
-            }     
+            return ta != null;
         }
     }
     

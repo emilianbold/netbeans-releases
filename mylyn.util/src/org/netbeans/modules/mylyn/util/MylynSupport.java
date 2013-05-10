@@ -52,9 +52,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.mylyn.internal.tasks.core.AbstractTask;
 import org.eclipse.mylyn.internal.tasks.core.ITaskListChangeListener;
+import org.eclipse.mylyn.internal.tasks.core.ITaskListRunnable;
 import org.eclipse.mylyn.internal.tasks.core.ITasksCoreConstants;
 import org.eclipse.mylyn.internal.tasks.core.LocalRepositoryConnector;
 import org.eclipse.mylyn.internal.tasks.core.RepositoryModel;
@@ -82,6 +84,8 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.openide.modules.Places;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -90,6 +94,7 @@ import org.openide.util.NbPreferences;
 public class MylynSupport {
 
     private static MylynSupport instance;
+    private static final String BACKUP_SUFFIX = ".backup"; //NOI18N
     private final TaskRepositoryManager taskRepositoryManager;
     private final TaskRepository localTaskRepository;
     private final TaskList taskList;
@@ -106,6 +111,9 @@ public class MylynSupport {
     private static final String PROP_REPOSITORY_CREATION_TIME = "repository.creation.time_"; //NOI18N
     private IRepositoryListener taskRepositoryManagerListener;
     private static final String ATTR_TASK_INCOMING_NEW = "NetBeans.task.unseen"; //NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("MylynSupport", 1, true); //NOI18N
+    private final Task saveTask;
+    private boolean dirty;
 
     public static synchronized MylynSupport getInstance () {
         if (instance == null) {
@@ -139,6 +147,16 @@ public class MylynSupport {
         taskListStorageFile = new File(storagePath, ITasksCoreConstants.DEFAULT_TASK_LIST_FILE);
         taskDataManager.setDataPath(storagePath);
         taskListWriter = new TaskListExternalizer(repositoryModel, taskRepositoryManager);
+        saveTask = RP.create(new Runnable() {
+            @Override
+            public void run () {
+                try {
+                    persist(false);
+                } catch (CoreException ex) {
+                    LOG.log(Level.WARNING, null, ex);
+                }
+            }
+        });
         attachListeners();
     }
 
@@ -178,7 +196,6 @@ public class MylynSupport {
         return localTaskRepository;
     }
 
-    // TODO auto-saving
     public void save () throws CoreException {
         persist(false);
     }
@@ -362,6 +379,15 @@ public class MylynSupport {
         }
     }
 
+    void finish () throws CoreException {
+        taskList.removeChangeListener(taskListListener);
+        synchronized (taskList) {
+            // make sure we save all changes
+            dirty = true;
+        }
+        persist(true);
+    }
+
     private void addTaskRepository (AbstractRepositoryConnector repositoryConnector, TaskRepository taskRepository) {
         if (!taskRepository.getConnectorKind().equals(repositoryConnector.getConnectorKind())) {
             throw new IllegalArgumentException("The given task repository is not managed by the given repository connector");
@@ -408,29 +434,43 @@ public class MylynSupport {
         }
     }
 
-    synchronized void persist (boolean removeUnseenOrphanedTasks) throws CoreException {
+    synchronized void persist (final boolean removeUnseenOrphanedTasks) throws CoreException {
         if (taskListInitialized) {
-            try {
-                if (removeUnseenOrphanedTasks) {
-                    Set<ITask> orphanedUnseenTasks = new HashSet<ITask>();
-                    for (UnmatchedTaskContainer cont : taskList.getUnmatchedContainers()) {
-                        for (ITask task : cont.getChildren()) {
-                            if (task.getSynchronizationState() == ITask.SynchronizationState.INCOMING_NEW
-                                    || Boolean.TRUE.toString().equals(task.getAttribute(ATTR_TASK_INCOMING_NEW))) {
-                                orphanedUnseenTasks.add(task);
+            taskList.run(new ITaskListRunnable() {
+                @Override
+                public void execute (IProgressMonitor monitor) throws CoreException {
+                    boolean save;
+                    synchronized (taskList) {
+                        save = dirty;
+                        dirty = false;
+                    }
+                    if (!save) {
+                        return;
+                    }
+                    try {
+                        if (removeUnseenOrphanedTasks) {
+                            Set<ITask> orphanedUnseenTasks = new HashSet<ITask>();
+                            for (UnmatchedTaskContainer cont : taskList.getUnmatchedContainers()) {
+                                for (ITask task : cont.getChildren()) {
+                                    if (task.getSynchronizationState() == ITask.SynchronizationState.INCOMING_NEW
+                                            || Boolean.TRUE.toString().equals(task.getAttribute(ATTR_TASK_INCOMING_NEW))) {
+                                        orphanedUnseenTasks.add(task);
+                                    }
+                                }
+                            }
+                            for (ITask taskToDelete : orphanedUnseenTasks) {
+                                deleteTask(taskToDelete);
                             }
                         }
-                    }
-                    for (ITask taskToDelete : orphanedUnseenTasks) {
-                        deleteTask(taskToDelete);
+                        taskListStorageFile.getParentFile().mkdirs();
+                        backupTaskList(taskListStorageFile);
+                        taskListWriter.writeTaskList(taskList, taskListStorageFile);
+                    } catch (CoreException ex) {
+                        LOG.log(Level.INFO, null, ex);
+                        throw new CoreException(new Status(ex.getStatus().getSeverity(), ex.getStatus().getPlugin(), "Cannot persist tasklist"));
                     }
                 }
-                taskListStorageFile.getParentFile().mkdirs();
-                taskListWriter.writeTaskList(taskList, taskListStorageFile);
-            } catch (CoreException ex) {
-                LOG.log(Level.INFO, null, ex);
-                throw new CoreException(new Status(ex.getStatus().getSeverity(), ex.getStatus().getPlugin(), "Cannot persist tasklist"));
-            }
+            });
         }
     }
     
@@ -464,6 +504,12 @@ public class MylynSupport {
             @Override
             public void containersChanged (Set<TaskContainerDelta> deltas) {
                 for (TaskContainerDelta delta : deltas) {
+                    if (!delta.isTransient()) {
+                        synchronized (taskList) {
+                            dirty = true;
+                        }
+                        scheduleSave();
+                    }
                     if (delta.getElement() instanceof ITask) {
                         // task added to the tasklist
                         // new tasks (incoming_new) created long ago in the past
@@ -502,5 +548,17 @@ public class MylynSupport {
             setRepositoryCreationTime(repositoryUrl, time);
         }
         return time;
+    }
+
+    private void scheduleSave () {
+        saveTask.schedule(5000);
+    }
+
+    private void backupTaskList (File taskListStorageFile) {
+        if (taskListStorageFile.canWrite()) {
+            File backup = new File(taskListStorageFile.getParentFile(), taskListStorageFile.getName() + BACKUP_SUFFIX);
+            backup.delete();
+            taskListStorageFile.renameTo(backup);
+        }
     }
 }

@@ -1072,7 +1072,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                         newSetups.add(setup);
                     }
                 }
-                Collections.sort(newSetups, new SetupsComparator());
                 return newSetups.toArray(new Setup[newSetups.size()]);
             }
         } catch (HgException.HgCommandCanceledException ex) {
