@@ -48,7 +48,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.browser.api.Page;
 import org.netbeans.modules.web.common.api.DependentFileQuery;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.inspect.PageModel;
@@ -109,18 +108,16 @@ public class Utilities {
     }
 
     /**
-     * Returns the file inspected by the given {@code Page}.
+     * Returns the file inspected by the given {@code PageModel}.
      * 
-     * @param page {@code Page} to retrieve the inspected file from.
+     * @param page {@code PageModel} to retrieve the inspected file from.
      * @return {@code FileObject} that corresponds to the file inspected
-     * by the given {@code Page} or {@code null} when such {@code FileObject}
+     * by the given {@code PageModel} or {@code null} when such {@code FileObject}
      * cannot be found.
      */
-    static FileObject inspectedFileObject(Page page) {
+    static FileObject inspectedFileObject(PageModel page) {
         FileObject fob = null;
-        // PENDING: resolve the following cast (we are not in the webkit
-        // package, we should know nothing about WebKitPageModel)
-        Project project = ((WebKitPageModel)page).getProject();
+        Project project = page.getProject();
         if (project != null) {
             String documentURL = page.getDocumentURL();
             try {
