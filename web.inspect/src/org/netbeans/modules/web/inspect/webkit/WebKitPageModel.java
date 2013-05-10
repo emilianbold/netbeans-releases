@@ -195,11 +195,7 @@ public class WebKitPageModel extends PageModel {
         return project;
     }
 
-    /**
-     * Returns the page context.
-     * 
-     * @return page context.
-     */
+    @Override
     public Lookup getPageContext() {
         return pageContext;
     }
