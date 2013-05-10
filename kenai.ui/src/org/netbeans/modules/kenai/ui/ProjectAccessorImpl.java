@@ -83,7 +83,7 @@ import org.openide.windows.WindowManager;
  * @author Jan Becicka
  */
 @ServiceProvider(service=ProjectAccessor.class)
-public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProject> {
+public class ProjectAccessorImpl extends ProjectAccessor<KenaiProject> {
     
     private static ProjectAccessorImpl instance;
 
@@ -95,10 +95,11 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
     }
 
     @Override
-    public List<ProjectHandle<KenaiProject>> getMemberProjects(KenaiServer server, LoginHandle login, boolean force) {
+    public List<ProjectHandle<KenaiProject>> getMemberProjects(TeamServer server, LoginHandle login, boolean force) {
+        assert server instanceof KenaiServer;
         try {
             LinkedList<ProjectHandle<KenaiProject>> l = new LinkedList<ProjectHandle<KenaiProject>>();
-            for (KenaiProject prj : server.getKenai().getMyProjects(force)) {
+            for (KenaiProject prj : ((KenaiServer)server).getKenai().getMyProjects(force)) {
                 l.add(new ProjectHandleImpl(prj));
                 for (KenaiFeature feature : prj.getFeatures(KenaiService.Type.SOURCE)) {
                     if (KenaiService.Names.SUBVERSION.equals(feature.getService())) {
@@ -125,9 +126,10 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
     }
 
     @Override
-    public ProjectHandle<KenaiProject> getNonMemberProject(KenaiServer server, String projectId, boolean force) {
+    public ProjectHandle<KenaiProject> getNonMemberProject(TeamServer server, String projectId, boolean force) {
+        assert server instanceof KenaiServer;
         try {
-            return new ProjectHandleImpl(server.getKenai().getProject(projectId,force));
+            return new ProjectHandleImpl(((KenaiServer)server).getKenai().getProject(projectId,force));
         } catch (KenaiException ex) {
             Logger.getLogger(ProjectAccessorImpl.class.getName()).log(Level.INFO, "getProject() " + projectId + " failed", ex);
             return null;
@@ -245,7 +247,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiServer, KenaiProje
                 } catch (KenaiException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(project);
+                final DefaultDashboard<KenaiProject> dashboard = KenaiServer.getDashboard(project);
                 dashboard.bookmarkingStarted();
                 Utilities.getRequestProcessor().post(new Runnable() {
                     @Override

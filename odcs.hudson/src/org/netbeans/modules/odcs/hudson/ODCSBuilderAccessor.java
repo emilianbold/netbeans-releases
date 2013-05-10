@@ -733,7 +733,7 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
         private void initRefreshListener() {
             ODCSServer odcsServer = server.get();
             if (odcsServer != null) {
-                DefaultDashboard<ODCSUiServer, ODCSProject> dashboard =
+                DefaultDashboard<ODCSProject> dashboard =
                         ODCSUiServer.forServer(odcsServer).getDashboard();
                 if (dashboard != null) {
                     dashboard.addPropertyChangeListener(

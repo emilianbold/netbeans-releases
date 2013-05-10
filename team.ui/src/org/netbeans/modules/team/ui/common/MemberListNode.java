@@ -63,14 +63,14 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-public class MemberListNode<S extends TeamServer, P> extends SectionNode {
+public class MemberListNode<P> extends SectionNode {
 
     private MessagingHandle msg;
     private PropertyChangeListener l;
     private static final String PROP_MEMBERS = "members"; // NOI18N
-    private final DashboardProvider<S, P> dashboard;
+    private final DashboardProvider<P> dashboard;
 
-    public MemberListNode( ProjectNode<S, P> parent, DashboardProvider<S, P> dashboard ) {
+    public MemberListNode( ProjectNode<P> parent, DashboardProvider<P> dashboard ) {
         super(getText(dashboard.getMessagingAccessor().getMessaging(parent.getProject())),
              parent, PROP_MEMBERS); //NOI18N
         this.dashboard = dashboard;

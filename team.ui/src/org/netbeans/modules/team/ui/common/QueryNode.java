@@ -71,9 +71,9 @@ import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
  *
  * @author S. Aubrecht
  */
-public class QueryNode<S extends TeamServer, P> extends AsynchronousNode<List<QueryResultHandle>> implements PropertyChangeListener {
+public class QueryNode<P> extends AsynchronousNode<List<QueryResultHandle>> implements PropertyChangeListener {
 
-    private final DashboardProvider<S, P> dashboard;
+    private final DashboardProvider<P> dashboard;
     private final QueryHandle query;
     
     private JPanel panel;
@@ -81,7 +81,7 @@ public class QueryNode<S extends TeamServer, P> extends AsynchronousNode<List<Qu
     private List<LinkButton> buttons = new ArrayList<LinkButton>(10);
     private final Object LOCK = new Object();
 
-    public QueryNode( QueryHandle query, TreeListNode parent, DashboardProvider<S, P> dashboard ) {
+    public QueryNode( QueryHandle query, TreeListNode parent, DashboardProvider<P> dashboard ) {
         super(false, parent, query.getDisplayName());
         this.query = query;
         this.dashboard = dashboard;

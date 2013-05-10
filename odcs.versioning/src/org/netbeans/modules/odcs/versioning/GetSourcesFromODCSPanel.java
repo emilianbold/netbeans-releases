@@ -481,7 +481,7 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
                     }
 
                     HashSet<ProjectHandle> projects = new HashSet<ProjectHandle>(ids.size());
-                    ProjectAccessor<ODCSUiServer, ODCSProject> projectAcccessor = server.getDashboard().getDashboardProvider().getProjectAccessor();
+                    ProjectAccessor<ODCSProject> projectAcccessor = server.getDashboard().getDashboardProvider().getProjectAccessor();
                     for (String id : ids) {
                         ProjectHandle handle = projectAcccessor.getNonMemberProject(server, id, false);
                         if (handle != null) {

@@ -73,7 +73,7 @@ import org.openide.util.NbBundle;
  *
  * @author S. Aubrecht
  */
-public class ProjectNode<S extends TeamServer, P> extends TreeListNode {
+public class ProjectNode<P> extends TreeListNode {
 
     private final ProjectHandle project;
     private final ProjectAccessor accessor;
@@ -92,9 +92,9 @@ public class ProjectNode<S extends TeamServer, P> extends TreeListNode {
     private final Object LOCK = new Object();
 
     private final PropertyChangeListener projectListener;
-    private final DefaultDashboard<S, P> dashboard;
+    private final DefaultDashboard<P> dashboard;
 
-    public ProjectNode( final ProjectHandle project, final DefaultDashboard<S, P> dashboard ) {
+    public ProjectNode( final ProjectHandle project, final DefaultDashboard<P> dashboard ) {
         super( true, null );
         if (project==null) {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
@@ -141,7 +141,7 @@ public class ProjectNode<S extends TeamServer, P> extends TreeListNode {
     @Override
     protected List<TreeListNode> createChildren() {
         ArrayList<TreeListNode> children = new ArrayList<TreeListNode>();
-        DashboardProvider<S, P> provider = dashboard.getDashboardProvider();
+        DashboardProvider<P> provider = dashboard.getDashboardProvider();
         children.add( provider.createProjectLinksNode(this, project) ); 
         if( null != provider.getMemberAccessor() ) {
             children.add( new MemberListNode(this, provider) );

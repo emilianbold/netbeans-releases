@@ -122,7 +122,7 @@ class PopupActionsProvider implements PopupMenuProvider {
                             if (project != null) {
                                 if (project.hasTasks()) {
                                     final ProjectHandleImpl pHandle = new ProjectHandleImpl(uiServer, project);
-                                    final DefaultDashboard<ODCSUiServer, ODCSProject> dashboard = uiServer.getDashboard();
+                                    final DefaultDashboard<ODCSProject> dashboard = uiServer.getDashboard();
                                     EventQueue.invokeLater(new Runnable() {
                                         @Override
                                         public void run() {
@@ -153,7 +153,7 @@ class PopupActionsProvider implements PopupMenuProvider {
             });
         }
         
-        protected abstract void performAction (DefaultDashboard<ODCSUiServer, ODCSProject> dashboard, ProjectHandle<ODCSProject> pHandle, ActionEvent e);
+        protected abstract void performAction (DefaultDashboard<ODCSProject> dashboard, ProjectHandle<ODCSProject> pHandle, ActionEvent e);
     }
     
     class LazyFindIssuesAction extends LazyProjectAction {
@@ -164,7 +164,7 @@ class PopupActionsProvider implements PopupMenuProvider {
         }
 
         @Override
-        protected void performAction (DefaultDashboard<ODCSUiServer, ODCSProject> dashboard, ProjectHandle<ODCSProject> pHandle, ActionEvent e) {
+        protected void performAction (DefaultDashboard<ODCSProject> dashboard, ProjectHandle<ODCSProject> pHandle, ActionEvent e) {
             dashboard.getDashboardProvider().getQueryAccessor(ODCSProject.class).getFindIssueAction(pHandle).actionPerformed(e);
         }
     }
@@ -177,7 +177,7 @@ class PopupActionsProvider implements PopupMenuProvider {
         }
 
         @Override
-        protected void performAction (DefaultDashboard<ODCSUiServer, ODCSProject> dashboard, ProjectHandle<ODCSProject> pHandle, ActionEvent e) {
+        protected void performAction (DefaultDashboard<ODCSProject> dashboard, ProjectHandle<ODCSProject> pHandle, ActionEvent e) {
             dashboard.getDashboardProvider().getQueryAccessor(ODCSProject.class).getCreateIssueAction(pHandle).actionPerformed(e);
         }
 
@@ -193,7 +193,7 @@ class PopupActionsProvider implements PopupMenuProvider {
         }
 
         @Override
-        protected void performAction (DefaultDashboard<ODCSUiServer, ODCSProject> dashboard, ProjectHandle<ODCSProject> pHandle, ActionEvent e) {
+        protected void performAction (DefaultDashboard<ODCSProject> dashboard, ProjectHandle<ODCSProject> pHandle, ActionEvent e) {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
