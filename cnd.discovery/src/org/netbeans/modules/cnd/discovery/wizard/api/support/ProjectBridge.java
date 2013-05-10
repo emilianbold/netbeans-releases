@@ -565,14 +565,16 @@ public class ProjectBridge {
         //itemConfiguration.setTool(Tool.CustomTool);
     }
     
-    public static void setHeaderTool(Item item){
+    public static boolean setHeaderTool(Item item){
         ItemConfiguration itemConfiguration = getOrCreateItemConfiguration(item);
         if (itemConfiguration == null) {
-            return;
+            return false;
         }
         if (itemConfiguration.getTool() == PredefinedToolKind.CCCompiler || itemConfiguration.getTool() == PredefinedToolKind.CCompiler) {
             itemConfiguration.setTool(PredefinedToolKind.CustomTool);
+            return true;
         }
+        return false;
     }
 
     private static ItemConfiguration getOrCreateItemConfiguration(Item item) {
