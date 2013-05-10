@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.core.ui.list;
+package org.netbeans.modules.web.browser.ui.picker;
 
 import java.util.Collections;
 import java.util.List;
@@ -52,7 +52,7 @@ import javax.swing.ListSelectionModel;
  *
  * @author S. Aubrecht
  */
-public final class SelectionList {
+final class SelectionList {
 
     private final SelectionListImpl theList;
 
@@ -87,14 +87,6 @@ public final class SelectionList {
             setSelectedItem( selItem );
         }
     }
-
-//    public void setMaximumVisibleItems( int maxVisible ) {
-//
-//    }
-
-//    public void setMaximumWidth( int maxWidth ) {
-//
-//    }
 
     ListSelectionModel getSelectionModel() {
         return theList.getSelectionModel();

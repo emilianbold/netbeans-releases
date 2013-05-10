@@ -43,13 +43,12 @@ package org.netbeans.modules.web.clientproject.ui.customizer;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
@@ -131,15 +130,6 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
     }
 
     private void init() {
-        jBrowserComboBox.setRenderer(BrowserUISupport.createBrowserRenderer());
-        String selectedBrowser = uiProperties.getSelectedBrowser();
-        if (selectedBrowser == null || BrowserUISupport.getBrowser(selectedBrowser) == null) {
-            WebBrowser wb = project.getProjectWebBrowser();
-            if (wb != null) {
-                selectedBrowser = wb.getId();
-            }
-        }
-        jBrowserComboBox.setModel(BrowserUISupport.createBrowserModel(selectedBrowser, false, true));
         updateConfigurationCustomizer();
         // start file
         jFileToRunTextField.setText(uiProperties.getStartFile());
@@ -157,9 +147,11 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
 
     private void initListeners() {
         // config
-        jBrowserComboBox.addActionListener(new ActionListener() {
+        jBrowserComboBox.addItemListener(new ItemListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void itemStateChanged( ItemEvent e ) {
+                if( e.getStateChange() == ItemEvent.DESELECTED )
+                    return;
                 validateAndStore();
             }
         });
@@ -294,7 +286,7 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         jWebRootTextField = new javax.swing.JTextField();
         jWebRootExampleLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jBrowserComboBox = new javax.swing.JComboBox();
+        jBrowserComboBox = createBrowserComboBox();
         jProjectURLLabel = new javax.swing.JLabel();
         jProjectURLTextField = new javax.swing.JTextField();
         jConfigurationPlaceholder = new javax.swing.JPanel();
@@ -485,6 +477,17 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
     @Override
     public void itemStateChanged(ItemEvent e) {
         updateWebRootEnablement();
+    }
+
+    private JComboBox createBrowserComboBox() {
+        String selectedBrowser = uiProperties.getSelectedBrowser();
+        if (selectedBrowser == null || BrowserUISupport.getBrowser(selectedBrowser) == null) {
+            WebBrowser wb = project.getProjectWebBrowser();
+            if (wb != null) {
+                selectedBrowser = wb.getId();
+            }
+        }
+        return BrowserUISupport.createBrowserPickerComboBox( selectedBrowser, false, true );
     }
 
     //~ Inner classes

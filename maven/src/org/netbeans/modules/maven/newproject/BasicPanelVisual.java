@@ -48,7 +48,6 @@ import java.awt.event.WindowFocusListener;
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -62,25 +61,18 @@ import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
 import javax.swing.text.Document;
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.handler.ArtifactHandler;
-import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
 import org.apache.maven.artifact.resolver.ArtifactResolutionException;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
-import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
-import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.maven.api.MavenValidators;
 import org.netbeans.modules.maven.api.archetype.Archetype;
-import org.netbeans.modules.maven.embedder.EmbedderFactory;
-import org.netbeans.modules.maven.embedder.MavenEmbedder;
 import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.indexer.api.RepositoryIndexer;
-import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
 import static org.netbeans.modules.maven.newproject.Bundle.*;
 import org.netbeans.modules.maven.options.MavenOptionController;
@@ -637,7 +629,7 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
             Artifact art = downloadArchetype(arch);
             File fil = art.getFile();
             if (fil.exists()) {
-                Map<String, String> props = ArchetypeWizardUtils.getAdditionalProperties(art);
+                Map<String, String> props = arch.loadRequiredProperties();
                 for (String key : props.keySet()) {
                     String defVal = props.get(key);
                     if ("groupId".equals(key) || "artifactId".equals(key) || "version".equals(key)) {
@@ -681,99 +673,21 @@ public class BasicPanelVisual extends JPanel implements DocumentListener, Window
         }
         return (Archetype) settings.getProperty(MavenWizardIterator.PROP_ARCHETYPE);
     }
-
+    
     @Messages("Handle_Download=Downloading Archetype")
     private Artifact downloadArchetype(Archetype arch) throws ArtifactResolutionException, ArtifactNotFoundException {
-        MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
-        Artifact art = online.createArtifact(
-                arch.getGroupId(), 
-                arch.getArtifactId(), 
-                arch.getVersion(), 
-                "jar", //NOI18N
-                "maven-archetype"); //NOI18N
-        Artifact pom = online.createArtifact(
-                arch.getGroupId(), 
-                arch.getArtifactId(), 
-                arch.getVersion(), 
-                "pom", //NOI18N
-                "pom"); //NOI18N
         
-        //hack to get the right extension for the right packaging without the plugin.
-        art.setArtifactHandler(new ArtifactHandler() {
-            @Override
-            public String getExtension() {
-                return "jar"; //NOI18N
-            }
-            @Override
-            public String getDirectory() {
-                return null;
-            }
-            @Override
-            public String getClassifier() {
-                return null;
-            }
-            @Override
-            public String getPackaging() {
-                return "maven-archetype"; //NOI18N
-            }
-            @Override
-            public boolean isIncludesDependencies() {
-                return false;
-            }
-            @Override
-            public String getLanguage() {
-                return "java"; //NOI18N
-            }
-            @Override
-            public boolean isAddedToClasspath() {
-                return false;
-            }
-        });
-        List<ArtifactRepository> repos;
-        if (arch.getRepository() == null) {
-            repos = Collections.<ArtifactRepository>singletonList(online.createRemoteRepository(RepositorySystem.DEFAULT_REMOTE_REPO_URL, RepositorySystem.DEFAULT_REMOTE_REPO_ID));
-        } else {
-           repos = Collections.<ArtifactRepository>singletonList(online.createRemoteRepository(arch.getRepository(), "custom-repo"));//NOI18N
-           for (RepositoryInfo info : RepositoryPreferences.getInstance().getRepositoryInfos()) {
-                if (arch.getRepository().equals(info.getRepositoryUrl())) {
-                    repos = Collections.<ArtifactRepository>singletonList(online.createRemoteRepository(arch.getRepository(), info.getId()));//NOI18N
-                    break;
-                }
-            }
-        }
         AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(Handle_Download(),
                 new ProgressContributor[] {
                     AggregateProgressFactory.createProgressContributor("zaloha") },  //NOI18N
                 ProgressTransferListener.cancellable(), null);
-        ProgressTransferListener.setAggregateHandle(hndl);
-
-        try {
-            hndl.start();
-
-            synchronized (HANDLE_LOCK) {
-               handle = hndl;
-            }            
-//TODO how to rewrite to track progress?
-//            try {
-//                WagonManager wagon = online.getPlexusContainer().lookup(WagonManager.class);
-//                wagon.setDownloadMonitor(new ProgressTransferListener());
-//            } catch (ComponentLookupException ex) {
-//                Exceptions.printStackTrace(ex);
-//            }
-            online.resolve(pom, repos, online.getLocalRepository());
-            online.resolve(art, repos, online.getLocalRepository());
-        } catch (ThreadDeath d) { // download interrupted
-        } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
-            if (!(ise.getCause() instanceof ThreadDeath)) {
-                throw ise;
-            }
-        } finally {
-            hndl.finish();
-            ProgressTransferListener.clearAggregateHandle();
-        }
+        synchronized (HANDLE_LOCK) {
+           handle = hndl;
+        }        
+        arch.resolveArtifacts(hndl);
         //#154913
-        RepositoryIndexer.updateIndexWithArtifacts(RepositoryPreferences.getInstance().getLocalRepository(), Collections.singletonList(art));
-        return art;
+        RepositoryIndexer.updateIndexWithArtifacts(RepositoryPreferences.getInstance().getLocalRepository(), Collections.singletonList(arch.getArtifact()));
+        return arch.getArtifact();
     }
     
     private TableModel createPropModel() {

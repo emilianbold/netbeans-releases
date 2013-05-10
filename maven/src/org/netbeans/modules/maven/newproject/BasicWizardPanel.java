@@ -58,9 +58,9 @@ public class BasicWizardPanel implements WizardDescriptor.FinishablePanel<Wizard
     private BasicPanelVisual component;
 
     private final boolean isFinish;
-    private boolean additional;
+    private final boolean additional;
     private final ValidationGroup validationGroup;
-    private Archetype arch;
+    private final Archetype arch;
     
     public BasicWizardPanel(ValidationGroup vg, @NullAllowed Archetype arch, boolean isFinish, boolean additional) {
         this.isFinish = isFinish;
@@ -87,7 +87,7 @@ public class BasicWizardPanel implements WizardDescriptor.FinishablePanel<Wizard
     }
 
     public @Override HelpCtx getHelp() {
-        return new HelpCtx(BasicWizardPanel.class);
+        return new HelpCtx("org.netbeans.modules.maven.newproject.BasicWizardPanel");
     }
     
     
