@@ -83,6 +83,7 @@ public class TemplatesAction extends AbstractAction { // XXX could be ActionList
 
     /** Weak reference to the dialog showing singleton Template Manager. */
     private Reference<Dialog> dialogWRef = new WeakReference<Dialog> (null);
+    private Reference<TemplatesPanel> templatesPanelRef = new WeakReference<TemplatesPanel> (null);
     
     public TemplatesAction() {
         putValue(Action.SHORT_DESCRIPTION, NbBundle.getMessage(TemplatesAction.class, "HINT_TemplatesAction")); // NOI18N
@@ -91,10 +92,12 @@ public class TemplatesAction extends AbstractAction { // XXX could be ActionList
     public @Override void actionPerformed(ActionEvent evt) {
         
         Dialog dialog = dialogWRef.get ();
+        String pathToSelect = System.getProperty("org.netbeans.modules.favorites.templates.TemplatesAction.preselect");
+        System.clearProperty("org.netbeans.modules.favorites.templates.TemplatesAction.preselect");
 
         if (dialog == null || ! dialog.isShowing ()) {
 
-            final TemplatesPanel tp = new TemplatesPanel ();
+            final TemplatesPanel tp = new TemplatesPanel (pathToSelect);
             JButton closeButton = new JButton ();
             Mnemonics.setLocalizedText (closeButton, NbBundle.getMessage (TemplatesAction.class, "BTN_TemplatesPanel_CloseButton")); // NOI18N
             JButton openInEditor = new JButton ();
@@ -118,8 +121,15 @@ public class TemplatesAction extends AbstractAction { // XXX could be ActionList
             dialog = DialogDisplayer.getDefault ().createDialog (dd);
             dialog.setVisible (true);
             dialogWRef = new WeakReference<Dialog> (dialog);
+            templatesPanelRef = new WeakReference<TemplatesPanel>(tp);
             
         } else {
+            if (pathToSelect != null) {
+                TemplatesPanel tp = templatesPanelRef.get();
+                if (tp != null) {
+                    tp.select(pathToSelect);
+                }
+            }
             dialog.toFront ();
         }
         

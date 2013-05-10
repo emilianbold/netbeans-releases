@@ -150,6 +150,11 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
 
     /** Creates new form TemplatesPanel */
     public TemplatesPanel () {
+        this(null);
+    }
+    
+    /** Creates new form TemplatesPanel */
+    public TemplatesPanel (String pathToSelect) {
         
         ActionMap map = getActionMap ();
         map.put (DefaultEditorKit.copyAction, ExplorerUtils.actionCopy (getExplorerManager ()));
@@ -162,7 +167,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         treePanel.add (view, BorderLayout.CENTER);
         
         associateLookup (ExplorerUtils.createLookup (getExplorerManager (), map));
-        initialize ();
+        initialize (pathToSelect);
         
     }
     
@@ -235,7 +240,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         }
     }
     
-    private void initialize () {
+    private void initialize (final String pathToSelect) {
         getExplorerManager ().setRootContext (getTemplateRootNode ());
         getExplorerManager ().addPropertyChangeListener (new SelectionListener ());
         deleteButton.setEnabled (false);
@@ -247,10 +252,22 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         SwingUtilities.invokeLater (new Runnable () {
             @Override public void run() {
                 Node[] nodes = templatesRootNode.getChildren ().getNodes(true);
+                Node nodeToSelect = null;
+                if (pathToSelect != null) {
+                    nodeToSelect = getTemplateNode(pathToSelect);
+                }
                 if (nodes.length > 0) {
-                    Node firstNode = nodes[0];
+                    Node firstNode;
+                    if (nodeToSelect != null) {
+                        firstNode = nodeToSelect;
+                    } else {
+                        firstNode = nodes[0];
+                    }
                     try {
                         manager.setSelectedNodes (new Node[]{firstNode});
+                        if (nodeToSelect != null) {
+                            view.expandNode(nodeToSelect);
+                        }
                     } catch (PropertyVetoException ex) {
                         Logger.getLogger(TemplatesPanel.class.getName()).log(Level.FINE, ex.getLocalizedMessage (), ex);
                     }
@@ -260,6 +277,23 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
                         view.requestFocus ();
                     }
                 });
+            }
+        });
+    }
+    
+    void select(String path) {
+        Node nodeToSelect = getTemplateNode(path);
+        if (nodeToSelect != null) {
+            try {
+                manager.setSelectedNodes (new Node[]{ nodeToSelect });
+                view.expandNode(nodeToSelect);
+            } catch (PropertyVetoException ex) {
+                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.FINE, ex.getLocalizedMessage (), ex);
+            }
+        }
+        SwingUtilities.invokeLater (new Runnable () {
+            @Override public void run() {
+                view.requestFocus ();
             }
         });
     }
@@ -1179,6 +1213,16 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     private static Node getTemplateNode(FileObject fo) {
         FileObject rootFO = getTemplateRootNode().getLookup().lookup(FileObject.class);
         if (FileUtil.isParentOf(rootFO, fo)) {
+            return getTemplateNode(fo, rootFO);
+        } else {
+            return null;
+        }
+    }
+    
+    private static Node getTemplateNode(String path) {
+        FileObject rootFO = getTemplateRootNode().getLookup().lookup(FileObject.class);
+        FileObject fo = rootFO.getFileObject(path);
+        if (fo != null) {
             return getTemplateNode(fo, rootFO);
         } else {
             return null;
