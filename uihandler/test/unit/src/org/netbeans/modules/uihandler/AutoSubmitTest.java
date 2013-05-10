@@ -151,8 +151,8 @@ public class AutoSubmitTest extends NbTestCase {
             //Installer.writeOut(r);
             MemoryURL.registerURL("memory://auto.html", utf8);
             LogRecord r = new LogRecord(Level.INFO, "MSG_SOMETHING"+i);
-            r.setLoggerName("org.netbeans.ui.anything");
-            Logger.getLogger("org.netbeans.ui.anything").log(r);
+            r.setLoggerName(Installer.UI_LOGGER_NAME + ".anything");
+            Logger.getLogger(Installer.UI_LOGGER_NAME + ".anything").log(r);
         }
         UIHandler.waitFlushed();
         

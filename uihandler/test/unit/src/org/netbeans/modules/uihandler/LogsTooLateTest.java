@@ -86,7 +86,7 @@ public class LogsTooLateTest extends NbTestCase {
         assertEquals("no logs", 0, InstallerTest.getLogsSize());
         installer.closing();
         installer.close();
-        Logger.getLogger("org.netbeans.ui.anything").warning("Ahoj");
+        Logger.getLogger(Installer.UI_LOGGER_NAME + ".anything").warning("Ahoj");
         
         assertEquals("one logger received", 1, InstallerTest.getLogsSize());
     }

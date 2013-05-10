@@ -69,7 +69,7 @@ public class ScreenSizeTest extends NbTestCase {
     }
 
     public void testScreenResolutionLogging() {
-        Logger logger = Logger.getLogger("org.netbeans.ui");
+        Logger logger = Logger.getLogger(Installer.UI_LOGGER_NAME);
         logger.setLevel(Level.ALL);
         logger.addHandler(new Handler() {
 

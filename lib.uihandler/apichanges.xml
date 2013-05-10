@@ -47,11 +47,45 @@ made subject to such option by the copyright holder.
 
 <apichanges>
 <apidefs>
-<apidef name="uihandler">UI Handler Library</apidef>
+<apidef name="uihandlerLib">UI Handler Library</apidef>
 </apidefs>
 <changes>
+    <change id="MovedToPlatform">
+      <api name="uihandlerLib"/>
+      <summary>UI Handler Library module is moved to NetBeans platform cluster</summary>
+      <version major="1" minor="37"/>
+      <date day="10" month="5" year="2013"/>
+      <author login="mentlicher"/>
+      <compatibility addition="yes" modification="yes" binary="incompatible" source="incompatible" semantic="incompatible" deprecation="no" deletion="yes"/>
+      <description>
+          The module is moved to platform cluster and friend API is changed to
+          public API. However, not all classes, that were exposed via friend
+          API are exposed via public API.
+          Following classes are made public:
+          <ul>
+              <li><code>BugTrackingAccessor</code> (renamed from NBBugzillaAccessor)</li>
+              <li><code>Decorable</code></li>
+              <li><code>InputGesture</code></li>
+              <li><code>LogRecords</code></li>
+              <li><code>PasswdEncryption</code></li>
+          </ul>
+          Following classes, that were a part of friend API are not public:
+          <ul>
+              <li><code>Decorations</code></li>
+              <li><code>MultiPartHandler</code></li>
+              <li><code>NBBugzillaAccessor)</code></li>
+              <li><code>ProjectOp</code></li>
+          </ul>
+      </description>
+      <class package="org.netbeans.lib.uihandler" name="BugTrackingAccessor"/>
+      <class package="org.netbeans.lib.uihandler" name="Decorable"/>
+      <class package="org.netbeans.lib.uihandler" name="InputGesture"/>
+      <class package="org.netbeans.lib.uihandler" name="LogRecords"/>
+      <class package="org.netbeans.lib.uihandler" name="PasswdEncryption"/>
+      <issue number="229019"/>
+    </change>
     <change id="ProjectOp.isStartup">
-      <api name="uihandler"/>
+      <api name="uihandlerLib"/>
       <summary>ProjectOp now recognizes info about startup as well</summary>
       <version major="1" minor="16"/>
       <date day="17" month="6" year="2008"/>
@@ -64,7 +98,7 @@ made subject to such option by the copyright holder.
       <class package="org.netbeans.lib.uihandler" name="ProjectOp"/>
     </change>    
     <change id="LogRecords.decorate">
-      <api name="uihandler"/>
+      <api name="uihandlerLib"/>
       <summary>LogRecords.decorate extracts UI info about LogRecords</summary>
       <version major="1" minor="13"/>
       <date day="30" month="7" year="2007"/>
@@ -77,7 +111,7 @@ made subject to such option by the copyright holder.
       <class package="org.netbeans.lib.uihandler" name="Decorable"/>
     </change>    
     <change id="LogRecords.scan.gzip">
-      <api name="uihandler"/>
+      <api name="uihandlerLib"/>
       <summary>LogRecords.scan is able to recognize and read GZIP</summary>
       <version major="1" minor="10"/>
       <date day="17" month="4" year="2007"/>
@@ -89,7 +123,7 @@ made subject to such option by the copyright holder.
       <class package="org.netbeans.lib.uihandler" name="LogRecords"/>
     </change>    
     <change id="LogRecords.read">
-      <api name="uihandler"/>
+      <api name="uihandlerLib"/>
       <summary>LogRecords.read removed</summary>
       <version major="1" minor="9"/>
       <date day="10" month="3" year="2007"/>

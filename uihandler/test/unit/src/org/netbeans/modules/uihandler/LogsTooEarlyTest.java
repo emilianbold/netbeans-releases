@@ -105,7 +105,7 @@ public class LogsTooEarlyTest extends NbTestCase {
     }
 
     public void testLogsReceivedOnStartup() throws Exception {
-        Logger.getLogger("org.netbeans.ui.anything").warning("Ahoj");
+        Logger.getLogger(Installer.UI_LOGGER_NAME + ".anything").warning("Ahoj");
 
         installer.restored();
         

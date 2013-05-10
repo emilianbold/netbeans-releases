@@ -29,7 +29,7 @@
  * Copyright 2006 Sun Microsystems, Inc. All rights reserved.
  */
 
-package org.netbeans.lib.uihandlerserver;
+package org.netbeans.lib.uihandler;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

@@ -178,7 +178,9 @@ public class Installer extends ModuleInstall implements Runnable {
 
     private String cmd;
 
-    static final String METRICS_LOGGER_NAME = "org.netbeans.ui.metrics"; // NOI18N
+    static final String METRICS_LOGGER_NAME = NbBundle.getMessage(Installer.class, "METRICS_LOGGER_NAME");
+    static final String UI_LOGGER_NAME = NbBundle.getMessage(Installer.class, "UI_LOGGER_NAME");
+    static final String UI_PERFORMANCE_LOGGER_NAME = NbBundle.getMessage(Installer.class, "UI_PERFORMANCE_LOGGER_NAME");
     private static Pattern ENCODING = Pattern.compile(
         "<meta.*http-equiv=['\"]Content-Type['\"]" +
         ".*content=.*charset=([A-Za-z0-9\\-]+)['\"]>", Pattern.CASE_INSENSITIVE
@@ -229,7 +231,7 @@ public class Installer extends ModuleInstall implements Runnable {
     @Override
     public void restored() {
         TimeToFailure.logAction();
-        Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
+        Logger log = Logger.getLogger(UI_LOGGER_NAME);
         log.setUseParentHandlers(false);
         log.setLevel(Level.FINEST);
         log.addHandler(ui);
@@ -292,7 +294,7 @@ public class Installer extends ModuleInstall implements Runnable {
     }
     
     private void logIdeStartup() {
-        Logger.getLogger("org.netbeans.ui").log(new LogRecord(Level.CONFIG, IDE_STARTUP));
+        Logger.getLogger(UI_LOGGER_NAME).log(new LogRecord(Level.CONFIG, IDE_STARTUP));
     }
 
     private void usageStatisticsReminder () {
@@ -402,7 +404,7 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     public final void doClose() {
-        Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
+        Logger log = Logger.getLogger(UI_LOGGER_NAME);
         log.removeHandler(ui);
         Logger all = Logger.getLogger(""); // NOI18N
         all.removeHandler(handler);
@@ -985,7 +987,7 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     static void logDeactivated(){
-        Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
+        Logger log = Logger.getLogger(UI_LOGGER_NAME);
         for (Deactivated a : Lookup.getDefault().lookupAll(Deactivated.class)) {
             a.deactivated(log);
         }
@@ -2106,10 +2108,13 @@ public class Installer extends ModuleInstall implements Runnable {
 
         private static String getVersion(){
             String str = ""; // NOI18N
+            String versionResourceBundle = NbBundle.getMessage(Installer.class, "ApplicationVersionResourceBundle");    // NOI18N
+            String versionResourceKey = NbBundle.getMessage(Installer.class, "ApplicationVersionResourceKey");          // NOI18N
+            String sysPropertyVersionResourceArg = NbBundle.getMessage(Installer.class, "ApplicationVersionSysPropertyResourceArg");// NOI18N
             try {
                 str = MessageFormat.format(
-                        NbBundle.getBundle("org.netbeans.core.startup.Bundle").getString("currentVersion"), // NOI18N
-                        new Object[] {System.getProperty("netbeans.buildnumber")} // NOI18N
+                        NbBundle.getBundle(versionResourceBundle).getString(versionResourceKey),
+                        new Object[] {System.getProperty(sysPropertyVersionResourceArg)}
                 );
             } catch (MissingResourceException ex) {
                 LOG.log(Level.FINE, ex.getMessage(), ex);

@@ -84,7 +84,7 @@ public class ActivatedDeativatedTest extends NbTestCase {
     }
     
     public void testActivatedAndDeativated() {
-        CharSequence log = Log.enable("org.netbeans.ui", Level.ALL);
+        CharSequence log = Log.enable(Installer.UI_LOGGER_NAME, Level.ALL);
         
         o.restored();
         if (log.toString().indexOf("A start") == -1) {
