@@ -95,7 +95,7 @@ made subject to such option by the copyright holder.
           Recognizes info about loaded projects on startup and adds new method
           that can query for that.
       </description>
-      <class package="org.netbeans.lib.uihandler" name="ProjectOp"/>
+      <!--class package="org.netbeans.lib.uihandler" name="ProjectOp"/ ProjectOp is not public now. -->
     </change>    
     <change id="LogRecords.decorate">
       <api name="uihandlerLib"/>
