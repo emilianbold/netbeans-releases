@@ -290,7 +290,7 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
             
             if (allTasks && process) {
                 filteredErrors = 
-                    (List<Error>)ErrorFilterQuery.getFilteredErrors(gsfParserResult,  ErrorFilter.FEATURE_TASKLIST); // NOI18N
+                    new ArrayList<Error>(ErrorFilterQuery.getFilteredErrors(gsfParserResult,  ErrorFilter.FEATURE_TASKLIST)); // NOI18N
             } else {
                 filteredErrors = new ArrayList<Error>();
             }
