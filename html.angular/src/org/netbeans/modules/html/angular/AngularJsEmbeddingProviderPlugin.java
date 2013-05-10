@@ -43,13 +43,12 @@ package org.netbeans.modules.html.angular;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.html.angular.model.AngularModel;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
@@ -85,8 +84,13 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     private List<Embedding> embeddings;
     private JsIndex index;
 
+    /** keeps mapping from simple property name to the object fqn 
+     */
+    private HashMap<String, String> propertyToFqn;
+    
     public AngularJsEmbeddingProviderPlugin() {
         this.stack = new LinkedList();
+        this.propertyToFqn = new HashMap();
     }
 
     @Override
@@ -114,7 +118,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     @Override
     public boolean processToken() {
         boolean processed = false;
-        CharSequence tokenText = tokenSequence.token().text();
+        CharSequence tokenText = tokenSequence.token().text();        
         switch (tokenSequence.token().id()) {
             case TAG_OPEN:
                 lastTagOpen = tokenText.toString();
@@ -145,18 +149,33 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 if (processArgumentValue) {
                     String value = WebUtils.unquotedValue(tokenText);
                     StringBuilder sb = new StringBuilder();
-                    sb.append("(function () { // generated function for scope ");
-                    sb.append(value).append("\n");
-
-                    Collection<IndexedElement> properties = index.getProperties(value + ".$scope");
+                    sb.append("(function () { // generated function for scope ");   //NOI18N
+                    sb.append(value).append("\n");  //NOI18N
+                    embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
+                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, value.length(), Constants.JAVASCRIPT_MIMETYPE));
+                    sb = new StringBuilder();
+                    sb.append("();\n"); //NOI18N
+                    Collection<IndexedElement> properties = index.getProperties(value + ".$scope"); //NOI18N
                     for (IndexedElement indexedElement : properties) {
-
-                        sb.append("var ");
+                        propertyToFqn.put(indexedElement.getName(), value);
+                        sb.append("var ");  //NOI18N
                         sb.append(indexedElement.getName());
 
                         switch (indexedElement.getJSKind()) {
                             case METHOD:
-                                sb.append(" = function(){}");
+                                IndexedElement.FunctionIndexedElement function = (IndexedElement.FunctionIndexedElement)indexedElement;
+                                sb.append(" = function(");  //NOI18N
+                                boolean first = true;
+                                for (String param : function.getParameters().keySet()) {
+                                    if (!first) {
+                                        sb.append(", ");    //NOI18N
+                                    } else {
+                                        first = false;
+                                    }
+                                    sb.append(param);
+                                }
+                                
+                                sb.append("){}");   //NOI18N
                                 break;
 
                             default:
@@ -167,12 +186,13 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                                     //use the last assignment
                                     TypeUsage typeUsage = typeUsages.get(typeUsages.size() - 1);
                                     String type = typeUsage.getType();
-                                    sb.append(" = new ");
+                                    sb.append(" = new ");   //NOI18N
                                     sb.append(type);
+                                    sb.append("()");    //NOI18N
 
                                 }
                         }
-                        sb.append(";\n");
+                        sb.append(";\n");   //NOI18N
                     }
 
                     embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
@@ -180,6 +200,28 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     stack.push(new StackItem(lastTagOpen));
                 }
                 break;
+            case EL_OPEN_DELIMITER:
+                if (tokenSequence.moveNext()) {
+                    if (tokenSequence.token().id() == HTMLTokenId.EL_CONTENT) {
+                        String value = tokenSequence.token().text().toString().trim();
+                        String name = value;
+                        int parenIndex = name.indexOf('('); //NOI18N
+                        if (parenIndex > -1) {
+                            name = name.substring(0, parenIndex);
+                        }
+                        if (propertyToFqn.containsKey(name)) {
+                            embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                            embeddings.add(snapshot.create(tokenSequence.offset(), value.length(), Constants.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                            processed = true;
+                        } else {
+                            tokenSequence.movePrevious();
+                        }
+                    } else {
+                        tokenSequence.movePrevious();
+                    }
+                }
+                break;    
             default:
         }
         return processed;
