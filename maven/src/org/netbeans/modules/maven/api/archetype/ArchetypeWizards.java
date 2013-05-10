@@ -58,7 +58,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 
 /**
- * Utilities for creating New Project wizards based on maven-archetyoe-plugin.
+ * Utilities for creating New Project wizards based on maven-archetype-plugin.
  */
 public class ArchetypeWizards {
 

@@ -130,11 +130,7 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
                 }
                 @Override
                 public void setSeen(BugzillaIssue issue, boolean uptodate) {
-                    if (uptodate) {
-                        // makes no sense, IssueAction marks issue seen                        
-                    } else {
-                        issue.setUpToDate(uptodate);
-                    }
+                    issue.setUpToDate(uptodate);
                 }
                 @Override
                 public void removePropertyChangeListener(BugzillaIssue issue, PropertyChangeListener listener) {

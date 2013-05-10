@@ -47,10 +47,18 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
+import org.apache.maven.artifact.resolver.ArtifactNotFoundException;
+import org.apache.maven.artifact.resolver.ArtifactResolutionException;
+import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
+import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
+import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.maven.api.MavenValidators;
+import org.netbeans.modules.maven.api.archetype.Archetype;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
+import org.netbeans.modules.maven.embedder.exec.ProgressTransferListener;
 import org.netbeans.modules.maven.indexer.api.NBVersionInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryInfo;
 import org.netbeans.modules.maven.indexer.api.RepositoryPreferences;
@@ -64,6 +72,7 @@ import org.netbeans.validation.api.builtin.stringvalidation.StringValidators;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.netbeans.validation.api.ui.swing.SwingValidationGroup;
 import org.openide.WizardDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
@@ -83,13 +92,18 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
     private ValidationGroup vgEnabled = ValidationGroup.create();
     boolean isApp = false;
     private boolean isLoaded = false;
+    private AggregateProgressHandle handle;
+    private final Object HANDLE_LOCK = new Object();
+    
 
     @SuppressWarnings("unchecked") // SIMPLEVALIDATION-48
-    @Messages("ADD_Module_Name=NetBeans Module ArtifactId")
+    @Messages({"ADD_Module_Name=NetBeans Module ArtifactId", 
+             "Handle_Download=Downloading Archetype"})
     public NbmWizardPanelVisual(NbmWizardPanel panel) {
         this.panel = panel;
         initComponents();
-        isApp = NbmWizardIterator.NB_APP_ARCH.equals(panel.getArchetype());
+        final Archetype arch = panel.getArchetype();
+        isApp = NbmWizardIterator.NB_APP_ARCH.equals(arch);
         if (isApp) {
             vg.add(txtAddModule, ValidatorUtils.merge(
                     MavenValidators.createArtifactIdValidators(),
@@ -138,6 +152,47 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
                         versions.add(version.getVersion());
                     }
                     versions.add("SNAPSHOT"); // NOI18N
+                    if (result.isPartial() || versions.size() == 1) {
+                        RP.post(new Runnable() {
+                            //download archetype to figure the default value of the netbeansVersion parameter.
+                            @Override
+                            public void run() {
+                                AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(Handle_Download(),
+                                        new ProgressContributor[]{
+                                            AggregateProgressFactory.createProgressContributor("zaloha")}, //NOI18N
+                                        ProgressTransferListener.cancellable(), null);
+                                synchronized (HANDLE_LOCK) {
+                                    handle = hndl;
+                                }
+
+                                try {
+                                    arch.resolveArtifacts(hndl);
+                                    Map<String, String> props = arch.loadRequiredProperties();
+                                    String def = props.get("netbeansVersion");
+                                    final List<String> versions3 = new ArrayList<String>();
+                                    if (def != null) {
+                                        versions3.add(def);
+                                    }
+                                    versions3.add("SNAPSHOT");
+                                    if (result.isPartial()) {
+                                        versions3.add(SEARCHING);
+                                    }
+                                    EventQueue.invokeLater(new Runnable() {
+                                        public @Override
+                                        void run() {
+                                            versionCombo.setModel(new DefaultComboBoxModel(versions3.toArray()));
+                                            versionComboActionPerformed(null);
+                                        }
+                                    });
+                                } catch (ArtifactResolutionException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } catch (ArtifactNotFoundException ex) {
+                                    Exceptions.printStackTrace(ex);
+                                } finally {
+                                }
+                            }
+                        });
+                    }
                     if (result.isPartial()) {
                         versions.add(SEARCHING);
                         //we return the values we have and schedule retrieval of the rest.
@@ -289,6 +344,13 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
 
 
      void store(WizardDescriptor d) {
+        synchronized (HANDLE_LOCK) {
+            if (handle != null) {
+                handle.finish();
+                handle = null;
+            }
+        }        
+         
         d.putProperty(NbmWizardIterator.OSGIDEPENDENCIES, Boolean.valueOf(cbOsgiDeps.isSelected()));
          if (isApp) {
              if (cbAddModule.isSelected()) {
@@ -313,6 +375,13 @@ public class NbmWizardPanelVisual extends javax.swing.JPanel {
     }
 
     void read(WizardDescriptor d) {
+        synchronized (HANDLE_LOCK) {
+            if (handle != null) {
+                handle.finish();
+                handle = null;
+            }
+        }        
+        
         Boolean b = (Boolean) d.getProperty(NbmWizardIterator.OSGIDEPENDENCIES);
         if (b != null) {
             cbOsgiDeps.setSelected(b.booleanValue());

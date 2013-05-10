@@ -50,6 +50,9 @@ import org.netbeans.modules.css.visual.api.CssStylesTC;
 import org.netbeans.modules.web.browser.api.Page;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
@@ -63,7 +66,7 @@ import org.openide.windows.WindowManager;
  * @author mfukala@netbeans.org
  * @author Jan Stola
  */
-public class CssStylesTCController implements PropertyChangeListener {
+public class CssStylesTCController implements PropertyChangeListener, LookupListener {
 
     private static final RequestProcessor RP = new RequestProcessor(CssStylesTCController.class);
     
@@ -82,12 +85,10 @@ public class CssStylesTCController implements PropertyChangeListener {
         Registry reg = WindowManager.getDefault().getRegistry();
         reg.addPropertyChangeListener(
                 WeakListeners.propertyChange(this, reg));
-        
-        PageInspector pageInspector = PageInspector.getDefault();
-        //can be null if the IDE has weird setup - Lookup.getDefault().lookup(PageInspector.class) returns no instance.
-        if(pageInspector != null) {
-            pageInspector.addPropertyChangeListener(this);
-        }
+
+        Lookup.Result<PageInspector> lookupResult = Lookup.getDefault().lookupResult(PageInspector.class);
+        lookupResult.addLookupListener(this);
+        resultChanged(new LookupEvent(lookupResult));
 
         //called from CssCaretAwareSourceTask constructor when the caret is set to a css source code
         //for the first time, which means if we initialize the window listener now, we won't get the component
@@ -164,4 +165,15 @@ public class CssStylesTCController implements PropertyChangeListener {
     private TopComponentGroup getCssStylesTCGroup() {
         return WindowManager.getDefault().findTopComponentGroup("CssStyles"); //NOI18N
     }
+
+    @Override
+    public final void resultChanged(LookupEvent ev) {
+        PageInspector pageInspector = PageInspector.getDefault();
+        if (pageInspector != null) {
+            Lookup.Result lookupResult = (Lookup.Result)ev.getSource();
+            lookupResult.removeLookupListener(this);
+            pageInspector.addPropertyChangeListener(this);
+        }
+    }
+
 }

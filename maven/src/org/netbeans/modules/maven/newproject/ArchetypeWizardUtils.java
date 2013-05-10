@@ -44,7 +44,6 @@ package org.netbeans.modules.maven.newproject;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -53,12 +52,9 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.jar.JarFile;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
-import java.util.zip.ZipEntry;
-import org.apache.maven.artifact.Artifact;
 import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
@@ -82,12 +78,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /**
  * @author mkleint
@@ -155,48 +145,8 @@ public class ArchetypeWizardUtils {
         ExecutorTask task = RunUtils.executeMaven(config); //NOI18N
         task.result();
     }
-
-    static Map<String, String> getAdditionalProperties(Artifact art) {
-        HashMap<String, String> map = new HashMap<String, String>();
-        File fil = art.getFile();
-        JarFile jf = null;
-        try {
-            jf = new JarFile(fil);
-            ZipEntry entry = jf.getJarEntry("META-INF/maven/archetype-metadata.xml");//NOI18N
-            if (entry == null) {
-                entry = jf.getJarEntry("META-INF/maven/archetype.xml");//NOI18N
-            }
-            if (entry != null) {
-                // http://maven.apache.org/archetype/maven-archetype-plugin/specification/archetype-metadata.html
-                InputStream in = jf.getInputStream(entry);
-                try {
-                    Document doc = XMLUtil.parse(new InputSource(in), false, false, XMLUtil.defaultErrorHandler(), null);
-                    NodeList nl = doc.getElementsByTagName("requiredProperty"); // NOI18N
-                    for (int i = 0; i < nl.getLength(); i++) {
-                        Element rP = (Element) nl.item(i);
-                        Element dV = XMLUtil.findElement(rP, "defaultValue", null); // NOI18N
-                        map.put(rP.getAttribute("key"), dV != null ? XMLUtil.findText(dV) : null); // NOI18N
-                    }
-                } finally {
-                    in.close();
-                }
-            }
-        } catch (IOException ex) {
-            LOG.log(Level.INFO, ex.getMessage(), ex);
-            //TODO should we do someting like delete the non-zip file? with the exception thrown the download failed?
-        } catch (SAXException ex) {
-            LOG.log(Level.INFO, ex.getMessage(), ex);
-        } finally {
-            if (jf != null) {
-                try {
-                    jf.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        }
-        return map;
-    }
+    
+   
 
     /**
      * Instantiates archetype stored in given wizard descriptor.

@@ -132,6 +132,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     public static final String RESOLVE_FIXED = "FIXED";                                                         // NOI18N
     public static final String RESOLVE_DUPLICATE = "DUPLICATE";                                                 // NOI18N
     public static final String VCSHOOK_BUGZILLA_FIELD = "netbeans.vcshook.bugzilla.";                           // NOI18N
+    public static final String ATTR_NEW_UNREAD = "NetBeans.bugzilla.markedNewUnread"; //NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");            // NOI18N
 
     private Reference<TaskData> repositoryDataRef;
@@ -197,6 +198,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     private static final Object MODEL_LOCK = new Object();
     private TaskDataModelListener list;
     private final Task repositoryTaskDataLoaderTask;
+    private boolean readPending;
 
     public BugzillaIssue (ITask task, BugzillaRepository repo) {
         this.task = task;
@@ -240,15 +242,18 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
             }
             model = null;
         }
+        MylynSupport mylynSupp = MylynSupport.getInstance();
+        mylynSupp.removeTaskDataListener(this);
+        mylynSupp.removeTaskListListener(this);
         getRepository().deleteTask(task);
     }
 
     void markNewRead () {
-        task.setAttribute("NetBeans.markedNewRead", "1"); // NOI18N
+        task.setAttribute(ATTR_NEW_UNREAD, null);
     }
 
-    boolean isMarkedNewRead () {
-        return "1".equals(task.getAttribute("NetBeans.markedNewRead")); // NOI18N
+    boolean isMarkedNewUnread () {
+        return isNew() && Boolean.TRUE.toString().equals(task.getAttribute(ATTR_NEW_UNREAD));
     }
     
     private void fireSeenChanged(boolean wasSeen, boolean seen) {
@@ -278,13 +283,17 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
             public void run () {
                 if (task.getSynchronizationState() == ITask.SynchronizationState.INCOMING_NEW) {
                     // mark as seen so no fields are highlighted
-                    setUpToDate(true);
+                    setUpToDate(true, false);
                 }
                 // clear upon close
                 synchronized (MODEL_LOCK) {
+                    if (readPending) {
+                        // make sure remote changes are not lost and still highlighted in the editor
+                        setUpToDate(false, false);
+                    }
                     model = MylynSupport.getInstance().getTaskDataModel(task);
+                    model.addModelListener(list);
                 }
-                model.addModelListener(list);
                 ensureConfigurationUptodate();
                 refreshViewData(true);
             }
@@ -299,26 +308,33 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getID()});
     }
 
-    void closed() {
+    void closed () {
         final NetBeansTaskDataModel m = model;
+        final boolean markedAsNewUnread = isMarkedNewUnread();
         if (m != null) {
             if (list != null) {
                 m.removeModelListener(list);
                 list = null;
             }
+            readPending = false;
             Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
                 @Override
                 public void run () {
-                    synchronized (MODEL_LOCK) {
-                        if (model == m) {
-                            model = null;
+                    if (markedAsNewUnread) {
+                        // was not modified by user and not yet saved
+                        deleteTask();
+                    } else {
+                        synchronized (MODEL_LOCK) {
+                            if (model == m) {
+                                model = null;
+                            }
                         }
-                    }
-                    if (m.isDirty()) {
-                        try {
-                            save(m);
-                        } catch (CoreException ex) {
-                            Bugzilla.LOG.log(Level.WARNING, null, ex);
+                        if (m.isDirty()) {
+                            try {
+                                save(m);
+                            } catch (CoreException ex) {
+                                Bugzilla.LOG.log(Level.WARNING, null, ex);
+                            }
                         }
                     }
                 }
@@ -764,7 +780,11 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         }
         TaskData taskData = model.getTaskData();
         TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
-        if(a == null) {
+        if (a == null) {
+            if (f == IssueField.REASSIGN_TO_DEFAULT) {
+                setOperation(BugzillaOperation.reassignbycomponent);
+                return;
+            }
             a = new TaskAttribute(taskData.getRoot(), f.getKey());
         }
         if(f == IssueField.PRODUCT) {
@@ -920,18 +940,8 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
                         taskData.getRoot().getMappedAttribute(BugzillaOperation.reassignbycomponent.getInputId()) != null :
                         false;
         } else {
-            boolean before4 = installedVersion != null ? installedVersion.compareMajorMinorOnly(BugzillaVersion.BUGZILLA_4_0) < 0 : false;
             TaskAttribute ta = taskData.getRoot().getAttribute(BugzillaAttribute.SET_DEFAULT_ASSIGNEE.getKey()); 
-            if(before4) {
-                return ta != null;
-            } else {
-                BugzillaAttribute key = BugzillaAttribute.SET_DEFAULT_ASSIGNEE;
-                TaskAttribute operationAttribute = taskData.getRoot().createAttribute(key.getKey());
-                operationAttribute.getMetaData().defaults().setReadOnly(key.isReadOnly()).setKind(key.getKind()).setLabel(key.toString()).setType(key.getType());
-                operationAttribute.setValue("0"); // NOI18N
-                model.attributeChanged(operationAttribute);
-                return true;
-            }     
+            return ta != null;
         }
     }
     
@@ -1190,7 +1200,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
                 StatusDisplayer.getDefault().setStatusText(Bundle.MSG_BugzillaIssue_statusBar_submitted(
                         getDisplayName()));
 
-                setUpToDate(true);
+                setUpToDate(true, false);
                 result[0] = true;
             }
             
@@ -1315,8 +1325,20 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         return null;
     }
 
-    public void setUpToDate(boolean seen) {
-        MylynSupport.getInstance().markTaskSeen(task, seen);
+    public void setUpToDate (boolean seen) {
+        setUpToDate(seen, true);
+    }
+
+    private void setUpToDate (boolean seen, boolean markReadPending) {
+        synchronized (MODEL_LOCK) {
+            if (markReadPending) {
+                readPending |= syncState == ITask.SynchronizationState.INCOMING
+                    || syncState == ITask.SynchronizationState.CONFLICT;
+            } else {
+                readPending = false;
+            }
+            MylynSupport.getInstance().markTaskSeen(task, seen);
+        }
     }
 
     private boolean updateRecentChanges () {
@@ -1427,6 +1449,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     }
 
     private void save (NetBeansTaskDataModel model) throws CoreException {
+        markNewRead();
         if (model.isDirty()) {
             if (isNew()) {
                 String summary = model.getTask().getSummary();
