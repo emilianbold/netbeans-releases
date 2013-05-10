@@ -57,6 +57,7 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageManager;
 import org.netbeans.modules.gsf.codecoverage.api.CoverageProvider;
@@ -65,6 +66,7 @@ import org.netbeans.modules.gsf.codecoverage.api.FileCoverageDetails;
 import org.netbeans.modules.gsf.codecoverage.api.FileCoverageSummary;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
+import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
@@ -239,17 +241,16 @@ public final class MavenCoverageProvider implements CoverageProvider {
         }
     }
 
-    private @CheckForNull FileObject src() {
-        // XXX getOriginalMavenProject().getCompileSourceRoots()
-        return p.getProjectDirectory().getFileObject("src/main/java"); // NOI18N
+    private ClassPath srcPath() {
+        ProjectSourcesClassPathProvider pscp = p.getLookup().lookup(ProjectSourcesClassPathProvider.class);
+        assert pscp != null;
+        ClassPath cp = pscp.getProjectSourcesClassPath(ClassPath.SOURCE);
+        assert cp != null;
+        return cp;
     }
     
     public @Override FileCoverageDetails getDetails(final FileObject fo, final Document doc) {
-        FileObject src = src();
-        if (src == null) {
-            return null;
-        }
-        String path = FileUtil.getRelativePath(src, fo);
+        String path = srcPath().getResourceName(fo);
         if (path == null) {
             return null;
         }
@@ -270,10 +271,7 @@ public final class MavenCoverageProvider implements CoverageProvider {
         if (r == null) {
             return null;
         }
-        FileObject src = src();
-        if (src == null) {
-            return null;
-        }
+        ClassPath src = srcPath();
         List<FileCoverageSummary> summs = new ArrayList<FileCoverageSummary>();
         Map<String, MavenSummary> summaries = new HashMap<String, MavenSummary>();
         boolean jacoco = hasPlugin(GROUP_JOCOCO, ARTIFACT_JOCOCO);
@@ -299,7 +297,7 @@ public final class MavenCoverageProvider implements CoverageProvider {
                 // XXX nicer to collect together nested classes in same compilation unit
                 name = clazz.getAttribute("name").replace('$', '.');
             }
-            FileObject java = src.getFileObject(filename); // NOI18N
+            FileObject java = src.findResource(filename); // NOI18N
             if (java == null) {
                 continue;
             }
