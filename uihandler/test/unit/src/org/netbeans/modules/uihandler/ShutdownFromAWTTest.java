@@ -77,7 +77,7 @@ public class ShutdownFromAWTTest extends NbTestCase {
         inst.restored();
 
         MockServices.setServices(DD.class);
-        Logger.getLogger("org.netbeans.ui").warning("ONE_LOG");
+        Logger.getLogger(Installer.UI_LOGGER_NAME).warning("ONE_LOG");
     }
 
     protected void tearDown() throws Exception {

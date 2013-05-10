@@ -156,7 +156,7 @@ public class InstallerTest extends NbTestCase {
     
     @RandomlyFails // #9267, #9435, #9436, #9437, #9949
     public void testLogsRereadOnStartup() throws Exception {
-        Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
+        Logger log = Logger.getLogger(Installer.UI_LOGGER_NAME);
         log.warning("Something happened");
 
         SwingUtilities.invokeAndWait(new Runnable() {
@@ -189,7 +189,7 @@ public class InstallerTest extends NbTestCase {
     }
 
     public void testWeCanGetLast1000If1500Logged() throws Exception {
-        Logger log = Logger.getLogger("org.netbeans.ui"); // NOI18N
+        Logger log = Logger.getLogger(Installer.UI_LOGGER_NAME);
         
         for (int i = 0; i < 1500; i++) {
             log.warning("" + i);

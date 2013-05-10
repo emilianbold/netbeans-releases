@@ -37,11 +37,11 @@ import java.security.KeyFactory;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.X509EncodedKeySpec;
-import java.util.Arrays;
 import javax.crypto.Cipher;
 
 /**
- *
+ * Password encryption/decryption utilities.
+ * 
  * @author Jindrich Sedek
  */
 public class PasswdEncryption {
@@ -49,14 +49,36 @@ public class PasswdEncryption {
     private static final String delimiter = ":"; //NOI18N
     public static final int MAX_ENCRYPTION_LENGHT = 100;
     
+    /**
+     * Encrypt a text with a default public key.
+     * @param text text to encrypt
+     * @return encrypted text
+     * @throws IOException when I/O error occurs
+     * @throws GeneralSecurityException when transformation error occurs
+     */
     public static String encrypt(String text) throws IOException, GeneralSecurityException {
         return encrypt(text, getPublicKey());
     }
 
+    /**
+     * Encrypt a sequence of bytes a default public key.
+     * @param text byte array to encrypt
+     * @return encrypted bytes
+     * @throws IOException when I/O error occurs
+     * @throws GeneralSecurityException when transformation error occurs
+     */
     public static byte[] encrypt(byte[] text) throws IOException, GeneralSecurityException {
         return encrypt(text, getPublicKey());
     }
 
+    /**
+     * Encrypt a sequence of bytes.
+     * @param text byte array to encrypt
+     * @param key the public key used for the encryption
+     * @return encrypted bytes
+     * @throws IOException when I/O error occurs
+     * @throws GeneralSecurityException when transformation error occurs
+     */
     public static byte[] encrypt(byte[] text, PublicKey key) throws IOException, GeneralSecurityException {
         assert (text.length <= MAX_ENCRYPTION_LENGHT);
         Cipher rsaCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding"); // NOI18N
@@ -66,6 +88,14 @@ public class PasswdEncryption {
         return encoded;
     }
 
+    /**
+     * Decrypt a sequence of bytes.
+     * @param text byte array to decrypt
+     * @param key the private key used for the decryption
+     * @return decrypted bytes
+     * @throws IOException when I/O error occurs
+     * @throws GeneralSecurityException when transformation error occurs
+     */
     public static byte[] decrypt(byte[] text, PrivateKey key) throws IOException, GeneralSecurityException {
         Cipher rsaCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding"); // NOI18N
         rsaCipher.init(Cipher.DECRYPT_MODE, key);
@@ -74,11 +104,27 @@ public class PasswdEncryption {
         return decoded;
     }
 
+    /**
+     * Encrypt a text.
+     * @param text text to encrypt
+     * @param key the public key used for the encryption
+     * @return encrypted text
+     * @throws IOException when I/O error occurs
+     * @throws GeneralSecurityException when transformation error occurs
+     */
     public static String encrypt(String text, PublicKey key) throws IOException, GeneralSecurityException {
         byte[] encrypted = encrypt(text.getBytes(), key);
         return arrayToString(encrypted);
     }
 
+    /**
+     * Decrypt a text.
+     * @param text text to decrypt
+     * @param key the private key used for the decryption
+     * @return decrypted text
+     * @throws IOException when I/O error occurs
+     * @throws GeneralSecurityException when transformation error occurs
+     */
     public static String decrypt(String text, PrivateKey key) throws IOException, GeneralSecurityException {
         byte[] decrypted = decrypt(stringToArray(text), key);
         return new String(decrypted);

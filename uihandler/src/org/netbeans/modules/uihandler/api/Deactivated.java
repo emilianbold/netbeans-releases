@@ -53,5 +53,10 @@ import java.util.logging.Logger;
  * @author Jaroslav Tulach
  */
 public interface Deactivated {
+    
+    /**
+     * Called when the UI logger is deactivated.
+     * @param uiLogger the deactivated UI logger
+     */
     public void deactivated(Logger uiLogger);
 }

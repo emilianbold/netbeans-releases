@@ -59,6 +59,6 @@ public class CPUInfo {
         OperatingSystemMXBean bean = ManagementFactory.getOperatingSystemMXBean();
         Object [] params = new Object[]{bean.getAvailableProcessors()};
         log.setParameters(params);
-        Logger.getLogger("org.netbeans.ui.performance").log(log);
+        Logger.getLogger(Installer.UI_PERFORMANCE_LOGGER_NAME).log(log);
     }
 }
