@@ -56,6 +56,8 @@ import static org.netbeans.modules.html.editor.HtmlErrorFilter.*;
 import org.netbeans.modules.html.editor.HtmlExtensions;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.ProjectDefaultHtmlSourceVersionController;
+import org.netbeans.modules.html.editor.api.gsf.ErrorBadgingRule;
+import org.netbeans.modules.html.editor.api.gsf.HtmlErrorFilterContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
@@ -164,6 +166,11 @@ public class HtmlHintsProvider implements HintsProvider {
      */
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
+        int errorType = 0;
+        // in the case the context is a regular one, not for indexing, all enabled hints should run.
+        if (context instanceof HtmlErrorFilterContext) {
+            errorType = ((HtmlErrorFilterContext)context).isOnlyBadging() ? 2 : 1;
+        }
         HtmlParserResult result = (HtmlParserResult) context.parserResult;
         SyntaxAnalyzerResult saresult = result.getSyntaxAnalyzerResult();
         Snapshot snapshot = result.getSnapshot();
@@ -206,9 +213,15 @@ public class HtmlHintsProvider implements HintsProvider {
             for (Error e : fatalErrors) {
                 //remove the fatal error from the list of errors for further processing
                 htmlRuleContext.getLeftDiagnostics().remove(e);
+                
+                // FatalHtmlRule does not implement ErrorBadgingRule - will not produce error badge.
+                if (errorType > 1) {
+                    continue;
+                }
 
                 String message = new StringBuilder().append(e.getDescription()).append('\n').append(NbBundle.getMessage(HtmlValidatorRule.class, "MSG_FatalHtmlErrorAddendum")).toString();
                 //add a special hint for the fatal error
+                // TODO - should FatalHtmlRule implement ErrorBadginRule 
                 Hint fatalErrorHint = new Hint(new FatalHtmlRule(),
                         message,
                         fo,
@@ -230,6 +243,10 @@ public class HtmlHintsProvider implements HintsProvider {
                 return;
             }
             for (org.netbeans.modules.html.editor.hints.HtmlRule rule : ids) {
+                // do not run regular rules when only error badging, or vice versa
+                if ((errorType == 2) != (rule instanceof ErrorBadgingRule)) {
+                    continue;
+                }
                 boolean enabled = manager.isEnabled(rule);
                 //html validator error categories workaround. 
                 //See the HtmlValidatorRule.isSpecialHtmlValidatorRule() documentation
@@ -242,7 +259,7 @@ public class HtmlHintsProvider implements HintsProvider {
                 }
             }
  
-        } else {
+        } else if (errorType < 2) {
             //add a special hint for reenabling disabled error checks
             List<HintFix> fixes = new ArrayList<HintFix>(3);
             if (isErrorCheckingDisabledForFile(saresult)) {

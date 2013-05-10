@@ -204,7 +204,6 @@ public final class GeneratorUtilities {
      */
     public ClassTree insertClassMember(ClassTree clazz, Tree member) {
         assert clazz != null && member != null;
-        int idx = 0;
         Document doc = null;
         try {
             doc = copy.getDocument();
@@ -220,22 +219,44 @@ public final class GeneratorUtilities {
         TreeUtilities utils = copy.getTreeUtilities();
         CompilationUnitTree compilationUnit = copy.getCompilationUnit();
         Tree lastMember = null;
+        int idx = -1;
+        int gsidx = -1;
+        String[] gsnames = codeStyle.keepGettersAndSettersTogether() ? correspondingGSNames(member) : null;
+        int i = 0;
         for (Tree tree : clazz.getMembers()) {
-            if (!utils.isSynthetic(compilationUnit, tree)
-                    && (codeStyle.getClassMemberInsertionPoint() == CodeStyle.InsertionPoint.FIRST_IN_CATEGORY && comparator.compare(member, tree) <= 0
-                    || comparator.compare(member, tree) < 0)) {
-                if (doc == null || !(doc instanceof GuardedDocument))
-                    break;
-                int pos = (int)(lastMember != null ? sp.getEndPosition(compilationUnit, lastMember) : sp.getStartPosition( compilationUnit,clazz));
-                pos = ((GuardedDocument)doc).getGuardedBlockChain().adjustToBlockEnd(pos);
-                long treePos = sp.getStartPosition(compilationUnit, tree);
-                if (treePos < 0 || pos <= treePos)
-                    break;
+            if (!utils.isSynthetic(compilationUnit, tree)) {
+                if (gsnames != null && gsidx < 0) {
+                    for (String name : gsnames) {
+                        if (name.equals(name(tree))) {
+                            if (isSetter(tree)) {
+                                gsidx = codeStyle.sortMembersInGroupsAlphabetically() ? i : i + 1;
+                            } else if (isGetter(tree) || isBooleanGetter(tree)) {
+                                gsidx = i + 1;
+                            }
+                        }
+                    }
+                }
+                if (idx < 0 && (codeStyle.getClassMemberInsertionPoint() == CodeStyle.InsertionPoint.FIRST_IN_CATEGORY && comparator.compare(member, tree) <= 0
+                        || comparator.compare(member, tree) < 0)) {
+                    if (doc == null || !(doc instanceof GuardedDocument)) {
+                        idx = i;
+                        continue;
+                    }
+                    int pos = (int)(lastMember != null ? sp.getEndPosition(compilationUnit, lastMember) : sp.getStartPosition( compilationUnit,clazz));
+                    pos = ((GuardedDocument)doc).getGuardedBlockChain().adjustToBlockEnd(pos);
+                    long treePos = sp.getStartPosition(compilationUnit, tree);
+                    if (treePos < 0 || pos <= treePos) {
+                        idx = i;
+                    }
+                }
             }
-            idx++;
+            i++;
             lastMember = tree;
         }
-        return copy.getTreeMaker().insertClassMember(clazz, idx, member);
+        if (idx < 0) {
+            idx = i;
+        }
+        return copy.getTreeMaker().insertClassMember(clazz, gsidx < 0 ? idx : gsidx, member);
     }
 
     /**
@@ -1346,6 +1367,60 @@ public final class GeneratorUtilities {
         return bindings;
     }
 
+    private static String name(Tree tree) {
+        switch (tree.getKind()) {
+            case VARIABLE:
+                return ((VariableTree)tree).getName().toString();
+            case METHOD:
+                return ((MethodTree)tree).getName().toString();
+            case CLASS:
+                return ((ClassTree)tree).getSimpleName().toString();
+        }
+        return ""; //NOI18N
+    }
+
+    private static String[] correspondingGSNames(Tree member) {
+        if (isSetter(member)) {
+            String name = name(member);
+            VariableTree param = ((MethodTree)member).getParameters().get(0);
+            if (param.getType().getKind() == Tree.Kind.PRIMITIVE_TYPE && ((PrimitiveTypeTree)param.getType()).getPrimitiveTypeKind() == TypeKind.BOOLEAN) {
+                return new String[] {'g' + name.substring(1), "is" + name.substring(3)};
+            }
+            return new String[] {'g' + name.substring(1)};
+        }
+        if (isGetter(member)) {
+            return new String[] {'s' + name(member).substring(1)};
+        }
+        if (isBooleanGetter(member)) {
+            return new String[] {"set" + name(member).substring(2)}; //NOI18N
+        }
+        return null;
+    }
+
+    private static boolean isSetter(Tree member) {
+        return member.getKind() == Tree.Kind.METHOD
+                && name(member).startsWith("set") //NOI18N
+                && ((MethodTree)member).getParameters().size() == 1
+                && ((MethodTree)member).getReturnType().getKind() == Tree.Kind.PRIMITIVE_TYPE
+                && ((PrimitiveTypeTree)((MethodTree)member).getReturnType()).getPrimitiveTypeKind() == TypeKind.VOID;
+    }
+
+    private static boolean isGetter(Tree member) {
+        return member.getKind() == Tree.Kind.METHOD
+                && name(member).startsWith("get") //NOI18N
+                && ((MethodTree)member).getParameters().isEmpty()
+                && (((MethodTree)member).getReturnType().getKind() != Tree.Kind.PRIMITIVE_TYPE
+                || ((PrimitiveTypeTree)((MethodTree)member).getReturnType()).getPrimitiveTypeKind() != TypeKind.VOID);
+    }
+
+    private static boolean isBooleanGetter(Tree member) {
+        return member.getKind() == Tree.Kind.METHOD
+                && name(member).startsWith("is") //NOI18N
+                && ((MethodTree)member).getParameters().isEmpty()
+                && ((MethodTree)member).getReturnType().getKind() == Tree.Kind.PRIMITIVE_TYPE
+                && ((PrimitiveTypeTree)((MethodTree)member).getReturnType()).getPrimitiveTypeKind() == TypeKind.BOOLEAN;
+    }
+
     private static String removeFieldPrefixSuffix(VariableElement var, CodeStyle cs) {
         boolean isStatic = var.getModifiers().contains(Modifier.STATIC);
         return CodeStyleUtils.removePrefixSuffix(var.getSimpleName(),
@@ -1368,23 +1443,41 @@ public final class GeneratorUtilities {
 
     private static class ClassMemberComparator implements Comparator<Tree> {
 
-        private CodeStyle.MemberGroups groups;
+        private final CodeStyle.MemberGroups groups;
+        private final boolean sortMembersAlpha;
+        private final boolean keepGASTogether;
 
         public ClassMemberComparator(CodeStyle cs) {
             this.groups = cs.getClassMemberGroups();
+            this.sortMembersAlpha = cs.sortMembersInGroupsAlphabetically();
+            this.keepGASTogether = cs.keepGettersAndSettersTogether();
         }
 
         @Override
         public int compare(Tree tree1, Tree tree2) {
             if (tree1 == tree2)
                 return 0;
-            return groups.getGroupId(tree1) - groups.getGroupId(tree2);
+            int diff = groups.getGroupId(tree1) - groups.getGroupId(tree2);
+            if (diff == 0 && sortMembersAlpha) {
+                String name1 = name(tree1);
+                String name2 = name(tree2);
+                if (keepGASTogether) {
+                    if (isSetter(tree1)) {
+                        name1 = "g" + name1.substring(1) + "+1"; //NOI18N
+                    }
+                    if (isSetter(tree2)) {
+                        name2 = "g" + name2.substring(1) + "+1"; //NOI18N
+                    }
+                }
+                diff = name1.compareTo(name2);
+            }
+            return diff;
         }
     }
-    
+
     private static class ImportsComparator implements Comparator<Object> {
 
-        private CodeStyle.ImportGroups groups;
+        private final CodeStyle.ImportGroups groups;
         
         private ImportsComparator(CodeStyle cs) {
             this.groups = cs.getImportGroups();
