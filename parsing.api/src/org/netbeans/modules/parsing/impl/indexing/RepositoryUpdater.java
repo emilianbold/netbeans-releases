@@ -450,12 +450,22 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos = IndexerCache.getCifCache().getIndexersByName(indexerName);
+        Work w;
+        
         if (cifInfos == null) {
-            throw new InvalidParameterException("No CustomIndexerFactory with name: '" + indexerName + "'"); //NOI18N
+            Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos = IndexerCache.getEifCache().getIndexersByName(indexerName);
+            if (eifInfos == null) {
+                throw new InvalidParameterException("No CustomIndexerFactory or EmbeddingIndexerFactory with name: '" + indexerName + "'"); //NOI18N
+            } else {
+                w = new RefreshEifIndices(
+                        eifInfos,
+                        scannedRoots2Dependencies, sourcesForBinaryRoots, suspendSupport.getSuspendStatus(), logCtx
+                );
+            }
         } else {
-            Work w = new RefreshCifIndices(cifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, suspendSupport.getSuspendStatus(), logCtx);
-            scheduleWork(w, false);
+            w = new RefreshCifIndices(cifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, suspendSupport.getSuspendStatus(), logCtx);
         }
+        scheduleWork(w, false);
     }
 
     public void refreshAll(
