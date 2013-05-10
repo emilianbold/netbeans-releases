@@ -43,6 +43,7 @@ package org.netbeans.modules.html.angular;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -85,8 +86,13 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     private List<Embedding> embeddings;
     private JsIndex index;
 
+    /** keeps mapping from simple property name to the object fqn 
+     */
+    private HashMap<String, String> propertyToFqn;
+    
     public AngularJsEmbeddingProviderPlugin() {
         this.stack = new LinkedList();
+        this.propertyToFqn = new HashMap();
     }
 
     @Override
@@ -114,8 +120,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     @Override
     public boolean processToken() {
         boolean processed = false;
-        CharSequence tokenText = tokenSequence.token().text();
-        switch (tokenSequence.token().id()) {
+        CharSequence tokenText = tokenSequence.token().text();        switch (tokenSequence.token().id()) {
             case TAG_OPEN:
                 lastTagOpen = tokenText.toString();
                 StackItem top = stack.peek();
@@ -153,7 +158,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     sb.append("();\n");
                     Collection<IndexedElement> properties = index.getProperties(value + ".$scope");
                     for (IndexedElement indexedElement : properties) {
-
+                        propertyToFqn.put(indexedElement.getName(), value);
                         sb.append("var ");
                         sb.append(indexedElement.getName());
 
@@ -183,6 +188,28 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     stack.push(new StackItem(lastTagOpen));
                 }
                 break;
+            case EL_OPEN_DELIMITER:
+                if (tokenSequence.moveNext()) {
+                    if (tokenSequence.token().id() == HTMLTokenId.EL_CONTENT) {
+                        String value = tokenSequence.token().text().toString().trim();
+                        String name = value;
+                        int parenIndex = name.indexOf('(');
+                        if (parenIndex > -1) {
+                            name = name.substring(0, parenIndex);
+                        }
+                        if (propertyToFqn.containsKey(name)) {
+                            embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create(tokenSequence.offset(), value.length(), Constants.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE));
+                            processed = true;
+                        } else {
+                            tokenSequence.movePrevious();
+                        }
+                    } else {
+                        tokenSequence.movePrevious();
+                    }
+                }
+                break;    
             default:
         }
         return processed;
