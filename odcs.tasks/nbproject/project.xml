@@ -6,29 +6,6 @@
             <code-name-base>org.netbeans.modules.odcs.tasks</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>oracle.eclipse.tools.cloud.dev.tasks</code-name-base>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>                
-                <dependency>
-                    <code-name-base>org.apache.commons.httpclient</code-name-base>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>        
-                <dependency>
-                    <code-name-base>org.eclipse.core.net</code-name-base>
-                    <compile-dependency/>
-                    <run-dependency/>
-                </dependency>                        
-                <dependency>
-                    <code-name-base>org.netbeans.modules.keyring</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>1.14</specification-version>
-                    </run-dependency>
-                </dependency>                
-                <dependency>
                     <code-name-base>com.tasktop.c2c.server.common.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -41,6 +18,16 @@
                     <run-dependency/>
                 </dependency>
                 <dependency>
+                    <code-name-base>oracle.eclipse.tools.cloud.dev.tasks</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.apache.commons.httpclient</code-name-base>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
                     <code-name-base>org.codehaus.jackson.core</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
@@ -48,6 +35,11 @@
                 <dependency>
                     <code-name-base>org.codehaus.jackson.mapper</code-name-base>
                     <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency/>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.eclipse.core.net</code-name-base>
                     <compile-dependency/>
                     <run-dependency/>
                 </dependency>
@@ -97,7 +89,15 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.38</specification-version>
+                        <specification-version>1.54</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.keyring</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.14</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

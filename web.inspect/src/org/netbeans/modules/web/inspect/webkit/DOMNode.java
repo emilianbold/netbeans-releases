@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.actions.Resource;
+import org.netbeans.modules.web.inspect.webkit.actions.GoToNodeSourceAction;
 import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -59,7 +60,9 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * DOM node.
@@ -106,12 +109,13 @@ public class DOMNode extends AbstractNode {
      */
     private static Lookup lookupFor(WebKitPageModel model, Node node) {
         Lookup lookup;
+        Project project = model.getProject();
+        DOMSourceElementHandle handle = new DOMSourceElementHandle(node, project);
         String documentURL = node.getDocumentURL();
         if (documentURL == null) {
-            lookup = Lookups.fixed(node);
+            lookup = Lookups.fixed(node, handle);
         } else {
-            Project project = model.getProject();
-            lookup = Lookups.fixed(node, new Resource(project, documentURL));
+            lookup = Lookups.fixed(node, handle, new Resource(project, documentURL));
         }
         return lookup;
     }
@@ -273,13 +277,20 @@ public class DOMNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
+        actions.add(SystemAction.get(GoToNodeSourceAction.class));
         for (Action action : org.openide.util.Utilities.actionsForPath(ACTIONS_PATH)) {
             if (action instanceof ContextAwareAction) {
-                action = ((ContextAwareAction)action).createContextAwareInstance(getLookup());
+                Lookup lookup = new ProxyLookup(Lookups.fixed(this), getLookup());
+                action = ((ContextAwareAction)action).createContextAwareInstance(lookup);
             }
             actions.add(action);
         }
         return actions.toArray(new Action[actions.size()]);
+    }
+
+    @Override
+    public Action getPreferredAction() {
+        return SystemAction.get(GoToNodeSourceAction.class);
     }
 
     /**

@@ -44,11 +44,18 @@ package org.netbeans.modules.cnd.modelui.trace;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmSelect;
+import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
+import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.openide.util.Exceptions;
@@ -111,13 +118,50 @@ public class TestReparseAction extends TestProjectActionBase {
             testReparse(file, out);
         }
         for( CsmFile file : project.getHeaderFiles() ) {
-            handle.progress("Parsing " + file.getName(), handled++); // NOI18N
-            testReparse(file, out);
+            if (!isPartial(file, new HashSet<CsmFile>())) {
+                handle.progress("Parsing " + file.getName(), handled++); // NOI18N
+                testReparse(file, out);
+            } else {
+                handle.progress("SKIP INCLUDED AS BODY " + file.getName(), handled++); // NOI18N
+            }
         }
         
         handle.finish();
         out.flush();
         out.close();
+    }
+    
+    /**
+     * Determines whether this file contains part of some declaration,
+     * i.e. whether it was included in the middle of some other declaration
+     */
+    private static boolean isPartial(CsmFile isIncluded, Set<CsmFile> antiLoop) {
+        if (antiLoop.contains(isIncluded)) {
+            return false;
+        }
+        antiLoop.add(isIncluded);
+        //Collection<CsmFile> files = CsmIncludeHierarchyResolver.getDefault().getFiles(isIncluded);
+        Collection<CsmReference> directives = CsmIncludeHierarchyResolver.getDefault().getIncludes(isIncluded);
+        for (CsmReference directive : directives) {
+            if (directive != null  ) {
+                int offset = directive.getStartOffset();
+                CsmFile containingFile = directive.getContainingFile();
+                if (containingFile != null) {
+                    if (CsmSelect.hasDeclarations(containingFile)) {
+                        CsmSelect.CsmFilter filter = CsmSelect.getFilterBuilder().createOffsetFilter(offset);
+                        Iterator<CsmOffsetableDeclaration> declarations = CsmSelect.getDeclarations(containingFile, filter);
+                        if (declarations.hasNext()) {
+                            return true;
+                        }
+                    } else {
+                        if (isPartial(containingFile, antiLoop)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+	return false;
     }
     
     private void testReparse(final CsmFile fileImpl, final OutputWriter out) {

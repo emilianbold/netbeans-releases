@@ -131,8 +131,8 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
             signingWarning.setVisible(true);
         } else if (JWSProjectProperties.SIGNING_KEY.equals(jwsProps.signing)) {
             signingInfolabel.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.Signing.Key", jwsProps.signingKeyAlias)); //NOI18N
-            signingWarning.setText(null);
-            signingWarning.setVisible(false);
+            signingWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.InfoDeprecated")); //NOI18N
+            signingWarning.setVisible(true);
         } else {
             signingInfolabel.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.Signing.Unsigned")); //NOI18N
             signingWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.WarnDeprecated")); //NOI18N
@@ -337,12 +337,13 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         add(signingCustomizeButton, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(signingWarning, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.signingWarning.text")); // NOI18N
-        signingWarning.setPreferredSize(new java.awt.Dimension(400, 35));
+        signingWarning.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        signingWarning.setPreferredSize(new java.awt.Dimension(400, 50));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         add(signingWarning, gridBagConstraints);
 

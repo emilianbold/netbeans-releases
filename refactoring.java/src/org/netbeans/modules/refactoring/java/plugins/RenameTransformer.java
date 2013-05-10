@@ -44,11 +44,16 @@
 
 package org.netbeans.modules.refactoring.java.plugins;
 
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.ReferenceTree;
 import com.sun.source.tree.*;
+import com.sun.source.util.DocTreePath;
+import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.lang.model.element.*;
@@ -77,6 +82,7 @@ public class RenameTransformer extends RefactoringVisitor {
     private boolean renameInComments;
 
     public RenameTransformer(TreePathHandle handle, String newName, Set<ElementHandle<ExecutableElement>> am, boolean renameInComments) {
+        super(true);
         this.handle = handle;
         this.newName = newName;
         this.allMethods = am;
@@ -376,6 +382,26 @@ public class RenameTransformer extends RefactoringVisitor {
         return false;
     }
 
+    @Override
+    public DocTree visitReference(ReferenceTree node, Element elementToFind) {
+        DocTreePath currentDocPath = getCurrentDocPath();
+        DocTrees trees = workingCopy.getDocTrees();
+        Element el = trees.getElement(getCurrentDocPath());
+        if (el != null && (el.equals(elementToFind) || isMethodMatch(el))) {
+            ReferenceTree newRef;
+            ExpressionTree classReference = workingCopy.getTreeUtilities().getReferenceClass(currentDocPath);
+            Name memberName = workingCopy.getTreeUtilities().getReferenceName(currentDocPath);
+            List<? extends Tree> methodParameters = workingCopy.getTreeUtilities().getReferenceParameters(currentDocPath);
+            if(el.getKind().isClass() || el.getKind().isInterface()) {
+                newRef = make.Reference(make.setLabel(classReference, newName), memberName, methodParameters);
+            } else {
+                newRef = make.Reference(classReference, newName, methodParameters);
+            }
+            rewrite(currentDocPath.getTreePath().getLeaf(), node, newRef);
+        }
+        return super.visitReference(node, elementToFind);
+    }
+
     /**
      * Renames the method (or constructor) parameter in comments. This method
      * considers comments before and inside the method declaration, and within
@@ -420,14 +446,14 @@ public class RenameTransformer extends RefactoringVisitor {
      * 
      * @param token the {@link Token} to check
      * @return {@code true} if {@code token} represents a line comment, block
-     *   comment or javadoc; {@code false} otherwise.
+     *          comment; {@code false} otherwise or javadoc.
      */
     private boolean isComment(final Token<JavaTokenId> token) {
         switch (token.id()) {
             case LINE_COMMENT:
             case BLOCK_COMMENT:
-            case JAVADOC_COMMENT:
                 return true;
+            case JAVADOC_COMMENT:
             default:
                 return false;
         }

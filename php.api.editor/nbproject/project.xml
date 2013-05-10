@@ -19,7 +19,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>2.0</specification-version>
+                        <specification-version>2.20</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -35,7 +35,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.26</specification-version>
+                        <specification-version>8.32</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -44,8 +44,10 @@
                 <friend>org.nbphpcouncil.modules.php.yii</friend>
                 <friend>org.netbeans.modules.php.api.framework</friend>
                 <friend>org.netbeans.modules.php.api.testing</friend>
+                <friend>org.netbeans.modules.php.atoum</friend>
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.fuel</friend>
+                <friend>org.netbeans.modules.php.nette2</friend>
                 <friend>org.netbeans.modules.php.phpunit</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.php.symfony</friend>

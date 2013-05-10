@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.webkit.debugging.api.console;
 
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.PropertyDescriptor;
@@ -70,7 +71,9 @@ class RemoteObjectMessage extends ConsoleMessage {
     public String getText() {
         if (ro.getType() == RemoteObject.Type.OBJECT) {
             String className = ro.getClassName();
-            if (className.startsWith("HTML") && className.endsWith("Element")) {
+            if (className != null &&
+                className.startsWith("HTML") && className.endsWith("Element")) {
+                
                 List<PropertyDescriptor> properties = webKit.getRuntime().getRemoteObjectProperties(ro, true);
                 for (PropertyDescriptor pd : properties) {
                     if ("outerHTML".equals(pd.getName())) {
@@ -83,4 +86,18 @@ class RemoteObjectMessage extends ConsoleMessage {
         return ro.getValueAsString();
     }
 
+    @Override
+    public List<ConsoleMessage> getSubMessages() {
+        if (ro.getType() == RemoteObject.Type.OBJECT) {
+            List<PropertyDescriptor> properties = ro.getProperties();
+            List<ConsoleMessage> propMessages = new ArrayList<ConsoleMessage>(properties.size());
+            for (PropertyDescriptor pd : properties) {
+                propMessages.add(new PropertyMessage(webKit, pd));
+            }
+            return propMessages;
+        } else {
+            return super.getSubMessages();
+        }
+    }
+    
 }

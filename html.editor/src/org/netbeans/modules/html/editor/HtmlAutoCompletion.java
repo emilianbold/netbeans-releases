@@ -452,6 +452,10 @@ public class HtmlAutoCompletion {
             char charBefore = token.text().charAt(diff - 1);
             if (charBefore == '$' || charBefore == '#') { // NOI18N
                 try {
+                    char charAfter = token.text().charAt(diff + 1);
+                    if (charAfter == '}') { // NOI18N
+                        return;
+                    }
                     doc.insertString(dotPosAfterTypedChar, "}", null); // NOI18N
                     caret.setDot(dotPosAfterTypedChar);
                     //open completion

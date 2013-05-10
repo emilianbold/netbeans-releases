@@ -102,7 +102,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     private KeyListener keyListenerForComponent;
     private PropertyChangeListener propertyChangeListenerForComponent;
     private final JLabel findLabel;
-    private final JComboBox incSearchComboBox;
+    private final JComboBox<String> incSearchComboBox;
     private final JTextComponent incSearchTextField;
     private final DocumentListener incSearchTextFieldListener;
     private boolean hadFocusOnIncSearchTextField = false;
@@ -151,7 +151,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
 
         add(Box.createHorizontalStrut(8)); //spacer in the beginnning of the toolbar
 
-        SearchComboBox scb = new SearchComboBox();
+        SearchComboBox<String> scb = new SearchComboBox<>();
         incSearchComboBox = scb;
         incSearchComboBox.setFocusable(false);
         incSearchComboBox.addPopupMenuListener(new SearchPopupMenuListener());
@@ -410,12 +410,12 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         incSearchTextField.getDocument().removeDocumentListener(incSearchTextFieldListener);
         // Add the text to the top of the list
         for (int i = incSearchComboBox.getItemCount() - 1; i >= 0; i--) {
-            String item = (String) incSearchComboBox.getItemAt(i);
+            String item = incSearchComboBox.getItemAt(i);
             if (item.equals(incrementalSearchText)) {
                 incSearchComboBox.removeItemAt(i);
             }
         }
-        ((MutableComboBoxModel) incSearchComboBox.getModel()).insertElementAt(incrementalSearchText, 0);
+        ((MutableComboBoxModel<String>) incSearchComboBox.getModel()).insertElementAt(incrementalSearchText, 0);
         incSearchComboBox.setSelectedIndex(0);
         incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
     }
@@ -748,7 +748,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         SearchComboBoxEditor.changeToOneLineEditorPane((JEditorPane) incSearchTextField);
         addEnterKeystrokeFindNextTo(incSearchTextField);
 
-        MutableComboBoxModel comboBoxModelIncSearch = ((MutableComboBoxModel) incSearchComboBox.getModel());
+        MutableComboBoxModel<String> comboBoxModelIncSearch = ((MutableComboBoxModel<String>) incSearchComboBox.getModel());
         for (int i = comboBoxModelIncSearch.getSize() - 1; i >= 0; i--) {
             comboBoxModelIncSearch.removeElementAt(i);
         }
@@ -1107,7 +1107,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         this.popupMenuWasCanceled = popupMenuWasCanceled;
     }
 
-    public JComboBox getIncSearchComboBox() {
+    public JComboBox<String> getIncSearchComboBox() {
         return incSearchComboBox;
     }
 

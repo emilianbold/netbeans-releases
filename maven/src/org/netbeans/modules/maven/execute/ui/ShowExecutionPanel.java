@@ -67,6 +67,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -168,23 +169,23 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         });
         jToolBar1.add(btnExpand);
 
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(btvExec)
-                    .add(jToolBar1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btvExec)
+                    .addComponent(jToolBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 564, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .add(btvExec, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(jToolBar1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 25, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(btvExec, javax.swing.GroupLayout.DEFAULT_SIZE, 349, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jToolBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -218,7 +219,23 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         manager.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-//                if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+                if (ExplorerManager.PROP_SELECTED_NODES.equals(evt.getPropertyName())) {
+                    Object oldO = evt.getOldValue();
+                    if (oldO instanceof Node[]) {
+                        
+                    }
+                    Object newO = evt.getNewValue();
+                    if (newO instanceof Node[]) {
+                        Node[] sel = (Node[]) newO;
+                        if (sel.length > 0) {
+                            ExecutionEventObject.Tree tree = sel[0].getLookup().lookup(ExecutionEventObject.Tree.class);
+                            if (tree != null) {
+                                tree.expandFold();
+                                tree.getStartOffset().scrollTo();
+                            }
+                        }
+                    }
+                }
 //                    Node[] nds = manager.getSelectedNodes();
 //                    if (nds.length > 0) {
 //                        ExecutionEventObject.Tree tree = nds[0].getLookup().lookup(ExecutionEventObject.Tree.class);
@@ -299,28 +316,27 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
     }
     
     private Children createPhasedChildren(final List<ExecutionEventObject.Tree> childrenNodes) {
-        return Children.create(new ChildFactory<Tuple>() {
+        return Children.create(new ChildFactory<Pair<String, List<ExecutionEventObject.Tree>>>() {
             @Override
-            protected boolean createKeys(List<Tuple> toPopulate) {
+            protected boolean createKeys(List<Pair<String, List<ExecutionEventObject.Tree>>> toPopulate) {
                 
-                Map<String, Tuple> phases = new HashMap<String, Tuple>();
+                Map<String, Pair<String, List<ExecutionEventObject.Tree>>> phases = new HashMap<String, Pair<String, List<ExecutionEventObject.Tree>>>();
                 for (ExecutionEventObject.Tree item : childrenNodes) {
                     ExecMojo mojo = (ExecMojo) item.startEvent;
                     String phaseString = mojo.phase != null ? mojo.phase : "<none>";
-                    Tuple phase = phases.get(phaseString);
+                    Pair<String, List<ExecutionEventObject.Tree>> phase = phases.get(phaseString);
                     if (phase == null) {
-                        phase = new Tuple();
-                        phase.phase = phaseString;
+                        phase = Pair.<String, List<ExecutionEventObject.Tree>>of(phaseString, new ArrayList<ExecutionEventObject.Tree>());
                         phases.put(phaseString, phase);
                         toPopulate.add(phase);
                     }
-                    phase.items.add(item);
+                    phase.second().add(item);
                 }
                 return true;
             }
             
             @Override
-            protected Node createNodeForKey(Tuple key) {
+            protected Node createNodeForKey(Pair<String, List<ExecutionEventObject.Tree>> key) {
                 return createPhaseNode(key);
             }
 
@@ -328,16 +344,11 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
         }, false);
     }    
     
-    private static class Tuple {
-        String phase;
-        List<ExecutionEventObject.Tree> items = new ArrayList<ExecutionEventObject.Tree>();
-    }
-
-    private Node createPhaseNode(Tuple key) {
+    private Node createPhaseNode(Pair<String, List<ExecutionEventObject.Tree>> key) {
         Children childs;
         if (showOnlyErrors) {
             boolean atLeastOne = false;
-            for (ExecutionEventObject.Tree ch : key.items) {
+            for (ExecutionEventObject.Tree ch : key.second()) {
                 ExecutionEventObject end = ch.endEvent;
                 if (end != null) {
                     if (ExecutionEvent.Type.ProjectFailed.equals(end.type)
@@ -350,16 +361,16 @@ public class ShowExecutionPanel extends javax.swing.JPanel implements ExplorerMa
                 }
             }
             if (atLeastOne) {
-                childs = createChildren(key.items);
+                childs = createChildren(key.second());
             } else {
                 childs = Children.LEAF;
             }
         } else {
-            childs = createChildren(key.items);
+            childs = createChildren(key.second());
         }
         AbstractNode nd = new AbstractNode(childs, Lookup.EMPTY);
-        nd.setName(key.phase);
-        nd.setDisplayName(key.phase);
+        nd.setName(key.first());
+        nd.setDisplayName(key.first());
         nd.setIconBaseWithExtension("org/netbeans/modules/maven/execute/ui/phase.png");
         return nd;
     }

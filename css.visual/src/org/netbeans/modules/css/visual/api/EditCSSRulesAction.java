@@ -49,6 +49,8 @@ import javax.swing.Action;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.css.visual.CreateRulePanel;
 import org.netbeans.modules.css.visual.HtmlSourceElementHandle;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -97,8 +99,8 @@ public class EditCSSRulesAction extends AbstractAction {
         setEnabled(context != null);
     }
     
-    public void setHtmlSourceElementHandle(HtmlSourceElementHandle handle) {
-        this.handle = handle;
+    public void setHtmlSourceElementHandle(OpenTag openTag, Snapshot snapshot, FileObject file) {
+        this.handle = new HtmlSourceElementHandle(openTag, snapshot, file);
     }
     
     public void setTargetLocation(FileObject stylesheet) {

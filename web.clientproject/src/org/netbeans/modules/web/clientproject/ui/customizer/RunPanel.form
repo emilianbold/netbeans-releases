@@ -153,6 +153,9 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBrowserComboBoxActionPerformed"/>
       </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createBrowserComboBox()"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="jProjectURLLabel">
       <Properties>

@@ -51,8 +51,8 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
  */
 public class ParameterObject extends JsObjectImpl {
 
-    public ParameterObject(JsObject parent, Identifier name) {
-        super(parent, name, name.getOffsetRange());
+    public ParameterObject(JsObject parent, Identifier name, String sourceLabel) {
+        super(parent, name, name.getOffsetRange(), sourceLabel);
         if (hasExactName()) {
             addOccurrence(name.getOffsetRange());
         }

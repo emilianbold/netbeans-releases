@@ -42,15 +42,17 @@
 
 package org.netbeans.modules.java.editor.javadoc;
 
-import com.sun.javadoc.ClassDoc;
-import com.sun.javadoc.Doc;
-import com.sun.javadoc.ExecutableMemberDoc;
-import com.sun.javadoc.MemberDoc;
-import com.sun.javadoc.Parameter;
-import com.sun.javadoc.ProgramElementDoc;
-import com.sun.javadoc.Tag;
-import com.sun.javadoc.Type;
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.DocTree.Kind;
+import com.sun.source.doctree.ReferenceTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.util.DocSourcePositions;
+import com.sun.source.util.DocTreePath;
+import com.sun.source.util.DocTreePathScanner;
+import com.sun.source.util.DocTreeScanner;
+import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.Trees;
 import java.io.IOException;
@@ -98,7 +100,7 @@ import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.editor.java.JavaCompletionItem;
-import org.netbeans.modules.editor.java.LazyTypeCompletionItem;
+import org.netbeans.modules.editor.java.LazyJavaCompletionItem;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionProvider;
@@ -230,21 +232,28 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
     private boolean resolveContext(CompilationInfo javac, JavadocContext jdctx) throws IOException {
         jdctx.doc = javac.getDocument();
         // find class context: class, method, ...
-        Doc javadoc = JavadocCompletionUtils.findJavadoc(javac, jdctx.doc, this.caretOffset);
-        if (javadoc == null) {
+        DocTrees trees = javac.getDocTrees();
+        TreePath javadocFor = JavadocCompletionUtils.findJavadoc(javac, this.caretOffset);
+        if (javadocFor == null) {
             return false;
         }
-        jdctx.jdoc = javadoc;
-        Element elm = javac.getElementUtilities().elementFor(javadoc);
+        jdctx.javadocFor = javadocFor;
+        DocCommentTree docCommentTree = trees.getDocCommentTree(javadocFor);
+        if (docCommentTree == null) {
+            return false;
+        }
+        jdctx.comment = docCommentTree;
+        Element elm = trees.getElement(javadocFor);
         if (elm == null) {
             return false;
         }
         jdctx.handle = ElementHandle.create(elm);
+        jdctx.commentFor = elm;
         jdctx.jdts = JavadocCompletionUtils.findJavadocTokenSequence(javac, this.caretOffset);
         if (jdctx.jdts == null) {
             return false;
         }
-        jdctx.positions = DocPositions.get(javac, javadoc, jdctx.jdts);
+        jdctx.positions = (DocSourcePositions) trees.getSourcePositions();
         return jdctx.positions != null;
     }
     
@@ -292,7 +301,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         assert jdctx.jdts.token() != null;
         assert jdctx.jdts.token().id() == JavadocTokenId.TAG;
 
-        Tag tag = jdctx.positions.getTag(caretOffset);
+        DocTreePath tag = getTag(jdctx, caretOffset);
         if (tag == null) {
             // eg * description @
             return;
@@ -304,28 +313,26 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
     }
     
-    void resolveBlockTag(Tag tag, JavadocContext jdctx) {
+    void resolveBlockTag(DocTreePath tag, JavadocContext jdctx) {
         int pos;
         String prefix;
         if (tag != null) {
-            int[] tagSpan = jdctx.positions.getTagSpan(tag);
-            prefix = JavadocCompletionUtils.getCharSequence(jdctx.doc, tagSpan[0], caretOffset).toString();
-            pos = tagSpan[0];
+            pos = (int) jdctx.positions.getStartPosition(jdctx.javac.getCompilationUnit(), jdctx.comment, tag.getLeaf());
+            prefix = JavadocCompletionUtils.getCharSequence(jdctx.doc, pos, caretOffset).toString();
         } else {
             prefix = ""; // NOI18N
             pos = caretOffset;
         }
         
-        items.addAll(JavadocCompletionItem.addBlockTagItems(jdctx.jdoc, jdctx.handle.getKind(), prefix, pos));
+        items.addAll(JavadocCompletionItem.addBlockTagItems(jdctx.handle.getKind(), prefix, pos));
         jdctx.anchorOffset = pos;
     }
     
-    void resolveInlineTag(Tag tag, JavadocContext jdctx) {
+    void resolveInlineTag(DocTreePath tag, JavadocContext jdctx) {
         int pos;
         String prefix;
         if (tag != null) {
-            int[] tagSpan = jdctx.positions.getTagSpan(tag);
-            pos = tagSpan[0] + 1;
+            pos = (int) jdctx.positions.getStartPosition(jdctx.javac.getCompilationUnit(), jdctx.comment, tag.getLeaf()) + 1;
             prefix = JavadocCompletionUtils.getCharSequence(jdctx.doc, pos, caretOffset).toString();
             jdctx.anchorOffset = pos;
         } else {
@@ -333,8 +340,50 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             prefix = ""; // NOI18N
             jdctx.anchorOffset = pos;
         }
-        items.addAll(JavadocCompletionItem.addInlineTagItems(jdctx.jdoc, jdctx.handle.getKind(), prefix, pos));
+        items.addAll(JavadocCompletionItem.addInlineTagItems(jdctx.handle.getKind(), prefix, pos));
     }
+
+    private int skipWhitespacesBackwards(final JavadocContext jdctx, final int offset) {
+        jdctx.jdts.move(offset);
+        
+        OUTER: while (jdctx.jdts.movePrevious()) {
+            Token t = jdctx.jdts.token();
+            
+            if (t.id() != JavadocTokenId.OTHER_TEXT) break;
+            
+            CharSequence text = t.text();
+            
+            for (int i = 0; i < text.length(); i++) {
+                if (!Character.isWhitespace(text.charAt(i))) {
+                    //XXX: does not handle the leading '*' correctly
+                    break OUTER;
+                }
+            }
+        }
+        
+        return jdctx.jdts.offset();
+    }
+    
+    private DocTreePath getTag(final JavadocContext jdctx, final int offset) {
+        final DocTreePath[] result = new DocTreePath[1];
+        final int normalizedOffset = skipWhitespacesBackwards(jdctx, offset);
+        new DocTreePathScanner<Void, Void>() {
+            @Override public Void scan(DocTree node, Void p) {
+                if (   node != null
+                    && jdctx.positions.getStartPosition(jdctx.javac.getCompilationUnit(), jdctx.comment, node) <= normalizedOffset
+                    && jdctx.positions.getEndPosition(jdctx.javac.getCompilationUnit(), jdctx.comment, node) >= normalizedOffset) {
+                    result[0] = new DocTreePath(getCurrentPath(), node);
+                    return super.scan(node, p);
+                }
+                
+                return null;
+            }
+        }.scan(new DocTreePath(jdctx.javadocFor, jdctx.comment), null);
+        
+        return result[0];
+    }
+    
+    private static final Set<ElementKind> EXECUTABLE = EnumSet.of(ElementKind.METHOD, ElementKind.CONSTRUCTOR);
     
     void resolveIdent(JavadocContext jdctx) {
         TokenSequence<JavadocTokenId> jdts = jdctx.jdts;
@@ -359,7 +408,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         // param list may contain spaces
         // no space allowed between member and parenthesis
         
-        Tag tag = jdctx.positions.getTag(caretOffset);
+        DocTreePath tag = getTag(jdctx, caretOffset);
         if (tag != null) {
             insideTag(tag, jdctx);
         }
@@ -369,7 +418,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         assert jdctx.jdts.token() != null;
         assert jdctx.jdts.token().id() == JavadocTokenId.DOT;
 
-        Tag tag = jdctx.positions.getTag(caretOffset);
+        DocTreePath tag = getTag(jdctx, caretOffset);
         if (tag != null) {
             insideTag(tag, jdctx);
         }
@@ -379,7 +428,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         assert jdctx.jdts.token() != null;
         assert jdctx.jdts.token().id() == JavadocTokenId.HASH;
 
-        Tag tag = jdctx.positions.getTag(caretOffset);
+        DocTreePath tag = getTag(jdctx, caretOffset);
         if (tag != null) {
             insideTag(tag, jdctx);
         }
@@ -389,35 +438,45 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         assert jdctx.jdts.token() != null;
         assert jdctx.jdts.token().id() == JavadocTokenId.HTML_TAG;
 
-        Tag tag = jdctx.positions.getTag(caretOffset);
-        if (tag != null && "@param".equals(tag.name())) {
+        DocTreePath tag = getTag(jdctx, caretOffset);
+        if (tag != null && tag.getLeaf().getKind() == Kind.PARAM) {
             // type param
             insideParamTag(tag, jdctx);
         }
     }
     
-    private void insideTag(Tag tag, JavadocContext jdctx) {
-        String kind = tag.kind();
-        if ("@param".equals(kind)) { // NOI18N
-            insideParamTag(tag, jdctx);
-        } else if ("@see".equals(kind) || "@throws".equals(kind) || "@value".equals(kind) // NOI18N
-                || (DocPositions.UNCLOSED_INLINE_TAG == kind && ("@link".equals(tag.name()) || "@linkplain".equals(tag.name()) || "@value".equals(tag.name())))) { // NOI18N
-            insideSeeTag(tag, jdctx);
+    private void insideTag(DocTreePath tag, JavadocContext jdctx) {
+        switch (tag.getLeaf().getKind()) {
+            case IDENTIFIER:
+                if (tag.getParentPath() == null || tag.getParentPath().getLeaf().getKind() != Kind.PARAM)
+                    break;
+                tag = tag.getParentPath();
+                //intentional fall-through:
+            case PARAM:
+                insideParamTag(tag, jdctx);
+                break;
+            case SEE: case THROWS: case VALUE:
+            case LINK: case LINK_PLAIN://XXX: was only unclosed???
+                insideSeeTag(tag, jdctx);
+                break;
+            case REFERENCE:
+                insideReference(tag, jdctx);
+                break;
         }
     }
     
-    private void insideSeeTag(Tag tag, JavadocContext jdctx) {
+    private void insideSeeTag(DocTreePath tag, JavadocContext jdctx) {
         TokenSequence<JavadocTokenId> jdts = jdctx.jdts;
         assert jdts.token() != null;
-        int[] span = jdctx.positions.getTagSpan(tag);
+        int start = (int) jdctx.positions.getStartPosition(jdctx.javac.getCompilationUnit(), jdctx.comment, tag.getLeaf());
         
-        boolean isThrowsKind = "@throws".equals(tag.kind()); // NOI18N
-        if (isThrowsKind && !(jdctx.jdoc.isMethod() || jdctx.jdoc.isConstructor())) {
+        boolean isThrowsKind = tag.getLeaf().getKind() == Kind.THROWS;
+        if (isThrowsKind && !(EXECUTABLE.contains(jdctx.commentFor.getKind()))) {
             // illegal tag in this context
             return;
         }
         
-        jdts.move(span[0] + (JavadocCompletionUtils.isBlockTag(tag)? 0: 1));
+        jdts.move(start + (JavadocCompletionUtils.isBlockTag(tag)? 0: 1));
         // @see|@link|@throws
         if (!jdts.moveNext() || caretOffset <= jdts.offset() + jdts.token().length()) {
             return;
@@ -458,57 +517,68 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             jdctx.anchorOffset = caretOffset;
             return;
         }
+    }
+    
+    private void insideReference(DocTreePath tag, JavadocContext jdctx) {
+        ReferenceTree ref = (ReferenceTree) tag.getLeaf();
+        boolean isThrowsKind = tag.getParentPath().getLeaf().getKind() == Kind.THROWS;
+        int start = (int) jdctx.positions.getStartPosition(jdctx.javac.getCompilationUnit(), jdctx.comment, ref);
+        int end   = (int) jdctx.positions.getEndPosition(jdctx.javac.getCompilationUnit(), jdctx.comment, ref);
         
-        jdts.moveNext(); // reference
-        JavaReference ref = JavaReference.resolve(jdctx.jdts, jdts.offset(), span[1]);
-        if (ref.isReference() && caretOffset <= ref.end) {
-            // complete type
-            CharSequence cs = JavadocCompletionUtils.getCharSequence(jdctx.doc, ref.begin, caretOffset);
-            StringBuilder sb = new StringBuilder();
-            jdctx.anchorOffset = ref.begin;
-            for (int i = cs.length() - 1; i >= 0; i--) {
-                char c = cs.charAt(i);
-                if (c == '#') {
-                    // complete class member
-                    String prefix = sb.toString();
-                    String fqn = ref.fqn == null? null: ref.fqn.toString();
-                    int substitutionOffset = caretOffset - sb.length();
-                    completeClassMember(fqn, prefix, substitutionOffset, jdctx);
-                    return;
-                } else if (c == '.') {
-                    // complete class or package
-                    String prefix = sb.toString();
-                    String fqn = cs.subSequence(0, i).toString();
-                    int substitutionOffset = caretOffset - sb.length();
-                    if (isThrowsKind) {
-                        completeThrowsOrPkg(fqn, prefix, substitutionOffset, jdctx);
-                    } else {
-                        completeClassOrPkg(fqn, prefix, substitutionOffset, jdctx);
-                    }
-                    return;
+        // complete type
+        CharSequence cs = JavadocCompletionUtils.getCharSequence(jdctx.doc, start, end);
+        StringBuilder sb = new StringBuilder();
+        jdctx.anchorOffset = start;
+        for (int i = caretOffset - start - 1; i >= 0; i--) {
+            char c = cs.charAt(i);
+            if (c == '#') {
+                // complete class member
+                String prefix = sb.toString();
+                int substitutionOffset = caretOffset - sb.length();
+                ExpressionTree classReference = jdctx.javac.getTreeUtilities().getReferenceClass(tag);
+                if (classReference == null) {
+                    addLocalMembersAndVars(jdctx, prefix, substitutionOffset);
                 } else {
-                    sb.insert(0, c);
+                    Element elm = jdctx.javac.getDocTrees().getElement(new TreePath(jdctx.javadocFor, classReference));
+                    if (elm != null) {
+                        addMembers(jdctx, prefix, substitutionOffset, elm.asType(), elm,
+                                EnumSet.<ElementKind>of(ENUM_CONSTANT, FIELD, METHOD, CONSTRUCTOR),
+                                null);
+                    }
                 }
-            }
-            // complete class or package
-            String prefix = sb.toString();
-            String fqn = null;
-            int substitutionOffset = caretOffset - sb.length();
-            if (isThrowsKind) {
-                completeThrowsOrPkg(fqn, prefix, substitutionOffset, jdctx);
+                return;
+            } else if (c == '.') {
+                // complete class or package
+                String prefix = sb.toString();
+                String fqn = cs.subSequence(0, i).toString();
+                int substitutionOffset = caretOffset - sb.length();
+                if (isThrowsKind) {
+                    completeThrowsOrPkg(fqn, prefix, substitutionOffset, jdctx);
+                } else {
+                    completeClassOrPkg(fqn, prefix, substitutionOffset, jdctx);
+                }
+                return;
             } else {
-                completeClassOrPkg(fqn, prefix, substitutionOffset, jdctx);
+                sb.insert(0, c);
             }
-            return;
+        }
+        // complete class or package
+        String prefix = sb.toString();
+        String fqn = null;
+        int substitutionOffset = caretOffset - sb.length();
+        if (isThrowsKind) {
+            completeThrowsOrPkg(fqn, prefix, substitutionOffset, jdctx);
+        } else {
+            completeClassOrPkg(fqn, prefix, substitutionOffset, jdctx);
         }
     }
     
-    private void insideParamTag(Tag tag, JavadocContext jdctx) {
+    private void insideParamTag(DocTreePath tag, JavadocContext jdctx) {
         TokenSequence<JavadocTokenId> jdts = jdctx.jdts;
         assert jdts.token() != null;
-        int[] span = jdctx.positions.getTagSpan(tag);
+        int start = (int) jdctx.positions.getStartPosition(jdctx.javac.getCompilationUnit(), jdctx.comment, tag.getLeaf());
         
-        jdts.move(span[0]);
+        jdts.move(start);
         // @param
         if (!jdts.moveNext() || caretOffset <= jdts.offset() + jdts.token().length()) {
             return;
@@ -548,24 +618,24 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
     }
     
-    private void completeParamName(Tag tag, String prefix, int substitutionOffset, JavadocContext jdctx) {
-        if (jdctx.jdoc.isMethod() || jdctx.jdoc.isConstructor()) {
-            ExecutableMemberDoc emd = (ExecutableMemberDoc) jdctx.jdoc;
-            Parameter[] params = emd.parameters();
-            for (int i = 0; i < params.length; i++) {
-                Parameter param = params[i];
-                if (param.name().startsWith(prefix)) {
-                    items.add(JavadocCompletionItem.createNameItem(param.name(), substitutionOffset));
+    private void completeParamName(DocTreePath tag, String prefix, int substitutionOffset, JavadocContext jdctx) {
+        if (EXECUTABLE.contains(jdctx.commentFor.getKind())) {
+            ExecutableElement method = (ExecutableElement) jdctx.commentFor;
+            for (VariableElement param : method.getParameters()) {
+                String name = param.getSimpleName().toString();
+                
+                if (name.startsWith(prefix)) {
+                    items.add(JavadocCompletionItem.createNameItem(name, substitutionOffset));
                 }
             }
             
-            completeTypeVarName(emd, prefix, substitutionOffset);
-        } else if (jdctx.jdoc.isClass() || jdctx.jdoc.isInterface()) {
-            completeTypeVarName(jdctx.jdoc, prefix, substitutionOffset);
+            completeTypeVarName(jdctx.commentFor, prefix, substitutionOffset);
+        } else if (jdctx.commentFor.getKind().isClass() || jdctx.commentFor.getKind().isInterface()) {
+            completeTypeVarName(jdctx.commentFor, prefix, substitutionOffset);
         }
     }
     
-    private void completeTypeVarName(Doc holder, String prefix, int substitutionOffset) {
+    private void completeTypeVarName(Element forElement, String prefix, int substitutionOffset) {
         if (prefix.length() > 0) {
             if (prefix.charAt(0) == '<') {
                 prefix = prefix.substring(1, prefix.length());
@@ -574,15 +644,15 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
                 return;
             }
         }
-
-        com.sun.javadoc.TypeVariable[] tparams = (holder.isClass() || holder.isInterface())
-                ? ((ClassDoc) holder).typeParameters()
-                : ((ExecutableMemberDoc) holder).typeParameters();
+        List<? extends TypeParameterElement> tparams = (forElement.getKind().isClass() || forElement.getKind().isInterface())
+             ? ((TypeElement) forElement).getTypeParameters()
+             : ((ExecutableElement) forElement).getTypeParameters();
         
-        for (com.sun.javadoc.TypeVariable typeVariable : tparams) {
-            if (typeVariable.simpleTypeName().startsWith(prefix)) {
+        for (TypeParameterElement typeVariable : tparams) {
+            String name = typeVariable.getSimpleName().toString();
+            if (name.startsWith(prefix)) {
                 items.add(JavadocCompletionItem.createNameItem(
-                        '<' + typeVariable.simpleTypeName() + '>', substitutionOffset));
+                        '<' + name + '>', substitutionOffset));
             }
         }
     }
@@ -623,18 +693,20 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         String pkgPrefix;
         
         // add declared Throwables        
-        ExecutableMemberDoc edoc = (ExecutableMemberDoc) jdctx.jdoc;
-        for (Type type : edoc.thrownExceptionTypes()) {
-            String typeName = type.typeName();
+        ExecutableElement method = (ExecutableElement) jdctx.commentFor;
+        for (TypeMirror type : method.getThrownTypes()) {
+            if (type.getKind() != TypeKind.DECLARED) continue;
+            TypeElement clazz = (TypeElement) ((DeclaredType) type).asElement();
+            String typeName = clazz.getSimpleName().toString();
             if (startsWith(typeName, prefix)) {
-                String qualTypeName = type.qualifiedTypeName();
+                String qualTypeName = clazz.getQualifiedName().toString();
                 TypeElement typeElement = elements.getTypeElement(qualTypeName);
                 if (typeElement == null) {
                     continue;
                 }
                 items.add(JavaCompletionItem.createTypeItem(
                         jdctx.javac, typeElement, (DeclaredType) typeElement.asType(),
-                        substitutionOffset, typeName != qualTypeName ? jdctx.getReferencesCount() : null,
+                        substitutionOffset, /*XXX:*/typeName != qualTypeName ? jdctx.getReferencesCount() : null,
                         elements.isDeprecated(typeElement), false, false, false, true, false, null));
                 excludes.add(typeElement);
             }
@@ -687,56 +759,6 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         return null;
     }
     
-    private void completeClassMember(String fqn, String prefix, int substitutionOffset, JavadocContext jdctx) {
-        Element elm;
-        if (fqn == null) {
-            // local members
-            elm = null;
-            
-            addLocalMembersAndVars(jdctx, prefix, substitutionOffset);
-        } else {
-            elm = lookAroundForClass(jdctx.jdoc, fqn, jdctx.javac.getElements());
-//            elm = jdctx.javac.getElements().getTypeElement(fqn);
-//            if (elm == null) {
-//                Element scope = jdctx.handle.resolve(jdctx.javac);
-//                while (scope != null && !(scope.getKind().isClass() || scope.getKind().isInterface())) {
-//                    scope = scope.getEnclosingElement();
-//                }
-//                if (scope == null) {
-//                    return;
-//                }
-//                TypeMirror parsedType = jdctx.javac.getTreeUtilities().parseType(fqn, (TypeElement) scope);
-//                if (parsedType != null && parsedType.getKind() == TypeKind.DECLARED) {
-//                    elm = ((DeclaredType) parsedType).asElement();
-//                }
-//            }
-        }
-        
-        if (elm != null) {
-            addMembers(jdctx, prefix, substitutionOffset, elm.asType(), elm,
-                    EnumSet.<ElementKind>of(ENUM_CONSTANT, FIELD, METHOD, CONSTRUCTOR),
-                    null);
-        }
-    }
-    
-    private static TypeElement lookAroundForClass(Doc holder, String fqn, Elements util) {
-        // borrowed from SeeTagImpl
-        ClassDoc container = null;
-        if (holder instanceof MemberDoc) {
-            container = ((ProgramElementDoc) holder).containingClass();
-        } else if (holder instanceof ClassDoc) {
-            container = (ClassDoc) holder;
-        }
-        
-        if (container != null) {
-            ClassDoc foundClass = container.findClass(fqn);
-            if (foundClass != null) {
-                return util.getTypeElement(foundClass.qualifiedName());
-            }
-        }
-        return null;
-    }
-        
     private void addMembers(final JavadocContext env, final String prefix, final int substitutionOffset, final TypeMirror type, final Element elem, final EnumSet<ElementKind> kinds, final DeclaredType baseType) {
         Set<? extends TypeMirror> smartTypes = /*queryType == COMPLETION_QUERY_TYPE ? env.getSmartTypes() :*/ null;
         final CompilationInfo controller = env.javac;
@@ -1025,7 +1047,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
         }
         for(ElementHandle<TypeElement> name : controller.getClasspathInfo().getClassIndex().getDeclaredTypes(prefix, kind, EnumSet.allOf(ClassIndex.SearchScope.class))) {
             if ((excludeHandles == null || !excludeHandles.contains(name)) && !isAnnonInner(name)) {
-                items.add(LazyTypeCompletionItem.create(name, kinds, substitutionOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), false, false, false, null));
+                items.add(LazyJavaCompletionItem.createTypeItem(name, kinds, substitutionOffset, env.getReferencesCount(), controller.getSnapshot().getSource(), false, false, false, null));
             }
         }
     }
@@ -1230,11 +1252,11 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
 
         CharSequence text = token.text();
         int pos = caretOffset - jdts.offset();
-        Tag tag = jdctx.positions.getTag(caretOffset);
+        DocTreePath tag = getTag(jdctx, caretOffset);
         if (pos > 0 && pos <= text.length() && text.charAt(pos - 1) == '{') {
             if (tag != null && !JavadocCompletionUtils.isBlockTag(tag)) {
-                int[] span = jdctx.positions.getTagSpan(tag);
-                if (span[0] + 1 != caretOffset) {
+                int start = (int) jdctx.positions.getStartPosition(jdctx.javac.getCompilationUnit(), jdctx.comment, tag.getLeaf());
+                if (start + 1 != caretOffset) {
                     return;
                 }
             }
@@ -1255,12 +1277,14 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
     static final class JavadocContext {
         int anchorOffset = -1;
         ElementHandle<Element> handle;
-        Doc jdoc;
-        DocPositions positions;
+        Element commentFor;
+        DocCommentTree comment;
+        DocSourcePositions positions;
         TokenSequence<JavadocTokenId> jdts;
         Document doc;
         CompilationInfo javac;
         private ReferencesCount count;
+        private TreePath javadocFor;
         ReferencesCount getReferencesCount() {
             if (count == null)
                 count = ReferencesCount.get(javac.getClasspathInfo());

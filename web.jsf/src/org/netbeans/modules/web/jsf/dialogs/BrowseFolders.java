@@ -263,12 +263,10 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
 
             try {
                 DataObject dobj = DataObject.find(fObj);
-                FilterNode fn = (isFile
-                        ? new SimpleFilterNode(dobj.getNodeDelegate(), Children.LEAF)
-                        : new SimpleFilterNode(dobj.getNodeDelegate(), new SourceGroupsChildren(fObj, group)));
-                if (key instanceof SourceGroup) {
-                    fn.setDisplayName(group.getDisplayName());
-                }
+                String name = key instanceof SourceGroup ? group.getDisplayName() : null;
+                FilterNode fn = isFile
+                        ? new SimpleFilterNode(dobj.getNodeDelegate(), Children.LEAF, name)
+                        : new SimpleFilterNode(dobj.getNodeDelegate(), new SourceGroupsChildren(fObj, group), name);
 
                 return new Node[]{fn};
             } catch (DataObjectNotFoundException e) {
@@ -335,12 +333,10 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
 
             try {
                 DataObject dobj = DataObject.find(fObj);
-                FilterNode fn = (!fObj.isFolder()
-                        ? new SimpleFilterNode(dobj.getNodeDelegate(), Children.LEAF)
-                        : new SimpleFilterNode(dobj.getNodeDelegate(), new FileObjectsChildren(fObj.getChildren(), null)));
-                if (naming != null) {
-                    fn.setDisplayName(naming.getName(fObj.getPath(), fObj.getName()));
-                }
+                String name = naming != null ? naming.getName(fObj.getPath(), fObj.getName()) : null;
+                FilterNode fn = !fObj.isFolder()
+                        ? new SimpleFilterNode(dobj.getNodeDelegate(), Children.LEAF, name)
+                        : new SimpleFilterNode(dobj.getNodeDelegate(), new FileObjectsChildren(fObj.getChildren(), null), name);
 
                 return new Node[]{fn};
             } catch (DataObjectNotFoundException e) {
@@ -394,8 +390,11 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
 
     private class SimpleFilterNode extends FilterNode {
 
-        public SimpleFilterNode(org.openide.nodes.Node node, org.openide.nodes.Children children) {
+        private final String displayName;
+
+        public SimpleFilterNode(Node node, org.openide.nodes.Children children, String displayName) {
             super(node, children);
+            this.displayName = displayName;
         }
 
         @Override
@@ -406,6 +405,11 @@ public class BrowseFolders extends javax.swing.JPanel implements ExplorerManager
         @Override
         public org.openide.util.actions.SystemAction getDefaultAction() {
             return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return displayName != null ? displayName : super.getDisplayName();
         }
     }
 }

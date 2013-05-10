@@ -178,7 +178,7 @@ public class Flow {
 
         v.deadBranches.remove(null);
         
-        Set<VariableElement> finalCandidates = v.finalCandidatesFromInitializers;
+        Set<VariableElement> finalCandidates = v.finalCandidates;
         
         finalCandidates.removeAll(v.usedWhileUndefined);
 
@@ -251,7 +251,7 @@ public class Flow {
         return false;
     }
 
-    private static final class VisitorImpl extends CancellableTreePathScanner<Boolean, Void> {
+    private static final class VisitorImpl extends CancellableTreePathScanner<Boolean, ConstructorData> {
         
         private final CompilationInfo info;
         
@@ -267,8 +267,7 @@ public class Flow {
         private final List<TreePath> pendingFinally = new LinkedList<TreePath>();
         private final Cancel cancel;
         private boolean doNotRecord;
-        private /*Map<ClassTree, */Set<VariableElement> finalCandidates;
-        private final Set<VariableElement> finalCandidatesFromInitializers = new HashSet<VariableElement>();
+        private /*Map<ClassTree, */Set<VariableElement> finalCandidates = new HashSet<>();
         private final Set<VariableElement> usedWhileUndefined = new HashSet<VariableElement>();
 
         public VisitorImpl(CompilationInfo info, Cancel cancel) {
@@ -283,7 +282,7 @@ public class Flow {
         }
 
         @Override
-        public Boolean scan(Tree tree, Void p) {
+        public Boolean scan(Tree tree, ConstructorData p) {
             resume(tree, resumeBefore);
             
             Boolean result = super.scan(tree, p);
@@ -304,7 +303,7 @@ public class Flow {
         }
 
         @Override
-        public Boolean visitAssignment(AssignmentTree node, Void p) {
+        public Boolean visitAssignment(AssignmentTree node, ConstructorData p) {
             switch (node.getVariable().getKind()) {
                 case MEMBER_SELECT:
                     scan(((MemberSelectTree) node.getVariable()).getExpression(), null); //XXX: this will not create a correct TreePath
@@ -330,7 +329,7 @@ public class Flow {
         }
 
         @Override
-        public Boolean visitCompoundAssignment(CompoundAssignmentTree node, Void p) {
+        public Boolean visitCompoundAssignment(CompoundAssignmentTree node, ConstructorData p) {
             switch (node.getVariable().getKind()) {
                 case MEMBER_SELECT:
                     scan(((MemberSelectTree) node.getVariable()).getExpression(), null); //XXX: this will not create a correct TreePath
@@ -354,7 +353,7 @@ public class Flow {
                 
                 if (LOCAL_VARIABLES.contains(e.getKind())) {
                     use2Values.put(node.getVariable(), prevState); //XXX
-                } else if (e.getKind() == ElementKind.FIELD && prevState != null && prevState.hasUnassigned() && !finalCandidatesFromInitializers.contains(ve)) {
+                } else if (e.getKind() == ElementKind.FIELD && prevState != null && prevState.hasUnassigned() && !finalCandidates.contains(ve)) {
                     usedWhileUndefined.add(ve);
                 }
                 
@@ -365,7 +364,7 @@ public class Flow {
         }
 
         @Override
-        public Boolean visitVariable(VariableTree node, Void p) {
+        public Boolean visitVariable(VariableTree node, ConstructorData p) {
             super.visitVariable(node, p);
 
             Element e = info.getTrees().getElement(getCurrentPath());
@@ -379,7 +378,7 @@ public class Flow {
         }
 
         @Override
-        public Boolean visitMemberSelect(MemberSelectTree node, Void p) {
+        public Boolean visitMemberSelect(MemberSelectTree node, ConstructorData p) {
             super.visitMemberSelect(node, p);
             handleCurrentAccess();
             return null;
@@ -394,14 +393,14 @@ public class Flow {
                 
                 if (LOCAL_VARIABLES.contains(e.getKind())) {
                     use2Values.put(getCurrentPath().getLeaf(), prevState);
-                } else if (e.getKind() == ElementKind.FIELD && (prevState == null || prevState.hasUnassigned()) && !finalCandidatesFromInitializers.contains(ve)) {
+                } else if (e.getKind() == ElementKind.FIELD && (prevState == null || prevState.hasUnassigned()) && !finalCandidates.contains(ve)) {
                     usedWhileUndefined.add(ve);
                 }
             }
         }
 
         @Override
-        public Boolean visitLiteral(LiteralTree node, Void p) {
+        public Boolean visitLiteral(LiteralTree node, ConstructorData p) {
             Object val = node.getValue();
 
             if (val instanceof Boolean) {
@@ -412,7 +411,7 @@ public class Flow {
         }
 
         @Override
-        public Boolean visitIf(IfTree node, Void p) {
+        public Boolean visitIf(IfTree node, ConstructorData p) {
             generalizedIf(node.getCondition(), node.getThenStatement(), node.getElseStatement() != null ? Collections.singletonList(node.getElseStatement()) : Collections.<Tree>emptyList(), true);
             return null;
         }
@@ -449,7 +448,7 @@ public class Flow {
         }
 
         @Override
-        public Boolean visitBinary(BinaryTree node, Void p) {
+        public Boolean visitBinary(BinaryTree node, ConstructorData p) {
             Boolean left = scan(node.getLeftOperand(), p);
 
             if (left != null && (node.getKind() == Kind.CONDITIONAL_AND || node.getKind() == Kind.CONDITIONAL_OR)) {
@@ -491,7 +490,7 @@ public class Flow {
         }
 
         @Override
-        public Boolean visitConditionalExpression(ConditionalExpressionTree node, Void p) {
+        public Boolean visitConditionalExpression(ConditionalExpressionTree node, ConstructorData p) {
             Boolean result = scan(node.getCondition(), p);
 
             if (result != null) {
@@ -526,14 +525,14 @@ public class Flow {
         }
 
         @Override
-        public Boolean visitIdentifier(IdentifierTree node, Void p) {
+        public Boolean visitIdentifier(IdentifierTree node, ConstructorData p) {
             super.visitIdentifier(node, p);
             handleCurrentAccess();
             return null;
         }
 
         @Override
-        public Boolean visitUnary(UnaryTree node, Void p) {
+        public Boolean visitUnary(UnaryTree node, ConstructorData p) {
             Boolean val = super.visitUnary(node, p);
 
             if (val != null && node.getKind() == Kind.LOGICAL_COMPLEMENT) {
@@ -552,7 +551,7 @@ public class Flow {
 
                     if (LOCAL_VARIABLES.contains(e.getKind())) {
                         use2Values.put(node.getExpression(), prevState);
-                    } else if (e.getKind() == ElementKind.FIELD && prevState != null && prevState.hasUnassigned() && !finalCandidatesFromInitializers.contains(ve)) {
+                    } else if (e.getKind() == ElementKind.FIELD && prevState != null && prevState.hasUnassigned() && !finalCandidates.contains(ve)) {
                         usedWhileUndefined.add(ve);
                     }
                     
@@ -565,68 +564,84 @@ public class Flow {
         }
 
         @Override
-        public Boolean visitMethod(MethodTree node, Void p) {
+        public Boolean visitMethod(MethodTree node, ConstructorData p) {
             Tree oldNearestMethod = nearestMethod;
             Set<VariableElement> oldCurrentMethodVariables = currentMethodVariables;
             Map<TypeMirror, Collection<Map<VariableElement, State>>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
+            Map<VariableElement, State> oldVariable2State = variable2State;
 
             nearestMethod = node;
             currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<VariableElement, Boolean>());
             resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<VariableElement, State>>>();
-            
-            try {
-                scan(node.getModifiers(), p);
-                scan(node.getReturnType(), p);
-                scan(node.getTypeParameters(), p);
-
-                inParameters = true;
-
-                try {
-                    scan(node.getParameters(), p);
-                } finally {
-                    inParameters = false;
-                }
-
-                scan(node.getThrows(), p);
-                scan(node.getBody(), p);
-                scan(node.getDefaultValue(), p);
-            } finally {
-                nearestMethod = oldNearestMethod;
-                currentMethodVariables = oldCurrentMethodVariables;
-                resumeOnExceptionHandler = oldResumeOnExceptionHandler;
-            }
-            
-            //constructor check:
-            boolean isConstructor = isConstructor(getCurrentPath());
-            Set<VariableElement> definitellyAssignedOnce = new HashSet<VariableElement>();
-            Set<VariableElement> assigned = new HashSet<VariableElement>();
+            variable2State = new HashMap<>(variable2State);
             
             for (Iterator<Entry<VariableElement, State>> it = variable2State.entrySet().iterator(); it.hasNext();) {
                 Entry<VariableElement, State> e = it.next();
                 
-                if (e.getKey().getKind() == ElementKind.FIELD) {
-                    if (isConstructor && !e.getValue().hasUnassigned() && !e.getValue().reassigned && !e.getKey().getModifiers().contains(Modifier.STATIC)) {
-                        definitellyAssignedOnce.add(e.getKey());
+                if (e.getKey().getKind().isField()) it.remove();
+            }
+            
+            try {
+                scan(node.getModifiers(), null);
+                scan(node.getReturnType(), null);
+                scan(node.getTypeParameters(), null);
+
+                inParameters = true;
+
+                try {
+                    scan(node.getParameters(), null);
+                } finally {
+                    inParameters = false;
+                }
+
+                scan(node.getThrows(), null);
+                
+                List<Tree> additionalTrees = p != null ? p.initializers : Collections.<Tree>emptyList();
+                handleInitializers(additionalTrees);
+                
+                scan(node.getBody(), null);
+                scan(node.getDefaultValue(), null);
+            
+                //constructor check:
+                boolean isConstructor = isConstructor(getCurrentPath());
+                Set<VariableElement> definitellyAssignedOnce = new HashSet<VariableElement>();
+                Set<VariableElement> assigned = new HashSet<VariableElement>();
+
+                for (Iterator<Entry<VariableElement, State>> it = variable2State.entrySet().iterator(); it.hasNext();) {
+                    Entry<VariableElement, State> e = it.next();
+
+                    if (e.getKey().getKind() == ElementKind.FIELD) {
+                        if (isConstructor && !e.getValue().hasUnassigned() && !e.getValue().reassigned && !e.getKey().getModifiers().contains(Modifier.STATIC)) {
+                            definitellyAssignedOnce.add(e.getKey());
+                        }
+
+                        assigned.add(e.getKey());
+
+                        it.remove();
+                    }
+                }
+
+                if (isConstructor && p != null/*IntroduceHint may bypass visitClass - TODO: test in FlowTest missing for this*/) {
+                    if (p.first) {
+                        finalCandidates.addAll(definitellyAssignedOnce);
+                    } else {
+                        finalCandidates.retainAll(definitellyAssignedOnce);
                     }
                     
-                    assigned.add(e.getKey());
-                    
-                    it.remove();
-                }
-            }
-            
-            if (isConstructor) {
-                if (finalCandidates == null) {
-                    definitellyAssignedOnce.removeAll(finalCandidatesFromInitializers);
-                    finalCandidates = definitellyAssignedOnce;
+                    for (VariableElement var : assigned) {
+                        if (var.getModifiers().contains(Modifier.STATIC)) {
+                            finalCandidates.remove(var);
+                        }
+                    }
                 } else {
-                    finalCandidates.retainAll(definitellyAssignedOnce);
+                    finalCandidates.removeAll(assigned);
                 }
-            } else if (finalCandidates != null) {
-                assert finalCandidates == null;
+            } finally {
+                nearestMethod = oldNearestMethod;
+                currentMethodVariables = oldCurrentMethodVariables;
+                resumeOnExceptionHandler = oldResumeOnExceptionHandler;
+                variable2State = mergeOr(variable2State, oldVariable2State, false);
             }
-            
-            finalCandidatesFromInitializers.removeAll(assigned);
             
             return null;
         }
@@ -636,12 +651,12 @@ public class Flow {
         }
 
         @Override
-        public Boolean visitWhileLoop(WhileLoopTree node, Void p) {
+        public Boolean visitWhileLoop(WhileLoopTree node, ConstructorData p) {
             return handleGeneralizedForLoop(null, node.getCondition(), null, node.getStatement(), node.getCondition(), p);
         }
 
         @Override
-        public Boolean visitDoWhileLoop(DoWhileLoopTree node, Void p) {
+        public Boolean visitDoWhileLoop(DoWhileLoopTree node, ConstructorData p) {
             Map<VariableElement, State> beforeLoop = variable2State;
 
             variable2State = new HashMap<VariableElement, Flow.State>(beforeLoop);
@@ -676,11 +691,11 @@ public class Flow {
         }
 
         @Override
-        public Boolean visitForLoop(ForLoopTree node, Void p) {
+        public Boolean visitForLoop(ForLoopTree node, ConstructorData p) {
             return handleGeneralizedForLoop(node.getInitializer(), node.getCondition(), node.getUpdate(), node.getStatement(), node.getCondition(), p);
         }
         
-        private Boolean handleGeneralizedForLoop(Iterable<? extends Tree> initializer, Tree condition, Iterable<? extends Tree> update, Tree statement, Tree resumeOn, Void p) {
+        private Boolean handleGeneralizedForLoop(Iterable<? extends Tree> initializer, Tree condition, Iterable<? extends Tree> update, Tree statement, Tree resumeOn, ConstructorData p) {
             scan(initializer, null);
             
             Map<VariableElement, State> beforeLoop = variable2State;
@@ -720,7 +735,7 @@ public class Flow {
             return null;
         }
 
-        public Boolean visitTry(TryTree node, Void p) {
+        public Boolean visitTry(TryTree node, ConstructorData p) {
             if (node.getFinallyBlock() != null) {
                 pendingFinally.add(0, new TreePath(getCurrentPath(), node.getFinallyBlock()));
             }
@@ -773,7 +788,7 @@ public class Flow {
             return null;
         }
 
-        public Boolean visitReturn(ReturnTree node, Void p) {
+        public Boolean visitReturn(ReturnTree node, ConstructorData p) {
             super.visitReturn(node, p);
             variable2State = new HashMap<VariableElement, State>(variable2State);
 
@@ -796,7 +811,7 @@ public class Flow {
             return null;
         }
 
-        public Boolean visitBreak(BreakTree node, Void p) {
+        public Boolean visitBreak(BreakTree node, ConstructorData p) {
             super.visitBreak(node, p);
 
             StatementTree target = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
@@ -808,7 +823,7 @@ public class Flow {
             return null;
         }
 
-        public Boolean visitSwitch(SwitchTree node, Void p) {
+        public Boolean visitSwitch(SwitchTree node, ConstructorData p) {
             scan(node.getExpression(), null);
 
             Map<VariableElement, State> origVariable2State = new HashMap<VariableElement, State>(variable2State);
@@ -834,12 +849,12 @@ public class Flow {
             return null;
         }
 
-        public Boolean visitEnhancedForLoop(EnhancedForLoopTree node, Void p) {
+        public Boolean visitEnhancedForLoop(EnhancedForLoopTree node, ConstructorData p) {
             return handleGeneralizedForLoop(Arrays.asList(node.getVariable(), node.getExpression()), null, null, node.getStatement(), node.getStatement(), p);
         }
 
         @Override
-        public Boolean visitAssert(AssertTree node, Void p) {
+        public Boolean visitAssert(AssertTree node, ConstructorData p) {
             Map<VariableElement, State> oldVariable2State = variable2State;
 
             variable2State = new HashMap<VariableElement, Flow.State>(oldVariable2State);
@@ -860,7 +875,7 @@ public class Flow {
             return null;
         }
 
-        public Boolean visitContinue(ContinueTree node, Void p) {
+        public Boolean visitContinue(ContinueTree node, ConstructorData p) {
             StatementTree loop = info.getTreeUtilities().getBreakContinueTarget(getCurrentPath());
 
             if (loop == null) {
@@ -905,7 +920,7 @@ public class Flow {
             return null;
         }
 
-        public Boolean visitThrow(ThrowTree node, Void p) {
+        public Boolean visitThrow(ThrowTree node, ConstructorData p) {
             super.visitThrow(node, p);
 
             if (node.getExpression() != null) {
@@ -917,7 +932,7 @@ public class Flow {
             return null;
         }
 
-        public Boolean visitMethodInvocation(MethodInvocationTree node, Void p) {
+        public Boolean visitMethodInvocation(MethodInvocationTree node, ConstructorData p) {
             super.visitMethodInvocation(node, p);
 
             Element invoked = info.getTrees().getElement(getCurrentPath());
@@ -929,7 +944,7 @@ public class Flow {
             return null;
         }
 
-        public Boolean visitNewClass(NewClassTree node, Void p) {
+        public Boolean visitNewClass(NewClassTree node, ConstructorData p) {
             super.visitNewClass(node, p);
 
             Element invoked = info.getTrees().getElement(getCurrentPath());
@@ -941,73 +956,74 @@ public class Flow {
             return null;
         }
 
-        public Boolean visitClass(ClassTree node, Void p) {
-            List<BlockTree> initializers = new ArrayList<BlockTree>(node.getMembers().size());
-            List<VariableTree> variables = new ArrayList<VariableTree>(node.getMembers().size());
-            List<Tree> constructors = new ArrayList<Tree>(node.getMembers().size());
+        public Boolean visitClass(ClassTree node, ConstructorData p) {
+            List<Tree> staticInitializers = new ArrayList<Tree>(node.getMembers().size());
+            List<Tree> instanceInitializers = new ArrayList<Tree>(node.getMembers().size());
+            List<MethodTree> constructors = new ArrayList<MethodTree>(node.getMembers().size());
             List<Tree> others = new ArrayList<Tree>(node.getMembers().size());
             
             for (Tree member : node.getMembers()) {
                 if (member.getKind() == Kind.BLOCK) {
-                    initializers.add((BlockTree) member);
-                } else if (member.getKind() == Kind.VARIABLE) {
-                    variables.add((VariableTree) member);
+                    if (((BlockTree) member).isStatic()) {
+                        staticInitializers.add(member);
+                    } else {
+                        instanceInitializers.add(member);
+                    }
+                } else if (member.getKind() == Kind.VARIABLE && ((VariableTree) member).getInitializer() != null) {
+                    if (((VariableTree) member).getModifiers().getFlags().contains(Modifier.STATIC)) {
+                        staticInitializers.add((VariableTree) member);
+                    } else {
+                        instanceInitializers.add((VariableTree) member);
+                    }
                 } else if (isConstructor(new TreePath(getCurrentPath(), member))) {
-                    constructors.add(member);
+                    constructors.add((MethodTree) member);
                 } else {
                     others.add(member);
                 }
             }
             
-            for (VariableTree f : variables) {
-                scan(f, p);
-                
-                Element e = info.getTrees().getElement(new TreePath(getCurrentPath(), f));
+            Map<VariableElement, State> oldVariable2State = variable2State;
 
-                if (e != null && e.getKind() == ElementKind.FIELD) {
-                    variable2State.remove((VariableElement) e);
-                    if (f.getInitializer() != null)
-                        finalCandidatesFromInitializers.add((VariableElement) e);
-                }
+            variable2State = new HashMap<>(variable2State);
+            
+            for (Iterator<Entry<VariableElement, State>> it = variable2State.entrySet().iterator(); it.hasNext();) {
+                Entry<VariableElement, State> e = it.next();
+                
+                if (e.getKey().getKind().isField()) it.remove();
             }
             
-            for (BlockTree init : initializers) {
-                Tree oldNearestMethod = nearestMethod;
-                Set<VariableElement> oldCurrentMethodVariables = currentMethodVariables;
-                Map<TypeMirror, Collection<Map<VariableElement, State>>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
+            try {
+                handleInitializers(staticInitializers);
+            
+                //constructor check:
+                Set<VariableElement> definitellyAssignedOnce = new HashSet<VariableElement>();
+                Set<VariableElement> assigned = new HashSet<VariableElement>();
 
-                nearestMethod = init;
-                currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<VariableElement, Boolean>());
-                resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<VariableElement, State>>>();
-
-                try {
-                    scan(init.getStatements(), p);
-                } finally {
-                    nearestMethod = oldNearestMethod;
-                    currentMethodVariables = oldCurrentMethodVariables;
-                    resumeOnExceptionHandler = oldResumeOnExceptionHandler;
-                }
-                
                 for (Iterator<Entry<VariableElement, State>> it = variable2State.entrySet().iterator(); it.hasNext();) {
                     Entry<VariableElement, State> e = it.next();
 
                     if (e.getKey().getKind() == ElementKind.FIELD) {
-                        if (!e.getValue().hasUnassigned() && !e.getValue().reassigned && !finalCandidatesFromInitializers.contains(e.getKey()) && init.isStatic() == e.getKey().getModifiers().contains(Modifier.STATIC)) {
-                            finalCandidatesFromInitializers.add(e.getKey());
-                        } else {
-                            finalCandidatesFromInitializers.remove(e.getKey());
+                        if (!e.getValue().hasUnassigned() && !e.getValue().reassigned && e.getKey().getModifiers().contains(Modifier.STATIC)) {
+                            definitellyAssignedOnce.add(e.getKey());
                         }
+
+                        assigned.add(e.getKey());
 
                         it.remove();
                     }
                 }
+
+                finalCandidates.addAll(definitellyAssignedOnce);
+                //TODO: support for erroneous source code, we should prevent marking instance fields written in static blocks as final-able (i.e. none of "assigned" - "definitellyAssignedOnce" should ever be final candidates
+            } finally {
+                variable2State = mergeOr(variable2State, oldVariable2State, false);
             }
+
+            boolean first = true;
             
-            scan(constructors, p);
-            
-            if (finalCandidates != null) {
-                finalCandidatesFromInitializers.addAll(finalCandidates);
-                finalCandidates = null;
+            for (MethodTree constructor : constructors) {
+                scan(constructor, new ConstructorData(first, instanceInitializers));
+                first = false;
             }
             
             scan(others, p);
@@ -1016,7 +1032,7 @@ public class Flow {
             return null;
         }
 
-        public Boolean visitBlock(BlockTree node, Void p) {
+        public Boolean visitBlock(BlockTree node, ConstructorData p) {
             List<? extends StatementTree> statements = new ArrayList<StatementTree>(node.getStatements());
             
             for (int i = 0; i < statements.size(); i++) {
@@ -1065,7 +1081,7 @@ public class Flow {
             r.add(new HashMap<VariableElement, State>(variable2State));
         }
 
-        public Boolean visitParenthesized(ParenthesizedTree node, Void p) {
+        public Boolean visitParenthesized(ParenthesizedTree node, ConstructorData p) {
             return super.visitParenthesized(node, p);
         }
 
@@ -1100,136 +1116,168 @@ public class Flow {
             r.add(new HashMap<VariableElement, State>(state));
         }
 
-        public Boolean visitWildcard(WildcardTree node, Void p) {
+        public Boolean visitWildcard(WildcardTree node, ConstructorData p) {
             super.visitWildcard(node, p);
             return null;
         }
 
-        public Boolean visitUnionType(UnionTypeTree node, Void p) {
+        public Boolean visitUnionType(UnionTypeTree node, ConstructorData p) {
             super.visitUnionType(node, p);
             return null;
         }
 
-        public Boolean visitTypeParameter(TypeParameterTree node, Void p) {
+        public Boolean visitTypeParameter(TypeParameterTree node, ConstructorData p) {
             super.visitTypeParameter(node, p);
             return null;
         }
 
-        public Boolean visitTypeCast(TypeCastTree node, Void p) {
+        public Boolean visitTypeCast(TypeCastTree node, ConstructorData p) {
             super.visitTypeCast(node, p);
             return null;
         }
 
-        public Boolean visitSynchronized(SynchronizedTree node, Void p) {
+        public Boolean visitSynchronized(SynchronizedTree node, ConstructorData p) {
             super.visitSynchronized(node, p);
             return null;
         }
 
-        public Boolean visitPrimitiveType(PrimitiveTypeTree node, Void p) {
+        public Boolean visitPrimitiveType(PrimitiveTypeTree node, ConstructorData p) {
             super.visitPrimitiveType(node, p);
             return null;
         }
 
-        public Boolean visitParameterizedType(ParameterizedTypeTree node, Void p) {
+        public Boolean visitParameterizedType(ParameterizedTypeTree node, ConstructorData p) {
             super.visitParameterizedType(node, p);
             return null;
         }
 
-        public Boolean visitOther(Tree node, Void p) {
+        public Boolean visitOther(Tree node, ConstructorData p) {
             super.visitOther(node, p);
             return null;
         }
 
-        public Boolean visitNewArray(NewArrayTree node, Void p) {
+        public Boolean visitNewArray(NewArrayTree node, ConstructorData p) {
             super.visitNewArray(node, p);
             return null;
         }
 
-        public Boolean visitModifiers(ModifiersTree node, Void p) {
+        public Boolean visitModifiers(ModifiersTree node, ConstructorData p) {
             super.visitModifiers(node, p);
             return null;
         }
 
-        public Boolean visitLabeledStatement(LabeledStatementTree node, Void p) {
+        public Boolean visitLabeledStatement(LabeledStatementTree node, ConstructorData p) {
             super.visitLabeledStatement(node, p);
             return null;
         }
 
-        public Boolean visitInstanceOf(InstanceOfTree node, Void p) {
+        public Boolean visitInstanceOf(InstanceOfTree node, ConstructorData p) {
             super.visitInstanceOf(node, p);
             return null;
         }
 
-        public Boolean visitImport(ImportTree node, Void p) {
+        public Boolean visitImport(ImportTree node, ConstructorData p) {
             super.visitImport(node, p);
             return null;
         }
 
-        public Boolean visitExpressionStatement(ExpressionStatementTree node, Void p) {
+        public Boolean visitExpressionStatement(ExpressionStatementTree node, ConstructorData p) {
             super.visitExpressionStatement(node, p);
             return null;
         }
 
-        public Boolean visitErroneous(ErroneousTree node, Void p) {
+        public Boolean visitErroneous(ErroneousTree node, ConstructorData p) {
             super.visitErroneous(node, p);
             return null;
         }
 
-        public Boolean visitEmptyStatement(EmptyStatementTree node, Void p) {
+        public Boolean visitEmptyStatement(EmptyStatementTree node, ConstructorData p) {
             super.visitEmptyStatement(node, p);
             return null;
         }
 
-        public Boolean visitCompilationUnit(CompilationUnitTree node, Void p) {
+        public Boolean visitCompilationUnit(CompilationUnitTree node, ConstructorData p) {
             super.visitCompilationUnit(node, p);
             return null;
         }
 
-        public Boolean visitCatch(CatchTree node, Void p) {
+        public Boolean visitCatch(CatchTree node, ConstructorData p) {
             super.visitCatch(node, p);
             return null;
         }
 
-        public Boolean visitCase(CaseTree node, Void p) {
+        public Boolean visitCase(CaseTree node, ConstructorData p) {
             super.visitCase(node, p);
             return null;
         }
 
-        public Boolean visitArrayType(ArrayTypeTree node, Void p) {
+        public Boolean visitArrayType(ArrayTypeTree node, ConstructorData p) {
             super.visitArrayType(node, p);
             return null;
         }
 
-        public Boolean visitArrayAccess(ArrayAccessTree node, Void p) {
+        public Boolean visitArrayAccess(ArrayAccessTree node, ConstructorData p) {
             super.visitArrayAccess(node, p);
             return null;
         }
 
-        public Boolean visitAnnotation(AnnotationTree node, Void p) {
+        public Boolean visitAnnotation(AnnotationTree node, ConstructorData p) {
             super.visitAnnotation(node, p);
             return null;
         }
 
         private Map<VariableElement, State> mergeOr(Map<VariableElement, State> into, Map<VariableElement, State> what) {
+            return mergeOr(into, what, true);
+        }
+        
+        private Map<VariableElement, State> mergeOr(Map<VariableElement, State> into, Map<VariableElement, State> what, boolean markMissingAsUnassigned) {
             for (Entry<VariableElement, State> e : what.entrySet()) {
                 State stt = into.get(e.getKey());
 
                 if (stt != null) {
                     into.put(e.getKey(), stt.merge(e.getValue()));
-                } else if (e.getKey().getKind() == ElementKind.FIELD) {
+                } else if (e.getKey().getKind() == ElementKind.FIELD && markMissingAsUnassigned) {
                     into.put(e.getKey(), e.getValue().merge(UNASSIGNED));
                 } else {
                     into.put(e.getKey(), e.getValue());
                 }
             }
             
-            for (Entry<VariableElement, State> e : into.entrySet()) {
-                if (e.getKey().getKind() == ElementKind.FIELD && !what.containsKey(e.getKey())) {
-                    into.put(e.getKey(), e.getValue().merge(UNASSIGNED));
+            if (markMissingAsUnassigned) {
+                for (Entry<VariableElement, State> e : into.entrySet()) {
+                    if (e.getKey().getKind() == ElementKind.FIELD && !what.containsKey(e.getKey())) {
+                        into.put(e.getKey(), e.getValue().merge(UNASSIGNED));
+                    }
                 }
             }
 
             return into;
+        }
+
+        private void handleInitializers(List<Tree> additionalTrees) {
+            for (Tree additionalTree : additionalTrees) {
+                switch (additionalTree.getKind()) {
+                    case BLOCK:
+                        Tree oldNearestMethod = nearestMethod;
+                        Set<VariableElement> oldCurrentMethodVariables = currentMethodVariables;
+                        Map<TypeMirror, Collection<Map<VariableElement, State>>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
+
+                        nearestMethod = additionalTree;
+                        currentMethodVariables = Collections.newSetFromMap(new IdentityHashMap<VariableElement, Boolean>());
+                        resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<VariableElement, State>>>();
+
+                        try {
+                            scan(((BlockTree) additionalTree).getStatements(), null);
+                        } finally {
+                            nearestMethod = oldNearestMethod;
+                            currentMethodVariables = oldCurrentMethodVariables;
+                            resumeOnExceptionHandler = oldResumeOnExceptionHandler;
+                        }
+                        break;
+                    case VARIABLE: scan(additionalTree, null); break;
+                    default: assert false : additionalTree.getKind(); break;
+                }
+            }
         }
     }
     
@@ -1260,6 +1308,15 @@ public class Flow {
         
         public boolean hasUnassigned() {
             return assignments.contains(null);
+        }
+    }
+    
+    static class ConstructorData {
+        final boolean first;
+        final List<Tree> initializers;
+        public ConstructorData(boolean first, List<Tree> initializers) {
+            this.first = first;
+            this.initializers = initializers;
         }
     }
     

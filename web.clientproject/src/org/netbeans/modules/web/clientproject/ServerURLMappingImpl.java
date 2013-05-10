@@ -48,6 +48,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import org.netbeans.modules.javascript.jstestdriver.api.JsTestDriver;
+import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.modules.web.common.api.WebServer;
@@ -70,8 +71,9 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
     @Override
     public URL toServer(int projectContext, FileObject projectFile) {
         if (projectContext == ServerURLMapping.CONTEXT_PROJECT_SOURCES) {
+            URL u = null;
             if (project.isUsingEmbeddedServer()) {
-                return WebServer.getWebserver().toServer(projectFile);
+                u = WebServer.getWebserver().toServer(projectFile);
             } else {
                 String relPath = FileUtil.getRelativePath(project.getSiteRootFolder(), projectFile);
                 String root = project.getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_PROJECT_URL);
@@ -81,8 +83,13 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
                 if (!root.endsWith("/")) { //NOI18N
                     root += "/"; //NOI18N
                 }
-                return WebUtils.stringToUrl(root + relPath);
+                u = WebUtils.stringToUrl(root + relPath);
             }
+            WebBrowser browser = project.getProjectWebBrowser();
+            if (browser != null) {
+                u = browser.toBrowserURL(project, projectFile, u);
+            }
+            return u;
         } else {
             return toJsTestDriverServer(projectFile);
         }
@@ -90,6 +97,10 @@ public class ServerURLMappingImpl implements ServerURLMappingImplementation {
 
     @Override
     public FileObject fromServer(int projectContext, URL serverURL) {
+        WebBrowser browser = project.getProjectWebBrowser();
+        if (browser != null) {
+            serverURL = browser.fromBrowserURL(project, serverURL);
+        }
         FileObject fo = null;
         if (project.isUsingEmbeddedServer()) {
             fo = WebServer.getWebserver().fromServer(serverURL);

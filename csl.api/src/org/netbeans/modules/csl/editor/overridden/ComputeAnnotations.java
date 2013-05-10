@@ -68,6 +68,7 @@ import org.netbeans.modules.csl.core.AbstractTaskFactory;
 import org.netbeans.modules.csl.core.GsfHtmlFormatter;
 import org.netbeans.modules.csl.core.Language;
 import org.netbeans.modules.csl.core.LanguageRegistry;
+import org.netbeans.modules.csl.navigation.ElementScanningTask;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -124,15 +125,25 @@ public class ComputeAnnotations extends ParserResultTask<Result> {
                         StructureScanner scanner = language.getStructure();
                         OverridingMethods om = language.getOverridingMethods();
                         if (scanner != null && om != null) {
-                            long startTime = System.currentTimeMillis();
                             Parser.Result r = resultIterator.getParserResult();
                             if (r instanceof ParserResult) {
                                 Map<ElementHandle, Collection<? extends AlternativeLocation>> overriding = new HashMap<ElementHandle, Collection<? extends AlternativeLocation>>();
                                 Map<ElementHandle, Collection<? extends AlternativeLocation>> overridden = new HashMap<ElementHandle, Collection<? extends AlternativeLocation>>();
                                 Set<ElementHandle> seen = new HashSet<ElementHandle>();
                                 Map<ElementHandle, ElementHandle> node2Parent = new HashMap<ElementHandle, ElementHandle>();
-                                List<StructureItem> todo = new LinkedList<StructureItem>(scanner.scan((ParserResult) r));
+                                
+                                List<? extends StructureItem> children = ElementScanningTask.findCachedStructure(resultIterator.getSnapshot(), r);
+                                if (children == null) {
+                                    long startTime = System.currentTimeMillis();
+                                    children = scanner.scan((ParserResult) r);
 
+                                    long endTime = System.currentTimeMillis();
+                                    Logger.getLogger("TIMER").log(Level.FINE, "Structure (" + language.getMimeType() + ")",
+                                            new Object[]{file, endTime - startTime});
+                                    ElementScanningTask.markProcessed(r, children);
+                                }        
+                                List<StructureItem> todo = new LinkedList<StructureItem>(children);
+                                
                                 while (!todo.isEmpty()) {
                                     StructureItem i = todo.remove(0);
 

@@ -256,23 +256,29 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         panelTopLabel.setLayout(new java.awt.GridBagLayout());
 
         labelInitialRemark.setText(org.openide.util.NbBundle.getBundle(JFXDeploymentPanel.class).getString("JFXDeploymentPanel.labelInitialRemark.text")); // NOI18N
+        labelInitialRemark.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        labelInitialRemark.setPreferredSize(new java.awt.Dimension(1015, 35));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.weighty = 0.1;
         panelTopLabel.add(labelInitialRemark, gridBagConstraints);
 
         labelInitialRemarkSwing.setText(org.openide.util.NbBundle.getBundle(JFXDeploymentPanel.class).getString("JFXDeploymentPanel.labelInitialRemarkSwing.text")); // NOI18N
+        labelInitialRemarkSwing.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        labelInitialRemarkSwing.setPreferredSize(new java.awt.Dimension(1047, 35));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
         gridBagConstraints.weightx = 0.1;
+        gridBagConstraints.weighty = 0.1;
         panelTopLabel.add(labelInitialRemarkSwing, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -387,6 +393,8 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
         warningSigning.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/javafx2/project/ui/resources/info.png"))); // NOI18N
         warningSigning.setText(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.warningSigning.text")); // NOI18N
+        warningSigning.setPreferredSize(new java.awt.Dimension(526, 30));
+        warningSigning.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -395,7 +403,7 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.ipady = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
         gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 36, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 36, 9, 0);
         panelBottom.add(warningSigning, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(buttonSigning, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.buttonSigning.text")); // NOI18N
@@ -591,19 +599,18 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 11;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(3, 19, 15, 10);
         panelBottom.add(labelRT, gridBagConstraints);
         labelRT.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.labelRT.text")); // NOI18N
         labelRT.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelRT.toolTipText")); // NOI18N
 
-        comboBoxRT.setPreferredSize(new java.awt.Dimension(56, 20));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 11;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.FIRST_LINE_START;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
+        gridBagConstraints.weighty = 0.1;
         panelBottom.add(comboBoxRT, gridBagConstraints);
         comboBoxRT.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.comboBoxRT.text")); // NOI18N
         comboBoxRT.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.comboBoxRT.text")); // NOI18N

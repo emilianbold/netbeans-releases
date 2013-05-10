@@ -166,36 +166,38 @@ is divided into following sections:
             
             <target name="-do-init">
                 <xsl:attribute name="depends">-pre-init,-init-private<xsl:if test="/p:project/p:configuration/libs:libraries/libs:definitions">,-init-libraries</xsl:if>,-init-user,-init-project,-init-macrodef-property</xsl:attribute>
-                <xsl:if test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
-                    <j2seproject1:property name="platform.home" value="platforms.${{platform.active}}.home"/>
-                    <j2seproject1:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
-                    <j2seproject1:property name="platform.compiler" value="platforms.${{platform.active}}.compile"/>
-                    <j2seproject1:property name="platform.javac.tmp" value="platforms.${{platform.active}}.javac"/>
-                    <condition property="platform.javac" value="${{platform.home}}/bin/javac">
-                        <equals arg1="${{platform.javac.tmp}}" arg2="$${{platforms.${{platform.active}}.javac}}"/>
-                    </condition>
-                    <property name="platform.javac" value="${{platform.javac.tmp}}"/>
-                    <j2seproject1:property name="platform.java.tmp" value="platforms.${{platform.active}}.java"/>
-                    <condition property="platform.java" value="${{platform.home}}/bin/java">
-                        <equals arg1="${{platform.java.tmp}}" arg2="$${{platforms.${{platform.active}}.java}}"/>
-                    </condition>
-                    <property name="platform.java" value="${{platform.java.tmp}}"/>
-                    <j2seproject1:property name="platform.javadoc.tmp" value="platforms.${{platform.active}}.javadoc"/>
-                    <condition property="platform.javadoc" value="${{platform.home}}/bin/javadoc">
-                        <equals arg1="${{platform.javadoc.tmp}}" arg2="$${{platforms.${{platform.active}}.javadoc}}"/>
-                    </condition>
-                    <property name="platform.javadoc" value="${{platform.javadoc.tmp}}"/>
-                    <condition property="platform.invalid" value="true">
-                        <or>
-                            <contains string="${{platform.javac}}" substring="$${{platforms."/>
-                            <contains string="${{platform.java}}" substring="$${{platforms."/>
-                            <contains string="${{platform.javadoc}}" substring="$${{platforms."/>
-                        </or>
-                    </condition>
-                    <fail unless="platform.home">Must set platform.home</fail>
-                    <fail unless="platform.bootcp">Must set platform.bootcp</fail>
-                    <fail unless="platform.java">Must set platform.java</fail>
-                    <fail unless="platform.javac">Must set platform.javac</fail>
+
+                <xsl:choose>
+                    <xsl:when test="/p:project/p:configuration/j2seproject3:data/j2seproject3:explicit-platform">
+                        <j2seproject1:property name="platform.home" value="platforms.${{platform.active}}.home"/>
+                        <j2seproject1:property name="platform.bootcp" value="platforms.${{platform.active}}.bootclasspath"/>
+                        <j2seproject1:property name="platform.compiler" value="platforms.${{platform.active}}.compile"/>
+                        <j2seproject1:property name="platform.javac.tmp" value="platforms.${{platform.active}}.javac"/>
+                        <condition property="platform.javac" value="${{platform.home}}/bin/javac">
+                            <equals arg1="${{platform.javac.tmp}}" arg2="$${{platforms.${{platform.active}}.javac}}"/>
+                        </condition>
+                        <property name="platform.javac" value="${{platform.javac.tmp}}"/>
+                        <j2seproject1:property name="platform.java.tmp" value="platforms.${{platform.active}}.java"/>
+                        <condition property="platform.java" value="${{platform.home}}/bin/java">
+                            <equals arg1="${{platform.java.tmp}}" arg2="$${{platforms.${{platform.active}}.java}}"/>
+                        </condition>
+                        <property name="platform.java" value="${{platform.java.tmp}}"/>
+                        <j2seproject1:property name="platform.javadoc.tmp" value="platforms.${{platform.active}}.javadoc"/>
+                        <condition property="platform.javadoc" value="${{platform.home}}/bin/javadoc">
+                            <equals arg1="${{platform.javadoc.tmp}}" arg2="$${{platforms.${{platform.active}}.javadoc}}"/>
+                        </condition>
+                        <property name="platform.javadoc" value="${{platform.javadoc.tmp}}"/>
+                        <condition property="platform.invalid" value="true">
+                            <or>
+                                <contains string="${{platform.javac}}" substring="$${{platforms."/>
+                                <contains string="${{platform.java}}" substring="$${{platforms."/>
+                                <contains string="${{platform.javadoc}}" substring="$${{platforms."/>
+                            </or>
+                        </condition>
+                        <fail unless="platform.home">Must set platform.home</fail>
+                        <fail unless="platform.bootcp">Must set platform.bootcp</fail>
+                        <fail unless="platform.java">Must set platform.java</fail>
+                        <fail unless="platform.javac">Must set platform.javac</fail>
   <fail if="platform.invalid">
  The J2SE Platform is not correctly set up.
  Your active platform is: ${platform.active}, but the corresponding property "platforms.${platform.active}.home" is not found in the project's properties files. 
@@ -204,7 +206,11 @@ is divided into following sections:
      ant -Duser.properties.file=&lt;path_to_property_file&gt; jar (where you put the property "platforms.${platform.active}.home" in a .properties file)
   or ant -Dplatforms.${platform.active}.home=&lt;path_to_JDK_home&gt; jar (where no properties file is used) 
   </fail>
-                </xsl:if>
+                    </xsl:when>
+                    <xsl:otherwise>
+                        <property name="platform.java" value="${{java.home}}/bin/java"/>
+                    </xsl:otherwise>
+                </xsl:choose>
                 <available file="${{manifest.file}}" property="manifest.available"/>
                 <condition property="splashscreen.available">
                     <and>
@@ -857,6 +863,7 @@ is divided into following sections:
                         </union>
                         <taskdef name="testng" classname="org.testng.TestNGAntTask" classpath="${{run.test.classpath}}"/>
                         <testng>
+                            <xsl:attribute name="listeners">org.testng.reporters.VerboseReporter</xsl:attribute>
                             <xsl:attribute name="mode">${testng.mode}</xsl:attribute>
                             <xsl:attribute name="classfilesetref">test.set</xsl:attribute>
                             <xsl:attribute name="workingDir">${work.dir}</xsl:attribute> <!-- #47474: match <java> --> 

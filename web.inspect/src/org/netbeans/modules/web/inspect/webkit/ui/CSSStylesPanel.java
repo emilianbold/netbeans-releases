@@ -95,9 +95,11 @@ import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 /**
@@ -196,6 +198,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
             contentUpdateInProgress = keepSelection;
             nodeLookup.setPageModel(pageModel);
             selectionPanel.updateContent(pageModel, keepSelection);
+            updateTitle();
         } finally {
             // Ugly hack that ensures that contentUpdateInProgress
             // is not set to false before the update of Document
@@ -213,7 +216,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                                         @Override
                                         public void run() {
                                             contentUpdateInProgress = false;
-                                            updateRulesEditor(ruleLookupResult.allInstances());
+                                            updateRulesEditor();
                                         }
                                     });
                                 }
@@ -230,14 +233,13 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
 
     /**
      * Updates the rules editor window to show information about the selected rule.
-     *
-     * @param rules rules selected in this panel.
      */
-    void updateRulesEditor(final Collection<? extends Rule> rules) {
+    void updateRulesEditor() {
         RP.post(new Runnable() {
             @Override
             public void run() {
                 if (pageModel != null) {
+                    Collection<? extends Rule> rules = ruleLookupResult.allInstances();
                     String selector = null;
                     if  (rules.size() == 1) {
                         Rule rule = rules.iterator().next();
@@ -250,10 +252,11 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         if (!active) {
             return;
         }
-        final RuleInfo ruleInfo = (rules.size() == 1) ? lookup.lookup(RuleInfo.class) : null;
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
+                final Collection<? extends Rule> rules = ruleLookupResult.allInstances();
+                final RuleInfo ruleInfo = (rules.size() == 1) ? lookup.lookup(RuleInfo.class) : null;
                 CssStylesTC ruleEditor = (CssStylesTC)WindowManager.getDefault().findTopComponent(CssStylesTC.ID);
                 final RuleEditorController controller = ruleEditor.getRuleEditorController();
                 RP.post(new Runnable() {
@@ -290,6 +293,28 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         });
     }
 
+    /**
+     * Updates the title of the enclosing view.
+     */
+    void updateTitle() {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (active) {
+                    PageModel page = pageModel;
+                    String title = null; // NOI18N
+                    if (page != null) {
+                        List<? extends Node> nodes = page.getSelectedNodes();
+                        if (nodes.size() == 1) {
+                            title = nodes.get(0).getDisplayName();
+                        }
+                    }
+                    TopComponent tc = WindowManager.getDefault().findTopComponent("CssStylesTC"); // NOI18N
+                    ((CssStylesTC)tc).setTitle(title);
+                }
+            }
+        });
+    }
     
     @Override
     public JComponent getView() {
@@ -304,7 +329,8 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     @Override
     public void activated() {
         active = true;
-        updateRulesEditor(ruleLookupResult.allInstances());
+        updateTitle();
+        updateRulesEditor();
     }
 
     @Override
@@ -324,15 +350,16 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                 updatePageModel();
             } else if (PageModel.PROP_DOCUMENT.equals(propName)) {
                 updateContent(false);
+            } else if (PageModel.PROP_SELECTED_NODES.equals(propName)) {
+                updateTitle();
             }
         }
 
         @Override
         public void resultChanged(LookupEvent ev) {
-            Collection<? extends Rule> rules = ruleLookupResult.allInstances();
             // Trying to avoid unwanted flashing of Rule Editor
             if (!contentUpdateInProgress) {
-                updateRulesEditor(rules);
+                updateRulesEditor();
             }
         }
 
@@ -435,6 +462,9 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                             controller.setModel(sourceModel);
                             controller.setRule(modelRule);
                             if (ruleInfo != null) {
+                                if (ruleInfo.getMetaSourceFile() != null) {
+                                    controller.setMessage(NbBundle.getMessage(CSSStylesPanel.class, "CSSStylesPanel.generatedRule")); // NOI18N
+                                }
                                 List<String> active = new ArrayList<String>();
                                 Declarations decls = modelRule.getDeclarations();
                                 if (decls != null) {

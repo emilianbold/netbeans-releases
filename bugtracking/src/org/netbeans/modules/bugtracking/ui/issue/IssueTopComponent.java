@@ -75,8 +75,8 @@ import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.*;
 import org.openide.awt.UndoRedo;
 import org.openide.util.Cancellable;
@@ -358,7 +358,10 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                         return;
                     }
                     if(issue != null) {
-                        if(controller != null) issuePanel.remove(controller.getComponent());
+                        if(controller != null) {
+                            issuePanel.remove(controller.getComponent());
+                            controller.closed();
+                        }
                         issue.removePropertyChangeListener(IssueTopComponent.this);
                     }
                     issue = repo.createNewIssue();
@@ -367,8 +370,8 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                     }
                     ((DelegatingUndoRedoManager)getUndoRedo()).init();
                     
-                    if(context != null && BugtrackingUtil.isNbRepository(repo.getUrl())) {
-                        OwnerInfo ownerInfo = KenaiUtil.getOwnerInfo(context);
+                    if(context != null && NBBugzillaUtils.isNbRepository(repo.getUrl())) {
+                        OwnerInfo ownerInfo = TeamUtil.getOwnerInfo(context);
                         if(ownerInfo != null) {
                             issue.setContext(ownerInfo);
                         }

@@ -72,4 +72,7 @@ public abstract class BugtrackingCommand {
         return errorMessage;
     }
     
+    public void cancel () {
+        
+    }
 }

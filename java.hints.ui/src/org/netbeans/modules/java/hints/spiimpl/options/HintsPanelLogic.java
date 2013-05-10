@@ -58,6 +58,7 @@ import java.awt.event.MouseListener;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -83,6 +84,7 @@ import org.netbeans.modules.java.hints.spiimpl.options.DepScanningSettings.Depen
 import org.netbeans.modules.java.hints.spiimpl.options.HintsPanel.State;
 import org.netbeans.modules.java.hints.spiimpl.refactoring.Configuration;
 import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.editor.hints.settings.FileHintPreferences;
 import org.netbeans.spi.java.hints.Hint.Kind;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
@@ -97,7 +99,7 @@ import org.openide.util.NbBundle;
  */
 public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListener, ChangeListener, ActionListener, ItemListener {
 
-    private Map<String,ModifiedPreferences> changes = new HashMap<String, ModifiedPreferences>();
+    private Map<HintMetadata,ModifiedPreferences> changes = new HashMap<HintMetadata, ModifiedPreferences>();
     private DependencyTracking depScn = null;
     
     private static final Map<Severity,Integer> severity2index;
@@ -142,10 +144,10 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     private String depScanningLabel = NbBundle.getMessage(HintsPanel.class, "CTL_Scope_Label"); //NOI18N
     private String depScanningDescription = NbBundle.getMessage(HintsPanel.class, "CTL_Scope_Desc"); //NOI18N
     private JComboBox configCombo;
-    private String currentProfileId = HintsSettings.getCurrentProfileId();
+//    private String currentProfileId = HintsSettings.getCurrentProfileId();
     private JButton editScript;
-    private Preferences overlayPreferences;
-    private boolean inOptionsDialog;
+    private HintsSettings originalSettings;
+            WritableSettings writableSettings;
     
     HintsPanelLogic() {
         defModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_AsError")); //NOI18N
@@ -160,7 +162,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     void connect( final JTree errorTree, DefaultTreeModel errorTreeModel, JLabel severityLabel, JComboBox severityComboBox,
                   JCheckBox tasklistCheckBox, JPanel customizerPanel,
                   JEditorPane descriptionTextArea, final JComboBox configCombo, JButton editScript,
-                  boolean inOptionsDialog) {
+                  HintsSettings settings) {
         
         this.errorTree = errorTree;
         this.errorTreeModel = errorTreeModel;
@@ -171,12 +173,18 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         this.descriptionTextArea = descriptionTextArea;        
         this.configCombo = configCombo;
         this.editScript = editScript;
-        this.inOptionsDialog = inOptionsDialog;
         
         
         if (configCombo.getSelectedItem() !=null) {
-            currentProfileId = ((Configuration) configCombo.getSelectedItem()).id();
-        }        
+            originalSettings = ((Configuration) configCombo.getSelectedItem()).getSettings();
+        } else if (settings != null) {
+            originalSettings = settings;
+        } else {
+            originalSettings = HintsSettings.getGlobalSettings();
+        }
+        
+        writableSettings = new WritableSettings(originalSettings);
+        
         valueChanged( null );
         
         errorTree.addKeyListener(this);
@@ -202,26 +210,27 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         componentsSetEnabled( false );
     }
     
-    String getCurrentProfileId() {
-        return currentProfileId;
-    }
+//    String getCurrentProfileId() {
+//        return currentProfileId;
+//    }
 
-    synchronized void setOverlayPreferences(Preferences prefs) {
+    synchronized void setOverlayPreferences(HintsSettings settings) {
         applyChanges();
-        this.overlayPreferences = prefs;
+        this.originalSettings = settings != null ? settings : HintsSettings.getGlobalSettings();
+        this.writableSettings = new WritableSettings(originalSettings);
         valueChanged(null);
         errorTree.repaint();
     }
     
+    synchronized HintsSettings getOverlayPreferences() {
+        return originalSettings;
+    }
+    
     synchronized void applyChanges() {
-	boolean containsChanges = false;
-        for (String hint : changes.keySet()) {
-            ModifiedPreferences mn = changes.get(hint);
-	    containsChanges |= !mn.isEmpty();
-            mn.store(HintsSettings.getPreferences(hint, getCurrentProfileId()));
-        }
+	boolean containsChanges = writableSettings.isModified();
+        writableSettings.commit();
 	if (containsChanges) {
-	    HintsSettings.fireChangeEvent();
+            FileHintPreferences.fireChange();
 	}
         if (depScn != null)
             DepScanningSettings.setDependencyTracking(depScn);
@@ -231,24 +240,22 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     /** Were there any changes in the settings
      */
     boolean isChanged() {
-        return !changes.isEmpty() || depScn != null;
+        return writableSettings.isModified()|| depScn != null;
     }
     
-    synchronized Preferences getCurrentPrefernces( String id ) {
-        if (overlayPreferences != null) return overlayPreferences.node(id);
-        Preferences node = changes.get(id);
-        return node == null ? HintsSettings.getPreferences(id, getCurrentProfileId() ) : node;
-    }
-    
-    synchronized Preferences getPreferences4Modification(String hint ) {
-        if (overlayPreferences != null) return overlayPreferences.node(hint);
-        Preferences node = changes.get(hint);        
-        if ( node == null ) {
-            node = new ModifiedPreferences(HintsSettings.getPreferences(hint, getCurrentProfileId() ) );
-            changes.put( hint, (ModifiedPreferences)node);
-        }        
-        return node;                
-    }
+//    synchronized Preferences getCurrentPrefernces(HintMetadata hm) {
+//        Preferences node = changes.get(hm);
+//        return node == null ? settings.getHintPreferences(hm) : node;
+//    }
+//    
+//    synchronized Preferences getPreferences4Modification(HintMetadata hm) {
+//        Preferences node = changes.get(hm);
+//        if ( node == null ) {
+//            node = new ModifiedPreferences(settings.getHintPreferences(hm));
+//            changes.put(hm, (ModifiedPreferences)node);
+//        }        
+//        return node;                
+//    }
     
     synchronized DependencyTracking getCurrentDependencyTracking() {
         return depScn != null ? depScn : DepScanningSettings.getDependencyTracking();
@@ -357,13 +364,11 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             
             // Set proper values to the componetnts
             
-            Preferences p = getCurrentPrefernces(hint.id);
-
             if (hint.kind == Kind.ACTION) {
                 severityComboBox.setSelectedIndex(severity2index.get(Severity.HINT));
                 severityComboBox.setEnabled(false);
             } else {
-                Severity severity = HintsSettings.getSeverity(hint, p);
+                Severity severity = writableSettings.getSeverity(hint);
                 if (severity != null) {
                     severityComboBox.setSelectedIndex(severity2index.get(severity));
                     severityComboBox.setEnabled(true);
@@ -373,17 +378,16 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
                 }
             }
             
-            boolean toTasklist = HintsSettings.isShowInTaskList(hint, p);
-            tasklistCheckBox.setSelected(toTasklist);
+            //TODO: tasklist checkbox
+//            boolean toTasklist = HintsSettings.isShowInTaskList(hint, p);
+//            tasklistCheckBox.setSelected(toTasklist);
             
             String description = hint.description;
             descriptionTextArea.setText( description == null ? "" : wrapDescription(description, hint)); // NOI18N
                                     
             // Optionally show the customizer
             customizerPanel.removeAll();
-            JComponent c = hint.customizer != null ? hint.customizer.getCustomizer(ex == null ?
-                getCurrentPrefernces(hint.id) :
-                getPreferences4Modification(hint.id)) : null;
+            JComponent c = hint.customizer != null ? hint.customizer.getCustomizer(/*TODO: will always create modified prefs*/writableSettings.getHintPreferences(hint)) : null;
 
             if ( c != null ) {               
                 customizerPanel.add(c, BorderLayout.CENTER);
@@ -426,10 +430,9 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         
         if ( o instanceof HintMetadata ) {
             HintMetadata hint = (HintMetadata) o;
-            Preferences p = getPreferences4Modification(hint.id);
             
-            if(HintsSettings.getSeverity(hint, p) != null)
-                HintsSettings.setSeverity(p, index2severity(severityComboBox.getSelectedIndex()));            
+            if(writableSettings.getSeverity(hint) != null)
+                writableSettings.setSeverity(hint, index2severity(severityComboBox.getSelectedIndex()));            
         } else if (o instanceof String) {
             if (getCurrentDependencyTracking() != DependencyTracking.DISABLED)
                 depScn = index2deptracking(severityComboBox.getSelectedIndex());
@@ -496,8 +499,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         if ( o instanceof HintMetadata ) {
             HintMetadata hint = (HintMetadata)o;
             boolean value = isEnabled(hint);
-            Preferences mn = getPreferences4Modification(hint.id);
-            HintsSettings.setEnabled(mn, !value);
+            writableSettings.setEnabled(hint, !value);
             model.nodeChanged(node);
             model.nodeChanged(node.getParent());
         }
@@ -511,8 +513,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
                     HintMetadata hint = (HintMetadata)cho;
                     boolean cv = isEnabled(hint);
                     if ( cv != value ) {                    
-                        Preferences mn = getPreferences4Modification(hint.id);
-                        HintsSettings.setEnabled(mn, value);
+                        writableSettings.setEnabled(hint, value);
                         model.nodeChanged( ch );
                     }
                 }
@@ -550,14 +551,14 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         Object o = configCombo.getSelectedItem();
         if (o instanceof Configuration) {
             applyChanges();
-            currentProfileId = ((Configuration) o).id();
+//            currentProfileId = ((Configuration) o).id();
             valueChanged(null);
             errorTree.repaint();
         }
     }
 
     public boolean isEnabled(HintMetadata hint) {
-        return HintsSettings.isEnabledWithDefault(getCurrentPrefernces(hint.id), inOptionsDialog && hint.enabled);
+        return writableSettings.isEnabled(hint);
     }
     
     public static final class HintCategory {
@@ -689,5 +690,85 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             throw new UnsupportedOperationException("Not supported yet.");
         }
     };
+    
+    static final class WritableSettings extends HintsSettings {
+        private final HintsSettings delegate;
+        private Map<HintMetadata,ModifiedHint> changes = new HashMap<HintMetadata, ModifiedHint>();
+
+        public WritableSettings(HintsSettings delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public boolean isEnabled(HintMetadata hint) {
+            ModifiedHint modified = changes.get(hint);
+            Boolean enabled = modified != null ? modified.enabledOverride : null;
+            
+            if (enabled != null) return enabled;
+            else return delegate.isEnabled(hint);
+        }
+
+        private ModifiedHint forWriting(HintMetadata hint) {
+            ModifiedHint result = changes.get(hint);
+            
+            if (result == null) {
+                changes.put(hint, result = new ModifiedHint());
+            }
+            
+            return result;
+        }
+        
+        @Override
+        public void setEnabled(HintMetadata hint, boolean value) {
+            forWriting(hint).enabledOverride = value;
+        }
+
+        @Override
+        public Preferences getHintPreferences(HintMetadata hint) {
+            Preferences prefs = forWriting(hint).preferencesOverride;
+            
+            if (prefs == null) {
+                //will always create the modified preferences
+                forWriting(hint).preferencesOverride = new ModifiedPreferences(delegate.getHintPreferences(hint));
+            }
+            
+            return prefs;
+        }
+
+        @Override
+        public Severity getSeverity(HintMetadata hint) {
+            ModifiedHint modified = changes.get(hint);
+            Severity severity = modified != null ? modified.severityOverride : null;
+            
+            if (severity != null) return severity;
+            else return delegate.getSeverity(hint);
+        }
+
+        @Override
+        public void setSeverity(HintMetadata hint, Severity severity) {
+            forWriting(hint).severityOverride = severity;
+        }
+        
+        public boolean isModified() {
+            return true; //XXX
+        }
+        
+        public void commit() {
+            for (Entry<HintMetadata, ModifiedHint> e : changes.entrySet()) {
+                if (e.getValue().preferencesOverride != null)
+                    e.getValue().preferencesOverride.store(delegate.getHintPreferences(e.getKey()));
+                if (e.getValue().enabledOverride != null)
+                    delegate.setEnabled(e.getKey(), e.getValue().enabledOverride);
+                if (e.getValue().severityOverride != null)
+                    delegate.setSeverity(e.getKey(), e.getValue().severityOverride);
+            }
+        }
+        
+        private static final class ModifiedHint {
+            private Boolean enabledOverride;
+            private Severity severityOverride;
+            private ModifiedPreferences preferencesOverride;
+        }
+    }
 
 }

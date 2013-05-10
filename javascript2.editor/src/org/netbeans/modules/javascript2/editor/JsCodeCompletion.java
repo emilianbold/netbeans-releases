@@ -102,7 +102,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         this.caseSensitive = ccContext.isCaseSensitive();
         
         ParserResult info = ccContext.getParserResult();
-        int caretOffset = ccContext.getCaretOffset();
+        int caretOffset = ccContext.getParserResult().getSnapshot().getEmbeddedOffset(ccContext.getCaretOffset());
         FileObject fileObject = ccContext.getParserResult().getSnapshot().getSource().getFileObject();
         JsParserResult jsParserResult = (JsParserResult)info;
         CompletionContext context = CompletionContextFinder.findCompletionContext(info, caretOffset);
@@ -143,9 +143,24 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     }
                     JsCompletionItem.Factory.create(added, request, resultList);
                     break;
+                default:
+                    break;
             }
         } else {
             switch (context) {
+                case STRING:
+                    //XXX should be treated in the getPrefix method, but now
+                    // there is hardcoded behavior for jQuery
+                    if (request.prefix.startsWith(".")) {
+                        request.prefix = request.prefix.substring(1);
+                        request.anchor = request.anchor + 1;
+                    }
+                    List<String> expression = resolveExpressionChainFromString(request);
+                    Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expression);
+
+                    // create code completion results
+                    JsCompletionItem.Factory.create(toAdd, request, resultList);
+                    break;
                 case GLOBAL:
                     HashMap<String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
                     addedProperties.putAll(getDomCompletionResults(request));
@@ -270,7 +285,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             return null;
         }
 
-        caretOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
+        //caretOffset = info.getSnapshot().getEmbeddedOffset(caretOffset);
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(info.getSnapshot(), caretOffset);
         if (ts == null) {
             return null;
@@ -485,17 +500,88 @@ class JsCodeCompletion implements CodeCompletionHandler {
             fqn.append(expChain.get(--i));
             fqn.append('.');
         }
-        fqn.append(request.prefix);
-        Collection<? extends IndexResult> indexResults = jsIndex.query(JsIndex.FIELD_FQ_NAME, fqn.toString(), QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
-        for (IndexResult indexResult : indexResults) {
-            IndexedElement indexedElement = IndexedElement.create(indexResult);
-            if (!indexedElement.isAnonymous()
-                    && indexedElement.getFQN().indexOf('.', fqn.length()) == -1
-                    && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
-                addPropertyToMap(request, addedProperties, indexedElement);
+        if (fqn.length() > 0) {
+            Collection<IndexedElement> indexResults = jsIndex.getPropertiesWithPrefix(fqn.toString().substring(0, fqn.length() - 1), request.prefix);
+            for (IndexedElement indexedElement : indexResults) {
+                if (!indexedElement.isAnonymous()
+                        && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
+                    addPropertyToMap(request, addedProperties, indexedElement);
+                }
             }
         }
         return addedProperties;
+    }
+    
+    private List<String> resolveExpressionChainFromString(CompletionRequest request) {
+        TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, request.anchor);
+        if (ts == null) {
+            return Collections.<String>emptyList();
+        }
+
+        int offset = request.info.getSnapshot().getEmbeddedOffset(request.anchor);
+        ts.move(offset);
+        String text = null;
+        if (ts.moveNext()) {
+            if (ts.token().id() == JsTokenId.STRING_END) {
+                if (ts.movePrevious() && ts.token().id() == JsTokenId.STRING) {
+                    text = ts.token().text().toString();
+                }
+            } else if (ts.token().id() == JsTokenId.STRING) {
+                text = ts.token().text().toString().substring(0, offset - ts.offset());
+            }
+        }
+        if (text != null && !text.isEmpty()) {
+            int index = text.length() - 1;
+            List<String> exp = new ArrayList<String>();
+            int parenBalancer = 0;
+            boolean methodCall = false;
+            char ch = text.charAt(index);
+            String part = "";
+            while (index > -1 && ch != ' ' && ch != '\n' && ch != ';' && ch != '}'
+                    && ch != '{' && ch != '(' && ch != '=' && ch != '+') {
+                if (ch == '.') {
+                    if (!part.isEmpty()) {
+                        exp.add(part);
+                        part = "";
+                        if (methodCall) {
+                            exp.add("@mtd");
+                            methodCall = false;
+                        } else {
+                            exp.add("@pro");
+                        }
+                    }
+                } else {
+                    if (ch == ')') {
+                        parenBalancer++;
+                        methodCall = true;
+                        while (parenBalancer > 0 && --index > -1) {
+                            ch = text.charAt(index);
+                            if (ch == ')') {
+                                parenBalancer++;
+                            } else if (ch == '(') {
+                                parenBalancer--;
+                            }
+                        }
+                    } else {
+                        part = ch + part;
+                    }
+                }
+                if (--index > -1) {
+                    ch = text.charAt(index);
+                }
+            }
+            if (!part.isEmpty()) {
+                exp.add(part);
+                if (methodCall) {
+                    exp.add("@mtd");
+                } else {
+                    exp.add("@pro");
+                }
+            }
+            return exp;
+        }
+        return Collections.<String>emptyList();
     }
 
     private List<String> resolveExpressionChain(CompletionRequest request) {
@@ -505,8 +591,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
             return Collections.<String>emptyList();
         }
 
-        int offset = request.info.getSnapshot().getEmbeddedOffset(request.anchor);
-        ts.move(offset);
+        ts.move(request.anchor);
         if (ts.movePrevious() && (ts.moveNext() || ((ts.offset() + ts.token().length()) == request.result.getSnapshot().getText().length()))) {
             if (ts.token().id() != JsTokenId.OPERATOR_DOT) {
                 ts.movePrevious();

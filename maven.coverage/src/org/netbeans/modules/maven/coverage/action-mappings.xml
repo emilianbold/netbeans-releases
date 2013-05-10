@@ -21,7 +21,7 @@
         </packagings>
         <goals>
             <goal>clean</goal> <!-- otherwise never removes coverage -->
-            <goal>prepare-package</goal>
+            <goal>verify</goal>
         </goals>
         <properties>
             <skipTests>false</skipTests>

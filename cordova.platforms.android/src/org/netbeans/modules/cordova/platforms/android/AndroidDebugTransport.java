@@ -44,35 +44,78 @@ package org.netbeans.modules.cordova.platforms.android;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.channels.SelectionKey;
+import java.nio.charset.Charset;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
+import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.cordova.platforms.ProcessUtils;
 import org.netbeans.modules.netserver.api.ProtocolDraft;
 import org.netbeans.modules.netserver.api.WebSocketClient;
 import org.netbeans.modules.netserver.api.WebSocketReadHandler;
+import org.netbeans.modules.web.webkit.debugging.spi.Command;
+import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
  * @author Jan Becicka
  */
-public class AndroidDebugTransport extends MobileDebugTransport {
+public class AndroidDebugTransport extends MobileDebugTransport implements WebSocketReadHandler {
 
+    private WebSocketClient webSocket;
 
     @Override
+    public boolean detach() {
+        if (webSocket != null) {
+            webSocket.stop();
+        }
+        return true;
+    }
+
+    @Override
+    public void sendCommand(Command command) {
+        String toString = translate(command.toString());
+        webSocket.sendMessage(toString);
+    }
+    
+    @Override
+    public void accepted(SelectionKey key) {
+        synchronized(webSocket) {
+            webSocket.notifyAll();
+        }
+    }
+
+    @Override
+    public void read(SelectionKey key, byte[] message, Integer dataType) {
+        final String string;
+        string = new String(message, Charset.forName("UTF-8")).trim(); //NOI18N
+        try {
+            final Object parse = JSONValue.parseWithException(string);
+            callBack.handleResponse(new Response((JSONObject) parse));
+        } catch (ParseException ex) {
+            Exceptions.attachMessage(ex, string);
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    @Override
+    public void closed(SelectionKey key) {
+        Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+    }
+
     public String getConnectionName() {
         return "Android"; //NOI18N
     }
 
-    @Override
     public WebSocketClient createWebSocket(WebSocketReadHandler handler) throws IOException {
         return new WebSocketClient(getURI(), ProtocolDraft.getRFC(), handler);
     }
@@ -83,14 +126,21 @@ public class AndroidDebugTransport extends MobileDebugTransport {
             String s = ProcessUtils.callProcess(
                     ((AndroidPlatform) PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE)).getAdbCommand(), 
                     true, 
-                    5000, 
+                    AndroidPlatform.DEFAULT_TIMEOUT, 
                     "forward", 
                     "tcp:9222", 
                     "localabstract:chrome_devtools_remote"); //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return super.attach(); 
+        try {
+            webSocket = createWebSocket(this);
+            webSocket.start();
+            return true;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+            return false;
+        }
     }
     
     

@@ -70,6 +70,7 @@ import org.openide.nodes.Node;
 /**
  * Tests for class BeanTreeViewTest
  */
+@RandomlyFails // https://netbeans.org/bugzilla/show_bug.cgi?id=229398
 public class BeanTreeViewTest extends NbTestCase {
     
     public static Test suite() {

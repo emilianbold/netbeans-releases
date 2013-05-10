@@ -386,13 +386,16 @@ public final class InstalledFileLocatorImpl extends InstalledFileLocator {
             for (int i = 0; i < dirs.length; i++) {
                 File root = dirs[i];
                 File d;
+                boolean isDir;
                 if (prefix.length() > 0) {
                     assert prefix.charAt(prefix.length() - 1) == '/';
                     d = new File(root, prefix.substring(0, prefix.length() - 1).replace('/', File.separatorChar));
+                    isDir = d.isDirectory();
                 } else {
                     d = root;
+                    isDir = true;
                 }
-                if (d.isDirectory()) {
+                if (isDir) {
                     String[] kids = d.list();
                     if (kids != null) {
                         fileCachePerPrefix.put(root, new HashSet<String>(Arrays.asList(kids)));

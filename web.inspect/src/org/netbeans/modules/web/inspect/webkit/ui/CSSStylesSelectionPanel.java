@@ -72,6 +72,7 @@ import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -101,7 +102,6 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.lib.api.CssColor;
-import org.netbeans.modules.css.visual.api.EditCSSRulesAction;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.Resource;
@@ -163,6 +163,8 @@ public class CSSStylesSelectionPanel extends JPanel {
     private ListView rulePane;
     /** Explorer manager for Style Cascade. */
     private ExplorerManager rulePaneManager;
+    /** Edit CSS Rules action used in rule pane. */
+    private EditCSSRulesAction editCSSRulesAction;
     /** Panel for messages. */
     private JPanel messagePanel;
     /** Label for messages. */
@@ -174,7 +176,7 @@ public class CSSStylesSelectionPanel extends JPanel {
     /** Header of Property Summary section. */
     private JLabel propertySummaryLabel;
     /** Component showing the style information for the current selection. */
-    private JComponent selectionView;
+    private final JComponent selectionView;
     /** Mapping of {@code Resource} to the corresponding {@code FileObject}. */
     private final Map<Resource,FileObject> resourceCache = new WeakHashMap<Resource, FileObject>();
 
@@ -430,9 +432,10 @@ public class CSSStylesSelectionPanel extends JPanel {
         //add toolbar
         CustomToolbar toolbar = new CustomToolbar();
         final JToggleButton createRuleToggleButton = new JToggleButton();
-        createRuleToggleButton.setAction(EditCSSRulesAction.getDefault());
+        editCSSRulesAction = new EditCSSRulesAction();
+        createRuleToggleButton.setAction(editCSSRulesAction);
         org.openide.awt.Mnemonics.setLocalizedText(createRuleToggleButton, null);
-        createRuleToggleButton.setToolTipText(EditCSSRulesAction.getDefault().getToolTip()); // NOI18N
+        createRuleToggleButton.setToolTipText((String)editCSSRulesAction.getValue(Action.NAME));
         createRuleToggleButton.setFocusable(false);
         createRuleToggleButton.addActionListener(new java.awt.event.ActionListener() {
             @Override
@@ -584,7 +587,7 @@ public class CSSStylesSelectionPanel extends JPanel {
      * @param keepSelection if {@code true} then an attempt to keep the current
      * selection is made, otherwise the selection is cleared.
      */
-    void updateContentImpl(final WebKitPageModel pageModel, final boolean keepSelection) {
+    void updateContentImpl(final WebKitPageModel pageModel, final boolean keepSelection) {        
         if (!EventQueue.isDispatchThread()) {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -597,6 +600,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         inspectedNode = null;
         if (pageModel == null) {
             setDummyRoots();
+            editCSSRulesAction.setActiveNode(null);
         } else {
             List<Node> selection = pageModel.getSelectedNodes();
             int selectionSize = 0;
@@ -651,6 +655,7 @@ public class CSSStylesSelectionPanel extends JPanel {
                     showLabel("CSSStylesSelectionPanel.noElementSelected"); // NOI18N
                 }
             }
+            editCSSRulesAction.setActiveNode((selectionSize == 1) ? knownNode : null);
         }
         revalidate();
         repaint();
@@ -687,14 +692,14 @@ public class CSSStylesSelectionPanel extends JPanel {
             final Node[] selectedProperties = propertyPaneManager.getSelectedNodes();
             Project project = pageModel.getProject();
             final Node rulePaneRoot = new MatchedRulesNode(project, selectedNode, matchedStyles);
-            rulePaneManager.setRootContext(rulePaneRoot);
-            updateResourceCache(rulePaneRoot);
             final Node propertyPaneRoot = new MatchedPropertiesNode(project, matchedStyles, propertyInfos);
-            propertyPaneManager.setRootContext(propertyPaneRoot);
-            if (keepSelection) {
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
+            updateResourceCache(rulePaneRoot);
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    rulePaneManager.setRootContext(rulePaneRoot);
+                    propertyPaneManager.setRootContext(propertyPaneRoot);
+                    if (keepSelection) {
                         if (selectedProperties.length > 0) {
                             Node selectedProperty = selectedProperties[0];
                             Property property = selectedProperty.getLookup().lookup(Property.class);
@@ -730,16 +735,11 @@ public class CSSStylesSelectionPanel extends JPanel {
                             // specific rule
                             preselectRule();
                         }
-                    }
-                });
-            } else {
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
+                    } else {
                         preselectRule();
                     }
-                });
-            }
+                }
+            });
         }
     }
 
@@ -1105,9 +1105,8 @@ public class CSSStylesSelectionPanel extends JPanel {
                 RuleInfo ruleInfo = node.getLookup().lookup(RuleInfo.class);
                 if (ruleInfo != null && ruleInfo.getMetaSourceFile() != null && ruleInfo.getMetaSourceLine() != -1) {
                     ruleLocation = ruleInfo.getMetaSourceFile();
-                    int slashIndex = ruleLocation.lastIndexOf('/');
+                    int slashIndex = Math.max(ruleLocation.lastIndexOf('/'), ruleLocation.lastIndexOf('\\'));
                     ruleLocation = ruleLocation.substring(slashIndex+1);
-                    ruleLocation = ruleLocation.replaceAll("\\\\", ""); // NOI18N
                     ruleLocation += ":" + ruleInfo.getMetaSourceLine(); // NOI18N
                 } else {
                     Resource ruleOrigin = node.getLookup().lookup(Resource.class);

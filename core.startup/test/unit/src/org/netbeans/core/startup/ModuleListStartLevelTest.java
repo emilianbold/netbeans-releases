@@ -71,6 +71,21 @@ public class ModuleListStartLevelTest extends SetupHid {
     private MockEvents ev;
     private File ud;
 
+    private void initModule() throws IOException {
+        FileObject fo = modulesfolder.createData("com-jcraft-jsch.xml");
+        File mod = new File(new File(ud, "modules"), "com-jcraft-jsch.jar");
+        final HashMap<String, String> man = new HashMap<String, String>();
+        man.put("Bundle-SymbolicName", "com.jcraft.jsch");
+        createJar(mod, new HashMap<String, String>(), man);
+        
+        InputStream is = ModuleListStartLevelTest.class.getResourceAsStream("ModuleList-com-jcraft-jsch.xml");
+        assertNotNull("Module definition found", is);
+        final OutputStream os = fo.getOutputStream();
+        FileUtil.copy(is, os);
+        os.close();
+        is.close();
+    }
+
     private final class IFL extends InstalledFileLocator {
         public IFL() {}
         public File locate(String relativePath, String codeNameBase, boolean localized) {
@@ -98,10 +113,7 @@ public class ModuleListStartLevelTest extends SetupHid {
 
         ud = new File(getWorkDir(), "ud");
         PlacesTestUtils.setUserDirectory(ud);
-        
-        MockModuleInstaller installer = new MockModuleInstaller();
-        ev = new MockEvents();
-        mgr = new ModuleManager(installer, ev);
+
         File dir = new File(ud, "config");
         File modulesdir = new File(dir, "Modules");
         if (! modulesdir.mkdirs()) throw new IOException("Making " + modulesdir);
@@ -109,22 +121,14 @@ public class ModuleListStartLevelTest extends SetupHid {
         fs.setRootDirectory(dir);
         modulesfolder = fs.findResource("Modules");
         assertNotNull(modulesfolder);
+        initModule();
+        
+        MockModuleInstaller installer = new MockModuleInstaller();
+        ev = new MockEvents();
+        mgr = new ModuleManager(installer, ev);
     }
     
     public void testParsesStartLevel() throws Exception {
-        FileObject fo = modulesfolder.createData("com-jcraft-jsch.xml");
-        File mod = new File(new File(ud, "modules"), "com-jcraft-jsch.jar");
-        final HashMap<String, String> man = new HashMap<String, String>();
-        man.put("Bundle-SymbolicName", "com.jcraft.jsch");
-        createJar(mod, new HashMap<String, String>(), man);
-        
-        InputStream is = ModuleListStartLevelTest.class.getResourceAsStream("ModuleList-com-jcraft-jsch.xml");
-        assertNotNull("Module definition found", is);
-        final OutputStream os = fo.getOutputStream();
-        FileUtil.copy(is, os);
-        os.close();
-        is.close();
-        
         ModuleList list = new ModuleList(mgr, modulesfolder, ev);
         Set<Module> set = list.readInitial();
         

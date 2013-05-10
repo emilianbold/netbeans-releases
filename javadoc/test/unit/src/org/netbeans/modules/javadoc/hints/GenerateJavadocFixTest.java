@@ -31,44 +31,40 @@
 
 package org.netbeans.modules.javadoc.hints;
 
-import com.sun.source.util.TreePath;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.hints.test.api.HintTest;
+import static org.netbeans.modules.javadoc.hints.JavadocHint.AVAILABILITY_KEY;
+import static org.netbeans.modules.javadoc.hints.JavadocHint.SCOPE_KEY;
 
 /**
  *
  * @author Jan Pokorsky
+ * @author Ralph Benjamin Ruijs
  */
-public class GenerateJavadocFixTest extends JavadocTestSupport {
+public class GenerateJavadocFixTest extends NbTestCase {
 
     public GenerateJavadocFixTest(String name) {
         super(name);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTestSuite(GenerateJavadocFixTest.class);
-//        suite.addTest(new GenerateJavadocFixTest("testGenerateMethodJavadoc"));
-        return suite;
-    }
-
-    @Override
-    protected void doFixTest(String code, String expectation, TreePath tpath) throws Exception {
-        super.doFixTest(code, expectation, tpath, true);
-    }
-    
     public void testGenerateMethodJavadoc() throws Exception {
-        doMemberFixTest(
-                "package test;\n" +
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
                 "import java.io.IOException;\n" +
-                "class Zima {\n" +
-                "    @Deprecated <T> int leden(int param1, int param2, T param3) throws IOException, IllegalArgumentException, java.io.FileNotFoundException {\n" +
+                "public class Test {\n" +
+                "    @Deprecated public <T> int le|den(int param1, int param2, T param3) throws IOException, IllegalArgumentException, java.io.FileNotFoundException {\n" +
                 "        return 0;\n" +
                 "    }\n" +
-                "}\n",
-                
-                "package test;\n" +
+                "}\n")
+                .run(JavadocHint.class)
+                .findWarning("3:31-3:36:hint:Missing javadoc.")
+                .applyFix("Create missing javadoc for leden")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                "import java.io.FileNotFoundException;\n" +
                 "import java.io.IOException;\n" +
-                "class Zima {\n" +
+                "public class Test {\n" +
                 "    /**\n" +
                 "     *\n" +
                 "     * @param <T>\n" +
@@ -78,27 +74,34 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "     * @return\n" +
                 "     * @throws IOException\n" +
                 "     * @throws IllegalArgumentException\n" +
-                "     * @throws java.io.FileNotFoundException\n" +
+                "     * @throws FileNotFoundException\n" +
                 "     * @deprecated\n" +
                 "     */\n" +
-                "    @Deprecated <T> int leden(int param1, int param2, T param3) throws IOException, IllegalArgumentException, java.io.FileNotFoundException {\n" +
+                "    @Deprecated public <T> int leden(int param1, int param2, T param3) throws IOException, IllegalArgumentException, java.io.FileNotFoundException {\n" +
                 "        return 0;\n" +
                 "    }\n" +
-                "}\n");        
+                "}\n");    
     }
     
     public void testGenerateConstructorJavadoc() throws Exception {
-        doConstructorFixTest(
-                "package test;\n" +
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
                 "import java.io.IOException;\n" +
-                "class Zima {\n" +
-                "    @Deprecated <T> Zima(int param1, int param2, T param3) throws IOException, IllegalArgumentException, java.io.FileNotFoundException {\n" +
+                "class Test {\n" +
+                "    @Deprecated <T> Te|st(int param1, int param2, T param3) throws IOException, IllegalArgumentException, java.io.FileNotFoundException {\n" +
                 "    }\n" +
-                "}\n",
-                
-                "package test;\n" +
+                "}\n")
+                .preference(AVAILABILITY_KEY + true, true)
+                .preference(SCOPE_KEY, "private")
+                .run(JavadocHint.class)
+                .findWarning("3:20-3:24:hint:Missing javadoc.")
+                .applyFix("Create missing javadoc for Test")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                "import java.io.FileNotFoundException;\n" +
                 "import java.io.IOException;\n" +
-                "class Zima {\n" +
+                "class Test {\n" +
                 "    /**\n" +
                 "     *\n" +
                 "     * @param <T>\n" +
@@ -107,22 +110,28 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "     * @param param3\n" +
                 "     * @throws IOException\n" +
                 "     * @throws IllegalArgumentException\n" +
-                "     * @throws java.io.FileNotFoundException\n" +
+                "     * @throws FileNotFoundException\n" +
                 "     * @deprecated\n" +
                 "     */\n" +
-                "    @Deprecated <T> Zima(int param1, int param2, T param3) throws IOException, IllegalArgumentException, java.io.FileNotFoundException {\n" +
+                "    @Deprecated <T> Test(int param1, int param2, T param3) throws IOException, IllegalArgumentException, java.io.FileNotFoundException {\n" +
                 "    }\n" +
-                "}\n");        
+                "}\n");
     }
     
     public void testGenerateClassJavadoc() throws Exception {
         System.setProperty("user.name", "Alois");
-        doClassFixTest(
-                "package test;\n" +
-                "@Deprecated class Zima<P,Q> {\n" +
-                "}\n",
-                
-                "package test;\n" +
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                "@Deprecated class Zi|ma<P,Q> {\n" +
+                "}\n")
+                .preference(AVAILABILITY_KEY + true, true)
+                .preference(SCOPE_KEY, "private")
+                .run(JavadocHint.class)
+                .findWarning("1:18-1:22:hint:Missing javadoc.")
+                .applyFix("Create missing javadoc for Zima")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
                 "/**\n" +
                 " *\n" +
                 " * @author Alois\n" +
@@ -131,18 +140,24 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 " * @deprecated\n" +
                 " */\n" +
                 "@Deprecated class Zima<P,Q> {\n" +
-                "}\n");        
+                "}\n");
     }
     
     public void testGenerateFieldJavadoc() throws Exception {
-        doMemberFixTest(
-                "package test;\n" +
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
                 "class Zima {\n" +
                 "    @Deprecated\n" +
-                "    int leden;\n" +
-                "}\n",
-                
-                "package test;\n" +
+                "    int le|den;\n" +
+                "}\n")
+                .preference(AVAILABILITY_KEY + true, true)
+                .preference(SCOPE_KEY, "private")
+                .run(JavadocHint.class)
+                .findWarning("3:8-3:13:hint:Missing javadoc.")
+                .applyFix("Create missing javadoc for leden")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
                 "class Zima {\n" +
                 "    /**\n" +
                 "     *\n" +
@@ -150,18 +165,24 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "     */\n" +
                 "    @Deprecated\n" +
                 "    int leden;\n" +
-                "}\n");        
+                "}\n");
     }
     
     public void testGenerateFieldGroupJavadoc() throws Exception { //#213499
-        doMemberFixTest(
-                "package test;\n" +
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
                 "class Zima {\n" +
                 "    @Deprecated\n" +
-                "    int leden, unor;\n" +
-                "}\n",
-                
-                "package test;\n" +
+                "    int leden, un|or;\n" +
+                "}\n")
+                .preference(AVAILABILITY_KEY + true, true)
+                .preference(SCOPE_KEY, "private")
+                .run(JavadocHint.class)
+                .findWarning("3:15-3:19:hint:Missing javadoc.")
+                .applyFix("Create missing javadoc for unor")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
                 "class Zima {\n" +
                 "    @Deprecated\n" +
                 "    int leden,\n" +
@@ -170,15 +191,21 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
                 "     * @deprecated\n" +
                 "     */\n" +
                 "    unor;\n" +
-                "}\n", 2);        
+                "}\n");
     }
     
     public void testGenerateEnumConstantJavadoc_124114() throws Exception {
-        doMemberFixTest(
-                "package test;\n" +
-                "enum Zima {LEDEN, UNOR}\n",
-                
-                "package test;\n" +
+        HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                "enum Zima {LE|DEN, UNOR}\n")
+                .preference(AVAILABILITY_KEY + true, true)
+                .preference(SCOPE_KEY, "private")
+                .run(JavadocHint.class)
+                .findWarning("1:11-1:16:hint:Missing javadoc.")
+                .applyFix("Create missing javadoc for LEDEN")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
                 "enum Zima {\n" +
                 "    /**\n" +
                 "     *\n" +
@@ -187,16 +214,22 @@ public class GenerateJavadocFixTest extends JavadocTestSupport {
     }
     
     public void testGenerateEnumConstantJavadoc_124114b() throws Exception {
-        doMemberFixTest(
-                "package test;\n" +
-                "enum Zima {LEDEN, UNOR}\n",
-                
-                "package test;\n" +
+       HintTest.create()
+                .setCaretMarker('|')
+                .input("package test;\n" +
+                "enum Zima {LEDEN, UN|OR}\n")
+                .preference(AVAILABILITY_KEY + true, true)
+                .preference(SCOPE_KEY, "private")
+                .run(JavadocHint.class)
+                .findWarning("1:18-1:22:hint:Missing javadoc.")
+                .applyFix("Create missing javadoc for UNOR")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
                 "enum Zima {LEDEN,\n" +
                 "    /**\n" +
                 "     *\n" +
                 "     */\n" +
-                "    UNOR}\n", 2);
+                "    UNOR}\n");
     }
 
 }

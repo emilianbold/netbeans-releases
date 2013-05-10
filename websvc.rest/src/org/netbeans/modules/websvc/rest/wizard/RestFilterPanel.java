@@ -44,13 +44,11 @@ package org.netbeans.modules.websvc.rest.wizard;
 
 import java.awt.Component;
 import java.io.IOException;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.rest.spi.WebRestSupport;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -104,10 +102,11 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
     @Override
     public boolean isValid() {
         Project project = Templates.getProject(myDescriptor);
-        WebRestSupport support  = project.getLookup().lookup(WebRestSupport.class);
-        if ( support != null ){
-            if ( OriginResourceIterator.isJee7Profile(project)){
-                if ( !support.isRestSupportOn() ){
+        RestSupport support  = project.getLookup().lookup(RestSupport.class);
+        if (support != null) {
+            if (support.isEE7() || support.hasJersey2(false)) {
+                if (!support.isRestSupportOn()) {
+                    // TODO: how is user supposed to "enable" Jax-RS? could IDE do it automatically?
                     myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                             NbBundle.getMessage(RestFilterPanel.class, 
                             "ERR_NoRestConfig"));                   // NOI18N 
@@ -120,18 +119,16 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
             
             Object object  = null;
             try {
-                object = support.getRestServletMapping(support.getWebApp());
-            }
-            catch(IOException e ){
+                object = MiscUtilities.getRestServletMapping(support.getWebApp());
+            } catch(IOException e ){
                 // just keep object with null value
             }
-            if (  object==  null ){
+            if (object == null) {
                 if ( support.isRestSupportOn() ){
                     myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                         NbBundle.getMessage(RestFilterPanel.class, 
                         "ERR_NoJerseyConfig"));                      // NOI18N
-                }
-                else {
+                } else {
                     myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
                             NbBundle.getMessage(RestFilterPanel.class, 
                             "ERR_NoRestConfig"));                   // NOI18N

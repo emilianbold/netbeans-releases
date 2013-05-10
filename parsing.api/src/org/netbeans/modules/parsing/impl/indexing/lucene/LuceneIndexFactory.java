@@ -52,7 +52,7 @@ import org.netbeans.modules.parsing.impl.indexing.ClusteredIndexables;
 import org.netbeans.modules.parsing.impl.indexing.IndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.TransientUpdateSupport;
 import org.netbeans.modules.parsing.impl.indexing.Util;
-import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex2;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
@@ -130,7 +130,7 @@ public final class LuceneIndexFactory implements IndexFactoryImpl {
             }
             LayeredDocumentIndex res = indexes.get(luceneIndexFolder);
             if (res == null) {
-                final DocumentIndex.Transactional base = DocumentBasedIndexManager.getDefault().getIndex(
+                final DocumentIndex2.Transactional base = DocumentBasedIndexManager.getDefault().getIndex(
                         luceneIndexFolder,
                         mode);
                 if (base != null) {

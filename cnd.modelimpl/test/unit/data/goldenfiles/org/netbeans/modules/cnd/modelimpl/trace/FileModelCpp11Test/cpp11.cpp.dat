@@ -16,11 +16,11 @@ CLASS A (A ) [5:1/105-8:2/150] lcurly=113 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION operator =  [6:5/119-7:6/148] MethodDDImpl SCOPE: A 
-            SIGNATURE operator =(A&)
-            UNIQUE NAME f:A::operator =(A&)
+            SIGNATURE operator =(A&&)
+            UNIQUE NAME f:A::operator =(A&&)
             DECLARATION: operator =  [6:5/119-7:6/148]
             PARAMETERS:
-                rhs [6:18/132-6:25/139]  TYPE: &A TEXT=A&  [6:18/132-6:21/135]  INIT: null  SCOPE: operator = 
+                rhs [6:18/132-6:25/139]  TYPE: &A TEXT=A&&  [6:18/132-6:21/135]  INIT: null  SCOPE: operator = 
             RETURNS &A TEXT=A&  [6:5/119-6:7/121]
             STATEMENT COMPOUND  [6:27/141-7:6/148] SCOPE: operator = 
 FUNCTION DEFINITION get_five  [13:1/209-13:37/245] FunctionDDImpl SCOPE: $Global$ 
@@ -292,11 +292,11 @@ CLASS ClassName<typename...BaseClasses> (ClassName ) [233:1/4833-236:2/4999] lcu
         CLASS=ClassName::BaseClasses VISIBILITY==PUBLIC virtual==false text='public BaseClasses'
     MEMBERS:
         FUNCTION DEFINITION ClassName  [235:5/4922-235:80/4997] ConstructorDDImpl SCOPE: ClassName 
-            SIGNATURE ClassName(BaseClasses&)
-            UNIQUE NAME f:ClassName::ClassName(BaseClasses&)
+            SIGNATURE ClassName(BaseClasses&&)
+            UNIQUE NAME f:ClassName::ClassName(BaseClasses&&)
             DECLARATION: ClassName  [235:5/4922-235:80/4997]
             PARAMETERS:
-                base_classes [235:16/4933-235:45/4962]  TYPE: &ClassName::BaseClasses TEXT=BaseClasses&  [235:16/4933-235:29/4946]  INIT: null  SCOPE: ClassName 
+                base_classes [235:16/4933-235:45/4962]  TYPE: &ClassName::BaseClasses TEXT=BaseClasses&&  [235:16/4933-235:29/4946]  INIT: null  SCOPE: ClassName 
             RETURNS <*no_classifier*> TEXT=  [null-null]
             STATEMENT COMPOUND  [235:78/4995-235:80/4997] SCOPE: ClassName 
 STRUCT SomeStruct<typename...Args> (SomeStruct ) [237:1/5001-239:2/5094] lcurly=5046 SCOPE: $Global$ 
@@ -311,7 +311,7 @@ STRUCT NonCopyable (NonCopyable ) [270:1/5961-274:2/6116] lcurly=5980 SCOPE: $Gl
             UNIQUE NAME f:NonCopyable::operator =(const NonCopyable&)
             DECLARATION: operator =  [271:5/5986-271:57/6038]
             PARAMETERS:
-                 [271:29/6010-271:47/6028]  TYPE: const &NonCopyable TEXT=const NonCopyable&  [271:29/6010-271:34/6015]  INIT: null  SCOPE: operator = 
+                 [271:29/6010-271:47/6028]  TYPE: const &NonCopyable TEXT=const NonCopyable&  [271:29/6010-271:47/6028]  INIT: null  SCOPE: operator = 
             RETURNS &NonCopyable TEXT=NonCopyable&  [271:5/5986-271:18/5999]
             STATEMENT COMPOUND  [271:5/5986-271:57/6038] SCOPE: operator = 
         FUNCTION DEFINITION NonCopyable  [272:5/6044-272:45/6084] ConstructorDDImpl SCOPE: NonCopyable 
@@ -319,7 +319,7 @@ STRUCT NonCopyable (NonCopyable ) [270:1/5961-274:2/6116] lcurly=5980 SCOPE: $Gl
             UNIQUE NAME f:NonCopyable::NonCopyable(const NonCopyable&)
             DECLARATION: NonCopyable  [272:5/6044-272:45/6084]
             PARAMETERS:
-                 [272:17/6056-272:35/6074]  TYPE: const &NonCopyable TEXT=const NonCopyable&  [272:17/6056-272:22/6061]  INIT: null  SCOPE: NonCopyable 
+                 [272:17/6056-272:35/6074]  TYPE: const &NonCopyable TEXT=const NonCopyable&  [272:17/6056-272:35/6074]  INIT: null  SCOPE: NonCopyable 
             RETURNS <*no_classifier*> TEXT=  [null-null]
             STATEMENT COMPOUND  [272:5/6044-272:45/6084] SCOPE: NonCopyable 
         FUNCTION DEFINITION NonCopyable  [273:5/6090-273:28/6113] ConstructorDDImpl SCOPE: NonCopyable 
@@ -380,11 +380,11 @@ CLASS A (A ) [5:1/105-8:2/150] lcurly=113 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
         FUNCTION DEFINITION operator =  [6:5/119-7:6/148] MethodDDImpl SCOPE: A 
-            SIGNATURE operator =(A&)
-            UNIQUE NAME f:A::operator =(A&)
+            SIGNATURE operator =(A&&)
+            UNIQUE NAME f:A::operator =(A&&)
             DECLARATION: operator =  [6:5/119-7:6/148]
             PARAMETERS:
-                rhs [6:18/132-6:25/139]  TYPE: &A TEXT=A&  [6:18/132-6:21/135]  INIT: null  SCOPE: operator = 
+                rhs [6:18/132-6:25/139]  TYPE: &A TEXT=A&&  [6:18/132-6:21/135]  INIT: null  SCOPE: operator = 
             RETURNS &A TEXT=A&  [6:5/119-6:7/121]
             STATEMENT COMPOUND  [6:27/141-7:6/148] SCOPE: operator = 
 FUNCTION DEFINITION get_five  [13:1/209-13:37/245] FunctionDDImpl SCOPE: $Global$ 
@@ -636,11 +636,11 @@ CLASS ClassName<typename...BaseClasses> (ClassName ) [233:1/4833-236:2/4999] lcu
         CLASS=ClassName::BaseClasses VISIBILITY==PUBLIC virtual==false text='public BaseClasses'
     MEMBERS:
         FUNCTION DEFINITION ClassName  [235:5/4922-235:80/4997] ConstructorDDImpl SCOPE: ClassName 
-            SIGNATURE ClassName(BaseClasses&)
-            UNIQUE NAME f:ClassName::ClassName(BaseClasses&)
+            SIGNATURE ClassName(BaseClasses&&)
+            UNIQUE NAME f:ClassName::ClassName(BaseClasses&&)
             DECLARATION: ClassName  [235:5/4922-235:80/4997]
             PARAMETERS:
-                base_classes [235:16/4933-235:45/4962]  TYPE: &ClassName::BaseClasses TEXT=BaseClasses&  [235:16/4933-235:29/4946]  INIT: null  SCOPE: ClassName 
+                base_classes [235:16/4933-235:45/4962]  TYPE: &ClassName::BaseClasses TEXT=BaseClasses&&  [235:16/4933-235:29/4946]  INIT: null  SCOPE: ClassName 
             RETURNS <*no_classifier*> TEXT=  [null-null]
             STATEMENT COMPOUND  [235:78/4995-235:80/4997] SCOPE: ClassName 
 STRUCT SomeStruct<typename...Args> (SomeStruct ) [237:1/5001-239:2/5094] lcurly=5046 SCOPE: $Global$ 
@@ -655,7 +655,7 @@ STRUCT NonCopyable (NonCopyable ) [270:1/5961-274:2/6116] lcurly=5980 SCOPE: $Gl
             UNIQUE NAME f:NonCopyable::operator =(const NonCopyable&)
             DECLARATION: operator =  [271:5/5986-271:57/6038]
             PARAMETERS:
-                 [271:29/6010-271:47/6028]  TYPE: const &NonCopyable TEXT=const NonCopyable&  [271:29/6010-271:34/6015]  INIT: null  SCOPE: operator = 
+                 [271:29/6010-271:47/6028]  TYPE: const &NonCopyable TEXT=const NonCopyable&  [271:29/6010-271:47/6028]  INIT: null  SCOPE: operator = 
             RETURNS &NonCopyable TEXT=NonCopyable&  [271:5/5986-271:18/5999]
             STATEMENT COMPOUND  [271:5/5986-271:57/6038] SCOPE: operator = 
         FUNCTION DEFINITION NonCopyable  [272:5/6044-272:45/6084] ConstructorDDImpl SCOPE: NonCopyable 
@@ -663,7 +663,7 @@ STRUCT NonCopyable (NonCopyable ) [270:1/5961-274:2/6116] lcurly=5980 SCOPE: $Gl
             UNIQUE NAME f:NonCopyable::NonCopyable(const NonCopyable&)
             DECLARATION: NonCopyable  [272:5/6044-272:45/6084]
             PARAMETERS:
-                 [272:17/6056-272:35/6074]  TYPE: const &NonCopyable TEXT=const NonCopyable&  [272:17/6056-272:22/6061]  INIT: null  SCOPE: NonCopyable 
+                 [272:17/6056-272:35/6074]  TYPE: const &NonCopyable TEXT=const NonCopyable&  [272:17/6056-272:35/6074]  INIT: null  SCOPE: NonCopyable 
             RETURNS <*no_classifier*> TEXT=  [null-null]
             STATEMENT COMPOUND  [272:5/6044-272:45/6084] SCOPE: NonCopyable 
         FUNCTION DEFINITION NonCopyable  [273:5/6090-273:28/6113] ConstructorDDImpl SCOPE: NonCopyable 

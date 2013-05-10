@@ -62,10 +62,12 @@ import org.netbeans.api.lexer.TokenId;
  * help class to match known text with existing token ids.
  * Can be used to match identifiers which are keywords
  * @author Vladimir Voskresensky
+ * @param <T> token ID type
  */
 public final class Filter<T extends TokenId> {
 
-    private Map<CharSequence, T> filter = new HashMap<CharSequence, T>();
+    private final Map<CharSequence, T> filter = new HashMap<CharSequence, T>();
+    private final Map<CharSequence, T> prefixFilter = new HashMap<CharSequence, T>();
 
     /*package*/ Filter() {
         
@@ -78,7 +80,32 @@ public final class Filter<T extends TokenId> {
      * @return TokenID or null if text does not match to any known id
      */
     public final T check(CharSequence text) {
-        return filter.get(text);
+        T out = filter.get(text);
+        if (out == null && !prefixFilter.isEmpty()) {
+            int bestPrefixLen = 0;
+            for (Map.Entry<CharSequence, T> entry : prefixFilter.entrySet()) {
+                CharSequence prefix = entry.getKey();
+                int length = prefix.length();
+                if (bestPrefixLen < length && length <= text.length()) {
+                    bestPrefixLen = length;
+                    for (int i = 0; i < length; i++) {
+                        if (prefix.charAt(i) != text.charAt(i)) {
+                            return null;
+                        }
+                    }
+                    out = entry.getValue();
+                }
+            }
+        }
+        return out;
+    }
+    
+    /**
+     * allow text starting with prefix to be treated as token 
+     */
+    /*package*/ final void addPrefixedMatch(CharSequence prefix, T id) {
+        assert prefix.length() > 0;
+        prefixFilter.put(prefix, id);
     }
     
     /**

@@ -67,6 +67,7 @@ public final class SymTabStack {
     }
     
     public SymTab push(CharSequence name) {        
+        assert CharSequences.isCompact(name) : "only compact strings allowed";
         SymTab symTab = new SymTab(stack.size(), name);
         stack.add(symTab);
         return symTab;
@@ -94,6 +95,7 @@ public final class SymTabStack {
     }
     
     public SymTabEntry lookupLocal(CharSequence entry) {
+        assert CharSequences.isCompact(entry) : "only compact strings allowed";
         return getLocal().lookup(entry);
     }
     
@@ -116,6 +118,10 @@ public final class SymTabStack {
     
     public void importToLocal(SymTab symTab) {
         getLocal().importSymTab(symTab);
+    }
+    
+    public int getSize() {
+        return stack.size();
     }
 
     private SymTab getLocal() {

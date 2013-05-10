@@ -108,6 +108,49 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="DocTreesSupport">
+             <api name="general"/>
+             <summary>Added support for DocTrees.</summary>
+             <version major="0" minor="124"/>
+             <date day="3" month="5" year="2013"/>
+             <author login="jlahoda"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added new methods to support working with DocTrees.
+             </description>
+             <class package="org.netbeans.api.java.source" name="CompilationInfo"/>
+             <class package="org.netbeans.api.java.source" name="WorkingCopy"/>
+             <class package="org.netbeans.api.java.source" name="TreeMaker"/>
+             <issue number="229081"/>
+        </change>
+        <change id="CodeStyle-Naming">
+             <api name="general"/>
+             <summary>Added <code>CodeStyleUtils</code>.</summary>
+             <version major="0" minor="123"/>
+             <date day="30" month="4" year="2013"/>
+             <author login="ralphbenjamin"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added class <code>CodeStyleUtils</code>, which helps with
+                 conforming java names to the naming codestyle. Used for
+                 variable naming and getter/setter names.
+             </description>
+             <class package="org.netbeans.api.java.source" name="CodeStyleUtils"/>
+             <issue number="228870"/>
+        </change>
+        <change id="ProfileSupport">
+             <api name="general"/>
+             <summary>Added support for JDK 8 Profiles.</summary>
+             <version major="0" minor="119"/>
+             <date day="12" month="4" year="2013"/>
+             <author login="tzezula"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added <code>ProfileSupport</code> class providing utility methods for JDK 8 profiles.
+             </description>
+             <class package="org.netbeans.api.java.source.support" name="ProfileSupport"/>
+             <issue number="228384"/>
+        </change>
          <change id="getSymbols">
              <api name="general"/>
              <summary>Added several methods to support Java 8 features.</summary>

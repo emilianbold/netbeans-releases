@@ -55,9 +55,9 @@ import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
 import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
-import org.netbeans.modules.bugzilla.issue.BugzillaTaskListProvider;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -81,17 +81,9 @@ public class Bugzilla {
     private IssueNode.ChangesProvider<BugzillaIssue> bcp;
 
     private Bugzilla() {
-
         brc = new BugzillaRepositoryConnector();
         clientManager = brc.getClientManager();
-
-        // lazy ping tasklist issue provider to load issues ...
-        getRequestProcessor().post(new Runnable() {
-            @Override
-            public void run() {
-                BugzillaTaskListProvider.getInstance();
-            }
-        });
+        MylynSupport.getInstance().addRepositoryListener(clientManager);
     }
 
     public static synchronized Bugzilla getInstance() {

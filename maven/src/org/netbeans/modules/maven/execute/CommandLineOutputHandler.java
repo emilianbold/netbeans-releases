@@ -63,6 +63,7 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.output.OutputUtils;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.modules.maven.execute.AbstractMavenExecutor.ResumeFromFinder;
 import static org.netbeans.modules.maven.execute.AbstractOutputHandler.PRJ_EXECUTE;
@@ -70,6 +71,7 @@ import static org.netbeans.modules.maven.execute.AbstractOutputHandler.SESSION_E
 import org.netbeans.modules.maven.execute.cmd.ExecMojo;
 import org.netbeans.modules.maven.execute.cmd.ExecProject;
 import org.netbeans.modules.maven.execute.cmd.ExecSession;
+import org.netbeans.modules.maven.options.MavenSettings;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
@@ -95,6 +97,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     private static final Pattern somethingMavenPlugin = Pattern.compile("(.+)-maven-plugin"); // NOI18N
     /** @see org.apache.maven.cli.ExecutionEventLogger#logReactorSummary */
     static final Pattern reactorFailure = Pattern.compile("\\[INFO\\] (.+) [.]* FAILURE \\[.+\\]"); // NOI18N
+    private static final Pattern stackTraceElement = OutputUtils.linePattern;
     
     public static final Pattern reactorSummaryLine = Pattern.compile("(.+) [.]* (FAILURE|SUCCESS) (\\[.+\\])?"); // NOI18N
     private OutputWriter stdOut;
@@ -112,6 +115,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
     private final ExecutionEventObject.Tree executionTree = new ExecutionEventObject.Tree(null, null);
 
     private ExecutionEventObject.Tree currentTreeNode = executionTree;
+    private boolean inStackTrace = false;
     
 
     CommandLineOutputHandler(ProgressHandle hand, boolean createVisitorContext) {
@@ -194,6 +198,8 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
 
         private final BufferedReader str;
         private boolean skipLF = false;
+        private boolean addMojoFold = false;
+        private boolean addProjectFold = false;
 
         public Output(InputStream instream) {
             str = new BufferedReader(new InputStreamReader(instream));
@@ -299,12 +305,14 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                         String levelS = match.group(1);
                         Level level = Level.valueOf(levelS);
                         String text = match.group(2);
+                        updateFoldForException(text);
                         processLine(text, stdOut, level);
                         if (level == Level.INFO && contextImpl == null) { //only perform for maven 2.x now
                             checkProgress(text);
                         }
                     } else {
                         // oh well..
+                        updateFoldForException(line);
                         processLine(line, stdOut, Level.INFO);
                     }
                     if (contextImpl == null && firstFailure == null) {
@@ -312,6 +320,14 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                         if (match.matches()) {
                             firstFailure = match.group(1);
                         }
+                    }
+                    if (addMojoFold && line.startsWith("[INFO] ---")) {     //NOI18N
+                        currentTreeNode.startFold(inputOutput);
+                        addMojoFold = false;
+                    }
+                    if (addProjectFold && line.startsWith("[INFO] Building")) {
+                        currentTreeNode.startFold(inputOutput);
+                        addProjectFold = false;
                     }
                     line = readLine();
                 }
@@ -355,6 +371,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             
             if (ExecutionEvent.Type.MojoStarted.equals(obj.type)) {
                 growTree(obj);
+                addMojoFold = true;
                 ExecMojo exec = (ExecMojo) obj;
                 String tag = goalPrefixFromArtifactId(exec.plugin.artifactId) + ":" + exec.goal;
                 ExecutionEventObject.Tree prjNode = currentTreeNode.findParentNodeOfType(ExecutionEvent.Type.ProjectStarted);
@@ -364,12 +381,17 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                 CommandLineOutputHandler.this.processStart(getEventId(SEC_MOJO_EXEC, tag), stdOut);
             }
             if (ExecutionEvent.Type.MojoSucceeded.equals(obj.type)) {
+                if (MavenSettings.getDefault().isCollapseSuccessFolds()) {
+                    currentTreeNode.collapseFold();
+                }
+                currentTreeNode.finishFold();
                 trimTree(obj);
                 ExecMojo exec = (ExecMojo) obj;
                 String tag = goalPrefixFromArtifactId(exec.plugin.artifactId) + ":" + exec.goal;
                 CommandLineOutputHandler.this.processEnd(getEventId(SEC_MOJO_EXEC, tag), stdOut);
             }
             else if (ExecutionEvent.Type.MojoFailed.equals(obj.type)) {
+                currentTreeNode.finishFold();
                 trimTree(obj);
                 ExecMojo exec = (ExecMojo) obj;
                 String tag = goalPrefixFromArtifactId(exec.plugin.artifactId) + ":" + exec.goal;
@@ -377,6 +399,7 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             }
             else if (ExecutionEvent.Type.ProjectStarted.equals(obj.type)) {
                 growTree(obj);
+                addProjectFold = true;
                 if (contextImpl != null) {
                     ExecProject pr = (ExecProject)obj;
                     Project project = pr.findProject();
@@ -390,10 +413,15 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                 //GlobalOutputProcessor currently depens on skipped projects not being added to tree.
             }
             else if (ExecutionEvent.Type.ProjectSucceeded.equals(obj.type)) {
+                if (MavenSettings.getDefault().isCollapseSuccessFolds()) {
+                    currentTreeNode.collapseFold();
+                }
+                currentTreeNode.finishFold();
                 trimTree(obj);
                 CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);                    
             }
             else if (ExecutionEvent.Type.ProjectFailed.equals(obj.type)) {
+                currentTreeNode.finishFold();
                 trimTree(obj);
                 CommandLineOutputHandler.this.processEnd(getEventId(PRJ_EXECUTE, null), stdOut);                    
             } else if (ExecutionEvent.Type.ForkStarted.equals(obj.type)) {
@@ -404,6 +432,13 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
                 trimTree(obj);
             } else if (ExecutionEvent.Type.ForkedProjectFailed.equals(obj.type) || ExecutionEvent.Type.ForkedProjectSucceeded.equals(obj.type)) {
                 trimTree(obj);
+            } else if (!MavenSettings.getDefault().isAlwaysShowOutput() && ExecutionEvent.Type.SessionEnded.equals(obj.type)) {
+                for (ExecutionEventObject.Tree node : executionTree.childrenNodes) {
+                    if (node.endEvent != null && ExecutionEvent.Type.ProjectFailed.equals(node.endEvent.type)) {
+                        getIO().select();
+                        break;
+                    }
+                }
             }
         }
 
@@ -422,6 +457,21 @@ public class CommandLineOutputHandler extends AbstractOutputHandler {
             return mojoArtifact;
         }
 
+        /**
+         * Check whether the line is start of a stacktrace, inside a stacktrace,
+         * or is another text, and update folds accordingly.
+         */
+        private void updateFoldForException(String line) {
+            if (stackTraceElement.matcher(line).find()) {
+                inStackTrace = true;
+                if (!currentTreeNode.hasInnerOutputFold()) {
+                    currentTreeNode.startInnerOutputFold(inputOutput);
+                }
+            } else  if (inStackTrace) {
+                currentTreeNode.finishInnerOutputFold();
+                inStackTrace = false;
+            }
+        }
         
         
         

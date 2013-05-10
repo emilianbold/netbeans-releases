@@ -54,6 +54,7 @@ import javax.swing.ImageIcon;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
@@ -81,7 +82,7 @@ public class JsCompletionItem implements CompletionProposal {
     
     @Override
     public int getAnchorOffset() {
-        return request.anchor;
+        return LexUtilities.getLexerOffset((JsParserResult)request.info, request.anchor);
     }
 
     @Override
@@ -114,9 +115,15 @@ public class JsCompletionItem implements CompletionProposal {
     @Override
     public String getRhsHtml(HtmlFormatter formatter) {
         String location = null;
-        if (element instanceof JsElement && ((JsElement) element).isPlatform()) {
-            location = Bundle.JsCompletionItem_lbl_js_platform();
-        } else {
+        if (element instanceof JsElement) {
+            JsElement jsElement = (JsElement) element;
+            if (jsElement.isPlatform()) {
+                location = Bundle.JsCompletionItem_lbl_js_platform();
+            } else if (jsElement.getSourceLabel() != null) {
+                location = jsElement.getSourceLabel();
+            }
+        }
+        if (location == null) {
             location = getFileNameURL();
         }
         if (location == null) {
@@ -375,12 +382,12 @@ public class JsCompletionItem implements CompletionProposal {
             // This maps unresolved types to the display name of the resolved type. 
             // It should save time to not resolve one type more times
             HashMap<String, Set<String>> resolvedTypes = new HashMap<String, Set<String>>();
-            
-            for (String name: items.keySet()) {
+
+            for (Map.Entry<String, List<JsElement>> entry: items.entrySet()) {
 
                 // this helps to eleminate items that will look as the same items in the cc
                 HashMap<String, JsCompletionItem> signatures = new HashMap<String, JsCompletionItem>();
-                for (JsElement element : items.get(name)) {
+                for (JsElement element : entry.getValue()) {
                     switch (element.getJSKind()) {
                         case CONSTRUCTOR:
                         case FUNCTION:
@@ -434,9 +441,9 @@ public class JsCompletionItem implements CompletionProposal {
                                 }
                                 // count parameters type
                                 LinkedHashMap<String, Collection<String>> parameters = ((IndexedElement.FunctionIndexedElement) element).getParameters();
-                                for (String paramName : parameters.keySet()) {
+                                for (Map.Entry<String, Collection<String>> paramEntry : parameters.entrySet()) {
                                     Set<String> paramTypes = new HashSet<String>();
-                                    for (String type : parameters.get(paramName)) {
+                                    for (String type : paramEntry.getValue()) {
                                         Set<String> resolvedType = resolvedTypes.get(type);
                                         if (resolvedType == null) {
                                             resolvedType = new HashSet(1);
@@ -448,11 +455,11 @@ public class JsCompletionItem implements CompletionProposal {
                                         }
                                         paramTypes.addAll(resolvedType);
                                     }
-                                    allParameters.put(paramName, paramTypes);
+                                    allParameters.put(paramEntry.getKey(), paramTypes);
                                 }
                             }
                             // create signature
-                            String signature = createFnSignature(name, allParameters, returnTypes);
+                            String signature = createFnSignature(entry.getKey(), allParameters, returnTypes);
                             if (!signatures.containsKey(signature)) {
                                 JsCompletionItem item = new JsFunctionCompletionItem(element, request, returnTypes, allParameters);
                                 signatures.put(signature, item);
@@ -521,9 +528,9 @@ public class JsCompletionItem implements CompletionProposal {
         private static String createFnSignature(String name, HashMap<String, Set<String>> params, Set<String> returnTypes) {
             StringBuilder sb = new StringBuilder();
             sb.append(name).append('(');
-            for(String paramName: params.keySet()) {
-                sb.append(paramName).append(':');
-                sb.append(createTypeSignature(params.get(paramName)));
+            for (Map.Entry<String, Set<String>> entry : params.entrySet()) {
+                sb.append(entry.getKey()).append(':');
+                sb.append(createTypeSignature(entry.getValue()));
                 sb.append(',');
             }
             sb.append(')');

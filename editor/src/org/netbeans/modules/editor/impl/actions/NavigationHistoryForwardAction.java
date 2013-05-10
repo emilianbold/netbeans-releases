@@ -63,7 +63,6 @@ import org.openide.util.ContextAwareAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.Presenter;
 
@@ -78,6 +77,7 @@ public final class NavigationHistoryForwardAction extends TextAction implements 
     private final JTextComponent component;
     private final NavigationHistory.Waypoint waypoint;
     private final JPopupMenu popupMenu;
+    private boolean updatePopupMenu = false;
     
     public NavigationHistoryForwardAction() {
         this(null, null, null);
@@ -99,7 +99,47 @@ public final class NavigationHistoryForwardAction extends TextAction implements 
             this.popupMenu = null;
         } else if (component != null) {
             putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/navigate_forward_16.png", false)); //NOI18N
-            this.popupMenu = new JPopupMenu();
+            this.popupMenu = new JPopupMenu() {
+
+                @Override
+                public int getComponentCount() {
+                    if (updatePopupMenu) {
+                        updatePopupMenu = false;    
+                        popupMenu.removeAll();
+
+                        int count = 0;
+                        String lastFileName = null;
+                        NavigationHistory.Waypoint lastWpt = null;
+                        List<NavigationHistory.Waypoint> waypoints = NavigationHistory.getNavigations().getNextWaypoints();
+                        for (int i = 0; i < waypoints.size(); i++) {
+                            NavigationHistory.Waypoint wpt = waypoints.get(i);
+                            String fileName = NavigationHistoryBackAction.getWaypointName(wpt);
+
+                            if (fileName == null) {
+                                continue;
+                            }
+
+                            if (lastFileName == null || !fileName.equals(lastFileName)) {
+                                if (lastFileName != null) {
+                                    popupMenu.add(new NavigationHistoryForwardAction(NavigationHistoryForwardAction.this.component, lastWpt,
+                                            count > 1 ? lastFileName + ":" + count : lastFileName)); //NOI18N
+                                }
+                                lastFileName = fileName;
+                                lastWpt = wpt;
+                                count = 1;
+                            } else {
+                                count++;
+                            }
+                        }
+
+                        if (lastFileName != null) {
+                            popupMenu.add(new NavigationHistoryForwardAction(NavigationHistoryForwardAction.this.component, lastWpt,
+                                    count > 1 ? lastFileName + ":" + count : lastFileName)); //NOI18N
+                        }
+                    }
+                    return super.getComponentCount(); //To change body of generated methods, choose Tools | Templates.
+                }  
+            };
             update();
             NavigationHistory nav = NavigationHistory.getNavigations();
             nav.addPropertyChangeListener(WeakListeners.propertyChange(this, nav));
@@ -110,11 +150,13 @@ public final class NavigationHistoryForwardAction extends TextAction implements 
         }
     }
     
+    @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         JTextComponent c = NavigationHistoryBackAction.findComponent(actionContext);
         return new NavigationHistoryForwardAction(c, null, null);
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt) {
         NavigationHistory history = NavigationHistory.getNavigations();
         NavigationHistory.Waypoint wpt = waypoint != null ? 
@@ -125,6 +167,7 @@ public final class NavigationHistoryForwardAction extends TextAction implements 
         }
     }
 
+    @Override
     public Component getToolbarPresenter() {
         if (popupMenu != null) {
             JButton button = DropDownButtonFactory.createDropDownButton(
@@ -139,6 +182,7 @@ public final class NavigationHistoryForwardAction extends TextAction implements 
         }
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         update();
     }
@@ -148,37 +192,7 @@ public final class NavigationHistoryForwardAction extends TextAction implements 
 
         // Update popup menu
         if (popupMenu != null) {
-            popupMenu.removeAll();
-
-            int count = 0;
-            String lastFileName = null;
-            NavigationHistory.Waypoint lastWpt = null;
-            
-            for(int i = 0; i < waypoints.size(); i++) {
-                NavigationHistory.Waypoint wpt = waypoints.get(i);
-                String fileName = NavigationHistoryBackAction.getWaypointName(wpt);
-                
-                if (fileName == null) {
-                    continue;
-                }
-                
-                if (lastFileName == null || !fileName.equals(lastFileName)) {
-                    if (lastFileName != null) {
-                        popupMenu.add(new NavigationHistoryForwardAction(component, lastWpt, 
-                            count > 1 ? lastFileName + ":" + count : lastFileName)); //NOI18N
-                    }
-                    lastFileName = fileName;
-                    lastWpt = wpt;
-                    count = 1;
-                } else {
-                    count++;
-                }
-            }
-            
-            if (lastFileName != null) {
-                popupMenu.add(new NavigationHistoryForwardAction(component, lastWpt,
-                    count > 1 ? lastFileName + ":" + count : lastFileName)); //NOI18N
-            }
+            updatePopupMenu = true;
         }
         
         // Set the short description

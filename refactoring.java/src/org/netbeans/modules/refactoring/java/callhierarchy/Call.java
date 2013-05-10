@@ -85,7 +85,6 @@ final class Call implements CallDescriptor {
     private Icon icon;
     TreePathHandle selection;
     TreePathHandle declaration;
-    private TreePathHandle overridden;
     private ElementHandle identity;
     private Call parent;
     private boolean leaf;
@@ -162,9 +161,7 @@ final class Call implements CallDescriptor {
     }
 
     TreePathHandle getSourceToQuery() {
-        return overridden != null
-                ? overridden
-                : declaration != null ? declaration : selection;
+        return declaration != null ? declaration : selection;
     }
 
     @Override
@@ -223,22 +220,10 @@ final class Call implements CallDescriptor {
         if (parent != null) {
             c.model = parent.model;
         }
-        Element wanted = javac.getTrees().getElement(selection);
 
-        if (isCallerGraph && wanted != null && wanted.getKind() == ElementKind.METHOD) {
-            Collection<ExecutableElement> overridenMethods = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement) wanted, javac);
-            if (!overridenMethods.isEmpty()) {
-                ExecutableElement next = overridenMethods.iterator().next();
-                c.overridden = TreePathHandle.create(next, javac);
-                c.identity = ElementHandle.create(next);
-            }
-        }
-
-        if (wanted != null) {
-            TreePath declarationPath = javac.getTrees().getPath(wanted);
-            if (declarationPath != null) {
-                c.declaration = TreePathHandle.create(declarationPath, javac);
-            }
+        TreePath declarationPath = javac.getTrees().getPath(selectionElm);
+        if (declarationPath != null) {
+            c.declaration = TreePathHandle.create(declarationPath, javac);
         }
 
         if (c.identity != null) {

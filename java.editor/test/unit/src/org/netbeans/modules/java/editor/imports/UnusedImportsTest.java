@@ -613,6 +613,19 @@ public class UnusedImportsTest extends NbTestCase {
                                                      "    private int ft1;\n" +
                                                      "}"));
     }
+    
+    public void testImportsNeededForJavadoc2() throws Exception {
+        performUnusedImportsTest(new FileDescription("test/ImportDisambiguation.java",
+                                                     "package javaapplication9;\n" +
+                                                     "import java.util.Collections;\n" +
+                                                     "import java.util.List;\n" +
+                                                     "public class ImportsNeededForJavadoc {\n" +
+                                                     "    /**\n" +
+                                                     "     * {@link Collections#sort(List) }\n" +
+                                                     "     */\n" +
+                                                     "    private void mt1() {}\n" +
+                                                     "}"));
+    }
 
     public UnusedImportsTest(String name) {
         super(name);

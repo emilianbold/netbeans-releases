@@ -66,6 +66,7 @@ public class VariablesViewButtons {
     public static final String PREFERENCES_NAME = "variables_view"; // NOI18N
     public static final String SHOW_VALUE_AS_STRING = "show_value_as_string"; // NOI18N
     private static final String SHOW_FORMATTERS_PROP_NAME = "org.netbeans.modules.debugger.jpda.ui.options.SHOW_FORMATTERS"; // NOI18N
+    private static final String OPTIONS_JAVA_DEBUGGER_ID = "org-netbeans-modules-debugger-jpda-ui-options-JavaDebuggerOptionsPanelController"; // NOI18N
 
     private static JToggleButton showValueAsStringToggle = null;
 
@@ -77,7 +78,7 @@ public class VariablesViewButtons {
         button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 System.setProperty(SHOW_FORMATTERS_PROP_NAME, "true"); // NOI18N
-                OptionsDisplayer.getDefault().open(JavaOptions.JAVA + "/JavaDebugger"); // NOI18N
+		OptionsDisplayer.getDefault().open(JavaOptions.JAVA + "/" + OPTIONS_JAVA_DEBUGGER_ID); // NOI18N
             }
         });
         return button;

@@ -92,6 +92,7 @@ public class GetterSetterGenerator implements CodeGenerator {
         public List<? extends CodeGenerator> create(Lookup context) {
             ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
             JTextComponent component = context.lookup(JTextComponent.class);
+            CodeStyle codeStyle = CodeStyle.getDefault(component.getDocument());
             CompilationController controller = context.lookup(CompilationController.class);
             TreePath path = context.lookup(TreePath.class);
             path = path != null ? Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path) : null;
@@ -122,8 +123,8 @@ public class GetterSetterGenerator implements CodeGenerator {
                 if (ERROR.contentEquals(variableElement.getSimpleName()))
                     continue;
                 ElementNode.Description description = ElementNode.Description.create(controller, variableElement, null, true, false);
-                boolean hasGetter = GeneratorUtils.hasGetter(controller, typeElement, variableElement, methods);
-                boolean hasSetter = variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, typeElement, variableElement, methods);
+                boolean hasGetter = GeneratorUtils.hasGetter(controller, typeElement, variableElement, methods, codeStyle);
+                boolean hasSetter = variableElement.getModifiers().contains(Modifier.FINAL) || GeneratorUtils.hasSetter(controller, typeElement, variableElement, methods, codeStyle);
                 if (!hasGetter) {
                     List<ElementNode.Description> descriptions = gDescriptions.get(variableElement.getEnclosingElement());
                     if (descriptions == null) {
@@ -154,21 +155,21 @@ public class GetterSetterGenerator implements CodeGenerator {
                 for (Map.Entry<Element, List<ElementNode.Description>> entry : gDescriptions.entrySet())
                     descriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(), false, false));
                 Collections.reverse(descriptions);
-                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(controller, typeElement, descriptions, false, false), GeneratorUtils.GETTERS_ONLY));
+                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(controller, typeElement, descriptions, false, false), GeneratorUtils.GETTERS_ONLY, codeStyle));
             }
             if (!sDescriptions.isEmpty()) {
                 List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
                 for (Map.Entry<Element, List<ElementNode.Description>> entry : sDescriptions.entrySet())
                     descriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(), false, false));
                 Collections.reverse(descriptions);
-                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(controller, typeElement, descriptions, false, false), GeneratorUtils.SETTERS_ONLY));
+                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(controller, typeElement, descriptions, false, false), GeneratorUtils.SETTERS_ONLY, codeStyle));
             }
             if (!gsDescriptions.isEmpty()) {
                 List<ElementNode.Description> descriptions = new ArrayList<ElementNode.Description>();
                 for (Map.Entry<Element, List<ElementNode.Description>> entry : gsDescriptions.entrySet())
                     descriptions.add(ElementNode.Description.create(controller, entry.getKey(), entry.getValue(), false, false));
                 Collections.reverse(descriptions);
-                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(controller, typeElement, descriptions, false, false), 0));
+                ret.add(new GetterSetterGenerator(component, ElementNode.Description.create(controller, typeElement, descriptions, false, false), 0, codeStyle));
             }
             return ret;
         }
@@ -177,12 +178,14 @@ public class GetterSetterGenerator implements CodeGenerator {
     private JTextComponent component;
     private ElementNode.Description description;
     private int type;
+    private CodeStyle codestyle;
 
     /** Creates a new instance of GetterSetterGenerator */
-    private GetterSetterGenerator(JTextComponent component, ElementNode.Description description, int type) {
+    private GetterSetterGenerator(JTextComponent component, ElementNode.Description description, int type, CodeStyle codeStyle) {
         this.component = component;
         this.description = description;
         this.type = type;
+        this.codestyle = codeStyle;
     }
 
     public String getDisplayName() {
@@ -256,7 +259,7 @@ public class GetterSetterGenerator implements CodeGenerator {
 
                 @Override
                 public void run(CompilationController parameter) throws Exception {
-                    createGetterSetterLists(parameter, variables, getters, setters);
+                    createGetterSetterLists(parameter, variables, getters, setters, codestyle);
                 }
             }, true);
             
@@ -277,15 +280,16 @@ public class GetterSetterGenerator implements CodeGenerator {
 
     }
         
-    private void createGetterSetterLists(CompilationController cc, List<ElementHandle<? extends Element>> variables, List<String> getters, List<String> setters) {
+    private void createGetterSetterLists(CompilationController cc, List<ElementHandle<? extends Element>> variables, List<String> getters, List<String> setters, CodeStyle codestyle) {
         for (ElementHandle handle:variables) {
             final Element el = handle.resolve(cc);
+            boolean isStatic = el.getModifiers().contains(Modifier.STATIC);
             if (type!=GeneratorUtils.GETTERS_ONLY)
-                setters.add("set" + GeneratorUtils.getCapitalizedName(el.getSimpleName()));//NOI18N
+                setters.add(CodeStyleUtils.computeSetterName(el.getSimpleName(), isStatic, codestyle));
             else 
                 setters.add(null);
             if (type!=GeneratorUtils.SETTERS_ONLY)
-                getters.add((el.asType().getKind() == TypeKind.BOOLEAN ? "is" : "get") + GeneratorUtils.getCapitalizedName(el.getSimpleName()));//NOI18N
+                getters.add(CodeStyleUtils.computeGetterName(el.getSimpleName(), el.asType().getKind() == TypeKind.BOOLEAN, isStatic, codestyle));
             else
                 getters.add(null);
         }

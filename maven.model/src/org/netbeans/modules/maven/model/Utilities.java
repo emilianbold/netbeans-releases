@@ -178,6 +178,11 @@ public class Utilities {
      * This is optional if both getDocument(FO) and createCatalogModel(FO) are overridden.
      */
     public static ModelSource createModelSource(final FileObject thisFileObj) {
+        return createModelSource(thisFileObj, null, null);
+
+    }
+    
+    public static ModelSource createModelSource(final FileObject thisFileObj, final DataObject dobject, final BaseDocument document) {
         assert thisFileObj != null : "Null file object.";
         final File fl = FileUtil.toFile(thisFileObj);
         boolean editable = (fl != null);// && thisFileObj.canWrite();
@@ -188,9 +193,9 @@ public class Utilities {
                 List<Object> items = new ArrayList<Object>();
                 items.add(thisFileObj);
                 try {
-                    DataObject dobj = DataObject.find(thisFileObj);
+                    DataObject dobj = dobject != null ? dobject : DataObject.find(thisFileObj);
                     items.add(dobj);
-                    BaseDocument doc = getDocument(dobj);
+                    BaseDocument doc = document != null ? document : getDocument(dobj);
                     if (doc != null) {
                         items.add(doc);
                     } else {
@@ -205,7 +210,6 @@ public class Utilities {
                 return Lookups.fixed(items.toArray());
             }
         });
-
         return new ModelSource(proxyLookup, editable);
     }
 

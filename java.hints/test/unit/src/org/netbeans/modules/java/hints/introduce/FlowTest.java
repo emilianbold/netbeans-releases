@@ -931,6 +931,21 @@ public class FlowTest extends NbTestCase {
                     "yy++");
     }
     
+    public void testUseInAnonymousInnerclass228416() throws Exception {
+        performTest("package test;\n" +
+                    "public class Test {\n" +
+                    "     public static void t() {\n" +
+                    "          final int yy = 42;\n" +
+                    "          new Runnable() {\n" +
+                    "              public void run() {\n" +
+                    "                  System.err.println(y`y);\n" +
+                    "              }\n" +
+                    "          };\n" +
+                    "     }\n" +
+                    "}\n",
+                    "42");
+    }
+    
     public void testDeadBranch207514() throws Exception {
         performDeadBranchTest("package test;\n" +
                               "public class Test {\n" +
@@ -1390,6 +1405,45 @@ public class FlowTest extends NbTestCase {
                                    "}\n",
                                    false,
                                    "i");
+    }
+    
+    public void testFinalCandidates228416a() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i;\n" +
+                                   "    public void test() {\n" +
+                                   "        i = 0;\n" +
+                                   "        new Runnable() {\n" +
+                                   "            public void run() {}\n" +
+                                   "        };\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false);
+    }
+    
+    public void testFinalCandidates228416b() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private int i;\n" +
+                                   "    public Test() {\n" +
+                                   "        i = 0;\n" +
+                                   "        new Runnable() {\n" +
+                                   "            public void run() {}\n" +
+                                   "        };\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false,
+                                   "i");
+    }
+    
+    public void test229306() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private static int countCreated = 0;\n" +
+                                   "    private final int ID = ++countCreated;\n" +
+                                   "}\n",
+                                   false,
+                                   "ID");//TODO: ID actually already is final - should or should not be on the list?
     }
     
     private void performFinalCandidatesTest(String code, boolean allowErrors, String... finalCandidates) throws Exception {

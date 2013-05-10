@@ -53,8 +53,8 @@ import org.netbeans.modules.javascript2.editor.model.JsObject;
  */
 public class AnonymousObject extends JsObjectImpl {
 
-    public AnonymousObject(JsObject parent, String name, OffsetRange offsetRange) {
-        super(parent, name, true, offsetRange, EnumSet.of(Modifier.PRIVATE));
+    public AnonymousObject(JsObject parent, String name, OffsetRange offsetRange, String sourceLabel) {
+        super(parent, name, true, offsetRange, EnumSet.of(Modifier.PRIVATE), sourceLabel);
     }
 
     @Override

@@ -75,7 +75,7 @@ public class ExecPluginOutputListenerProvider implements OutputProcessor {
     public void processLine(String line, OutputVisitor visitor) {
         OutputVisitor.Context context = visitor.getContext();
         Project prj = project;
-        if (context != null) {
+        if (context != null && context.getCurrentProject() != null) {
             prj = context.getCurrentProject();
         }
         ClassPath[] cp = prj.getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectClassPaths(ClassPath.EXECUTE);

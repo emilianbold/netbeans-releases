@@ -62,11 +62,11 @@ import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
-import org.netbeans.modules.java.source.usages.Pair;
 import static org.netbeans.api.java.lexer.JavaTokenId.*;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.save.CasualDiff.LineInsertionType;
+import org.openide.util.Pair;
 
 /**
  * Estimates the position for given element or element set. Offsets are
@@ -997,7 +997,7 @@ public abstract class PositionEstimator {
                                     if (commentEndPos.isEmpty()) {
                                         wideEnd = seq.offset() + indexOf + 1;
                                     } else {
-                                        commentEndPos.add(Pair.of(commentEndPos.getLast().first, seq.offset() + indexOf + 1));                                            
+                                        commentEndPos.add(Pair.of(commentEndPos.getLast().first(), seq.offset() + indexOf + 1));
                                     }
                                 }
                             }
@@ -1031,8 +1031,8 @@ public abstract class PositionEstimator {
                 }
                 maxLines = Math.max(maxLines, newlines);
                 for (Pair<Integer, Integer> comment : commentEndPos) {
-                    if (comment.first < maxLines || comment.first == 0) {
-                        wideEnd = comment.second;
+                    if (comment.first() < maxLines || comment.first() == 0) {
+                        wideEnd = comment.second();
                     } else {
                         break;
                     }

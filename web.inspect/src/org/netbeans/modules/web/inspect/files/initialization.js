@@ -505,6 +505,12 @@ NetBeans.installMouseEventFilters = function() {
             }
         }
     };
+    var mousedownListener = function(e) {
+        if ((e.clientX < document.documentElement.clientWidth)
+                && (e.clientY < document.documentElement.clientHeight)) {
+            blockingListener(e);
+        }
+    };
     var mousemoveListener = function(e) {
         if (!NetBeans.selectionMode) {
             NetBeans.lastHoveredElement = e.target;
@@ -520,7 +526,7 @@ NetBeans.installMouseEventFilters = function() {
     document.documentElement.addEventListener('click', blockingListener, true);
     document.documentElement.addEventListener('contextmenu', blockingListener, true);
     document.documentElement.addEventListener('dblclick', blockingListener, true);
-    document.documentElement.addEventListener('mousedown', blockingListener, true);
+    document.documentElement.addEventListener('mousedown', mousedownListener, true);
     document.documentElement.addEventListener('mouseenter', blockingListener, true);
     document.documentElement.addEventListener('mouseleave', blockingListener, true);
     document.documentElement.addEventListener('mousemove', mousemoveListener, true);

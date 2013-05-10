@@ -42,21 +42,20 @@
 
 package org.netbeans.modules.bugzilla.autoupdate;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.text.MessageFormat;
-import java.util.Calendar;
+import org.netbeans.modules.bugtracking.util.AutoupdatePluginUCTestCase;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
+import junit.framework.Test;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
-import org.netbeans.api.autoupdate.UpdateUnitProviderFactory;
+import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.bugtracking.util.AutoupdateSupport;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author tomas
  */
-public class BugzillaPluginUCTest extends BugzillaPluginUCTestCase {
+public class BugzillaPluginUCTest extends AutoupdatePluginUCTestCase {
 
     String CATALOG_CONTENTS_FORMAT =
             "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" +
@@ -133,27 +132,10 @@ public class BugzillaPluginUCTest extends BugzillaPluginUCTestCase {
         super(testName);
     }
 
-    public void testNewBugzillavailable() throws Throwable {
-        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, BugzillaAutoupdate.BUGZILLA_MODULE_CODE_NAME, "999.9.9", "999.9.9");
-        populateCatalog(contents);
-
-        assertNotNull(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());
+    public static junit.framework.Test suite() {
+        return NbModuleSuite.create(BugzillaPluginUCTest.class, null, null);
     }
-
-    public void testNewBugzillaNotAvailable() throws Throwable {
-        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, BugzillaAutoupdate.BUGZILLA_MODULE_CODE_NAME, "0.0.0", "0.0.0");
-        populateCatalog(contents);
-
-        assertNull(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());
-    }
-
-    public void testBugzillaIsNotAtUCAvailable() throws Throwable {
-        String contents = MessageFormat.format(CATALOG_CONTENTS_FORMAT, "org.netbeans.modules.ketchup", "1.0.0", "1.0.0");
-        populateCatalog(contents);
-
-        assertNull(BugzillaAutoupdate.getInstance().checkNewBugzillaPluginAvailable());
-    }
-
+    
     public void testIsSupported() {
         assertTrue(BugzillaAutoupdate.getInstance().isSupportedVersion(BugzillaVersion.MIN_VERSION));
         assertTrue(BugzillaAutoupdate.getInstance().isSupportedVersion(BugzillaVersion.BUGZILLA_3_2));
@@ -165,19 +147,6 @@ public class BugzillaPluginUCTest extends BugzillaPluginUCTestCase {
         assertFalse(BugzillaAutoupdate.getInstance().isSupportedVersion(getHigherMicro(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString())));
         assertFalse(BugzillaAutoupdate.getInstance().isSupportedVersion(getHigherMinor(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString())));
         assertFalse(BugzillaAutoupdate.getInstance().isSupportedVersion(getHigherMajor(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString())));
-    }
-
-    public void testCheckedToday() {
-
-        assertFalse(BugzillaAutoupdate.getInstance().wasCheckedToday(-1));                           // never
-
-        assertFalse(BugzillaAutoupdate.getInstance().wasCheckedToday(1L));                           // a long long time ago
-
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.HOUR, -24);                                      // yesterday
-        assertFalse(BugzillaAutoupdate.getInstance().wasCheckedToday(c.getTime().getTime()));
-
-        assertTrue(BugzillaAutoupdate.getInstance().wasCheckedToday(System.currentTimeMillis()));    // now
     }
 
     public void testGetVersion() {
@@ -193,16 +162,6 @@ public class BugzillaPluginUCTest extends BugzillaPluginUCTestCase {
         BugzillaVersion version = BugzillaAutoupdate.getInstance().getVersion(desc);
         assertNotNull(version);
         assertEquals(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION.toString(), version.toString());
-    }
-
-    private void populateCatalog(String contents) throws FileNotFoundException, IOException {
-        OutputStream os = new FileOutputStream(catalogFile);
-        try {
-            os.write(contents.getBytes());
-        } finally {
-            os.close();
-        }
-        UpdateUnitProviderFactory.getDefault().refreshProviders (null, true);
     }
 
     private BugzillaVersion getHigherMicro(String version) {
@@ -257,6 +216,21 @@ public class BugzillaPluginUCTest extends BugzillaPluginUCTestCase {
     private String getVersion(String segment) {
         int n = segment.indexOf('-');
         return n == -1 ? segment : segment.substring(0, n);
+    }
+
+    @Override
+    protected AutoupdateSupport getAutoupdateSupport() {
+        return BugzillaAutoupdate.getInstance().getAutoupdateSupport();
+    }
+
+    @Override
+    protected String getContentFormat() {
+        return CATALOG_CONTENTS_FORMAT;
+    }
+
+    @Override
+    protected String getCNB() {
+        return BugzillaAutoupdate.BUGZILLA_MODULE_CODE_NAME;
     }
 
 }

@@ -42,7 +42,10 @@
 package org.netbeans.modules.cordova.platforms.android;
 
 import java.awt.Image;
+import org.netbeans.modules.cordova.platforms.BrowserURLMapperImpl;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
+import org.netbeans.modules.web.browser.spi.BrowserURLMapperProvider;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.ImageUtilities;
@@ -59,7 +62,7 @@ import org.openide.util.lookup.ServiceProvider;
     "LBL_DeviceChrome=Android Device (Chrome)",
     "LBL_EmulatorDefault=Android Emulator (Default Browser)"
 })
-public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory {
+public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory, BrowserURLMapperProvider {
 
     @Override
     public BrowserFamilyId getBrowserFamilyId() {
@@ -72,14 +75,15 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
     }
 
     @Override
-    public boolean hasNetBeansIntegration() {
-        return false;
-    }
-
-    @Override
     public boolean canCreateHtmlBrowserImpl() {
         return true;
     }
+
+    @Override
+    public BrowserURLMapperImplementation getBrowserURLMapper() {
+        return BrowserURLMapperImpl.DEFAULT;
+    }
+
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
     public static class DeviceDefault extends AndroidBrowserFactory {
@@ -99,6 +103,10 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
             return AndroidBrowser.Kind.ANDROID_DEVICE_DEFAULT.toString(); // NOI18N
         }
 
+        @Override
+        public boolean hasNetBeansIntegration() {
+            return false;
+        }
     }
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
@@ -118,6 +126,12 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
         public String getId() {
             return AndroidBrowser.Kind.ANDROID_DEVICE_CHROME.toString(); // NOI18N
         }
+        
+        @Override
+        public boolean hasNetBeansIntegration() {
+            return true;
+        }
+        
     }
     
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
@@ -137,6 +151,12 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
         public String getId() {
             return AndroidBrowser.Kind.ANDROID_EMULATOR_DEFAULT.toString(); // NOI18N
         }
+        
+        @Override
+        public boolean hasNetBeansIntegration() {
+            return false;
+        }
+
     }
     
 

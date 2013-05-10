@@ -43,15 +43,13 @@
  */
 package org.netbeans.modules.java.hints.spiimpl.options;
 
-import java.util.Map;
 import java.util.prefs.Preferences;
-import javax.swing.event.ChangeListener;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
-import org.netbeans.modules.java.hints.spiimpl.RulesManager;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.spi.editor.hints.Severity;
-import org.openide.util.ChangeSupport;
+import org.netbeans.spi.editor.hints.settings.FileHintPreferences;
+import org.netbeans.spi.editor.hints.settings.FileHintPreferences.GlobalHintPreferencesProvider;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbPreferences;
 
 /**
@@ -59,146 +57,93 @@ import org.openide.util.NbPreferences;
  * @author Petr Hrebejk
  * @author Jan Lahoda
  */
-public class HintsSettings {
+public abstract class HintsSettings {
 
-//    // Only used for categories (disabled state in options dialog)
-//    static final AbstractHint.HintSeverity SEVERITY_DEFAUT = AbstractHint.HintSeverity.WARNING;
-//    static final boolean IN_TASK_LIST_DEFAULT = true;
-//
-//    public static HintsAccessor HINTS_ACCESSOR;
-//
-    static final String ENABLED_KEY = "enabled";         // NOI18N
-    static final String OLD_SEVERITY_KEY = "severity";       // NOI18N
-    static final String NEW_SEVERITY_KEY = "hintSeverity";       // NOI18N
-    static final String IN_TASK_LIST_KEY = "inTaskList"; // NOI18N
+    private static final String ENABLED_KEY = "enabled";         // NOI18N
+    private static final String OLD_SEVERITY_KEY = "severity";       // NOI18N
+    private static final String NEW_SEVERITY_KEY = "hintSeverity";       // NOI18N
+//    protected static final String IN_TASK_LIST_KEY = "inTaskList"; // NOI18N
 
-    private static final String DEFAULT_PROFILE = "default"; // NOI18N
-
-    private HintsSettings() {
-    }
-
-    public static String getCurrentProfileId() {
-        return DEFAULT_PROFILE;
-    }
-
-    /** For current profile
-     */
-    public static boolean isEnabled( HintMetadata hint ) {
-        Preferences p = getPreferences(hint.id, HintsSettings.getCurrentProfileId());
-        return isEnabled(hint, p);
-    }
-
-    /** For current profile
-     */
-    public static boolean isShowInTaskList( HintMetadata hint ) {
-        Preferences p = getPreferences(hint.id, HintsSettings.getCurrentProfileId());
-        return isShowInTaskList(hint, p);
-    }
-
-
-    public static boolean isEnabled( HintMetadata metadata, Preferences preferences ) {
-        return isEnabled(preferences, metadata.enabled);
-    }
-
-    public static boolean isEnabled(Preferences preferences, boolean enabledDefault) {
-        boolean useDefault = preferences.parent()==null || DEFAULT_PROFILE.equals(preferences.parent().name());
-        return preferences.getBoolean(ENABLED_KEY, useDefault && enabledDefault);
-    }
+    public abstract boolean isEnabled(HintMetadata hint);
+    public abstract void setEnabled(HintMetadata hint, boolean value);
+    public abstract Preferences getHintPreferences(HintMetadata hint);
+    public abstract Severity getSeverity(HintMetadata hint);
+    public abstract void setSeverity(HintMetadata hint, Severity severity);
+//    public abstract Iterable<? extends HintDescription> getEnabledHints();
     
-    public static boolean isEnabledWithDefault(Preferences preferences, boolean enabledDefault) {
-        return preferences.getBoolean(ENABLED_KEY, enabledDefault);
-    }
-    
-    public static void setEnabled( HintMetadata metadata, boolean value ) {
-	setEnabled(getPreferences(metadata.id, HintsSettings.getCurrentProfileId()), value);
-	fireChangeEvent();
-    }
+    private static final class PreferencesBasedHintsSettings extends HintsSettings {
 
-    public static void setEnabled( Preferences p, boolean value ) {
-        p.putBoolean(ENABLED_KEY, value);
-    }
+        private final Preferences preferences;
+        private final boolean useDefaultEnabled;
+        private final Severity overrideSeverity;
 
-    public static boolean isShowInTaskList( HintMetadata hint, Preferences preferences ) {
-        return preferences.getBoolean(IN_TASK_LIST_KEY, hint.showInTaskList);
-    }
-
-    public static void setShowInTaskList( Preferences p, boolean value ) {
-        p.putBoolean(IN_TASK_LIST_KEY, value);
-    }
-
-    public static Severity getSeverity(@NullAllowed HintMetadata hint, @NonNull Preferences preferences ) {
-        String s = preferences.get(NEW_SEVERITY_KEY, null);
-        if (s != null) return Severity.valueOf(s);
-
-        s = preferences.get(OLD_SEVERITY_KEY, null);
-
-        if (s == null) return hint != null ? hint.severity : null;
-
-        if ("ERROR".equals(s)) return Severity.ERROR;
-        else if ("WARNING".equals(s)) return Severity.VERIFIER;
-        else if ("CURRENT_LINE_WARNING".equals(s)) return Severity.HINT;
-        
-        return hint != null ? hint.severity : null;
-    }
-//
-//    public static AbstractHint.HintSeverity getSeverity( AbstractHint hint, Preferences preferences ) {
-//        String s = preferences.get(SEVERITY_KEY, null );
-//        return s == null ? HINTS_ACCESSOR.severiryDefault(hint) : AbstractHint.HintSeverity.valueOf(s);
-//    }
-//
-    public static void setSeverity( Preferences p, Severity severity ) {
-        p.put(NEW_SEVERITY_KEY, severity.name());
-    }
-//
-//    public static String[] getSuppressedBy(AbstractHint ah) {
-//        return HINTS_ACCESSOR.getSuppressBy(ah);
-//    }
-//
-    private static Map<String, Preferences> preferencesOverride;
-
-    public static void setPreferencesOverride(Map<String, Preferences> preferencesOverride) {
-        HintsSettings.preferencesOverride = preferencesOverride;
-    }
-
-    public static Map<String, Preferences> getPreferencesOverride() {
-        return preferencesOverride;
-    }
-
-    private static final ChangeSupport cs = new ChangeSupport(HintsSettings.class);
-
-    public static void addChangeListener(ChangeListener l) {
-	cs.addChangeListener(l);
-    }
-
-    public static void removeChangeListener(ChangeListener l) {
-	cs.removeChangeListener(l);
-    }
-
-    public static void fireChangeEvent() {
-	cs.fireChange();
-    }
-    
-    private static final String PREFERENCES_LOCATION = "org/netbeans/modules/java/hints";
-    
-    /** Gets preferences node, which stores the options for given hint.
-     * The preferences node is created
-     * by calling <code>NbPreferences.forModule(this.getClass()).node(profile).node(getId());</code>
-     * @param hintId id of the hint
-     * @param profile Profile to get the node for. May be null for current profile
-     * @return Preferences node for given hint.
-     */
-    public static Preferences getPreferences(String hintId, String profile) {
-        Map<String, Preferences> override = getPreferencesOverride();
-
-        if (override != null) {
-            Preferences p = override.get(hintId);
-
-            if (p != null) {
-                return p;
-            }
+        public PreferencesBasedHintsSettings(Preferences preferences, boolean useDefaultEnabled, Severity overrideSeverity) {
+            this.preferences = preferences;
+            this.useDefaultEnabled = useDefaultEnabled;
+            this.overrideSeverity = overrideSeverity;
         }
 
-        profile = profile == null ? HintsSettings.getCurrentProfileId() : profile;
-        return NbPreferences.root().node(PREFERENCES_LOCATION).node(profile).node(hintId);
+        @Override
+        public boolean isEnabled(HintMetadata hint) {
+            return getHintPreferences(hint).getBoolean(ENABLED_KEY, useDefaultEnabled && hint.enabled);
+        }
+
+        @Override
+        public void setEnabled(HintMetadata hint, boolean value) {
+            getHintPreferences(hint).putBoolean(ENABLED_KEY, value);
+        }
+
+        @Override
+        public Preferences getHintPreferences(HintMetadata hint) {
+            return preferences.node(hint.id);
+        }
+
+        @Override
+        public Severity getSeverity(HintMetadata hint) {
+            Preferences prefs = getHintPreferences(hint);
+            String s = prefs.get(NEW_SEVERITY_KEY, null);
+            if (s != null) return Severity.valueOf(s);
+
+            s = prefs.get(OLD_SEVERITY_KEY, null);
+
+            if (s == null) return overrideSeverity != null ? overrideSeverity : hint != null ? hint.severity : null;
+
+            if ("ERROR".equals(s)) return Severity.ERROR;
+            else if ("WARNING".equals(s)) return Severity.VERIFIER;
+            else if ("CURRENT_LINE_WARNING".equals(s)) return Severity.HINT;
+
+            return overrideSeverity != null ? overrideSeverity : hint != null ? hint.severity : null;
+        }
+        
+        @Override
+        public void setSeverity(HintMetadata hint, Severity severity) {
+            getHintPreferences(hint).put(NEW_SEVERITY_KEY, severity.name());
+        }
+    }
+    
+    public static HintsSettings createPreferencesBasedHintsSettings(Preferences preferences, boolean useDefaultEnabled, Severity overrideSeverity) {
+        return new PreferencesBasedHintsSettings(preferences, useDefaultEnabled, overrideSeverity);
+    }
+    
+    public static HintsSettings getSettingsFor(FileObject file) {
+        return createPreferencesBasedHintsSettings(FileHintPreferences.getFilePreferences(file, "text/x-java"), true, null);
+    }
+    
+    public static HintsSettings getGlobalSettings() {
+        return GLOBAL_SETTINGS;
+    }
+    
+    private static final String DEFAULT_PROFILE = "default"; // NOI18N
+    private static final String PREFERENCES_LOCATION = "org/netbeans/modules/java/hints";
+    private static final HintsSettings GLOBAL_SETTINGS = createPreferencesBasedHintsSettings(NbPreferences.root().node(PREFERENCES_LOCATION).node(DEFAULT_PROFILE), true, null);
+    
+    @MimeRegistration(mimeType="text/x-java", service=GlobalHintPreferencesProvider.class)
+    public static class GlobalSettingsProvider implements GlobalHintPreferencesProvider {
+
+        @Override
+        public Preferences getGlobalPreferences() {
+            return NbPreferences.root().node(PREFERENCES_LOCATION).node(DEFAULT_PROFILE);
+        }
+        
     }
 }

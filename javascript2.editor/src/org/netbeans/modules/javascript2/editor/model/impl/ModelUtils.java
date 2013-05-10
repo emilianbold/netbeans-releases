@@ -57,11 +57,16 @@ import jdk.nashorn.internal.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.Stack;
 import java.util.StringTokenizer;
+import jdk.nashorn.internal.ir.TernaryNode;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Modifier;
@@ -533,6 +538,7 @@ public class ModelUtils {
                     }
 
                     for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
+                        assert libGlobal != null;
                         for (JsObject object : libGlobal.getProperties().values()) {
                             if (object.getName().equals(name)) {
                                 //localObjects.add(object);
@@ -660,7 +666,7 @@ public class ModelUtils {
                             if ("@mtd".equals(kind) && jsKind.isFunction()) {
                                 //Collection<TypeUsage> resolved = resolveTypeFromSemiType(model, ModelUtils.findJsObject(model, offset), IndexedElement.getReturnTypes(indexResult));
                                 Collection<TypeUsage> resolvedTypes = IndexedElement.getReturnTypes(indexResult);
-                                ModelUtils.addUnigueType(newResolvedTypes, resolvedTypes);
+                                ModelUtils.addUniqueType(newResolvedTypes, resolvedTypes);
                             } else {
                                 checkProperty = true;
                             }
@@ -670,9 +676,9 @@ public class ModelUtils {
                             List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
                             resolveAssignments(jsIndex, propertyFQN, fromAssignment);
                             if (fromAssignment.isEmpty()) {
-                                ModelUtils.addUnigueType(newResolvedTypes, new TypeUsageImpl(propertyFQN));
+                                ModelUtils.addUniqueType(newResolvedTypes, new TypeUsageImpl(propertyFQN));
                             } else {
-                                ModelUtils.addUnigueType(newResolvedTypes, fromAssignment);
+                                ModelUtils.addUniqueType(newResolvedTypes, fromAssignment);
                             }
                         }
                         // from libraries look for top level types
@@ -718,6 +724,7 @@ public class ModelUtils {
 
     public static Collection<TypeUsage> resolveTypes(Collection<? extends TypeUsage> unresolved, JsParserResult parserResult) {
         Collection<TypeUsage> types = new ArrayList<TypeUsage>(unresolved);
+        Set<String> original = null;
         Model model = parserResult.getModel();
         FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
         JsIndex jsIndex = JsIndex.get(fo);
@@ -729,6 +736,12 @@ public class ModelUtils {
             Collection<TypeUsage> resolved = new ArrayList<TypeUsage>();
             for (TypeUsage typeUsage : types) {
                 if (!typeUsage.isResolved()) {
+                    if (original == null) {
+                        original = new HashSet<String>(unresolved.size());
+                        for (TypeUsage t : unresolved) {
+                            original.add(t.getType());
+                        }
+                    }
                     resolvedAll = false;
                     String sexp = typeUsage.getType();
                     if (sexp.startsWith("@exp;")) {
@@ -744,12 +757,14 @@ public class ModelUtils {
                                 nExp.add("@pro");
                             }
                         }
-                        ModelUtils.addUnigueType(resolved, ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, typeUsage.getOffset()));
+                        // passing original prevents the unresolved return types
+                        // when recursion in place
+                        ModelUtils.addUniqueType(resolved, original, ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, typeUsage.getOffset()));
                     } else {
-                        ModelUtils.addUnigueType(resolved, new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
+                        ModelUtils.addUniqueType(resolved, new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
                     }
                 } else {
-                    ModelUtils.addUnigueType(resolved, (TypeUsage) typeUsage);
+                    ModelUtils.addUniqueType(resolved, (TypeUsage) typeUsage);
                 }
             }
             types.clear();
@@ -812,10 +827,10 @@ public class ModelUtils {
                     
                     
                 if(!hasAssignments || isType) {
-                    ModelUtils.addUnigueType(resolved, new TypeUsageImpl(fqn, -1, true));
+                    ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, -1, true));
                 }
             } else {
-                ModelUtils.addUnigueType(resolved, new TypeUsageImpl(fqn, -1, false));
+                ModelUtils.addUniqueType(resolved, new TypeUsageImpl(fqn, -1, false));
             }
 //            Collection<IndexedElement> globalVars = jsIndex.getGlobalVar(fqn);
 //            resolved.add(new TypeUsageImpl(fqn, -1, true));
@@ -870,24 +885,31 @@ public class ModelUtils {
         return result;
     }
     
-    public static void addUnigueType(Collection <TypeUsage> where, TypeUsage type) {
-        boolean isThere = false;
+    public static void addUniqueType(Collection <TypeUsage> where, Set<String> forbidden, TypeUsage type) {
         String typeName = type.getType();
-        for(TypeUsage utype : where) {
+        if (forbidden.contains(typeName)) {
+            return;
+        }
+        for (TypeUsage utype : where) {
             if (utype.getType().equals(typeName)) {
-                isThere = true;
-                break;
+                return;
             }
         }
-        if (!isThere) {
-            where.add(type);
+        where.add(type);
+    }
+
+    public static void addUniqueType(Collection <TypeUsage> where, TypeUsage type) {
+        addUniqueType(where, Collections.<String>emptySet(), type);
+    }
+
+    public static void addUniqueType(Collection <TypeUsage> where, Set<String> forbidden, Collection <TypeUsage> what) {
+        for (TypeUsage type: what) {
+            addUniqueType(where, forbidden, type);
         }
     }
-    
-    public static void addUnigueType(Collection <TypeUsage> where, Collection <TypeUsage> what) {
-        for(TypeUsage type: what) {
-            addUnigueType(where, type);
-        }
+
+    public static void addUniqueType(Collection <TypeUsage> where, Collection <TypeUsage> what) {
+        addUniqueType(where, Collections.<String>emptySet(), what);
     }
     
     private static class SemiTypeResolverVisitor extends PathNodeVisitor {
@@ -899,8 +921,9 @@ public class ModelUtils {
         private static TypeUsage REGEXP_TYPE = new TypeUsageImpl(Type.REGEXP, -1, true);
         
         private final Set<TypeUsage> result = new HashSet<TypeUsage>();
+        private final Deque<StringBuilder> sbDeque = new LinkedList<StringBuilder>();
         private StringBuilder sb = new StringBuilder();
-        final private JsParserResult parserResult;
+        private final JsParserResult parserResult;
         
         public SemiTypeResolverVisitor(JsParserResult parserResult) {
             this.parserResult = parserResult;
@@ -925,6 +948,9 @@ public class ModelUtils {
 
         @Override
         public Node enter(AccessNode aNode) {
+            sbDeque.offerLast(sb);
+            sb = new StringBuilder(sb);
+
             if (aNode.getBase() instanceof IdentNode) {
                 IdentNode iNode = (IdentNode)aNode.getBase();
                 if (iNode.getName().equals("this")) {
@@ -946,7 +972,7 @@ public class ModelUtils {
                     sb.insert(0, "@exp;");
                     add(new TypeUsageImpl(sb.toString(), aNode.getStart()));
                 }
-                return null;
+                return stopTraversing();
             } else {
                 if ("@call;".equals(sb.toString())) {
                     sb.append(aNode.getProperty().getName());
@@ -956,6 +982,12 @@ public class ModelUtils {
                 }
             }
             return super.enter(aNode);
+        }
+
+        @Override
+        public Node leave(AccessNode accessNode) {
+            sb = sbDeque.pollLast();
+            return super.leave(accessNode);
         }
 
         @Override
@@ -997,9 +1029,25 @@ public class ModelUtils {
             }
             return result;
         }
-        
+
+        private Node stopTraversing() {
+            sb = sbDeque.pollLast();
+            return null;
+        }
+
+        @Override
+        public Node enter(TernaryNode ternaryNode) {
+            super.enter(ternaryNode);
+            ternaryNode.rhs().accept(this);
+            ternaryNode.third().accept(this);
+            return null;
+        }
+
         @Override
         public Node enter(CallNode callNode) {
+            sbDeque.offerLast(sb);
+            sb = new StringBuilder(sb);
+
             super.enter(callNode);
             if (callNode.getFunction() instanceof ReferenceNode) {
                 FunctionNode function = (FunctionNode)((ReferenceNode)callNode.getFunction()).getReference();
@@ -1014,6 +1062,7 @@ public class ModelUtils {
                         String name = ((IdentNode)callNode.getFunction()).getName();
                         sb.insert(0, name);
                         sb.insert(0, "@call;"); //NOI18N
+                        // keep the sb at the current state ?
                         return null;
                     }
                 }
@@ -1025,11 +1074,20 @@ public class ModelUtils {
                 // don't visit arguments, just name the name of function.
                 callNode.getFunction().accept(this);
             }
-            return null;
+            return stopTraversing();
+        }
+
+        @Override
+        public Node leave(CallNode callNode) {
+            sb = sbDeque.pollLast();
+            return super.leave(callNode);
         }
 
         @Override
         public Node enter(IdentNode iNode) {
+            sbDeque.offerLast(sb);
+            sb = new StringBuilder(sb);
+
             if (getPath().isEmpty()) {
                 if (iNode.getName().equals("this")) {   //NOI18N
                     add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
@@ -1058,7 +1116,7 @@ public class ModelUtils {
                     }
                 }
             }
-            return null;
+            return stopTraversing();
         }
 
         @Override

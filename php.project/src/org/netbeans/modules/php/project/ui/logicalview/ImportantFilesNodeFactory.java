@@ -55,7 +55,6 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
@@ -81,6 +80,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -309,18 +309,18 @@ public class ImportantFilesNodeFactory implements NodeFactory {
         private final FileObject sourceDir;
 
         public ImportantFileNode(Pair<PhpFrameworkProvider, FileObject> pair, FileObject sourceDir) throws DataObjectNotFoundException {
-            super(DataObject.find(pair.second).getNodeDelegate());
+            super(DataObject.find(pair.second()).getNodeDelegate());
             this.pair = pair;
             this.sourceDir = sourceDir;
         }
 
         @Override
         public String getShortDescription() {
-            String filepath = FileUtil.getRelativePath(sourceDir, pair.second);
+            String filepath = FileUtil.getRelativePath(sourceDir, pair.second());
             if (filepath == null) {
-                filepath = FileUtil.getFileDisplayName(pair.second);
+                filepath = FileUtil.getFileDisplayName(pair.second());
             }
-            return NbBundle.getMessage(ImportantFileNode.class, "LBL_ImportantFileTooltip", filepath, pair.first.getName());
+            return NbBundle.getMessage(ImportantFileNode.class, "LBL_ImportantFileTooltip", filepath, pair.first().getName());
         }
     }
 }

@@ -73,7 +73,7 @@ public class ActionsTest extends JellyTestCase {
 
     public void testActions() {
         // call main menu item "Windows|Properties"
-        Action action = new Action("Window|Properties", null);
+        Action action = new Action("Window|IDE Tools|Properties", null);
         action.perform();
         new PropertySheetOperator().close();
         

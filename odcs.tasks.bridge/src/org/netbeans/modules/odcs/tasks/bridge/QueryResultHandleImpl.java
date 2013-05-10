@@ -48,8 +48,7 @@ import java.util.Collection;
 import java.util.LinkedList;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
 import static org.netbeans.modules.odcs.tasks.bridge.Bundle.*;
 import org.openide.util.NbBundle.Messages;
@@ -91,7 +90,7 @@ class QueryResultHandleImpl extends QueryResultHandle implements ActionListener 
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        KenaiUtil.openQuery(query, queryMode, true);
+        TeamUtil.openQuery(query, queryMode, true);
     }
 
     @Messages({"# {0} - number of tasks", "LBL_QueryResultTotal=total {0}"})

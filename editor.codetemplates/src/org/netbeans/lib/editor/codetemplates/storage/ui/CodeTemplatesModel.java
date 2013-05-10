@@ -49,16 +49,23 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import javax.swing.DefaultListModel;
 import javax.swing.KeyStroke;
+import javax.swing.ListModel;
 import javax.swing.table.DefaultTableModel;
+
+import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.CodeTemplateDescription;
+import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
 import org.netbeans.lib.editor.codetemplates.storage.CodeTemplateSettingsImpl;
 import org.netbeans.lib.editor.codetemplates.storage.CodeTemplateSettingsImpl.OnExpandAction;
 import org.netbeans.modules.editor.settings.storage.api.EditorSettings;
@@ -114,7 +121,7 @@ final class CodeTemplatesModel {
             List<Vector<String>> table = new ArrayList<Vector<String>>();
             for(String abbreviation : abbreviationsMap.keySet()) {
                 CodeTemplateDescription ctd = abbreviationsMap.get(abbreviation);
-                Vector<String> line =  new Vector<String>(2);
+                Vector<String> line =  new Vector<String>(3);
                 line.add(abbreviation);
                 if (LOG.isLoggable(Level.FINER)) {
                     LOG.finer("CodeTemplatesModel:     Added abbrev \"" + abbreviation + "\"\n"); // NOI18N
@@ -125,8 +132,14 @@ final class CodeTemplatesModel {
             }
             Collections.sort(table, new MComparator());
             
+            List<String> supportedContexts = new ArrayList<>();
+            for (CodeTemplateFilter.ContextBasedFactory factory : MimeLookup.getLookup(mimeType).lookupAll(CodeTemplateFilter.ContextBasedFactory.class)) {
+                supportedContexts.addAll(factory.getSupportedContexts());
+            }
+            Collections.sort(supportedContexts);
+
             // Create the code templates table model for this language
-            TM tableModel = new TM(abbreviationsMap, columns, table);
+            TM tableModel = new TM(abbreviationsMap, columns, table, supportedContexts);
             
             modelToLanguage.put(tableModel, language);
             languageToModel.put(language, tableModel);
@@ -182,7 +195,7 @@ final class CodeTemplatesModel {
                     abbreviation,
                     tableModel.getDescription(idx),
                     tableModel.getText(idx),
-                    tableModel.getContexts(idx),
+                    new ArrayList(tableModel.getContexts(idx)),
                     tableModel.getUniqueId(idx),
                     mimeType
                 );
@@ -258,15 +271,23 @@ final class CodeTemplatesModel {
     /* package */ static class TM extends DefaultTableModel {
 
         private final Map<String, CodeTemplateDescription> codeTemplatesMap;
+        private final Map<String, Set<String>> contexts;
+        private final DefaultListModel<String> supportedContexts;
         private boolean modified = false;
         
         public TM(
             Map<String, CodeTemplateDescription> codeTemplatesMap, 
             Vector<String> headers,
-            List<Vector<String>> data
+            List<Vector<String>> data,
+            List<String> supportedContexts
         ) {
             super(new Vector<Object>(data), headers);
             this.codeTemplatesMap = codeTemplatesMap;
+            this.contexts = new HashMap<>(codeTemplatesMap.size());
+            this.supportedContexts = new DefaultListModel<>();
+            for (String context : supportedContexts) {
+                this.supportedContexts.addElement(context);                
+            }
         }
 
         public @Override boolean isCellEditable(int row, int column) {
@@ -303,9 +324,41 @@ final class CodeTemplatesModel {
             this.modified = true;
         }
 
-        public List<String> getContexts(int row) {
-            CodeTemplateDescription ctd = codeTemplatesMap.get(getAbbreviation(row));
-            return ctd == null ? null : ctd.getContexts();
+        public Set<String> getContexts(int row) {
+            String abbreviation = getAbbreviation(row);
+            Set<String> ret = contexts.get(abbreviation);
+            if (ret == null) {
+                CodeTemplateDescription ctd = codeTemplatesMap.get(abbreviation);
+                final boolean[] afterInit = {false};
+                ret = new LinkedHashSet() {
+                    @Override
+                    public boolean add(Object e) {
+                        boolean b = super.add(e);
+                        if (b && afterInit[0]) {
+                            TM.this.modified = true;
+                        }
+                        return b;
+                    }
+                    @Override
+                    public boolean remove(Object o) {
+                        boolean b = super.remove(o);
+                        if (b && afterInit[0]) {
+                            TM.this.modified = true;
+                        }
+                        return b;
+                    }                    
+                };
+                if (ctd != null) {
+                    ret.addAll(ctd.getContexts());
+                }
+                afterInit[0] = true;
+                contexts.put(abbreviation, ret);
+            }
+            return ret;
+        }
+        
+        public ListModel<String> getSupportedContexts() {
+            return supportedContexts;
         }
         
         public String getUniqueId(int row) {

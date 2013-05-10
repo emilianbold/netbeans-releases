@@ -49,6 +49,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.api.ejbjar.Ear;
+import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -253,6 +258,64 @@ public class DDHelper {
             return action.getResult();
     }
 
+    /**
+     * Generate EAR deployment descriptor (<i>application.xml</i>) if needed or forced (applies for JAVA EE 5).
+     * <p>
+     * For J2EE 1.4 or older the deployment descriptor is always generated if missing.
+     * For JAVA EE 5 it is only generated if missing and forced as well.
+     * @param profile J2EE profile.
+     * @param dir Configuration directory.
+     * @param forceCreation if <code>true</code> <i>application.xml</i> is generated even if it's not needed
+     * @return {@link FileObject} of the deployment descriptor or <code>null</code>.
+     * @throws java.io.IOException if any error occurs.
+     * @since 1.84
+     */
+    public static FileObject createApplicationXml(final Profile profile, final FileObject dir,
+            boolean forceCreation) throws IOException {
+        String template = null;
+        if (Profile.J2EE_14.equals(profile) || Profile.J2EE_13.equals(profile)) {
+            template = "ear-1.4.xml"; // NOI18N
+        } else if (Profile.JAVA_EE_5.equals(profile) && forceCreation) {
+            template = "ear-5.xml"; // NOI18N
+        } else if (Util.isAtLeastJavaEE7Web(profile) && forceCreation) {
+            template = "ear-7.xml"; // NOI18N
+        } else if (Util.isAtLeastJavaEE6Web(profile) && forceCreation) {
+            template = "ear-6.xml"; // NOI18N
+        }
+
+        if (template == null) {
+            return null;
+        }
+        
+        MakeFileCopy action = new MakeFileCopy(RESOURCE_FOLDER + template, dir, "application.xml");
+        FileUtil.runAtomicAction(action);
+        if (action.getException() != null) {
+            throw action.getException();
+        } else {
+            return action.getResult();
+        }
+    }
+
+    /**
+     * Return <code>true</code> if deployment descriptor is compulsory for given EAR project.
+     * @param project EAR project instance, shall include EarImplementation in it's lookup.
+     * @return <code>true</code> if deployment descriptor is compulsory for given EAR project.
+     * @since 1.84
+     */
+    public static boolean isApplicationXMLCompulsory(Project project) {
+        assert project != null;
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        if (provider != null && provider.getJ2eeModule().getType() == J2eeModule.Type.EAR) {
+            if (provider.getConfigSupport().isDescriptorRequired()) {
+                return true;
+            }
+        }
+        Ear ear = Ear.getEar(project.getProjectDirectory());
+        if (ear != null && Profile.J2EE_14.equals(ear.getJ2eeProfile())) {
+            return true;
+        }
+        return false;
+    }
 
     // -------------------------------------------------------------------------
     private static class MakeFileCopy implements Runnable {
@@ -280,7 +343,7 @@ public class DDHelper {
             try {
                 // PENDING : should be easier to define in layer and copy related FileObject (doesn't require systemClassLoader)
                 if (toDir.getFileObject(toFile) != null) {
-                    throw new IllegalStateException("file "+toFile+" already exists in "+toDir);
+                    return; // #229533, #189768: The file already exists in the file system --> Simply do nothing
                 }
                 FileObject xml = FileUtil.createData(toDir, toFile);
                 String content = readResource(DDHelper.class.getResourceAsStream(fromFile));

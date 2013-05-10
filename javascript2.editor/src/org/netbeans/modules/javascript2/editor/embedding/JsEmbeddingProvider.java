@@ -58,7 +58,10 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
+import org.netbeans.modules.javascript2.editor.JsLanguage;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.lexer.JsLexer;
+import org.netbeans.modules.javascript2.editor.lexer.JsonLexer;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
@@ -137,7 +140,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     public static boolean isGeneratedIdentifier(String ident) {
         return GENERATED_IDENTIFIER.equals(ident) || ident.contains(NETBEANS_IMPORT_FILE);
     }
-    
+
     public static boolean containsGeneratedIdentifier(String ident) {
         return ident.contains(GENERATED_IDENTIFIER) || ident.contains(NETBEANS_IMPORT_FILE);
     }
@@ -153,6 +156,7 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     private static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
     private static final String TPL_MIME_TYPE = "text/x-tpl"; // NOI18N
     private static final String TWIG_MIME_TYPE = "text/x-twig"; // NOI18N
+    private static final String LATTE_MIME_TYPE = "text/x-latte"; // NOI18N
     //private static final String GSP_TAG_MIME_TYPE = "application/x-gsp"; // NOI18N
     private static final Map<String, Translator> translators = new HashMap<String, Translator>();
 
@@ -160,11 +164,14 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
         translators.put(JSP_MIME_TYPE, new JspTranslator());
         translators.put(TAG_MIME_TYPE, new JspTranslator());
         translators.put(RHTML_MIME_TYPE, new RhtmlTranslator());
-        translators.put(HTML_MIME_TYPE, new HtmlTranslator());
+        //the creation of javascript virtual source for files with text/html mimetype
+        //is now handled by o.n.m.html.editor.embedding.JsEmbeddingProvider
+//        translators.put(HTML_MIME_TYPE, new HtmlTranslator());
         translators.put(XHTML_MIME_TYPE, new XhtmlTranslator());
         translators.put(PHP_MIME_TYPE, new PhpTranslator());
         translators.put(TPL_MIME_TYPE, new TplTranslator());
         translators.put(TWIG_MIME_TYPE, new TwigTranslator());
+        translators.put(LATTE_MIME_TYPE, new LatteTranslator());
     }
     // If you change this, update the testcase reference
     private static final String GENERATED_IDENTIFIER = "__UNKNOWN__"; // NOI18N
@@ -243,8 +250,8 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             return embeddings;
         }
     } // End JspTranslator class
-    
-    
+
+
     private static final class XhtmlTranslator implements Translator {
 
         @Override
@@ -454,6 +461,53 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
             return embeddings;
         }
     } // End of TwigTranslator class
+
+    private static final class LatteTranslator implements Translator {
+
+        @Override
+        public List<Embedding> translate(Snapshot snapshot) {
+            TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+            if (th == null) {
+                //likely the latte language couldn't be found
+                LOG.info("Cannot get TokenHierarchy from snapshot " + snapshot); //NOI18N
+                return Collections.emptyList();
+            }
+
+            TokenSequence<? extends TokenId> tokenSequence = th.tokenSequence();
+            List<Embedding> embeddings = new ArrayList<Embedding>();
+
+            JsAnalyzerState state = new JsAnalyzerState();
+            while (tokenSequence.moveNext()) {
+                Token<? extends TokenId> token = tokenSequence.token();
+
+                if (token.id().name().equals("T_HTML")) { //NOI18N
+                    TokenSequence<? extends HTMLTokenId> ts = tokenSequence.embedded(HTMLTokenId.language());
+                    if (ts == null) {
+                        continue;
+                    }
+                    extractJavaScriptFromHtml(snapshot, ts, state, embeddings);
+                } else if (token.id().name().equals("T_LATTE")) { // NOI18N
+                    if (state.in_inlined_javascript || state.in_javascript) {
+                        //find end of the latte
+                        boolean hasNext = false;
+                        while (token.id().name().equals("T_LATTE")) { // NOI18N
+                            hasNext = tokenSequence.moveNext();
+                            if (!hasNext) {
+                                break;
+                            }
+                            token = tokenSequence.token();
+                        }
+                        if (hasNext) {
+                            tokenSequence.movePrevious();
+                        }
+                        embeddings.add(snapshot.create(GENERATED_IDENTIFIER, JsTokenId.JAVASCRIPT_MIME_TYPE));
+                    }
+                }
+            }
+
+            return embeddings;
+        }
+    } // End of LatteTranslator class
 
     private static final class RhtmlTranslator implements Translator {
 
@@ -776,6 +830,26 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
 
             } else if (htmlId == HTMLTokenId.TAG_CLOSE && "script".equals(htmlToken.toString())) {
                 embeddings.add(snapshot.create("\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
+            } else if (htmlId == HTMLTokenId.EL_OPEN_DELIMITER) {
+                //1.check if the next token represents javascript content
+                String mimetype = (String) ts.token().getProperty("contentMimeType"); //NOT IN AN API, TBD
+                if (mimetype != null && "text/javascript".equals(mimetype)) {
+                    embeddings.add(snapshot.create("(function(){\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
+
+                    //2. check content
+                    if (ts.moveNext()) {
+                        Token<? extends HTMLTokenId> token = ts.token();
+                        if (token.id() == HTMLTokenId.EL_CONTENT) {
+                            //not empty expression: {{sg}}
+                            embeddings.add(snapshot.create(ts.offset(), ts.token().length(), JsTokenId.JAVASCRIPT_MIME_TYPE));
+                            embeddings.add(snapshot.create(";\n});\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
+                        } else if (token.id() == HTMLTokenId.EL_CLOSE_DELIMITER) {
+                            //empty expression: {{}}
+                            embeddings.add(snapshot.create(ts.offset(), 0, JsTokenId.JAVASCRIPT_MIME_TYPE));
+                            embeddings.add(snapshot.create(";\n});\n", JsTokenId.JAVASCRIPT_MIME_TYPE)); //NOI18N
+                        }
+                    }
+                }
             } else {
                 // TODO - stash some other DOM stuff into the JavaScript
                 // file such that I can refer to them from within JavaScript

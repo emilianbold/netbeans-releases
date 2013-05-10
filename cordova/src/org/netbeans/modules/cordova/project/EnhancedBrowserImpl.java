@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.cordova.project;
 
-import java.io.File;
 import java.io.IOException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
@@ -60,22 +59,19 @@ import org.openide.util.Exceptions;
  */
 public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
 
-    final private Project project;
-    private MobileConfigurationsProvider configsProvider;
+    private Project project;
+    private WebBrowser browser;
+    private MobileConfigurationImpl config;
 
     EnhancedBrowserImpl(Project project, WebBrowser browser) {
-        this.project = project;
-     
-        final File f = new File(project.getProjectDirectory().getPath() + "/nbproject/configs"); //NOI18N
-        if (!f.exists()) {
-            try {
-                MobileProjectExtender.createMobileConfigs(project.getProjectDirectory());
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+        try {
+            this.project = project;
+            this.browser = browser;
+            MobileProjectExtender.createMobileConfigs(project.getProjectDirectory());
+            this.config = MobileConfigurationImpl.create(project, browser.getId());
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
-    
-        configsProvider = new MobileConfigurationsProvider(project);
     }
 
     @Override
@@ -90,11 +86,7 @@ public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplemen
 
     @Override
     public ActionProvider getActionProvider() {
-        final MobileConfigurationImpl activeConfiguration = configsProvider.getActiveConfiguration();
-        if (activeConfiguration == null) {
-            return null;
-        }
-        return activeConfiguration.getDevice().getActionProvider(project);
+        return this.config.getDevice().getActionProvider(project);
     }
 
     @Override
@@ -113,7 +105,7 @@ public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplemen
 
     @Override
     public ProjectConfigurationProvider getProjectConfigurationProvider() {
-        return configsProvider;
+        return null;
     }
 
 }

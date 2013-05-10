@@ -37,14 +37,14 @@ CLASS OrderedStatic<class,class,Loki::NullType> (OrderedStatic<class,class,Loki:
             SIGNATURE OrderedStatic(const OrderedStatic&)
             UNIQUE NAME F:OrderedStatic<class,class,Loki::NullType>::OrderedStatic(const OrderedStatic&)
             PARAMETERS:
-                 [17:23/541-17:43/561]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [17:23/541-17:28/546]  INIT: null  SCOPE: OrderedStatic 
+                 [17:23/541-17:43/561]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [17:23/541-17:43/561]  INIT: null  SCOPE: OrderedStatic 
             RETURNS <*no_classifier*> TEXT=  [null-null]
         FUNCTION operator = [18:9/572-18:56/619] MethodImpl SCOPE: OrderedStatic 
             DEFINITION: null
             SIGNATURE operator =(const OrderedStatic&)
             UNIQUE NAME F:OrderedStatic<class,class,Loki::NullType>::operator =(const OrderedStatic&)
             PARAMETERS:
-                 [18:34/597-18:54/617]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [18:34/597-18:39/602]  INIT: null  SCOPE: operator = 
+                 [18:34/597-18:54/617]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [18:34/597-18:54/617]  INIT: null  SCOPE: operator = 
             RETURNS &$unresolved$::OrderedStatic TEXT=OrderedStatic&  [18:9/572-18:23/586]
 STRUCT RefCountedMTAdj<template<class,class> class ThreadingModel,class MX=LOKI_DEFAULT_MUTEX> (RefCountedMTAdj ) [21:5/632-32:6/1096] lcurly=765 SCOPE: $Global$ 
     BASE CLASSES:
@@ -144,14 +144,14 @@ CLASS OrderedStatic<class,class,Loki::NullType> (OrderedStatic<class,class,Loki:
             SIGNATURE OrderedStatic(const OrderedStatic&)
             UNIQUE NAME F:OrderedStatic<class,class,Loki::NullType>::OrderedStatic(const OrderedStatic&)
             PARAMETERS:
-                 [17:23/541-17:43/561]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [17:23/541-17:28/546]  INIT: null  SCOPE: OrderedStatic 
+                 [17:23/541-17:43/561]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [17:23/541-17:43/561]  INIT: null  SCOPE: OrderedStatic 
             RETURNS <*no_classifier*> TEXT=  [null-null]
         FUNCTION operator = [18:9/572-18:56/619] MethodImpl SCOPE: OrderedStatic 
             DEFINITION: null
             SIGNATURE operator =(const OrderedStatic&)
             UNIQUE NAME F:OrderedStatic<class,class,Loki::NullType>::operator =(const OrderedStatic&)
             PARAMETERS:
-                 [18:34/597-18:54/617]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [18:34/597-18:39/602]  INIT: null  SCOPE: operator = 
+                 [18:34/597-18:54/617]  TYPE: const &$unresolved$::OrderedStatic TEXT=const OrderedStatic&  [18:34/597-18:54/617]  INIT: null  SCOPE: operator = 
             RETURNS &$unresolved$::OrderedStatic TEXT=OrderedStatic&  [18:9/572-18:23/586]
 STRUCT RefCountedMTAdj<template<class,class> class ThreadingModel,class MX=LOKI_DEFAULT_MUTEX> (RefCountedMTAdj ) [21:5/632-32:6/1096] lcurly=765 SCOPE: $Global$ 
     BASE CLASSES:

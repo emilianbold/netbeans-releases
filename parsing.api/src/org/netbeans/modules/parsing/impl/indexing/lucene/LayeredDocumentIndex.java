@@ -49,29 +49,35 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import org.apache.lucene.analysis.KeywordAnalyzer;
+import org.apache.lucene.search.Query;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.parsing.impl.indexing.Pair;
-import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex2;
 import org.netbeans.modules.parsing.lucene.support.Index.Status;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
 import org.openide.util.Exceptions;
 import static org.netbeans.modules.parsing.impl.indexing.TransientUpdateSupport.isTransientUpdate;
+import org.netbeans.modules.parsing.lucene.support.Convertor;
+import org.netbeans.modules.parsing.lucene.support.Convertors;
+import org.netbeans.modules.parsing.lucene.support.Queries;
+import org.openide.util.Pair;
 /**
  *
  * @author Tomas Zezula
  */
-public final class LayeredDocumentIndex implements DocumentIndex.Transactional {
+public final class LayeredDocumentIndex implements DocumentIndex2.Transactional {
     
-    private final DocumentIndex.Transactional base;
+    private final DocumentIndex2.Transactional base;
     
     private final Set<String> filter = new HashSet<String>();
     //@GuardedBy("this")
-    private DocumentIndex overlay;
+    private DocumentIndex2 overlay;
     
     
-    LayeredDocumentIndex(@NonNull final DocumentIndex.Transactional base) {
+    LayeredDocumentIndex(@NonNull final DocumentIndex2.Transactional base) {
         assert base != null;
         this.base = base;
     }
@@ -117,9 +123,9 @@ public final class LayeredDocumentIndex implements DocumentIndex.Transactional {
     @Override
     public void store(boolean optimize) throws IOException {
         if (isTransientUpdate()) {
-            final Pair<DocumentIndex,Set<String>> ovl = getOverlayIfExists();
-            if (ovl.first != null) {
-                ovl.first.store(false);
+            final Pair<DocumentIndex2,Set<String>> ovl = getOverlayIfExists();
+            if (ovl.first() != null) {
+                ovl.first().store(false);
             }
         } else {
             base.store(optimize);
@@ -165,29 +171,50 @@ public final class LayeredDocumentIndex implements DocumentIndex.Transactional {
 
     @Override
     public Collection<? extends IndexDocument> query(String fieldName, String value, QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {
-        final Collection<? extends IndexDocument> br = base.query(fieldName, value, kind, fieldsToLoad);
-        final Pair<DocumentIndex,Set<String>> ovl = getOverlayIfExists();
-        if (ovl.first == null) {
-            return ovl.second == null ? br : filter(br,ovl.second);
-        } else {
-            return new ProxyCollection<IndexDocument>(
-                ovl.second == null ? br : filter(br,ovl.second),
-                ovl.first.query(fieldName, value, kind, fieldsToLoad));
-        }
+        return query(Queries.createQuery(fieldName, fieldName, value, kind), Convertors.<IndexDocument>identity(), fieldsToLoad);
     }
 
     @Override
     public Collection<? extends IndexDocument> findByPrimaryKey(String primaryKeyValue, QueryKind kind, String... fieldsToLoad) throws IOException, InterruptedException {
         final Collection<? extends IndexDocument> br = base.findByPrimaryKey(primaryKeyValue, kind, fieldsToLoad);
-        final Pair<DocumentIndex,Set<String>> ovl = getOverlayIfExists();
-        if (ovl.first == null) {
-            return ovl.second == null ? br : filter(br, ovl.second);
+        final Pair<DocumentIndex2,Set<String>> ovl = getOverlayIfExists();
+        if (ovl.first() == null) {
+            return ovl.second() == null ? br : Filter.filter(br, ovl.second());
         } else {
             return new ProxyCollection<IndexDocument>(
-                ovl.second == null ? br : filter(br,ovl.second),
-                ovl.first.findByPrimaryKey(primaryKeyValue, kind, fieldsToLoad));
+                ovl.second() == null ? br : Filter.filter(br,ovl.second()),
+                ovl.first().findByPrimaryKey(primaryKeyValue, kind, fieldsToLoad));
         }
     }
+
+    @Override
+     @NonNull
+     public <T> Collection<? extends T> query(
+             @NonNull final Query query,
+             @NonNull final Convertor<? super IndexDocument, ? extends T> convertor,
+             @NullAllowed final String... fieldsToLoad) throws IOException, InterruptedException {
+         final Pair<DocumentIndex2,Set<String>> ovl = getOverlayIfExists();
+         Convertor<? super IndexDocument, ? extends T> filterConvertor;
+         if (ovl.second() == null) {
+             filterConvertor = convertor;
+         } else {
+             filterConvertor = Convertors.compose(
+                     new Filter(ovl.second()),
+                     convertor);
+         }
+         final Collection<? extends T> br = base.query(
+                 query,
+                 filterConvertor,
+                 fieldsToLoad);
+
+         if (ovl.first() == null) {
+             return br;
+         } else {
+             return new ProxyCollection<T>(
+                 br,
+                 ovl.first().query(query, convertor, fieldsToLoad));
+         }
+     }
 
     @Override
     public void markKeyDirty(String primaryKey) {
@@ -220,17 +247,17 @@ public final class LayeredDocumentIndex implements DocumentIndex.Transactional {
     }
     
     @NonNull
-    private synchronized DocumentIndex getOverlay() throws IOException {
+    private synchronized DocumentIndex2 getOverlay() throws IOException {
         if (overlay == null) {
-            overlay = IndexManager.createDocumentIndex(IndexManager.createMemoryIndex(new KeywordAnalyzer()));
+            overlay = (DocumentIndex2) IndexManager.createDocumentIndex(IndexManager.createMemoryIndex(new KeywordAnalyzer()));
         }
         return overlay;
     }
     
     @NonNull
-    private synchronized Pair<DocumentIndex,Set<String>> getOverlayIfExists() throws IOException {
+    private synchronized Pair<DocumentIndex2,Set<String>> getOverlayIfExists() throws IOException {
         final Set<String> f = filter.isEmpty() ? null : new HashSet<String>(filter);
-        return Pair.<DocumentIndex,Set<String>>of(overlay,f);
+        return Pair.<DocumentIndex2,Set<String>>of(overlay,f);
     }
     
     private synchronized void addToFilter(@NonNull final String primaryKey) {
@@ -249,19 +276,47 @@ public final class LayeredDocumentIndex implements DocumentIndex.Transactional {
             }
         }
     }
-    
-    @NonNull
-    private static Collection<? extends IndexDocument> filter (
-        @NonNull final Collection<? extends IndexDocument> base,
-        @NonNull final Set<String> filter) {
-        assert !filter.isEmpty();
-        final Collection<IndexDocument> res = new ArrayList<IndexDocument>(base.size());
-        for (IndexDocument doc : base) {
-            if (!filter.contains(doc.getPrimaryKey())) {
-                res.add(doc);
-            }
+
+    private static final class Filter implements Convertor<IndexDocument, IndexDocument> {
+
+        private final Set<String> filter;
+
+        Filter(@NonNull final Set<String> filter) {
+            assert filter != null;
+            assert !filter.isEmpty();
+            this.filter = filter;
         }
-        return res;
+
+        @Override
+        @CheckForNull
+        public IndexDocument convert(@NullAllowed final IndexDocument p) {
+            return filtered(p, filter) ?
+                null :
+                p;
+        }
+
+        @NonNull
+        static Collection<? extends IndexDocument> filter (
+            @NonNull final Collection<? extends IndexDocument> base,
+            @NonNull final Set<String> filter) {
+            assert !filter.isEmpty();
+            final Collection<IndexDocument> res = new ArrayList<IndexDocument>(base.size());
+            for (IndexDocument doc : base) {
+                if (!filtered(doc, filter)) {
+                    res.add(doc);
+                }
+            }
+            return res;
+        }
+
+        private static boolean filtered(
+            @NullAllowed final IndexDocument doc,
+            @NonNull final Set<? extends String> filter) {
+            return doc == null ?
+                true :
+                filter.contains(doc.getPrimaryKey());
+        }
+
     }
     
     private static class ProxyCollection<E> extends AbstractCollection<E> {

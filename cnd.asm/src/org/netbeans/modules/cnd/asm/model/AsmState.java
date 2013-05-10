@@ -48,7 +48,7 @@ package org.netbeans.modules.cnd.asm.model;
 import org.openide.util.Lookup;
 
 import org.netbeans.modules.cnd.asm.model.lang.AsmElement;
-import org.netbeans.modules.cnd.asm.model.util.Pair;
+import org.openide.util.Pair;
 
 public interface AsmState {
     AsmElement getElements();  

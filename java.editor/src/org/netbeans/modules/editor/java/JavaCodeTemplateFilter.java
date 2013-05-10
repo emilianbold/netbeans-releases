@@ -46,6 +46,7 @@ package org.netbeans.modules.editor.java;
 
 import com.sun.source.tree.Tree;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -165,11 +166,21 @@ public class JavaCodeTemplateFilter implements CodeTemplateFilter {
         }
     }
 
-    public static final class Factory implements CodeTemplateFilter.Factory {
+    public static final class Factory implements CodeTemplateFilter.ContextBasedFactory {
         
         @Override
         public CodeTemplateFilter createFilter(JTextComponent component, int offset) {
             return new JavaCodeTemplateFilter(component, offset);
+        }
+
+        @Override
+        public List<String> getSupportedContexts() {
+            Tree.Kind[] values = Tree.Kind.values();
+            List<String> contexts = new ArrayList<>(values.length);
+            for (Tree.Kind value : values) {
+                contexts.add(value.name());
+            }
+            return contexts;
         }
     }
 }

@@ -414,7 +414,7 @@ public final class BreakpointFilter extends ModelListenerSupport
 
 		if (node instanceof NativeBreakpoint) {
 			NativeBreakpoint b = (NativeBreakpoint) node;
-			String summary = b.getSummary();
+			String summary = ( b.getSummary() == null ? "" : b.getSummary() );
 			if (b.getError() != null) {
 				summary += " (" + b.getError() + ")";	// NOI18N
 			}

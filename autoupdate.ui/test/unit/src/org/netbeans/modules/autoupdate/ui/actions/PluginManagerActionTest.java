@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -50,7 +50,6 @@ import javax.swing.JFrame;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.autoupdate.ui.PluginManagerUI;
 
 /**
@@ -80,7 +79,6 @@ public class PluginManagerActionTest extends NbTestCase {
     
     private static Object help;
 
-    @RandomlyFails
     public void testMemLeakPluginManagerUI () throws Exception {
         help = this;
         
@@ -113,14 +111,15 @@ public class PluginManagerActionTest extends NbTestCase {
                 dlg.dispose ();
             }
         });
+        Thread.sleep (10500);
         //dlg = null;
         close = null;
 
         ui = null;
         assertNull (ui);
         
-        // sun.management.ManagementFactory.ManagementFactory.getDiagnosticMXBean().dumpHeap("/tmp/heapdump.out", true);
         ToolTipManager.sharedInstance ().mousePressed (null);
+        // sun.management.ManagementFactoryHelper.getDiagnosticMXBean().dumpHeap("/tmp/heapdump2.out", true);
         assertGC ("Reference to PluginManagerUI is empty.", ref);
 
         assertNotNull (ref);

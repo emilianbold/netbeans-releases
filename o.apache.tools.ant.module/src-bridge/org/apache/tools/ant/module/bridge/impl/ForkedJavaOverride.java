@@ -48,6 +48,8 @@ import org.apache.tools.ant.taskdefs.ExecuteStreamHandler;
 import org.apache.tools.ant.taskdefs.Java;
 import org.apache.tools.ant.taskdefs.Redirector;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.FoldHandle;
+import org.openide.windows.IOFolding;
 import org.openide.windows.OutputWriter;
 
 /**
@@ -174,8 +176,11 @@ public class ForkedJavaOverride extends Java {
             private Thread errTask;
             private Thread inTask;
             private Copier outCopier, errCopier; // #212526
+            private FoldingHelper foldingHelper;
 
-            NbOutputStreamHandler() {}
+            NbOutputStreamHandler() {
+                this.foldingHelper = new FoldingHelper();
+            }
 
             public void start() throws IOException {}
 
@@ -214,7 +219,7 @@ public class ForkedJavaOverride extends Java {
                     os = AntBridge.delegateOutputStream(false);
                     logLevel = Project.MSG_INFO;
                 }
-                outTask = new Thread(Thread.currentThread().getThreadGroup(), outCopier = new Copier(inputStream, os, logLevel, outEncoding),
+                outTask = new Thread(Thread.currentThread().getThreadGroup(), outCopier = new Copier(inputStream, os, logLevel, outEncoding, foldingHelper),
                         "Out Thread for " + getProject().getName()); // NOI18N
                 outTask.setDaemon(true);
                 outTask.start();
@@ -227,7 +232,7 @@ public class ForkedJavaOverride extends Java {
                     os = AntBridge.delegateOutputStream(true);
                     logLevel = Project.MSG_WARN;
                 }
-                errTask = new Thread(Thread.currentThread().getThreadGroup(), errCopier = new Copier(inputStream, os, logLevel, errEncoding),
+                errTask = new Thread(Thread.currentThread().getThreadGroup(), errCopier = new Copier(inputStream, os, logLevel, errEncoding, foldingHelper),
                         "Err Thread for " + getProject().getName()); // NOI18N
                 errTask.setDaemon(true);
                 errTask.start();
@@ -238,7 +243,7 @@ public class ForkedJavaOverride extends Java {
                 if (is == null) {
                     is = AntBridge.delegateInputStream();
                 }
-                inTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(is, outputStream, null, null),
+                inTask = new Thread(Thread.currentThread().getThreadGroup(), new Copier(is, outputStream, null, null, foldingHelper),
                         "In Thread for " + getProject().getName()); // NOI18N
                 inTask.setDaemon(true);
                 inTask.start();
@@ -259,12 +264,15 @@ public class ForkedJavaOverride extends Java {
         private OutputWriter ow = null;
         private boolean err;
         private AntSession session = null;
+        private final FoldingHelper foldingHelper;
 
-        public Copier(InputStream in, OutputStream out, Integer logLevel, String encoding/*, long init*/) {
+        public Copier(InputStream in, OutputStream out, Integer logLevel, String encoding/*, long init*/,
+                FoldingHelper foldingHelper) {
             this.in = in;
             this.out = out;
             this.logLevel = logLevel;
             this.encoding = encoding;
+            this.foldingHelper = foldingHelper;
             if (logLevel != null) {
                 flusher = PROCESSOR.create(new Runnable() {
                     public void run() {
@@ -306,7 +314,7 @@ public class ForkedJavaOverride extends Java {
                             out.write(c);
                             out.flush();
                         } else {
-                            synchronized (this) {
+                            synchronized (foldingHelper) {
                                 if (c == '\n') {
                                     String str = currentLine.toString(encoding);
                                     int len = str.length();
@@ -314,6 +322,7 @@ public class ForkedJavaOverride extends Java {
                                         str = str.substring(0, len - 1);
                                     }
                                     // skip stack traces (hyperlinks are created by JavaAntLogger), everything else write directly
+                                    foldingHelper.checkFolds(str, err, session);
                                     if (!STACK_TRACE.matcher(str).find()) {
                                         StandardLogger.findHyperlink(str, session, null).println(session, err);
                                     }
@@ -360,4 +369,43 @@ public class ForkedJavaOverride extends Java {
 
     }
 
+    /**
+     * A helper class for detecting stacktraces in the output and for creating
+     * folds for them. It is also used as a shared lock for {@link Copier}s of
+     * standard and error outputs, which should make the mixed output a bit more
+     * readable.
+     */
+    public static class FoldingHelper {
+
+        private final Pattern STACK_TRACE = Pattern.compile(
+                "^\\s+at.*:");                                          //NOI18N
+        private final Pattern EXCEPTION = Pattern.compile(
+                "^(\\.?\\w)*(Exception|Error).*");                      //NOI18N
+        private FoldHandle foldHandle = null;
+        boolean inStackTrace = false;
+
+        private void checkFolds(String s, boolean error, AntSession session) {
+
+            if (EXCEPTION.matcher(s).find() && error) {
+                inStackTrace = true;
+                clearHandle();
+            } else if (STACK_TRACE.matcher(s).find()
+                    && inStackTrace && error) {
+                if (foldHandle == null) {
+                    foldHandle = IOFolding.startFold(session.getIO(),
+                            true);
+                }
+            } else {
+                inStackTrace = false;
+                clearHandle();
+            }
+        }
+
+        private void clearHandle() {
+            if (foldHandle != null) {
+                foldHandle.finish();
+                foldHandle = null;
+            }
+        }
+    }
 }

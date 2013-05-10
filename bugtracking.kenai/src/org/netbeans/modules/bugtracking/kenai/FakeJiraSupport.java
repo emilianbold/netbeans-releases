@@ -50,7 +50,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -216,8 +216,8 @@ class FakeJiraSupport {
         public void removePropertyChangeListener(PropertyChangeListener l) {}
 
         public void actionPerformed(ActionEvent e) {
-            if(KenaiUtil.notifyJiraDownload(projectUrl)) {
-                KenaiUtil.downloadAndInstallJira();
+            if(TeamUtil.notifyJiraDownload(projectUrl)) {
+                TeamUtil.downloadAndInstallJira();
             }
         }
         public List<QueryResultHandle> getQueryResults() {
@@ -260,8 +260,8 @@ class FakeJiraSupport {
             return NbBundle.getMessage(FakeJiraQueryHandle.class, "LBL_NotAvailableTooltip");   // NOI18N
         }
         public void actionPerformed(ActionEvent e) {
-            if(KenaiUtil.notifyJiraDownload(projectUrl)) {
-                KenaiUtil.downloadAndInstallJira();
+            if(TeamUtil.notifyJiraDownload(projectUrl)) {
+                TeamUtil.downloadAndInstallJira();
             }
         }
         @Override
@@ -280,8 +280,8 @@ class FakeJiraSupport {
     private ActionListener getJiraListener(final String urlString) {
         return new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                if(KenaiUtil.notifyJiraDownload(urlString)) {
-                    KenaiUtil.downloadAndInstallJira();
+                if(TeamUtil.notifyJiraDownload(urlString)) {
+                    TeamUtil.downloadAndInstallJira();
                 }
             }
         };

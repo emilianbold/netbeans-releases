@@ -55,9 +55,9 @@ import org.netbeans.modules.css.editor.module.spi.*;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
-import org.netbeans.modules.web.common.api.Pair;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 
 /**
  *

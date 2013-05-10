@@ -70,7 +70,9 @@ public class InspectionTest extends GeneralHTMLProject {
                 "testHighlightedElements",
                 "testInspectionFromNavigator",
                 "testMatchedHighlighted",
-                "testDynamicElementPopulation").enableModules(".*").clusters(".*").honorAutoloadEager(true));
+                "testDynamicElementPopulation"
+                )
+                .enableModules(".*").clusters(".*").honorAutoloadEager(true));
     }
 
     public void testOpenProject() throws Exception {
@@ -124,9 +126,8 @@ public class InspectionTest extends GeneralHTMLProject {
         waitElementsSelected(1, 2000);
         HTMLElement[] el = getSelectedElements();
 
-        HTMLNavigatorOperator no = new HTMLNavigatorOperator("div - Navigator");
+        DomOperator no = new DomOperator();
         CSSStylesOperator co = new CSSStylesOperator("index.html");
-        int position = eo.txtEditorPane().getCaretPosition();
         AppliedRule[] rules = co.getAppliedRules();
 
         assertEquals("Unexpected number of applied rules", 3, rules.length);
@@ -135,10 +136,9 @@ public class InspectionTest extends GeneralHTMLProject {
         assertEquals("Unexpected source css file", "style.css:9", rules[0].source);
         assertEquals("Unexpected path", "div#el2.test", rules[1].path);
         assertEquals("Unexpected number of selected elements: was " + el.length + " should be 1", 1, el.length);
-        assertEquals("Unexpected element in Navigator", "[html, body, div]div#el2.test", no.getFocusedElement());
-        assertEquals("Unexpected element is selected", "[html, body, div]div#el2.test", el[0].getNavigatorString());
+        assertEquals("Unexpected element in Navigator", "[html, body#el1, div#el2.test]", no.getFocusedElement());
+        assertEquals("Unexpected element is selected", "[html, body#el1, div#el2.test]", el[0].getNavigatorString());
         assertEquals("Unexpected element in CSS Styles", "div #el2.test", co.getSelectedHTMLElementName());
-        assertEquals("Unexpected element focused in editor", "<div id=\"el2\" class=\"test\">", eo.txtEditorPane().getText(position, 27));
 
         eo.deleteLine(19);
         eb.closeWindow();
@@ -157,8 +157,7 @@ public class InspectionTest extends GeneralHTMLProject {
         runFile("simpleProject", "index.html");
 
         EmbeddedBrowserOperator eb = new EmbeddedBrowserOperator("Web Browser");
-        EditorOperator eo = new EditorOperator("index.html");
-        eo.setCaretPosition("ipsum", true);
+        new DomOperator().focusElement("html|body|div", "0|0|1");
         evt.waitNoEvent(500);
         CSSStylesOperator co = new CSSStylesOperator("index.html");
         co.editNumberedProperty("font-size", 5, true, true, false);
@@ -200,8 +199,8 @@ public class InspectionTest extends GeneralHTMLProject {
         HTMLElement[] elements = getMatchingElements();
 
         assertEquals("Unexpected number of matched elements", 2, elements.length);
-        assertEquals("Unexpected element is selected", "[html, body, div]div#el2.test", elements[0].getNavigatorString());
-        assertEquals("Unexpected element is selected", "[html, body, div]div.test", elements[1].getNavigatorString());
+        assertEquals("Unexpected element is selected", "[html, body#el1, div#el2.test]", elements[0].getNavigatorString());
+        assertEquals("Unexpected element is selected", "[html, body#el1, div.test]", elements[1].getNavigatorString());
 
         eo.deleteLine(19);
         eb.closeWindow();
@@ -218,16 +217,17 @@ public class InspectionTest extends GeneralHTMLProject {
         startTest();
         runFile("simpleProject", "index.html");
         EditorOperator eo = new EditorOperator("index.html");
-        eo.setCaretPosition("Test", false);
+        new DomOperator().focusElement("html|body|div", "0|0|2");
         CSSStylesOperator co = new CSSStylesOperator("index.html");
         evt.waitNoEvent(500);
         assertEquals("Unexpected element in CSS Styles", "div .test", co.getSelectedHTMLElementName());
+        eo.setCaretPosition("Test", false);
         type(eo, " modification");
         eo.save();
         evt.waitNoEvent(500);
-        assertEquals("Unexpected element in CSS Styles", "div .test", co.getSelectedHTMLElementName());
+        assertEquals("Unexpected element in CSS Styles", "div .test", new CSSStylesOperator("index.html").getSelectedHTMLElementName());
         evt.waitNoEvent(3000); // waits a while and checks CSS styles again
-        assertEquals("Unexpected element in CSS Styles", "div .test", co.getSelectedHTMLElementName());
+        assertEquals("Unexpected element in CSS Styles", "div .test", new CSSStylesOperator("index.html").getSelectedHTMLElementName());
         new EmbeddedBrowserOperator("Web Browser").closeWindow();
         endTest();
     }
@@ -250,18 +250,18 @@ public class InspectionTest extends GeneralHTMLProject {
         eo.save();
         waitElementsSelected(1, 2000);
 
-
-        eo.setCaretPosition("Test", false);
+        new DomOperator().focusElement("html|body|div", "0|0|2");
         CSSStylesOperator co = new CSSStylesOperator("index.html");
         evt.waitNoEvent(500);
-        assertEquals("Unexpected element in CSS Styles", "div .test", co.getSelectedHTMLElementName());
+        assertEquals("Unexpected element in CSS Styles", "div #el2.test", co.getSelectedHTMLElementName());
+        eo.setCaretPosition("Test", false);
         type(eo, " modification");
         eo.deleteLine(19);
         eo.save();
         evt.waitNoEvent(500);
-        assertEquals("Unexpected element in CSS Styles", "div .test", co.getSelectedHTMLElementName());
+        assertEquals("Unexpected element in CSS Styles", "div #el2.test", new CSSStylesOperator("index.html").getSelectedHTMLElementName());
         evt.waitNoEvent(3000); // waits a while and checks CSS styles again
-        assertEquals("Unexpected element in CSS Styles", "div .test", co.getSelectedHTMLElementName());
+        assertEquals("Unexpected element in CSS Styles", "div #el2.test", new CSSStylesOperator("index.html").getSelectedHTMLElementName());
         new EmbeddedBrowserOperator("Web Browser").closeWindow();
         endTest();
     }
@@ -278,7 +278,7 @@ public class InspectionTest extends GeneralHTMLProject {
         EmbeddedBrowserOperator eb = new EmbeddedBrowserOperator("Web Browser");
         eb.checkInspectModeButton(true);
 
-        HTMLNavigatorOperator no = new HTMLNavigatorOperator("Navigator");
+        DomOperator no = new DomOperator();
         no.focusElement("html|body|div", "0|0|0");
         waitElementsSelected(1, 0);
 
@@ -291,8 +291,8 @@ public class InspectionTest extends GeneralHTMLProject {
         assertEquals("Unexpected source css file", "style.css:9", rules[0].source);
         assertEquals("Unexpected path", "div#el2.test", rules[1].path);
         assertEquals("Unexpected number of selected elements: was " + el.length + " should be 1", 1, el.length);
-        assertEquals("Unexpected element in Navigator", "[html, body, div]div#el2.test", no.getFocusedElement());
-        assertEquals("Unexpected element is selected", "[html, body, div]div#el2.test", el[0].getNavigatorString());
+        assertEquals("Unexpected element in Navigator", "[html, body#el1, div#el2.test]", no.getFocusedElement());
+        assertEquals("Unexpected element is selected", "[html, body#el1, div#el2.test]", el[0].getNavigatorString());
         assertEquals("Unexpected element in CSS Styles", "div #el2.test", co.getSelectedHTMLElementName());
         eb.closeWindow();
 
@@ -306,7 +306,7 @@ public class InspectionTest extends GeneralHTMLProject {
     public void testHighlightedElements() {
         startTest();
         runFile("simpleProject", "index.html");
-        HTMLNavigatorOperator no = new HTMLNavigatorOperator("Navigator");
+        DomOperator no = new DomOperator();
         EmbeddedBrowserOperator eb = new EmbeddedBrowserOperator("Web Browser");
         eb.checkInspectModeButton(true);
         EditorOperator eo = new EditorOperator("index.html");
@@ -316,7 +316,7 @@ public class InspectionTest extends GeneralHTMLProject {
         eo.save();
         waitElementsHighlighted(1, 1000);
         HTMLElement[] el = getHighlightedElements();
-        assertEquals("Unexpected element is highlighted", "[html, body, div]div#el2.test", el[0].getNavigatorString());
+        assertEquals("Unexpected element is highlighted", "[html, body#el1, div#el2.test]", el[0].getNavigatorString());
         eo.deleteLine(19);
         eb.closeWindow();
         eo.save();
@@ -334,11 +334,11 @@ public class InspectionTest extends GeneralHTMLProject {
         setRunConfiguration("Embedded WebKit Browser", true, true);
         runFile(InspectionTest.current_project, "index.html");
         CSSStylesOperator co = new CSSStylesOperator("index.html");
-        HTMLNavigatorOperator no = new HTMLNavigatorOperator("Navigator");
+        DomOperator no = new DomOperator();
         no.focusElement("html|body|div|div|div|div|h1", "0|0|1|0|0|0|0");
         AppliedRule[] rules = co.getAppliedRules();
         assertEquals("Unexpected applied rule", ".hero-unit h1", rules[0].selector);
-        assertEquals("Unexpected element selected in Navigator", "[html, body, div, div, div, div, h1]h1;DOM", no.getFocusedElement());
+        assertEquals("Unexpected element selected in Navigator", "[html, body, div.container-fluid, div.row-fluid, div.span9, div#welcome.hero-unit, h1]", no.getFocusedElement());
         endTest();
     }
 }

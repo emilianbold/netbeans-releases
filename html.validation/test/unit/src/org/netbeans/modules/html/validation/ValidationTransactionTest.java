@@ -43,6 +43,7 @@ package org.netbeans.modules.html.validation;
  */
 import java.io.File;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
@@ -362,12 +363,13 @@ public class ValidationTransactionTest extends TestBase {
 
     private void validate(String code, boolean expectedPass, HtmlVersion version, ValidationTransaction vt, Set<String> filteredNamespaces) throws SAXException {
         System.out.println(String.format("Validating code %s chars long, using %s.", code.length(), version));
-        vt.validateCode(code, null, filteredNamespaces, "UTF-8");
+        vt.validateCode(new StringReader(code), null, filteredNamespaces, "UTF-8");
 
         Collection<ProblemDescription> problems = vt.getFoundProblems(
                 new ProblemDescriptionFilter.CombinedFilter(new ProblemDescriptionFilter.SeverityFilter(ProblemDescription.WARNING),
                 new ProblemDescriptionFilter() {
 
+                    @Override
                     public boolean accepts(ProblemDescription pd) {
                         return !isFilteredNamespacesProblem(pd);
                     }

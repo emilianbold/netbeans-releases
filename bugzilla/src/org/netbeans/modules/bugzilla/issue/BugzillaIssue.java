@@ -42,13 +42,15 @@
 
 package org.netbeans.modules.bugzilla.issue;
 
-import java.awt.event.ActionEvent;
+import java.awt.EventQueue;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.text.MessageFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -60,24 +62,31 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.logging.Level;
-import javax.swing.AbstractAction;
 import javax.swing.JTable;
-import javax.swing.SwingUtilities;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaTaskDataHandler;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
+import org.eclipse.mylyn.internal.tasks.core.ITaskListChangeListener;
+import org.eclipse.mylyn.internal.tasks.core.TaskContainerDelta;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
+import org.eclipse.mylyn.internal.tasks.core.data.ITaskDataManagerListener;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManagerEvent;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskDataState;
+import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.eclipse.mylyn.tasks.core.data.TaskDataModel;
+import org.eclipse.mylyn.tasks.core.data.TaskDataModelEvent;
+import org.eclipse.mylyn.tasks.core.data.TaskDataModelListener;
 import org.eclipse.mylyn.tasks.core.data.TaskOperation;
-import org.netbeans.api.diff.PatchUtils;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugzilla.Bugzilla;
@@ -85,49 +94,52 @@ import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.cache.IssueCache;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
+import org.netbeans.modules.bugtracking.util.PatchUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.commands.AddAttachmentCommand;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.commands.GetAttachmentCommand;
-import org.netbeans.modules.mylyn.util.SubmitCommand;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.mylyn.util.MylynSupport;
+import org.netbeans.modules.mylyn.util.NetBeansTaskDataModel;
+import org.netbeans.modules.mylyn.util.SubmitTaskCommand;
+import org.netbeans.modules.mylyn.util.SynchronizeTasksCommand;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
  * @author Tomas Stupka
  * @author Jan Stola
  */
-public class BugzillaIssue {
+public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeListener {
 
     public static final String RESOLVE_FIXED = "FIXED";                                                         // NOI18N
     public static final String RESOLVE_DUPLICATE = "DUPLICATE";                                                 // NOI18N
     public static final String VCSHOOK_BUGZILLA_FIELD = "netbeans.vcshook.bugzilla.";                           // NOI18N
+    public static final String ATTR_NEW_UNREAD = "NetBeans.bugzilla.markedNewUnread"; //NOI18N
     private static final SimpleDateFormat CC_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");            // NOI18N
-    private static final SimpleDateFormat MODIFIED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");   // NOI18N
-    private static final SimpleDateFormat CREATED_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm");       // NOI18N
-    private static final int SHORTENED_SUMMARY_LENGTH = 22;
 
-    private TaskData data;
-    private BugzillaRepository repository;
+    private Reference<TaskData> repositoryDataRef;
+    private final BugzillaRepository repository;
 
     private IssueController controller;
-    private IssueNode node;
+    private BugzillaIssueNode node;
     private OwnerInfo info;
 
     static final String LABEL_NAME_ID           = "bugzilla.issue.id";          // NOI18N
@@ -160,27 +172,51 @@ public class BugzillaIssue {
     static final int FIELD_STATUS_UPTODATE = 1;
 
     /**
-     * Field has a value in oposite to the last time when it was seen
+     * Field was changed since the issue was seen the last time
      */
-    static final int FIELD_STATUS_NEW = 2;
+    static final int FIELD_STATUS_MODIFIED = 2;
 
     /**
      * Field was changed since the issue was seen the last time
      */
-    static final int FIELD_STATUS_MODIFIED = 4;
-    private Map<String, String> seenAtributes;
+    static final int FIELD_STATUS_OUTGOING = 4;
+
+    /**
+     * Field was changed both locally and in repository
+     */
+    static final int FIELD_STATUS_CONFLICT = FIELD_STATUS_MODIFIED | FIELD_STATUS_OUTGOING;
     private String initialProduct = null;
 
-    private Map<String, String> attributes;
     private Map<String, TaskOperation> availableOperations;
 
     private static final RequestProcessor parallelRP = new RequestProcessor("BugzillaIssue", 5); //NOI18N
     private final PropertyChangeSupport support;
+    private ITask task;
+    private ITask.SynchronizationState syncState = ITask.SynchronizationState.SYNCHRONIZED;
+    private String recentChanges = "";
+    private NetBeansTaskDataModel model;
+    private static final Object MODEL_LOCK = new Object();
+    private TaskDataModelListener list;
+    private final Task repositoryTaskDataLoaderTask;
+    private boolean readPending;
 
-    public BugzillaIssue(TaskData data, BugzillaRepository repo) {
-        this.data = data;
+    public BugzillaIssue (ITask task, BugzillaRepository repo) {
+        this.task = task;
         this.repository = repo;
+        this.repositoryDataRef = new SoftReference<TaskData>(null);
         support = new PropertyChangeSupport(this);
+        syncState = task.getSynchronizationState();
+        repositoryTaskDataLoaderTask = Bugzilla.getInstance().getRequestProcessor().create(new Runnable() {
+            @Override
+            public void run () {
+                loadRepositoryTaskData();
+            }
+        });
+        updateRecentChanges();
+        MylynSupport mylynSupp = MylynSupport.getInstance();
+        // should be a weak listener
+        mylynSupp.addTaskDataListener(this);
+        mylynSupp.addTaskListListener(this);
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -197,46 +233,126 @@ public class BugzillaIssue {
     protected void fireDataChanged() {
         support.firePropertyChange(IssueProvider.EVENT_ISSUE_REFRESHED, null, null);
     }
+
+    void deleteTask () {
+        synchronized (MODEL_LOCK) {
+            if (list != null) {
+                model.removeModelListener(list);
+                list = null;
+            }
+            model = null;
+        }
+        MylynSupport mylynSupp = MylynSupport.getInstance();
+        mylynSupp.removeTaskDataListener(this);
+        mylynSupp.removeTaskListListener(this);
+        getRepository().deleteTask(task);
+    }
+
+    void markNewRead () {
+        task.setAttribute(ATTR_NEW_UNREAD, null);
+    }
+
+    boolean isMarkedNewUnread () {
+        return isNew() && Boolean.TRUE.toString().equals(task.getAttribute(ATTR_NEW_UNREAD));
+    }
     
     private void fireSeenChanged(boolean wasSeen, boolean seen) {
         support.firePropertyChange(IssueStatusProvider.EVENT_SEEN_CHANGED, wasSeen, seen);
     }
 
     public boolean isNew() {
-        return data == null || data.isNew();
+        return task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW;
     }
 
     void opened() {
         if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
-        if(!data.isNew()) {
-            // 1.) to get seen attributes makes no sense for new issues
-            // 2.) set seenAtributes on issue open, before its actuall
-            //     state is written via setSeen().
-            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
-        }
+        list = new TaskDataModelListener() {
+            @Override
+            public void attributeChanged (TaskDataModelEvent event) {
+                TaskDataModel m = model;
+                if (event.getModel() == m) {
+                    if (controller != null) {
+                        // view might not exist yet and we won't unnecessarily create it
+                        controller.modelStateChanged(m.isDirty(), m.isDirty() || !m.getChangedAttributes().isEmpty());
+                    }
+                }
+            }
+        };
+        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+            @Override
+            public void run () {
+                if (task.getSynchronizationState() == ITask.SynchronizationState.INCOMING_NEW) {
+                    // mark as seen so no fields are highlighted
+                    setUpToDate(true, false);
+                }
+                // clear upon close
+                synchronized (MODEL_LOCK) {
+                    if (readPending) {
+                        // make sure remote changes are not lost and still highlighted in the editor
+                        setUpToDate(false, false);
+                    }
+                    model = MylynSupport.getInstance().getTaskDataModel(task);
+                    model.addModelListener(list);
+                }
+                ensureConfigurationUptodate();
+                refreshViewData(true);
+            }
+        });
         String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh"); // NOI18N
         if(refresh != null && refresh.equals("true")) {                                      // NOI18N
             return;
         }
-        repository.scheduleForRefresh(getID());
+        if (!isNew()) {
+            repository.scheduleForRefresh(task);
+        }
         if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getID()});
     }
 
-    void closed() {
+    void closed () {
+        final NetBeansTaskDataModel m = model;
+        final boolean markedAsNewUnread = isMarkedNewUnread();
+        if (m != null) {
+            if (list != null) {
+                m.removeModelListener(list);
+                list = null;
+            }
+            readPending = false;
+            Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+                @Override
+                public void run () {
+                    if (markedAsNewUnread) {
+                        // was not modified by user and not yet saved
+                        deleteTask();
+                    } else {
+                        synchronized (MODEL_LOCK) {
+                            if (model == m) {
+                                model = null;
+                            }
+                        }
+                        if (m.isDirty()) {
+                            try {
+                                save(m);
+                            } catch (CoreException ex) {
+                                Bugzilla.LOG.log(Level.WARNING, null, ex);
+                            }
+                        }
+                    }
+                }
+            });
+        }
         if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close start", new Object[] {getID()});
-        repository.stopRefreshing(getID());
-        seenAtributes = null;
+        repository.stopRefreshing(task);
         if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} close finish", new Object[] {getID()});
     }
 
     public String getDisplayName() {
-        return getDisplayName(data);
+        return getDisplayName(task);
     }
 
-    public static String getDisplayName(TaskData taskData) {
-        return taskData.isNew() ?
-                NbBundle.getMessage(BugzillaIssue.class, "CTL_NewIssue") : // NOI18N
-                NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(taskData), getSummary(taskData)}); // NOI18N
+    public static String getDisplayName (ITask task) {
+        return task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW ?
+                getSummary(task) :
+                NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue", new Object[] {getID(task), getSummary(task)}); //NOI18N
     }
     
     // XXX not the same as in Issue.getShortenedDisplayName()
@@ -270,7 +386,7 @@ public class BugzillaIssue {
             ret.add(new ColumnDescriptor<String>(IssueNode.LABEL_NAME_SUMMARY, String.class,
                                               loc.getString("CTL_Issue_Summary_Title"),           // NOI18N
                                               loc.getString("CTL_Issue_Summary_Desc")));          // NOI18N
-            ret.add(BugzillaUtil.isNbRepository(repository)
+            ret.add(NBBugzillaUtils.isNbRepository(repository.getUrl())
                                         ?
                                               new ColumnDescriptor<String>(LABEL_NAME_ISSUE_TYPE, String.class,
                                               loc.getString("CTL_Issue_Issue_Type_Title"),        // NOI18N
@@ -366,6 +482,10 @@ public class BugzillaIssue {
         if(node == null) {
             node = createNode();
         }
+        if (!EventQueue.isDispatchThread()) {
+            // loads repository task data from disk
+            getRepositoryTaskData();
+        }
         return node;
     }
 
@@ -377,38 +497,8 @@ public class BugzillaIssue {
         return info;
     }
 
-    public Map<String, String> getAttributes() {
-        if(attributes == null) {
-            attributes = new HashMap<String, String>();
-            String value;
-            for (IssueField field : getRepository().getConfiguration().getFields()) {
-                value = getFieldValue(field);
-                if(value != null && !value.trim().equals("")) {                 // NOI18N
-                    attributes.put(field.getKey(), value);
-                }
-            }
-        }
-        return attributes;
-    }
-
-    public void setSeen(boolean seen) throws IOException {
-        repository.getIssueCache().setSeen(getID(), seen);
-    }
-
-    private boolean wasSeen() {
-        return repository.getIssueCache().wasSeen(getID());
-    }
-
     public Date getLastModifyDate() {
-        String value = getFieldValue(IssueField.MODIFICATION);
-        if(value != null && !value.trim().equals("")) {
-            try {
-                return MODIFIED_DATE_FORMAT.parse(value);
-            } catch (ParseException ex) {
-                Bugzilla.LOG.log(Level.WARNING, value, ex);
-            }
-        }
-        return null;
+        return task.getModificationDate();
     }
 
     public long getLastModify() {
@@ -421,15 +511,7 @@ public class BugzillaIssue {
     }
 
     public Date getCreatedDate() {
-        String value = getFieldValue(IssueField.CREATION);
-        if(value != null && !value.trim().equals("")) {
-            try {
-                return CREATED_DATE_FORMAT.parse(value);
-            } catch (ParseException ex) {
-                Bugzilla.LOG.log(Level.WARNING, value, ex);
-            }
-        }
-        return null;
+        return task.getCreationDate();
     }
 
     public long getCreated() {
@@ -442,100 +524,7 @@ public class BugzillaIssue {
     }
 
     public String getRecentChanges() {
-        if(wasSeen()) {
-            return "";                                                          // NOI18N
-        }
-        IssueCache.Status status = repository.getIssueCache().getStatus(getID());
-        if(status == IssueCache.Status.ISSUE_STATUS_NEW) {
-            return NbBundle.getMessage(BugzillaIssue.class, "LBL_NEW_STATUS");
-        } else if(status == IssueCache.Status.ISSUE_STATUS_MODIFIED) {
-            List<IssueField> changedFields = new ArrayList<IssueField>();
-            assert getSeenAttributes() != null;
-            for (IssueField f : getRepository().getConfiguration().getFields()) {
-                if (f==IssueField.MODIFICATION
-                        || f==IssueField.REPORTER_NAME
-                        || f==IssueField.QA_CONTACT_NAME
-                        || f==IssueField.ASSIGNED_TO_NAME) {
-                    continue;
-                }
-                String value = getFieldValue(f);
-                String seenValue = getSeenValue(f);
-                if(!value.trim().equals(seenValue)) {
-                    changedFields.add(f);
-                }
-            }
-            int changedCount = changedFields.size();
-            if(changedCount == 1) {
-                String ret = null;
-                for (IssueField changedField : changedFields) {
-                    if (changedField == IssueField.SUMMARY) {
-                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_SUMMARY_CHANGED_STATUS"); // NOI18N
-                    } else if (changedField == IssueField.CC) {
-                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CC_FIELD_CHANGED_STATUS"); // NOI18N
-                    } else if (changedField == IssueField.KEYWORDS) {
-                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_KEYWORDS_CHANGED_STATUS"); // NOI18N
-                    } else if (changedField == IssueField.DEPENDS_ON || changedField == IssueField.BLOCKS) {
-                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_DEPENDENCE_CHANGED_STATUS"); // NOI18N
-                    } else if (changedField == IssueField.COMMENT_COUNT) {
-                        String value = getFieldValue(changedField);
-                        String seenValue = getSeenValue(changedField);
-                        if(seenValue.equals("")) { // NOI18N
-                            seenValue = "0"; // NOI18N
-                        }
-                        int count = 0;
-                        try {
-                            count = Integer.parseInt(value) - Integer.parseInt(seenValue);
-                        } catch(NumberFormatException ex) {
-                            Bugzilla.LOG.log(Level.WARNING, ret, ex);
-                        }
-                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_COMMENTS_CHANGED", new Object[] {count}); // NOI18N
-                    } else if (changedField == IssueField.ATTACHEMENT_COUNT) {
-                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_ATTACHMENTS_CHANGED"); // NOI18N
-                    } else {
-                        ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGED_TO", new Object[] {changedField.getDisplayName(), getFieldValue(changedField)}); // NOI18N
-                    }
-                }
-                return ret;
-            } else {
-                String ret = null;
-                for (IssueField changedField : changedFields) {
-                    String key;
-                    if (changedField == IssueField.SUMMARY) {
-                        key = "LBL_CHANGES_INCL_SUMMARY"; // NOI18N
-                    } else if (changedField == IssueField.PRIORITY) {
-                        key = "LBL_CHANGES_INCL_PRIORITY"; // NOI18N
-                    } else if (changedField == IssueField.SEVERITY) {
-                        key = "LBL_CHANGES_INCL_SEVERITY"; // NOI18N
-                    } else if (changedField == IssueField.ISSUE_TYPE) {
-                        key = "LBL_CHANGES_INCL_ISSUE_TYPE"; // NOI18N
-                    } else if (changedField == IssueField.PRODUCT) {
-                        key = "LBL_CHANGES_INCL_PRODUCT"; // NOI18N
-                    } else if (changedField == IssueField.COMPONENT) {
-                        key = "LBL_CHANGES_INCL_COMPONENT"; // NOI18N
-                    } else if (changedField == IssueField.PLATFORM) {
-                        key = "LBL_CHANGES_INCL_PLATFORM"; // NOI18N
-                    } else if (changedField == IssueField.VERSION) {
-                        key = "LBL_CHANGES_INCL_VERSION"; // NOI18N
-                    } else if (changedField == IssueField.MILESTONE) {
-                        key = "LBL_CHANGES_INCL_MILESTONE"; // NOI18N
-                    } else if (changedField == IssueField.KEYWORDS) {
-                        key = "LBL_CHANGES_INCL_KEYWORDS"; // NOI18N
-                    } else if (changedField == IssueField.URL) {
-                        key = "LBL_CHANGES_INCL_URL"; // NOI18N
-                    } else if (changedField == IssueField.ASSIGNED_TO) {
-                        key = "LBL_CHANGES_INCL_ASSIGNEE"; // NOI18N
-                    } else if (changedField == IssueField.QA_CONTACT) {
-                        key = "LBL_CHANGES_INCL_QA_CONTACT"; // NOI18N
-                    } else if (changedField == IssueField.DEPENDS_ON || changedField == IssueField.BLOCKS) {
-                        key = "LBL_CHANGES_INCLUSIVE_DEPENDENCE"; // NOI18N
-                    } else {
-                        key = "LBL_CHANGES"; // NOI18N
-                    }
-                    return NbBundle.getMessage(BugzillaIssue.class, key, new Object[] {changedCount});
-                }
-            }
-        }
-        return "";                                                              // NOI18N
+        return recentChanges;
     }
 
     /**
@@ -551,15 +540,24 @@ public class BugzillaIssue {
     }
 
     /**
-     * Returns the id from the given taskData or null if taskData.isNew()
-     * @param taskData
+     * Returns the id of the given task or null if task is new
+     * @param task
      * @return id or null
      */
-    public static String getSummary(TaskData taskData) {
-        if(taskData.isNew()) {
-            return null;
+    public static String getID (ITask task) {
+        if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
+            return "-" + task.getTaskId();
         }
-        return getFieldValue(IssueField.SUMMARY, taskData);
+        return task.getTaskId();
+    }
+
+    /**
+     * Returns the summary of the given task.
+     * @param task
+     * @return summary
+     */
+    public static String getSummary (ITask task) {
+        return task.getSummary();
     }
 
     public BugzillaRepository getRepository() {
@@ -567,43 +565,178 @@ public class BugzillaIssue {
     }
 
     public String getID() {
-        return getID(data);
+        return getID(task);
     }
 
     public String getSummary() {
-        return getFieldValue(IssueField.SUMMARY);
+        return task.getSummary();
     }
 
-    public void setTaskData(TaskData taskData) {
-        assert !taskData.isPartial();
-        data = taskData;
-        attributes = null; // reset
-        availableOperations = null;
-        Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
-            @Override
-            public void run() {
-                ((BugzillaIssueNode)getNode()).fireDataChanged();
-                fireDataChanged();
-                refreshViewData(false);
+    @Override
+    public void taskDataUpdated (TaskDataManagerEvent event) {
+        if (event.getTask() == task) {
+            if (!event.getTaskData().isPartial()) {
+                this.repositoryDataRef = new SoftReference<TaskData>(event.getTaskData());
             }
-        });
+            if (event.getTaskDataUpdated()) {
+                availableOperations = null;
+                ensureConfigurationUptodate();
+                TaskDataModel m = model;
+                if (m != null) {
+                    try {
+                        m.refresh(null);
+                    } catch (CoreException ex) {
+                        Bugzilla.LOG.log(Level.INFO, null, ex);
+                    }
+                }
+                Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (node != null) {
+                            node.fireDataChanged();
+                        }
+                        fireDataChanged();
+                        refreshViewData(false);
+                    }
+                });
+            }
+        }
     }
 
-    TaskData getTaskData() {
-        return data;
+    @Override
+    public void editsDiscarded (TaskDataManagerEvent tdme) {
+        // what here?
     }
 
-    /**
-     * Returns the value represented by the given field
-     *
-     * @param f
-     * @return
-     */
-    public String getFieldValue(IssueField f) {
-        return getFieldValue(f, data);
+    @Override
+    public void containersChanged (Set<TaskContainerDelta> deltas) {
+        for (TaskContainerDelta delta : deltas) {
+            if (delta.getElement() == task && delta.getKind() == TaskContainerDelta.Kind.CONTENT) {
+                boolean syncStateChanged = syncState != task.getSynchronizationState();
+                boolean seen = wasSeen();
+                if (syncStateChanged) {
+                    syncState = task.getSynchronizationState();
+                }
+                if (updateRecentChanges()) {
+                    fireDataChanged();
+                }
+                if (syncStateChanged) {
+                    fireSeenChanged(seen, wasSeen());
+                }
+            }
+        }
     }
 
-    private static String getFieldValue(IssueField f, TaskData taskData) {
+    private void ensureConfigurationUptodate () {
+        BugzillaConfiguration conf = getRepository().getConfiguration();
+        TaskDataState taskDataState = null;
+        try {
+            taskDataState = MylynSupport.getInstance().getTaskDataState(task);
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.INFO, null, ex);
+        }
+        boolean needsRefresh = false;
+        if (taskDataState != null && !isNew()) {
+            for (TaskData taskData : new TaskData[] { 
+                taskDataState.getEditsData(),
+                taskDataState.getLastReadData(),
+                taskDataState.getLocalData(),
+                taskDataState.getRepositoryData()
+            }) {
+                String product = getFieldValue(taskData, IssueField.PRODUCT);
+                String resolution = getFieldValue(taskData, IssueField.RESOLUTION);
+                String severity = getFieldValue(taskData, IssueField.SEVERITY);
+                String milestone = getFieldValue(taskData, IssueField.MILESTONE);
+                String version = getFieldValue(taskData, IssueField.VERSION);
+                String priority = getFieldValue(taskData, IssueField.PRIORITY);
+                String platform = getFieldValue(taskData, IssueField.PLATFORM);
+                String status = getFieldValue(taskData, IssueField.STATUS);
+                String os = getFieldValue(taskData, IssueField.OS);
+                String component = getFieldValue(taskData, IssueField.COMPONENT);
+
+                if(!component.isEmpty() && !conf.getComponents(product).contains(component) ||
+                   !os.isEmpty() && !conf.getOSs().contains(os) ||
+                   !status.isEmpty() && !conf.getStatusValues().contains(status) ||
+                   !platform.isEmpty() && !conf.getPlatforms().contains(platform) ||
+                   !priority.isEmpty() && !conf.getPriorities().contains(priority) ||
+                   !product.isEmpty() && !conf.getProducts().contains(product) ||
+                   !resolution.isEmpty() && !conf.getResolutions().contains(resolution) ||
+                   !severity.isEmpty() && !conf.getSeverities().contains(severity) ||
+                   !milestone.isEmpty() && !conf.getTargetMilestones(product).contains(milestone) ||
+                   !version.isEmpty() && !conf.getVersions(product).contains(version))
+                {
+                    needsRefresh = true;
+                    break;
+                }
+            }            
+        }
+        if (needsRefresh) {
+            getRepository().refreshConfiguration();
+            
+        }
+    }
+
+    private TaskData getRepositoryTaskData () {
+        TaskData taskData = repositoryDataRef.get();
+        if (taskData == null) {
+            if (EventQueue.isDispatchThread()) {
+                repositoryTaskDataLoaderTask.schedule(100);
+            } else {
+                return loadRepositoryTaskData();
+            }
+        }
+        return taskData;
+    }
+
+    private TaskData loadRepositoryTaskData () {
+        // this method is time consuming
+        assert !EventQueue.isDispatchThread();
+        TaskData td = repositoryDataRef.get();
+        if (td != null) {
+            return td;
+        }
+        try {
+            MylynSupport mylynSupp = MylynSupport.getInstance();
+            TaskDataState taskDataState = mylynSupp.getTaskDataState(task);
+            if (taskDataState != null) {
+                td = taskDataState.getRepositoryData();
+                repositoryDataRef = new SoftReference<TaskData>(td);
+                if (node != null) {
+                    node.fireDataChanged();
+                }
+            }
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+        }
+        return null;
+    }
+
+    public String getRepositoryFieldValue (IssueField f) {
+        NetBeansTaskDataModel m = model;
+        TaskData td;
+        if (m == null) {
+            td = getRepositoryTaskData();
+            if (td == null) {
+                return "..."; //NOI18N
+            }
+        } else {
+            td = m.getRepositoryTaskData();
+        }
+        return getFieldValue(td, f);
+    }
+    
+    String getFieldValue(IssueField f) {
+        return getFieldValue(model == null ? null : model.getTaskData(), f);
+    }
+
+    String getLastSeenFieldValue (IssueField f) {
+        return getFieldValue(model == null ? null : model.getLastReadTaskData(), f);
+    }
+
+    private static String getFieldValue (TaskData taskData, IssueField f) {
+        if (taskData == null) {
+            return "";
+        }
         if(f.isSingleAttribute()) {
             TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
             if(a != null && a.getValues().size() > 1) {
@@ -645,28 +778,54 @@ public class BugzillaIssue {
             assert false : "can't set value into IssueField " + f.getKey();       // NOI18N
             return;
         }
-        TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
-        if(a == null) {
-            a = new TaskAttribute(data.getRoot(), f.getKey());
+        TaskData taskData = model.getTaskData();
+        TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
+        if (a == null) {
+            if (f == IssueField.REASSIGN_TO_DEFAULT) {
+                setOperation(BugzillaOperation.reassignbycomponent);
+                return;
+            }
+            a = new TaskAttribute(taskData.getRoot(), f.getKey());
         }
         if(f == IssueField.PRODUCT) {
             handleProductChange(a);
         }
         Bugzilla.LOG.log(Level.FINER, "setting value [{0}] on field [{1}]", new Object[]{value, f.getKey()}) ;
-        a.setValue(value);
+        if (!value.equals(a.getValue())) {
+            a.setValue(value);
+            model.attributeChanged(a);
+        }
     }
 
     void setFieldValues(IssueField f, List<String> ccs) {
-        TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
+        TaskData taskData = model.getTaskData();
+        TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
         if(a == null) {
-            a = new TaskAttribute(data.getRoot(), f.getKey());
+            a = new TaskAttribute(taskData.getRoot(), f.getKey());
         }
         a.setValues(ccs);
+        model.attributeChanged(a);
     }
 
-    public List<String> getFieldValues(IssueField f) {
+    public List<String> getRepositoryFieldValues (IssueField f) {
+        NetBeansTaskDataModel m = model;
+        return getFieldValues(m == null ? getRepositoryTaskData() : m.getRepositoryTaskData(), f);
+    }
+
+    List<String> getFieldValues(IssueField f) {
+        return getFieldValues(model == null ? null : model.getTaskData(), f);
+    }
+
+    List<String> getLastSeenFieldValues (IssueField f) {
+        return getFieldValues(model == null ? null : model.getLastReadTaskData(), f);
+    }
+    
+    private static List<String> getFieldValues(TaskData taskData, IssueField f) {
+        if (taskData == null) {
+            return Collections.<String>emptyList();
+        }
         if(f.isSingleAttribute()) {
-            TaskAttribute a = data.getRoot().getMappedAttribute(f.getKey());
+            TaskAttribute a = taskData.getRoot().getMappedAttribute(f.getKey());
             if(a != null) {
                 return a.getValues();
             } else {
@@ -674,7 +833,7 @@ public class BugzillaIssue {
             }
         } else {
             List<String> ret = new ArrayList<String>();
-            ret.add(getFieldValue(f));
+            ret.add(getFieldValue(taskData, f));
             return ret;
         }
     }
@@ -684,44 +843,60 @@ public class BugzillaIssue {
      * <ul>
      *  <li>{@link #FIELD_STATUS_IRELEVANT} - issue wasn't seen yet
      *  <li>{@link #FIELD_STATUS_UPTODATE} - field value wasn't changed
-     *  <li>{@link #FIELD_STATUS_MODIFIED} - field value was changed
-     *  <li>{@link #FIELD_STATUS_NEW} - field has a value for the first time since it was seen
+     *  <li>{@link #FIELD_STATUS_MODIFIED} - field value was changed in repository
+     *  <li>{@link #FIELD_STATUS_OUTGOING} - field value was changed locally
+     *  <li>{@link #FIELD_STATUS_CONFLICT} - field value was changed both locally and remotely
      * </ul>
      * @param f IssueField
      * @return a status value
      */
     int getFieldStatus(IssueField f) {
-        String seenValue = getSeenValue(f);
-        if(seenValue.equals("") && !seenValue.equals(getFieldValue(f))) {       // NOI18N
-            return FIELD_STATUS_NEW;
-        } else if (!seenValue.equals(getFieldValue(f))) {
+        if (model == null) {
+            return FIELD_STATUS_UPTODATE;
+        }
+        TaskAttribute ta = model.getTaskData().getRoot().getMappedAttribute(f.getKey());
+        boolean incoming = ta != null && model.hasIncomingChanges(ta, true);
+        boolean outgoing = ta != null && model.hasOutgoingChanges(ta);
+        if (ta == null) {
+            return FIELD_STATUS_UPTODATE;
+        } else if (incoming & outgoing) {
+            return FIELD_STATUS_CONFLICT;
+        } else if (incoming) {
             return FIELD_STATUS_MODIFIED;
+        } else if (outgoing) {
+            return FIELD_STATUS_OUTGOING;
         }
         return FIELD_STATUS_UPTODATE;
     }
 
-    private IssueNode createNode() {
+    private BugzillaIssueNode createNode() {
         return new BugzillaIssueNode(this);
     }
 
     private void handleProductChange(TaskAttribute a) {
-        if(!data.isNew() && initialProduct == null) {
+        if(!isNew() && initialProduct == null) {
             initialProduct = a.getValue();
         }
     }
 
-    void resolve(String resolution) {
-        assert !data.isNew();
+    void resolve (final String resolution) {
+        assert !isNew();
 
-        String value = getFieldValue(IssueField.STATUS);
-        if(!value.equals("RESOLVED")) {                                         // NOI18N
-            setOperation(BugzillaOperation.resolve);
-            TaskAttribute rta = data.getRoot();
-            TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.resolve.getInputId());
-            if(ta != null) { // ta can be null when changing status from CLOSED to RESOLVED
-                ta.setValue(resolution);
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                String value = getFieldValue(IssueField.STATUS);
+                if(!(value.equals("RESOLVED") && resolution.equals(getFieldValue(IssueField.RESOLUTION)))) { // NOI18N
+                    setOperation(BugzillaOperation.resolve);
+                    TaskAttribute rta = model.getTaskData().getRoot();
+                    TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.resolve.getInputId());
+                    if(ta != null) { // ta can be null when changing status from CLOSED to RESOLVED
+                        ta.setValue(resolution);
+                        model.attributeChanged(ta);
+                    }
+                }
             }
-        }
+        });
     }
 
     void accept() {
@@ -730,17 +905,21 @@ public class BugzillaIssue {
 
     void duplicate(String id) {
         setOperation(BugzillaOperation.duplicate);
-        TaskAttribute rta = data.getRoot();
+        TaskAttribute rta = model.getTaskData().getRoot();
         TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.duplicate.getInputId());
         ta.setValue(id);
+        model.attributeChanged(ta);
     }
 
     boolean canReassign() {
+        if (model == null) {
+            return false;
+        }
         BugzillaConfiguration rc = getRepository().getConfiguration();
         final BugzillaVersion installedVersion = rc != null ? rc.getInstalledVersion() : null;
         boolean oldRepository = installedVersion != null ? installedVersion.compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_2) < 0 : false;
         if (oldRepository) {
-            TaskAttribute rta = data.getRoot();
+            TaskAttribute rta = model.getTaskData().getRoot();
             TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.reassign.getInputId());
             return (ta != null);
         } else {
@@ -749,49 +928,40 @@ public class BugzillaIssue {
     }
     
     boolean canAssignToDefault() {
+        if (model == null) {
+            return false;
+        }
         BugzillaConfiguration rc = getRepository().getConfiguration();
         final BugzillaVersion installedVersion = rc != null ? rc.getInstalledVersion() : null;
         boolean pre4 = installedVersion != null ? installedVersion.compareMajorMinorOnly(BugzillaVersion.BUGZILLA_3_0) <= 0 : false;
+        TaskData taskData = model.getTaskData();
         if(pre4) {
             return BugzillaOperation.reassignbycomponent.getInputId() != null ? 
-                        data.getRoot().getMappedAttribute(BugzillaOperation.reassignbycomponent.getInputId()) != null :
+                        taskData.getRoot().getMappedAttribute(BugzillaOperation.reassignbycomponent.getInputId()) != null :
                         false;
         } else {
-            boolean before4 = installedVersion != null ? installedVersion.compareMajorMinorOnly(BugzillaVersion.BUGZILLA_4_0) < 0 : false;
-            TaskAttribute ta = data.getRoot().getAttribute(BugzillaAttribute.SET_DEFAULT_ASSIGNEE.getKey()); 
-            if(before4) {
-                return ta != null;
-            } else {
-                BugzillaAttribute key = BugzillaAttribute.SET_DEFAULT_ASSIGNEE;
-                TaskAttribute operationAttribute = data.getRoot().createAttribute(key.getKey());
-                operationAttribute.getMetaData().defaults().setReadOnly(key.isReadOnly()).setKind(key.getKind()).setLabel(key.toString()).setType(key.getType());
-                operationAttribute.setValue("0"); // NOI18N
-                return true;
-            }     
+            TaskAttribute ta = taskData.getRoot().getAttribute(BugzillaAttribute.SET_DEFAULT_ASSIGNEE.getKey()); 
+            return ta != null;
         }
     }
     
     boolean hasTimeTracking() {
-        return data.getRoot().getMappedAttribute(BugzillaAttribute.ACTUAL_TIME.getKey()) != null; // XXX dummy
+        return model != null && model.getTaskData().getRoot()
+                .getMappedAttribute(BugzillaAttribute.ACTUAL_TIME.getKey()) != null; // XXX dummy
     }
 
     void reassign(String user) {
         setOperation(BugzillaOperation.reassign);
-        TaskAttribute rta = data.getRoot();
+        TaskAttribute rta = model.getTaskData().getRoot();
         TaskAttribute ta = rta.getMappedAttribute(BugzillaOperation.reassign.getInputId());
-        if(ta != null) ta.setValue(user);
+        if(ta != null) {
+            ta.setValue(user);
+            model.attributeChanged(ta);
+        }
         ta = rta.getMappedAttribute(BugzillaAttribute.ASSIGNED_TO.getKey());
-        if(ta != null) ta.setValue(user);
-    }
-
-    
-    void assignToDefault() {
-        BugzillaAttribute key = BugzillaAttribute.SET_DEFAULT_ASSIGNEE;
-        TaskAttribute operationAttribute = data.getRoot().getAttribute(key.getKey());
-        if (operationAttribute == null) {
-            setOperation(BugzillaOperation.reassignbycomponent);
-        } else {
-            operationAttribute.setValue("1");                                   // NOI18N
+        if(ta != null) {
+            ta.setValue(user);
+            model.attributeChanged(ta);
         }
     }
 
@@ -807,14 +977,26 @@ public class BugzillaIssue {
         setOperation(BugzillaOperation.reopen);
     }
 
-    private void setOperation(BugzillaOperation operation) {
-        TaskAttribute rta = data.getRoot();
+    private void setOperation (BugzillaOperation operation) {
+        TaskAttributeMapper mapper = model.getTaskData().getAttributeMapper();
+        for (TaskOperation op : mapper.getTaskOperations(model.getTaskData().getRoot())) {
+            if (op.getOperationId().equals(operation.toString())) {
+                setOperation(op);
+                return;
+            }
+        }
+    }
+    
+    private void setOperation (TaskOperation operation) {
+        TaskAttribute rta = model.getTaskData().getRoot();
         TaskAttribute ta = rta.getMappedAttribute(TaskAttribute.OPERATION);
-        ta.setValue(operation.toString());
+        model.getTaskData().getAttributeMapper().setTaskOperation(ta, operation);
+        model.attributeChanged(ta);
     }
 
     List<Attachment> getAttachments() {
-        List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_ATTACHMENT);
+        List<TaskAttribute> attrs = model == null ? null : model.getTaskData()
+                .getAttributeMapper().getAttributesByType(model.getTaskData(), TaskAttribute.TYPE_ATTACHMENT);
         if (attrs == null) {
             return Collections.emptyList();
         }
@@ -826,7 +1008,7 @@ public class BugzillaIssue {
     }
 
     public void addAttachment(File file, final String comment, final String desc, String contentType, final boolean patch) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         final FileTaskAttachmentSource attachmentSource = new FileTaskAttachmentSource(file);
         if (contentType == null) {
             file = FileUtil.normalizeFile(file);
@@ -839,7 +1021,7 @@ public class BugzillaIssue {
         }
         attachmentSource.setContentType(contentType);
 
-        final TaskAttribute attAttribute = new TaskAttribute(data.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
+        final TaskAttribute attAttribute = new TaskAttribute(getRepositoryTaskData().getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
         TaskAttributeMapper mapper = attAttribute.getTaskData().getAttributeMapper();
         TaskAttribute a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_DESCRIPTION);
         a.setValue(desc);
@@ -848,16 +1030,16 @@ public class BugzillaIssue {
         a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_CONTENT_TYPE);
         a.setValue(contentType);
 
-        refresh(); // refresh might fail, but be optimistic and still try to force add attachment
         AddAttachmentCommand cmd = new AddAttachmentCommand(getID(), repository, comment, attachmentSource, file, attAttribute);
         repository.getExecutor().execute(cmd);
         if(!cmd.hasFailed()) {
-            refresh(getID(), true); // XXX to much refresh - is there no other way?
+            refresh(true); // XXX to much refresh - is there no other way?
         }
     }
 
     Comment[] getComments() {
-        List<TaskAttribute> attrs = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_COMMENT);
+        List<TaskAttribute> attrs = model == null ? null : model.getTaskData()
+                .getAttributeMapper().getAttributesByType(model.getTaskData(), TaskAttribute.TYPE_COMMENT);
         if (attrs == null) {
             return new Comment[0];
         }
@@ -869,58 +1051,69 @@ public class BugzillaIssue {
     }
 
     // XXX carefull - implicit refresh
-    public void addComment(String comment, boolean close) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+    public void addComment (final String comment, final boolean close) {
+        assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         if(comment == null && !close) {
             return;
         }
         refresh();
 
-        // resolved attrs
-        if(close) {
-            Bugzilla.LOG.log(Level.FINER, "resolving issue #{0} as fixed", new Object[]{getID()});
-            resolve(RESOLVE_FIXED); // XXX constant?
+        runWithModelLoaded(new Runnable() {
+            @Override
+            public void run () {
+                // resolved attrs
+                if (close) {
+                    Bugzilla.LOG.log(Level.FINER, "resolving issue #{0} as fixed", new Object[]{getID()});
+                    resolve(RESOLVE_FIXED); // XXX constant?
 
-            if(BugzillaUtil.isNbRepository(repository)) {
-                // check for other preselections
-                Properties p = System.getProperties();
-                Enumeration<Object> keys = p.keys();
-                List<String> keyList = new LinkedList<String>();
-                while(keys.hasMoreElements()) {
-                    Object key = keys.nextElement();
-                    if(key.toString().startsWith(VCSHOOK_BUGZILLA_FIELD)) {
-                        keyList.add(key.toString());
-                    }
-                }
-                for (String key : keyList) {
-                    String fieldName = key.substring(VCSHOOK_BUGZILLA_FIELD.length());
-                    String value = p.getProperty(key);
-                    IssueField issueField = repository.getConfiguration().getField(fieldName);
-                    if(issueField != null) {
-                        if(issueField.isReadOnly()) {
-                            Bugzilla.LOG.log(Level.WARNING, "field [{0}] is read-only.", new Object[]{repository.getUrl(), fieldName});
-                        } else {
-                            setFieldValue(issueField, value);
+                    if(BugzillaUtil.isNbRepository(repository)) {
+                        // check for other preselections
+                        Properties p = System.getProperties();
+                        Enumeration<Object> keys = p.keys();
+                        List<String> keyList = new LinkedList<String>();
+                        while(keys.hasMoreElements()) {
+                            Object key = keys.nextElement();
+                            if(key.toString().startsWith(VCSHOOK_BUGZILLA_FIELD)) {
+                                keyList.add(key.toString());
+                            }
                         }
-                    } else {
-                        Bugzilla.LOG.log(Level.WARNING, "Repsitory [{0}] has no field [{1}]", new Object[]{repository.getUrl(), fieldName});
+                        for (String key : keyList) {
+                            String fieldName = key.substring(VCSHOOK_BUGZILLA_FIELD.length());
+                            String value = p.getProperty(key);
+                            IssueField issueField = repository.getConfiguration().getField(fieldName);
+                            if(issueField != null) {
+                                if(issueField.isReadOnly()) {
+                                    Bugzilla.LOG.log(Level.WARNING, "field [{0}] is read-only.", new Object[]{repository.getUrl(), fieldName});
+                                } else {
+                                    setFieldValue(issueField, value);
+                                }
+                            } else {
+                                Bugzilla.LOG.log(Level.WARNING, "Repsitory [{0}] has no field [{1}]", new Object[]{repository.getUrl(), fieldName});
+                            }
+                        }
                     }
+
                 }
+                if(comment != null) {
+                    addComment(comment);
+                }        
+
+                submitAndRefresh();
             }
-
-        }
-        if(comment != null) {
-            addComment(comment);
-        }        
-
-        submitAndRefresh();
+        });
     }
 
-    public void addComment(String comment) {
+    public void addComment (final String comment) {
         if(comment != null) {
-            Bugzilla.LOG.log(Level.FINER, "adding comment [{0}] to issue #{1}", new Object[]{comment, getID()});
-            TaskAttribute ta = data.getRoot().createMappedAttribute(TaskAttribute.COMMENT_NEW);
-            ta.setValue(comment);
+            runWithModelLoaded(new Runnable() {
+                @Override
+                public void run () {
+                    Bugzilla.LOG.log(Level.FINER, "adding comment [{0}] to issue #{1}", new Object[]{comment, getID()});
+                    TaskAttribute ta = model.getTaskData().getRoot().getMappedAttribute(IssueField.COMMENT.getKey());
+                    ta.setValue(comment);
+                    model.attributeChanged(ta);
+                }
+            });
         }
     }
 
@@ -934,92 +1127,139 @@ public class BugzillaIssue {
     private void prepareSubmit() {
         if (initialProduct != null) {
             // product change
-            TaskAttribute ta = data.getRoot().getMappedAttribute(BugzillaAttribute.CONFIRM_PRODUCT_CHANGE.getKey());
+            TaskAttribute ta = model.getTaskData().getRoot().getMappedAttribute(BugzillaAttribute.CONFIRM_PRODUCT_CHANGE.getKey());
             if (ta == null) {
-                ta = BugzillaTaskDataHandler.createAttribute(data.getRoot(), BugzillaAttribute.CONFIRM_PRODUCT_CHANGE);
+                ta = BugzillaTaskDataHandler.createAttribute(model.getTaskData().getRoot(), BugzillaAttribute.CONFIRM_PRODUCT_CHANGE);
             }
             ta.setValue("1");                                                   // NOI18N
+            model.attributeChanged(ta);
         }
     }
 
+    @NbBundle.Messages({
+        "# {0} - task id and summary", "MSG_BugzillaIssue.statusBar.submitted=Task {0} submitted."
+    })
     boolean submitAndRefresh() {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        final boolean[] result = new boolean[1];
+        runWithModelLoaded(new Runnable() {
 
-        prepareSubmit();
-        final boolean wasNew = data.isNew();
-        final boolean wasSeenAlready = wasNew || repository.getIssueCache().wasSeen(getID());
-        
-        SubmitCommand submitCmd = 
-            new SubmitCommand(
-                Bugzilla.getInstance().getRepositoryConnector(),
-                getRepository().getTaskRepository(), 
-                data);
-        repository.getExecutor().execute(submitCmd);
+            @Override
+            public void run () {
+                assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
 
-        if (!wasNew) {
-            refresh();
-        } else {
-            RepositoryResponse rr = submitCmd.getRepositoryResponse();
-            if(!submitCmd.hasFailed()) {
-                assert rr != null;
-                String id = rr.getTaskId();
-                Bugzilla.LOG.log(Level.FINE, "created issue #{0}", id);
-                refresh(id, true);
-            } else {
-                Bugzilla.LOG.log(Level.FINE, "submiting failed");
-                if(rr != null) {
-                    Bugzilla.LOG.log(Level.FINE, "repository response {0}", rr.getReposonseKind());
-                } else {
-                    Bugzilla.LOG.log(Level.FINE, "no repository response available");
+                prepareSubmit();
+                final boolean wasNew = isNew();
+
+                SubmitTaskCommand submitCmd;
+                try {
+                    if (saveChanges()) {
+                        submitCmd = MylynSupport.getInstance().getMylynFactory().createSubmitTaskCommand(task, model);
+                    } else {
+                        result[0] = false;
+                        return;
+                    }
+                } catch (CoreException ex) {
+                    Bugzilla.LOG.log(Level.WARNING, null, ex);
+                    result[0] = false;
+                    return;
                 }
+                repository.getExecutor().execute(submitCmd);
+
+                if (!wasNew) {
+                    refresh();
+                } else {
+                    RepositoryResponse rr = submitCmd.getRepositoryResponse();
+                    if(!submitCmd.hasFailed()) {
+                        ITask newTask = submitCmd.getSubmittedTask();
+                        assert newTask != null && newTask != task;
+                        task = newTask;
+                        resetModel();
+                        String id = task.getTaskId();
+                        try {
+                            repository.getIssueCache().setIssueData(id, BugzillaIssue.this);
+                        } catch (IOException ex) {
+                            Bugzilla.LOG.log(Level.INFO, null, ex);
+                        }
+                        Bugzilla.LOG.log(Level.FINE, "created issue #{0}", id);
+                        // a new issue was created -> refresh all queries
+                        repository.refreshAllQueries();
+                    } else {
+                        Bugzilla.LOG.log(Level.FINE, "submiting failed");
+                        if(rr != null) {
+                            Bugzilla.LOG.log(Level.FINE, "repository response {0}", rr.getReposonseKind());
+                        } else {
+                            Bugzilla.LOG.log(Level.FINE, "no repository response available");
+                        }
+                    }
+                }
+
+                if(submitCmd.hasFailed()) {
+                    result[0] = false;
+                    return;
+                }
+                StatusDisplayer.getDefault().setStatusText(Bundle.MSG_BugzillaIssue_statusBar_submitted(
+                        getDisplayName()));
+
+                setUpToDate(true, false);
+                result[0] = true;
             }
-        }
-
-        if(submitCmd.hasFailed()) {
-            return false;
-        }
-
-        // it was the user who made the changes, so preserve the seen status if seen already
-        if (wasSeenAlready) {
-            try {
-                repository.getIssueCache().setSeen(getID(), true);
-                // it was the user who made the changes, so preserve the seen status if seen already
-            } catch (IOException ex) {
-                Bugzilla.LOG.log(Level.SEVERE, null, ex);
-            }
-        }
-        if(wasNew) {
-            // a new issue was created -> refresh all queries
-            repository.refreshAllQueries();
-        }
-
-        try {
-            seenAtributes = null;
-            setSeen(true);
-        } catch (IOException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-        }
-        return true;
+            
+        });
+        return result[0];
     }
 
+    boolean cancelChanges () {
+        try {
+            if (saveChanges()) {
+                MylynSupport.getInstance().discardLocalEdits(task);
+                model.refresh(null);
+                return true;
+            }
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+        }
+        return false;
+    }
+
+    boolean saveChanges () {
+        try {
+            save(model);
+            return true;
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+        }
+        return false;
+    }
+    
+    boolean hasLocalEdits () {
+        return !(model == null || model.getChangedAttributes().isEmpty());
+    }
+
+    boolean updateModelAndRefresh () {
+        try {
+            model.refresh(null);
+            return refresh();
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.INFO, null, ex);
+        }
+        return false;
+    }
+    
     public boolean refresh() {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-        return refresh(getID(), false);
+        assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+        return refresh(false);
     }
 
-    private boolean refresh(String id, boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
+    private boolean refresh (boolean afterSubmitRefresh) { // XXX cacheThisIssue - we probalby don't need this, just always set the issue into the cache
+        assert task != null;
+        assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
         try {
-            Bugzilla.LOG.log(Level.FINE, "refreshing issue #{0}", id);
-            TaskData td = BugzillaUtil.getTaskData(repository, id);
-            if(td == null) {
-                return false;
-            }
-            setTaskData(td);
-            getRepository().getIssueCache().setIssueData(td.getTaskId(), this); // XXX
-            getRepository().ensureConfigurationUptodate(this);
+            Bugzilla.LOG.log(Level.FINE, "refreshing issue #{0}", task.getTaskId());
+            SynchronizeTasksCommand cmd = MylynSupport.getInstance().getMylynFactory().createSynchronizeTasksCommand(
+                    getRepository().getTaskRepository(), Collections.<ITask>singleton(task));
+            getRepository().getExecutor().execute(cmd);
             refreshViewData(afterSubmitRefresh);
-        } catch (IOException ex) {
+        } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.SEVERE, null, ex);
         }
         return true;
@@ -1039,7 +1279,7 @@ public class BugzillaIssue {
     Map<String, TaskOperation> getAvailableOperations () {
         if (availableOperations == null) {
             HashMap<String, TaskOperation> operations = new HashMap<String, TaskOperation>(5);
-            List<TaskAttribute> allOperations = data.getAttributeMapper().getAttributesByType(data, TaskAttribute.TYPE_OPERATION);
+            List<TaskAttribute> allOperations = model.getTaskData().getAttributeMapper().getAttributesByType(model.getTaskData(), TaskAttribute.TYPE_OPERATION);
             for (TaskAttribute operation : allOperations) {
                 // the test must be here, 'operation' (applying writable action) is also among allOperations
                 if (operation.getId().startsWith(TaskAttribute.PREFIX_OPERATION)) {
@@ -1056,26 +1296,7 @@ public class BugzillaIssue {
         Map<String, TaskOperation> operations = getAvailableOperations();
         return operations.containsKey(BugzillaOperation.resolve.toString());
     }
-
-    private Map<String, String> getSeenAttributes() {
-        if(seenAtributes == null) {
-            seenAtributes = repository.getIssueCache().getSeenAttributes(getID());
-            if(seenAtributes == null) {
-                seenAtributes = new HashMap<String, String>();
-            }
-        }
-        return seenAtributes;
-    }
-
-    String getSeenValue(IssueField f) {
-        Map<String, String> attr = getSeenAttributes();
-        String seenValue = attr != null ? attr.get(f.getKey()) : null;
-        if(seenValue == null) {
-            seenValue = "";                                                     // NOI18N
-        }
-        return seenValue;
-    }
-
+    
     private String getMappedValue(TaskAttribute a, String key) {
         TaskAttribute ma = a.getMappedAttribute(key);
         if(ma != null) {
@@ -1085,34 +1306,205 @@ public class BugzillaIssue {
     }
 
     public boolean isFinished() {
-        String value = getFieldValue(IssueField.STATUS);
-        return "RESOLVED".equals(value);
+        return task.isCompleted();
     }
 
     public IssueStatusProvider.Status getStatus() {
-        IssueCache.Status status = getRepository().getIssueCache().getStatus(getID());
-        switch(status) {
-            case ISSUE_STATUS_NEW:
-                return IssueStatusProvider.Status.NEW;
-            case ISSUE_STATUS_MODIFIED:
+        ITask.SynchronizationState state = syncState;
+        switch(state) {
+            case CONFLICT:
+            case INCOMING:
                 return IssueStatusProvider.Status.MODIFIED;
-            case ISSUE_STATUS_SEEN:
+            case INCOMING_NEW:
+                return IssueStatusProvider.Status.NEW;
+            case OUTGOING:
+            case OUTGOING_NEW:
+            case SYNCHRONIZED:
                 return IssueStatusProvider.Status.SEEN;
         }
         return null;
     }
 
-    public void setUpToDate(boolean seen) {
-        try {
-            final IssueCache<BugzillaIssue> issueCache = getRepository().getIssueCache();
-            boolean wasSeen = issueCache.wasSeen(getID());
-            if(seen != wasSeen) {
-                issueCache.setSeen(getID(), seen);
-                fireSeenChanged(wasSeen, seen);
+    public void setUpToDate (boolean seen) {
+        setUpToDate(seen, true);
+    }
+
+    private void setUpToDate (boolean seen, boolean markReadPending) {
+        synchronized (MODEL_LOCK) {
+            if (markReadPending) {
+                readPending |= syncState == ITask.SynchronizationState.INCOMING
+                    || syncState == ITask.SynchronizationState.CONFLICT;
+            } else {
+                readPending = false;
             }
-        } catch (IOException ex) {
-            Bugzilla.LOG.log(Level.WARNING, null, ex);
+            MylynSupport.getInstance().markTaskSeen(task, seen);
         }
+    }
+
+    private boolean updateRecentChanges () {
+        String oldChanges = recentChanges;
+        recentChanges = "";
+        if (syncState == ITask.SynchronizationState.INCOMING_NEW) {
+            recentChanges = NbBundle.getMessage(BugzillaIssue.class, "LBL_NEW_STATUS"); //NOI18N
+        } else if (syncState == ITask.SynchronizationState.INCOMING
+                || syncState == ITask.SynchronizationState.CONFLICT) {
+            try {
+                TaskDataState taskDataState = MylynSupport.getInstance().getTaskDataState(task);
+                TaskData repositoryData = taskDataState.getRepositoryData();
+                TaskData lastReadData = taskDataState.getLastReadData();
+                List<IssueField> changedFields = new ArrayList<IssueField>();
+                for (IssueField f : getRepository().getConfiguration().getFields()) {
+                    if (f==IssueField.MODIFICATION
+                            || f==IssueField.REPORTER_NAME
+                            || f==IssueField.QA_CONTACT_NAME
+                            || f==IssueField.ASSIGNED_TO_NAME) {
+                        continue;
+                    }
+                    String value = getFieldValue(repositoryData, f);
+                    String seenValue = getFieldValue(lastReadData, f);
+                    if(!value.trim().equals(seenValue)) {
+                        changedFields.add(f);
+                    }
+                }
+                int changedCount = changedFields.size();
+                if(changedCount == 1) {
+                    String ret = null;
+                    for (IssueField changedField : changedFields) {
+                        if (changedField == IssueField.SUMMARY) {
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_SUMMARY_CHANGED_STATUS"); // NOI18N
+                        } else if (changedField == IssueField.CC) {
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CC_FIELD_CHANGED_STATUS"); // NOI18N
+                        } else if (changedField == IssueField.KEYWORDS) {
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_KEYWORDS_CHANGED_STATUS"); // NOI18N
+                        } else if (changedField == IssueField.DEPENDS_ON || changedField == IssueField.BLOCKS) {
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_DEPENDENCE_CHANGED_STATUS"); // NOI18N
+                        } else if (changedField == IssueField.COMMENT_COUNT) {
+                            String value = getFieldValue(repositoryData, changedField);
+                            String seenValue = getFieldValue(lastReadData, changedField);
+                            if(seenValue.equals("")) { // NOI18N
+                                seenValue = "0"; // NOI18N
+                            }
+                            int count = 0;
+                            try {
+                                count = Integer.parseInt(value) - Integer.parseInt(seenValue);
+                            } catch(NumberFormatException ex) {
+                                Bugzilla.LOG.log(Level.WARNING, ret, ex);
+                            }
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_COMMENTS_CHANGED", new Object[] {count}); // NOI18N
+                        } else if (changedField == IssueField.ATTACHEMENT_COUNT) {
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_ATTACHMENTS_CHANGED"); // NOI18N
+                        } else {
+                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGED_TO", new Object[] {changedField.getDisplayName(), getFieldValue(repositoryData, changedField)}); // NOI18N
+                        }
+                    }
+                    recentChanges = ret;
+                } else {
+                    for (IssueField changedField : changedFields) {
+                        String key;
+                        if (changedField == IssueField.SUMMARY) {
+                            key = "LBL_CHANGES_INCL_SUMMARY"; // NOI18N
+                        } else if (changedField == IssueField.PRIORITY) {
+                            key = "LBL_CHANGES_INCL_PRIORITY"; // NOI18N
+                        } else if (changedField == IssueField.SEVERITY) {
+                            key = "LBL_CHANGES_INCL_SEVERITY"; // NOI18N
+                        } else if (changedField == IssueField.ISSUE_TYPE) {
+                            key = "LBL_CHANGES_INCL_ISSUE_TYPE"; // NOI18N
+                        } else if (changedField == IssueField.PRODUCT) {
+                            key = "LBL_CHANGES_INCL_PRODUCT"; // NOI18N
+                        } else if (changedField == IssueField.COMPONENT) {
+                            key = "LBL_CHANGES_INCL_COMPONENT"; // NOI18N
+                        } else if (changedField == IssueField.PLATFORM) {
+                            key = "LBL_CHANGES_INCL_PLATFORM"; // NOI18N
+                        } else if (changedField == IssueField.VERSION) {
+                            key = "LBL_CHANGES_INCL_VERSION"; // NOI18N
+                        } else if (changedField == IssueField.MILESTONE) {
+                            key = "LBL_CHANGES_INCL_MILESTONE"; // NOI18N
+                        } else if (changedField == IssueField.KEYWORDS) {
+                            key = "LBL_CHANGES_INCL_KEYWORDS"; // NOI18N
+                        } else if (changedField == IssueField.URL) {
+                            key = "LBL_CHANGES_INCL_URL"; // NOI18N
+                        } else if (changedField == IssueField.ASSIGNED_TO) {
+                            key = "LBL_CHANGES_INCL_ASSIGNEE"; // NOI18N
+                        } else if (changedField == IssueField.QA_CONTACT) {
+                            key = "LBL_CHANGES_INCL_QA_CONTACT"; // NOI18N
+                        } else if (changedField == IssueField.DEPENDS_ON || changedField == IssueField.BLOCKS) {
+                            key = "LBL_CHANGES_INCLUSIVE_DEPENDENCE"; // NOI18N
+                        } else {
+                            key = "LBL_CHANGES"; // NOI18N
+                        }
+                        recentChanges = NbBundle.getMessage(BugzillaIssue.class, key, new Object[] {changedCount});
+                    }
+                }
+            } catch (CoreException ex) {
+                Bugzilla.LOG.log(Level.WARNING, null, ex);
+            }
+        }
+        return !oldChanges.equals(recentChanges);
+    }
+
+    private boolean wasSeen () {
+        return syncState == ITask.SynchronizationState.OUTGOING
+            || syncState == ITask.SynchronizationState.OUTGOING_NEW
+            || syncState == ITask.SynchronizationState.SYNCHRONIZED;
+    }
+
+    private void save (NetBeansTaskDataModel model) throws CoreException {
+        markNewRead();
+        if (model.isDirty()) {
+            if (isNew()) {
+                String summary = model.getTask().getSummary();
+                String newSummary = getFieldValue(model.getTaskData(), IssueField.SUMMARY);
+                if (!(newSummary.isEmpty() || newSummary.equals(summary))) {
+                    task.setSummary(newSummary);
+                    fireDataChanged();
+                }
+            }
+            model.save(null);
+            if (controller != null) {
+                controller.modelStateChanged(model.isDirty(), model.isDirty() || !model.getChangedAttributes().isEmpty());
+            }
+        }
+    }
+
+    private void runWithModelLoaded (Runnable runnable) {
+        synchronized (MODEL_LOCK) {
+            boolean closeModel = false;
+            try {
+                if (model == null) {
+                    closeModel = true;
+                    model = MylynSupport.getInstance().getTaskDataModel(task);
+                }
+                runnable.run();
+            } finally {
+                if (closeModel) {
+                    if (model != null && model.isDirty()) {
+                        try {
+                            // let's not loose edits
+                            model.save(null);
+                        } catch (CoreException ex) {
+                            Bugzilla.LOG.log(Level.INFO, null, ex);
+                        }
+                    }
+                    model = null;
+                }
+            }
+        }
+    }
+
+    private void resetModel () {
+        synchronized (MODEL_LOCK) {
+            if (list != null) {
+                model.removeModelListener(list);
+            }
+            model = MylynSupport.getInstance().getTaskDataModel(task);
+            repositoryDataRef.clear();
+            if (list != null) {
+                model.addModelListener(list);
+            }
+        }
+        syncState = task.getSynchronizationState();
+        updateRecentChanges();
+        fireDataChanged();
     }
 
     class Comment {
@@ -1187,18 +1579,18 @@ public class BugzillaIssue {
         }
     }
 
-    class Attachment {
+    class Attachment extends AttachmentsPanel.AbstractAttachment {
         private final String desc;
         private final String filename;
         private final String author;
         private final String authorName;
         private final Date date;
         private final String id;
-        private String contentType;
-        private String isDeprected;
-        private String size;
-        private String isPatch;
-        private String url;
+        private final String contentType;
+        private final String isDeprected;
+        private final String size;
+        private final String isPatch;
+        private final String url;
 
 
         public Attachment(TaskAttribute ta) {
@@ -1223,7 +1615,7 @@ public class BugzillaIssue {
                 TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
                 authorName = nameAttr != null ? nameAttr.getValue() : null;
             } else {
-                authorAttr = data.getRoot().getMappedAttribute(IssueField.REPORTER.getKey()); 
+                authorAttr = ta.getTaskData().getRoot().getMappedAttribute(IssueField.REPORTER.getKey()); 
                 if(authorAttr != null) {
                     author = authorAttr.getValue();
                     TaskAttribute nameAttr = authorAttr.getMappedAttribute(TaskAttribute.PERSON_NAME);
@@ -1239,26 +1631,37 @@ public class BugzillaIssue {
             url = getMappedValue(ta, TaskAttribute.ATTACHMENT_URL);
         }
 
+        @Override
+        public boolean isPatch() {
+            return "1".equals(isPatch);
+        }
+        
+        @Override
         public String getAuthorName() {
             return authorName;
         }
 
+        @Override
         public String getAuthor() {
             return author;
         }
 
+        @Override
         public Date getDate() {
             return date;
         }
 
+        @Override
         public String getDesc() {
             return desc;
         }
 
+        @Override
         public String getFilename() {
             return filename;
         }
 
+        @Override
         public String getContentType() {
             return contentType;
         }
@@ -1271,10 +1674,6 @@ public class BugzillaIssue {
             return isDeprected;
         }
 
-        public String getIsPatch() {
-            return isPatch;
-        }
-
         public String getSize() {
             return size;
         }
@@ -1283,15 +1682,14 @@ public class BugzillaIssue {
             return url;
         }
 
+        @Override
         public void getAttachementData(final OutputStream os) {
-            assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N            
+            assert !EventQueue.isDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N            
             repository.getExecutor().execute(new GetAttachmentCommand(repository, id, os));
         }
 
         void open() {
-            String progressFormat = NbBundle.getMessage(
-                                        DefaultAttachmentAction.class,
-                                        "Attachment.open.progress");    //NOI18N
+            String progressFormat = NbBundle.getMessage(BugzillaIssue.class, "Attachment.open.progress");    //NOI18N
             String progressMessage = MessageFormat.format(progressFormat, getFilename());
             final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
             handle.start();
@@ -1329,12 +1727,10 @@ public class BugzillaIssue {
         }
 
         void saveToFile() {
-            final File file = new FileChooserBuilder(AttachmentsPanel.class)
+            final File file = new FileChooserBuilder(BugzillaIssue.class)
                     .setFilesOnly(true).showSaveDialog();
             if (file != null) {
-                String progressFormat = NbBundle.getMessage(
-                                            SaveAttachmentAction.class,
-                                            "Attachment.saveToFile.progress"); //NOI18N
+                String progressFormat = NbBundle.getMessage(BugzillaIssue.class, "Attachment.saveToFile.progress"); //NOI18N
                 String progressMessage = MessageFormat.format(progressFormat, getFilename());
                 final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
                 handle.start();
@@ -1360,11 +1756,9 @@ public class BugzillaIssue {
         }
 
         void applyPatch() {
-            final File context = BugtrackingUtil.selectPatchContext();
+            final File context = PatchUtils.selectPatchContext();
             if (context != null) {
-                String progressFormat = NbBundle.getMessage(
-                                            ApplyPatchAction.class,
-                                            "Attachment.applyPatch.progress"); //NOI18N
+                String progressFormat = NbBundle.getMessage(BugzillaIssue.class, "Attachment.applyPatch.progress"); //NOI18N
                 String progressMessage = MessageFormat.format(progressFormat, getFilename());
                 final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
                 handle.start();
@@ -1401,49 +1795,6 @@ public class BugzillaIssue {
             }
             return file;
         }
-
-        class DefaultAttachmentAction extends AbstractAction {
-
-            public DefaultAttachmentAction() {
-                putValue(NAME, NbBundle.getMessage(
-                                   DefaultAttachmentAction.class,
-                                   "Attachment.DefaultAction.name"));   //NOI18N
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Attachment.this.open();
-            }
-        }
-
-        class SaveAttachmentAction extends AbstractAction {
-
-            public SaveAttachmentAction() {
-                putValue(NAME, NbBundle.getMessage(
-                                   SaveAttachmentAction.class,
-                                   "Attachment.SaveAction.name"));      //NOI18N
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Attachment.this.saveToFile();
-            }
-        }
-
-        class ApplyPatchAction extends AbstractAction {
-
-            public ApplyPatchAction() {
-                putValue(NAME, NbBundle.getMessage(
-                                   ApplyPatchAction.class,
-                                   "Attachment.ApplyPatchAction.name"));//NOI18N
-            }
-
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                Attachment.this.applyPatch();
-            }
-        }
-
     }
 
 }

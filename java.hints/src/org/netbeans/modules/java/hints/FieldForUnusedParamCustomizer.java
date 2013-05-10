@@ -44,7 +44,7 @@ public class FieldForUnusedParamCustomizer extends javax.swing.JPanel {
     public FieldForUnusedParamCustomizer(Preferences p) {
         initComponents();
         this.p = p;
-        finalFields.setSelected(FieldForUnusedParam.isFinalFields());
+        finalFields.setSelected(FieldForUnusedParam.isFinalFields(p));
     }
 
     /** This method is called from within the constructor to

@@ -42,13 +42,15 @@
 
 package org.netbeans.modules.jira.autoupdate;
 
+import com.atlassian.connector.eclipse.internal.jira.core.model.JiraVersion;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.jira.JiraTestUtil;
 
 /**
  *
  * @author tomas
  */
-public class JiraNotSupportedTest extends JiraPluginUCTestCase {
+public class JiraNotSupportedTest extends NbTestCase {
 
     public JiraNotSupportedTest(String testName) {
         super(testName);
@@ -58,11 +60,12 @@ public class JiraNotSupportedTest extends JiraPluginUCTestCase {
     protected void setUp() throws Exception {
         System.setProperty("netbeans.t9y.jira.supported.version", "0.0.0");
         super.setUp();
+        JiraTestUtil.initClient(getWorkDir());
     }
 
     public void testIsNotSupportedJIRAVersion() {
-        JiraAutoupdate jau = new JiraAutoupdate();
-        assertFalse(jau.checkSupportedJiraServerVersion(JiraTestUtil.getRepository()));
+        JiraVersion version = JiraAutoupdate.getInstance().getSupportedServerVersion(JiraTestUtil.getRepository());
+        assertFalse(JiraAutoupdate.getInstance().isSupportedVersion(version));
     }
 
 }

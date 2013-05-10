@@ -52,10 +52,10 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.team.ui.common.ColorManager;
 import org.netbeans.modules.team.ui.common.LinkButton;
-import org.netbeans.modules.team.ui.treelist.LeafNode;
-import org.netbeans.modules.team.ui.treelist.TreeListNode;
-import org.netbeans.modules.team.ui.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
+import org.netbeans.modules.team.ui.util.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 
 /**
@@ -81,7 +81,7 @@ public class SourceNode<ODCSUIServer, ODCSProject> extends LeafNode {
     }
 
     @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
         if( null == panel ) {
             panel = new JPanel( new GridBagLayout() );
             panel.setOpaque(false);

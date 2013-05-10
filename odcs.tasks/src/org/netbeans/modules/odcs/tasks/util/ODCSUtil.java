@@ -44,6 +44,7 @@ package org.netbeans.modules.odcs.tasks.util;
 import com.tasktop.c2c.server.tasks.domain.Iteration;
 import com.tasktop.c2c.server.tasks.domain.Keyword;
 import com.tasktop.c2c.server.tasks.domain.Milestone;
+import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import com.tasktop.c2c.server.tasks.domain.Priority;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.TaskResolution;
@@ -70,8 +71,8 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.util.ListValuePicker;
 import org.netbeans.modules.odcs.tasks.ODCS;
 import org.netbeans.modules.odcs.tasks.ODCSConnector;
@@ -200,14 +201,14 @@ public class ODCSUtil {
         //TODO review this, team projects were always initialized again and again
         //this caused problems with listeners
         assert odcsRepository.getKenaiProject() != null : "looks like repository " + odcsRepository.getDisplayName() + " wasn't porperly inititalized via team support."; // NOI18N
-        KenaiProject teamProject = odcsRepository.getKenaiProject();
+        TeamProject teamProject = odcsRepository.getKenaiProject();
         Repository repository = null;
         // It is posible to bypass the generaly contract that it isn't possible 
         // to create an ODCS repository by hand (in such case there always should 
         // be a teamProject available). 
         // for more info see o.n.m.bugtracking.DelegatingConnector#OVERRIDE_REPOSITORY_MANAGEMENT
         if(teamProject != null) {
-            repository = KenaiUtil.getRepository(teamProject);
+            repository = TeamUtil.getRepository(teamProject);
         }
         if (repository == null) {
             
@@ -393,4 +394,25 @@ public class ODCSUtil {
         return date;
     }
 
+    @NbBundle.Messages({"LBL_Mine=Assigned to me",
+                        "LBL_Related=Related to me",
+                        "LBL_Recent=Recently changed",
+                        "LBL_Open=Open tasks",
+                        "LBL_All=All tasks"})
+    public static String getPredefinedQueryName(PredefinedTaskQuery ptq) {
+        switch(ptq) {
+            case ALL:
+                return Bundle.LBL_All();
+            case MINE:              
+                return Bundle.LBL_Mine();
+            case OPEN:              
+                return Bundle.LBL_Open();
+            case RECENT:              
+                return Bundle.LBL_Recent();
+            case RELATED:              
+                return Bundle.LBL_Related();
+            default:
+                throw new IllegalStateException("unexpected PredefinedTaskQuery value [" + ptq + "]"); // NOI18N
+        }
+    }
 }

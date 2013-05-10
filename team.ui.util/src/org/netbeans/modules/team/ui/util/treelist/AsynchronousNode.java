@@ -94,7 +94,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
         lblLoading.setForeground(ColorManager.getDefault().getDisabledColor());
         lblError = new TreeLabel(NbBundle.getMessage(AsynchronousNode.class, "LBL_NotResponding")); //NOI18N
         lblError.setForeground(ColorManager.getDefault().getErrorColor());
-        Image img = ImageUtilities.loadImage("org/netbeans/modules/tasks/ui/resources/error.png"); //NOI18N
+        Image img = ImageUtilities.loadImage("org/netbeans/modules/team/ui/util/resources/error.png"); //NOI18N
         lblError.setIcon(new ImageIcon(img));
         lblFill = new JLabel();
         btnRetry = new LinkButton(NbBundle.getMessage(AsynchronousNode.class, "LBL_Retry"), new AbstractAction() { //NOI18N
@@ -115,7 +115,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
     protected final JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth) {
         synchronized (LOCK) {
             if (null != inner) {
-                configure(inner, foreground, background, isSelected, hasFocus);
+                configure(inner, foreground, background, isSelected, hasFocus, rowWidth);
             } else {
                 if (!loaded) {
                     if (null == loader) {
@@ -145,7 +145,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
      * @param isSelected
      * @param hasFocus
      */
-    protected abstract void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus);
+    protected abstract void configure(JComponent component, Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth);
 
     /**
      * Creates node's renderer component. The method is always invoked from AWT

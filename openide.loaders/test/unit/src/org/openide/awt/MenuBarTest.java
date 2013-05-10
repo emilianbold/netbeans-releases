@@ -94,6 +94,11 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
     protected Level logLevel() {
         return Level.WARNING;
     }
+
+    @Override
+    protected int timeOut() {
+        return 10000;
+    }
     
     @Override
     protected void setUp() throws Exception {
@@ -320,7 +325,7 @@ public class MenuBarTest extends NbTestCase implements ContainerListener {
         doActionIsCreatedOnlyOnce_13195("MenuWithNew");
     }
 
-    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9882/testReport/
+    @RandomlyFails // See NB-Core-Build: 9106, 9882, 10029, 10031, 10077, 10115
     public void testActionFactoryCanReturnNull() throws Exception {
         CharSequence log = Log.enable("", Level.WARNING);
         doActionIsCreatedOnlyOnce_13195("ReturnsNull");

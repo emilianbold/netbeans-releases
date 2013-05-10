@@ -500,8 +500,9 @@ made subject to such option by the copyright holder.
             </li>
             <li>
                 <api type="export" group="systemproperty" name="netbeans.dirs" category="friend">
-                    Additional secondary NetBeans installation directories, if <a
-                    href="http://www.netbeans.org/issues/show_bug.cgi?id=27151">applicable</a>.
+                    Additional secondary NetBeans installation directories as proposed in <a
+                    href="https://platform.netbeans.org/articles/installation.html">installation structure</a>
+                    design document.
                 </api>
             </li>
             <li>
@@ -1046,8 +1047,25 @@ made subject to such option by the copyright holder.
             IDE.
             </p>
         </api>
+        <api category="friend" group="java.io.File" name="installation.cache" type="export">
+            <p>
+                Installer can speed NetBeans IDE start by generating caches when the
+                installation is over. Such caches are stored in the installation,
+                in first cluster listed by <a href="#systemproperty-netbeans.dirs">
+                netbeans.dirs</a> and have the same layout as user caches 
+                (including here in described caches like <a href="@TOP@/architecture-summary.html#java.io.File-all-resources.dat">all-resources.dat</a>, 
+                as well as caches provided by other subsystems like 
+                <a href="@org-netbeans-core-netigso@/architecture-summary.html#java.io.File-netigso-bundles">
+                netigso-bundles</a>)
+                in the user directory - e.g. they are under <code>var/cache</code>.
+            </p>
+            <p>
+                If a file <code>var/cache/populate.zip</code> is found, its 
+                content is unzipped into user directory (if it is empty).
+            </p>
+        </api>
 
-        <api category="devel" group="java.io.File" name="all-resources.dat" type="export">
+        <api category="friend" group="java.io.File" name="all-resources.dat" type="export">
             <p>
             To speedup class loading during startup, the system keeps a cache
             of resources needed during startup in var/cache/all-resources.dat.
@@ -1057,8 +1075,123 @@ made subject to such option by the copyright holder.
                         
             <p>
             The file is binary and shouldn't be modified by other code than
-            org.netbeans.Archive. The file content uses magic header
+            <code>org.netbeans.Archive</code>. The file content uses magic header
             and versioning to allow evolution of its (private) format.
+            The location is however well known for 
+            <a href="@TOP@/architecture-summary.html#java.io.File-installation.cache">purposes of installer</a>.
+            </p>
+        </api>
+        <api category="friend" group="java.io.File" name="all-files.dat" type="export">
+            <p>
+            Rather than seeking on disk and using <code>access</code> OS call uselessly
+            to find that some file is not present, the layout of files under
+            the clusters is recorded in <code>var/cache/all-files.data</code>.
+            </p>
+                        
+            <p>
+            The file is binary and its format is <em>private</em>. The location
+            is however well known for 
+            <a href="#java.io.File-installation.cache">purposes of installer</a>.
+            </p>
+        </api>
+        <api category="friend" group="java.io.File" name="all-layers.dat" type="export">
+            <p>
+            Modules register their functionality into the system using 
+            <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html#how-layer">layers</a>.
+            To avoid parsing and merging of content of these files on each start, 
+            the system creates a cached, binary representation of the layers
+            structure in <code>var/cache/all-layers.dat</code> and
+            <code>var/cache/all-local-layers.dat</code>.
+            </p>
+                        
+            <p>
+            The file is binary and its format is <em>private</em>. The location
+            is however well known for 
+            <a href="#java.io.File-installation.cache">purposes of installer</a>.
+            </p>
+        </api>
+        <api category="friend" group="java.io.File" name="all-clusters.dat" type="export">
+            <p>
+                Lists relative paths of clusters (those defined by
+                <a href="#systemproperty-netbeans.home">netbeans.home</a> and
+                <a href="#systemproperty-netbeans.dirs">netbeans.dirs</a>)
+                for which the cache has been created. This is an important file
+                in the 
+                <a href="#java.io.File-installation.cache">shared cache</a> as
+                it helps to ensure the set of clusters has not changed since
+                the cache has been generated.
+            </p>
+            <p>
+                The file is binary and its format is <em>private</em>. The location
+                is however well known for 
+                <a href="#java.io.File-installation.cache">purposes of installer</a>.
+            </p>
+        </api>
+        <api category="friend" group="java.io.File" name="all-installer.dat" type="export">
+            <p>
+                Additional information about modules (like <em>deprecation message</em>, etc.)
+                is stored in <code>var/cache/all-installer.dat</code> to avoid the need
+                to parse it out on each start.
+            </p>
+                        
+            <p>
+                The file is binary and its format is <em>private</em>. The location
+                is however well known for 
+                <a href="#java.io.File-installation.cache">purposes of installer</a>.
+            </p>
+        </api>
+        <api category="friend" group="java.io.File" name="all-manifests.dat" type="export">
+            <p>
+                Graph of dependencies between modules, sorted startup order,
+                state of modules 
+                is stored in <code>var/cache/all-manifests.dat</code> to avoid the need
+                to compute this information on every start.
+            </p>
+                        
+            <p>
+                The file is binary and its format is <em>private</em>. The location
+                is however well known for 
+                <a href="#java.io.File-installation.cache">purposes of installer</a>.
+            </p>
+        </api>
+        <api category="friend" group="java.io.File" name="all-modules.dat" type="export">
+            <p>
+                Pre-parsed content of <code>config/Modules/*.xml</code>
+                is cached in <code>var/cache/all-modules.dat</code>.
+            </p>
+                        
+            <p>
+                The file is binary and its format is <em>private</em>. The location
+                is however well known for 
+                <a href="#java.io.File-installation.cache">purposes of installer</a>.
+            </p>
+        </api>
+        <api category="friend" group="java.io.File" name="package-attrs.dat" type="export">
+            <p>
+                Cache of various attributes of packages (vendor, spec &amp; impl version, etc.)
+                is stored in <code>var/cache/package-attrs.dat</code>. This
+                file is often almost empty to signal such information 
+                is not provided by any module.
+            </p>
+                        
+            <p>
+                The file is binary and its format is <em>private</em>. The location
+                is however well known for 
+                <a href="#java.io.File-installation.cache">purposes of installer</a>.
+            </p>
+        </api>
+        <api category="friend" group="java.io.File" name="localeVariants" type="export">
+            <p>
+                File <code>var/cache/localeVariants</code> contains information
+                about used branding and L10N files for each module. Avoids checking
+                for <code>locale/xyz_cs_CZ.jar</code> files when (for example) only English
+                L10N are present.
+            </p>
+                        
+            <p>
+                The file is binary and its format is <em>private</em>. The location
+                is however well known for 
+                <a href="#java.io.File-installation.cache">purposes of installer</a>.
             </p>
         </api>
     </answer>
@@ -1195,7 +1328,9 @@ made subject to such option by the copyright holder.
 -->
  <answer id="arch-overall">
   <p>
-   XXX no answer for arch-overall
+  The heart of NetBeans Runtime Container. Handles 
+    <a href="@org-openide-modules@/org/openide/modules/doc-files/api.html">lifecycle of 
+        installed modules and OSGi bundles</a>.
   </p>
  </answer>
 
@@ -1257,9 +1392,89 @@ made subject to such option by the copyright holder.
         </question>
 -->
  <answer id="arch-usecases">
-  <p>
-   XXX no answer for arch-usecases
-  </p>
+     <usecase id="invalidate.cache" name="Invalidating Caches">
+        <a name="usecase-invalidate.cache"></a>
+        <p>
+            NetBeans Module system is optimized to eliminate useless I/O
+            operations on start (as a result the <a href="http://netbinox.apidesign.org">
+            embedded OSGi container</a> is fastest on the planet -- with respect to 
+            application start up time). This is achieved by caching information
+            known to have been needed in previous starts and using it
+            rather than obtaining it again from the module JAR files.
+        </p>
+        <p>
+            There are various caches (like 
+                <a href="@TOP@/architecture-summary.html#java.io.File-all-layers.dat">all-layers.dat</a>,
+                <a href="@TOP@/architecture-summary.html#java.io.File-all-manifests.dat">all-manifests.dat</a>,
+                <a href="@TOP@/architecture-summary.html#java.io.File-all-resources.dat">all-resources.dat</a>,
+                <a href="@org-netbeans-core-netigso@/architecture-summary.html#java.io.File-netigso-bundles">netigso-bundles</a>,
+                etc.
+            ) provided by the module system or by other subsystems of the application.
+            Together, working in orchestration, they eliminate the need to
+            touch the disk (which is very slow operation especially during
+            <a href="http://wiki.apidesign.org/wiki/Startup#Morning_Launch">morning launch</a>).
+            Btw. there is a <a href="http://hg.netbeans.org/releases/file/cdbdc70050a8/core.startup/test/unit/src/org/netbeans/core/startup/layers/CachingPreventsFileTouchesTest.java">
+            test which verifies</a> 
+            the caching system really works
+            -- it is recommended for each product built on top of NetBeans Platform
+            to copy and adjust it to verify the caches are really used.
+        </p>
+        <p>
+            Of course, the caches may get out of date, for example when an external
+            tool modifies the installation layout. 
+            How can the system detect whether the caches are valid and 
+            still be usable? The only way to verify the
+            caches are 100% correct is to regenerate them and compare whether the
+            cached bits are the same. However that would be terribly slow and defeat 
+            the whole purpose of using caches.
+        </p>
+        <p>
+            As such we have the <a href="@TOP@/architecture-summary.html#java.io.File-.lastModified">lastModified API</a>.
+            Every cluster (as enumerated by <a href="@TOP@/architecture-summary.html#systemproperty-netbeans.dirs">netbeans.dirs</a>
+            and <a href="@TOP@/architecture-summary.html#systemproperty-netbeans.home">netbeans.home</a> properties)
+            is supposed to contain such file. Whenever an external tool changes something
+            inside some cluster, it is supposed to touch the file and change its 
+            timestamp. That will tell the system that caches are invalid 
+            (as their timestamps will become older than newest <code>.lastModified</code> file).
+        </p>
+     </usecase>
+     <usecase id="shared.cache" name="Generating Shared Cache">
+         <p>
+             The caches (as introduced in <a href="@TOP@/architecture-summary.html#usecase-invalidate.cache">
+             invalidating caches</a> section) are optimized to reflect the state of 
+             previous start. However that means, the very first start runs
+             without them. This may not be a problem (if the start follows
+             immediately after installation), however in <a href="http://wiki.apidesign.org/wiki/Startup#Multi_User_Initial_Launch">
+             multi user environment</a> (when the installation is done by administrator), 
+             the first start may be slow. 
+         </p>
+         <p>
+             To mitigate that the system offers support for <em>shared caches</em>.
+             As part of installation, one can also copy <a href="@TOP@/architecture-summary.html#java.io.File-installation.cache">
+             certain cache files
+             </a> into the shared location. Those files will then be used
+             on a first start of the system (when the user directory is empty).
+         </p>
+         <p>
+             To generate the shared cache files start NetBeans with an empty,
+             temporary user directory and then copy the desired files into
+             first cluster directory:
+         </p>
+         <pre>
+$ netbeans --userdir /tmp/nb -J-Dnetbeans.close=true -J-Dorg.netbeans.core.WindowSystem.show=false
+$ cd /tmp/nb
+$ zip -r $INSTALL/$first_netbeans_dirs_dir/var/cache/populate.zip var/cache/netigso
+$ cp var/cache/* $INSTALL/$first_netbeans_dirs_dir/var/cache
+$ rm -r /tmp/nb/
+         </pre>
+         <p>
+             The meaning of <code>populate.zip</code> and list of known cache
+             files is described <a href="@TOP@/architecture-summary.html#java.io.File-installation.cache">here</a>.
+             Additional modules and subsystems may add new files however. The 
+             ultimate knowledge is available only to those who understand overall
+             product installation structure.
+         </p>
+     </usecase>
  </answer>
 
 

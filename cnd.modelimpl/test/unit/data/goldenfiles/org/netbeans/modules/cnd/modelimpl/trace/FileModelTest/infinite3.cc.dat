@@ -35,14 +35,14 @@ NAMESPACE DEFINITOIN boost [1:1/0-18:2/380] SCOPE: infinite3.cc
                     SIGNATURE noncopyable(const noncopyable&)
                     UNIQUE NAME F:boost::noncopyable_::noncopyable::noncopyable(const noncopyable&)
                     PARAMETERS:
-                         [11:20/243-11:38/261]  TYPE: const &boost::noncopyable_::noncopyable TEXT=const noncopyable&  [11:20/243-11:25/248]  INIT: null  SCOPE: noncopyable 
+                         [11:20/243-11:38/261]  TYPE: const &boost::noncopyable_::noncopyable TEXT=const noncopyable&  [11:20/243-11:38/261]  INIT: null  SCOPE: noncopyable 
                     RETURNS <*no_classifier*> TEXT=  [null-null]
                 FUNCTION operator = [12:7/271-12:58/322] MethodImpl SCOPE: noncopyable 
                     DEFINITION: null
                     SIGNATURE operator =(const noncopyable&)
                     UNIQUE NAME F:boost::noncopyable_::noncopyable::operator =(const noncopyable&)
                     PARAMETERS:
-                         [12:37/301-12:55/319]  TYPE: const &boost::noncopyable_::noncopyable TEXT=const noncopyable&  [12:37/301-12:42/306]  INIT: null  SCOPE: operator = 
+                         [12:37/301-12:55/319]  TYPE: const &boost::noncopyable_::noncopyable TEXT=const noncopyable&  [12:37/301-12:55/319]  INIT: null  SCOPE: operator = 
                     RETURNS const &boost::noncopyable_::noncopyable TEXT=const noncopyable&  [12:7/271-12:25/289]
     TYPEDEF noncopyable  [16:1/331-16:47/377] TYPE: boost::noncopyable_::noncopyable TEXT=noncopyable_::noncopyable  [16:9/339-16:34/364] SCOPE: boost 
 
@@ -76,13 +76,13 @@ NAMESPACE boost (boost)
                     SIGNATURE noncopyable(const noncopyable&)
                     UNIQUE NAME F:boost::noncopyable_::noncopyable::noncopyable(const noncopyable&)
                     PARAMETERS:
-                         [11:20/243-11:38/261]  TYPE: const &boost::noncopyable_::noncopyable TEXT=const noncopyable&  [11:20/243-11:25/248]  INIT: null  SCOPE: noncopyable 
+                         [11:20/243-11:38/261]  TYPE: const &boost::noncopyable_::noncopyable TEXT=const noncopyable&  [11:20/243-11:38/261]  INIT: null  SCOPE: noncopyable 
                     RETURNS <*no_classifier*> TEXT=  [null-null]
                 FUNCTION operator = [12:7/271-12:58/322] MethodImpl SCOPE: noncopyable 
                     DEFINITION: null
                     SIGNATURE operator =(const noncopyable&)
                     UNIQUE NAME F:boost::noncopyable_::noncopyable::operator =(const noncopyable&)
                     PARAMETERS:
-                         [12:37/301-12:55/319]  TYPE: const &boost::noncopyable_::noncopyable TEXT=const noncopyable&  [12:37/301-12:42/306]  INIT: null  SCOPE: operator = 
+                         [12:37/301-12:55/319]  TYPE: const &boost::noncopyable_::noncopyable TEXT=const noncopyable&  [12:37/301-12:55/319]  INIT: null  SCOPE: operator = 
                     RETURNS const &boost::noncopyable_::noncopyable TEXT=const noncopyable&  [12:7/271-12:25/289]
 

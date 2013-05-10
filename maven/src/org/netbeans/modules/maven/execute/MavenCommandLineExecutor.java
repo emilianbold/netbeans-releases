@@ -88,6 +88,7 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.IOColorLines;
+import org.openide.windows.IOColors;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputEvent;
 import org.openide.windows.OutputListener;
@@ -166,8 +167,9 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         actionStatesAtStart();
         handle.start();
         processInitialMessage();
-        boolean isMaven2 = isMaven2();
-        if (!isMaven2) {
+        boolean isMaven3 = !isMaven2();
+        boolean singlethreaded = !isMultiThreaded(clonedConfig);
+        if (isMaven3 && singlethreaded) {
             injectEventSpy( clonedConfig );
             if (clonedConfig.getPreExecution() != null) {
                 injectEventSpy( (BeanRunConfig) clonedConfig.getPreExecution());
@@ -175,10 +177,12 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         }
 
         
-        CommandLineOutputHandler out = new CommandLineOutputHandler(ioput, clonedConfig.getProject(), handle, clonedConfig, !isMaven2);
+        CommandLineOutputHandler out = new CommandLineOutputHandler(ioput, clonedConfig.getProject(), handle, clonedConfig, isMaven3 && singlethreaded);
         try {
             BuildExecutionSupport.registerRunningItem(item);
-
+            if (MavenSettings.getDefault().isAlwaysShowOutput()) {
+                ioput.select();
+            }
             if (clonedConfig.getPreExecution() != null) {
                 ProcessBuilder builder = constructBuilder(clonedConfig.getPreExecution(), ioput);
                 preProcessUUID = UUID.randomUUID().toString();
@@ -488,7 +492,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
     private static void printGray(InputOutput io, String text) {
         if (IOColorLines.isSupported(io)) {
             try {
-                IOColorLines.println(io, text, Color.GRAY);
+                IOColorLines.println(io, text, IOColors.getColor(io, IOColors.OutputType.LOG_DEBUG));
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -541,6 +545,7 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
             if (isMaven2()) {
                 printGray(ioput, "WARNING: Using Maven 2.x for execution, NetBeans cannot establish links between current project and output directories of dependency projects with Compile on Save turned on. Only works with Maven 3.0+.");
             }
+            
         }
     }
     
@@ -563,6 +568,16 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
         clonedConfig.setProperty(CosChecker.MAVENEXTCLASSPATH, mavenPath);
     }
 
-    
-    
+    private boolean isMultiThreaded(BeanRunConfig clonedConfig) {
+        String list = MavenSettings.getDefault().getDefaultOptions();
+        for (String s : clonedConfig.getGoals()) {
+            list = list + " " + s;
+        }
+        if (clonedConfig.getPreExecution() != null) {
+            for (String s : clonedConfig.getPreExecution().getGoals()) {
+                list = list + " " + s;
+            }
+        }
+        return list.contains("-T ") || list.contains("--threads ");
+    } 
 }

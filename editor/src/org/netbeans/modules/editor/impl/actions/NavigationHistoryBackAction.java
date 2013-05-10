@@ -94,7 +94,8 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
     private final JTextComponent component;
     private final NavigationHistory.Waypoint waypoint;
     private final JPopupMenu popupMenu;
-    
+    private boolean updatePopupMenu = false;
+   
     public NavigationHistoryBackAction() {
         this(null, null, null);
     }
@@ -115,7 +116,48 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
             this.popupMenu = null;
         } else if (component != null) {
             putValue(SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/editor/resources/navigate_back_16.png", false)); //NOI18N
-            this.popupMenu = new JPopupMenu();
+            this.popupMenu = new JPopupMenu() {
+
+                @Override
+                public int getComponentCount() {
+                    if (updatePopupMenu) {
+                        updatePopupMenu = false;    
+                        List<NavigationHistory.Waypoint> waypoints = NavigationHistory.getNavigations().getPreviousWaypoints();
+                        removeAll();
+
+                        int count = 0;
+                        String lastFileName = null;
+                        NavigationHistory.Waypoint lastWpt = null;
+
+                        for (int i = waypoints.size() - 1; i >= 0; i--) {
+                            NavigationHistory.Waypoint wpt = waypoints.get(i);
+                            String fileName = getWaypointName(wpt);
+
+                            if (fileName == null) {
+                                continue;
+                            }
+
+                            if (lastFileName == null || !fileName.equals(lastFileName)) {
+                                if (lastFileName != null) {
+                                    popupMenu.add(new NavigationHistoryBackAction(NavigationHistoryBackAction.this.component, lastWpt,
+                                            count > 1 ? lastFileName + ":" + count : lastFileName)); //NOI18N
+                                }
+                                lastFileName = fileName;
+                                lastWpt = wpt;
+                                count = 1;
+                            } else {
+                                count++;
+                            }
+                        }
+
+                        if (lastFileName != null) {
+                            add(new NavigationHistoryBackAction(NavigationHistoryBackAction.this.component, lastWpt,
+                                    count > 1 ? lastFileName + ":" + count : lastFileName)); //NOI18N
+                        }
+                    }
+                    return super.getComponentCount(); //To change body of generated methods, choose Tools | Templates.
+                }  
+            };
             update();
             NavigationHistory nav = NavigationHistory.getNavigations();
             nav.addPropertyChangeListener(WeakListeners.propertyChange(this, nav));
@@ -126,11 +168,13 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
         }
     }
     
+    @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         JTextComponent c = findComponent(actionContext);
         return new NavigationHistoryBackAction(c, null, null);
     }
 
+    @Override
     public void actionPerformed(ActionEvent evt) {
         NavigationHistory history = NavigationHistory.getNavigations();
         if (null == history.getCurrentWaypoint()) {
@@ -153,6 +197,7 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
         }
     }
 
+    @Override
     public Component getToolbarPresenter() {
         if (popupMenu != null) {
             JButton button = DropDownButtonFactory.createDropDownButton(
@@ -167,6 +212,7 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
         }
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         update();
     }
@@ -176,37 +222,7 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
 
         // Update popup menu
         if (popupMenu != null) {
-            popupMenu.removeAll();
-
-            int count = 0;
-            String lastFileName = null;
-            NavigationHistory.Waypoint lastWpt = null;
-            
-            for(int i = waypoints.size() - 1; i >= 0; i--) {
-                NavigationHistory.Waypoint wpt = waypoints.get(i);
-                String fileName = getWaypointName(wpt);
-                
-                if (fileName == null) {
-                    continue;
-                }
-                
-                if (lastFileName == null || !fileName.equals(lastFileName)) {
-                    if (lastFileName != null) {
-                        popupMenu.add(new NavigationHistoryBackAction(component, lastWpt, 
-                            count > 1 ? lastFileName + ":" + count : lastFileName)); //NOI18N
-                    }
-                    lastFileName = fileName;
-                    lastWpt = wpt;
-                    count = 1;
-                } else {
-                    count++;
-                }
-            }
-            
-            if (lastFileName != null) {
-                popupMenu.add(new NavigationHistoryBackAction(component, lastWpt,
-                    count > 1 ? lastFileName + ":" + count : lastFileName)); //NOI18N
-            }
+            updatePopupMenu = true;
         }
         
         // Set the short description
@@ -253,6 +269,7 @@ public final class NavigationHistoryBackAction extends TextAction implements Con
                 final boolean worked[] = new boolean [1];
                 final BaseDocument baseDoc = (BaseDocument) doc;
                 doc.render(new Runnable() {
+                    @Override
                     public void run() {
                         Element lineRoot = baseDoc.getParagraphElement(0).getParentElement();
                         int lineIndex = lineRoot.getElementIndex(offset);

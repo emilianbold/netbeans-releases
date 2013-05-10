@@ -52,7 +52,7 @@ import org.openide.nodes.PropertyEditorRegistration;
  * Editor for Character.TYPE
  * @author  Petr Zajac, David Strupl
  */
-@PropertyEditorRegistration(targetType=Character.class)
+@PropertyEditorRegistration(targetType={Character.class, char.class})
 public class CharEditor extends PropertyEditorSupport implements EnhancedPropertyEditor {
 
     /**

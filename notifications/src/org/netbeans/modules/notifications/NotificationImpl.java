@@ -233,7 +233,7 @@ public class NotificationImpl extends Notification implements Comparable<Notific
         if (icon != null) {
             titleComp.setIcon(icon);
         }
-        titleComp.setFont(titleComp.getFont().deriveFont(Font.BOLD, titleComp.getFont().getSize() + 3f));
+        titleComp.setFont(titleComp.getFont().deriveFont(Font.BOLD));
         return titleComp;
     }
 

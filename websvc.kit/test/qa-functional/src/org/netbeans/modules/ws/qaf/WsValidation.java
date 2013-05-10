@@ -57,7 +57,6 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
-import org.netbeans.jellytools.OutputOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.ActionNoBlock;
@@ -649,7 +648,7 @@ public class WsValidation extends WebServicesTestBase {
                     eo.getText().contains("@HandlerChain(file = \"" + handlerCfg.getName() + "\")")); //NOI18N
         } else {
             boolean isAnt = getProjectType().isAntBasedProject();
-            waitForWsImport(isAnt ? "wsimport-client" : "wsimport", isAnt); //NOI18N
+            waitForWsImport(isAnt ? "wsimport-client-clean" : "wsimport", isAnt); //NOI18N
         }
         assertTrue(handlerCfg.exists());
         FileObject fo = FileUtil.toFileObject(handlerCfg);
@@ -667,7 +666,7 @@ public class WsValidation extends WebServicesTestBase {
                     eo.getText().contains("@HandlerChain(file = \"" + handlerCfg.getName() + "\")")); //NOI18N
         } else {
             boolean isAnt = getProjectType().isAntBasedProject();
-            waitForWsImport(isAnt ? "wsimport-client" : "wsimport", isAnt); //NOI18N
+            waitForWsImport(isAnt ? "wsimport-client-clean" : "wsimport", isAnt); //NOI18N
         }
         assertTrue(handlerCfg.exists());
         checkHandlers(new String[]{"WsMsgHandler1"}, fo, isService); //NOI18N
@@ -682,7 +681,7 @@ public class WsValidation extends WebServicesTestBase {
                     eo.contains("@HandlerChain(file = \"" + handlerCfg.getName() + "\")")); //NOI18N
         } else {
             boolean isAnt = getProjectType().isAntBasedProject();
-            waitForWsImport(isAnt ? "wsimport-client" : "wsimport", isAnt); //NOI18N
+            waitForWsImport(isAnt ? "wsimport-client-clean" : "wsimport", isAnt); //NOI18N
         }
         assertTrue(handlerCfg.exists());
         checkHandlers(new String[]{
@@ -700,7 +699,7 @@ public class WsValidation extends WebServicesTestBase {
                     eo.contains("@HandlerChain(file = \"" + handlerCfg.getName() + "\")")); //NOI18N
         } else {
             boolean isAnt = getProjectType().isAntBasedProject();
-            waitForWsImport(isAnt ? "wsimport-client" : "wsimport", isAnt); //NOI18N
+            waitForWsImport(isAnt ? "wsimport-client-clean" : "wsimport", isAnt); //NOI18N
         }
         assertTrue(handlerCfg.exists());
         checkHandlers(new String[]{
@@ -718,7 +717,7 @@ public class WsValidation extends WebServicesTestBase {
                     eo.contains("@HandlerChain(file = \"" + handlerCfg.getName() + "\")")); //NOI18N
         } else {
             boolean isAnt = getProjectType().isAntBasedProject();
-            waitForWsImport(isAnt ? "wsimport-client" : "wsimport", isAnt); //NOI18N
+            waitForWsImport(isAnt ? "wsimport-client-clean" : "wsimport", isAnt); //NOI18N
         }
         assertTrue(handlerCfg.exists());
         checkHandlers(new String[]{

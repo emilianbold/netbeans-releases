@@ -42,6 +42,33 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
+import static com.sun.source.tree.Tree.Kind.ASSERT;
+import static com.sun.source.tree.Tree.Kind.ASSIGNMENT;
+import static com.sun.source.tree.Tree.Kind.BLOCK;
+import static com.sun.source.tree.Tree.Kind.BREAK;
+import static com.sun.source.tree.Tree.Kind.CLASS;
+import static com.sun.source.tree.Tree.Kind.CONTINUE;
+import static com.sun.source.tree.Tree.Kind.DO_WHILE_LOOP;
+import static com.sun.source.tree.Tree.Kind.EMPTY_STATEMENT;
+import static com.sun.source.tree.Tree.Kind.ENHANCED_FOR_LOOP;
+import static com.sun.source.tree.Tree.Kind.EXPRESSION_STATEMENT;
+import static com.sun.source.tree.Tree.Kind.FOR_LOOP;
+import static com.sun.source.tree.Tree.Kind.IF;
+import static com.sun.source.tree.Tree.Kind.LABELED_STATEMENT;
+import static com.sun.source.tree.Tree.Kind.METHOD_INVOCATION;
+import static com.sun.source.tree.Tree.Kind.NEW_ARRAY;
+import static com.sun.source.tree.Tree.Kind.NEW_CLASS;
+import static com.sun.source.tree.Tree.Kind.POSTFIX_DECREMENT;
+import static com.sun.source.tree.Tree.Kind.POSTFIX_INCREMENT;
+import static com.sun.source.tree.Tree.Kind.PREFIX_DECREMENT;
+import static com.sun.source.tree.Tree.Kind.PREFIX_INCREMENT;
+import static com.sun.source.tree.Tree.Kind.RETURN;
+import static com.sun.source.tree.Tree.Kind.SWITCH;
+import static com.sun.source.tree.Tree.Kind.SYNCHRONIZED;
+import static com.sun.source.tree.Tree.Kind.THROW;
+import static com.sun.source.tree.Tree.Kind.TRY;
+import static com.sun.source.tree.Tree.Kind.VARIABLE;
+import static com.sun.source.tree.Tree.Kind.WHILE_LOOP;
 import com.sun.source.util.*;
 import java.util.*;
 import javax.lang.model.element.*;
@@ -50,12 +77,12 @@ import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.Pair;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
@@ -68,12 +95,16 @@ public class InlineMethodTransformer extends RefactoringVisitor {
     private boolean hasParameters;
     private Problem problem;
     private HashMap<Tree, Tree> original2Translated;
-    private Deque<Map<Tree, List<StatementTree>>> queue;
+    private final Deque<Map<Tree, List<StatementTree>>> newStatsQueue;
+    private final Deque<Map<Tree, Tree>> translateQueue;
+    private final LinkedList<String> definedIds;
     private final TreePathHandle tph;
 
     public InlineMethodTransformer(TreePathHandle tph) {
         this.tph = tph;
-        queue = new LinkedList<Map<Tree, List<StatementTree>>>();
+        newStatsQueue = new LinkedList<>();
+        translateQueue = new LinkedList<>();
+        definedIds = new LinkedList<>();
     }
 
     public Problem getProblem() {
@@ -121,21 +152,29 @@ public class InlineMethodTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitBlock(BlockTree node, Element p) {
-        queue.add(new HashMap<Tree, List<StatementTree>>());
+        newStatsQueue.add(new HashMap<Tree, List<StatementTree>>());
+        translateQueue.add(new HashMap<Tree, Tree>());
+        int nrOfIds = definedIds.size();
         Tree value = super.visitBlock(node, p);
-        Map<Tree, List<StatementTree>> original2TranslatedForBlock = queue.pollLast();
-        List<StatementTree> newStatementList = new LinkedList<StatementTree>();
+        while(definedIds.size() > nrOfIds) {
+            definedIds.pop();
+        }
+        Map<Tree, List<StatementTree>> newStatementsForBlock = newStatsQueue.pollLast();
+        Map<Tree, Tree> original2TranslatedForBlock = translateQueue.pollLast();
 
-        if (!original2TranslatedForBlock.isEmpty()) {
+        if (!newStatementsForBlock.isEmpty()) {
+            List<StatementTree> newStatementList = new LinkedList<>();
             for (StatementTree statementTree : node.getStatements()) {
-                List<StatementTree> stats = original2TranslatedForBlock.get(statementTree);
+                List<StatementTree> stats = newStatementsForBlock.get(statementTree);
                 if (stats != null) {
                     newStatementList.addAll(stats);
-                } else {
-                    newStatementList.add(statementTree);
                 }
+                newStatementList.add(statementTree);
             }
             BlockTree newBlock = make.Block(newStatementList, node.isStatic());
+            if(!original2TranslatedForBlock.isEmpty()) {
+                newBlock = (BlockTree) workingCopy.getTreeUtilities().translate(newBlock, original2TranslatedForBlock);
+            }
             original2Translated.put(node, newBlock);
         }
         return value;
@@ -151,12 +190,13 @@ public class InlineMethodTransformer extends RefactoringVisitor {
 
     @Override
     public Tree visitMethodInvocation(MethodInvocationTree node, Element methodElement) {
+        Tree value = super.visitMethodInvocation(node, methodElement);
         final TreePath methodInvocationPath = getCurrentPath();
         Element el = trees.getElement(methodInvocationPath);
         if (el.getKind() == ElementKind.METHOD && methodElement.equals(el)) {
             ExecutableElement method = (ExecutableElement) el;
-            List<StatementTree> newStatementList = new LinkedList<StatementTree>();
-            final HashMap<Tree, Tree> original2TranslatedBody = new HashMap<Tree, Tree>();
+            List<StatementTree> newStatementList = new LinkedList<>();
+            final HashMap<Tree, Tree> original2TranslatedBody = new HashMap<>();
 
             final TypeElement bodyEnclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(methodElement);
             TreePath findEnclosingClass = JavaRefactoringUtils.findEnclosingClass(workingCopy, methodInvocationPath, true, true, true, true, true);
@@ -170,7 +210,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
 
             BlockTree body = methodTree.getBody();
 
-            scanForNameClash(methodInvocationPath, body, methodElement);
+            scanForNameClash(methodInvocationPath, body, methodElement, original2TranslatedBody);
             if (problem != null && problem.isFatal()) {
                 return node;
             }
@@ -206,7 +246,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
 
             Tree parent = methodInvocationPath.getParentPath().getLeaf();
             Tree grandparent = null;
-            final Tree methodInvocation;
+            Tree methodInvocation;
 
             if (parent.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
                 methodInvocation = node;
@@ -237,15 +277,11 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     lastStatement = GeneratorUtilities.get(workingCopy).importFQNs(lastStatement);
                 }
             }
-            lastStatement = translateLastStatement(body, parent, grandparent, newStatementList, lastStatement);
-            if(lastStatement != null) {
-                StatementTree translate = (StatementTree) workingCopy.getTreeUtilities().translate(statementTree, Collections.singletonMap(methodInvocation, lastStatement));
-                newStatementList.add(translate);
-            }
+            lastStatement = translateLastStatement(parent, grandparent, newStatementList, lastStatement, node);
             
             Element element = workingCopy.getTrees().getElement(statementPath);
             if (element != null && element.getKind() == ElementKind.FIELD) {
-                if (newStatementList.size() != 1) {
+                if (!newStatementList.isEmpty()) {
                     SourcePositions positions = workingCopy.getTrees().getSourcePositions();
                     long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
                     long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
@@ -253,14 +289,20 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                     problem = JavaPluginUtils.chainProblems(problem,
                             new Problem(false, NbBundle.getMessage(InlineMethodTransformer.class, "WRN_InlineMethodMultipleLines", source)));
                 } else {
-                    rewrite(statementTree, newStatementList.get(0));
+                    rewrite(methodInvocation, lastStatement);
                 }
             } else {
-                Map<Tree, List<StatementTree>> original2TranslatedForBlock = queue.getLast();
-                original2TranslatedForBlock.put(statementTree, newStatementList);
+                Map<Tree, List<StatementTree>> addedStatementsForBlock = newStatsQueue.getLast();
+                Map<Tree, Tree> translateMap = translateQueue.getLast();
+                List<StatementTree> stats = addedStatementsForBlock.get(statementTree);
+                if(stats == null) {
+                    addedStatementsForBlock.put(statementTree, stats = new LinkedList<>());
+                }
+                stats.addAll(newStatementList);
+                translateMap.put(methodInvocation, lastStatement);
             }
         }
-        return super.visitMethodInvocation(node, methodElement);
+        return value;
     }
 
     private boolean isInStaticContext(TreePath methodInvocationPath) {
@@ -317,7 +359,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 }
 
                 Element el = trees.getElement(currentPath);
-                if (el != null) {
+                if (el != null && el != p) {
                     DeclaredType declaredType = workingCopy.getTypes().getDeclaredType(scope.getEnclosingClass());
                     if (methodSelect != null
                             && el.getEnclosingElement() != method
@@ -347,7 +389,11 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                         }
                     }
                 }
-                return super.visitMethodInvocation(node, p);
+                if(el != null && el == p) {
+                    return null;
+                } else {
+                    return super.visitMethodInvocation(node, p);
+                }
             }
 
             @Override
@@ -394,27 +440,51 @@ public class InlineMethodTransformer extends RefactoringVisitor {
         return result;
     }
 
-    private void scanForNameClash(final TreePath methodInvocationPath, BlockTree body, Element p) {
+    private void scanForNameClash(final TreePath methodInvocationPath, final Tree body, Element p, final HashMap<Tree, Tree> original2TranslatedBody) {
+        Element resolved = tph.getElementHandle().resolve(workingCopy);
+        final CompilationUnitTree compilationUnitTree = workingCopy.getTrees().getPath(resolved).getCompilationUnit();
+        final LinkedList<Pair<Element, String>> renames = new LinkedList<>();
         // Scan the body and look for name clashes
         TreeScanner<Void, ExecutableElement> nameClashScanner = new TreeScanner<Void, ExecutableElement>() {
             @Override
             public Void visitVariable(VariableTree node, ExecutableElement p) {
-                TreePath path = trees.getPath(workingCopy.getCompilationUnit(), node);
+                TreePath path = trees.getPath(compilationUnitTree, node);
                 if (path != null) {
                     Element variable = trees.getElement(path);
                     if (!(variable.getKind() == ElementKind.PARAMETER && p.getParameters().contains((VariableElement) variable))) {
-                        String msg = RefactoringUtils.variableClashes(node.getName().toString(), methodInvocationPath, workingCopy);
-                        if (msg != null) {
-                            problem = MoveTransformer.createProblem(problem, true, NbBundle.getMessage(InlineRefactoringPlugin.class,
-                                    "ERR_InlineMethodNameClash", msg)); // NOI18N
+                        String varName = node.getName().toString();
+                        String uniqueName = JavaPluginUtils.makeNameUnique(workingCopy,
+                                                       workingCopy.getTrees().getScope(methodInvocationPath), varName, definedIds);
+                        if(uniqueName != varName) {
+                            original2TranslatedBody.put(node, make.setLabel(node, uniqueName));
+                            renames.add(Pair.of(variable, uniqueName));
+                            definedIds.add(uniqueName);
+                        } else {
+                            definedIds.add(varName);
                         }
                     }
                 }
                 return super.visitVariable(node, p);
             }
         };
-
         nameClashScanner.scan(body, (ExecutableElement) p);
+        TreeScanner<Void, Pair<Element, String>> idScan = new TreeScanner<Void, Pair<Element, String>>() {
+            @Override
+            public Void visitIdentifier(IdentifierTree node, Pair<Element, String> p) {
+                TreePath path = trees.getPath(compilationUnitTree, node);
+                Element el = null;
+                if(path != null) {
+                    el = trees.getElement(path);
+                }
+                if (p.first().equals(el)) {
+                    original2TranslatedBody.put(node, make.setLabel(node, p.second()));
+                }
+                return super.visitIdentifier(node, p);
+            }
+        };
+        for (Pair<Element, String> pair : renames) {
+            idScan.scan(body, pair);
+        }
     }
 
     private TreePath findCorrespondingStatement(TreePath methodInvocationPath) {
@@ -443,8 +513,8 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 if(currentPath != null) {
                     el = trees.getElement(currentPath);
                 }
-                if (p.first.equals(el)) {
-                    original2TranslatedBody.put(node, p.second);
+                if (p.first().equals(el)) {
+                    original2TranslatedBody.put(node, p.second());
                 }
                 return super.visitIdentifier(node, p);
             }
@@ -457,7 +527,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
         }
     }
 
-    private Tree translateLastStatement(BlockTree body, Tree parent, Tree grandparent, List<StatementTree> newStatementList, Tree lastStatement) {
+    private Tree translateLastStatement(Tree parent, Tree grandparent, List<StatementTree> newStatementList, Tree lastStatement, Tree node) {
         Tree result = lastStatement;
         if (parent.getKind() != Tree.Kind.EXPRESSION_STATEMENT) {
             if (result != null) {
@@ -475,7 +545,38 @@ public class InlineMethodTransformer extends RefactoringVisitor {
         } else {
             if (result != null) {
                 if (result.getKind() == Tree.Kind.RETURN) {
-                    result = make.ExpressionStatement(((ReturnTree) result).getExpression());
+                    ExpressionTree returnExpression = ((ReturnTree) result).getExpression();
+                    /*
+                     * Allowed expressions in expressionstatement:
+                     * Assignment
+                     * PreIncrementExpression
+                     * PreDecrementExpression
+                     * PostIncrementExpression
+                     * PostDecrementExpression
+                     * MethodInvocation
+                     * ClassInstanceCreationExpression
+                     */
+                    switch (returnExpression.getKind()) {
+                        case ASSIGNMENT:
+                        case PREFIX_INCREMENT:
+                        case PREFIX_DECREMENT:
+                        case POSTFIX_DECREMENT:
+                        case POSTFIX_INCREMENT:
+                        case METHOD_INVOCATION:
+                        case NEW_CLASS:
+                        case NEW_ARRAY:
+                            result = make.ExpressionStatement(returnExpression);
+                            break;
+                        default:
+                            result = make.EmptyStatement();
+                            SourcePositions positions = workingCopy.getTrees().getSourcePositions();
+                            long startPosition = positions.getStartPosition(workingCopy.getCompilationUnit(), node);
+                            long lineNumber = workingCopy.getCompilationUnit().getLineMap().getLineNumber(startPosition);
+                            String source = FileUtil.getFileDisplayName(workingCopy.getFileObject()) + ':' + lineNumber;
+                            problem = JavaPluginUtils.chainProblems(problem,
+                                                                    new Problem(false, NbBundle.getMessage(InlineMethodTransformer.class, "WRN_InlineChangeReturn", source)));
+                            break;
+                    }
                 }
             }
             switch (grandparent.getKind()) {

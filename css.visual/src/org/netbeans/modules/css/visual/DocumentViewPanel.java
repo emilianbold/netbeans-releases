@@ -44,6 +44,7 @@ package org.netbeans.modules.css.visual;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.EventQueue;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -65,6 +66,7 @@ import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.visual.api.CssStylesTC;
 import org.netbeans.modules.css.visual.api.RuleEditorController;
 import org.netbeans.modules.css.visual.api.EditCSSRulesAction;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -85,6 +87,8 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -336,6 +340,8 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
             documentModel = new DocumentViewModel(context);
         }
 
+        updateTitle();
+
         RP.post(new Runnable() {
             @Override
             public void run() {
@@ -345,6 +351,41 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         });
 
     }
+
+    /** Determines whether the panel is active. */
+    private boolean active;
+
+    /**
+     * Invoked when the panel is activated.
+     */
+    void activated() {
+        this.active = true;
+        updateTitle();
+    }
+
+    /**
+     * Invoked when the panel is deactivated.
+     */
+    void deactivated() {
+        this.active = false;
+    }
+
+    /**
+     * Updates the title of the enclosing view.
+     */
+    void updateTitle() {
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (active) {
+                    TopComponent tc = WindowManager.getDefault().findTopComponent("CssStylesTC"); // NOI18N
+                    FileObject fob = getContext();
+                    ((CssStylesTC)tc).setTitle(fob.getNameExt());
+                }
+            }
+        });
+    }
+    
 
     /**
      * Initializes the tree view.

@@ -105,11 +105,9 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.modules.ModuleInfo;
 import org.openide.modules.ModuleInstall;
 import org.openide.modules.Places;
-import org.openide.modules.SpecificationVersion;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -267,8 +265,10 @@ public class Installer extends ModuleInstall implements Runnable {
                 for (LogRecord rec : disabledRec) {
                     LogRecords.write(logStreamMetrics(), rec);
                 }
-                LogRecord clusterRec = getClusterList(log);
+                LogRecord clusterRec = EnabledModulesCollector.getClusterList(log);
                 LogRecords.write(logStreamMetrics(), clusterRec);
+                LogRecord userInstalledRec = EnabledModulesCollector.getUserInstalledModules(log);
+                LogRecords.write(logStreamMetrics(), userInstalledRec);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -644,56 +644,20 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         if (!enabled.isEmpty()) {
             LogRecord rec = new LogRecord(Level.INFO, "USG_ENABLED_MODULES");
-            String[] enabledNames = new String[enabled.size()];
-            int i = 0;
-            for (ModuleInfo m : enabled) {
-                SpecificationVersion specVersion = m.getSpecificationVersion();
-                if (specVersion != null){
-                    enabledNames[i++]  = m.getCodeName() + " [" + specVersion.toString() + "]";
-                }else{
-                    enabledNames[i++] = m.getCodeName();
-                }
-            }
+            String[] enabledNames = EnabledModulesCollector.getModuleNames(enabled);
             rec.setParameters(enabledNames);
             rec.setLoggerName(logger.getName());
             enabledRec.add(rec);
         }
         if (!disabled.isEmpty()) {
             LogRecord rec = new LogRecord(Level.INFO, "USG_DISABLED_MODULES");
-            String[] disabledNames = new String[disabled.size()];
-            int i = 0;
-            for (ModuleInfo m : disabled) {
-                SpecificationVersion specVersion = m.getSpecificationVersion();
-                if (specVersion != null){
-                    disabledNames[i++]   = m.getCodeName() + " [" + specVersion.toString() + "]";
-                }else{
-                    disabledNames[i++] = m.getCodeName();
-                }
-            }
+            String[] disabledNames = EnabledModulesCollector.getModuleNames(disabled);
             rec.setParameters(disabledNames);
             rec.setLoggerName(logger.getName());
             disabledRec.add(rec);
         }
     }
 
-    static LogRecord getClusterList (Logger logger) {
-        LogRecord rec = new LogRecord(Level.INFO, "USG_INSTALLED_CLUSTERS");
-        String dirs = System.getProperty("netbeans.dirs");
-        if (dirs != null) {
-            String [] dirsArray = dirs.split(File.pathSeparator);
-            List<String> list = new ArrayList<String>();
-            for (int i = 0; i < dirsArray.length; i++) {
-                File f = new File(dirsArray[i]);
-                if (f.exists()){
-                    list.add(f.getName());
-                }
-            }
-            rec.setParameters(list.toArray());
-        }
-        rec.setLoggerName(logger.getName());
-        return rec;
-    }
-    
     public static URL hintsURL() {
         return hintURL;
     }
@@ -844,14 +808,12 @@ public class Installer extends ModuleInstall implements Runnable {
 
     static File logsDirectory(){
         
-        File logDir = InstalledFileLocator.getDefault().locate("var/log", null, false); // NOI18N
-        if (logDir == null) {
-            File userDir = Places.getUserDirectory();
-            if (userDir != null) {
-                logDir = new File(new File(userDir, "var"), "log");             // NOI18N
-            }
+        File userDir = Places.getUserDirectory();
+        if (userDir != null) {
+            return new File(new File(userDir, "var"), "log");                   // NOI18N
+        } else {
+            return null;
         }
-        return logDir;
     }
 
     private static File logFile(int revision) {
@@ -2050,7 +2012,8 @@ public class Installer extends ModuleInstall implements Runnable {
                 if (dataType != DataType.DATA_METRICS) {
                     String txt;
                     String logFile = NbBundle.getMessage(Installer.class, "LOG_FILE");
-                    File log = InstalledFileLocator.getDefault().locate(logFile, null, false);
+                    File userDir = Places.getUserDirectory();
+                    File log = (userDir != null) ? new File(userDir, logFile) : null;
                     if (log != null) {
                         logFile = log.getAbsolutePath();
                     }
@@ -2404,7 +2367,8 @@ public class Installer extends ModuleInstall implements Runnable {
                  os.write(slownData.getNpsContent());
                  os.close();
 
-                 File gestures = InstalledFileLocator.getDefault().locate("var/log/uigestures", null, false); // NOI18N
+                 File varLogs = logsDirectory();
+                 File gestures = (varLogs != null) ? new File(varLogs, "uigestures") : null; // NOI18N
 
                  SelfSampleVFS fs;
                  if (gestures != null && gestures.exists()) {

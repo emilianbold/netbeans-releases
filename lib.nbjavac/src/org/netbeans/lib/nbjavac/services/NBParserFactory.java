@@ -101,7 +101,7 @@ public class NBParserFactory extends ParserFactory {
         ((NBJavacParser.EndPosTableImpl)endPos).resetErrorEndPos();
         return new NBJavacParser(this, lexer, true, false, true, cancelService) {
             @Override protected AbstractEndPosTable newEndPosTable(boolean keepEndPositions) {
-                return new AbstractEndPosTable() {
+                return new AbstractEndPosTable(this) {
 
                     @Override
                     protected void storeEnd(JCTree tree, int endpos) {
@@ -153,7 +153,7 @@ public class NBParserFactory extends ParserFactory {
 
         @Override
         protected AbstractEndPosTable newEndPosTable(boolean keepEndPositions) {
-            return new EndPosTableImpl();
+            return new EndPosTableImpl(this);
         }
 
         @Override
@@ -196,6 +196,10 @@ public class NBParserFactory extends ParserFactory {
         }
         
         public final class EndPosTableImpl extends SimpleEndPosTable {
+            
+            private EndPosTableImpl(JavacParser parser) {
+                super(parser);
+            }
             
             private void resetErrorEndPos() {
                 errorEndPos = Position.NOPOS;

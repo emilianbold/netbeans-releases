@@ -73,7 +73,6 @@ import org.netbeans.modules.web.clientproject.api.util.JsLibUtilities;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.clientproject.api.validation.FolderValidator;
 import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
-import org.netbeans.modules.web.common.api.Pair;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -81,6 +80,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**

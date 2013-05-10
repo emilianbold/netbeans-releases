@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cordova.platforms;
 
+import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.openide.WizardDescriptor;
@@ -66,6 +67,7 @@ public class MobileProjectExtender implements ClientProjectExtender {
     @Override
     @NbBundle.Messages({
         "LBL_iPhoneSimulator=iPhone Simulator",
+        "LBL_iPhoneDevice=iPhone Device",
         "LBL_AndroidEmulator=Android Emulator",
         "LBL_AndroidDevice=Android Device"
     })
@@ -79,25 +81,60 @@ public class MobileProjectExtender implements ClientProjectExtender {
     }
 
     public static void createMobileConfigs(FileObject projectRoot) throws IOException {
-        EditableProperties ios = new EditableProperties(true);
-        ios.put(ConfigUtils.DISPLAY_NAME_PROP, Bundle.LBL_iPhoneSimulator());
-        ios.put(Device.TYPE_PROP, PlatformManager.IOS_TYPE);
-        ios.put(Device.DEVICE_PROP, Device.EMULATOR);
-        ios.put("ios.build.sdk", PlatformManager.getPlatform(PlatformManager.IOS_TYPE).getPrefferedTarget().getIdentifier());
-        ios.put("ios.build.arch", "i386");
+        
+        File f = new File(projectRoot.getPath() + "/nbproject/configs/ios.properties");
+        if (!f.exists()) {
+            EditableProperties ios = new EditableProperties(true);
+            ios.put(ConfigUtils.DISPLAY_NAME_PROP, Bundle.LBL_iPhoneSimulator());
+            ios.put(Device.TYPE_PROP, PlatformManager.IOS_TYPE);
+            ios.put(Device.DEVICE_PROP, Device.EMULATOR);
+            ios.put("ios.build.sdk", PlatformManager.getPlatform(PlatformManager.IOS_TYPE).getPrefferedTarget().getIdentifier());
+            ios.put("ios.build.arch", "i386");
 
-        ConfigUtils.createConfigFile(projectRoot, PlatformManager.IOS_TYPE, ios);//NOI18N
+            ConfigUtils.createConfigFile(projectRoot, PlatformManager.IOS_TYPE, ios);//NOI18N
+        }
 
-        EditableProperties androide = new EditableProperties(true);
-        androide.put(ConfigUtils.DISPLAY_NAME_PROP, Bundle.LBL_AndroidEmulator());
-        androide.put(Device.TYPE_PROP, PlatformManager.ANDROID_TYPE);//NOI18N
-        androide.put(Device.DEVICE_PROP, Device.EMULATOR);//NOI18N
-        ConfigUtils.createConfigFile(projectRoot, PlatformManager.ANDROID_TYPE, androide);//NOI18N
+        f = new File(projectRoot.getPath() + "/nbproject/configs/ios_1.properties");
+        if (!f.exists()) {
 
-        EditableProperties androidd = new EditableProperties(true);
-        androidd.put(ConfigUtils.DISPLAY_NAME_PROP, Bundle.LBL_AndroidDevice());
-        androidd.put(Device.TYPE_PROP, PlatformManager.ANDROID_TYPE);//NOI18N
-        androidd.put(Device.DEVICE_PROP, Device.DEVICE);//NOI18N
-        ConfigUtils.createConfigFile(projectRoot, PlatformManager.ANDROID_TYPE, androidd);//NOI18N
+            EditableProperties iosdev = new EditableProperties(true);
+            iosdev.put(ConfigUtils.DISPLAY_NAME_PROP, Bundle.LBL_iPhoneDevice());
+            iosdev.put(Device.TYPE_PROP, PlatformManager.IOS_TYPE);
+            iosdev.put(Device.DEVICE_PROP, Device.DEVICE);
+            //TODO: Hardcoded value
+            iosdev.put("ios.build.sdk", "iphoneos6.1");
+            iosdev.put("ios.build.arch", "armv6 armv7");
+
+            ConfigUtils.createConfigFile(projectRoot, PlatformManager.IOS_TYPE, iosdev);//NOI18N
+        }
+
+        f = new File(projectRoot.getPath() + "/nbproject/configs/android.properties");
+        if (!f.exists()) {
+
+            EditableProperties androide = new EditableProperties(true);
+            androide.put(ConfigUtils.DISPLAY_NAME_PROP, Bundle.LBL_AndroidEmulator());
+            androide.put(Device.TYPE_PROP, PlatformManager.ANDROID_TYPE);//NOI18N
+            androide.put(Device.DEVICE_PROP, Device.EMULATOR);//NOI18N
+            ConfigUtils.createConfigFile(projectRoot, PlatformManager.ANDROID_TYPE, androide);//NOI18N
+        }
+
+        f = new File(projectRoot.getPath() + "/nbproject/configs/android_1.properties");
+        if (!f.exists()) {
+
+            EditableProperties androidd = new EditableProperties(true);
+            androidd.put(ConfigUtils.DISPLAY_NAME_PROP, Bundle.LBL_AndroidDevice());
+            androidd.put(Device.TYPE_PROP, PlatformManager.ANDROID_TYPE);//NOI18N
+            androidd.put(Device.DEVICE_PROP, Device.DEVICE);//NOI18N
+            ConfigUtils.createConfigFile(projectRoot, PlatformManager.ANDROID_TYPE, androidd);//NOI18N
+        }
+    }
+
+    @Override
+    public Panel<WizardDescriptor>[] createInitPanels() {
+        return new Panel[0];
+    }
+
+    @Override
+    public void initialize(WizardDescriptor wizardDescriptor) {
     }
 }

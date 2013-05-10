@@ -168,7 +168,7 @@ public class JFXSigningPanel extends javax.swing.JPanel implements DocumentListe
         warningSigning = new javax.swing.JLabel();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
 
-        setPreferredSize(new java.awt.Dimension(570, 215));
+        setPreferredSize(new java.awt.Dimension(570, 240));
         setLayout(new java.awt.GridBagLayout());
 
         buttonGroupSigning.add(radioButtonSelfSign);
@@ -201,7 +201,7 @@ public class JFXSigningPanel extends javax.swing.JPanel implements DocumentListe
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 10, 10, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 10, 10, 0);
         add(radioButtonSpecKey, gridBagConstraints);
         radioButtonSpecKey.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "AN_JFXSigningPanel.radioButtonSpecKey.text")); // NOI18N
         radioButtonSpecKey.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "AD_JFXSigningPanel.radioButtonSpecKey.text")); // NOI18N
@@ -288,7 +288,7 @@ public class JFXSigningPanel extends javax.swing.JPanel implements DocumentListe
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 20, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 20, 3, 0);
         add(labelKeyPassword, gridBagConstraints);
         labelKeyPassword.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "AN_JFXSigningPanel.labelKeyPassword.text")); // NOI18N
         labelKeyPassword.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "AD_JFXSigningPanel.labelKeyPassword.text")); // NOI18N
@@ -299,19 +299,19 @@ public class JFXSigningPanel extends javax.swing.JPanel implements DocumentListe
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE;
         gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.insets = new java.awt.Insets(0, 5, 12, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 5, 3, 0);
         add(passwordFieldKey, gridBagConstraints);
 
-        warningSigning.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        warningSigning.setPreferredSize(new java.awt.Dimension(400, 35));
+        warningSigning.setText(org.openide.util.NbBundle.getMessage(JFXSigningPanel.class, "JFXSigningPanel.warningSigning.text")); // NOI18N
+        warningSigning.setVerticalAlignment(javax.swing.SwingConstants.BOTTOM);
+        warningSigning.setPreferredSize(new java.awt.Dimension(400, 40));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.LINE_START;
-        gridBagConstraints.weightx = 0.1;
-        gridBagConstraints.insets = new java.awt.Insets(5, 10, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 10, 0, 10);
         add(warningSigning, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -364,6 +364,7 @@ public class JFXSigningPanel extends javax.swing.JPanel implements DocumentListe
         if(!radioButtonSpecKey.isSelected()) {
             warningSigning.setText(NbBundle.getMessage(JFXSigningPanel.class, "JFXSigningPanel.warningSigning.message")); //NOI18N
             warningSigning.setVisible(true);
+            desc.setValid(true);
         } else {
             if(textFieldPath.getDocument().getLength()>0 && passwordField.getDocument().getLength()>5 && 
                     textFieldKeyAlias.getDocument().getLength()>0 && passwordFieldKey.getDocument().getLength()>5 ) {

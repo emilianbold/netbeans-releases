@@ -98,9 +98,9 @@ public class IOSActionProvider implements ActionProvider {
             if (COMMAND_BUILD.equals(command)) {
                 build.perform(BuildPerformer.BUILD_IOS, p);
             } else if (COMMAND_CLEAN.equals(command)) {
-                build.perform(build.CLEAN_IOS, p);
+                build.perform(BuildPerformer.CLEAN_IOS, p);
             } else if (COMMAND_RUN.equals(command) || COMMAND_RUN_SINGLE.equals(command)) {
-                build.perform(build.RUN_IOS, p);
+                build.perform(BuildPerformer.RUN_IOS, p);
             }
         } catch (IllegalStateException ex) {
             NotifyDescriptor not = new NotifyDescriptor(

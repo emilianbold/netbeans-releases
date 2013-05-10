@@ -243,6 +243,11 @@ public class JQueryModel {
         }
 
         @Override
+        public String getSourceLabel() {
+            return delegate.getSourceLabel();
+        }
+
+        @Override
         public boolean isPlatform() {
             return delegate.isPlatform();
         }

@@ -86,7 +86,7 @@ public class BugtrackingUtilTest {
 
     @Test
     public void testIsNbRepositoryStringUrl() {        
-        assertFalse(BugtrackingUtil.isNbRepository("enembenem"));
+        assertFalse(NBBugzillaUtils.isNbRepository("enembenem"));
         urlTest("http://", VALID_HOSTS, false);
         urlTest("https://", VALID_HOSTS, false);
         urlTest("http://", INVALID_HOSTS, true);
@@ -109,9 +109,9 @@ public class BugtrackingUtilTest {
 
     private void urlTest(String protocol, String[] hosts, boolean fail) {
         for (String url : hosts) {
-            if(!fail && !BugtrackingUtil.isNbRepository(protocol + url)) {
+            if(!fail && !NBBugzillaUtils.isNbRepository(protocol + url)) {
                 fail(protocol + url + " is expected to be a netbeans bugzilla url");
-            } else if(fail && BugtrackingUtil.isNbRepository(protocol + url)) {
+            } else if(fail && NBBugzillaUtils.isNbRepository(protocol + url)) {
                 fail(protocol + url + " isn't expected to be a netbeans bugzilla url");
             }
         }
@@ -120,24 +120,24 @@ public class BugtrackingUtilTest {
     @Test(expected=NullPointerException.class)
     public void testIsNbRepositoryNullString() {
         String url = null;
-        BugtrackingUtil.isNbRepository(url);
+        NBBugzillaUtils.isNbRepository(url);
     }
 
     @Test
     public void testIsNbRepositoryRepo() {
-        assertFalse(BugtrackingUtil.isNbRepository(TestKit.getRepository(new BUTestRepository("enembenem")).getUrl()));
-        assertTrue(BugtrackingUtil.isNbRepository("https://netbeans.org/bugzilla"));        
+        assertFalse(NBBugzillaUtils.isNbRepository(TestKit.getRepository(new BUTestRepository("enembenem")).getUrl()));
+        assertTrue(NBBugzillaUtils.isNbRepository("https://netbeans.org/bugzilla"));        
     }
 
     @Test(expected=NullPointerException.class)
     public void testIsNbRepositoryNullRepo() {
         BUTestRepository repo = null;
-        assertFalse(BugtrackingUtil.isNbRepository(TestKit.getRepository(repo).getUrl()));
+        assertFalse(NBBugzillaUtils.isNbRepository(TestKit.getRepository(repo).getUrl()));
     }
 
     @Test(expected=NullPointerException.class)
     public void testIsNbRepositoryRepoNullUrl() {
-        assertFalse(BugtrackingUtil.isNbRepository(TestKit.getRepository(new BUTestRepository(null)).getUrl()));
+        assertFalse(NBBugzillaUtils.isNbRepository(TestKit.getRepository(new BUTestRepository(null)).getUrl()));
     }
 
     private class BUTestRepository extends TestRepository {

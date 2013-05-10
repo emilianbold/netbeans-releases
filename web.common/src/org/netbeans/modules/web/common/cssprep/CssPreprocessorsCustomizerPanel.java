@@ -42,8 +42,11 @@
 package org.netbeans.modules.web.common.cssprep;
 
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,15 +58,21 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.LayoutStyle;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.awt.Mnemonics;
 import org.openide.util.HelpCtx;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 /**
@@ -132,21 +141,28 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
         return result;
     }
 
+    @NbBundle.Messages({
+        "# {0} - customizer name",
+        "# {1} - message",
+        "CssPreprocessorsCustomizerPanel.message={0}: {1}",
+    })
     void validateCustomizers() {
-        String warning = null; // NOI18N
+        String message = null; // NOI18N
         for (CssPreprocessorImplementation.Customizer customizer : customizers) {
             if (!customizer.isValid()) {
                 String errorMessage = customizer.getErrorMessage();
                 Parameters.notNull("errorMessage", errorMessage); // NOI18N
-                category.setErrorMessage(errorMessage);
+                category.setErrorMessage(Bundle.CssPreprocessorsCustomizerPanel_message(customizer.getDisplayName(), errorMessage));
                 category.setValid(false);
                 return;
             }
-            if (warning == null) {
-                warning = customizer.getWarningMessage();
+            String warning = customizer.getWarningMessage();
+            if (message == null
+                    && warning != null) {
+                message = Bundle.CssPreprocessorsCustomizerPanel_message(customizer.getDisplayName(), warning);
             }
         }
-        category.setErrorMessage(warning != null ? warning : " "); // NOI18N
+        category.setErrorMessage(message != null ? message : " "); // NOI18N
         category.setValid(true);
     }
 
@@ -180,21 +196,47 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
     private void initComponents() {
 
         mainTabbedPane = new JTabbedPane();
+        optionsLabel = new JLabel();
+
+        Mnemonics.setLocalizedText(optionsLabel, NbBundle.getMessage(CssPreprocessorsCustomizerPanel.class, "CssPreprocessorsCustomizerPanel.optionsLabel.text")); // NOI18N
+        optionsLabel.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
+                optionsLabelMouseEntered(evt);
+            }
+            public void mousePressed(MouseEvent evt) {
+                optionsLabelMousePressed(evt);
+            }
+        });
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addComponent(mainTabbedPane, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(0, 0, Short.MAX_VALUE)
+                .addComponent(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addComponent(mainTabbedPane, GroupLayout.DEFAULT_SIZE, 300, Short.MAX_VALUE)
+            .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(mainTabbedPane, GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void optionsLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_optionsLabelMouseEntered
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+    }//GEN-LAST:event_optionsLabelMouseEntered
+
+    private void optionsLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_optionsLabelMousePressed
+        OptionsDisplayer.getDefault().open(CssPreprocessors.OPTIONS_PATH);
+    }//GEN-LAST:event_optionsLabelMousePressed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JTabbedPane mainTabbedPane;
+    private JLabel optionsLabel;
     // End of variables declaration//GEN-END:variables
 
     @Override

@@ -97,7 +97,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
     private static Set<Modifier> accessModifiers = EnumSet.of(Modifier.PRIVATE, Modifier.PROTECTED, Modifier.PUBLIC);
     private static List<Modifier> MODIFIERS = Arrays.asList(Modifier.PRIVATE, null, Modifier.PROTECTED, Modifier.PUBLIC);
     private final EncapsulateFieldRefactoring refactoring;
-    public static final String CLASS_FIELD_PREFIX = "_"; // NOI18N
+
     /**
      * path in source with field declaration; refactoring.getSelectedObject()
      * may contain path to a reference
@@ -390,55 +390,6 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         return false;
     }
 
-    /**
-     * Removes the class field prefix from the identifer of a field. For
-     * example, if the class field prefix is "_", the identifier "_name" is
-     * stripped to become "name".
-     *
-     * @param identifierString The identifer to strip.
-     * @return The stripped identifier.
-     */
-    private static String stripPrefix(String identifierString) {
-        String stripped;
-        if (identifierString.startsWith(CLASS_FIELD_PREFIX) && identifierString.length() > 1) {
-            stripped = identifierString.substring(CLASS_FIELD_PREFIX.length());
-        } else {
-            stripped = identifierString;
-        }
-        return stripped;
-    }
-
-    private static StringBuilder getCapitalizedName(VariableElement field) {
-        StringBuilder name = new StringBuilder(stripPrefix(field.getSimpleName().toString()));
-
-        //Beans naming convention, #165241
-        if (name.length() > 1 && Character.isUpperCase(name.charAt(1))) {
-            return name;
-        }
-
-        name.setCharAt(0, Character.toUpperCase(name.charAt(0)));
-        return name;
-    }
-
-    public static String computeSetterName(VariableElement field) {
-        StringBuilder name = getCapitalizedName(field);
-
-        name.insert(0, "set"); //NOI18N
-        return name.toString();
-    }
-
-    public static String computeGetterName(VariableElement field) {
-        StringBuilder name = getCapitalizedName(field);
-
-        if (TypeKind.BOOLEAN == field.asType().getKind()) { // XXX check autoboxing???
-            name.insert(0, "is"); //NOI18N
-        } else {
-            name.insert(0, "get"); //NOI18N
-        }
-
-        return name.toString();
-    }
-
     @Override
     public Problem prepare(RefactoringElementsBag bag) {
 
@@ -605,24 +556,24 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                     ClassTree nct = node;
                     List<Tree> newMembers = new ArrayList<Tree>();
                     int getterIdx = 0;
-                        VariableTree pcs = null;
-                        if (descs.get(0).refactoring.isGeneratePropertyChangeSupport()) {
-                            pcs = getPropertyChangeSupport(clazz, "java.beans.PropertyChangeSupport"); //NOI18N
-                            if (pcs == null) {
-                                pcs = createPropertyChangeSupport("java.beans.PropertyChangeSupport", "propertyChangeSupport");//NOI18N
-                                newMembers.add(pcs);
-                            }
+                    VariableTree pcs = null;
+                    if (descs.get(0).refactoring.isGeneratePropertyChangeSupport()) {
+                        pcs = getPropertyChangeSupport(clazz, "java.beans.PropertyChangeSupport"); //NOI18N
+                        if (pcs == null) {
+                            pcs = createPropertyChangeSupport("java.beans.PropertyChangeSupport", "propertyChangeSupport");//NOI18N
+                            newMembers.add(pcs);
                         }
+                    }
 
-                        VariableTree vcs = null;
-                        if (descs.get(0).refactoring.isGenerateVetoableChangeSupport()) {
-                            vcs = getPropertyChangeSupport(clazz, "java.beans.VetoableChangeSupport");//NOI18N
-                            if (vcs == null) {
-                                vcs = createPropertyChangeSupport("java.beans.VetoableChangeSupport", "vetoableChangeSupport");//NOI18N
-                                newMembers.add(vcs);
-                            }
+                    VariableTree vcs = null;
+                    if (descs.get(0).refactoring.isGenerateVetoableChangeSupport()) {
+                        vcs = getPropertyChangeSupport(clazz, "java.beans.VetoableChangeSupport");//NOI18N
+                        if (vcs == null) {
+                            vcs = createPropertyChangeSupport("java.beans.VetoableChangeSupport", "vetoableChangeSupport");//NOI18N
+                            newMembers.add(vcs);
                         }
-                        
+                    }
+                    CodeStyle cs = RefactoringUtils.getCodeStyle(workingCopy);
                     for (EncapsulateDesc desc : descs) {
                         VariableTree propName = createPropName(clazz, desc);
                         if (pcs!=null) {
@@ -633,6 +584,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                                 desc.refactoring.getGetterName(),
                                 desc.refactoring.getSetterName(),
                                 desc.refactoring.getMethodModifiers(),
+                                cs,
                                 pcs,
                                 vcs,
                                 propName);
@@ -989,17 +941,18 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         }
 
         private MethodTree[] createGetterAndSetter(
-                VariableElement field, String getterName,
-                String setterName, Set<Modifier> useModifiers,
+                VariableElement field, String getterName, String setterName,
+                Set<Modifier> useModifiers, CodeStyle cs,
                 VariableTree propertyChange, VariableTree vetoableChange, VariableTree propName) {
-
-
-            String fieldName = field.getSimpleName().toString();
             boolean staticMod = field.getModifiers().contains(Modifier.STATIC);
+            String fieldName = CodeStyleUtils.removePrefixSuffix(field.getSimpleName(),
+                    staticMod ? cs.getStaticFieldNamePrefix() : cs.getFieldNamePrefix(),
+                    staticMod ? cs.getStaticFieldNameSuffix() : cs.getFieldNameSuffix());
+            
             String longName = (staticMod ? "" : "this.") + fieldName;//NOI18N
-            String oldName = "old" + getCapitalizedName(field);//NOI18N
-            String parName = staticMod ? "a" + getCapitalizedName(field) : Utilities.isJavaIdentifier(stripPrefix(fieldName)) ? stripPrefix(fieldName) : fieldName; //NOI18N
-            String getterBody = "{return " + fieldName + ";}"; //NOI18N
+            String oldName = "old" + CodeStyleUtils.getCapitalizedName(fieldName);//NOI18N
+            String parName = staticMod ? "a" + CodeStyleUtils.getCapitalizedName(fieldName) : fieldName; //NOI18N
+            String getterBody = "{return " + field.getSimpleName() + ";}"; //NOI18N
             StringBuilder setterBody = new StringBuilder();
             setterBody.append("{");//NOI18N
 

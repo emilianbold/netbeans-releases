@@ -46,10 +46,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.bugtracking.APIAccessor;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 
@@ -119,17 +119,7 @@ public class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
     }
 
     @Override
-    protected RepositoryImpl getRepository(DataObject dataObj) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public RepositoryImpl getRepository(Project project, boolean askIfUnknown) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-
-    @Override
-    public RepositoryImpl getRepository(File file, String issueId, boolean askIfUnknown) {
+    public RepositoryImpl getRepository(File file, boolean askIfUnknown) {
         if (file == null) {
             throw new IllegalArgumentException("file is <null>");
         }
@@ -146,7 +136,7 @@ public class DummyBugtrackingOwnerSupport extends BugtrackingOwnerSupport {
     }
 
     @Override
-    protected RepositoryImpl getRepositoryForContext(File context, String issueId, boolean askIfUnknown) {
+    protected RepositoryImpl getRepositoryForContext(File context, boolean askIfUnknown) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 

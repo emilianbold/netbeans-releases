@@ -10,7 +10,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.GET;
 import javax.ws.rs.Produces;
-import org.codehaus.jettison.json.JSONObject;
 
 /**
  * REST Web Service
@@ -31,11 +30,11 @@ public class CcCI1CClass {
 
     /**
      * Retrieves representation of an instance of o.n.m.ws.qaf.rest.patterns.CcCI1CClass
-     * @return an instance of org.codehaus.jettison.json.JSONObject
+     * @return an instance of java.lang.String
      */
     @GET
     @Produces("application/json")
-    public JSONObject getJson() {
+    public String getJson() {
         //TODO return proper representation object
         throw new UnsupportedOperationException();
     }

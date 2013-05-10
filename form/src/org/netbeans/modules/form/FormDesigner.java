@@ -736,9 +736,7 @@ public class FormDesigner {
     }
 
     Component getTopDesignComponentView() {
-        return topDesignComponent != null
-                ? (Component) replicator.getClonedComponent(topDesignComponent)
-                : null;
+        return (Component) replicator.getClonedComponent(topDesignComponent);
     }
 
     // NOTE: does not create a new Point instance
@@ -1665,12 +1663,11 @@ public class FormDesigner {
 //            return;
 //        }
 
-        if (comp.isShowing())
-            return; // component is showing
-        if (!isInDesigner(metacomp))
-            return; // component is not in designer
+        if (comp.isShowing() || !isInDesigner(metacomp) || metacomp == topDesignComponent) {
+            return;
+        }
 
-        Component topComp = (Component) getComponent(topDesignComponent);
+        Component topComp = getTopDesignComponentView();
         if (topComp == null || !topComp.isShowing())
             return; // designer is not showing
 
@@ -2500,7 +2497,7 @@ public class FormDesigner {
         @Override
         public void run() {
             if (events == null) {
-                Object originalVisualComp = (topDesignComponent == null) ? null : replicator.getClonedComponent(topDesignComponent);
+                Object originalVisualComp = getTopDesignComponentView();
                 Dimension originalSize =  originalVisualComp instanceof Component ?
                     ((Component)originalVisualComp).getSize() : null;
 

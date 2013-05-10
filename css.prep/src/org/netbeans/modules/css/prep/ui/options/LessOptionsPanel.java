@@ -99,7 +99,9 @@ public final class LessOptionsPanel extends JPanel {
 
         // listeners
         lessPathTextField.getDocument().addDocumentListener(new DefaultDocumentListener());
-        lessOutputOnErrorCheckBox.addItemListener(new DefaultItemListener());
+        DefaultItemListener defaultItemListener = new DefaultItemListener();
+        lessOutputOnErrorCheckBox.addItemListener(defaultItemListener);
+        lessDebugCheckBox.addItemListener(defaultItemListener);
     }
 
     public String getLessPath() {
@@ -116,6 +118,14 @@ public final class LessOptionsPanel extends JPanel {
 
     public void setLessOutputOnError(boolean outputOnError) {
         lessOutputOnErrorCheckBox.setSelected(outputOnError);
+    }
+
+    public boolean getLessDebug() {
+        return lessDebugCheckBox.isSelected();
+    }
+
+    public void setLessDebug(boolean debug) {
+        lessDebugCheckBox.setSelected(debug);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -144,6 +154,7 @@ public final class LessOptionsPanel extends JPanel {
         lessPathHintLabel = new JLabel();
         installLessLabel = new JLabel();
         lessOutputOnErrorCheckBox = new JCheckBox();
+        lessDebugCheckBox = new JCheckBox();
 
         lessPathLabel.setLabelFor(lessPathTextField);
         Mnemonics.setLocalizedText(lessPathLabel, NbBundle.getMessage(LessOptionsPanel.class, "LessOptionsPanel.lessPathLabel.text")); // NOI18N
@@ -176,6 +187,8 @@ public final class LessOptionsPanel extends JPanel {
 
         Mnemonics.setLocalizedText(lessOutputOnErrorCheckBox, NbBundle.getMessage(LessOptionsPanel.class, "LessOptionsPanel.lessOutputOnErrorCheckBox.text")); // NOI18N
 
+        Mnemonics.setLocalizedText(lessDebugCheckBox, NbBundle.getMessage(LessOptionsPanel.class, "LessOptionsPanel.lessDebugCheckBox.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -195,7 +208,9 @@ public final class LessOptionsPanel extends JPanel {
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lessPathSearchButton))))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(lessOutputOnErrorCheckBox)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(lessOutputOnErrorCheckBox)
+                    .addComponent(lessDebugCheckBox))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -215,6 +230,8 @@ public final class LessOptionsPanel extends JPanel {
                     .addComponent(lessPathHintLabel))
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(lessOutputOnErrorCheckBox)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(lessDebugCheckBox)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -252,6 +269,7 @@ public final class LessOptionsPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel installLessLabel;
+    private JCheckBox lessDebugCheckBox;
     private JCheckBox lessOutputOnErrorCheckBox;
     private JButton lessPathBrowseButton;
     private JLabel lessPathHintLabel;

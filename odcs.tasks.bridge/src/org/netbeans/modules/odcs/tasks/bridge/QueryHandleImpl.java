@@ -52,8 +52,8 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
 import org.openide.util.WeakListeners;
@@ -106,7 +106,7 @@ public class QueryHandleImpl extends QueryHandle implements QueryDescriptor, Act
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        KenaiUtil.openQuery(query, Query.QueryMode.SHOW_ALL, true);
+        TeamUtil.openQuery(query, Query.QueryMode.SHOW_ALL, true);
     }
 
     @Override
@@ -146,7 +146,7 @@ public class QueryHandleImpl extends QueryHandle implements QueryDescriptor, Act
     private void registerIssues() {
         issues = query.getIssues();
         for (Issue issue : issues) {
-            KenaiUtil.addCacheListener(issue, this);
+            TeamUtil.addCacheListener(issue, this);
         }
     }
 

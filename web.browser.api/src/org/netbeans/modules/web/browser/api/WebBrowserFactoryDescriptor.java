@@ -42,7 +42,8 @@
 package org.netbeans.modules.web.browser.api;
 
 import java.awt.Image;
-import javax.swing.Icon;
+import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
+import org.netbeans.modules.web.browser.spi.BrowserURLMapperProvider;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Factory;
@@ -131,6 +132,13 @@ final class WebBrowserFactoryDescriptor {
 
     public Image getIconImage() {
         return iconImage;
+    }
+
+    BrowserURLMapperImplementation getBrowserURLMapper() {
+        if (factory instanceof BrowserURLMapperProvider) {
+            return ((BrowserURLMapperProvider)factory).getBrowserURLMapper();
+        }
+        return null;
     }
 
     @Override

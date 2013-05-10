@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.cordova.platforms.SDK;
@@ -61,6 +62,7 @@ public class Target implements SDK {
     private String name;
     private HashMap<String, String> props;
     private int id;
+    private static final Logger LOG = Logger.getLogger(Target.class.getName());
 
     private Target() {
         this.props = new HashMap();
@@ -96,6 +98,10 @@ public class Target implements SDK {
                     //current.props.put(lastProp, current.props.get(lastProp) + line);
                 }
             }
+        }
+        if (result.isEmpty()) {
+            LOG.warning("no targets found");
+            LOG.warning("output:" + output);
         }
         return result;
     }

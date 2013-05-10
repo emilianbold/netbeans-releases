@@ -51,9 +51,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import static org.netbeans.modules.maven.j2ee.ui.wizard.Bundle.*;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.validation.api.ui.ValidationGroup;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle.Messages;
@@ -87,14 +89,17 @@ public abstract class BaseWizardIterator implements WizardDescriptor.BackgroundI
         // Saving server information for project
         MavenProjectSupport.setJ2eeVersion(project, j2eeVersion);
         MavenProjectSupport.setServerInstanceID(project, instanceID);
-        MavenProjectSupport.setJDK(project, null);
+
+        // Fixing #225551
+        AuxiliaryProperties properties = project.getLookup().lookup(AuxiliaryProperties.class);
+        properties.put(Constants.HINT_JDK_PLATFORM, null, true);
     }
 
     protected void saveServerToPom(Project project) {
         String serverID = (String) wiz.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
 
         MavenProjectSupport.setServerID(project, serverID);
-        MavenProjectSupport.createDDIfRequired(project, serverID);
+        MavenProjectSupport.createWebXMLIfRequired(project, serverID);
     }
 
     @Override

@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelInterceptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -63,6 +64,7 @@ public class KnockoutModelInterceptor implements ModelInterceptor {
     // for unit testing
     static boolean disabled = false;
 
+    @NbBundle.Messages("label_knockout=Knockout")
     @Override
     public Collection<JsObject> interceptGlobal(ModelElementFactory factory) {
         if (disabled) {
@@ -72,7 +74,7 @@ public class KnockoutModelInterceptor implements ModelInterceptor {
         InputStream is = getClass().getClassLoader().getResourceAsStream(
                 "org/netbeans/modules/javascript2/knockout/model/resources/knockout-2.2.1.model"); // NOI18N
         try {
-            return Collections.singleton(factory.loadGlobalObject(is));
+            return Collections.singleton(factory.loadGlobalObject(is, Bundle.label_knockout()));
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
             return Collections.emptySet();

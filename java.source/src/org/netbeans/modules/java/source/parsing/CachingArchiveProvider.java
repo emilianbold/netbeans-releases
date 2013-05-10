@@ -58,11 +58,11 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Utilities;
 
 
@@ -161,6 +161,12 @@ public final class CachingArchiveProvider {
         }
     }
 
+    /**
+     * Maps ct.sym back to the base boot classpath root.
+     * @param archiveOrCtSym the root or ct.sym folder to transform.
+     * @return the boot classpath root corresponding to the ct.sym folder
+     * or the given boot classpath root.
+     */
     @NonNull
     public URL mapCtSymToJar (@NonNull final URL archiveOrCtSym) {
         final URI result = ctSymToJar.get(toURI(archiveOrCtSym));
@@ -172,6 +178,28 @@ public final class CachingArchiveProvider {
             }
         }
         return archiveOrCtSym;
+    }
+
+    /**
+     * Checks if the given boot classpath root has the the ct.sym equivalent.
+     * @param root the root to check
+     * @return true if there is a ct.sym folder corresponding to given boot classpath
+     * root
+     */
+    public boolean hasCtSym (@NonNull final URL root) {
+        final URL fileURL = FileUtil.getArchiveFile(root);
+        if (fileURL == null) {
+            return false;
+        }
+        final File f = Utilities.toFile(fileURL);
+        if (f == null || !f.exists()) {
+            return false;
+        }
+        synchronized (this) {
+            final Pair<File,String> res = mapJarToCtSym(f, root);
+            return res.second() != null;
+        }
+
     }
 
     /**
@@ -205,8 +233,8 @@ public final class CachingArchiveProvider {
                 if (f.isFile()) {
                     final Pair<File,String> resolved = mapJarToCtSym(f, root);
                     return new CachingArchive(
-                            resolved.first,
-                            resolved.second,
+                            resolved.first(),
+                            resolved.second(),
                             cacheFile);
                 }
                 else {

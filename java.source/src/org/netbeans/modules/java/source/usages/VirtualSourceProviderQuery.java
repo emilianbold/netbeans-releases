@@ -62,6 +62,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
@@ -131,7 +132,7 @@ public final class VirtualSourceProviderQuery {
                    m.put(ext, Pair.of(prov, l));
                }
                else {
-                   l = p.second;
+                   l = p.second();
                }
                try {
                    final File file = Utilities.toFile(indexable.getURL().toURI());
@@ -147,8 +148,8 @@ public final class VirtualSourceProviderQuery {
         
         final R r = new R (root, file2indexables);
         for (Pair<VirtualSourceProvider,List<File>> p : m.values()) {
-            final VirtualSourceProvider prov = p.first;
-            final List<File> tf = p.second;
+            final VirtualSourceProvider prov = p.first();
+            final List<File> tf = p.second();
             r.setProvider(prov);
             prov.translate(tf, root,r);
         }

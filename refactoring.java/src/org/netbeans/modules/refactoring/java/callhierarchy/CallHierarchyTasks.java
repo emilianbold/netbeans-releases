@@ -63,6 +63,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.plugins.FindUsagesVisitor;
 import org.netbeans.modules.refactoring.java.plugins.JavaWhereUsedQueryPlugin;
 import org.openide.cookies.EditorCookie;
@@ -113,7 +114,7 @@ final class CallHierarchyTasks {
         }
     }
     
-    public static void resolveRoot(final Lookup lookup, final boolean isCallerGraph, final Task<Call> rootCallback) {
+    public static void resolveRoot(final Lookup lookup, final boolean searchFromBase, final boolean isCallerGraph, final Task<Call> rootCallback) {
         JavaSource js = null;
         RootResolver resolver = null;
         EditorCookie ec = lookup.lookup(EditorCookie.class);
@@ -121,7 +122,7 @@ final class CallHierarchyTasks {
             JEditorPane openedPane = NbDocument.findRecentEditorPane(ec);
             Document doc = ec.getDocument();
             js = JavaSource.forDocument(doc);
-            resolver = new RootResolver(openedPane.getCaretPosition(), isCallerGraph);
+            resolver = new RootResolver(openedPane.getCaretPosition(), isCallerGraph, searchFromBase);
         }
 //        else {
             // XXX resolve Node.class
@@ -129,13 +130,13 @@ final class CallHierarchyTasks {
         postResolveRoot(js, resolver, rootCallback);
     }   
     
-    static void resolveRoot(TreePathHandle selection, boolean isCallerGraph, Task<Call> rootCallback) {
+    static void resolveRoot(TreePathHandle selection, final boolean searchFromBase, boolean isCallerGraph, Task<Call> rootCallback) {
         JavaSource js = JavaSource.forFileObject(selection.getFileObject());
         if (js==null) {
-            Logger.getLogger(CallHierarchyTasks.class.getName()).log(Level.INFO, "Cannot get JavaSource for " + selection.getFileObject().getPath());
+            Logger.getLogger(CallHierarchyTasks.class.getName()).log(Level.INFO, "Cannot get JavaSource for {0}", selection.getFileObject().getPath());
             return;
         }
-        postResolveRoot(js, new RootResolver(selection, isCallerGraph), rootCallback);
+        postResolveRoot(js, new RootResolver(selection, isCallerGraph, searchFromBase), rootCallback);
     }
     
 //    static void  resolveRoot(JavaSource src, int position, boolean isCallerGraph, Task<Call> rootCallback) {
@@ -198,16 +199,19 @@ final class CallHierarchyTasks {
         private int offset = -1;
         private TreePathHandle tHandle;
         private final boolean isCallerGraph;
+        private final boolean searchFromBase;
         private Call root;
 
-        public RootResolver(TreePathHandle tHandle, boolean isCallerGraph) {
+        public RootResolver(TreePathHandle tHandle, boolean isCallerGraph, boolean searchFromBase) {
             this.tHandle = tHandle;
             this.isCallerGraph = isCallerGraph;
+            this.searchFromBase = searchFromBase;
         }
 
-        public RootResolver(int offset, boolean isCallerGraph) {
+        public RootResolver(int offset, boolean isCallerGraph, boolean searchFromBase) {
             this.offset = offset;
             this.isCallerGraph = isCallerGraph;
+            this.searchFromBase = searchFromBase;
         }
 
         @Override
@@ -234,7 +238,13 @@ final class CallHierarchyTasks {
                 tpath = tpath.getParentPath();
             }
             
-            if (method != null) {
+            if (isCallerGraph && method != null) {
+                if(this.searchFromBase) {
+                    Collection<ExecutableElement> overriddenMethods = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement)method, javac);
+                    if(!overriddenMethods.isEmpty()) {
+                        method = overriddenMethods.iterator().next();
+                    }
+                }
                 root = Call.createRoot(javac, tpath, method, isCallerGraph);
             }
         }

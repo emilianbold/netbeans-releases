@@ -112,10 +112,10 @@ import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.StyleConstants;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CancellableTask;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
@@ -145,7 +145,6 @@ import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.api.java.source.matching.Occurrence;
 import org.netbeans.modules.java.hints.errors.CreateElementUtilities;
-import org.netbeans.modules.java.hints.providers.spi.PositionRefresherHelper;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -443,8 +442,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             String guessedName = Utilities.getName(resolved.getLeaf());
             if (guessedName == null) guessedName = "name";
             Scope s = info.getTrees().getScope(resolved);
-            Fix variable = isVariable ? new IntroduceFix(h, info.getJavaSource(), variableRewrite ? guessedName : Utilities.makeNameUnique(info, s, guessedName), duplicatesForVariable.size() + 1, IntroduceKind.CREATE_VARIABLE) : null;
-            Fix constant = isConstant ? new IntroduceFix(h, info.getJavaSource(), variableRewrite ? guessedName : Utilities.makeNameUnique(info, info.getTrees().getScope(constantTarget), Utilities.toConstantName(guessedName)), duplicatesForConstant.size() + 1, IntroduceKind.CREATE_CONSTANT) : null;
+            CodeStyle cs = CodeStyle.getDefault(info.getFileObject());
+            Fix variable = isVariable ? new IntroduceFix(h, info.getJavaSource(), variableRewrite ? guessedName : Utilities.makeNameUnique(info, s, guessedName, cs.getLocalVarNamePrefix(), cs.getLocalVarNameSuffix()), duplicatesForVariable.size() + 1, IntroduceKind.CREATE_VARIABLE) : null;
+            Fix constant = isConstant ? new IntroduceFix(h, info.getJavaSource(), variableRewrite ? guessedName : Utilities.makeNameUnique(info, info.getTrees().getScope(constantTarget), Utilities.toConstantName(guessedName), cs.getStaticFieldNamePrefix(), cs.getStaticFieldNameSuffix()), duplicatesForConstant.size() + 1, IntroduceKind.CREATE_CONSTANT) : null;
             Fix parameter = isVariable ? new IntroduceParameterFix(h) : null;
             Fix field = null;
             Fix methodFix = null;
@@ -466,7 +466,18 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                 if (resolved.getLeaf().getKind() == Kind.VARIABLE) {
                     //the variable name would incorrectly clash with itself:
-                    guessedName = Utilities.guessName(info, resolved, resolved.getParentPath());
+                    guessedName = Utilities.guessName(info, resolved, resolved.getParentPath(), cs.getFieldNamePrefix(), cs.getFieldNameSuffix());
+                } else if (!variableRewrite) {
+                    TreePath pathToClass = resolved;
+
+                    while (pathToClass != null && !TreeUtilities.CLASS_TREE_KINDS.contains(pathToClass.getLeaf().getKind())) {
+                        pathToClass = pathToClass.getParentPath();
+                    }
+                    
+                    if (pathToClass != null) { //XXX: should actually produce two different names: one when replacing duplicates, one when not replacing them
+                        guessedName = Utilities.makeNameUnique(info, info.getTrees().getScope(pathToClass),
+                                guessedName, cs.getFieldNamePrefix(), cs.getFieldNameSuffix());
+                    }
                 }
 
                 field = new IntroduceFieldFix(h, info.getJavaSource(), guessedName, duplicatesForConstant.size() + 1, initilizeIn, statik, allowFinalInCurrentMethod);
@@ -794,7 +805,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         return true;
     }
 
-    private static final Set<ElementKind> LOCAL_VARIABLES = EnumSet.of(ElementKind.EXCEPTION_PARAMETER, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER);
+    private static final Set<ElementKind> LOCAL_VARIABLES = EnumSet.of(ElementKind.EXCEPTION_PARAMETER, ElementKind.LOCAL_VARIABLE, ElementKind.PARAMETER, ElementKind.RESOURCE_VARIABLE);
 
     private static TreePath findStatement(TreePath statementPath) {
         while (    statementPath != null

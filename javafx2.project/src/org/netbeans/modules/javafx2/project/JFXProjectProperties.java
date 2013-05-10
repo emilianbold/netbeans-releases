@@ -198,10 +198,12 @@ public final class JFXProjectProperties {
     // Deployment - native packaging
     public static final String JAVAFX_NATIVE_BUNDLING_ENABLED = "javafx.native.bundling.enabled"; //NOI18N
     public static final String JAVAFX_NATIVE_BUNDLING_TYPE = "javafx.native.bundling.type"; //NOI18N
+    public static final String JAVASE_NATIVE_BUNDLING_ENABLED = "native.bundling.enabled"; //NOI18N
 
-    //
+    // Deployment - common and SE specific
     public static final String RUN_CP = "run.classpath";    //NOI18N
     public static final String BUILD_CLASSES = "build.classes.dir"; //NOI18N
+    public static final String JAVASE_KEEP_JFXRT_ON_CLASSPATH = "keep.javafx.runtime.on.classpath"; //NOI18N
     
     // Deployment - libraries download mode
     public static final String DOWNLOAD_MODE_LAZY_JARS = "download.mode.lazy.jars";   //NOI18N
@@ -481,6 +483,15 @@ public final class JFXProjectProperties {
             }
         }
         return false;
+    }
+    
+    // in SE project - keep jfxrt.jar on classpath
+    boolean keepJFXRTonCP;
+    public boolean getKeepJFXRTonCP() {
+        return keepJFXRTonCP;
+    }
+    public void setKeepJFXRTonCP(boolean enabled) {
+        this.keepJFXRTonCP = enabled;
     }
 
     // Deployment - Libraries Download Mode
@@ -1246,6 +1257,15 @@ public final class JFXProjectProperties {
     }
         
     public void store() throws IOException {
+        String fxEnabled = evaluator.getProperty(JFXProjectProperties.JAVAFX_ENABLED);
+        if(isTrue(fxEnabled)) {
+            storeFX();
+        } else {
+            storeSE();
+        }
+    }
+    
+    private void storeFX() throws IOException {
         updatePreloaderDependencies(CONFIGS);
         CONFIGS.storeActive();
         final EditableProperties ep = new EditableProperties(true);
@@ -1320,6 +1340,55 @@ public final class JFXProjectProperties {
             throw (IOException) mux.getException();
         }
     }
+
+    private void storeSE() throws IOException {
+        final EditableProperties ep = new EditableProperties(true);
+        final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        try {
+            final InputStream is = projPropsFO.getInputStream();
+            ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    try {
+                        ep.load(is);
+                    } finally {
+                        if (is != null) {
+                            is.close();
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (MutexException mux) {
+            throw (IOException) mux.getException();
+        }
+        setOrRemove(ep, JAVASE_NATIVE_BUNDLING_ENABLED, nativeBundlingEnabled ? "true" : null); //NOI18N
+        setOrRemove(ep, JAVASE_KEEP_JFXRT_ON_CLASSPATH, keepJFXRTonCP ? "true" : null); //NOI18N
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    OutputStream os = null;
+                    FileLock lock = null;
+                    try {
+                        lock = projPropsFO.lock();
+                        os = projPropsFO.getOutputStream(lock);
+                        ep.store(os);
+                    } finally {
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                        if (os != null) {
+                            os.close();
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (MutexException mux) {
+            throw (IOException) mux.getException();
+        }
+    }
     
     private void updatePreloaderComment(EditableProperties ep) {
         if(isTrue(ep.get(JFXProjectProperties.PRELOADER_ENABLED))) {
@@ -1375,34 +1444,37 @@ public final class JFXProjectProperties {
     }
     
     private void initNativeBundling(PropertyEvaluator eval) {
-        String enabled = eval.getProperty(JAVAFX_NATIVE_BUNDLING_ENABLED);
-        String bundleProp = eval.getProperty(JAVAFX_NATIVE_BUNDLING_TYPE);
-        nativeBundlingEnabled = isTrue(enabled);
-        nativeBundlingType = BundlingType.NONE;
-        if(bundleProp != null) {
-            if(bundleProp.equalsIgnoreCase(BundlingType.ALL.getValue())) {
-                nativeBundlingType = BundlingType.ALL;
-            } else {
-                if(bundleProp.equalsIgnoreCase(BundlingType.IMAGE.getValue())) {
-                    nativeBundlingType = BundlingType.IMAGE;
+        String fxEnabled = evaluator.getProperty(JFXProjectProperties.JAVAFX_ENABLED);
+        if(isTrue(fxEnabled)) {
+            String enabled = eval.getProperty(JAVAFX_NATIVE_BUNDLING_ENABLED);
+            String bundleProp = eval.getProperty(JAVAFX_NATIVE_BUNDLING_TYPE);
+            nativeBundlingEnabled = isTrue(enabled);
+            nativeBundlingType = BundlingType.NONE;
+            if(bundleProp != null) {
+                if(bundleProp.equalsIgnoreCase(BundlingType.ALL.getValue())) {
+                    nativeBundlingType = BundlingType.ALL;
                 } else {
-                    if(bundleProp.equalsIgnoreCase(BundlingType.INSTALLER.getValue())) {
-                        nativeBundlingType = BundlingType.INSTALLER;
+                    if(bundleProp.equalsIgnoreCase(BundlingType.IMAGE.getValue())) {
+                        nativeBundlingType = BundlingType.IMAGE;
                     } else {
-                        if(bundleProp.equalsIgnoreCase(BundlingType.DEB.getValue())) {
-                            nativeBundlingType = BundlingType.DEB;
+                        if(bundleProp.equalsIgnoreCase(BundlingType.INSTALLER.getValue())) {
+                            nativeBundlingType = BundlingType.INSTALLER;
                         } else {
-                            if(bundleProp.equalsIgnoreCase(BundlingType.DMG.getValue())) {
-                                nativeBundlingType = BundlingType.DMG;
+                            if(bundleProp.equalsIgnoreCase(BundlingType.DEB.getValue())) {
+                                nativeBundlingType = BundlingType.DEB;
                             } else {
-                                if(bundleProp.equalsIgnoreCase(BundlingType.EXE.getValue())) {
-                                    nativeBundlingType = BundlingType.EXE;
+                                if(bundleProp.equalsIgnoreCase(BundlingType.DMG.getValue())) {
+                                    nativeBundlingType = BundlingType.DMG;
                                 } else {
-                                    if(bundleProp.equalsIgnoreCase(BundlingType.MSI.getValue())) {
-                                        nativeBundlingType = BundlingType.MSI;
+                                    if(bundleProp.equalsIgnoreCase(BundlingType.EXE.getValue())) {
+                                        nativeBundlingType = BundlingType.EXE;
                                     } else {
-                                        if(bundleProp.equalsIgnoreCase(BundlingType.RPM.getValue())) {
-                                            nativeBundlingType = BundlingType.RPM;
+                                        if(bundleProp.equalsIgnoreCase(BundlingType.MSI.getValue())) {
+                                            nativeBundlingType = BundlingType.MSI;
+                                        } else {
+                                            if(bundleProp.equalsIgnoreCase(BundlingType.RPM.getValue())) {
+                                                nativeBundlingType = BundlingType.RPM;
+                                            }
                                         }
                                     }
                                 }
@@ -1411,11 +1483,15 @@ public final class JFXProjectProperties {
                     }
                 }
             }
+        } else {
+            String enabled = eval.getProperty(JAVASE_NATIVE_BUNDLING_ENABLED);
+            nativeBundlingEnabled = isTrue(enabled);
         }
     }
     
     private void initRest(PropertyEvaluator eval) {
         requestedRT = eval.getProperty(REQUEST_RT);
+        keepJFXRTonCP = isTrue(eval.getProperty(JAVASE_KEEP_JFXRT_ON_CLASSPATH));
     }
     
     private boolean isParentOf(File parent, File child) {

@@ -51,10 +51,6 @@ import java.lang.reflect.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.FactoryConfigurationError;
-import javax.xml.parsers.ParserConfigurationException;
 import org.openide.explorer.propertysheet.editors.XMLPropertyEditor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -72,15 +68,13 @@ import org.netbeans.modules.form.layoutdesign.LayoutComponent;
 import org.netbeans.modules.form.layoutdesign.support.SwingLayoutBuilder;
 
 import org.netbeans.modules.form.editors.EnumEditor;
-import org.netbeans.modules.form.project.ClassPathUtils;
-import org.netbeans.modules.java.source.queries.api.Function;
-import org.netbeans.modules.java.source.queries.api.Queries;
 import org.netbeans.modules.java.source.queries.api.QueryException;
 import org.openide.nodes.Node.Property;
 import org.openide.util.Lookup;
 import org.openide.util.TopologicalSortException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
+import org.xml.sax.InputSource;
 
 /**
  * XML persistence manager - responsible for saving/loading forms to/from XML.
@@ -101,6 +95,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
     private static final String NB61_VERSION = "1.6"; // NOI18N
     private static final String NB65_VERSION = "1.7"; // NOI18N
     private static final String NB71_VERSION = "1.8"; // NOI18N
+    private static final String NB74_VERSION = "1.9"; // NOI18N
 
     // XML elements names
     static final String XML_FORM = "Form"; // NOI18N
@@ -250,25 +245,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
         ErrorManager.getDefault().annotate(t,target);
     }
 
-    private DocumentBuilder getDocumentBuilder() throws PersistenceException {
-        // We don't use XMLUtil.parse() because there is a bug
-        // in the default JDK 6 DOM parser, see issue 181955
-        DocumentBuilderFactory factory;
-        try {
-            // We prefer Xerces parser because of issue 181955
-            ClassLoader classLoader = Lookup.getDefault().lookup(ClassLoader.class);
-            factory = DocumentBuilderFactory.newInstance("org.apache.xerces.jaxp.DocumentBuilderFactoryImpl", classLoader); // NOI18N
-        } catch (FactoryConfigurationError fce) {
-            factory = DocumentBuilderFactory.newInstance();
-        }
-        try {
-            return factory.newDocumentBuilder();
-        } catch (ParserConfigurationException pcex) {
-            PersistenceException pe = new PersistenceException(pcex, FormUtils.getBundleString("MSG_ERR_XMLParser")); // NOI18N
-            throw pe;
-        }
-    }
-    
     /** This method is used to check if the persistence manager can read the
      * given form (if it understands the form file format).
      * @return true if this persistence manager can load the form
@@ -281,8 +257,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
         FileObject formFile = formObject.getFormEntry().getFile();
         org.w3c.dom.Element mainElement;
         try {
-            DocumentBuilder builder = getDocumentBuilder();
-            Document document = builder.parse(new org.xml.sax.InputSource(formFile.getURL().toExternalForm()));
+            Document document = XMLUtil.parse(
+                new InputSource(formFile.getURL().toExternalForm()),
+                false, false, null, null);
             mainElement = document.getDocumentElement();
         }
         catch (IOException ex) {
@@ -340,8 +317,9 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
         org.w3c.dom.Element mainElement;
         try { // parse document, get the main element
-            DocumentBuilder builder = getDocumentBuilder();
-            Document document = builder.parse(new org.xml.sax.InputSource(formFile.getURL().toExternalForm()));
+            Document document = XMLUtil.parse(
+                new InputSource(formFile.getURL().toExternalForm()),
+                false, false, null, null);
             mainElement = document.getDocumentElement();
         }
         catch (IOException ex) {
@@ -1061,6 +1039,13 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 }
                 // subcomponents are set after reading from code [for some reason...]
                 visualContainer.initSubComponents(childComponents);
+                if (layoutSupport.getComponentCount() == 0) {
+                    RADVisualComponent[] visualSubComponents = visualContainer.getSubComponents();
+                    if (visualSubComponents.length > 0) {
+                        // no layout code was saved for simply added components, so need to add them now
+                        layoutSupport.addComponents(visualSubComponents, null, -1);
+                    }
+                }
                 if (layoutInitialized) { // successfully initialized - build the primary container
                     try { // some weird problems might occur - see issue 67890
                         layoutSupport.updatePrimaryContainer();
@@ -1537,18 +1522,20 @@ public class GandalfPersistenceManager extends PersistenceManager {
             CodeStructure.createStatement(
                             compExp, setBoundsMethod, boundsParams);
 
+            // create add method statement
+            CodeStructure.createStatement(contDelCodeExp,
+                                          getSimpleAddMethod(),
+                                          new CodeExpression[] { compExp });
+
             node = constrAttr.getNamedItem("layer"); // NOI18N
             if (node != null) {
-                String strValue = node.getNodeValue();
-                // create add method statement
-                CodeStructure.createStatement(
-                    contDelCodeExp,
-                    getAddWithConstrMethod(),
-                    new CodeExpression[] { compExp,
-                                           codeStructure.createExpression(
-                                               Integer.TYPE,
-                                               Integer.valueOf(strValue),
-                                               strValue) });
+                Object metacomp = compExp.getOrigin().getMetaObject();
+                if (metacomp instanceof RADVisualComponent) {
+                    Integer layer = (Integer) decodePrimitiveValue(node.getNodeValue(), Integer.class);
+                    if (layer.intValue() != javax.swing.JLayeredPane.DEFAULT_LAYER) {
+                        ((RADVisualComponent)metacomp).setAuxValue(RADVisualComponent.PROP_LAYER, layer);
+                    }
+                }
             }
         }
 
@@ -3516,15 +3503,19 @@ public class GandalfPersistenceManager extends PersistenceManager {
         }
 
         // components code
-        for (int i=0, n=layoutSupport.getComponentCount(); i < n; i++) {
-            code = layoutSupport.getComponentCode(i);
-            if (code != null) {
-                Iterator it = code.getStatementsIterator();
-                while (it.hasNext()) {
-                    saveCodeStatement((CodeStatement) it.next(), buf2, subIndent);
+        if (layoutSupport.hasComponentConstraints()
+                || formModel.getCurrentVersionLevel().ordinal() < FormModel.FormVersion.NB74.ordinal()) {
+            for (int i=0, n=layoutSupport.getComponentCount(); i < n; i++) {
+                code = layoutSupport.getComponentCode(i);
+                if (code != null) {
+                    Iterator it = code.getStatementsIterator();
+                    while (it.hasNext()) {
+                        saveCodeStatement((CodeStatement) it.next(), buf2, subIndent);
+                    }
                 }
             }
-        }
+        } // Otherwise optimizing: don't save lenghty XML for components added via simple add method.
+          // From our standard layouts this applies to OverlayLayout and FlowLayout with alignOnBaseline set.
 
         if (buf2.length() > 0) {
             buf.append(indent);
@@ -3541,6 +3532,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
                                      StringBuffer buf, String indent)
     {
         saveComponent(component, buf, indent);
+
+        if (component.isInLayeredPane()) {
+            formModel.raiseVersionLevel(FormModel.FormVersion.NB74, FormModel.FormVersion.NB74);
+            formModel.setMaxVersionLevel(FormModel.LATEST_VERSION);
+        }
 
         RADVisualContainer container = component.getParentContainer();
         if (container == null || container.getLayoutSupport() == null)
@@ -3704,29 +3700,6 @@ public class GandalfPersistenceManager extends PersistenceManager {
             return LAYOUT_CARD;
         }
 
-        // constraints of JLayeredPane (must be tested before AbsoluteLayout)
-        if (constr instanceof JLayeredPaneSupport.LayeredConstraints) {
-            int layer =
-                ((JLayeredPaneSupport.LayeredConstraints)constr).getLayer();
-            java.awt.Rectangle r =
-                ((JLayeredPaneSupport.LayeredConstraints)constr).getBounds();
-
-            buf.append(indent);
-            addLeafElementOpenAttr(
-                buf,
-                "JLayeredPaneConstraints", // NOI18N
-                new String[] { "x", "y", "width", "height", // NOI18N
-                               "layer", "position" }, // NOI18N
-                new String[] { Integer.toString(r.x),
-                               Integer.toString(r.y),
-                               Integer.toString(r.width),
-                               Integer.toString(r.height),
-                               Integer.toString(layer),
-                               "-1" }); // NOI18N
-
-            return LAYOUT_JLAYER;
-        }
-
         // constraints of AbsoluteLayout
         if (constr instanceof AbsoluteLayoutSupport.AbsoluteLayoutConstraints) {
             java.awt.Rectangle r =
@@ -3803,6 +3776,11 @@ public class GandalfPersistenceManager extends PersistenceManager {
         if (component == formModel.getTopRADComponent()) {
             auxValues = (auxValues == null) ? new TreeMap<String,Object>() : new TreeMap<String,Object>(auxValues);
             addFormSettings(auxValues);
+        } else if (component.getAuxValue(RADVisualComponent.PROP_LAYER) != null
+                   && (!(component instanceof RADVisualComponent) || !((RADVisualComponent)component).isInLayeredPane())) {
+            // don't save layer value for component that was moved away from JLayeredPane
+            auxValues = new TreeMap<String,Object>(auxValues);
+            auxValues.remove(RADVisualComponent.PROP_LAYER);
         }
         if (auxValues != null && auxValues.size() > 0) {
 //            buf.append("\n"); // NOI18N
@@ -6209,7 +6187,8 @@ public class GandalfPersistenceManager extends PersistenceManager {
                || NB60_VERSION.equals(ver)
                || NB61_VERSION.equals(ver)
                || NB65_VERSION.equals(ver)
-               || NB71_VERSION.equals(ver);
+               || NB71_VERSION.equals(ver)
+               || NB74_VERSION.equals(ver);
     }
 
     private static FormModel.FormVersion formVersionForVersionString(String version) {
@@ -6234,7 +6213,10 @@ public class GandalfPersistenceManager extends PersistenceManager {
             }
             if (NB71_VERSION.equals(version)) {
                 return FormModel.FormVersion.NB71;
-        }
+            }
+            if (NB74_VERSION.equals(version)) {
+                return FormModel.FormVersion.NB74;
+            }
         }
         return null;
     }
@@ -6249,6 +6231,7 @@ public class GandalfPersistenceManager extends PersistenceManager {
                 case NB61: return NB61_VERSION;
                 case NB65: return NB65_VERSION;
                 case NB71: return NB71_VERSION;
+                case NB74: return NB74_VERSION;
             }
         }
         return null;

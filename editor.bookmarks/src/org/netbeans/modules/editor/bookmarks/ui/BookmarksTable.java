@@ -46,6 +46,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
+import javax.swing.Action;
+import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.ListSelectionModel;
@@ -111,7 +113,18 @@ public class BookmarksTable extends ETable {
                         if (e.getClickCount() == 2) {
                             node.openInEditor();
                         } else if (SwingUtilities.isRightMouseButton(e)) {
-                            node.getContextMenu().show(BookmarksTable.this, e.getPoint().x, e.getPoint().y);
+                            JTable table = ((JTable) e.getSource());
+                            int r = table.rowAtPoint(e.getPoint());
+                            if (r >= 0 && r < table.getRowCount()) {
+                                table.setRowSelectionInterval(r, r);
+                                final BookmarkNode rightClickNode = model.getEntry(r);
+                                JPopupMenu menu = rightClickNode.getContextMenu();
+                                menu.remove(2);
+                                Action a = getActionMap().get("delete");
+                                a.putValue(Action.NAME, "Delete");
+                                menu.add(a);
+                                menu.show(BookmarksTable.this, e.getPoint().x, e.getPoint().y);
+                            }   
                         }
                     }
                 }

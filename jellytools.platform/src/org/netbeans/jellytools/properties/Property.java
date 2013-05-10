@@ -48,6 +48,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyEditor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JTable;
@@ -425,13 +426,20 @@ public class Property {
      * @return PropertyEditor instance of this property.
      */
     private PropertyEditor getPropertyEditor() {
-        try {
-            Class clazz = Class.forName("org.openide.explorer.propertysheet.PropUtils");
-            Method getPropertyEditorMethod = clazz.getDeclaredMethod("getPropertyEditor", new Class[] {Node.Property.class});
-            getPropertyEditorMethod.setAccessible(true);
-            return (PropertyEditor)getPropertyEditorMethod.invoke(null, new Object[] {property});
-        } catch (Exception e) {
-            throw new JemmyException("PropUtils.getPropertyEditor() by reflection failed.", e);
-        }
+        final AtomicReference<PropertyEditor> atomicReference = new AtomicReference<PropertyEditor>();
+        new QueueTool().invokeSmoothly(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    Class clazz = Class.forName("org.openide.explorer.propertysheet.PropUtils");
+                    Method getPropertyEditorMethod = clazz.getDeclaredMethod("getPropertyEditor", new Class[]{Node.Property.class});
+                    getPropertyEditorMethod.setAccessible(true);
+                    atomicReference.set((PropertyEditor) getPropertyEditorMethod.invoke(null, new Object[]{property}));
+                } catch (Exception e) {
+                    throw new JemmyException("PropUtils.getPropertyEditor() by reflection failed.", e);
+                }
+            }
+        });
+        return atomicReference.get();
     }
 }

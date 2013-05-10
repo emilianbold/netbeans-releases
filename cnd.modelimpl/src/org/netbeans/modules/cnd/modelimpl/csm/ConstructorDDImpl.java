@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilderContainer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -157,7 +158,7 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
     public static class ConstructorDDBuilder extends MethodDDBuilder implements StatementBuilderContainer {
 
         @Override
-        public ConstructorDDImpl create() {
+        public ConstructorDDImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
             final FunctionParameterListBuilder parameters = (FunctionParameterListBuilder)getParametersListBuilder();
             if (parameters == null) {
                 return null;

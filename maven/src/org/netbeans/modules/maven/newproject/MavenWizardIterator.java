@@ -73,6 +73,7 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
     private static final long serialVersionUID = 1L;
     static final String PROPERTY_CUSTOM_CREATOR = "customCreator"; //NOI18N
     static final String PROP_ARCHETYPE = "archetype";
+    static final String JAVAFX_SAMPLES_TEMPLATE_FOLDER = "Project/Samples/JavaFX";
     private transient int index;
     private transient List<WizardDescriptor.Panel<WizardDescriptor>> panels;
     private transient WizardDescriptor wiz;
@@ -98,7 +99,13 @@ public class MavenWizardIterator implements WizardDescriptor.BackgroundInstantia
     @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=120, displayName="#LBL_Maven_JavaFx_Archetype", iconBase="org/netbeans/modules/maven/resources/jaricon.png", description="javafx.html")
     @Messages("LBL_Maven_JavaFx_Archetype=JavaFX Application")
     public static WizardDescriptor.InstantiatingIterator<?> javafx() {
-        return ArchetypeWizards.definedArchetype("org.codehaus.mojo.archetypes", "javafx", "0.1-SNAPSHOT", "https://nexus.codehaus.org/content/groups/snapshots-group", LBL_Maven_JavaFx_Archetype());
+        return ArchetypeWizards.definedArchetype("org.codehaus.mojo.archetypes", "javafx", "0.2-SNAPSHOT", "https://nexus.codehaus.org/content/groups/snapshots-group", LBL_Maven_JavaFx_Archetype());
+    }
+
+    @TemplateRegistration(folder=JAVAFX_SAMPLES_TEMPLATE_FOLDER, position=2450, displayName="#LBL_Maven_JavaFx_Sample_Archetype", iconBase="org/netbeans/modules/maven/resources/jaricon.png", description="javafx.html")
+    @Messages("LBL_Maven_JavaFx_Sample_Archetype=Maven FXML MigPane Sample")
+    public static WizardDescriptor.InstantiatingIterator<?> javafxSample() {
+        return ArchetypeWizards.definedArchetype("org.codehaus.mojo.archetypes", "sample-javafx", "0.1-SNAPSHOT", "https://nexus.codehaus.org/content/groups/snapshots-group", LBL_Maven_JavaFx_Sample_Archetype());
     }
 
     @TemplateRegistration(folder=ArchetypeWizards.TEMPLATE_FOLDER, position=980, displayName="#LBL_Maven_POM_Archetype", iconBase="org/netbeans/modules/maven/resources/Maven2Icon.gif", description="pom-root.html")

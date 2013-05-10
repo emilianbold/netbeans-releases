@@ -115,6 +115,12 @@ public class J2MEProjectOperations implements DeleteOperationImplementation, Cop
         assert cleanTargetNames.length > 0;
         
         ActionUtils.runTarget(buildXML, cleanTargetNames, p).waitFinished();
+                
+        // bug #163460 - Project directory should be deleted during project deleting.
+        final FileObject buildDir = project.getProjectDirectory().getFileObject("build"); // NOI18N
+        if (buildDir != null && buildDir.isValid()) {
+            buildDir.delete();
+        }
     }
     
     public void notifyDeleted() {

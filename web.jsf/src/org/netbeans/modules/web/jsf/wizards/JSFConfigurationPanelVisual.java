@@ -167,11 +167,7 @@ public class JSFConfigurationPanelVisual extends javax.swing.JPanel implements H
 
     /** Libraries excluded from panel's {@link #jsfLibraries}. Libraries offered as registered in the IDE. */
     private static final Set<String> EXCLUDE_FROM_REGISTERED_LIBS = new HashSet<String>(Arrays.asList(
-            "javaee-web-api-6.0", //NOI18N
-            "javaee-api-6.0", //NOI18N
-            "jsp-compilation", //NOI18N
-            "jsp-compilation-syscp", //NOI18N
-            "javaee-api-5.0")); //NOI18N
+            "jsp-compilation", "jsp-compilation-syscp")); //NOI18N
 
     /**
      * Creates new form JSFConfigurationPanelVisual.
@@ -897,6 +893,11 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
     }
 
+    @Messages({
+        "JSFConfigurationPanelVisual.lbl.primefaces.plus.jsf22=PrimeFaces with JSF2.2 requires Apache Commons FileUpload "
+            + "available<br> on the project classpath. <a href=\"http://commons.apache.org/proper/commons-fileupload/download_fileupload.cgi\">"
+            + "Download ACF</a> and add it into project libraries."
+    })
     boolean valid() {
         ExtenderController controller = panel.getController();
         String urlPattern = tURLPattern.getText();
@@ -969,6 +970,12 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                     setErrorMessage(getFormatedJsfSuiteErrorMessage(
                             jsfComponentDescriptor.getDisplayName(), componentCustomizer.getErrorMessage()));
                     return false;
+                }
+
+                //issue #228883 hack - JSF2.2 + PF3.5 until NB74
+                if ("PrimeFaces".equals(jsfComponentDescriptor.getName()) //NOI18N
+                        && currentJSFVersion.isAtLeast(JSFVersion.JSF_2_2)) {
+                    setInfoMessage(Bundle.JSFConfigurationPanelVisual_lbl_primefaces_plus_jsf22());
                 }
             }
         }
@@ -1832,7 +1839,8 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                     content = library.getContent("classpath"); //NOI18N
                     try {
                         if (Util.containsClass(content, JSFUtils.FACES_EXCEPTION)
-                                && !EXCLUDE_FROM_REGISTERED_LIBS.contains(library.getName())) {
+                                && !EXCLUDE_FROM_REGISTERED_LIBS.contains(library.getName())
+                                && !Util.containsClass(content, JSFUtils.EJB_STATELESS)) {
                             JSFVersion jsfVersion = JSFVersion.forClasspath(content);
                             if (jsfVersion != null) {
                                 jsfLibraries.add(new LibraryItem(library, jsfVersion));

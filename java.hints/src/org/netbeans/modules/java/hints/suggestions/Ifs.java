@@ -174,6 +174,9 @@ public class Ifs {
                     break;
                 default:
                     newTree = make.Unary(Kind.LOGICAL_COMPLEMENT, original);
+                    if (JavaFixUtilities.requiresParenthesis(original, original, newTree)) {
+                        newTree = make.Unary(Kind.LOGICAL_COMPLEMENT, make.Parenthesized(original));
+                    }
                     break;
             }
          
@@ -196,7 +199,7 @@ public class Ifs {
     }
 
     //TODO: does not produce correctly formatted output (change testJoinIfs1 from assertOutput to assertVerbatimOutput):
-//    @Hint(displayName="#DN_JoinElseIf", description="#DESC_JoinElseIf", category="suggestions", hintKind=Hint.Kind.ACTION)
+    @Hint(displayName="#DN_JoinElseIf", description="#DESC_JoinElseIf", category="suggestions", hintKind=Hint.Kind.ACTION)
     @TriggerPattern("if ($cond1) $then1; else { if ($cond2) $then2; else $else$; }")
     @Messages({"ERR_JoinElseIf=",
                "FIX_JoinElseIf=Join nested if into the enclosing if"})

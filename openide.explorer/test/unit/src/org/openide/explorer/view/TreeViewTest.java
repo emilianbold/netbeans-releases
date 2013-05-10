@@ -90,7 +90,7 @@ public final class TreeViewTest extends NbTestCase {
     }
 
     protected @Override int timeOut() {
-        return 500000;
+        return 50000;
     }
     
     private ExplorerWindow testWindow;

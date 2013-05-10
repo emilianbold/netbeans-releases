@@ -51,13 +51,13 @@ import org.netbeans.modules.php.api.editor.EditorSupport;
 import org.netbeans.modules.php.api.editor.PhpClass;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.phpunit.commands.PhpUnit;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.locate.TestLocator;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 
 public class PhpUnitTestLocator implements TestLocator {
 
@@ -110,14 +110,14 @@ public class PhpUnitTestLocator implements TestLocator {
 
             for (Pair<String, String> namePair : classes) {
                 // prefer FQN
-                Collection<Pair<FileObject, Integer>> files = editorSupport.filesForClass(sourceRoot, new PhpClass(namePair.first, namePair.second, -1));
+                Collection<Pair<FileObject, Integer>> files = editorSupport.filesForClass(sourceRoot, new PhpClass(namePair.first(), namePair.second(), -1));
                 List<Locations.Offset> results = filterPhpFiles(sourceRoot, files);
                 if (!results.isEmpty()) {
                     phpFiles.addAll(results);
                     continue;
                 }
                 // #221816 - search only by class name
-                files = editorSupport.filesForClass(sourceRoot, new PhpClass(namePair.first, null, -1));
+                files = editorSupport.filesForClass(sourceRoot, new PhpClass(namePair.first(), null, -1));
                 results = filterPhpFiles(sourceRoot, files);
                 phpFiles.addAll(results);
             }
@@ -128,10 +128,10 @@ public class PhpUnitTestLocator implements TestLocator {
     private List<Locations.Offset> filterPhpFiles(FileObject sourceRoot, Collection<Pair<FileObject, Integer>> files) {
         List<Locations.Offset> results = new ArrayList<Locations.Offset>(files.size());
         for (Pair<FileObject, Integer> pair : files) {
-            FileObject fileObject = pair.first;
+            FileObject fileObject = pair.first();
             if (FileUtils.isPhpFile(fileObject)
                     && FileUtil.isParentOf(sourceRoot, fileObject)) {
-                results.add(new Locations.Offset(fileObject, pair.second));
+                results.add(new Locations.Offset(fileObject, pair.second()));
             }
         }
         return results;

@@ -104,7 +104,7 @@ public class TransformPerformer {
     
     // instance freshness state
     private volatile boolean stalled = false;
-    private volatile boolean active = true;
+    private volatile boolean active = false;
     
     public TransformPerformer(Node[] nodes) {
         this.nodes = nodes;
@@ -198,6 +198,7 @@ public class TransformPerformer {
             }
         } finally {
             stalled = true;
+            active = false;
         }
     }
     
@@ -473,6 +474,7 @@ public class TransformPerformer {
             workaround31850 = false;
             if ( DialogDescriptor.OK_OPTION.equals(e.getSource()) ) {
                 try {
+                    active = true;
                     prepareData(); // throws IOException(, FileStateInvalidException, MalformedURLException), ParserConfigurationException, SAXException
                     
                     if ( ( data.getOutput() != null ) &&

@@ -71,10 +71,10 @@ public class CompletionContextFinder {
         new Object[]{JsTokenId.KEYWORD_THIS, JsTokenId.OPERATOR_DOT},
         new Object[]{JsTokenId.KEYWORD_THIS, JsTokenId.OPERATOR_DOT, JsTokenId.IDENTIFIER}
     );
-    
+        
     @NonNull
-    static CompletionContext findCompletionContext(ParserResult info, int caretOffset){
-         TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
+    static CompletionContext findCompletionContext(ParserResult info, int offset){
+        TokenHierarchy<?> th = info.getSnapshot().getTokenHierarchy();
         if (th == null) {
             return CompletionContext.NONE;
         }
@@ -83,26 +83,60 @@ public class CompletionContextFinder {
             return CompletionContext.NONE;
         }
         
-        int offset = info.getSnapshot().getEmbeddedOffset(caretOffset);
         ts.move(offset);
         
         if (!ts.moveNext() && !ts.movePrevious()){
             return CompletionContext.NONE;
         }
-        
+               
         Token<? extends JsTokenId> token = ts.token();
         JsTokenId tokenId =token.id();
+        
+        if (tokenId == JsTokenId.STRING || tokenId == JsTokenId.STRING_END) {
+            return CompletionContext.STRING;
+        }
         
         if (acceptTokenChains(ts, OBJECT_THIS_TOKENCHAINS, true)) {
             return CompletionContext.OBJECT_MEMBERS;
         }
+        
         if (acceptTokenChains(ts, OBJECT_PROPERTY_TOKENCHAINS, tokenId != JsTokenId.OPERATOR_DOT)) {
             return CompletionContext.OBJECT_PROPERTY;
         }
         
-        if (tokenId == JsTokenId.EOL && ts.movePrevious()) {
-            token = ts.token();
+        ts.move(offset); 
+        if (ts.moveNext()) {
+            List<JsTokenId> listIds = Arrays.asList(JsTokenId.OPERATOR_COMMA, JsTokenId.OPERATOR_COLON, JsTokenId.BRACKET_LEFT_CURLY,
+                    JsTokenId.OPERATOR_SEMICOLON);
+            token = LexUtilities.findPreviousToken(ts, listIds);
             tokenId = token.id();
+            if (tokenId == JsTokenId.OPERATOR_COMMA && ts.movePrevious()) {
+                token = LexUtilities.findPreviousToken(ts, listIds);
+                tokenId = token.id();
+                if (tokenId == JsTokenId.OPERATOR_COLON) {
+                    // we are in the previous property definition
+                    return CompletionContext.OBJECT_PROPERTY_NAME;
+                } 
+            } 
+            if (tokenId == JsTokenId.BRACKET_LEFT_CURLY && ts.movePrevious()) {
+                // check whether it's the first property in the object literal definion
+                token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL));
+                tokenId = token.id();
+                if (tokenId == JsTokenId.BRACKET_LEFT_PAREN || tokenId == JsTokenId.OPERATOR_COMMA || tokenId == JsTokenId.OPERATOR_EQUALS) {
+                    return CompletionContext.OBJECT_PROPERTY_NAME;
+                }
+            }
+        }
+        
+        ts.move(offset); 
+        if (!ts.moveNext()) {
+            if (!ts.movePrevious()) {
+                return CompletionContext.GLOBAL;
+            }
+        }
+        token = ts.token(); tokenId = token.id();
+        if (tokenId == JsTokenId.EOL && ts.movePrevious()) {
+            token = ts.token(); tokenId = token.id();
         }
         if (tokenId == JsTokenId.IDENTIFIER || WHITESPACES_TOKENS.contains(tokenId)) {
             if (!ts.movePrevious()) {
@@ -117,6 +151,7 @@ public class CompletionContextFinder {
         if (tokenId == JsTokenId.DOC_COMMENT) {
             return CompletionContext.DOCUMENTATION;
         }
+        
         return CompletionContext.EXPRESSION;
     }
     

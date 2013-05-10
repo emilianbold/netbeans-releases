@@ -325,6 +325,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 }
                 if (urlFixed) {
                     panel.tipLabel.setText(null);
+                    activeSettingsType.requestFocusInWindow();
                 }
             }
         });
@@ -537,6 +538,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         protected int getPreferedPanelHeight () { return 0; }
         protected void populateFields (ConnectionSettings connSettings) { }
         protected void populateCredentials(PasswordAuthentication pa) { }
+        protected void requestFocusInWindow () { }
     }
     
     //<editor-fold defaultstate="collapsed" desc="Connection Setting Types">
@@ -650,6 +652,11 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         @Override
         protected int getPreferedPanelHeight () {
             return settingsPanel.getPreferredSize().height;
+        }
+
+        @Override
+        protected void requestFocusInWindow () {
+            settingsPanel.userTextField.requestFocusInWindow();
         }
     }
     
@@ -862,6 +869,11 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                         + ".ssh" + File.separator + "id_dsa"; //NOI18N
             }
             return identityFile;
+        }
+
+        @Override
+        protected void requestFocusInWindow () {
+            settingsPanel.userTextField.requestFocusInWindow();
         }
     }
     

@@ -42,8 +42,8 @@
 package org.netbeans.modules.odcs.tasks;
 
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
+import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.spi.IssueFinder;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
@@ -60,7 +60,7 @@ import org.netbeans.modules.odcs.tasks.repository.ODCSRepository;
         tooltip="#LBL_ConnectorTooltip",
         providesRepositoryManagement=false
 )    
-public class ODCSConnector extends KenaiBugtrackingConnector {
+public class ODCSConnector extends TeamBugtrackingConnector {
     public static final String ID = "org.netbeans.modules.odcs.tasks"; // NOI18N
     
     @Override
@@ -95,7 +95,7 @@ public class ODCSConnector extends KenaiBugtrackingConnector {
      ***************************************************************************/
     
     @Override
-    public Repository createRepository (KenaiProject project) {
+    public Repository createRepository (TeamProject project) {
         if (project == null || project.getType() != BugtrackingType.ODCS) {
             return null;
         }

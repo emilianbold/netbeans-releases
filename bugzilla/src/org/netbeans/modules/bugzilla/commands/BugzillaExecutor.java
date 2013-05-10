@@ -56,7 +56,6 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaStatus;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaUserMatchResponse;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.autoupdate.BugzillaAutoupdate;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
@@ -212,7 +211,6 @@ public class BugzillaExecutor {
         if(conf.isValid()) {
             BugzillaVersion version = conf.getInstalledVersion();
             if(version.compareMajorMinorOnly(BugzillaAutoupdate.SUPPORTED_BUGZILLA_VERSION) > 0) {
-                boolean ua = BugzillaAutoupdate.getInstance().isUpdateAvailable(repository);
                 notifyErrorMessage(
                         NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_ERROR_WARNING", status.getMessage()) + "\n\n" + 
                         NbBundle.getMessage(BugzillaExecutor.class, "MSG_BUGZILLA_VERSION_WARNING1", version) + "\n" +          // NOI18N
@@ -528,7 +526,7 @@ public class BugzillaExecutor {
             }
             @Override
             protected boolean handle() {
-                boolean ret = BugtrackingUtil.editRepository(BugzillaUtil.getRepository(executor.repository), errroMsg);
+                boolean ret = Bugzilla.getInstance().getBugtrackingFactory().editRepository(BugzillaUtil.getRepository(executor.repository), errroMsg);
                 if(!ret) {
                     notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
                 }

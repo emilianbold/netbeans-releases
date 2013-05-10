@@ -54,9 +54,12 @@ import org.openide.util.NbBundle;
  */
 public class AttachmentPanel extends javax.swing.JPanel {
     static final String PROP_DELETED = "attachmentDeleted"; // NOI18N
-
-    public AttachmentPanel() {
+    private final AttachmentsPanel.NBBugzillaCallback nbCallback;
+    
+    public AttachmentPanel(AttachmentsPanel.NBBugzillaCallback nbCallback) {
+        this.nbCallback = nbCallback;
         initComponents();
+        setBackground( UIUtils.getSectionPanelBackground() );
         initFileTypeCombo();
     }
 
@@ -133,15 +136,10 @@ public class AttachmentPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        fileField = new javax.swing.JTextField();
-        browseButton = new javax.swing.JButton();
         deleteButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         descriptionLabel = new javax.swing.JLabel();
         descriptionField = new javax.swing.JTextField();
         fileTypeLabel = new javax.swing.JLabel();
-        fileTypeCombo = new javax.swing.JComboBox();
-        patchLabel = new javax.swing.JLabel();
-        patchChoice = new javax.swing.JCheckBox();
 
         fileField.setColumns(30);
 
@@ -178,6 +176,13 @@ public class AttachmentPanel extends javax.swing.JPanel {
             }
         });
 
+        viewButton.setText(org.openide.util.NbBundle.getMessage(AttachmentPanel.class, "AttachmentPanel.viewButton.text")); // NOI18N
+        viewButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                viewButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -186,7 +191,7 @@ public class AttachmentPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(fileField)
+                        .addComponent(fileField, javax.swing.GroupLayout.DEFAULT_SIZE, 445, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseButton))
                     .addGroup(layout.createSequentialGroup()
@@ -200,6 +205,8 @@ public class AttachmentPanel extends javax.swing.JPanel {
                             .addComponent(descriptionField)
                             .addComponent(patchChoice))))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(viewButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(deleteButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
@@ -210,7 +217,8 @@ public class AttachmentPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(fileField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(browseButton)
-                    .addComponent(deleteButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(deleteButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(viewButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(descriptionLabel)
@@ -257,17 +265,21 @@ public class AttachmentPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_patchChoiceActionPerformed
 
+    private void viewButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_viewButtonActionPerformed
+        nbCallback.showLogFile();
+    }//GEN-LAST:event_viewButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton browseButton;
+    final javax.swing.JButton browseButton = new javax.swing.JButton();
     private org.netbeans.modules.bugtracking.util.LinkButton deleteButton;
     private javax.swing.JTextField descriptionField;
     private javax.swing.JLabel descriptionLabel;
-    private javax.swing.JTextField fileField;
-    private javax.swing.JComboBox fileTypeCombo;
+    final javax.swing.JTextField fileField = new javax.swing.JTextField();
+    final javax.swing.JComboBox fileTypeCombo = new javax.swing.JComboBox();
     private javax.swing.JLabel fileTypeLabel;
-    private javax.swing.JCheckBox patchChoice;
-    private javax.swing.JLabel patchLabel;
+    final javax.swing.JCheckBox patchChoice = new javax.swing.JCheckBox();
+    final javax.swing.JLabel patchLabel = new javax.swing.JLabel();
+    final org.netbeans.modules.bugtracking.util.LinkButton viewButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     // End of variables declaration//GEN-END:variables
 
     static class FileType {

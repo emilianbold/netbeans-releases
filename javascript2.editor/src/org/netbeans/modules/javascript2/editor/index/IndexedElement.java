@@ -42,9 +42,14 @@
 package org.netbeans.modules.javascript2.editor.index;
 
 import java.util.*;
+import org.netbeans.modules.csl.api.ElementHandle;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
@@ -61,7 +66,7 @@ import org.openide.filesystems.FileObject;
  *
  * @author Petr Pisl
  */
-public class IndexedElement extends JsElementImpl {
+public class IndexedElement implements JsElement {
     
     private final JsElement.Kind jsKind;
     private final String fqn;
@@ -70,16 +75,28 @@ public class IndexedElement extends JsElementImpl {
     private final Collection<TypeUsage> assignments;
     public final static char ANONYMOUS_POSFIX = 'A';
     public final static char OBJECT_POSFIX = 'O';
+    public final static char PARAMETER_POSTFIX = 'P';
+    private final FileObject fileObject;
+    private final String name;
+    private final boolean isDeclared;
+    private final Set<Modifier> modifiers;
+    private final OffsetRange offsetRange;
     
     public IndexedElement(FileObject fileObject, String name, String fqn, boolean isDeclared, boolean isAnonymous, JsElement.Kind kind, OffsetRange offsetRange, Set<Modifier> modifiers, Collection<TypeUsage> assignments, boolean isPlatform) {
-        super(fileObject, name, isDeclared, offsetRange, modifiers);
+//        super(fileObject, name, isDeclared, offsetRange, modifiers, null);
         this.jsKind = kind;
         this.fqn = fqn;
         this.isAnonymous = isAnonymous;
         this.assignments = assignments;
         this.isPlatform = isPlatform;
+        this.fileObject = fileObject;
+        this.name = name;
+        this.isDeclared = isDeclared;
+        this.modifiers = modifiers;
+        this.offsetRange = offsetRange;
     }
 
+    
     @Override
     public Kind getJSKind() {
         return this.jsKind;
@@ -105,19 +122,20 @@ public class IndexedElement extends JsElementImpl {
     protected static IndexDocument createDocument(JsObject object, String fqn, IndexingSupport support, Indexable indexable) {
         IndexDocument elementDocument = support.createDocument(indexable);
         elementDocument.addPair(JsIndex.FIELD_BASE_NAME, object.getName(), true, true);
-        elementDocument.addPair(JsIndex.FIELD_FQ_NAME,  fqn + (object.isAnonymous() ? ANONYMOUS_POSFIX : OBJECT_POSFIX), true, true);
+        elementDocument.addPair(JsIndex.FIELD_FQ_NAME,  fqn + (object.isAnonymous() ? ANONYMOUS_POSFIX 
+                : object.getJSKind() == Kind.PARAMETER ? PARAMETER_POSTFIX : OBJECT_POSFIX), true, true);
 //        boolean isGlobal = object.getParent() != null ? ModelUtils.isGlobal(object.getParent()) : ModelUtils.isGlobal(object);
 //        elementDocument.addPair(JsIndex.FIELD_IS_GLOBAL, (isGlobal ? "1" : "0"), true, true);
         elementDocument.addPair(JsIndex.FIELD_OFFSET, Integer.toString(object.getOffset()), true, true);            
         elementDocument.addPair(JsIndex.FIELD_FLAG, Integer.toString(Flag.getFlag(object)), false, true);
-        StringBuilder sb = new StringBuilder();
+//        StringBuilder sb = new StringBuilder();
 //        for (JsObject property : object.getProperties().values()) {
 //            if (!property.getModifiers().contains(Modifier.PRIVATE)) {
 //                sb.append(codeProperty(property)).append("#@#");
 //            }
 //        }
 //        elementDocument.addPair(JsIndex.FIELD_PROPERTY, sb.toString(), false, true);
-        sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder();
         for (TypeUsage type : object.getAssignments()) {
             sb.append(type.getType());
             sb.append(":"); //NOI18N
@@ -134,6 +152,8 @@ public class IndexedElement extends JsElementImpl {
                 sb.append(type.getType());
                 sb.append(","); //NOI18N
                 sb.append(type.getOffset());
+                sb.append(","); //NOI18N
+                sb.append(type.isResolved() ? "1" : "0");  //NOI18N
                 sb.append("|");
             }
             elementDocument.addPair(JsIndex.FIELD_RETURN_TYPES, sb.toString(), false, true);
@@ -220,17 +240,16 @@ public class IndexedElement extends JsElementImpl {
         if (text != null) {
             for (StringTokenizer st = new StringTokenizer(text, "|"); st.hasMoreTokens();) {
                 String token = st.nextToken();
-                int index = token.indexOf(',');
-                if(index > -1) {
-                    String type = token.substring(0, index);
-                    String sOffset = token.substring(index + 1);
+                String[] parts = token.split(",");
+                if (parts.length > 2) {
                     int offset;
                     try {
-                        offset = Integer.parseInt(sOffset);
+                        offset = Integer.parseInt(parts[1]);
                     } catch (NumberFormatException nfe) {
                         offset = -1;
                     }
-                    result.add(new TypeUsageImpl(type, offset, true));
+                    boolean resolve = parts[2].equals("1");
+                    result.add(new TypeUsageImpl(parts[0], offset, resolve));
                 }
             }
         }
@@ -303,6 +322,66 @@ public class IndexedElement extends JsElementImpl {
             parameters.put(paramName, types);
         }
         return parameters;
+    }
+
+    @Override
+    public int getOffset() {
+        return offsetRange.getStart();
+    }
+
+    @Override
+    public OffsetRange getOffsetRange() {
+        return offsetRange;
+    }
+
+    @Override
+    public boolean isDeclared() {
+        return isDeclared;
+    }
+
+    @Override
+    public String getSourceLabel() {
+        return null;
+    }
+
+    @Override
+    public FileObject getFileObject() {
+        return fileObject;
+    }
+
+    @Override
+    public String getMimeType() {
+        return JsTokenId.JAVASCRIPT_MIME_TYPE;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public String getIn() {
+        return null;
+    }
+
+    @Override
+    public ElementKind getKind() {
+        return JsElementImpl.convertJsKindToElementKind(jsKind);
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        return modifiers;
+    }
+
+    @Override
+    public boolean signatureEquals(ElementHandle handle) {
+        return false;
+    }
+
+    @Override
+    public OffsetRange getOffsetRange(ParserResult result) {
+        return getOffsetRange();
     }
     
 //    private static IndexedElement decodeProperty(String text, FileObject fo, String fqn) {

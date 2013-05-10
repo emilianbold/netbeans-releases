@@ -288,13 +288,13 @@
 ==============================================================
 'ostream', tokenID=identifier, offset=3393 [91:29/3393-91:36/3400]
 --OWNER:
-    TYPE &$unresolved$::ostream TEXT=ostream&  [91:29/3393-91:36/3400] ReferencesTestCase/module.h
+    TYPE &$unresolved$::ostream TEXT=ostream&  [91:29/3393-91:37/3401] ReferencesTestCase/module.h
 --RESOLVED TO:
     null
 ==============================================================
 'Module', tokenID=identifier, offset=3409 [91:45/3409-91:51/3415]
 --OWNER:
-    VARIABLE  [91:39/3403-91:52/3416] ReferencesTestCase/module.h  TYPE: const &Module TEXT=const Module&  [91:39/3403-91:44/3408]  INIT: null  SCOPE: operator << 
+    TYPE const &Module TEXT=const Module&  [91:39/3403-91:52/3416] ReferencesTestCase/module.h
 --RESOLVED TO:
     CLASS Module [51:1/2205-92:2/3420] ReferencesTestCase/module.h
 ==============================================================

@@ -64,6 +64,7 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOColorPrint;
+import org.openide.windows.IOColors;
 import org.openide.windows.InputOutput;
 import org.openide.windows.OutputWriter;
 
@@ -192,9 +193,9 @@ public abstract class AbstractOutputHandler {
                     ex.printStackTrace();
                 }
             } else {
-                if (visitor.getColor() != null && IOColorLines.isSupported(getIO())) {
+                if (visitor.getColor(getIO()) != null && IOColorLines.isSupported(getIO())) {
                     try {
-                        IOColorLines.println(getIO(), visitor.getLine(), visitor.getColor());
+                        IOColorLines.println(getIO(), visitor.getLine(), visitor.getColor(getIO()));
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -295,34 +296,32 @@ public abstract class AbstractOutputHandler {
         }
         if (!visitor.isLineSkipped()) {
             String line = visitor.getLine() == null ? input : visitor.getLine();
-            if (visitor.getColor() == null && visitor.getOutputListener() == null) {
+            if (visitor.getColor(getIO()) == null && visitor.getOutputListener() == null) {
                 switch (level) {
                 case DEBUG:
-                    visitor.setColor(Color.GRAY);
+                    visitor.setOutputType(IOColors.OutputType.LOG_DEBUG);
                     break;
                 case WARNING:
-                    visitor.setColor(Color.ORANGE.darker());
+                    visitor.setOutputType(IOColors.OutputType.LOG_WARNING);
                     break;
                 case ERROR:
-                    visitor.setColor(Color.RED);
-                    break;
                 case FATAL:
-                    visitor.setColor(Color.MAGENTA);
+                    visitor.setOutputType(IOColors.OutputType.LOG_FAILURE);
                     break;
                 }
             }
             try {
                 if (visitor.getOutputListener() != null) {
-                    if (visitor.getColor() != null && IOColorPrint.isSupported(getIO())) {
-                        IOColorPrint.print(getIO(), line + "\n", visitor.getOutputListener(), visitor.isImportant(), visitor.getColor());
+                    if (visitor.getColor(getIO()) != null && IOColorPrint.isSupported(getIO())) {
+                        IOColorPrint.print(getIO(), line + "\n", visitor.getOutputListener(), visitor.isImportant(), visitor.getColor(getIO()));
                     } else {
                         writer.println(line, visitor.getOutputListener(), visitor.isImportant());
                     }
                 } else {
                     if (level.compareTo(Level.ERROR) >= 0 && IOColorPrint.isSupported(getIO())) {
-                        IOColorPrint.print(getIO(), line + "\n", null, true, visitor.getColor());
-                    } else if (visitor.getColor() != null && IOColorLines.isSupported(getIO())) {
-                        IOColorLines.println(getIO(), line, visitor.getColor());
+                        IOColorPrint.print(getIO(), line + "\n", null, true, visitor.getColor(getIO()));
+                    } else if (visitor.getColor(getIO()) != null && IOColorLines.isSupported(getIO())) {
+                        IOColorLines.println(getIO(), line, visitor.getColor(getIO()));
                     } else {
                         writer.println(line);
                     }

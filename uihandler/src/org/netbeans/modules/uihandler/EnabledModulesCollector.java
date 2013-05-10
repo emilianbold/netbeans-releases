@@ -44,9 +44,13 @@
 
 package org.netbeans.modules.uihandler;
 
+import java.io.File;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -89,16 +93,7 @@ public class EnabledModulesCollector implements Deactivated {
         
         if (!newEnabled.isEmpty()) {
             LogRecord rec = new LogRecord(Level.CONFIG, "UI_ENABLED_MODULES");
-            String[] enabledNames = new String[newEnabled.size()];
-            int i = 0;
-            for (ModuleInfo m : newEnabled) {
-                SpecificationVersion specVersion = m.getSpecificationVersion();
-                if (specVersion != null){
-                    enabledNames[i++]  = m.getCodeName() + " [" + specVersion.toString() + "]";
-                }else{
-                    enabledNames[i++] = m.getCodeName();
-                }
-            }
+            String[] enabledNames = getModuleNames(newEnabled);
             rec.setParameters(enabledNames);
             rec.setLoggerName(uiLogger.getName());
             rec.setResourceBundle(NbBundle.getBundle(EnabledModulesCollector.class));
@@ -107,16 +102,7 @@ public class EnabledModulesCollector implements Deactivated {
         }
         if (!newDisabled.isEmpty()) {
             LogRecord rec = new LogRecord(Level.CONFIG, "UI_DISABLED_MODULES");
-            String[] disabledNames = new String[newDisabled.size()];
-            int i = 0;
-            for (ModuleInfo m : newDisabled) {
-                SpecificationVersion specVersion = m.getSpecificationVersion();
-                if (specVersion != null){
-                    disabledNames[i++]   = m.getCodeName() + " [" + specVersion.toString() + "]";
-                }else{
-                    disabledNames[i++] = m.getCodeName();
-                }
-            }
+            String[] disabledNames = getModuleNames(newDisabled);
             rec.setParameters(disabledNames);
             rec.setLoggerName(uiLogger.getName());
             rec.setResourceBundle(NbBundle.getBundle(EnabledModulesCollector.class));
@@ -128,4 +114,81 @@ public class EnabledModulesCollector implements Deactivated {
         previouslyDisabled = disabled;
     }
     
+    static String[] getModuleNames(List<ModuleInfo> modules) {
+        String[] names = new String[modules.size()];
+        int i = 0;
+        for (ModuleInfo m : modules) {
+            SpecificationVersion specVersion = m.getSpecificationVersion();
+            if (specVersion != null) {
+                names[i++]   = m.getCodeName() + " [" + specVersion.toString() + "]";
+            } else {
+                names[i++] = m.getCodeName();
+            }
+        }
+        return names;
+    }
+    
+    private static List<String> getClusterNames() {
+        String dirs = System.getProperty("netbeans.dirs");                      // NOI18N
+        if (dirs != null) {
+            String [] dirsArray = dirs.split(File.pathSeparator);
+            List<String> list = new ArrayList<String>();
+            for (int i = 0; i < dirsArray.length; i++) {
+                File f = new File(dirsArray[i]);
+                if (f.exists()){
+                    list.add(f.getName());
+                }
+            }
+            return list;
+        } else {
+            return Collections.EMPTY_LIST;
+        }
+    }
+    
+    static LogRecord getClusterList (Logger logger) {
+        LogRecord rec = new LogRecord(Level.INFO, "USG_INSTALLED_CLUSTERS");
+        rec.setParameters(getClusterNames().toArray());
+        rec.setLoggerName(logger.getName());
+        return rec;
+    }
+    
+    static LogRecord getUserInstalledModules(Logger logger) {
+        LogRecord rec = new LogRecord(Level.INFO, "USG_USER_INSTALLED_MODULES");
+        Set<String> clusterNames = new HashSet<String>(getClusterNames());
+        clusterNames.add("platform");                                           // NOI18N
+        List<ModuleInfo> userInstalledModules = new ArrayList<ModuleInfo>();
+        for (ModuleInfo mi : Lookup.getDefault().lookupAll(ModuleInfo.class)) {
+            Object showAttr = mi.getAttribute("AutoUpdate-Show-In-Client");     // NOI18N
+            if (!(showAttr instanceof String) ||
+                !Boolean.parseBoolean((String) showAttr)) {
+                
+                continue;
+            }
+            File moduleJarFile = getModuleJarFile(mi);
+            if (moduleJarFile == null) {
+                continue;
+            }
+            File moduleParent = moduleJarFile.getParentFile();
+            if (moduleParent.getName().equals("modules")) {                     // NOI18N
+                String cn = moduleParent.getParentFile().getName();
+                if (!clusterNames.contains(cn)) {
+                    userInstalledModules.add(mi);
+                }
+            }
+        }
+        rec.setParameters(getModuleNames(userInstalledModules));
+        rec.setLoggerName(logger.getName());
+        return rec;
+    }
+    
+    private static File getModuleJarFile(ModuleInfo mi) {
+        try {
+            Method getJarFileMethod = mi.getClass().getMethod("getJarFile");    // NOI18N
+            getJarFileMethod.setAccessible(true);
+            return (File) getJarFileMethod.invoke(mi);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+        return null;
+    }
 }

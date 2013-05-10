@@ -393,6 +393,7 @@ public final class CndLexerUtilities {
             case __INLINE:
             case __INLINE__:
             case INT:
+            case __BUILTIN_VA_LIST:
             case LONG:
             case MUTABLE:
             case REGISTER:
@@ -634,6 +635,7 @@ public final class CndLexerUtilities {
         CppTokenId[] ids = new CppTokenId[]{
             CppTokenId.AUTO,
             CppTokenId.BREAK,
+            CppTokenId.__BUILTIN_VA_LIST,
             CppTokenId.CASE,
             CppTokenId.CHAR,
             CppTokenId.CONST,
@@ -666,6 +668,7 @@ public final class CndLexerUtilities {
             CppTokenId.VOLATILE,
             CppTokenId.WHILE,};
         addToFilter(ids, filterToModify);
+ //       filterToModify.addPrefixedMatch("__builtin_", CppTokenId.BUILT_IN_TYPE);
     }
 
     private static void addCppOnlyKeywords(Filter<CppTokenId> filterToModify) {
@@ -830,7 +833,23 @@ public final class CndLexerUtilities {
             CppTokenId.__IS_CLASS,
             CppTokenId.__IS_POD,
             CppTokenId.__IS_BASE_OF,
-            CppTokenId.__HAS_TRIVIAL_CONSTRUCTOR,};
+            CppTokenId.__HAS_TRIVIAL_CONSTRUCTOR,
+            CppTokenId.__HAS_NOTHROW_ASSIGN,
+            CppTokenId.__HAS_NOTHROW_COPY,
+            CppTokenId.__HAS_NOTHROW_CONSTRUCTOR,
+            CppTokenId.__HAS_TRIVIAL_ASSIGN,
+            CppTokenId.__HAS_TRIVIAL_COPY,
+            CppTokenId.__HAS_TRIVIAL_DESTRUCTOR,
+            CppTokenId.__HAS_VIRTUAL_DESTRUCTOR,
+            CppTokenId.__IS_ABSTRACT,
+            CppTokenId.__IS_EMPTY,
+            CppTokenId.__IS_LITERAL_TYPE,
+            CppTokenId.__IS_POLYMORPHIC,
+            CppTokenId.__IS_STANDARD_LAYOUT,
+            CppTokenId.__IS_TRIVIAL,
+            CppTokenId.__IS_UNION,
+            CppTokenId.__UNDERLYING_TYPE   
+        };
         addToFilter(ids, filterToModify);
     }
 

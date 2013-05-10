@@ -52,6 +52,7 @@ import java.awt.Dimension;
 import java.io.IOException;
 import java.util.*;
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
 import javax.swing.*;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.TableModelEvent;
@@ -62,6 +63,7 @@ import javax.swing.table.TableColumn;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ui.ElementHeaders;
 import org.netbeans.modules.refactoring.java.RefactoringModule;
+import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.MemberInfo;
 import org.netbeans.modules.refactoring.java.plugins.EncapsulateFieldRefactoringPlugin;
 import org.netbeans.modules.refactoring.java.ui.EncapsulateFieldsRefactoring.EncapsulateFieldInfo;
@@ -188,8 +190,10 @@ public final class EncapsulateFieldPanel extends javax.swing.JPanel implements C
             TreePath fieldTPath = javac.getTrees().getPath(field);
             boolean createGetter = fields !=null? fields.contains(TreePathHandle.create(field, javac)) : selectedElm == field ;
             boolean createSetter = createGetter && !field.getModifiers().contains(Modifier.FINAL);
-            String getName = EncapsulateFieldRefactoringPlugin.computeGetterName(field);
-            String setName = EncapsulateFieldRefactoringPlugin.computeSetterName(field);
+            CodeStyle cs = RefactoringUtils.getCodeStyle(javac);
+            boolean staticMod = field.getModifiers().contains(Modifier.STATIC);
+            String getName = CodeStyleUtils.computeGetterName(field.getSimpleName(), field.asType().getKind() == TypeKind.BOOLEAN, staticMod, cs);
+            String setName = CodeStyleUtils.computeSetterName(field.getSimpleName(), staticMod, cs);
             model.addRow(new Object[] { 
                 MemberInfo.create(fieldTPath, javac),
                 createGetter ? Boolean.TRUE : Boolean.FALSE,                        

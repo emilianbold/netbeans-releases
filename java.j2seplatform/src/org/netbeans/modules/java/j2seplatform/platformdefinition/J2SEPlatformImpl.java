@@ -45,7 +45,6 @@
 package org.netbeans.modules.java.j2seplatform.platformdefinition;
 
 import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.net.MalformedURLException;
 import java.io.File;
@@ -55,10 +54,11 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,16 +66,17 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.modules.java.j2seplatform.spi.J2SEPlatformDefaultJavadoc;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Implementation of the JavaPlatform API class, which serves proper
@@ -94,6 +95,8 @@ public class J2SEPlatformImpl extends JavaPlatform {
     protected static final String SYSPROP_USER_DIR = "user.dir";                      //NOI18N
 
     private static final String PROP_NO_DEFAULT_JAVADOC = "no.default.javadoc";       //NOI18N
+    private static final String DEFAULT_JAVADOC_PROVIDER_PATH =
+            "org-netbeans-api-java/platform/j2seplatform/defaultJavadocProviders/";  //NOI18N
     private static final Logger LOG = Logger.getLogger(J2SEPlatformImpl.class.getName());
 
     /**
@@ -448,57 +451,25 @@ public class J2SEPlatformImpl extends JavaPlatform {
      * @return a (possibly empty) list of URLs
      */
     public static List<URL> defaultJavadoc(JavaPlatform platform) {
-        final List<URL> result = new ArrayList<URL>();
-        for (FileObject folder : platform.getInstallFolders()) {
-            // XXX should this rather be docs/api?
-            FileObject docs = folder.getFileObject("docs"); // NOI18N
-            if (docs != null && docs.isFolder() && docs.canRead()) {
-                try {
-                    result.add(docs.getURL());
-                } catch (FileStateInvalidException x) {
-                    LOG.log(Level.INFO, null, x);
-                }
-            }            
-            if (Utilities.isMac()) {
-                try {
-                    final FileObject docsJar = folder.getFileObject("docs.jar"); //NOI18N
-                    //XXX: Verify zip integrity? But it's slow
-                    //Better not to do it, only test FileUtil.isArchoveFile
-                    if (docsJar != null && docsJar.canRead() && FileUtil.isArchiveFile(docsJar)) {                
-                        final URL rootURL = FileUtil.getArchiveRoot(docsJar.getURL());
-                        result.add(new URL(rootURL.toExternalForm() + "docs/api/"));    //NOI18N
-                        result.add(new URL(rootURL.toExternalForm() + "docs/jdk/api/"));    //NOI18N
-                        result.add(new URL(rootURL.toExternalForm() + "docs/jre/api/"));    //NOI18N
-                    }
-                    final FileObject appleDocsJar = folder.getFileObject("appledocs.jar");    //NOI18N
-                    //XXX: Verify zip integrity? But will slowdown the DefaultPlatform constructor.
-                    //Better not to do it, only test FileUtil.isArchoveFile
-                    if (appleDocsJar != null && appleDocsJar.canRead() && FileUtil.isArchiveFile(appleDocsJar)) {                
-                        result.add(new URL (FileUtil.getArchiveRoot(appleDocsJar.getURL()).toExternalForm() + "appledoc/api/"));    //NOI18N
-                    }
-                } catch (MalformedURLException mue) {
-                    Exceptions.printStackTrace(mue);
-                } catch (FileStateInvalidException fsi) {
-                    Exceptions.printStackTrace(fsi);
-                }
+        final JavaPlatform safePlatform = new ForwardingJavaPlatform(platform) {
+            @Override
+            public List<URL> getJavadocFolders() {
+                return Collections.<URL>emptyList();
             }
+        };
+        final Set<URI> roots = new LinkedHashSet<>();
+        for (J2SEPlatformDefaultJavadoc jdoc : Lookups.forPath(DEFAULT_JAVADOC_PROVIDER_PATH).lookupAll(J2SEPlatformDefaultJavadoc.class)) {
+            roots.addAll(jdoc.getDefaultJavadoc(safePlatform));
         }
-        if (!result.isEmpty()) {
-            return Collections.unmodifiableList(result);
-        }
-        String version = platform.getSpecification().getVersion().toString();
-        if (!OFFICIAL_JAVADOC.containsKey(version)) {
-            LOG.log(Level.WARNING, "unrecognized Java spec version: {0}", version);
-        }
-        String location = OFFICIAL_JAVADOC.get(version);
-        if (location != null) {
+        final List<URL> result = new ArrayList<>(roots.size());
+        for (URI root : roots) {
             try {
-                return Collections.singletonList(new URL(location));
-            } catch (MalformedURLException x) {
-                LOG.log(Level.INFO, null, x);
+                result.add(root.toURL());
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
             }
         }
-        return Collections.emptyList();
+        return Collections.unmodifiableList(result);
     }
 
     boolean isBroken () {
@@ -511,18 +482,5 @@ public class J2SEPlatformImpl extends JavaPlatform {
             }
         }
         return false;
-    }
-
-    private static final Map<String,String> OFFICIAL_JAVADOC = new HashMap<String,String>();
-    static {
-        OFFICIAL_JAVADOC.put("1.0", null); // NOI18N
-        OFFICIAL_JAVADOC.put("1.1", null); // NOI18N
-        OFFICIAL_JAVADOC.put("1.2", null); // NOI18N
-        OFFICIAL_JAVADOC.put("1.3", "http://download.oracle.com/javase/1.3/docs/api/"); // NOI18N
-        OFFICIAL_JAVADOC.put("1.4", "http://download.oracle.com/javase/1.4.2/docs/api/"); // NOI18N
-        OFFICIAL_JAVADOC.put("1.5", "http://download.oracle.com/javase/1.5.0/docs/api/"); // NOI18N
-        OFFICIAL_JAVADOC.put("1.6", "http://download.oracle.com/javase/6/docs/api/"); // NOI18N
-        OFFICIAL_JAVADOC.put("1.7", "http://download.oracle.com/javase/7/docs/api/"); // NOI18N
-    }
-    
+    }        
 }

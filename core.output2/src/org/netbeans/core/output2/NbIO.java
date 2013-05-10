@@ -57,10 +57,12 @@ import org.netbeans.core.output2.options.OutputOptions;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.FoldHandle;
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOColorPrint;
 import org.openide.windows.IOColors;
 import org.openide.windows.IOContainer;
+import org.openide.windows.IOFolding;
 import org.openide.windows.IOPosition;
 import org.openide.windows.IOSelect;
 import org.openide.windows.IOTab;
@@ -85,6 +87,7 @@ class NbIO implements InputOutput, Lookup.Provider {
     private Lookup lookup;
     private IOTabImpl ioTab;
     private IOColorsImpl ioColors;
+    private IOFoldingImpl.NbIoFoldHandleDefinition currentFold = null;
 
     /** Creates a new instance of NbIO 
      * @param name The name of the IO
@@ -296,7 +299,7 @@ class NbIO implements InputOutput, Lookup.Provider {
             ioColors = new IOColorsImpl();
             lookup = Lookups.fixed(ioTab, ioColors, new IOPositionImpl(),
                     new IOColorLinesImpl(), new IOColorPrintImpl(),
-                    new IOSelectImpl(), options);
+                    new IOSelectImpl(), new IOFoldingImpl(), options);
         }
         return lookup;
     }
@@ -512,7 +515,7 @@ class NbIO implements InputOutput, Lookup.Provider {
         protected void println(CharSequence text, OutputListener listener, boolean important, Color color) throws IOException {
             OutWriter out = out();
             if (out != null) {
-                out.print(text, listener, important, color, null, false, true);
+                out.print(text, listener, important, color, null, OutputKind.OUT, true);
             }
         }
     }
@@ -523,7 +526,7 @@ class NbIO implements InputOutput, Lookup.Provider {
         protected void print(CharSequence text, OutputListener listener, boolean important, Color color) throws IOException {
             OutWriter out = out();
             if (out != null) {
-                out.print(text, listener, important, color, null, false, false);
+                out.print(text, listener, important, color, null, OutputKind.OUT, false);
             }
         }
     }
@@ -538,7 +541,7 @@ class NbIO implements InputOutput, Lookup.Provider {
     }
 
     private class IOColorsImpl extends IOColors {
-        Color[] clrs = new Color[4];
+        Color[] clrs = new Color[OutputType.values().length];
 
         @Override
         protected Color getColor(OutputType type) {
@@ -550,6 +553,100 @@ class NbIO implements InputOutput, Lookup.Provider {
             clrs[type.ordinal()] = color;
             post(NbIO.this, IOEvent.CMD_DEF_COLORS, type);
         }
+    }
+
+    private class IOFoldingImpl extends IOFolding {
+
+        @Override
+        protected FoldHandleDefinition startFold(boolean expanded) {
+            synchronized (out()) {
+                if (currentFold != null) {
+                    throw new IllegalStateException(
+                            "The last fold hasn't been finished yet");  //NOI18N
+                }
+                return new NbIoFoldHandleDefinition(null,
+                        getLastLineNumber(), expanded);
+            }
+        }
+
+        class NbIoFoldHandleDefinition extends IOFolding.FoldHandleDefinition {
+
+            private final NbIoFoldHandleDefinition parent;
+            private final int start;
+            private int end = -1;
+            private NbIoFoldHandleDefinition nested = null;
+
+            public NbIoFoldHandleDefinition(NbIoFoldHandleDefinition parent,
+                    int start, boolean expanded) {
+                this.parent = parent;
+                this.start = start;
+                setCurrentFoldStart(start);
+                setExpanded(expanded);
+            }
+
+            @Override
+            public void finish() {
+                synchronized (out()) {
+                    if (nested != null) {
+                        throw new IllegalStateException(
+                                "Nested fold hasn't been finished.");   //NOI18N
+                    }
+                    if (end != -1) {
+                        throw new IllegalStateException(
+                                "Fold has been already finished.");     //NOI18N
+                    }
+                    if (parent == null) {
+                        currentFold = null;
+                        setCurrentFoldStart(-1);
+                    } else {
+                        parent.nested = null;
+                        setCurrentFoldStart(parent.start);
+                    }
+                    end = getLastLineNumber();
+                }
+            }
+
+            @Override
+            public FoldHandleDefinition startFold(boolean expanded) {
+                synchronized (out()) {
+                    if (end != -1) {
+                        throw new IllegalStateException(
+                                "The fold has been alredy finished.");  //NOI18N
+                    }
+                    if (nested != null) {
+                        throw new IllegalStateException(
+                                "An unfinished nested fold exists.");   //NOI18N
+                    }
+                    NbIoFoldHandleDefinition def = new NbIoFoldHandleDefinition(
+                            this, getLastLineNumber(), expanded);
+                    this.nested = def;
+                    return def;
+                }
+            }
+
+            @Override
+            public final void setExpanded(boolean expanded) {
+                synchronized (out()) {
+                    if (expanded) {
+                        getLines().showFold(start);
+                    } else {
+                        getLines().hideFold(start);
+                    }
+                }
+            }
+
+            private void setCurrentFoldStart(int foldStartIndex) {
+                getLines().setCurrentFoldStart(foldStartIndex);
+            }
+
+            private AbstractLines getLines() {
+                return ((AbstractLines) out().getLines());
+            }
+        }
+    }
+
+    private int getLastLineNumber() {
+        return Math.max(0, out().getLines().getLineCount() - 2);
     }
 
     /**

@@ -50,7 +50,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
@@ -101,6 +100,7 @@ public final class ServerURLMapping {
     public static URL toServer(Project p, int projectContext, FileObject projectFile) {
         Parameters.notNull("project", p); //NOI18N
         Parameters.notNull("projectFile", projectFile); //NOI18N
+        
         ServerURLMappingImplementation impl = p.getLookup().lookup(ServerURLMappingImplementation.class);
         if (impl != null) {
             URL u = impl.toServer(projectContext, projectFile);

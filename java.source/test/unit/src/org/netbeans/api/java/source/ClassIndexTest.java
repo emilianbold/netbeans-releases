@@ -64,6 +64,7 @@ import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.Symbols;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
@@ -103,6 +104,18 @@ public class ClassIndexTest extends NbTestCase {
 
     public ClassIndexTest (String name) {
         super (name);
+    }
+
+    public static NbTestSuite suite() {
+        final NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new ClassIndexTest("testEvents"));    //NOI18N
+        suite.addTest(new ClassIndexTest("testholdsWriteLock"));    //NOI18N
+        suite.addTest(new ClassIndexTest("testGetElementsScopes"));    //NOI18N
+        suite.addTest(new ClassIndexTest("testGetDeclaredTypesScopes"));    //NOI18N
+        suite.addTest(new ClassIndexTest("testPackageUdages"));    //NOI18N
+        suite.addTest(new ClassIndexTest("testNullRootPassedToClassIndexEvent"));    //NOI18N
+        suite.addTest(new ClassIndexTest("testFindSymbols"));    //NOI18N
+        return suite;
     }
 
     @Override
