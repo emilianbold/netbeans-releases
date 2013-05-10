@@ -118,7 +118,8 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     @Override
     public boolean processToken() {
         boolean processed = false;
-        CharSequence tokenText = tokenSequence.token().text();        switch (tokenSequence.token().id()) {
+        CharSequence tokenText = tokenSequence.token().text();        
+        switch (tokenSequence.token().id()) {
             case TAG_OPEN:
                 lastTagOpen = tokenText.toString();
                 StackItem top = stack.peek();
@@ -148,33 +149,33 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 if (processArgumentValue) {
                     String value = WebUtils.unquotedValue(tokenText);
                     StringBuilder sb = new StringBuilder();
-                    sb.append("(function () { // generated function for scope ");
-                    sb.append(value).append("\n");
+                    sb.append("(function () { // generated function for scope ");   //NOI18N
+                    sb.append(value).append("\n");  //NOI18N
                     embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
                     embeddings.add(snapshot.create(tokenSequence.offset() + 1, value.length(), Constants.JAVASCRIPT_MIMETYPE));
                     sb = new StringBuilder();
-                    sb.append("();\n");
-                    Collection<IndexedElement> properties = index.getProperties(value + ".$scope");
+                    sb.append("();\n"); //NOI18N
+                    Collection<IndexedElement> properties = index.getProperties(value + ".$scope"); //NOI18N
                     for (IndexedElement indexedElement : properties) {
                         propertyToFqn.put(indexedElement.getName(), value);
-                        sb.append("var ");
+                        sb.append("var ");  //NOI18N
                         sb.append(indexedElement.getName());
 
                         switch (indexedElement.getJSKind()) {
                             case METHOD:
                                 IndexedElement.FunctionIndexedElement function = (IndexedElement.FunctionIndexedElement)indexedElement;
-                                sb.append(" = function(");
+                                sb.append(" = function(");  //NOI18N
                                 boolean first = true;
                                 for (String param : function.getParameters().keySet()) {
                                     if (!first) {
-                                        sb.append(", ");
+                                        sb.append(", ");    //NOI18N
                                     } else {
                                         first = false;
                                     }
                                     sb.append(param);
                                 }
                                 
-                                sb.append("){}");
+                                sb.append("){}");   //NOI18N
                                 break;
 
                             default:
@@ -185,13 +186,13 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                                     //use the last assignment
                                     TypeUsage typeUsage = typeUsages.get(typeUsages.size() - 1);
                                     String type = typeUsage.getType();
-                                    sb.append(" = new ");
+                                    sb.append(" = new ");   //NOI18N
                                     sb.append(type);
-                                    sb.append("()");
+                                    sb.append("()");    //NOI18N
 
                                 }
                         }
-                        sb.append(";\n");
+                        sb.append(";\n");   //NOI18N
                     }
 
                     embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
@@ -204,14 +205,14 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     if (tokenSequence.token().id() == HTMLTokenId.EL_CONTENT) {
                         String value = tokenSequence.token().text().toString().trim();
                         String name = value;
-                        int parenIndex = name.indexOf('(');
+                        int parenIndex = name.indexOf('('); //NOI18N
                         if (parenIndex > -1) {
                             name = name.substring(0, parenIndex);
                         }
                         if (propertyToFqn.containsKey(name)) {
-                            embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                             embeddings.add(snapshot.create(tokenSequence.offset(), value.length(), Constants.JAVASCRIPT_MIMETYPE));
-                            embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                             processed = true;
                         } else {
                             tokenSequence.movePrevious();
