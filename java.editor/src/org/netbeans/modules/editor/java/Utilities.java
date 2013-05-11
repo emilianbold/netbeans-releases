@@ -505,6 +505,8 @@ public final class Utilities {
         while(path != null) {
             switch(path.getLeaf().getKind()) {
                 case BLOCK:
+                    if (path.getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION)
+                        break;
                 case ANNOTATION_TYPE:
                 case CLASS:
                 case ENUM:

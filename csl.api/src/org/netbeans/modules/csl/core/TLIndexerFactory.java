@@ -286,28 +286,40 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
             }
             
             //filter all the errors and retain only those suitable for the tasklist
-            List<Error> filteredErrors;
-            
+            List<Error> filteredErrors  = new ArrayList<Error>();
+
             if (allTasks && process) {
-                filteredErrors = 
-                    (List<Error>)ErrorFilterQuery.getFilteredErrors(gsfParserResult,  ErrorFilter.FEATURE_TASKLIST); // NOI18N
-            } else {
-                filteredErrors = new ArrayList<Error>();
+                List<? extends Error> e = ErrorFilterQuery.getFilteredErrors(gsfParserResult,  ErrorFilter.FEATURE_TASKLIST);
+                if (e != null) {
+                    filteredErrors.addAll(e);
+                }
             }
-            filteredErrors.addAll(
-                    ErrorFilterQuery.getFilteredErrors(gsfParserResult,  FEATURE_ERROR_BADGES)
-            );
-            
+            List<? extends Error> lst  = ErrorFilterQuery.getFilteredErrors(gsfParserResult,  FEATURE_ERROR_BADGES);
             //convert the Error-s to SimpleError-s instancies. For more info look at the SimpleError class javadoc
             List<SimpleError> simplifiedErrors = new ArrayList<SimpleError>();
             Set<String> seenErrorKeys = new HashSet<String>();
+            if (lst != null) {
+                filteredErrors.addAll(lst);
+            } else {
+                // must translate diagnostics offsets into file/document offsets.
+                for (Error err : gsfParserResult.getDiagnostics()) {
+                    int startPos = err.getStartPosition();
+                    startPos = gsfParserResult.getSnapshot().getOriginalOffset(startPos);
+                    String ek = Integer.toString(startPos) + ":" + err.getKey(); // NOI18N
+                    if (!seenErrorKeys.add(ek)) {
+                        continue;
+                    }
+                    simplifiedErrors.add(simplify(err, startPos));
+                }
+            }
+            
             for(Error e : filteredErrors) {
                 String ek = Integer.toString(e.getStartPosition()) + ":" + e.getKey(); // NOI18N
                 // since ErrorFilterQuery is called 2x, avoid potential duplicates from buggy implementations of ErrorFilter
-                if (seenErrorKeys.add(ek)) {
+                if (!seenErrorKeys.add(ek)) {
                     continue;
                 }
-                simplifiedErrors.add(simplify(e));
+                simplifiedErrors.add(simplify(e, -1));
             }
             
             storedErrors.addAll(simplifiedErrors);
@@ -379,10 +391,10 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                 
     }
     
-    private static SimpleError simplify(Error error) {
+    private static SimpleError simplify(Error error, int pos) {
         return new SimpleError(error.getDisplayName(), 
                 error.getDescription(), 
-                error.getStartPosition(), 
+                pos == -1 ? error.getStartPosition() : pos,
                 error.getSeverity(),
                 error instanceof Badging && ((Badging) error).showExplorerBadge());
     }
