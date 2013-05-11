@@ -46,7 +46,9 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -212,7 +214,7 @@ public class JavaFxRuntimeInclusion {
      * </p>
      *
      */
-    public static String[] getProjectClassPathExtension(@NonNull final JavaPlatform javaPlatform) {
+    public static Set<String> getProjectClassPathExtension(@NonNull final JavaPlatform javaPlatform) {
         Parameters.notNull("javaPlatform", javaPlatform);   //NOI18N
         if (!SPEC_J2SE.equals(javaPlatform.getSpecification().getName())) {
             final Collection<? extends FileObject> installFolders = javaPlatform.getInstallFolders();
@@ -227,32 +229,32 @@ public class JavaFxRuntimeInclusion {
         }
         final JavaFxRuntimeInclusion inclusion = forPlatform(javaPlatform);
         if (!inclusion.isSupported()) {
-            final Collection<? extends FileObject> installFolders = javaPlatform.getInstallFolders();
-            throw new IllegalArgumentException(
-                String.format(
-                    "Java platform %s (%s) installed in %s does not support JavaFX.",    //NOI18N
-                    javaPlatform.getDisplayName(),
-                    javaPlatform.getSpecification(),
-                    installFolders.isEmpty() ?
-                        "???" : //NOI18N
-                        FileUtil.getFileDisplayName(installFolders.iterator().next())));
+            return new LinkedHashSet<String>();
+//            final Collection<? extends FileObject> installFolders = javaPlatform.getInstallFolders();
+//            throw new IllegalArgumentException(
+//                String.format(
+//                    "Java platform %s (%s) installed in %s does not support JavaFX.",    //NOI18N
+//                    javaPlatform.getDisplayName(),
+//                    javaPlatform.getSpecification(),
+//                    installFolders.isEmpty() ?
+//                        "???" : //NOI18N
+//                        FileUtil.getFileDisplayName(installFolders.iterator().next())));
         }
         List<String> artifacts = inclusion.getExtensionArtifactPaths();
         if(!artifacts.isEmpty()) {
-            List<String> extensionProp = new ArrayList<String>();
+            Set<String> extensionProp = new LinkedHashSet<String>();
             Iterator<String> i = artifacts.iterator();
             while(i.hasNext()) {
                 String artifact = i.next();
                 extensionProp.add(
                         String.format(
-                            "${%s}/%s%s",  //NOI18N
+                            "${%s}/%s",  //NOI18N
                             getPlatformHomeProperty(javaPlatform),
-                            artifact,
-                            i.hasNext() ? ":" : "")); //NOI18N
+                            artifact));
             }
-            return extensionProp.toArray(new String[0]);
+            return extensionProp; //.toArray(new String[0]);
         }
-        return null;
+        return new LinkedHashSet<String>();
     }
 
     /**

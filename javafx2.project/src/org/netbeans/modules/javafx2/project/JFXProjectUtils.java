@@ -65,10 +65,18 @@ import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.extbrowser.ExtWebBrowser;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.netbeans.modules.javafx2.platform.api.JavaFxRuntimeInclusion;
+import static org.netbeans.modules.javafx2.platform.api.JavaFxRuntimeInclusion.getPlatformHomeProperty;
+import static org.netbeans.modules.javafx2.project.JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH;
+import static org.netbeans.modules.javafx2.project.JFXProjectProperties.JAVASE_NATIVE_BUNDLING_ENABLED;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.cookies.CloseCookie;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileLock;
@@ -864,6 +872,181 @@ public final class JFXProjectUtils {
             }
         }
         return _currentJfxImplCRC.equals(crc);
+    }
+
+    /**
+     * Updates project.properties so that if JFXRT artifacts are explicitly added to
+     * compile classpath if they are not on classpath by default. This is a workaround
+     * of the fact that JDK1.7 does contain FX RT but does not provide it on classpath.
+     * JDK1.8 has FX RT on classpath, but still may not include all relevant artifacts by default
+     * and may need this extension.
+     * Note that this extension is relevant not only for FX Application projects, but also
+     * for SE projects that have the property "keep.javafx.runtime.on.classpath" set 
+     * (see SE Deployment category in Project Properties dialog).
+     * 
+     * @param prj the project to update
+     */
+    public static void updateClassPathExtension(@NonNull final Project project) throws IOException {
+        final EditableProperties ep = new EditableProperties(true);
+        final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        try {
+            final InputStream is = projPropsFO.getInputStream();
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    try {
+                        ep.load(is);
+                    } finally {
+                        if (is != null) {
+                            is.close();
+                        }
+                    }
+                    updateClassPathExtensionProperties(ep);
+                    OutputStream os = null;
+                    FileLock lock = null;
+                    try {
+                        lock = projPropsFO.lock();
+                        os = projPropsFO.getOutputStream(lock);
+                        ep.store(os);
+                    } finally {
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                        if (os != null) {
+                            os.close();
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (MutexException mux) {
+            throw (IOException) mux.getException();
+        }
+    }
+
+    /**
+     * Create array of Strings representing path artifacts that can be set to path property;
+     * all but the last String gets : appended.
+     * @param artifacts
+     * @return array of artifacts
+     */
+    public static String[] getPaths(@NonNull final Collection<String> artifacts) {
+        List<String> l = new ArrayList<String>();
+        Iterator<String> i = artifacts.iterator();
+        while(i.hasNext()) {
+            String s = i.next();
+            if(i.hasNext()) {
+                if(s.endsWith(":")) { //NOI18N
+                    l.add(s);
+                } else {
+                    l.add(s + ":"); //NOI18N
+                }
+            } else {
+                if(s.endsWith(":")) { //NOI18N
+                    l.add(s.substring(0, s.length()-1));
+                } else {
+                    l.add(s);
+                }
+            }
+        }
+        return l.toArray(new String[0]);
+    }
+    
+    /**
+     * Remove trailing : from array of path artifacts and return the array as collection
+     * @param artifacts
+     * @return 
+     */
+    public static Set<String> getPaths(@NonNull final String[] artifacts) {
+        if(artifacts != null) {
+            Set<String> l = new TreeSet<String>();
+            for(int i = 0 ; i < artifacts.length; i++) {
+                if(artifacts[i].endsWith(":")) { //NOI18N
+                    l.add(artifacts[i].substring(0, artifacts[i].length()-1));
+                } else {
+                    l.add(artifacts[i]);
+                }
+            }
+            return l;
+        }
+        return null;
+    }
+    
+    /**
+     * Returns new value of classpath property if it needs to be updated, null otherwise
+     * @param ep EditableProperties
+     * @return collection of artifacts or null
+     */
+    public static Collection<String> getUpdatedCPProperty(@NonNull final EditableProperties ep) {
+        // existing
+        String currentPropVal = ep.getProperty(ProjectProperties.JAVAC_CLASSPATH);
+        String[] existingArray = currentPropVal == null ? null : PropertyUtils.tokenizePath(currentPropVal);
+        Set<String> existing = existingArray == null ? new TreeSet<String>() : getPaths(existingArray);
+        // expected
+        Set<String> extend = getPaths(new String[] {JavaFXPlatformUtils.getClassPathExtensionProperty()});
+        // compare
+        if(existing.containsAll(extend)) {
+            return null; // no update needed
+        }
+        existing.addAll(extend);
+        return Collections.unmodifiableSet(existing);
+    }
+    
+    /**
+     * Returns new value of FX artifacts extension property if it needs to be updated, null otherwise
+     * @param ep EditableProperties
+     * @return collection of artifacts or null
+     */
+    public static Collection<String> getUpdatedExtensionProperty(@NonNull final EditableProperties ep) {
+        // existing
+        String currentPropVal = ep.getProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION);
+        String[] existingArray = currentPropVal == null ? null : PropertyUtils.tokenizePath(currentPropVal);
+        Set<String> existing = existingArray == null ? new TreeSet<String>() : getPaths(existingArray);
+        // expected
+        String platformName = ep.getProperty(JFXProjectProperties.PLATFORM_ACTIVE);                
+        Set<String> extend = JavaFxRuntimeInclusion.getProjectClassPathExtension(JavaFXPlatformUtils.findJavaPlatform(platformName));
+        // compare
+        if(extend == null || (existing != null && existing.containsAll(extend))) {
+            return null; // no update needed
+        }
+        // replace the old property entirely
+        return Collections.unmodifiableSet(extend);
+    }
+    
+    /**
+     * Checks whether JFXRT artifacts are properly added to classpath and represented 
+     * in project.properties if the current Java Platform needs this workaround
+     * @param prj the project to check
+     * @return true if project properties correctly represent JFXRT artifacts
+     */
+    public static boolean hasCorrectClassPathExtension(@NonNull final Project project) throws IOException {
+        final EditableProperties ep = readFromFile(
+            project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH)
+                );
+        return getUpdatedCPProperty(ep) == null && getUpdatedExtensionProperty(ep) == null;
+    }
+    
+    /**
+     * Updates EditableProperties so that JFXRT artifacts are explicitly added to
+     * compile classpath if they are not on classpath by default. This is a workaround
+     * of the fact that JDK1.7 does contain FX RT but does not provide it on classpath.
+     * JDK1.8 has FX RT on classpath, but still may not include all relevant artifacts by default
+     * and may need this extension.
+     * Note that this extension is relevant not only for FX Application projects, but also
+     * for SE projects that have the property "keep.javafx.runtime.on.classpath" set 
+     * (see SE Deployment category in Project Properties dialog).
+     * 
+     * @param ep EditableProperties containing properties to be updated
+     */
+    public static void updateClassPathExtensionProperties(@NonNull final EditableProperties ep) {       
+        Collection<String> extendCPProp = getUpdatedCPProperty(ep);
+        if(extendCPProp != null) {
+            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, getPaths(extendCPProp));
+        }
+        Collection<String> extendExtProp = getUpdatedExtensionProperty(ep);
+        if(extendExtProp != null) {
+            ep.setProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION, getPaths(extendExtProp));
+        }
     }
 
     /**

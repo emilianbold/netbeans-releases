@@ -50,9 +50,11 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -449,9 +451,9 @@ public class JFXProjectGenerator {
         ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, type == WizardType.SWING ? "COMMENT_updatemode_swing" : "COMMENT_updatemode")}, false); // NOI18N
         ep.setProperty(JFXProjectProperties.ALLOW_OFFLINE, "true"); // NOI18N
 
-        String[] extensions = JavaFxRuntimeInclusion.getProjectClassPathExtension(JavaFXPlatformUtils.findJavaPlatform(platformName));
-        if(extensions != null) {
-            ep.setProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION, extensions);
+        Collection<String> extensions = JavaFxRuntimeInclusion.getProjectClassPathExtension(JavaFXPlatformUtils.findJavaPlatform(platformName));
+        if(extensions != null && !extensions.isEmpty()) {
+            ep.setProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION, JFXProjectUtils.getPaths(extensions));
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, new String[] {JavaFXPlatformUtils.getClassPathExtensionProperty()}); // NOI18N
         }
         ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, ""); // NOI18N
@@ -580,7 +582,7 @@ public class JFXProjectGenerator {
         ep.setProperty("build.test.results.dir", "${build.dir}/test/results"); // NOI18N
         ep.setProperty("build.classes.excludes", "**/*.java,**/*.form"); // NOI18N
         ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc"); // NOI18N
-        ep.setProperty("platform.active", platformName); // NOI18N
+        ep.setProperty(JFXProjectProperties.PLATFORM_ACTIVE, platformName); // NOI18N
 
         ep.setProperty(JFXProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
