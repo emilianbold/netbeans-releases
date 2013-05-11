@@ -1344,12 +1344,10 @@ public class Installer extends ModuleInstall implements Runnable {
     }
 
     private static File getMessagesLog(){
-        File directory = logsDirectory();
-        if (directory == null){
-            return null;
-        }
-        File messagesLog = new File(directory, "messages.log");
-        return messagesLog;
+        String logFile = NbBundle.getMessage(Installer.class, "LOG_FILE");
+        File userDir = Places.getUserDirectory();
+        File log = (userDir != null) ? new File(userDir, logFile) : null;
+        return log;
     }
 
     private static File getHeapDump() {
@@ -2012,8 +2010,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 if (dataType != DataType.DATA_METRICS) {
                     String txt;
                     String logFile = NbBundle.getMessage(Installer.class, "LOG_FILE");
-                    File userDir = Places.getUserDirectory();
-                    File log = (userDir != null) ? new File(userDir, logFile) : null;
+                    File log = getMessagesLog();
                     if (log != null) {
                         logFile = log.getAbsolutePath();
                     }
