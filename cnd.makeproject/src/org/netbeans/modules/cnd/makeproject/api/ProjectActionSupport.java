@@ -181,8 +181,7 @@ public class ProjectActionSupport {
             }
             // IZ#201761  -  Too long refreshing file system after build.
             // refresh can take a lot of time for slow file systems
-            // so we use worker and schedule it out of build process if auto refresh
-            // is turned off by user in Tools->Options->Misk->Files->Enable auto-scanning of sources
+            // so we use worker and schedule it out of build process
             final Runnable refresher = new Runnable() {
 
                 @Override
@@ -198,23 +197,16 @@ public class ProjectActionSupport {
                     }
                 }
             };
-            final Preferences nd = NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction"); // NOI18N
-            boolean manual = (nd != null) && nd.getBoolean("manual", false);// NOI18N
-            if (manual) {
-                RP.post(new Runnable() {
+            // Always redirect into RP, otherwise status of build is not displayed for a long time
+            RP.post(new Runnable() {
 
-                    @Override
-                    public void run() {
-                        FileUtil.runAtomicAction(refresher);
-                        fon.onFinish(curPAE);
-                        MakeLogicalViewProvider.refreshBrokenItems(project);
-                    }
-                });
-            } else {
-                FileUtil.runAtomicAction(refresher);
-                fon.onFinish(curPAE);
-                MakeLogicalViewProvider.refreshBrokenItems(project);
-            }
+                @Override
+                public void run() {
+                    FileUtil.runAtomicAction(refresher);
+                    fon.onFinish(curPAE);
+                    MakeLogicalViewProvider.refreshBrokenItems(project);
+                }
+            });
         } catch (Exception e) {
             LOGGER.log(Level.INFO, "Cannot refresh project files", e);
         }
