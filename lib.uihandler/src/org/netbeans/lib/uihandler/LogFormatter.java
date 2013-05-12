@@ -300,9 +300,10 @@ class LogFormatter extends XMLFormatter{
         sb.append(record.getThreadID());
         sb.append("</thread>\n");// NOI18N
         
-        if (record.getMessage() != null) {
+        String message = record.getMessage();
+        if (message != null) {
             sb.append("  <message>");// NOI18N
-            escape(sb, record.getMessage());
+            escape(sb, message);
             sb.append("</message>\n");// NOI18N
         }
                 
@@ -310,9 +311,9 @@ class LogFormatter extends XMLFormatter{
         // bundle name, and params.
         ResourceBundle bundle = record.getResourceBundle();
         try {
-            if (bundle != null && bundle.getString(record.getMessage()) != null) {
+            if (bundle != null && bundle.getString(message) != null) {
                 sb.append("  <key>");// NOI18N
-                escape(sb, record.getMessage());
+                escape(sb, message);
                 sb.append("</key>\n");// NOI18N
                 sb.append("  <catalog>");// NOI18N
                 escape(sb, record.getResourceBundleName());
@@ -327,7 +328,7 @@ class LogFormatter extends XMLFormatter{
         //  Check to see if the parameter was not a messagetext format
         //  or was not null or empty
         if ( parameters != null && parameters.length != 0
-                && record.getMessage().indexOf("{") == -1 ) {
+                && (message == null || message.indexOf("{") == -1) ) {
             for (int i = 0; i < parameters.length; i++) {
                 sb.append("  <param>");// NOI18N
                 try {
