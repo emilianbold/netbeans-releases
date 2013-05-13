@@ -143,12 +143,20 @@ public final class TeamServerTopComponent extends TopComponent {
         removeAll();
         dashboardComponent = Dashboard.getInstance().getComponent();
         add(dashboardComponent, BorderLayout.CENTER);
-        add(getServerSwitcher(), BorderLayout.NORTH);
+        Component serverSwitcher = getServerSwitcher();
+        if(serverSwitcher != null) {
+            add(serverSwitcher, BorderLayout.NORTH);
+        }
     }
 
     @Messages("LBL_Server=Team Server:")
-    Component getServerSwitcher() {
+    private Component getServerSwitcher() {
+        if(!Utilities.isMoreProjectsDashboard()) {
+            return null;
+        }
+        
         combo = new TeamServerCombo(true);
+        combo.setVisible(false);
         Object k = Utilities.getLastTeamServer();
         if (k!=null) {
             combo.setSelectedItem(k);

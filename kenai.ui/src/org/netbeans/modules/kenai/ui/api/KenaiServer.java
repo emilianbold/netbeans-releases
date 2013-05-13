@@ -63,7 +63,7 @@ import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardProviderImpl;
 import org.netbeans.modules.kenai.ui.impl.LoginPanelSupportImpl;
 import org.netbeans.modules.kenai.ui.impl.TeamServerProviderImpl;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.DashboardSupport;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -83,11 +83,11 @@ public final class KenaiServer implements TeamServer {
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
     private final PropertyChangeListener kenaiListener;
 
-    private DefaultDashboard<KenaiProject> dashboard;
+    private DashboardSupport<KenaiProject> dashboard;
     
     private KenaiServer (Kenai kenai) {
         this.kenai = kenai;
-        dashboard = new DefaultDashboard<KenaiProject>(this, new DashboardProviderImpl(this));
+        dashboard = new DashboardSupport<KenaiProject>(this, new DashboardProviderImpl(this));
         kenai.addPropertyChangeListener(WeakListeners.propertyChange(l=new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
@@ -129,7 +129,7 @@ public final class KenaiServer implements TeamServer {
         });        
     }
 
-    public DefaultDashboard<KenaiProject> getDashboard() {
+    public DashboardSupport<KenaiProject> getDashboard() {
         return dashboard;
     }
     
@@ -145,11 +145,11 @@ public final class KenaiServer implements TeamServer {
         return serverUi;
     }
     
-    public static DefaultDashboard<KenaiProject> getDashboard(ProjectHandle<KenaiProject> pHandle) {
+    public static DashboardSupport<KenaiProject> getDashboard(ProjectHandle<KenaiProject> pHandle) {
         return getDashboard(pHandle.getTeamProject().getKenai());
     }
     
-    public static DefaultDashboard<KenaiProject> getDashboard(Kenai kenai) {
+    public static DashboardSupport<KenaiProject> getDashboard(Kenai kenai) {
         KenaiServer server = forKenai(kenai);
         return server.getDashboard();
     }

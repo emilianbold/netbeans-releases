@@ -55,7 +55,7 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.ui.dashboard.DashboardProviderImpl;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.DashboardSupport;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
@@ -78,11 +78,11 @@ public class ODCSUiServer implements TeamServer {
     private final WeakReference<ODCSServer> impl;
     private PropertyChangeListener l;
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
-    private final DefaultDashboard<ODCSProject> dashboard;
+    private final DashboardSupport<ODCSProject> dashboard;
 
     private ODCSUiServer (ODCSServer server) {
         this.impl = new WeakReference<ODCSServer>(server);
-        dashboard = new DefaultDashboard<ODCSProject>(this, new DashboardProviderImpl(this));
+        dashboard = new DashboardSupport<ODCSProject>(this, new DashboardProviderImpl(this));
         server.addPropertyChangeListener(WeakListeners.propertyChange(l=new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
@@ -129,7 +129,7 @@ public class ODCSUiServer implements TeamServer {
         return ret.toArray(new ProjectHandle[ret.size()]);
     }
     
-    public DefaultDashboard<ODCSProject> getDashboard() {
+    public DashboardSupport<ODCSProject> getDashboard() {
         return dashboard;
     }    
 

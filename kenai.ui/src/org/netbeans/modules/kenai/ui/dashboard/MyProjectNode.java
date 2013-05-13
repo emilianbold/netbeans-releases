@@ -52,7 +52,7 @@ import org.netbeans.modules.kenai.api.*;
 import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.DashboardSupport;
 import org.netbeans.modules.team.ui.common.ProjectProvider;
 import org.netbeans.modules.team.ui.spi.MessagingAccessor;
 import org.netbeans.modules.team.ui.spi.MessagingHandle;
@@ -114,7 +114,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
     private TreeLabel rightPar;
     private TreeLabel leftPar;
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
-    private final DefaultDashboard<KenaiProject> dashboard;
+    private final DashboardSupport<KenaiProject> dashboard;
 
     public MyProjectNode( final ProjectHandle<KenaiProject> project ) {
         super( null );
@@ -261,7 +261,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
                 if (btnMessages != null) {
                     btnMessages.setVisible(b);
                 }
-                dashboard.dashboardComponent.repaint();
+                dashboard.getComponent().repaint();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -330,7 +330,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
                 btnBugs.setVisible(!"0".equals(bug.getText())); // NOI18N
                 component.validate();
                 dashboard.myProjectsProgressFinished();
-                dashboard.dashboardComponent.repaint();
+                dashboard.getComponent().repaint();
             }
         });
     }

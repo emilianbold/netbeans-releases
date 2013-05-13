@@ -68,7 +68,7 @@ import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.DashboardSupport;
 import org.netbeans.modules.team.ui.common.URLDisplayerAction;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -247,7 +247,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<KenaiProject> {
                 } catch (KenaiException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                final DefaultDashboard<KenaiProject> dashboard = KenaiServer.getDashboard(project);
+                final DashboardSupport<KenaiProject> dashboard = KenaiServer.getDashboard(project);
                 dashboard.bookmarkingStarted();
                 Utilities.getRequestProcessor().post(new Runnable() {
                     @Override

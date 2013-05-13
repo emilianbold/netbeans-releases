@@ -55,7 +55,7 @@ import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.team.ui.common.NbModuleOwnerSupport;
 import org.netbeans.modules.team.ui.common.NbModuleOwnerSupport.OwnerInfo;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.DashboardSupport;
 import org.netbeans.modules.team.ui.spi.PopupMenuProvider;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.openide.DialogDisplayer;
@@ -146,7 +146,7 @@ public class KenaiPopupActionsProvider implements PopupMenuProvider {
                         if (kp != null) {
                             if (kp.getFeatures(Type.ISSUES).length > 0) {
                                 final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                final DefaultDashboard<KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
+                                final DashboardSupport<KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
                                 SwingUtilities.invokeLater( new Runnable() {
                                     @Override
                                     public void run() {
@@ -194,7 +194,7 @@ public class KenaiPopupActionsProvider implements PopupMenuProvider {
                         if (kp != null) {
                             if (kp.getFeatures(Type.ISSUES).length > 0) {
                                 final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                                final DefaultDashboard<KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
+                                final DashboardSupport<KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
                                 SwingUtilities.invokeLater( new Runnable() {
                                     @Override
                                     public void run() {
@@ -250,7 +250,7 @@ public class KenaiPopupActionsProvider implements PopupMenuProvider {
                         final KenaiProject kp = getActualKenaiProject(getKenaiProjectName(proj, repositoryUrl), repositoryUrl);
                         if (kp != null) {
                             final ProjectHandleImpl pHandle = new ProjectHandleImpl(kp);
-                            final DefaultDashboard<KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
+                            final DashboardSupport<KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
                             SwingUtilities.invokeLater( new Runnable() {
                                 @Override
                                 public void run() {

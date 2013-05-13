@@ -144,14 +144,14 @@ public class ProjectNode<P> extends TreeListNode {
         DashboardProvider<P> provider = dashboard.getDashboardProvider();
         children.add( provider.createProjectLinksNode(this, project) ); 
         if( null != provider.getMemberAccessor() ) {
-            children.add( new MemberListNode(this, provider) );
+            children.add( new MemberListNode(this, project, provider) );
         }
         BuilderAccessor builds = provider.getBuilderAccessor();
         if (builds != null && builds.isEnabled(project)) {
-            children.add(new BuildListNode(this, builds));
+            children.add(new BuildListNode(this, project, builds));
         }
         if( null != provider.getQueryAccessor() ) {
-            children.add( new QueryListNode(this, provider) );
+            children.add( new QueryListNode(this, project, provider) );
         }
         if( null != provider.getSourceAccessor() ) {
             children.add( provider.createSourceListNode(this, project) );

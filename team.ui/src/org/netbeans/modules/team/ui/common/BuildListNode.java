@@ -74,10 +74,10 @@ public class BuildListNode extends SectionNode {
     private List<JobHandle> builds;
     private final Object BUILDS_LOCK = new Object();
 
-    public BuildListNode(ProjectNode parent, BuilderAccessor accessor) {
-        super( NbBundle.getMessage(BuildListNode.class, "LBL_Builds"), parent,  null ); //NOI18N
+    public BuildListNode(ProjectNode parent, ProjectHandle project, BuilderAccessor accessor) {
+        super( NbBundle.getMessage(BuildListNode.class, "LBL_Builds"), parent, project, null ); //NOI18N
         this.accessor = accessor;
-        parent.getProject().addPropertyChangeListener(new PropertyChangeListener() {
+        project.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if(ProjectHandle.PROP_BUILD_LIST.equals(evt.getPropertyName())) {

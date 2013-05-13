@@ -67,7 +67,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 import static org.netbeans.modules.odcs.ui.dashboard.Bundle.*;
 import org.netbeans.modules.odcs.ui.utils.Utils;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.DashboardSupport;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
@@ -201,7 +201,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<ODCSProject> {
                 } catch (ODCSException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                final DefaultDashboard<ODCSProject> dashboard = ODCSUiServer.forServer(server).getDashboard();
+                final DashboardSupport<ODCSProject> dashboard = ODCSUiServer.forServer(server).getDashboard();
                 dashboard.bookmarkingStarted();
                 RequestProcessor.getDefault().post(new Runnable() {
                     @Override

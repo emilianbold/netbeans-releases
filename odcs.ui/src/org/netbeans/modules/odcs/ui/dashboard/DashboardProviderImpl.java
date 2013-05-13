@@ -159,7 +159,7 @@ public class DashboardProviderImpl extends DashboardProvider<ODCSProject> {
 
     @Override
     public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<ODCSProject> project) {
-        return new SourceListNode(pn, this, (LeafNode[]) null);
+        return new SourceListNode(pn, project, this, (LeafNode[]) null);
     }
 
     @Override

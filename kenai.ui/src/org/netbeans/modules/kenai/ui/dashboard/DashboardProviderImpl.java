@@ -149,9 +149,9 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiProject> {
     @Override
     public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<KenaiProject> project) {
         if (server.getUrl().toString().equals("https://netbeans.org")) { //NOI18N
-            return new SourceListNode(pn, this, new OpenNetBeansIDEProjects(server.getKenai(), pn));
+            return new SourceListNode(pn, project, this, new OpenNetBeansIDEProjects(server.getKenai(), pn));
         } else {
-            return new SourceListNode(pn, this, (LeafNode[]) null);
+            return new SourceListNode(pn, project, this, (LeafNode[]) null);
         }
     }
 

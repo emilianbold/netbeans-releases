@@ -40,60 +40,56 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.team.ui.common;
+package org.netbeans.modules.team.ui;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import org.netbeans.modules.team.ui.spi.DashboardProvider;
-import org.netbeans.modules.team.ui.spi.NbProjectHandle;
+import java.awt.Component;
+import java.awt.Font;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.team.ui.common.ColorManager;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.spi.SourceAccessor;
-import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.netbeans.modules.team.ui.util.treelist.LeafNode;
-import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
-import org.openide.util.NbBundle;
 
 /**
- * Node for project's sources section.
  *
- * @author S. Aubrecht, Jan Becicka
+ * @author Tomas Stupka
  */
-public class SourceListNode<P> extends SectionNode {
-    private final DashboardProvider<P> dashboard;
-    private final LeafNode[] nodes;
+public class ProjectListRenderer implements ListCellRenderer {
 
-    public SourceListNode( TreeListNode parent,  ProjectHandle project, DashboardProvider<P> dashboard, LeafNode... nodes  ) {
-        super( NbBundle.getMessage(SourceListNode.class, "LBL_Sources"), parent, project, ProjectHandle.PROP_SOURCE_LIST ); //NOI18N
-        this.dashboard = dashboard;
-        this.nodes = nodes;
+    public ProjectListRenderer() {
     }
 
     @Override
-    protected List<TreeListNode> createChildren() {
-        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
-        SourceAccessor<P> accessor = dashboard.getSourceAccessor();
-        List<SourceHandle> sources = accessor.getSources(project);
-        if(sources.isEmpty() && nodes != null) {
-            res.addAll(Arrays.asList(nodes));
-        }
-        for (SourceHandle s : sources) {
-            res.add(dashboard.createSourceNode(s, this));
-            res.addAll(getRecentProjectsNodes(s));
-            if (s.getWorkingDirectory() != null) {
-                res.add(new OpenNbProjectNode(s, this, dashboard ));
-                res.add(new OpenFavoritesNode(s, this, dashboard ));
-            }
-        }
-        return res;
-    }
+    public Component getListCellRendererComponent(
+                                       JList list,
+                                       Object value,
+                                       int index,
+                                       boolean isSelected,
+                                       boolean cellHasFocus) {
 
-    private List<TreeListNode> getRecentProjectsNodes(SourceHandle handle) {
-        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>();
-        for( NbProjectHandle s : handle.getRecentProjects()) {
-            res.add( new NbProjectNode( s, this, dashboard ) );
+        JLabel ret = new JLabel();
+        ret.setBorder(new EmptyBorder(1,1,1,1));
+        ret.setOpaque(true);
+
+        if (value instanceof ProjectHandle) {
+            ret.setFont(ret.getFont().deriveFont(Font.BOLD));
+            final ProjectHandle project = (ProjectHandle) value;
+            ret.setText(project.getDisplayName());
+            ret.setToolTipText(project.getDisplayName().toString());
+        } else {
+            ret.setIcon(null);
+            ret.setText(value==null?null:value.toString());
         }
-        return res;
+
+        if (isSelected) {
+            ret.setBackground(list.getSelectionBackground());
+            ret.setForeground(list.getSelectionForeground());
+        } else {
+            ret.setBackground(ColorManager.getDefault().getDefaultBackground());
+            ret.setForeground(list.getForeground());
+        }
+        return ret;
     }
 }
