@@ -218,34 +218,35 @@ class JsCodeCompletion implements CodeCompletionHandler {
         if(element instanceof IndexedElement) {
             final IndexedElement indexedElement = (IndexedElement)element;
             FileObject nextFo = indexedElement.getFileObject();
-            
-            try {
-                ParserManager.parse(Collections.singleton(Source.create(nextFo)), new UserTask () {
+            if (nextFo != null) {
+                try {
+                    ParserManager.parse(Collections.singleton(Source.create(nextFo)), new UserTask () {
 
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        Result parserResult = resultIterator.getParserResult();
-                        if (parserResult instanceof JsParserResult) {
-                            JsParserResult jsInfo = (JsParserResult)parserResult;
-                            
-                            String fqn = indexedElement.getFQN();
-                            JsObject jsObjectGlobal  = jsInfo.getModel().getGlobalObject();
-                            JsObject property = ModelUtils.findJsObjectByName(jsObjectGlobal, fqn);
-                            if (property != null) {
-                                String doc = property.getDocumentation();
-                                if (doc != null && !doc.isEmpty()) {
-                                    documentation.append(doc);
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            Result parserResult = resultIterator.getParserResult();
+                            if (parserResult instanceof JsParserResult) {
+                                JsParserResult jsInfo = (JsParserResult)parserResult;
+
+                                String fqn = indexedElement.getFQN();
+                                JsObject jsObjectGlobal  = jsInfo.getModel().getGlobalObject();
+                                JsObject property = ModelUtils.findJsObjectByName(jsObjectGlobal, fqn);
+                                if (property != null) {
+                                    String doc = property.getDocumentation();
+                                    if (doc != null && !doc.isEmpty()) {
+                                        documentation.append(doc);
+                                    }
                                 }
+
+                            } else {
+                                LOGGER.log(Level.INFO, "Not instance of JsParserResult: {0}", parserResult);
                             }
-                            
-                        } else {
-                            LOGGER.log(Level.INFO, "Not instance of JsParserResult: {0}", parserResult);
                         }
-                    }
-                    
-                });
-            } catch (ParseException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
+
+                    });
+                } catch (ParseException ex) {
+                    LOGGER.log(Level.WARNING, null, ex);
+                }
             }
         } else if (element instanceof JsObject) {
             JsObject jsObject = (JsObject) element;
