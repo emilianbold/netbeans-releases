@@ -867,7 +867,7 @@ public abstract class CndLexer implements Lexer<CppTokenId> {
     public void release() {
     }
 
-    private boolean isTokenSplittedByEscapedLine() {
+    protected final boolean isTokenSplittedByEscapedLine() {
         return tokenSplittedByEscapedLine > 0;
     }
 }

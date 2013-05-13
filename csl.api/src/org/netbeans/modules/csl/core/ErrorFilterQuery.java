@@ -86,7 +86,7 @@ public class ErrorFilterQuery {
                 UPDATER_BACKDOOR.log(lr);
             }
         }
-        return filtered.isEmpty() ? parserResult.getDiagnostics() :  filtered;
+        return filtered.isEmpty() ? null :  filtered;
     }
 
     static String filterName(ErrorFilter.Factory fact, ErrorFilter f) {

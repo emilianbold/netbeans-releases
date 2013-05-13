@@ -3102,6 +3102,9 @@ public class Reformatter implements ReformatTask {
             if (checkWrap != null && col > rightMargin && checkWrap.pos >= lastNewLineOffset) {
                 throw checkWrap;
             }
+            if (bof) {
+                maxCount = minCount;
+            }
             int count = Math.min(minCount, maxCount);
             if (lastBlankLinesTokenIndex < 0) {
                 lastBlankLines = count;
