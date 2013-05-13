@@ -227,11 +227,27 @@ public class JavaSymbolProvider implements SymbolProvider {
                                                     final Set<String> idents = p.getValue();
                                                     if (te != null) {
                                                         if (idents.contains(getSimpleName(te, null))) {
-                                                            result.addResult(new JavaSymbolDescriptor(te.getSimpleName().toString(), te.getKind(), te.getModifiers(), owner, ElementHandle.create(te), project, root));
+                                                            result.addResult(new JavaSymbolDescriptor(
+                                                                    te.getSimpleName().toString(),
+                                                                    te.getKind(),
+                                                                    te.getModifiers(),
+                                                                    owner,
+                                                                    ElementHandle.create(te),
+                                                                    project,
+                                                                    root,
+                                                                    impl));
                                                         }
                                                         for (Element ne : te.getEnclosedElements()) {
                                                             if (idents.contains(getSimpleName(ne, te))) {
-                                                                result.addResult(new JavaSymbolDescriptor(getDisplayName(ne, te), ne.getKind(), ne.getModifiers(), owner, ElementHandle.create(ne), project, root));
+                                                                result.addResult(new JavaSymbolDescriptor(
+                                                                    getDisplayName(ne, te),
+                                                                    ne.getKind(),
+                                                                    ne.getModifiers(),
+                                                                    owner,
+                                                                    ElementHandle.create(ne),
+                                                                    project,
+                                                                    root,
+                                                                    impl));
                                                             }
                                                         }
                                                     }
