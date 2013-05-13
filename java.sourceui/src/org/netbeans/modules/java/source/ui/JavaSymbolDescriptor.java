@@ -50,6 +50,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -58,6 +59,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementOpen;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -189,12 +191,18 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
    
     @Override
     public String getProjectName() {
-        return project == null ? "" : ProjectUtils.getInformation(project).getDisplayName();
+        final ProjectInformation info = getProjectInfo();
+        return info == null ?
+            "" :    //NOI18N
+            info.getDisplayName();
     }
 
     @Override
     public Icon getProjectIcon() {
-        return project == null ? null : ProjectUtils.getInformation(project).getIcon();
+        final ProjectInformation info = getProjectInfo();
+        return info == null ?
+            null :
+            info.getIcon();
     }
 
     @Override
@@ -203,5 +211,11 @@ public class JavaSymbolDescriptor extends SymbolDescriptor {
         return -1;
     }
     
+    @CheckForNull
+    private ProjectInformation getProjectInfo() {
+        return project == null ?
+            null :
+            project.getLookup().lookup(ProjectInformation.class);   //Intentionally does not use ProjectUtils.getInformation() it does project icon annotation which is expensive
+    }
     
 }
