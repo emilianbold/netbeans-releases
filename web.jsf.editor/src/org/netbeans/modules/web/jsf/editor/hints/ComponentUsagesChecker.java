@@ -52,6 +52,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.RuleContext;
+import org.netbeans.modules.html.editor.api.gsf.HtmlErrorFilterContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.CloseTag;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
@@ -92,7 +93,12 @@ public class ComponentUsagesChecker extends HintsProvider {
     private void checkCCCalls(final List<Hint> hints, final RuleContext context) {
         HtmlParserResult result = (HtmlParserResult) context.parserResult;
         final Snapshot snapshot = result.getSnapshot();
-
+        final HtmlErrorFilterContext errContext = context instanceof HtmlErrorFilterContext ? (HtmlErrorFilterContext)context : null;
+        // this check only produces error badging rules
+        if (errContext != null && 
+            !errContext.isOnlyBadging()) {
+            return;
+        }
         //find all usages of composite components tags for this page
         Map<String, Library> declaredLibraries = LibraryUtils.getDeclaredLibraries(result);
 

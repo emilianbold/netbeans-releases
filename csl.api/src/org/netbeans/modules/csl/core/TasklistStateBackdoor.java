@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,69 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.csl.spi;
 
-import java.util.List;
-import org.netbeans.modules.csl.api.Error;
+package org.netbeans.modules.csl.core;
+
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.spi.tasklist.PushTaskScanner;
+import org.netbeans.spi.tasklist.TaskScanningScope;
+import org.openide.util.NbBundle;
+
+import static org.netbeans.modules.csl.core.Bundle.*;
 
 /**
- * Filters out some of the parser result errors for the specified feature.
- * 
- * @author marekfukala
+ * This class provides access to tasklist settings. The settings are only available
+ * to push scanners, so this 'push scanner' is a singleton, which can be queried for 
+ * settings, but really does not push any tasks to the tasklist. 
+ * <p/>
+ * Be aware that the scope can change to null at any time.
+ * @author sdedic
  */
-public interface ErrorFilter {
-
-    /**
-     * Feature name representing the tasklist feature.
-     */
-    public static final String FEATURE_TASKLIST = "tasklist"; //NOI18N
+@NbBundle.Messages({
+    "DN_tlIndexerName=Hints-based tasks",
+    "DESC_tlIndexerName=Tasks provided by language hints"
+})
+class TasklistStateBackdoor extends PushTaskScanner {
+    private static final TasklistStateBackdoor INSTANCE = new TasklistStateBackdoor();
     
-    /**
-     * @param parserResult an instance of ParserResult
-     * 
-     * @return A list of the filtered errors or null if the filter doesn't
-     * want to participate on the filtering 
-     */
-    public List<? extends Error> filter(ParserResult parserResult);
-
-    /**
-     * TODO: Possibly use mimelookup
-     * An instance of this factory for creating ErrorFilters needs to be registered as a system service.
-     */
-    public interface Factory {
-
-        /**
-         * 
-         * @param featureName The feature name for which the ErrorFilter should be created.
-         * @return
-         */
-        public ErrorFilter createErrorFilter(String featureName);
+    private volatile TaskScanningScope scope;
+    private volatile Callback callback;
     
+    TasklistStateBackdoor() {
+        super(DN_tlIndexerName(), DESC_tlIndexerName(), null);
     }
     
+    static TasklistStateBackdoor getInstance() {
+        return INSTANCE;
+    }
+    
+    boolean isCurrentEditorScope() {
+        Callback c = this.callback;
+        return c != null && c.isCurrentEditorScope();
+    }
+    
+    boolean isObserved() {
+        Callback c = this.callback;
+        return c != null && c.isObserved();
+    }
+    
+    TaskScanningScope getScope() {
+        return scope;
+    }
+    
+    @Override
+    public void setScope(TaskScanningScope scope, Callback callback) {
+        this.callback = callback;
+        if (scope == null) {
+            return;
+        }
+        this.scope = scope;
+        if (!callback.isObserved() || callback.isCurrentEditorScope()) {
+            return;
+        }
+        IndexingManager.getDefault().refreshAllIndices(TLIndexerFactory.INDEXER_NAME);
+        
+    }
 }

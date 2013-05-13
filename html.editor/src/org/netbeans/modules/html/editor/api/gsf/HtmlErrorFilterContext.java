@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,46 +37,34 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.csl.spi;
 
-import java.util.List;
-import org.netbeans.modules.csl.api.Error;
+package org.netbeans.modules.html.editor.api.gsf;
+
+import org.netbeans.modules.csl.api.RuleContext;
 
 /**
- * Filters out some of the parser result errors for the specified feature.
+ * Extended RuleContext, which provides a flag extension can test to speed up the processing.
+ * The error rules are processed during indexing. Unless tasklist is displayed and the file in question
+ * is in its scope, the extension should check {@link #isOnlyBadging} and avoid any rules that
+ * do just hinting and not error badging to improve performance.
+ * <p/>
+ * See defect #
  * 
- * @author marekfukala
+ * @author sdedic
  */
-public interface ErrorFilter {
+public final class HtmlErrorFilterContext extends RuleContext {
+    private boolean onlyBadging;
 
-    /**
-     * Feature name representing the tasklist feature.
-     */
-    public static final String FEATURE_TASKLIST = "tasklist"; //NOI18N
-    
-    /**
-     * @param parserResult an instance of ParserResult
-     * 
-     * @return A list of the filtered errors or null if the filter doesn't
-     * want to participate on the filtering 
-     */
-    public List<? extends Error> filter(ParserResult parserResult);
-
-    /**
-     * TODO: Possibly use mimelookup
-     * An instance of this factory for creating ErrorFilters needs to be registered as a system service.
-     */
-    public interface Factory {
-
-        /**
-         * 
-         * @param featureName The feature name for which the ErrorFilter should be created.
-         * @return
-         */
-        public ErrorFilter createErrorFilter(String featureName);
-    
+    public HtmlErrorFilterContext() {
     }
     
+    public void setOnlyBadging(boolean enable) {
+        this.onlyBadging = enable;
+    }
+
+    public boolean isOnlyBadging() {
+        return onlyBadging;
+    }
 }

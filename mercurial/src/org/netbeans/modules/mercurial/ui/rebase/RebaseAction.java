@@ -168,6 +168,10 @@ public class RebaseAction extends ContextAction {
         support.start(rp, root, Bundle.MSG_Rebase_Preparing_Progress());
     }
 
+    @NbBundle.Messages({
+        "MSG_RebaseAction.progress.preparingChangesets=Preparing changesets to rebase",
+        "MSG_RebaseAction.progress.rebasingChangesets=Rebasing changesets"
+    })
     public static boolean doRebase (File root, String base, String source, String dest,
             HgProgressSupport supp) throws HgException {
         OutputLogger logger = supp.getLogger();
@@ -197,6 +201,7 @@ public class RebaseAction extends ContextAction {
                     if (baseRev == null) {
                         baseRev = HgCommand.getParent(root, null, null).getChangesetId();
                     }
+                    supp.setDisplayName(Bundle.MSG_RebaseAction_progress_preparingChangesets());
                     String revPattern = MessageFormat.format("last(limit(ancestor({0},{1})::{1}, 2), 1)", destRev, baseRev); //NOI18N
                     HgLogMessage[] revs = HgCommand.getRevisionInfo(root, Collections.<String>singletonList(revPattern), null);
                     if (revs.length == 0) {
@@ -215,12 +220,15 @@ public class RebaseAction extends ContextAction {
             return false;
         }
         
+        supp.setDisplayName(Bundle.MSG_RebaseAction_progress_rebasingChangesets());
         RebaseResult rebaseResult = HgCommand.doRebase(root, base, source, dest, logger);
-        HgUtils.forceStatusRefresh(root);
-        handleRebaseResult(new RebaseHookContext(root, sourceRev, destRev, hooks), rebaseResult, logger);
+        handleRebaseResult(new RebaseHookContext(root, sourceRev, destRev, hooks), rebaseResult, supp);
         return rebaseResult.getState() == State.OK;
     }
 
+    @NbBundle.Messages({
+        "MSG_RebaseAction.progress.refreshingFiles=Refreshing files"
+    })
     private void doRebase (final File root, HgLogMessage workingCopyParent,
             String currentBranch, Map<String, Collection<HgLogMessage>> branchHeads) {
         final Rebase rebase = new Rebase(root, workingCopyParent, currentBranch, branchHeads);
@@ -245,6 +253,8 @@ public class RebaseAction extends ContextAction {
                                 RebaseAction.doRebase(root, rebase.getRevisionBase(),
                                         rebase.getRevisionSource(),
                                         rebase.getRevisionDest(), supp);
+                                supp.setDisplayName(Bundle.MSG_RebaseAction_progress_refreshingFiles());
+                                HgUtils.forceStatusRefresh(root);
                                 return null;
                             }
                         }, root);
@@ -298,6 +308,7 @@ public class RebaseAction extends ContextAction {
                 
                 private void finishRebase (final boolean cont) {
                     final OutputLogger logger = getLogger();
+                    final HgProgressSupport supp = this;
                     try {
                         logger.outputInRed(Bundle.MSG_Rebase_Title());
                         logger.outputInRed(Bundle.MSG_Rebase_Title_Sep());
@@ -310,7 +321,7 @@ public class RebaseAction extends ContextAction {
                                 RebaseHookContext rebaseCtx = buildRebaseContext(root);
                                 RebaseResult rebaseResult = HgCommand.finishRebase(root, cont, logger);
                                 HgUtils.forceStatusRefresh(root);
-                                handleRebaseResult(rebaseCtx, rebaseResult, logger);
+                                handleRebaseResult(rebaseCtx, rebaseResult, supp);
                                 return null;
                             }
                         }, root);
@@ -327,8 +338,10 @@ public class RebaseAction extends ContextAction {
     }
 
     @NbBundle.Messages({
+        "MSG_RebaseAction.progress.repairingPushHooks=Updating push hooks"
     })
-    private static void handleRebaseResult (RebaseHookContext rebaseCtx, RebaseResult rebaseResult, OutputLogger logger) {
+    private static void handleRebaseResult (RebaseHookContext rebaseCtx, RebaseResult rebaseResult, HgProgressSupport supp) {
+        OutputLogger logger = supp.getLogger();
         for (File f : rebaseResult.getTouchedFiles()) {
             Mercurial.getInstance().notifyFileChanged(f);
         }
@@ -348,6 +361,7 @@ public class RebaseAction extends ContextAction {
             if (!rebaseCtx.hooks.isEmpty() && rebaseCtx.source != null && rebaseCtx.dest != null) {
                 File bundleFile = rebaseResult.getBundleFile();
                 if (bundleFile != null && bundleFile.exists()) {
+                    supp.setDisplayName(Bundle.MSG_RebaseAction_progress_repairingPushHooks());
                     try {
                         HgHookContext.LogEntry[] originalEntries = findOriginalEntries(repository, bundleFile);
                         HgHookContext.LogEntry[] newEntries = findNewEntries(repository, rebaseCtx.dest);
