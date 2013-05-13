@@ -314,11 +314,20 @@ outer:      for(MultiKeyBinding mkb : m.getShortcuts()) {
             // try simple keystorkes first
             KeyStroke keyStroke = KeyStroke.getKeyStrokeForEvent((KeyEvent) maybeKeyEvent);
             MimePath mimeType = MimePath.parse(NbEditorUtilities.getMimeType(target));
-            MacroDescription macro = findMacro(mimeType, keyStroke);
+            MacroDescription macro = null;
+            if (keyStroke != null) {
+                macro = findMacro(mimeType, keyStroke);
+            } else {
+                LOG.warning("KeyStroke could not be created for event " + maybeKeyEvent);
+            }
             if (macro == null) {
                 // if not found, try action command, which should contain complete multi keystroke
                 KeyStroke[] shortcut = KeyStrokeUtils.getKeyStrokes(evt.getActionCommand());
-                macro = findMacro(mimeType, shortcut);
+                if (shortcut != null) {
+                    macro = findMacro(mimeType, shortcut);
+                } else {
+                    LOG.warning("KeyStroke could not be created for action command " + evt.getActionCommand());
+                }
             }
 
             if (macro == null) {
