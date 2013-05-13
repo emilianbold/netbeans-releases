@@ -84,8 +84,12 @@ public final class NamespaceUtils {
     @CheckForNull
     public static <T> T getForNs(Map<String, T> map, String ns) {
         T result = map.get(ns);
-        if (result == null && NS_MAPPING.containsKey(ns)) {
-            result = map.get(NS_MAPPING.get(ns));
+        if (result == null) {
+            if (NS_MAPPING.containsKey(ns)) {
+                result = map.get(NS_MAPPING.get(ns));
+            } else if (ns.startsWith(DefaultLibraryInfo.COMPOSITE.getLegacyNamespace())) {
+                result = map.get(ns.replace(DefaultLibraryInfo.COMPOSITE.getLegacyNamespace(), DefaultLibraryInfo.COMPOSITE.getNamespace()));
+            }
         }
         return result;
     }
