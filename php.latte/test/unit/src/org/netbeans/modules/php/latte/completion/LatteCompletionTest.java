@@ -39,55 +39,32 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.utils;
-
-import java.util.List;
-import javax.swing.text.Document;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.php.latte.lexer.LatteMarkupTokenId;
+package org.netbeans.modules.php.latte.completion;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public final class LatteLexerUtils {
+public class LatteCompletionTest extends LatteCompletionTestBase {
 
-    private LatteLexerUtils() {
+    public LatteCompletionTest(String testName) {
+        super(testName);
     }
 
-    public static TokenSequence<? extends LatteMarkupTokenId> getLatteMarkupTokenSequence(final Snapshot snapshot, final int offset) {
-        return getTokenSequence(snapshot.getTokenHierarchy(), offset, LatteMarkupTokenId.language());
+    public void testCompletion_01() throws Exception {
+        checkCompletion("testfiles/completion/testCompletion_01.latte", "{^}", false);
     }
 
-    public static TokenSequence<? extends LatteMarkupTokenId> getLatteMarkupTokenSequence(final Document document, final int offset) {
-        TokenHierarchy<Document> th = TokenHierarchy.get(document);
-        return getTokenSequence(th, offset, LatteMarkupTokenId.language());
+    public void testCompletion_02() throws Exception {
+        checkCompletion("testfiles/completion/testCompletion_02.latte", "{fo^}", false);
     }
 
-    public static <L> TokenSequence<? extends L> getTokenSequence(final TokenHierarchy<?> th, final int offset, final Language<? extends L> language) {
-        TokenSequence<? extends L> ts = th.tokenSequence(language);
-        if (ts == null) {
-            List<TokenSequence<?>> list = th.embeddedTokenSequences(offset, true);
-            for (TokenSequence t : list) {
-                if (t.language() == language) {
-                    ts = t;
-                    break;
-                }
-            }
-            if (ts == null) {
-                list = th.embeddedTokenSequences(offset, false);
-                for (TokenSequence t : list) {
-                    if (t.language() == language) {
-                        ts = t;
-                        break;
-                    }
-                }
-            }
-        }
-        return ts;
+    public void testCompletion_03() throws Exception {
+        checkCompletion("testfiles/completion/testCompletion_03.latte", "{$item|^}", false);
+    }
+
+    public void testCompletion_04() throws Exception {
+        checkCompletion("testfiles/completion/testCompletion_04.latte", "{$item|l^}", false);
     }
 
 }
