@@ -67,7 +67,7 @@ public class ComponentImpl extends PersistentObject implements Component,  Refre
     private String tagName;
     private Boolean createTag;
 
-    private final static String DEFAULT_COMPONENT_NS = "http://java.sun.com/jsf/component";
+    private final static String DEFAULT_COMPONENT_NS = "http://xmlns.jcp.org/jsf/component"; //NOI18N
 
     protected ComponentImpl(AnnotationModelHelper helper, TypeElement typeElement) {
         super(helper, typeElement);
