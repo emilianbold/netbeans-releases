@@ -84,6 +84,8 @@ implements ActionListener, Runnable, Callable<JButton> {
     private static final int MAX_RECORDS_TO_WRITE_OUT = 1000; // Be sure not to hold more than this number of log records.
     private final SlownessReporter reporter;
 
+    private volatile boolean someRecordsScheduled = false;
+
     private static boolean exceptionHandler;
     public static void registerExceptionHandler(boolean enable) {
         exceptionHandler = enable;
@@ -94,6 +96,7 @@ implements ActionListener, Runnable, Callable<JButton> {
         this.exceptionOnly = exceptionOnly;
         if (exceptionOnly){
             this.reporter = null;
+            AfterRestartExceptions.report();
         } else {
             this.reporter = new SlownessReporter();
         }
@@ -148,6 +151,10 @@ implements ActionListener, Runnable, Callable<JButton> {
             }
             if (!exceptionHandler) {
                 return;
+            }
+            boolean scheduled = AfterRestartExceptions.schedule(record);
+            if (scheduled) {
+                someRecordsScheduled = true;
             }
         } else {
             if ((record.getLevel().equals(Level.CONFIG)) && record.getMessage().equals("Slowness detected")){
@@ -223,6 +230,9 @@ implements ActionListener, Runnable, Callable<JButton> {
     private JButton button;
     @Override
     public JButton call() throws Exception {
+        if (someRecordsScheduled) {
+            return null;    // No submits when some records are scheduled after the next start.
+        }
         if (button == null) {
             button = new JButton();
             Mnemonics.setLocalizedText(button, NbBundle.getMessage(UIHandler.class, "MSG_SubmitButton")); // NOI18N
