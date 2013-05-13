@@ -160,7 +160,7 @@ public class JsCompletionItem implements CompletionProposal {
 
     @Override
     public int getSortPrioOverride() {
-        return ((JsElement)element).isPlatform() ? 0 : 100;
+        return (element != null && ((JsElement)element).isPlatform()) ? 0 : 100;
     }
 
     @Override
@@ -346,6 +346,11 @@ public class JsCompletionItem implements CompletionProposal {
                     break;
             }
             return builder.toString();
+        }
+
+        @Override
+        public int getSortPrioOverride() {
+            return 110;
         }
     }
 
