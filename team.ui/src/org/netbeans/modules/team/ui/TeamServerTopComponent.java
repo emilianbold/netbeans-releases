@@ -42,23 +42,11 @@
 package org.netbeans.modules.team.ui;
 
 import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 import java.io.Serializable;
 import java.util.logging.Logger;
-import javax.swing.JComboBox;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSeparator;
-import javax.swing.SwingUtilities;
-import org.netbeans.modules.team.ui.common.AddInstanceAction;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
-import org.openide.awt.Mnemonics;
 import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -75,7 +63,6 @@ public final class TeamServerTopComponent extends TopComponent {
     /** path to the icon used by the component and its open action */
     static final String ICON_PATH = "org/netbeans/modules/team/ui/resources/team-small.png"; // NOI18N
     private static final String PREFERRED_ID = "TeamTopComponent"; // NOI18N
-    private JComboBox combo;
 
     private JComponent dashboardComponent;
 
@@ -141,100 +128,13 @@ public final class TeamServerTopComponent extends TopComponent {
     @Override
     public void componentOpened() {
         removeAll();
-        dashboardComponent = Dashboard.getInstance().getComponent();
+        dashboardComponent = TeamView.getInstance().getComponent();
         add(dashboardComponent, BorderLayout.CENTER);
-        Component serverSwitcher = getServerSwitcher();
-        if(serverSwitcher != null) {
-            add(serverSwitcher, BorderLayout.NORTH);
-        }
-    }
-
-    @Messages("LBL_Server=Team Server:")
-    private Component getServerSwitcher() {
-        if(!Utilities.isMoreProjectsDashboard()) {
-            return null;
-        }
-        
-        combo = new TeamServerCombo(true);
-        combo.setVisible(false);
-        Object k = Utilities.getLastTeamServer();
-        if (k!=null) {
-            combo.setSelectedItem(k);
-        }
-        combo.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                if (combo.getSelectedItem() instanceof TeamServer) {
-                    Dashboard.getInstance().setTeamServer((TeamServer) combo.getSelectedItem());
-                } else if (combo.getSelectedItem() instanceof String) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            new AddInstanceAction().actionPerformed(e);
-                            Dashboard.getInstance().setTeamServer((TeamServer) combo.getSelectedItem());
-                        }
-                    });
-                } else {
-                    Dashboard.getInstance().setTeamServer(null);
-                }
-            }
-        });
-
-        final JPanel panel = new JPanel();
-        java.awt.GridBagConstraints gridBagConstraints;
-
-        JLabel serverLabel = new javax.swing.JLabel();
-        JSeparator jSeparator = new javax.swing.JSeparator();
-
-        panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 3, 0, 3));
-        panel.setLayout(new java.awt.GridBagLayout());
-
-        Mnemonics.setLocalizedText(serverLabel, LBL_Server());
-        serverLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 3, 3));
-        panel.add(serverLabel, new java.awt.GridBagConstraints());
-
-        combo.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 3, 3));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        panel.add(combo, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        panel.add(jSeparator, gridBagConstraints);
-
-        panel.setBackground(dashboardComponent.getBackground());
-        combo.setOpaque(false);
-
-        combo.addComponentListener(new ComponentAdapter() {
-
-            @Override
-            public void componentShown(ComponentEvent e) {
-                panel.setVisible(true);
-            }
-
-            @Override
-            public void componentHidden(ComponentEvent e) {
-                panel.setVisible(false);
-            }
-        });
-
-        return panel;
-    }
-
-    public void setSelectedServer(TeamServer server) {
-        if (combo!=null) {
-            combo.setSelectedItem(server);
-        }
     }
 
     @Override
     public void componentClosed() {
-        Dashboard.getInstance().close();
+        TeamView.getInstance().close();
         dashboardComponent = null;
         removeAll();
     }
