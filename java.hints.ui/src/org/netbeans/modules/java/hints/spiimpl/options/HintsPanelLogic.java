@@ -729,7 +729,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             
             if (prefs == null) {
                 //will always create the modified preferences
-                forWriting(hint).preferencesOverride = new ModifiedPreferences(delegate.getHintPreferences(hint));
+                prefs = forWriting(hint).preferencesOverride = new ModifiedPreferences(delegate.getHintPreferences(hint));
             }
             
             return prefs;
