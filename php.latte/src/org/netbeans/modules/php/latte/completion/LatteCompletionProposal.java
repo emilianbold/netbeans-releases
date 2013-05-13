@@ -186,6 +186,30 @@ public abstract class LatteCompletionProposal implements CompletionProposal {
 
     }
 
+    static class IteratorItemCompletionProposal extends LatteCompletionProposal {
+
+        public IteratorItemCompletionProposal(LatteElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        @NbBundle.Messages("IteratorRhs=Iterator")
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return Bundle.IteratorRhs();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.FIELD;
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return null;
+        }
+
+    }
+
     public static class CompletionRequest {
         public int anchorOffset;
         public String prefix;

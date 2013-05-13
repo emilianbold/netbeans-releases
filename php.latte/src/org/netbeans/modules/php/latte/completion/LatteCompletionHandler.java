@@ -174,6 +174,15 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
         KEYWORDS.add(LatteElement.Factory.create("break")); //NOI18N
     }
 
+    static final Set<LatteElement> ITERATOR_ITEMS = new HashSet<>();
+    static {
+        ITERATOR_ITEMS.add(LatteElement.Factory.create("first")); //NOI18N
+        ITERATOR_ITEMS.add(LatteElement.Factory.create("last")); //NOI18N
+        ITERATOR_ITEMS.add(LatteElement.Factory.create("counter")); //NOI18N
+        ITERATOR_ITEMS.add(LatteElement.Factory.create("odd")); //NOI18N
+        ITERATOR_ITEMS.add(LatteElement.Factory.create("even")); //NOI18N
+    }
+
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
         final List<CompletionProposal> completionProposals = new ArrayList<>();

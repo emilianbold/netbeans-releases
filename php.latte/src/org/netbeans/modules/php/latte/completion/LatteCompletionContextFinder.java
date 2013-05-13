@@ -59,6 +59,10 @@ public class LatteCompletionContextFinder {
             new Object[]{ValuedTokenId.HELPER_TOKEN},
             new Object[]{ValuedTokenId.HELPER_TOKEN, LatteMarkupTokenId.T_SYMBOL}
     );
+    private static final List<Object[]> ITERATOR_ITEMS_TOKEN_CHAINS = Arrays.asList(
+            new Object[]{ValuedTokenId.ITERATOR_TOKEN, ValuedTokenId.OBJECT_ACCESS_TOKEN},
+            new Object[]{ValuedTokenId.ITERATOR_TOKEN, ValuedTokenId.OBJECT_ACCESS_TOKEN, LatteMarkupTokenId.T_SYMBOL}
+    );
 
     public static LatteCompletionContext find(LatteParserResult parserResult, int caretOffset) {
         LatteCompletionContext result = LatteCompletionContext.NONE;
@@ -87,6 +91,9 @@ public class LatteCompletionContextFinder {
             LatteMarkupTokenId tokenId = token.id();
             if (acceptTokenChains(ts, FILTER_TOKEN_CHAINS, false)) {
                 result = LatteCompletionContext.HELPER;
+                break;
+            } else if (acceptTokenChains(ts, ITERATOR_ITEMS_TOKEN_CHAINS, false)) {
+                result = LatteCompletionContext.ITERATOR_ITEM;
                 break;
             } else if (LatteMarkupTokenId.T_SYMBOL.equals(tokenId) || LatteMarkupTokenId.T_MACRO_START.equals(tokenId)) {
                 result = LatteCompletionContext.MACRO;
@@ -143,7 +150,9 @@ public class LatteCompletionContextFinder {
     }
 
     private static enum ValuedTokenId {
-        HELPER_TOKEN(LatteMarkupTokenId.T_CHAR, "|"); //NOI18N
+        HELPER_TOKEN(LatteMarkupTokenId.T_CHAR, "|"), //NOI18N
+        ITERATOR_TOKEN(LatteMarkupTokenId.T_VARIABLE, "$iterator"), //NOI18N
+        OBJECT_ACCESS_TOKEN(LatteMarkupTokenId.T_CHAR, "->"); //NOI18N
 
         private final LatteMarkupTokenId id;
         private final String value;

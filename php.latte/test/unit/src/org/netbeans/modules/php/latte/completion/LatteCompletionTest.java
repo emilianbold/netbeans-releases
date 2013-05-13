@@ -67,4 +67,12 @@ public class LatteCompletionTest extends LatteCompletionTestBase {
         checkCompletion("testfiles/completion/testCompletion_04.latte", "{$item|l^}", false);
     }
 
+    public void testIterator_01() throws Exception {
+        checkCompletion("testfiles/completion/testIterator_01.latte", "{$iterator->^}", false);
+    }
+
+    public void testIterator_02() throws Exception {
+        checkCompletion("testfiles/completion/testIterator_02.latte", "{$iterator->f^}", false);
+    }
+
 }
