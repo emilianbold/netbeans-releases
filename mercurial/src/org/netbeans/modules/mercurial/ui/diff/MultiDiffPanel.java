@@ -907,7 +907,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         Arrays.sort(localSetups, new Comparator<Setup>() {
             @Override
             public int compare (Setup o1, Setup o2) {
-                return o1.getNode().getLocation().compareTo(o2.getNode().getLocation());
+                return o2.getNode().getLocation().compareTo(o1.getNode().getLocation());
             }
         });
         final EditorCookie[] cookies = DiffUtils.setupsToEditorCookies(localSetups);

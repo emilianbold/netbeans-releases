@@ -137,6 +137,16 @@ final class LocalOperationFactory extends FileOperationFactory {
     @Override
     protected Callable<Boolean> createInitHandlerInternal(final FileObject source) {
         LOGGER.log(Level.FINE, "Creating INIT handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
+        if (!ProjectPropertiesSupport.isCopySourcesOnOpen(project)) {
+            LOGGER.log(Level.FINE, "Copying on open not enabled for project (project {0})", project.getName());
+            return null;
+        }
+        return createCopyFolderHandler(source);
+    }
+
+    @Override
+    protected Callable<Boolean> createReinitHandlerInternal(final FileObject source) {
+        LOGGER.log(Level.FINE, "Creating REINIT handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return createCopyFolderHandler(source);
     }
 
