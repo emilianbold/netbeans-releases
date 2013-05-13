@@ -234,9 +234,10 @@ public abstract class OnlineSampleWizardIterator extends AbstractWizardIterator 
         assert siteRootDir != null;
 
         // apply extenders
-        for (ClientProjectExtender extender : Lookup.getDefault().lookupAll(ClientProjectExtender.class)) {
-            extender.apply(project.getProjectDirectory(), siteRootDir, (String) wizardDescriptor.getProperty(LIBRARIES_PATH));
-        }
+        //no extenders for online samples
+//        for (ClientProjectExtender extender : Lookup.getDefault().lookupAll(ClientProjectExtender.class)) {
+//            extender.apply(project.getProjectDirectory(), siteRootDir, (String) wizardDescriptor.getProperty(LIBRARIES_PATH));
+//        }
 
         return siteRootDir;
     }
