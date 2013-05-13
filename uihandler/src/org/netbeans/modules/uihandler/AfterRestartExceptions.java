@@ -58,6 +58,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.io.NbObjectInputStream;
 
 /**
  *
@@ -160,7 +161,7 @@ class AfterRestartExceptions implements Runnable {
         ObjectInputStream in = null;
         synchronized (IOLock) {
             try {
-                in = new ObjectInputStream(new FileInputStream(logRecords));
+                in = new NbObjectInputStream(new FileInputStream(logRecords));
                 while (true) {
                     Object obj = in.readObject();
                     if (obj instanceof LogRecord) {
