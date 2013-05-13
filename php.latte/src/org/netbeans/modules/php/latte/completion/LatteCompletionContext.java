@@ -70,6 +70,12 @@ public enum LatteCompletionContext {
             completeHelpers(completionProposals, request);
         }
     },
+    ITERATOR_ITEM {
+        @Override
+        public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+            completeIteratorItems(completionProposals, request);
+        }
+    },
     NONE {
         @Override
         public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
@@ -102,6 +108,14 @@ public enum LatteCompletionContext {
             }
         }
     }
+    protected void completeIteratorItems(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+        for (LatteElement iteratorItem : LatteCompletionHandler.ITERATOR_ITEMS) {
+            if (startsWith(iteratorItem.getName(), request.prefix)) {
+                completionProposals.add(new LatteCompletionProposal.IteratorItemCompletionProposal(iteratorItem, request));
+            }
+        }
+    }
+
 
     private static boolean startsWith(String theString, String prefix) {
         return prefix.length() == 0 ? true : theString.toLowerCase().startsWith(prefix.toLowerCase());

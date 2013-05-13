@@ -39,18 +39,40 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
-
-import org.netbeans.api.project.Project;
+package org.netbeans.modules.php.latte.completion;
 
 /**
  *
- * @author Jan Becicka
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public interface CordovaMapping {
+public class LatteCompletionTest extends LatteCompletionTestBase {
 
-    void setBaseUrl(String url);
+    public LatteCompletionTest(String testName) {
+        super(testName);
+    }
 
-    void setProject(Project p);
-    
+    public void testCompletion_01() throws Exception {
+        checkCompletion("testfiles/completion/testCompletion_01.latte", "{^}", false);
+    }
+
+    public void testCompletion_02() throws Exception {
+        checkCompletion("testfiles/completion/testCompletion_02.latte", "{fo^}", false);
+    }
+
+    public void testCompletion_03() throws Exception {
+        checkCompletion("testfiles/completion/testCompletion_03.latte", "{$item|^}", false);
+    }
+
+    public void testCompletion_04() throws Exception {
+        checkCompletion("testfiles/completion/testCompletion_04.latte", "{$item|l^}", false);
+    }
+
+    public void testIterator_01() throws Exception {
+        checkCompletion("testfiles/completion/testIterator_01.latte", "{$iterator->^}", false);
+    }
+
+    public void testIterator_02() throws Exception {
+        checkCompletion("testfiles/completion/testIterator_02.latte", "{$iterator->f^}", false);
+    }
+
 }

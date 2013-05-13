@@ -72,11 +72,12 @@ import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ServiceProvider;
 import static org.netbeans.modules.cordova.PropertyNames.*;
-import org.netbeans.modules.cordova.platforms.BrowserURLMapperImpl;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
+import org.netbeans.modules.cordova.project.PhoneGapBrowserFactory;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitUIManager;
 import org.openide.DialogDescriptor;
@@ -142,16 +143,14 @@ public class CordovaPerformer implements BuildPerformer {
                                 WebBrowser activeConfiguration = provider.getActiveBrowser();
                                 MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(project, activeConfiguration.getId());
                                 Device device = mobileConfig.getDevice();
-//                                CordovaMapping map = (CordovaMapping) Lookup.getDefault().lookup(ServerURLMappingImplementation.class);
-//                                map.setProject(project);
-                                BrowserURLMapperImpl.DEFAULT.setSiteRoot(ClientProjectUtilities.getSiteRoot(project));
+                                BrowserURLMapperImplementation.BrowserURLMapper mapper = ((PhoneGapBrowserFactory) activeConfiguration.getHtmlBrowserFactory()).getMapper();
                                 if (!device.isEmulator()) {
                                     DialogDescriptor dd = new DialogDescriptor("Install application using iTunes and tap on it", "Install and Run");
                                     if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
                                         return;
                                     }
                                 }
-                                startDebugging(device, project, null, false);
+                                startDebugging(device, project, Lookups.singleton(mapper), false);
                             }
                         }
                     }
@@ -293,18 +292,19 @@ public class CordovaPerformer implements BuildPerformer {
 
     @Override
     public String getUrl(Project p, Lookup context) {
-        if (context == null) {
+        if (org.netbeans.modules.cordova.project.ClientProjectUtilities.isUsingEmbeddedServer(p)) {
+            WebServer.getWebserver().start(p, ClientProjectUtilities.getSiteRoot(p), ClientProjectUtilities.getWebContextRoot(p));
+        } else {
+            WebServer.getWebserver().stop(p);
+        }
+
+        if (context == null || context.lookup(BrowserURLMapperImplementation.BrowserURLMapper.class)!=null) {
             return null;
         }
         URL url = context.lookup(URL.class);
         if (url!=null) {
             //TODO: hack to workaround #221791
             return url.toExternalForm().replace("localhost", WebUtils.getLocalhostInetAddress().getHostAddress());
-        }
-        if (org.netbeans.modules.cordova.project.ClientProjectUtilities.isUsingEmbeddedServer(p)) {
-            WebServer.getWebserver().start(p, ClientProjectUtilities.getSiteRoot(p), ClientProjectUtilities.getWebContextRoot(p));
-        } else {
-            WebServer.getWebserver().stop(p);
         }
 
         DataObject dObject = context.lookup(DataObject.class);
@@ -334,8 +334,13 @@ public class CordovaPerformer implements BuildPerformer {
         final String url = getUrl(p, context);
         transport.setBaseUrl(url);
         if (url==null) {
+            //phonegap
             String id = getConfig(p).getId();
             transport.setBundleIdentifier(id);
+            if (context !=null) {
+                BrowserURLMapperImplementation.BrowserURLMapper mapper = context.lookup(BrowserURLMapperImplementation.BrowserURLMapper.class);
+                transport.setBrowserURLMapper(mapper);
+            }
         }
         transport.attach();
         try {
@@ -357,37 +362,29 @@ public class CordovaPerformer implements BuildPerformer {
 
     @Override
     public void stopDebugging() {
-        try {
-            if (webKitDebugging == null || webKitDebugging == null) {
-                return;
-            }
-            if (debuggerSession != null) {
-                WebKitUIManager.getDefault().stopDebuggingSession(debuggerSession);
-            }
-            debuggerSession = null;
-            if (consoleLogger != null) {
-                WebKitUIManager.getDefault().stopBrowserConsoleLogger(consoleLogger);
-            }
-            consoleLogger = null;
-            if (networkMonitor != null) {
-                WebKitUIManager.getDefault().stopNetworkMonitor(networkMonitor);
-            }
-            networkMonitor = null;
-            if (webKitDebugging.getDebugger().isEnabled()) {
-                webKitDebugging.getDebugger().disable();
-            }
-            webKitDebugging.reset();
-            transport.detach();
-            transport = null;
-            webKitDebugging = null;
-            PageInspector.getDefault().inspectPage(Lookup.EMPTY);
-        } finally {
-//            CordovaMapping map = Lookup.getDefault().lookup(CordovaMapping.class);
-//            map.setBaseUrl(null);
-//            map.setProject(null);
-            BrowserURLMapperImpl.DEFAULT.setBrowserUrl(null);
-            BrowserURLMapperImpl.DEFAULT.setSiteRoot(null);
+        if (webKitDebugging == null || webKitDebugging == null) {
+            return;
         }
+        if (debuggerSession != null) {
+            WebKitUIManager.getDefault().stopDebuggingSession(debuggerSession);
+        }
+        debuggerSession = null;
+        if (consoleLogger != null) {
+            WebKitUIManager.getDefault().stopBrowserConsoleLogger(consoleLogger);
+        }
+        consoleLogger = null;
+        if (networkMonitor != null) {
+            WebKitUIManager.getDefault().stopNetworkMonitor(networkMonitor);
+        }
+        networkMonitor = null;
+        if (webKitDebugging.getDebugger().isEnabled()) {
+            webKitDebugging.getDebugger().disable();
+        }
+        webKitDebugging.reset();
+        transport.detach();
+        transport = null;
+        webKitDebugging = null;
+        PageInspector.getDefault().inspectPage(Lookup.EMPTY);
     }
 
 }

@@ -173,7 +173,7 @@ KEYWORD="true"|"false"|"null"|"and"|"or"|"xor"|"clone"|"new"|"instanceof"|"retur
 CAST="(" ("expand"|"string"|"array"|"int"|"integer"|"float"|"bool"|"boolean"|"object") ")"
 VARIABLE="$"[a-zA-Z0-9_]+
 NUMBER=["+""-"]?[0-9]+(\.[0-9]+)?(e[0-9]+)?
-STRICT_CHAR="::"|"=>"|"as"
+STRICT_CHAR="::"|"=>"|"as"|"->"
 GLOBAL_CHAR=[^\"']
 SYMBOL=[a-zA-Z0-9_]+(\-[a-zA-Z0-9_]+)*
 MACRO="if" | "elseif" | "else" | "ifset" | "elseifset" | "ifCurrent" | "for" | "foreach" | "while" | "first" | "last" | "sep" |
