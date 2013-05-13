@@ -68,6 +68,7 @@ import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
+import org.netbeans.modules.maven.j2ee.ear.EarDDHelper;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
@@ -401,11 +402,7 @@ public class MavenProjectSupport {
 
             if (applicationXML == null) {
                 String j2eeVersion = readJ2eeVersion(project);
-                try {
-                    DDHelper.createApplicationXml(Profile.fromPropertiesString(j2eeVersion), metaInf, true);
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
+                EarDDHelper.setupDD(Profile.fromPropertiesString(j2eeVersion), metaInf, project, true);
             }
         }
     }
