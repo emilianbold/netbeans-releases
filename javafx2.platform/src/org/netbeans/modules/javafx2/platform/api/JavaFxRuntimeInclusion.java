@@ -205,7 +205,7 @@ public class JavaFxRuntimeInclusion {
      * <pre>
      * {@code
      * if (JavaFxRuntimeInclusion.forPlatform(javaPlatform).isSupported()) {
-     *      String[] cpEntries = JavaFxRuntimeInclusion.getProjectClassPathExtension(javaPlatform);
+     *      Set&lt;String&gt; cpEntries = JavaFxRuntimeInclusion.getProjectClassPathExtension(javaPlatform);
      *      if (cpEntries.length > 0) {
      *          appendToProjectClasspath(cpEntries);
      *      }
@@ -230,15 +230,6 @@ public class JavaFxRuntimeInclusion {
         final JavaFxRuntimeInclusion inclusion = forPlatform(javaPlatform);
         if (!inclusion.isSupported()) {
             return new LinkedHashSet<String>();
-//            final Collection<? extends FileObject> installFolders = javaPlatform.getInstallFolders();
-//            throw new IllegalArgumentException(
-//                String.format(
-//                    "Java platform %s (%s) installed in %s does not support JavaFX.",    //NOI18N
-//                    javaPlatform.getDisplayName(),
-//                    javaPlatform.getSpecification(),
-//                    installFolders.isEmpty() ?
-//                        "???" : //NOI18N
-//                        FileUtil.getFileDisplayName(installFolders.iterator().next())));
         }
         List<String> artifacts = inclusion.getExtensionArtifactPaths();
         if(!artifacts.isEmpty()) {

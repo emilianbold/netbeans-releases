@@ -47,11 +47,9 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -64,7 +62,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 /**
@@ -91,19 +88,6 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
 
     @Override
     protected synchronized void projectOpened() {
-//        if(!isFXProject(eval) && isEnabledSEClassPathExtension()) {
-//            final Runnable runUpdateClassPathExtension = needClassPathUpdate() ? new Runnable() {
-//                @Override
-//                public void run() {
-//                    updateClassPathExtension();
-//                }
-//            } : null;
-//            if(runUpdateClassPathExtension != null) {
-//                switchBusy();
-//                runUpdateClassPathExtension.run();
-//                switchDefault();
-//            }
-//        }
         if(isFXProject(eval)) {
             JFXProjectGenerator.logUsage(JFXProjectGenerator.Action.OPEN);
 
@@ -117,13 +101,6 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
             LOGGER.log(Level.INFO, "FX PCP: " + pcp.toString());
             chl = new ConfigChangeListener(prj);
             pcp.addPropertyChangeListener(chl);
-
-//            final Runnable runUpdateClassPathExtension = needClassPathUpdate() ? new Runnable() {
-//                @Override
-//                public void run() {
-//                    updateClassPathExtension();
-//                }
-//            } : null;
 
             // and update FX build script file jfx-impl.xml if it is not in expected state
             // #204765
@@ -154,44 +131,11 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
                 }
             } : null;
 
-//            if(runUpdateClassPathExtension != null && runUpdateJFXImpl != null) {
-//                switchBusy();
-//                final ProjectInformation info = ProjectUtils.getInformation(prj);
-//                final String projName = info != null ? info.getName() : null;
-//                final RequestProcessor RP = new RequestProcessor(JFXProjectOpenedHook.class.getName() + projName, 2);
-//                final RequestProcessor.Task taskPlatforms = RP.post(runUpdateClassPathExtension);
-//                final RequestProcessor.Task taskJfxImpl = RP.post(runUpdateJFXImpl);
-//                if(taskPlatforms != null) {
-//                    taskPlatforms.waitFinished();
-//                }
-//                if(taskJfxImpl != null) {
-//                    taskJfxImpl.waitFinished();
-//                }
-//                switchDefault();
-//            } else {
-//                if(runUpdateClassPathExtension != null) {
-//                    switchBusy();
-//                    runUpdateClassPathExtension.run();
-//                    switchDefault();
-//                }
-                if(runUpdateJFXImpl != null) {
-                    switchBusy();
-                    runUpdateJFXImpl.run();
-                    switchDefault();
-                }
-//            }
-            
-//            if(runUpdateJFXImpl != null) {
-//                switchBusy();
-//                final ProjectInformation info = ProjectUtils.getInformation(prj);
-//                final String projName = info != null ? info.getName() : null;
-//                final RequestProcessor RP = new RequestProcessor(JFXProjectOpenedHook.class.getName() + projName, 2);
-//                final RequestProcessor.Task taskJfxImpl = RP.post(runUpdateJFXImpl);
-//                if(taskJfxImpl != null) {
-//                    taskJfxImpl.waitFinished();
-//                }
-//                switchDefault();
-//            }
+            if(runUpdateJFXImpl != null) {
+                switchBusy();
+                runUpdateJFXImpl.run();
+                switchDefault();
+            }
         }
     }
 
@@ -208,33 +152,6 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
         }
     }
 
-
-    private boolean needClassPathUpdate() {
-        try {
-            return !JFXProjectUtils.hasCorrectClassPathExtension(prj);
-        } catch (Exception ex) {
-            LOGGER.log(Level.WARNING, "Can't read project properties: {0}", ex); // NOI18N
-        }
-        return false;
-    }
-    
-    private void updateClassPathExtension() {
-        try {
-            JFXProjectUtils.updateClassPathExtension(prj);
-        } catch (Exception ex) {
-            LOGGER.log(Level.WARNING, "Can't update project class path extending properties: {0}", ex); // NOI18N
-        }
-    }
-
-    private boolean isEnabledSEClassPathExtension() {
-        final PropertyEvaluator evaluator = eval.evaluator();
-        if(evaluator != null) {
-            return !JFXProjectProperties.isTrue(evaluator.getProperty(JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH));
-        } else {
-            LOGGER.log(Level.WARNING, "PropertyEvaluator instantiation failed, disabling classpath JFXRT extension update."); // NOI18N
-        }
-        return false;
-    }
 
     private boolean isEnabledJFXUpdate() {
         final PropertyEvaluator evaluator = eval.evaluator();
