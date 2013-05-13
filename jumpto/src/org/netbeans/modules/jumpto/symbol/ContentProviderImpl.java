@@ -422,7 +422,6 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                 setProjectName(jlPrj, td.getProjectName());
                 jlPrj.setIcon(td.getProjectIcon());
 		rendererComponent.setDescriptor(td);
-                rendererComponent.setToolTipText(td.getFileDisplayPath());
                 LOG.fine("  Time in paint " + (System.currentTimeMillis() - time) + " ms.");
             }
             else {
