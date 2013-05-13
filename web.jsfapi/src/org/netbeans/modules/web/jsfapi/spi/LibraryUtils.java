@@ -64,7 +64,6 @@ import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.web.common.api.WebUtils;
-import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryType;
@@ -76,11 +75,16 @@ import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
  */
 public class LibraryUtils {
 
-    public static final String COMPOSITE_LIBRARY_NS = "http://java.sun.com/jsf/composite"; //NOI18N
+    public static final String COMPOSITE_LIBRARY_NS = "http://xmlns.jcp.org/jsf/composite"; //NOI18N
+    public static final String COMPOSITE_LIBRARY_LEGACY_NS = "http://java.sun.com/jsf/composite"; //NOI18N
     public static final String XHTML_NS = "http://www.w3.org/1999/xhtml"; //NOI18N
 
-    public static String getCompositeLibraryURL(String libraryFolderPath) {
-        return COMPOSITE_LIBRARY_NS + "/" + libraryFolderPath;
+    public static String getCompositeLibraryURL(String libraryFolderPath, boolean jsf22Plus) {
+        if (jsf22Plus) {
+            return COMPOSITE_LIBRARY_NS + "/" + libraryFolderPath; //NOI18N
+        } else {
+            return COMPOSITE_LIBRARY_LEGACY_NS + "/" + libraryFolderPath; //NOI18N
+        }
     }
 
     @Deprecated
