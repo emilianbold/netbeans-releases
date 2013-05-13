@@ -76,7 +76,6 @@ import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.BinaryElementOpen;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -94,7 +93,6 @@ import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -719,13 +717,27 @@ public class JavaTypeProvider implements TypeProvider {
             }
         }
 
+        @CheckForNull
+        URI getRootURI() {
+            return rootURI;
+        }
+        
+        @CheckForNull
+        ClassIndexImpl getClassIndex() {
+            return index;
+        }
+        
         private void initProjectInfo() {
             Project p = FileOwnerQuery.getOwner(this.rootURI);
             if (p != null) {
-                ProjectInformation pi = ProjectUtils.getInformation( p );
-                projectName = pi.getDisplayName();
-                projectIcon = pi.getIcon();
-            }            
+                final ProjectInformation pi = p.getLookup().lookup(ProjectInformation.class);   //Intentionally does not use ProjectUtil.getInformation() as it does slow icon annotation
+                projectName = pi == null ?
+                    p.getProjectDirectory().getNameExt() :
+                    pi.getDisplayName();
+                projectIcon = pi == null ?
+                    null :
+                    pi.getIcon();
+            }
         }
 
         @NonNull
