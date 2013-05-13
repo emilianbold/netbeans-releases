@@ -77,6 +77,8 @@ public class DOM {
     private final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
     /** Document node */
     private Node documentNode;
+    /** Counter of documents the user navigated across. */
+    private int documentCounter;
     /** Known nodes - maps node ID to Node. */
     private final Map<Integer,Node> nodes = new HashMap<Integer,Node>();
 
@@ -97,19 +99,42 @@ public class DOM {
      * 
      * @return document node.
      */
-    public synchronized Node getDocument() {
-        if (documentNode == null) {
+    public Node getDocument() {
+        Node document;
+        int counter;
+        synchronized (this) {
+            document = documentNode;
+            counter = documentCounter;
+        }
+        if (document == null) {
             Response response = transport.sendBlockingCommand(new Command("DOM.getDocument")); // NOI18N
-            if (response != null) {
-                JSONObject result = response.getResult();
-                if (result != null) {
-                    JSONObject node = (JSONObject)result.get("root"); // NOI18N
-                    documentNode = new Node(node);
-                    updateNodesMap(documentNode);
+            synchronized (this) {
+                if (documentNode == null) {
+                    if (counter == documentCounter) {
+                        if (response != null) {
+                            JSONObject result = response.getResult();
+                            if (result != null) {
+                                JSONObject node = (JSONObject)result.get("root"); // NOI18N
+                                documentNode = new Node(node);
+                                updateNodesMap(documentNode);
+                            }
+                        }
+                        return documentNode;
+                    }
+                    // else {
+                    //     Navigation occured before we obtained the response
+                    //     => return the document node of the new document
+                    //     (which is done by the return statement behind
+                    //     this synchronized block)
+                    // }
+                } else {
+                    // another thread already updated documentNode field
+                    return documentNode;
                 }
             }
+            return getDocument();
         }
-        return documentNode;
+        return document;
     }
 
     /**
@@ -655,6 +680,7 @@ public class DOM {
         synchronized (this) {
             nodes.clear();
             documentNode = null;
+            documentCounter++;
         }
         notifyDocumentUpdated();
     }
