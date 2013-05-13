@@ -175,6 +175,10 @@ public class CommitAction extends ContextAction {
             @Override
             public void run () {
                 File root = HgUtils.getRootFile(ctx);
+                if (root == null) {
+                    Mercurial.LOG.log(Level.FINE, "CommitAction.commit: null owner for {0}", ctx.getRootFiles()); //NOI18N
+                    return;
+                }
                 if (HgUtils.isRebasing(root)) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                             Bundle.MSG_CommitAction_interruptedRebase_error(root.getName()),

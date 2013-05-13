@@ -44,10 +44,13 @@ package org.netbeans.modules.mercurial.ui.diff;
 import java.awt.Image;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -114,20 +117,23 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
     
     @Override
     public Object prepareModel (DiffNode[] nodes) {
-        Map<File, List<DiffNode>> sortedNodes = new HashMap<File, List<DiffNode>>();
+        Map<File, Collection<DiffNode>> sortedNodes = new HashMap<File, Collection<DiffNode>>();
         for (DiffNode n : nodes) {
             File repository = Mercurial.getInstance().getRepositoryRoot(n.getFile());
-            List<DiffNode> repositorySetups = sortedNodes.get(repository);
+            if (repository == null) {
+                continue;
+            }
+            Collection<DiffNode> repositorySetups = sortedNodes.get(repository);
             if (repositorySetups == null) {
-                repositorySetups = new ArrayList<DiffNode>();
+                repositorySetups = new TreeSet<DiffNode>(new PathComparator());
                 sortedNodes.put(repository, repositorySetups);
             }
             repositorySetups.add(n);
         }
         Node rootNode;
         if (sortedNodes.size() == 1) {
-            Map.Entry<File, List<DiffNode>> e = sortedNodes.entrySet().iterator().next();
-            rootNode = new RepositoryRootNode(e.getKey(), e.getValue());
+            Map.Entry<File, Collection<DiffNode>> e = sortedNodes.entrySet().iterator().next();
+            rootNode = new RepositoryRootNode(e.getKey(), new ArrayList<DiffNode>(e.getValue()));
             ((DiffTreeViewChildren) rootNode.getChildren()).buildSubNodes();
         } else {
             rootNode = new RootNode(sortedNodes);
@@ -177,7 +183,7 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
     }
     
     private static class RootNode extends AbstractNode {
-        public RootNode (Map<File, List<DiffNode>> nodes) {
+        public RootNode (Map<File, Collection<DiffNode>> nodes) {
             super(new RootNodeChildren(nodes));
         }
     }
@@ -187,9 +193,9 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
     }
 
     private static class RootNodeChildren extends DiffTreeViewChildren {
-        private final java.util.Map<File, List<DiffNode>> nestedNodes;
+        private final java.util.Map<File, Collection<DiffNode>> nestedNodes;
         
-        public RootNodeChildren (java.util.Map<File, List<DiffNode>> setups) {
+        public RootNodeChildren (java.util.Map<File, Collection<DiffNode>> setups) {
             this.nestedNodes = setups;
         }
 
@@ -200,8 +206,8 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
         
         private Node[] createNodes () {
             List<Node> nodes = new ArrayList<Node>(nestedNodes.size());
-            for (java.util.Map.Entry<File, List<DiffNode>> e : nestedNodes.entrySet()) {
-                RepositoryRootNode root = new RepositoryRootNode(e.getKey(), e.getValue());
+            for (java.util.Map.Entry<File, Collection<DiffNode>> e : nestedNodes.entrySet()) {
+                RepositoryRootNode root = new RepositoryRootNode(e.getKey(), new ArrayList<DiffNode>(e.getValue()));
                 ((DiffTreeViewChildren) root.getChildren()).buildSubNodes();
                 nodes.add(root);
             }
@@ -392,6 +398,32 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
             FOLDER_ICON = base;
         }
         return FOLDER_ICON;
+    }
+
+    private static class PathComparator implements Comparator<DiffNode> {
+
+        @Override
+        public int compare (DiffNode o1, DiffNode o2) {
+            String[] segments1 = o1.getLocation().split(PATH_SEPARATOR_REGEXP);
+            String[] segments2 = o2.getLocation().split(PATH_SEPARATOR_REGEXP);
+            for (int i = 0; i < Math.min(segments1.length, segments2.length); ++i) {
+                String segment1 = segments1[i];
+                String segment2 = segments2[i];
+                int comp = segment1.compareTo(segment2);
+                if (comp != 0) {
+                    if (segment1.startsWith(segment2)) {
+                        // xml.xdm must precede xml node
+                        return segment2.length() - segment1.length();
+                    } else if (segment2.startsWith(segment1)) {
+                        // xml must follow xml.xdm node
+                        return segment2.length() - segment1.length();
+                    }
+                    return comp;
+                }
+            }
+            return segments2.length - segments1.length;
+        }
+
     }
     
 }

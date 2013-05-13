@@ -355,9 +355,11 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
                     ListModel<String> supportedContexts = tableModel.getSupportedContexts();
                     if (supportedContexts.getSize() > 0) {
                         lContexts.setModel(supportedContexts);
-                        tabPane.addTab(null, spContexts);
-                        loc(tabPane, 2, "Contexts", null); //NOI18N
-                    } else {
+                        if (tabPane.getTabCount() < 3) {
+                            tabPane.addTab(null, spContexts);
+                            loc(tabPane, 2, "Contexts", null); //NOI18N
+                        }
+                    } else if (tabPane.getTabCount() > 2) {
                         tabPane.remove(2);
                     }
                 }
