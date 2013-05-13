@@ -126,7 +126,7 @@ public class CppSymbolBaseTestCase extends ProjectBasedTestCase {
                 if (result == 0) {
                     result = compareStrings(t1.getProjectName(), t2.getProjectName());
                     if (result == 0) {
-                        result = compareStrings(t1.getFileObject().getPath(), t2.getFileObject().getPath());
+                        result = compareStrings(t1.getFileDisplayPath(), t2.getFileDisplayPath());
                     }
                 }
             }
