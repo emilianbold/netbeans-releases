@@ -91,6 +91,7 @@ public class FromDBTest extends CRUDTest {
         jcbo.clearText();
         jcbo.typeText(getRestPackage() + ".service"); //NOI18N
         wo.btFinish().pushNoBlock();
+        wo.waitClosed();
         String generationTitle = Bundle.getStringTrimmed("org.netbeans.modules.j2ee.persistence.wizard.fromdb.Bundle", "TXT_EntityClassesGeneration");
         waitDialogClosed(generationTitle, 180000); // wait 3 minutes
         new EventTool().waitNoEvent(1500);
