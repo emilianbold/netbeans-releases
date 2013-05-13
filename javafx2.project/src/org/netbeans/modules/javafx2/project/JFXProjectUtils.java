@@ -58,6 +58,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
@@ -887,10 +888,10 @@ public final class JFXProjectUtils {
         final EditableProperties ep = new EditableProperties(true);
         final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         try {
-            final InputStream is = projPropsFO.getInputStream();
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 @Override
                 public Void run() throws Exception {
+                    final InputStream is = projPropsFO.getInputStream();
                     try {
                         ep.load(is);
                     } finally {
@@ -906,11 +907,11 @@ public final class JFXProjectUtils {
                         os = projPropsFO.getOutputStream(lock);
                         ep.store(os);
                     } finally {
-                        if (lock != null) {
-                            lock.releaseLock();
-                        }
                         if (os != null) {
                             os.close();
+                        }
+                        if (lock != null) {
+                            lock.releaseLock();
                         }
                     }
                     return null;
@@ -970,44 +971,92 @@ public final class JFXProjectUtils {
     }
     
     /**
-     * Returns new value of classpath property if it needs to be updated, null otherwise
+     * Filter out artifacts that contain subString
+     * @param artifacts
+     * @return set without artifacts that contain subString
+     */
+    private static Set<String> filterOutArtifacts(@NonNull final Collection<String> artifacts, @NonNull String subString) {
+        Set<String> result = new LinkedHashSet<String>();
+        for(String artifact : artifacts) {
+            if(!artifact.contains(subString)) {
+                result.add(artifact);
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Returns existing value of a path property, null if it does not exist
      * @param ep EditableProperties
      * @return collection of artifacts or null
      */
-    public static Collection<String> getUpdatedCPProperty(@NonNull final EditableProperties ep) {
-        // existing
-        String currentPropVal = ep.getProperty(ProjectProperties.JAVAC_CLASSPATH);
-        String[] existingArray = currentPropVal == null ? null : PropertyUtils.tokenizePath(currentPropVal);
-        Set<String> existing = existingArray == null ? new TreeSet<String>() : getPaths(existingArray);
-        // expected
-        Set<String> extend = getPaths(new String[] {JavaFXPlatformUtils.getClassPathExtensionProperty()});
-        // compare
-        if(existing.containsAll(extend)) {
-            return null; // no update needed
+    public static Set<String> getExistingProperty(@NonNull final EditableProperties ep, @NonNull String propName) {
+        // existing 
+        String currentPropVal = ep.getProperty(propName);
+        if(currentPropVal != null) {
+            String[] existingArray = PropertyUtils.tokenizePath(currentPropVal);
+            Set<String> existing = existingArray == null ? new TreeSet<String>() : getPaths(existingArray);
+            return Collections.unmodifiableSet(existing);
         }
-        existing.addAll(extend);
-        return Collections.unmodifiableSet(existing);
+        return null;
     }
     
+    /**
+     * Returns updated value of classpath property, null if it should not exist
+     * @param ep EditableProperties
+     * @return collection of artifacts or null
+     */
+    public static Set<String> getUpdatedCPProperty(@NonNull final EditableProperties ep, boolean extensionPropertyEmpty) {
+        boolean extensionNeeded = JFXProjectProperties.isTrue(ep.getProperty(JFXProjectProperties.JAVAFX_ENABLED)) ||
+                JFXProjectProperties.isTrue(ep.getProperty(JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH));
+        // existing
+        Set<String> existing = getExistingProperty(ep, ProjectProperties.JAVAC_CLASSPATH);
+        Set<String> updated = new LinkedHashSet<String>();
+        if(existing != null) {
+            updated = filterOutArtifacts(existing, "${javafx.runtime}"); // NOI18N
+            updated = filterOutArtifacts(updated, JavaFXPlatformUtils.getClassPathExtensionProperty());
+        }
+        if(extensionNeeded && !extensionPropertyEmpty) {
+            updated.add(JavaFXPlatformUtils.getClassPathExtensionProperty());
+        }
+        return Collections.unmodifiableSet(updated);
+    }
+
     /**
      * Returns new value of FX artifacts extension property if it needs to be updated, null otherwise
      * @param ep EditableProperties
      * @return collection of artifacts or null
      */
-    public static Collection<String> getUpdatedExtensionProperty(@NonNull final EditableProperties ep) {
-        // existing
-        String currentPropVal = ep.getProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION);
-        String[] existingArray = currentPropVal == null ? null : PropertyUtils.tokenizePath(currentPropVal);
-        Set<String> existing = existingArray == null ? new TreeSet<String>() : getPaths(existingArray);
+    public static Set<String> getUpdatedExtensionProperty(@NonNull final EditableProperties ep) throws IllegalArgumentException {
+        boolean propertyNeeded = JFXProjectProperties.isTrue(ep.getProperty(JFXProjectProperties.JAVAFX_ENABLED)) ||
+                JFXProjectProperties.isTrue(ep.getProperty(JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH));
         // expected
-        String platformName = ep.getProperty(JFXProjectProperties.PLATFORM_ACTIVE);                
-        Set<String> extend = JavaFxRuntimeInclusion.getProjectClassPathExtension(JavaFXPlatformUtils.findJavaPlatform(platformName));
-        // compare
-        if(extend == null || (existing != null && existing.containsAll(extend))) {
-            return null; // no update needed
+        Set<String> updated = null;
+        if(propertyNeeded) {
+            String platformName = ep.getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
+            JavaPlatform platform = JavaFXPlatformUtils.findJavaPlatform(platformName);
+            if(platform == null) {
+                throw new IllegalArgumentException(platformName);
+            }
+            updated = JavaFxRuntimeInclusion.getProjectClassPathExtension(platform);
         }
-        // replace the old property entirely
-        return Collections.unmodifiableSet(extend);
+        return updated == null ? null : Collections.unmodifiableSet(updated);
+    }
+
+    /**
+     * Compares two Set representations of a path property
+     * @param set1
+     * @param set2
+     * @return true if the two sets represent equal existence and values of path properties
+     */
+    public static boolean pathPropertiesEqual(Set<String> set1, Set<String> set2) {
+        if(set1 == null && set2 == null) {
+            return true;
+        }
+        if(set1 == null || set2 == null) {
+            return false;
+        }
+        return set1.containsAll(set2) && set2.containsAll(set1);
     }
     
     /**
@@ -1016,11 +1065,20 @@ public final class JFXProjectUtils {
      * @param prj the project to check
      * @return true if project properties correctly represent JFXRT artifacts
      */
-    public static boolean hasCorrectClassPathExtension(@NonNull final Project project) throws IOException {
+    public static boolean hasCorrectClassPathExtension(@NonNull final Project project) throws IOException, IllegalArgumentException  {
         final EditableProperties ep = readFromFile(
             project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH)
                 );
-        return getUpdatedCPProperty(ep) == null && getUpdatedExtensionProperty(ep) == null;
+        String platformName = ep.getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
+        if(JFXProjectProperties.isEqual(platformName, JavaFXPlatformUtils.DEFAULT_JAVAFX_PLATFORM)) {
+            // request auto-replace of Default_JavaFX_Platform by default platform
+            return false;
+        }
+        Set<String> existingExt = getExistingProperty(ep, JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION);
+        Set<String> updatedExt = getUpdatedExtensionProperty(ep);
+        Set<String> existingCP = getExistingProperty(ep, ProjectProperties.JAVAC_CLASSPATH);
+        Set<String> updatedCP = getUpdatedCPProperty(ep, updatedExt == null || updatedExt.isEmpty());
+        return pathPropertiesEqual(existingExt, updatedExt) && pathPropertiesEqual(existingCP, updatedCP);
     }
     
     /**
@@ -1035,14 +1093,27 @@ public final class JFXProjectUtils {
      * 
      * @param ep EditableProperties containing properties to be updated
      */
-    public static void updateClassPathExtensionProperties(@NonNull final EditableProperties ep) {       
-        Collection<String> extendCPProp = getUpdatedCPProperty(ep);
+    public static void updateClassPathExtensionProperties(@NonNull final EditableProperties ep) {
+        String platformName = ep.getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
+        if(JFXProjectProperties.isEqual(platformName, JavaFXPlatformUtils.DEFAULT_JAVAFX_PLATFORM)) {
+            // automatically replace Default_JavaFX_Platform by default_platform
+            ep.setProperty(JFXProjectProperties.PLATFORM_ACTIVE, JavaFXPlatformUtils.DEFAULT_PLATFORM);
+        }
+        ep.remove(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME);
+        ep.remove(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK);
+        Collection<String> extendExtProp = getUpdatedExtensionProperty(ep);
+        if(extendExtProp != null && !extendExtProp.isEmpty()) {
+            ep.setProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION, getPaths(extendExtProp));
+        } else {
+            ep.remove(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION);
+            //ep.remove(JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH);
+        }
+        Collection<String> extendCPProp = getUpdatedCPProperty(ep, extendExtProp == null || extendExtProp.isEmpty());
+        // JAVAC_CLASSPATH to be preserved even if empty (create new project creates it empty by default)
         if(extendCPProp != null) {
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, getPaths(extendCPProp));
-        }
-        Collection<String> extendExtProp = getUpdatedExtensionProperty(ep);
-        if(extendExtProp != null) {
-            ep.setProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION, getPaths(extendExtProp));
+        } else {
+            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, ""); // NOI18N
         }
     }
 
@@ -1177,10 +1248,10 @@ public final class JFXProjectUtils {
         if(propsFO != null) {
             assert propsFO.isData();
             try {
-                final InputStream is = propsFO.getInputStream();
                 ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
                     @Override
                     public Void run() throws Exception {
+                        final InputStream is = propsFO.getInputStream();
                         try {
                             ep.load(is);
                         } finally {
@@ -1257,11 +1328,11 @@ public final class JFXProjectUtils {
                             os = propsFO.getOutputStream(lock);
                             ep.store(os);
                         } finally {
-                            if (lock != null) {
-                                lock.releaseLock();
-                            }
                             if (os != null) {
                                 os.close();
+                            }
+                            if (lock != null) {
+                                lock.releaseLock();
                             }
                         }
                         return null;

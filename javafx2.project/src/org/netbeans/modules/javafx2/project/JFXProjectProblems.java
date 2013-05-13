@@ -94,7 +94,7 @@ public class JFXProjectProblems implements ProjectProblemsProvider, PropertyChan
     private final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(JFXProjectProblems.class);
-    private Task updateClassPathExtensionTask = null;
+    private volatile Task updateClassPathExtensionTask = null;
     private final Project prj;
     private final J2SEPropertyEvaluator eval;
     private final J2SEProjectPlatform platformSetter;
@@ -130,13 +130,16 @@ public class JFXProjectProblems implements ProjectProblemsProvider, PropertyChan
     })
     public Collection<? extends ProjectProblem> getProblems() {
         try {
-            if(needsJFXRT(eval) && !JFXProjectUtils.hasCorrectClassPathExtension(prj)) {
+            if(//needsJFXRT(eval) && 
+                    !JFXProjectUtils.hasCorrectClassPathExtension(prj)) {
                 if (updateClassPathExtensionTask == null || updateClassPathExtensionTask.isFinished()) {
                     updateClassPathExtensionTask = RP.create(new Runnable() { // NOI18N
                         @Override
                         public void run() {
                             try {
                                 JFXProjectUtils.updateClassPathExtension(prj);
+                            } catch(IllegalArgumentException ex) {
+                                // missing platform; ignore here, will be detected in collectProblems() below
                             } catch (IOException ex) {
                                 LOGGER.log(Level.WARNING, "Can't update project properties: {0}", ex); // NOI18N
                             }
@@ -146,12 +149,15 @@ public class JFXProjectProblems implements ProjectProblemsProvider, PropertyChan
                         @Override
                         public void taskFinished(org.openide.util.Task task) {
                             problemsProviderSupport.fireProblemsChange();
+                            //updateClassPathExtensionTask = null;
                         }
                     });
                     updateClassPathExtensionTask.schedule(0);
                 }
                 return Collections.<ProjectProblem>emptySet();
             }
+        } catch(IllegalArgumentException ex) {
+            // missing platform; ignore here, will be detected in collectProblems() below
         } catch(Exception ex) {
             LOGGER.log(Level.WARNING, "Can't read project properties: {0}", ex); // NOI18N
         }
@@ -198,6 +204,7 @@ public class JFXProjectProblems implements ProjectProblemsProvider, PropertyChan
         //JFXProjectProperties.JAVAFX_ENABLED is inlined by compliler
         return isTrue(eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED)) ||
                 isTrue(eval.evaluator().getProperty(JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH));
+                //eval.evaluator().getProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION) != null;
     }
 
     private static boolean isTrue(@NullAllowed final String value) {
