@@ -330,7 +330,11 @@ public class XMLCompletionQuery implements XMLTokenIDs {
         try {
             Enumeration res = getPerformer(doc, sup).queryValues(helper.getContext());
             String curValue = helper.getContext().getNodeValue();
-            int curLen = curValue != null ? curValue.length() : 0;
+            int curLen = 0;
+            if (curValue != null) {
+                curValue = curValue.trim();
+                curLen = curValue.length();
+            }
             return translateValues(res, curLen);
         } catch (Exception ex) {
             Logger.getLogger(XMLCompletionQuery.class.getName()).log(Level.INFO, "cf. #118136", ex);
