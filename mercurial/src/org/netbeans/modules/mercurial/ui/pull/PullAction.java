@@ -523,6 +523,11 @@ public class PullAction extends ContextAction {
 
         private void askForMerge (List<HgLogMessage> parents) {
             if (isRebaseAllowed(root, parents)) {
+                if (Boolean.getBoolean("versioning.mercurial.pullwithrebase")) { //NOI18N
+                    mergeAccepted = false;
+                    rebaseAccepted = true;
+                    return;
+                }
                 JButton btnMerge = new JButton();
                 Mnemonics.setLocalizedText(btnMerge, Bundle.CTL_PullAction_mergeButton_text());
                 btnMerge.setToolTipText(Bundle.CTL_PullAction_mergeButton_TTtext());
