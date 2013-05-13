@@ -60,7 +60,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.modules.java.api.common.project.ui.customizer.CustomizerProvider2;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.api.common.project.ui.customizer.ProjectSharability;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;

@@ -42,7 +42,7 @@
 package org.netbeans.modules.web.project;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.api.common.project.ui.customizer.CustomizerProvider2;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
