@@ -160,7 +160,7 @@ public class JsCompletionItem implements CompletionProposal {
 
     @Override
     public int getSortPrioOverride() {
-        return 0;
+        return ((JsElement)element).isPlatform() ? 0 : 100;
     }
 
     @Override
