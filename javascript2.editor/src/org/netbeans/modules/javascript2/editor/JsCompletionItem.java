@@ -347,6 +347,11 @@ public class JsCompletionItem implements CompletionProposal {
             }
             return builder.toString();
         }
+
+        @Override
+        public int getSortPrioOverride() {
+            return 110;
+        }
     }
 
     public static class JsPropertyCompletionItem extends JsCompletionItem {
