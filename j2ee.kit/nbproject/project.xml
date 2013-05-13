@@ -5,7 +5,7 @@
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/3">
             <code-name-base>org.netbeans.modules.j2ee.kit</code-name-base>
             <module-dependencies>
-		<!--
+                <!--
                 <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.archive</code-name-base>
                     <run-dependency>
@@ -80,6 +80,10 @@
                     <name>qa-functional</name>
                     <test-dependency>
                         <code-name-base>org.netbeans.libs.junit4</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.j2ee.dd</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
