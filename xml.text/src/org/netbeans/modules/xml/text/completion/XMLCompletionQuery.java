@@ -329,7 +329,9 @@ public class XMLCompletionQuery implements XMLTokenIDs {
     private List<CompletionItem> queryValues(SyntaxQueryHelper helper, Document doc, XMLSyntaxSupport sup) {
         try {
             Enumeration res = getPerformer(doc, sup).queryValues(helper.getContext());
-            return translateValues(res);
+            String curValue = helper.getContext().getNodeValue();
+            int curLen = curValue != null ? curValue.length() : 0;
+            return translateValues(res, curLen);
         } catch (Exception ex) {
             Logger.getLogger(XMLCompletionQuery.class.getName()).log(Level.INFO, "cf. #118136", ex);
             return null;
@@ -390,13 +392,13 @@ public class XMLCompletionQuery implements XMLTokenIDs {
         return result;
     }
     
-    private List<CompletionItem> translateValues(Enumeration values ) {
+    private List<CompletionItem> translateValues(Enumeration values, int curLen) {
         List<CompletionItem> result = new ArrayList<CompletionItem>(3);
         int i = 0;
         while (values.hasMoreElements()) {
             GrammarResult next = (GrammarResult) values.nextElement();
             if(next != null && next.getDisplayName() != null) {
-                ValueResultItem val = new ValueResultItem(i++, next);
+                ValueResultItem val = new ValueResultItem(i++, next, curLen);
                 result.add( val );
             }
         }

@@ -130,6 +130,19 @@ class XMLResultItem implements CompletionItem {
     }
     
     /**
+     * Computes length of the original text to be deleted prior to the replacement.
+     * It is a hack to allow ValueResultItems to delete extra suffixes after inserting
+     * a new value (see defect #228865). The original code in replaceText ignores entirely the parameter 'len',
+     * so the correct len cannot be passed from an overriding method: other code may send
+     * invalid lengths, which were ignored before the fix. 
+     * 
+     * The fix affects just the ValueResultItem then.
+     * 
+     */
+    /* package */ int getDeleteLength(String currentText, String replaceToText, int len) {
+        return getFirstDiffPosition(currentText, replaceToText);
+    }
+    /**
      * Actually replaces a piece of document by passes text.
      * @param component a document source
      * @param text a string to be inserted
@@ -157,8 +170,9 @@ class XMLResultItem implements CompletionItem {
                             (doc.getLength() - offset) : replacementLength) ;
                 }
                 //
-                // Length correction here. See the issue #141320
-                len = getFirstDiffPosition(currentText, replaceToText);
+                // Length correction here. See the issue #141320.
+                // See also issue #228865
+                len = getDeleteLength(currentText, replaceToText, len);
                 //
                 // if the text is going to remove isn't the same as that is going
                 // to be inserted, then only move the caret position
@@ -215,15 +229,20 @@ class XMLResultItem implements CompletionItem {
         if (! isTextRemovingAllowable) {
             String tokenItemImage = tokenItem.getImage();
             if ((tokenItemImage != null) && (tokenItemImage.length() > 0)) {
-                int diffPos = getFirstDiffPosition(tokenItemImage, replaceToText);
+                // See also issue #228865. In this case, the token also may include a prefix
+                // of the replacement value
+                String replaceInclPrefix;
+                int offs = Math.max(0, offset - tokenItem.getOffset());
+                replaceInclPrefix = tokenItemImage.substring(0, offs) + replaceToText;
+                int diffPos = getFirstDiffPosition(tokenItemImage, replaceInclPrefix);
                 diffPos = diffPos == 0 ? 1 : diffPos;
                 if ((diffPos > -1) && 
-                    (diffPos <= Math.min(tokenItemImage.length(), replaceToText.length()))) {
+                    (diffPos <= Math.min(tokenItemImage.length(), replaceInclPrefix.length()))) {
                     String
                         strImg = tokenItemImage.length() >= diffPos ?
                             tokenItemImage.substring(0, diffPos) : tokenItemImage,
-                        strText = replaceToText.length() >= diffPos ?
-                            replaceToText.substring(0, diffPos) : replaceToText;
+                        strText = replaceInclPrefix.length() >= diffPos ?
+                            replaceInclPrefix.substring(0, diffPos) : replaceInclPrefix;
 
                     TokenID tokenID = tokenItem.getTokenID();
                     int id = (tokenID != null ? tokenID.getNumericID() : -1);
