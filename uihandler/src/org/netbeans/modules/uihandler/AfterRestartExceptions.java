@@ -154,7 +154,7 @@ class AfterRestartExceptions implements Runnable {
     
     private static boolean readRecords() {
         File logRecords = getLogRecordsFile();
-        if (!logRecords.exists()) {
+        if (logRecords == null || !logRecords.exists()) {
             return false;
         }
         Set<LogRecord> records = new LinkedHashSet<LogRecord>();
