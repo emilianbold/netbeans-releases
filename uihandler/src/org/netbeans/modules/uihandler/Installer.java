@@ -221,7 +221,7 @@ public class Installer extends ModuleInstall implements Runnable {
      */
     private static final Object METRICS_LOG_LOCK = new Object();
 
-    private static enum DataType {
+    static enum DataType {
         DATA_UIGESTURE,
         DATA_METRICS
     };
@@ -957,7 +957,16 @@ public class Installer extends ModuleInstall implements Runnable {
     
     private static AtomicReference<String> DISPLAYING = new AtomicReference<String>();
 
-    private static boolean displaySummary(String msg, boolean explicit, boolean auto, boolean connectDialog, DataType dataType, List<LogRecord> recs, SlownessData slownData) {
+    static boolean displaySummary(String msg, boolean explicit, boolean auto,
+                                  boolean connectDialog, DataType dataType,
+                                  List<LogRecord> recs, SlownessData slownData) {
+        return displaySummary(msg, explicit, auto, connectDialog, dataType, recs, slownData, false);
+    }
+    
+    static boolean displaySummary(String msg, boolean explicit, boolean auto,
+                                  boolean connectDialog, DataType dataType,
+                                  List<LogRecord> recs, SlownessData slownData,
+                                  boolean isAfterRestart) {
         if (!DISPLAYING.compareAndSet(null, msg)) {
             return true;
         }
@@ -972,7 +981,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
             }
 
-            Submit submit = auto ? new SubmitAutomatic(msg, Button.SUBMIT, dataType, recs) : new SubmitInteractive(msg, connectDialog, dataType, recs, slownData);
+            Submit submit = auto ? new SubmitAutomatic(msg, Button.SUBMIT, dataType, recs) : new SubmitInteractive(msg, connectDialog, dataType, recs, slownData, isAfterRestart);
             submit.doShow(dataType);
             v = submit.okToExit;
         } finally {
@@ -1111,14 +1120,16 @@ public class Installer extends ModuleInstall implements Runnable {
         return res instanceof String ? (String)res : null;
     }
 
-    static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, DataType dataType, boolean isErrorReport, SlownessData slownData, boolean isOOM) throws IOException {
+    private static URL uploadLogs(URL postURL, String id, Map<String,String> attrs,
+            List<LogRecord> recs, DataType dataType, boolean isErrorReport,
+            SlownessData slownData, boolean isOOM, boolean isAfterRestart) throws IOException {
         ProgressHandle h = null;
         //Do not show progress UI for metrics upload
         if (dataType != DataType.DATA_METRICS) {
             h = ProgressHandleFactory.createHandle(NbBundle.getMessage(Installer.class, "MSG_UploadProgressHandle"));
         }
         try {
-            return uLogs(h, postURL, id, attrs, recs, dataType, isErrorReport, slownData, isOOM);
+            return uLogs(h, postURL, id, attrs, recs, dataType, isErrorReport, slownData, isOOM, isAfterRestart);
         } finally {
             if (h != null) {
                 h.finish();
@@ -1127,12 +1138,13 @@ public class Installer extends ModuleInstall implements Runnable {
     }
     
     static URL uploadLogs(URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs, boolean isErrorReport) throws IOException {
-        return uploadLogs(postURL, id, attrs, recs, DataType.DATA_UIGESTURE, isErrorReport, null, false);
+        return uploadLogs(postURL, id, attrs, recs, DataType.DATA_UIGESTURE, isErrorReport, null, false, false);
     }
 
     private static URL uLogs
     (ProgressHandle h, URL postURL, String id, Map<String,String> attrs, List<LogRecord> recs,
-            DataType dataType, boolean isErrorReport, SlownessData slownData, boolean isOOM) throws IOException {
+            DataType dataType, boolean isErrorReport, SlownessData slownData, boolean isOOM,
+            boolean isAfterRestart) throws IOException {
         if (dataType != DataType.DATA_METRICS) {
             int workUnits = isOOM ? 1100 : 100;
             h.start(workUnits + recs.size());
@@ -1203,7 +1215,8 @@ public class Installer extends ModuleInstall implements Runnable {
             os.println("Content-Disposition: form-data; name=\"messages\"; filename=\"" + id + "_messages.gz\"");
             os.println("Content-Type: x-application/log");
             os.println();
-            uploadMessagesLog(os);
+            boolean fromLastRun = recs.size() > 0 && isAfterRestart;
+            uploadMessagesLog(os, fromLastRun);
             os.println();
             os.println("\n----------konec<>bloku");
         }
@@ -1224,7 +1237,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         if (isOOM){
-            File f = getHeapDump();
+            File f = getHeapDump(recs, isAfterRestart);
             assert (f != null);
             assert (f.exists() && f.canRead());
             assert f.length() != 0 : "Heapdump has zero size!";
@@ -1313,7 +1326,7 @@ public class Installer extends ModuleInstall implements Runnable {
         }
 
         if (isOOM){
-            FileObject fo = FileUtil.createData(getHeapDump());
+            FileObject fo = FileUtil.createData(getHeapDump(recs, isAfterRestart));
             FileObject folder = fo.getParent();
             String submittedName = fo.getName() + "_submitted"; // NOI18N
             FileObject submittedFO = folder.getFileObject(submittedName, fo.getExt());
@@ -1343,16 +1356,49 @@ public class Installer extends ModuleInstall implements Runnable {
         }
     }
 
-    private static File getMessagesLog(){
-        File directory = logsDirectory();
-        if (directory == null){
-            return null;
+    private static boolean isAfterRestartRecord(List<LogRecord> recs) {
+        for (int i = recs.size() - 1; i >= 0; i--) {
+            LogRecord r = recs.get(i);
+            if (r.getThrown() != null) {
+                return AfterRestartExceptions.isAfterRestartRecord(r);
+            }
         }
-        File messagesLog = new File(directory, "messages.log");
-        return messagesLog;
+        return false;
     }
 
-    private static File getHeapDump() {
+    private static File getMessagesLog(boolean fromLastRun) {
+        File userDir = Places.getUserDirectory();
+        if (userDir == null) {
+            return null;
+        }
+        File log = null;
+        if (fromLastRun) {
+            log = new File(userDir, NbBundle.getMessage(Installer.class, "LOG_FILE_LAST"));
+        }
+        if (log == null || !log.exists()) {
+            log = new File(userDir, NbBundle.getMessage(Installer.class, "LOG_FILE"));
+        }
+        return log;
+    }
+    
+    static File getHeapDump(List<LogRecord> recs, boolean isAfterRestart) {
+        LogRecord thrownLog = getThrownLog(recs);
+        if (isAfterRestart) {
+            Object[] parameters = thrownLog.getParameters();
+            if (parameters != null && parameters.length > 0) {
+                String heapDumpPath = (String) parameters[parameters.length - 1];
+                File hdf = new File(heapDumpPath);
+                if (!hdf.exists()) {
+                    heapDumpPath += ".old";
+                    hdf = new File(heapDumpPath);
+                }
+                return hdf;
+            }
+        }
+        return getHeapDump();
+    }
+
+    static File getHeapDump() {
         String heapDumpPath = null;
         RuntimeMXBean RuntimemxBean = ManagementFactory.getRuntimeMXBean();
         List<String> lst = RuntimemxBean.getInputArguments();
@@ -1377,9 +1423,9 @@ public class Installer extends ModuleInstall implements Runnable {
         return null;
     }
     
-    static void uploadMessagesLog(PrintStream os) throws IOException {
+    private static void uploadMessagesLog(PrintStream os, boolean fromLastRun) throws IOException {
         flushSystemLogs();
-        File messagesLog = getMessagesLog();
+        File messagesLog = getMessagesLog(fromLastRun);
         if (messagesLog == null){
             return;
         }
@@ -1495,6 +1541,7 @@ public class Installer extends ModuleInstall implements Runnable {
         protected DataType dataType = DataType.DATA_UIGESTURE;
         final protected List<LogRecord> recs;
         protected boolean isOOM = false;
+        protected boolean isAfterRestart = false;
         protected ExceptionsSettings settings;
         protected JProgressBar jpb = new JProgressBar();
         
@@ -2003,7 +2050,8 @@ public class Installer extends ModuleInstall implements Runnable {
                 if (dataType == DataType.DATA_METRICS) {
                     logMetricsUploadFailed = false;
                 }
-                nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(), recs, dataType, report, slownData, isOOM);
+                nextURL = uploadLogs(u, findIdentity(), Collections.<String,String>emptyMap(),
+                                     recs, dataType, report, slownData, isOOM, isAfterRestart);
             } catch (IOException ex) {
                 LOG.log(Level.INFO, null, ex);
                 if (dataType == DataType.DATA_METRICS) {
@@ -2011,11 +2059,13 @@ public class Installer extends ModuleInstall implements Runnable {
                 }
                 if (dataType != DataType.DATA_METRICS) {
                     String txt;
-                    String logFile = NbBundle.getMessage(Installer.class, "LOG_FILE");
-                    File userDir = Places.getUserDirectory();
-                    File log = (userDir != null) ? new File(userDir, logFile) : null;
+                    String logFile;
+                    boolean fromLastRun = recs.size() > 0 && isAfterRestart;
+                    File log = getMessagesLog(fromLastRun);
                     if (log != null) {
                         logFile = log.getAbsolutePath();
+                    } else {
+                        logFile = NbBundle.getMessage(Installer.class, "LOG_FILE");
                     }
                     if (!report) {
                         txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm(), logFile);
@@ -2130,10 +2180,18 @@ public class Installer extends ModuleInstall implements Runnable {
             this(msg, connectDialog, dataType, null, null);
         }
 
-        private SubmitInteractive(String msg, boolean connectDialog, DataType dataType, List<LogRecord> recs, SlownessData slownData) {
+        private SubmitInteractive(String msg, boolean connectDialog, DataType dataType,
+                                  List<LogRecord> recs, SlownessData slownData) {
+            this(msg, connectDialog, dataType, recs, slownData, false);
+        }
+        
+        private SubmitInteractive(String msg, boolean connectDialog, DataType dataType,
+                                  List<LogRecord> recs, SlownessData slownData,
+                                  boolean isAfterRestart) {
             super(msg, dataType, recs);
             this.connectDialog = connectDialog;
             this.slownData = slownData;
+            this.isAfterRestart = isAfterRestart;
         }
 
         @Override
@@ -2152,7 +2210,7 @@ public class Installer extends ModuleInstall implements Runnable {
                 Throwable t = getThrown(recs);
                 if (t != null) {
                     message = createMessage(t);
-                    if (message.contains("OutOfMemoryError") && getHeapDump() != null) {
+                    if (message.contains("OutOfMemoryError") && getHeapDump(recs, isAfterRestart) != null) {
                         isOOM = true;
                     }
                 }
@@ -2311,7 +2369,8 @@ public class Installer extends ModuleInstall implements Runnable {
                 JTabbedPane tabs = new JTabbedPane();
                 tabs.addTab(org.openide.util.NbBundle.getMessage(Installer.class, "UI_TAB_TITLE"), panel);
                 tabs.setPreferredSize(panel.getPreferredSize());
-                File messagesLog = getMessagesLog();
+                boolean fromLastRun = recs.size() > 0 && isAfterRestart;
+                File messagesLog = getMessagesLog(fromLastRun);
                 try {
                     JEditorPane pane = new JEditorPane(Utilities.toURI(messagesLog).toURL());
                     pane.setEditable(false);

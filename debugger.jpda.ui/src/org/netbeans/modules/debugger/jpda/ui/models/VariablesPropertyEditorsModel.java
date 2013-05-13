@@ -62,6 +62,15 @@ import static org.netbeans.spi.debugger.ui.Constants.*;
     @DebuggerServiceRegistration(path="netbeans-JPDASession/LocalsView",
                                  types=TablePropertyEditorsModel.class,
                                  position=25000),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ToolTipView",
+                                 types=TablePropertyEditorsModel.class,
+                                 position=25000),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/WatchesView",
+                                 types=TablePropertyEditorsModel.class,
+                                 position=25000),
+    @DebuggerServiceRegistration(path="netbeans-JPDASession/ResultsView",
+                                 types=TablePropertyEditorsModel.class,
+                                 position=25000),
 })
 public class VariablesPropertyEditorsModel implements TablePropertyEditorsModel {
     

@@ -44,7 +44,6 @@
 package org.netbeans.modules.versioning.util;
 
 import java.beans.PropertyChangeListener;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -71,108 +70,104 @@ import org.openide.util.lookup.Lookups;
     keywordsCategory="Advanced/Versioning")
 public class VcsAdvancedOptions extends OptionsPanelController {
     
-        private VcsAdvancedOptionsPanel panel;
-        private boolean initialized = false;
-        private Map<String,AdvancedOption> categoryToOption = new HashMap<String,AdvancedOption>();
-        private Map<String, JComponent> categoryToPanel = new HashMap<String, JComponent> ();
-        private Map<String, OptionsPanelController> categoryToController = new HashMap<String, OptionsPanelController>();
-        private List<String> categoriesOrdered = new ArrayList<String>();
-        
-        private void init(Lookup masterLookup) {
-            if (initialized) return;
-            initialized = true;
-            panel = new VcsAdvancedOptionsPanel();
-            
-            Lookup lookup = Lookups.forPath("VersioningOptionsDialog"); // NOI18N
-            Iterator<? extends AdvancedOption> it = lookup.lookup(new Lookup.Template<AdvancedOption> (AdvancedOption.class)).
-                    allInstances().iterator();
-            while (it.hasNext()) {
-                AdvancedOption option = it.next();
-                registerOption(option, masterLookup);
-            }
+    private VcsAdvancedOptionsPanel panel;
+    private boolean initialized = false;
+    private final Map<String, OptionsPanelController> categoryToController = new HashMap<String, OptionsPanelController>();
+
+    private void init(Lookup masterLookup) {
+        if (initialized) return;
+        initialized = true;
+        panel = new VcsAdvancedOptionsPanel();
+
+        Lookup lookup = Lookups.forPath("VersioningOptionsDialog"); // NOI18N
+        Iterator<? extends AdvancedOption> it = lookup.lookup(new Lookup.Template<AdvancedOption> (AdvancedOption.class)).
+                allInstances().iterator();
+        while (it.hasNext()) {
+            AdvancedOption option = it.next();
+            registerOption(option, masterLookup);
         }
+    }
 
     private void registerOption (AdvancedOption option, Lookup masterLookup) {
         String category = option.getDisplayName();
         OptionsPanelController controller = option.create();
-        categoryToController.put(category, controller);
+        synchronized (categoryToController) {
+            categoryToController.put(category, controller);
+        }
         panel.addPanel(category, controller.getComponent(masterLookup));
         if ("org.netbeans.modules.versioning.ui.options.GeneralAdvancedOption".equals(option.getClass().getName())) {
             panel.addPanel(category, controller.getComponent(masterLookup));
         }
     }
-        
-        public JComponent getComponent(Lookup masterLookup) {
-            init(masterLookup);
-            return panel;
-//            if (panel == null) {
-//                panel = new VcsAdvancedOptionsPanel();
-//                panel.setLayout(new GridBagLayout());
-//                int index = 0;
-//                for(String category : categoriesOrdered) {
-//                    JComponent component = categoryToPanel.get(category);
-//                    GridBagConstraints gbc = new GridBagConstraints();
-//                    gbc.anchor = GridBagConstraints.NORTHWEST;
-//                    gbc.fill = GridBagConstraints.BOTH;
-//                    gbc.weightx = 1.0;
-//                    gbc.weighty = 1.0;
-//                    gbc.gridy = index++;
-//                    gbc.gridx = 0;
-//                    panel.add(component,gbc);
-//                }
-//            }
-//            
-//            return panel;
+
+    @Override
+    public JComponent getComponent(Lookup masterLookup) {
+        init(masterLookup);
+        return panel;
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+    }
+
+    @Override
+    public void update() {
+        for (OptionsPanelController c : getControllers()) {
+            c.update();
         }
-        
-        public void removePropertyChangeListener(PropertyChangeListener l) {
+    }
+
+    @Override
+    public void applyChanges() {
+        for (OptionsPanelController c : getControllers()) {
+            c.applyChanges();
         }
-        
-        public void addPropertyChangeListener(PropertyChangeListener l) {
+    }
+
+    @Override
+    public void cancel() {
+        for (OptionsPanelController c : getControllers()) {
+            c.cancel();
         }
-        
-        public void update() {
-            Iterator it = categoryToController.values().iterator();
-            while (it.hasNext())
-                ((OptionsPanelController) it.next()).update();
+    }
+
+    @Override
+    public boolean isValid() {
+        for (OptionsPanelController c : getControllers()) {
+            if (!c.isValid()) {
+                return false;
+            }
         }
-        
-        public void applyChanges() {
-            Iterator it = categoryToController.values().iterator();
-            while (it.hasNext())
-                ((OptionsPanelController) it.next()).applyChanges();
+        return true;
+    }
+
+    @Override
+    public boolean isChanged() {
+        for (OptionsPanelController c : getControllers()) {
+            if (c.isChanged()) {
+                return true;
+            }
         }
-        
-        public void cancel() {
-            Iterator it = categoryToController.values().iterator();
-            while (it.hasNext())
-                ((OptionsPanelController) it.next()).cancel();
-        }
-        
-        public boolean isValid() {
-            Iterator it = categoryToController.values().iterator();
-            while (it.hasNext())
-                if (!((OptionsPanelController) it.next()).isValid())
-                    return false;
-            return true;
-        }
-        
-        public boolean isChanged() {
-            Iterator it = categoryToController.values().iterator();
-            while (it.hasNext())
-                if (((OptionsPanelController) it.next()).isChanged())
-                    return true;
-            return false;
-        }
-        
-        
-        public HelpCtx getHelpCtx() {
-            return new HelpCtx(VcsAdvancedOptions.class);
-        }
+        return false;
+    }
+
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.versioning.util.VcsAdvancedOptions"); //NOI18N
+    }
 
     @Override
     public void handleSuccessfulSearch (String searchText, List<String> matchedKeywords) {
-        for (Map.Entry<String, OptionsPanelController> e : categoryToController.entrySet()) {
+        Map<String, OptionsPanelController> m;
+        synchronized (categoryToController) {
+            m = new HashMap<String, OptionsPanelController>(categoryToController);
+        }
+        for (Map.Entry<String, OptionsPanelController> e : m.entrySet()) {
             OptionsPanelController c = e.getValue();
             if (c instanceof VCSOptionsKeywordsProvider) {
                 if (((VCSOptionsKeywordsProvider) c).acceptKeywords(matchedKeywords)) {
@@ -180,6 +175,12 @@ public class VcsAdvancedOptions extends OptionsPanelController {
                     break;
                 }
             }
+        }
+    }
+
+    private OptionsPanelController[] getControllers () {
+        synchronized (categoryToController) {
+            return categoryToController.values().toArray(new OptionsPanelController[categoryToController.values().size()]);
         }
     }
 }
