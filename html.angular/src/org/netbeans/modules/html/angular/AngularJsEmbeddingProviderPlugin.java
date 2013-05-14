@@ -70,11 +70,13 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     private static class StackItem {
 
         final String tag;
+        final String finishText;
         int balance;
 
-        public StackItem(String tag) {
+        public StackItem(String tag, String finishText) {
             this.tag = tag;
             this.balance = 1;
+            this.finishText = finishText;
         }
     }
     private final LinkedList<StackItem> stack;
@@ -142,7 +144,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     if (top.balance == 0) {
                         processed = true;
                         stack.pop();
-                        embeddings.add(snapshot.create("});\n", Constants.JAVASCRIPT_MIMETYPE));  //NOI18N
+                        embeddings.add(snapshot.create(top.finishText, Constants.JAVASCRIPT_MIMETYPE));  //NOI18N
                     }
                 }
                 break;
@@ -163,18 +165,16 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     switch (interestedAttr) {
                         case controller:
                             processed = processController(value);
+                            stack.push(new StackItem(lastTagOpen, "});\n")); //NOI18N
                             break;
                         case model:
                             processed = processModel(value);
                             break;
                         case repeat:
                             processed = processRepeat(value);
+                            stack.push(new StackItem(lastTagOpen, "}\n")); //NOI18N
                             break;
                         default:        
-                    }
-                    if (processed && (interestedAttr == AngularAttribute.controller 
-                            || interestedAttr == AngularAttribute.repeat)) {
-                        stack.push(new StackItem(lastTagOpen));
                     }
                 }
                 break;
@@ -273,7 +273,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
             }  else {
                 // need to create local variable
-                if (name.indexOf(' ') == -1 && name.indexOf('(') == -1) {
+                if (name.indexOf(' ') == -1 && name.indexOf('(') == -1 && name.indexOf('.') == -1) {
                     embeddings.add(snapshot.create("var ", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                 }
                 embeddings.add(snapshot.create(tokenSequence.offset() + 1, name.length(), Constants.JAVASCRIPT_MIMETYPE));
@@ -294,7 +294,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             if (parts[0].contains(" in ")) {
                 // we understand only "in"  now
                 String[] forParts = parts[0].trim().split(" ");   // this is the should contain [new variale, in, collection name]
-                embeddings.add(snapshot.create("for ( var ", Constants.JAVASCRIPT_MIMETYPE));                
+                embeddings.add(snapshot.create("for (var ", Constants.JAVASCRIPT_MIMETYPE));                
                 if (forParts.length == 3 && propertyToFqn.containsKey(forParts[2])) {
                     // if we know the collection from a controller ....
                     int lastPartPos = expression.indexOf(forParts[2]); // the start position of the collection name
