@@ -173,6 +173,8 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
     public void actionPerformed (ActionEvent e) {
         if (e.getSource() == panel.cbCheckoutAsNewBranch) {
             panel.branchNameField.setEnabled(panel.cbCheckoutAsNewBranch.isSelected());
+            //#229555: automatically fill in local branch name based on the remote branch name
+            validateBranchCB();
             validate();
         }
     }
@@ -197,6 +199,17 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
         } else {
             branchNameRecommended = true;
         }
+        
+        //#229555: automatically fill in local branch name based on the remote branch name
+        if (b != null && b.isRemote() && panel.cbCheckoutAsNewBranch.isSelected()) {
+            //extract "branch_X" from "origin/branch_X" to be the default local branch name
+            final String localBranch = rev.substring(rev.lastIndexOf("/")+1);
+            final boolean localBranchExists = branches.containsKey(localBranch);
+            if (!localBranchExists) {
+                panel.branchNameField.setText(localBranch);
+            }
+        }
+        
         validate();
     }
 

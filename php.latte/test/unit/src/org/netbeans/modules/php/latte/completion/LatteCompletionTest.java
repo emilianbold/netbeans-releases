@@ -75,4 +75,28 @@ public class LatteCompletionTest extends LatteCompletionTestBase {
         checkCompletion("testfiles/completion/testIterator_02.latte", "{$iterator->f^}", false);
     }
 
+    public void testVariable_01() throws Exception {
+        checkCompletion("testfiles/completion/testVariable_01.latte", "{$^}", false);
+    }
+
+    public void testVariable_02() throws Exception {
+        checkCompletion("testfiles/completion/testVariable_02.latte", "{$b^}", false);
+    }
+
+    public void testVariable_03() throws Exception {
+        checkCompletion("testfiles/completion/testVariable_03.latte", "{$x^}", false);
+    }
+
+    public void testVariable_04() throws Exception {
+        checkCompletion("testfiles/completion/testVariable_04.latte", "{foreach $b^ as item}", false);
+    }
+
+    public void testEndMacro_01() throws Exception {
+        checkCompletion("testfiles/completion/testEndMacro_01.latte", "{/^}", false);
+    }
+
+    public void testEndMacro_02() throws Exception {
+        checkCompletion("testfiles/completion/testEndMacro_02.latte", "{/c^}", false);
+    }
+
 }
