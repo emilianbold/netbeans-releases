@@ -62,12 +62,39 @@ public enum LatteCompletionContext {
         @Override
         public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
             completeMacros(completionProposals, request);
+            completeVariables(completionProposals, request);
+        }
+    },
+    END_MACRO {
+        @Override
+        public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+            completeEndMacros(completionProposals, request);
         }
     },
     HELPER {
         @Override
         public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
             completeHelpers(completionProposals, request);
+        }
+    },
+    ITERATOR_ITEM {
+        @Override
+        public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+            completeIteratorItems(completionProposals, request);
+        }
+    },
+    VARIABLE {
+        @Override
+        public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+            completeVariables(completionProposals, request);
+        }
+    },
+    EMPTY_DELIMITERS {
+        @Override
+        public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+            completeMacros(completionProposals, request);
+            completeVariables(completionProposals, request);
+            completeEndMacros(completionProposals, request);
         }
     },
     NONE {
@@ -82,7 +109,15 @@ public enum LatteCompletionContext {
     protected void completeMacros(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
         for (LatteElement macro : LatteCompletionHandler.MACROS) {
             if (startsWith(macro.getName(), request.prefix)) {
-                completionProposals.add(new LatteCompletionProposal.MacroCompletionProposal(macro, request));
+                completionProposals.add(new LatteCompletionProposal.StartMacroCompletionProposal(macro, request));
+            }
+        }
+    }
+
+    protected void completeEndMacros(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+        for (LatteElement endMacro : LatteCompletionHandler.END_MACROS) {
+            if (startsWith(endMacro.getName(), request.prefix)) {
+                completionProposals.add(new LatteCompletionProposal.EndMacroCompletionProposal(endMacro, request));
             }
         }
     }
@@ -103,7 +138,41 @@ public enum LatteCompletionContext {
         }
     }
 
+    protected void completeIteratorItems(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+        completeIteratorFieldItems(completionProposals, request);
+        completeIteratorMethodItems(completionProposals, request);
+    }
+
+    private void completeIteratorFieldItems(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+        for (LatteElement iteratorItem : LatteCompletionHandler.ITERATOR_FIELD_ITEMS) {
+            if (startsWith(iteratorItem.getName(), request.prefix)) {
+                completionProposals.add(new LatteCompletionProposal.IteratorFieldItemCompletionProposal(iteratorItem, request));
+            }
+        }
+    }
+
+    private void completeIteratorMethodItems(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+        for (LatteElement iteratorItem : LatteCompletionHandler.ITERATOR_METHOD_ITEMS) {
+            if (startsWith(iteratorItem.getName(), request.prefix)) {
+                completionProposals.add(new LatteCompletionProposal.IteratorMethodItemCompletionProposal(iteratorItem, request));
+            }
+        }
+    }
+
+    protected void completeVariables(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+        completeDefaultVariables(completionProposals, request);
+    }
+
+    private void completeDefaultVariables(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+        for (LatteElement variable : LatteCompletionHandler.DEFAULT_VARIABLES) {
+            if (startsWith(variable.getName(), request.prefix)) {
+                completionProposals.add(new LatteCompletionProposal.VariableCompletionProposal(variable, request));
+            }
+        }
+    }
+
     private static boolean startsWith(String theString, String prefix) {
         return prefix.length() == 0 ? true : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
+
 }

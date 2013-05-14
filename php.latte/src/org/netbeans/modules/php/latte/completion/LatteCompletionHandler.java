@@ -76,102 +76,153 @@ import org.netbeans.modules.php.latte.utils.LatteLexerUtils;
  */
 public class LatteCompletionHandler implements CodeCompletionHandler {
     private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<>(
-            Arrays.asList('=', ';', '+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t', '\n', '$'));
+            Arrays.asList('=', ';', '+', '-', '*', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t', '\n'));
     static final Set<LatteElement> MACROS = new HashSet<>();
     static {
-        MACROS.add(LatteElement.Factory.createMacro("link", "Presenter:action", "link ${Presenter}:${action}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("plink", "Presenter:action", "plink ${Presenter}:${action}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("continueIf", "true", "continueIf ${true}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("breakIf", "true", "breakif ${true}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("if", "true", "if ${true}")); //NOI18N
-        MACROS.add(LatteElement.Factory.create("else")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("elseif", "true", "elseif ${true}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("ifset", "$var", "ifset ${var}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("ifset", "#block", "ifset #${block}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("elseifset", "$var", "elseifset ${var}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("ifCurrent", "Presenter:action", "ifCurrent ${Presenter}:${action}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("for", "init; cond; exec", "for ${init}; ${cond}; ${exec}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("foreach", "$array as $item", "foreach ${array} as ${item}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("while", "true", "while ${true}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("include", "'file.latte'", "include '${file.latte}'")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("include", "#block", "include #{block}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("extends", "'file.latte'", "extends '${file.latte}'")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("layout", "'file.latte'", "layout '${file.latte}'")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("control", "name", "control ${name}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("cache", "$key", "cache ${key}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("snippet", "$name", "snippet ${name}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("block", "#name", "block #${name}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("define", "#name", "define #${name}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("includeblock", "'file.latte'", "includeblock '${file.latte}'")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("contentType", "$type", "contentType ${type}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("status", "$code", "status ${code}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("capture", "$var", "capture ${var}")); //NOI18N
-        MACROS.add(LatteElement.Factory.create("assign")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("default", "$name = $value", "default ${name} = ${value}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("var", "$name = $value", "var ${name} = ${value}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("dump", "$var", "dump ${var}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("syntax", "mode", "syntax ${mode}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("use", "Class", "use ${Class}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("form", "$name", "form ${name}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("label", "$name", "label ${name}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("input", "$name", "input ${name}")); //NOI18N
-        MACROS.add(LatteElement.Factory.createMacro("debugbreak", "$cond", "debugbreak ${cond}")); //NOI18N
-        MACROS.add(LatteElement.Factory.create("l")); //NOI18N
-        MACROS.add(LatteElement.Factory.create("r")); //NOI18N
-        MACROS.add(LatteElement.Factory.create("first")); //NOI18N
-        MACROS.add(LatteElement.Factory.create("last")); //NOI18N
-        MACROS.add(LatteElement.Factory.create("sep")); //NOI18N
-        MACROS.add(LatteElement.Factory.create("_")); //NOI18N
-        MACROS.add(LatteElement.Factory.create("!")); //NOI18N
-        MACROS.add(LatteElement.Factory.create("!_")); //NOI18N
-        MACROS.add(LatteElement.Factory.create("=")); //NOI18N
-        MACROS.add(LatteElement.Factory.create("#")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("link", "Presenter:action", "link ${Presenter}:${action}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("plink", "Presenter:action", "plink ${Presenter}:${action}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("continueIf", "true", "continueIf ${true}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("breakIf", "true", "breakif ${true}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("if", "true", "if ${true}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("else")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("elseif", "true", "elseif ${true}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("ifset", "$var", "ifset ${var}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("ifset", "#block", "ifset #${block}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("elseifset", "$var", "elseifset ${var}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("ifCurrent", "Presenter:action", "ifCurrent ${Presenter}:${action}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("for", "init; cond; exec", "for ${init}; ${cond}; ${exec}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("foreach", "$array as $item", "foreach ${array} as ${item}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("while", "true", "while ${true}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("include", "'file.latte'", "include '${file.latte}'")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("include", "#block", "include #{block}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("extends", "'file.latte'", "extends '${file.latte}'")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("layout", "'file.latte'", "layout '${file.latte}'")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("control", "name", "control ${name}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("cache", "$key", "cache ${key}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("snippet", "$name", "snippet ${name}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("block", "#name", "block #${name}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("define", "#name", "define #${name}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("includeblock", "'file.latte'", "includeblock '${file.latte}'")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("contentType", "$type", "contentType ${type}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("status", "$code", "status ${code}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("capture", "$var", "capture ${var}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("assign")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("default", "$name = $value", "default ${name} = ${value}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("var", "$name = $value", "var ${name} = ${value}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("dump", "$var", "dump ${var}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("syntax", "mode", "syntax ${mode}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("use", "Class", "use ${Class}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("form", "$name", "form ${name}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("label", "$name", "label ${name}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("input", "$name", "input ${name}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("debugbreak", "$cond", "debugbreak ${cond}")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("l")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("r")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("first")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("last")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("sep")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("_")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("!")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("!_")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("=")); //NOI18N
+        MACROS.add(LatteElement.MacroFactory.create("#")); //NOI18N
+    }
+
+    static final Set<LatteElement> END_MACROS = new HashSet<>();
+    static {
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("if")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("ifset")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("ifCurrent")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("for")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("foreach")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("while")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("first")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("last")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("sep")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("capture")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("cache")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("syntax")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("_")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("block")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("form")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("label")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("snippet")); //NOI18N
     }
 
     static final Set<LatteElement> HELPERS = new HashSet<>();
     static {
-        HELPERS.add(LatteElement.Factory.create("truncate", Arrays.asList(new Parameter[] {new HelperParameter("length"), new HelperParameter("append", "'…'")}))); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("substr", Arrays.asList(new Parameter[] {new HelperParameter("offset"), new HelperParameter("length", "stringLegth")}))); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("trim", Arrays.asList(new Parameter[] {new HelperParameter("charlist", "' \\t\\n\\r\\0\\x0B\\xC2\\xA0'")}))); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("striptags")); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("strip")); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("webalize", Arrays.asList(new Parameter[] {new HelperParameter("charlist", "NULL"), new HelperParameter("lower", "true")}))); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("toAscii")); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("indent", Arrays.asList(new Parameter[] {new HelperParameter("level", "1"), new HelperParameter("char", "'\\t'")}))); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("replace", Arrays.asList(new Parameter[] {new HelperParameter("search"), new HelperParameter("replace", "''")}))); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("replaceRE", Arrays.asList(new Parameter[] {new HelperParameter("pattern"), new HelperParameter("replace", "''")}))); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("padLeft", Arrays.asList(new Parameter[] {new HelperParameter("length"), new HelperParameter("pad", "' '")}))); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("padRight", Arrays.asList(new Parameter[] {new HelperParameter("length"), new HelperParameter("pad", "' '")}))); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("repeat", Arrays.asList(new Parameter[] {new HelperParameter("count")}))); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("implode", Arrays.asList(new Parameter[] {new HelperParameter("glue", "''")}))); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("nl2br")); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("lower")); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("upper")); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("firstLower")); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("capitalize")); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("date", Arrays.asList(new Parameter[] {new HelperParameter("'format'")}))); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("number", Arrays.asList(new Parameter[] {new HelperParameter("decimals", "0"), new HelperParameter("decPoint", "'.'")}))); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("bytes", Arrays.asList(new Parameter[] {new HelperParameter("precision", "2")}))); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("dataStream", Arrays.asList(new Parameter[] {new HelperParameter("mimetype", "NULL")}))); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("url")); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("length")); //NOI18N
-        HELPERS.add(LatteElement.Factory.create("null")); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("truncate", Arrays.asList(new Parameter[] {new HelperParameter("length"), new HelperParameter("append", "'…'")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("substr", Arrays.asList(new Parameter[] {new HelperParameter("offset"), new HelperParameter("length", "stringLegth")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("trim", Arrays.asList(new Parameter[] {new HelperParameter("charlist", "' \\t\\n\\r\\0\\x0B\\xC2\\xA0'")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("striptags")); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("strip")); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("webalize", Arrays.asList(new Parameter[] {new HelperParameter("charlist", "NULL"), new HelperParameter("lower", "true")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("toAscii")); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("indent", Arrays.asList(new Parameter[] {new HelperParameter("level", "1"), new HelperParameter("char", "'\\t'")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("replace", Arrays.asList(new Parameter[] {new HelperParameter("search"), new HelperParameter("replace", "''")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("replaceRE", Arrays.asList(new Parameter[] {new HelperParameter("pattern"), new HelperParameter("replace", "''")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("padLeft", Arrays.asList(new Parameter[] {new HelperParameter("length"), new HelperParameter("pad", "' '")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("padRight", Arrays.asList(new Parameter[] {new HelperParameter("length"), new HelperParameter("pad", "' '")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("repeat", Arrays.asList(new Parameter[] {new HelperParameter("count")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("implode", Arrays.asList(new Parameter[] {new HelperParameter("glue", "''")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("nl2br")); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("lower")); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("upper")); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("firstLower")); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("capitalize")); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("date", Arrays.asList(new Parameter[] {new HelperParameter("'format'")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("number", Arrays.asList(new Parameter[] {new HelperParameter("decimals", "0"), new HelperParameter("decPoint", "'.'")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("bytes", Arrays.asList(new Parameter[] {new HelperParameter("precision", "2")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("dataStream", Arrays.asList(new Parameter[] {new HelperParameter("mimetype", "NULL")}))); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("url")); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("length")); //NOI18N
+        HELPERS.add(LatteElement.HelperFactory.create("null")); //NOI18N
     }
 
     static final Set<LatteElement> KEYWORDS = new HashSet<>();
     static {
-        KEYWORDS.add(LatteElement.Factory.create("true")); //NOI18N
-        KEYWORDS.add(LatteElement.Factory.create("false")); //NOI18N
-        KEYWORDS.add(LatteElement.Factory.create("null")); //NOI18N
-        KEYWORDS.add(LatteElement.Factory.create("and")); //NOI18N
-        KEYWORDS.add(LatteElement.Factory.create("or")); //NOI18N
-        KEYWORDS.add(LatteElement.Factory.create("xor")); //NOI18N
-        KEYWORDS.add(LatteElement.Factory.create("clone")); //NOI18N
-        KEYWORDS.add(LatteElement.Factory.create("new")); //NOI18N
-        KEYWORDS.add(LatteElement.Factory.create("instanceof")); //NOI18N
-        KEYWORDS.add(LatteElement.Factory.create("return")); //NOI18N
-        KEYWORDS.add(LatteElement.Factory.create("continue")); //NOI18N
-        KEYWORDS.add(LatteElement.Factory.create("break")); //NOI18N
+        KEYWORDS.add(LatteElement.KeywordFactory.create("true")); //NOI18N
+        KEYWORDS.add(LatteElement.KeywordFactory.create("false")); //NOI18N
+        KEYWORDS.add(LatteElement.KeywordFactory.create("null")); //NOI18N
+        KEYWORDS.add(LatteElement.KeywordFactory.create("and")); //NOI18N
+        KEYWORDS.add(LatteElement.KeywordFactory.create("or")); //NOI18N
+        KEYWORDS.add(LatteElement.KeywordFactory.create("xor")); //NOI18N
+        KEYWORDS.add(LatteElement.KeywordFactory.create("clone")); //NOI18N
+        KEYWORDS.add(LatteElement.KeywordFactory.create("new")); //NOI18N
+        KEYWORDS.add(LatteElement.KeywordFactory.create("instanceof")); //NOI18N
+        KEYWORDS.add(LatteElement.KeywordFactory.create("return")); //NOI18N
+        KEYWORDS.add(LatteElement.KeywordFactory.create("continue")); //NOI18N
+        KEYWORDS.add(LatteElement.KeywordFactory.create("break")); //NOI18N
+    }
+
+    static final Set<LatteElement> ITERATOR_FIELD_ITEMS = new HashSet<>();
+    static {
+        ITERATOR_FIELD_ITEMS.add(LatteElement.IteratorItemFactory.create("first")); //NOI18N
+        ITERATOR_FIELD_ITEMS.add(LatteElement.IteratorItemFactory.create("last")); //NOI18N
+        ITERATOR_FIELD_ITEMS.add(LatteElement.IteratorItemFactory.create("counter")); //NOI18N
+        ITERATOR_FIELD_ITEMS.add(LatteElement.IteratorItemFactory.create("odd")); //NOI18N
+        ITERATOR_FIELD_ITEMS.add(LatteElement.IteratorItemFactory.create("even")); //NOI18N
+    }
+
+    static final Set<LatteElement> ITERATOR_METHOD_ITEMS = new HashSet<>();
+    static {
+        ITERATOR_METHOD_ITEMS.add(LatteElement.IteratorItemFactory.create("isFirst()")); //NOI18N
+        ITERATOR_METHOD_ITEMS.add(LatteElement.IteratorItemFactory.create("isLast()")); //NOI18N
+        ITERATOR_METHOD_ITEMS.add(LatteElement.IteratorItemFactory.create("getCounter()")); //NOI18N
+        ITERATOR_METHOD_ITEMS.add(LatteElement.IteratorItemFactory.create("isOdd()")); //NOI18N
+        ITERATOR_METHOD_ITEMS.add(LatteElement.IteratorItemFactory.create("isEven()")); //NOI18N
+    }
+
+    static final Set<LatteElement> DEFAULT_VARIABLES = new HashSet<>();
+    static {
+        DEFAULT_VARIABLES.add(LatteElement.VariableFactory.create("$control")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.VariableFactory.create("$presenter")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.VariableFactory.create("$user")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.VariableFactory.create("$netteHttpResponse")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.VariableFactory.create("$netteCacheStorage")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.VariableFactory.create("$baseUri")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.VariableFactory.create("$basePath")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.VariableFactory.create("$flashes")); //NOI18N
     }
 
     @Override
@@ -335,7 +386,9 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
         }
 
         private static boolean isValidTokenId(LatteMarkupTokenId id) {
-            return LatteMarkupTokenId.T_SYMBOL.equals(id) || LatteMarkupTokenId.T_MACRO_START.equals(id) || LatteMarkupTokenId.T_MACRO_END.equals(id);
+            return LatteMarkupTokenId.T_SYMBOL.equals(id) || LatteMarkupTokenId.T_VARIABLE.equals(id)
+                    || LatteMarkupTokenId.T_MACRO_START.equals(id) || LatteMarkupTokenId.T_MACRO_END.equals(id)
+                    || LatteMarkupTokenId.T_ERROR.equals(id);
         }
 
     }

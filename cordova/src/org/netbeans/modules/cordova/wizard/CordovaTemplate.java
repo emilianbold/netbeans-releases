@@ -156,28 +156,8 @@ public class CordovaTemplate implements SiteTemplateImplementation {
     @ServiceProvider(service=ClientProjectExtender.class)
     public static class CordovaExtender implements ClientProjectExtender {
 
-        private boolean enabled;
         private CordovaWizardPanel panel;
         private CordovaSetupPanel initPanel;
-
-        /**
-         * Get the value of enabled
-         *
-         * @return the value of enabled
-         */
-        public boolean isEnabled() {
-            return enabled;
-        }
-
-        /**
-         * Set the value of enabled
-         *
-         * @param enabled new value of enabled
-         */
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
-        }
-
 
         @Override
         public Panel<WizardDescriptor>[] createWizardPanels() {
@@ -199,10 +179,8 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             "LBL_AndroidDevice=Android Device"
         })
         public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath) {
-            if (!isEnabled()) {
-                return;
-            }
             try {
+                librariesPath = librariesPath == null ? "js/libs":librariesPath;
                 String version = CordovaPlatform.getDefault().getVersion().toString();
 
                 final String sdkLocation = CordovaPlatform.getDefault().getSdkLocation();
@@ -315,7 +293,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         @NbBundle.Messages("ERR_MobilePlatforms=Mobile Platforms are not configured")
         public boolean isValid() {
             final String sdkLocation = CordovaPlatform.getDefault().getSdkLocation();
-            if (sdkLocation == null && ext.isEnabled()) {
+            if (sdkLocation == null) {
                 setErrorMessage(Bundle.ERR_MobilePlatforms());
                 return false;
             }

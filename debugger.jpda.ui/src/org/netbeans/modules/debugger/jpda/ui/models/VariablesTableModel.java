@@ -167,31 +167,12 @@ public class VariablesTableModel implements TableModel, Constants {
                 String e = w.getExceptionDescription ();
                 if (e != null)
                     return BoldVariablesTableModelFilter.toHTML(">" + e + "<", false, false, Color.RED);
-                return w.getValue ();
+                return getValueOf(w, row, columnID); // return  w.getValue ();
             } else 
             if (row instanceof Variable) {
                 //return ((Variable) row).getValue ();
                 Variable var = (Variable) row;
-                if (ValuePropertyEditor.hasPropertyEditorFor(var)) {
-                    Object mirror = var.createMirrorObject();
-                    synchronized (mirrors) {
-                        if (mirror == null) {
-                            mirrors.remove(var);
-                            origValues.remove(var);
-                        } else {
-                            mirrors.put(var, mirror);
-                            //origValues.put(var, ((JDIVariable) var).getJDIValue());
-                        }
-                    }
-                }
-                boolean isROCheck;
-                synchronized (checkReadOnlyMutables) {
-                    isROCheck = checkReadOnlyMutables.remove((Variable) row);
-                }
-                if (true || isROCheck) {
-                    fireModelChange(new ModelEvent.TableValueChanged(this, row, columnID, ModelEvent.TableValueChanged.IS_READ_ONLY_MASK));
-                }
-                return var;
+                return getValueOf(var, row, columnID);
             }
         }
         if (row instanceof JPDAClassType) {
@@ -213,6 +194,35 @@ public class VariablesTableModel implements TableModel, Constants {
             return "";
         }
         throw new UnknownTypeException (row);
+    }
+    
+    private Object getValueOf(Variable var, Object row, String columnID) {
+        if (var instanceof Refreshable) {
+            boolean current = ((Refreshable) var).isCurrent();
+            if (!current) {
+                return var.getValue();
+            }
+        }
+        if (ValuePropertyEditor.hasPropertyEditorFor(var)) {
+            Object mirror = var.createMirrorObject();
+            synchronized (mirrors) {
+                if (mirror == null) {
+                    mirrors.remove(var);
+                    origValues.remove(var);
+                } else {
+                    mirrors.put(var, mirror);
+                    //origValues.put(var, ((JDIVariable) var).getJDIValue());
+                }
+            }
+        }
+        boolean isROCheck;
+        synchronized (checkReadOnlyMutables) {
+            isROCheck = checkReadOnlyMutables.remove((Variable) row);
+        }
+        if (true || isROCheck) {
+            fireModelChange(new ModelEvent.TableValueChanged(this, row, columnID, ModelEvent.TableValueChanged.IS_READ_ONLY_MASK));
+        }
+        return var;
     }
     
     void setOrigValue(Variable var) {

@@ -802,31 +802,7 @@ public abstract class RemoteFileObjectBase {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final RemoteFileObjectBase other = (RemoteFileObjectBase) obj;
-        if (this.flags != other.flags) {
-            return false;
-        }
-        if (this.getFileSystem() != other.getFileSystem() && (this.getFileSystem() == null || !this.fileSystem.equals(other.fileSystem))) {
-            return false;
-        }
-        if (this.getExecutionEnvironment() != other.getExecutionEnvironment() && (this.getExecutionEnvironment() == null || !this.getExecutionEnvironment().equals(other.getExecutionEnvironment()))) {
-            return false;
-        }
-        String thisPath = this.getPath();
-        String otherPath = other.getPath();
-        if (thisPath != otherPath && (thisPath == null || !thisPath.equals(otherPath))) {
-            return false;
-        }
-        return true;
+        return this == obj;
     }
 
     @Override

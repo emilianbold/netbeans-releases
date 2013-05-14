@@ -124,9 +124,22 @@ public abstract class LatteCompletionProposal implements CompletionProposal {
         return element.getTemplate();
     }
 
-    static class MacroCompletionProposal extends LatteCompletionProposal {
+    abstract static class MacroCompletionProposal extends LatteCompletionProposal {
 
         public MacroCompletionProposal(LatteElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.METHOD;
+        }
+
+    }
+
+    static class StartMacroCompletionProposal extends MacroCompletionProposal {
+
+        public StartMacroCompletionProposal(LatteElement element, CompletionRequest request) {
             super(element, request);
         }
 
@@ -137,8 +150,27 @@ public abstract class LatteCompletionProposal implements CompletionProposal {
         }
 
         @Override
-        public ElementKind getKind() {
-            return ElementKind.METHOD;
+        public int getSortPrioOverride() {
+            return 50;
+        }
+
+    }
+
+    static class EndMacroCompletionProposal extends MacroCompletionProposal {
+
+        public EndMacroCompletionProposal(LatteElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        @NbBundle.Messages("EndMacroRhs=End Macro")
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return Bundle.EndMacroRhs();
+        }
+
+        @Override
+        public int getSortPrioOverride() {
+            return 100;
         }
 
     }
@@ -182,6 +214,69 @@ public abstract class LatteCompletionProposal implements CompletionProposal {
         @Override
         public ImageIcon getIcon() {
             return KEYWORD_ICON;
+        }
+
+    }
+
+    abstract static class IteratorItemCompletionProposal extends LatteCompletionProposal {
+
+        public IteratorItemCompletionProposal(LatteElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        @NbBundle.Messages("IteratorRhs=Iterator")
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return Bundle.IteratorRhs();
+        }
+
+        @Override
+        public ImageIcon getIcon() {
+            return null;
+        }
+
+    }
+
+    static class IteratorFieldItemCompletionProposal extends IteratorItemCompletionProposal {
+
+        public IteratorFieldItemCompletionProposal(LatteElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.FIELD;
+        }
+
+    }
+
+    static class IteratorMethodItemCompletionProposal extends IteratorItemCompletionProposal {
+
+        public IteratorMethodItemCompletionProposal(LatteElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.METHOD;
+        }
+
+    }
+
+    static class VariableCompletionProposal extends LatteCompletionProposal {
+        public VariableCompletionProposal(LatteElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        @NbBundle.Messages("VariableRhs=Variable")
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return Bundle.VariableRhs();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.VARIABLE;
         }
 
     }

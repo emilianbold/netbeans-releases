@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
 import org.openide.filesystems.FileSystem;
 
 /**
@@ -243,7 +244,9 @@ public class CndUtils {
     }
 
     public static void assertNonUiThread() {
-        assertFalse(SwingUtilities.isEventDispatchThread(), "Should not be called from UI thread"); //NOI18N
+        if (SwingUtilities.isEventDispatchThread()) {
+            DLightLibsCommonLogger.assertNonUiThreadOnce(Level.INFO);
+        }
     }
 
     public static void assertUiThread() {

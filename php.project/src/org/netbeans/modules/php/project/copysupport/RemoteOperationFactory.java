@@ -131,6 +131,12 @@ final class RemoteOperationFactory extends FileOperationFactory {
     }
 
     @Override
+    protected Callable<Boolean> createReinitHandlerInternal(FileObject source) {
+        LOGGER.log(Level.FINE, "No REINIT handler needed for project {0}", project.getName());
+        return null;
+    }
+
+    @Override
     protected Callable<Boolean> createCopyHandlerInternal(final FileObject source, FileEvent fileEvent) {
         LOGGER.log(Level.FINE, "Creating COPY handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return new Callable<Boolean>() {

@@ -118,13 +118,10 @@ public final class ProjectImpl extends ProjectBase {
     protected final ParserQueue.Position getIncludedFileParserQueuePosition() {
         return ParserQueue.Position.HEAD;
     }
-
+    
     public 
     @Override
     void onFileEditStart(final FileBuffer buf, NativeFileItem nativeFile) {
-        if (!Utils.acceptNativeItem(nativeFile)) {
-            return;
-        }
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------------------------- onFileEditSTART " + buf.getUrl()); //NOI18N
         }
@@ -161,9 +158,6 @@ public final class ProjectImpl extends ProjectBase {
     public 
     @Override
     void onFileEditEnd(FileBuffer buf, NativeFileItem nativeFile, boolean undo) {
-        if (!Utils.acceptNativeItem(nativeFile)) {
-            return;
-        }
         if (TraceFlags.DEBUG) {
             Diagnostic.trace("------------------------- onFileEditEND " + buf.getUrl()); //NOI18N
         }

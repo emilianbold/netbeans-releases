@@ -43,6 +43,8 @@ package org.netbeans.modules.cordova.project;
 
 import java.awt.Image;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
+import org.netbeans.modules.web.browser.spi.BrowserURLMapperProvider;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.ImageUtilities;
@@ -52,8 +54,10 @@ import org.openide.util.lookup.ServiceProvider;
  *
  * @author Jan Becicka
  */
-public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory {
+public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory, BrowserURLMapperProvider {
 
+    private CordovaURLMapper mapper;
+    
     @Override
     public boolean canCreateHtmlBrowserImpl() {
         return true;
@@ -68,6 +72,19 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
     public BrowserFamilyId getBrowserFamilyId() {
         return BrowserFamilyId.PHONEGAP;
     }
+    
+    @Override
+    public BrowserURLMapperImplementation getBrowserURLMapper() {
+        if (mapper==null) {
+            mapper = new CordovaURLMapper();
+        }
+        return mapper;
+    }
+    
+    public BrowserURLMapperImplementation.BrowserURLMapper getMapper() {
+        return ((CordovaURLMapper) getBrowserURLMapper()).getBrowserURLMapper();
+    }
+
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
     public static class IOSDevice extends PhoneGapBrowserFactory {
