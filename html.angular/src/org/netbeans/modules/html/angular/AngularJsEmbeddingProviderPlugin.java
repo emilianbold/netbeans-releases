@@ -284,36 +284,50 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     }
     
     private boolean processRepeat(String expression) {
+        boolean processed = false;
+        // split the expression with |
+        // we expect that the first part is the for cycle and the rest are conditions
+        // and attributes like orderby, filter etc.
         String[] parts = expression.split("\\|");
         if (parts.length > 0) {
+            // try to create the for cycle in virtual source
             if (parts[0].contains(" in ")) {
-                String[] forParts = parts[0].trim().split(" ");
+                // we understand only "in"  now
+                String[] forParts = parts[0].trim().split(" ");   // this is the should contain [new variale, in, collection name]
                 embeddings.add(snapshot.create("for ( var ", Constants.JAVASCRIPT_MIMETYPE));                
-                if (forParts.length == 3 && propertyToFqn.containsKey(forParts[2])) {                    
-                    int lastPartPos = expression.indexOf(forParts[2]);
+                if (forParts.length == 3 && propertyToFqn.containsKey(forParts[2])) {
+                    // if we know the collection from a controller ....
+                    int lastPartPos = expression.indexOf(forParts[2]); // the start position of the collection name
                     embeddings.add(snapshot.create(tokenSequence.offset() + 1, lastPartPos, Constants.JAVASCRIPT_MIMETYPE));
                     embeddings.add(snapshot.create(propertyToFqn.get(forParts[2]) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                     embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos, forParts[2].length(), Constants.JAVASCRIPT_MIMETYPE));
                 } else {
+                    // if we don't know the collection from a controller, put it to the virtual source at it is
                     embeddings.add(snapshot.create(tokenSequence.offset() + 1, parts[0].length(), Constants.JAVASCRIPT_MIMETYPE));
                 }
                 embeddings.add(snapshot.create(") {", Constants.JAVASCRIPT_MIMETYPE));
-                return true;
+                // the for cycle should be closed in appropriate CLOSE_TAG token
+                processed = true;
             }
-//            int partIndex = 1;
-//            int lastPartPos = parts[0].length() + 1;
-//            while (partIndex < parts.length) {
-//                if (parts[partIndex].contains(":")) {
-//                    String[] conditionParts = parts[partIndex].trim().split(":");
-//                    if(conditionParts.length > 1 && propertyToFqn.containsKey(conditionParts[1])) {
-//                        embeddings.add(snapshot.create(tokenSequence.offset() + 1, lastPartPos, Constants.JAVASCRIPT_MIMETYPE));
-//                    embeddings.add(snapshot.create(propertyToFqn.get(forParts[2]) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-//                    embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos, forParts[2].length(), Constants.JAVASCRIPT_MIMETYPE));
-//                    }
-//                }
-//                lastPartPos = parts[partIndex].length();
-//            }
+            int partIndex = 1;
+            int lastPartPos = parts[0].length() + 1;
+            while (partIndex < parts.length) { // are there any condition / attributes of the cycle?
+                if (parts[partIndex].contains(":")) {
+                    String[] conditionParts = parts[partIndex].trim().split(":");
+                    String propName = conditionParts[1].trim();
+                    int position = lastPartPos + parts[partIndex].indexOf(propName) + 1;
+                    if(conditionParts.length > 1) {
+                        if (propertyToFqn.containsKey(propName)) {
+                            embeddings.add(snapshot.create(propertyToFqn.get(propName) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N                            
+                        }
+                        embeddings.add(snapshot.create(tokenSequence.offset() + position, propName.length(), Constants.JAVASCRIPT_MIMETYPE));
+                        embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                    }
+                }
+                lastPartPos = lastPartPos + parts[partIndex].length() + 1;
+                partIndex++;
+            }
         }
-        return false;
+        return processed;
     }
 }
