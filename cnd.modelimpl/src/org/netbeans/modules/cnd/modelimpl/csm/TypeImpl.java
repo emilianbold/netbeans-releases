@@ -110,7 +110,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     private static final CharSequence NON_INITIALIZED_CLASSIFIER_TEXT = CharSequences.empty();
     
     private final byte pointerDepth;
-    private final int constQualifiers; // supports only pointers with 31 level
+    
+    // bit mask of pointerDepth pointers for const qualifiers (supports only pointers with less than 32 depth)
+    private final int constQualifiers; 
     
     private final byte arrayDepth;
     private byte flags;
@@ -1001,6 +1003,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         output.writeByte(pointerDepth);
+        output.writeInt(constQualifiers);
         output.writeByte(arrayDepth);
         output.writeByte(flags);
         assert this.classifierText != null;
