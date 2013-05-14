@@ -91,4 +91,12 @@ public class LatteCompletionTest extends LatteCompletionTestBase {
         checkCompletion("testfiles/completion/testVariable_04.latte", "{foreach $b^ as item}", false);
     }
 
+    public void testEndMacro_01() throws Exception {
+        checkCompletion("testfiles/completion/testEndMacro_01.latte", "{/^}", false);
+    }
+
+    public void testEndMacro_02() throws Exception {
+        checkCompletion("testfiles/completion/testEndMacro_02.latte", "{/c^}", false);
+    }
+
 }

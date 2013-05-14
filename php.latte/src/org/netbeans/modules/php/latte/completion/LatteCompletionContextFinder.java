@@ -67,6 +67,10 @@ public class LatteCompletionContextFinder {
             new Object[]{ValuedTokenId.VARIABLE_TOKEN},
             new Object[]{LatteMarkupTokenId.T_VARIABLE}
     );
+    private static final List<Object[]> END_MACRO_TOKEN_CHAINS = Arrays.asList(
+            new Object[]{LatteMarkupTokenId.T_MACRO_END},
+            new Object[]{LatteMarkupTokenId.T_MACRO_END, LatteMarkupTokenId.T_SYMBOL}
+    );
 
     public static LatteCompletionContext find(LatteParserResult parserResult, int caretOffset) {
         LatteCompletionContext result = LatteCompletionContext.NONE;
@@ -79,7 +83,7 @@ public class LatteCompletionContextFinder {
         } else {
             TokenSequence<? extends LatteTopTokenId> tts = LatteLexerUtils.getTokenSequence(parserResult.getSnapshot().getTokenHierarchy(), caretOffset, LatteTopTokenId.language());
             if (tts != null) {
-                result = LatteCompletionContext.MACRO;
+                result = LatteCompletionContext.EMPTY_DELIMITERS;
             }
         }
         return result;
@@ -101,6 +105,9 @@ public class LatteCompletionContextFinder {
                 break;
             } else if (acceptTokenChains(ts, VARIABLE_TOKEN_CHAINS, false)) {
                 result = LatteCompletionContext.VARIABLE;
+                break;
+            } else if (acceptTokenChains(ts, END_MACRO_TOKEN_CHAINS, false)) {
+                result = LatteCompletionContext.END_MACRO;
                 break;
             } else if (LatteMarkupTokenId.T_SYMBOL.equals(tokenId) || LatteMarkupTokenId.T_MACRO_START.equals(tokenId)) {
                 result = LatteCompletionContext.MACRO;

@@ -65,6 +65,12 @@ public enum LatteCompletionContext {
             completeVariables(completionProposals, request);
         }
     },
+    END_MACRO {
+        @Override
+        public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+            completeEndMacros(completionProposals, request);
+        }
+    },
     HELPER {
         @Override
         public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
@@ -83,6 +89,14 @@ public enum LatteCompletionContext {
             completeVariables(completionProposals, request);
         }
     },
+    EMPTY_DELIMITERS {
+        @Override
+        public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+            completeMacros(completionProposals, request);
+            completeVariables(completionProposals, request);
+            completeEndMacros(completionProposals, request);
+        }
+    },
     NONE {
         @Override
         public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
@@ -95,7 +109,15 @@ public enum LatteCompletionContext {
     protected void completeMacros(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
         for (LatteElement macro : LatteCompletionHandler.MACROS) {
             if (startsWith(macro.getName(), request.prefix)) {
-                completionProposals.add(new LatteCompletionProposal.MacroCompletionProposal(macro, request));
+                completionProposals.add(new LatteCompletionProposal.StartMacroCompletionProposal(macro, request));
+            }
+        }
+    }
+
+    protected void completeEndMacros(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+        for (LatteElement endMacro : LatteCompletionHandler.END_MACROS) {
+            if (startsWith(endMacro.getName(), request.prefix)) {
+                completionProposals.add(new LatteCompletionProposal.EndMacroCompletionProposal(endMacro, request));
             }
         }
     }
