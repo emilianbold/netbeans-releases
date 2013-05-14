@@ -95,7 +95,7 @@ public class BrowserConsoleLogger implements Console.Listener {
     
     private static final String PROMPT = "";//> ";              // NOI18N
 
-    private Lookup projectContext;
+    private final Lookup projectContext;
     private InputOutput io;
     private Color colorStdBrighter;
     /** The last logged message. */
@@ -468,10 +468,10 @@ public class BrowserConsoleLogger implements Console.Listener {
 
     public static class MyListener implements OutputListener {
 
-        private String url;
-        private int line;
-        private int column;
-        private Project project;
+        private final String url;
+        private final int line;
+        private final int column;
+        private final Project project;
 
         public MyListener(Project project, String url, int line, int column) {
             this.url = url;

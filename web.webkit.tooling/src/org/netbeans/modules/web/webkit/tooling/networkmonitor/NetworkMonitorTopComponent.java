@@ -105,10 +105,10 @@ import org.openide.windows.WindowManager;
 })
 public final class NetworkMonitorTopComponent extends TopComponent implements ListDataListener, ChangeListener {
 
-    private Model model;
-    private static RequestProcessor RP = new RequestProcessor(NetworkMonitorTopComponent.class.getName(), 5);
-    private NetworkMonitor parent;
-    private InputOutput io;
+    private final Model model;
+    private static final RequestProcessor RP = new RequestProcessor(NetworkMonitorTopComponent.class.getName(), 5);
+    private final NetworkMonitor parent;
+    private final InputOutput io;
 
     NetworkMonitorTopComponent(NetworkMonitor parent, Model m) {
         initComponents();
@@ -547,13 +547,13 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
     }
 
     private static class ModelItem implements PropertyChangeListener {
-        private Network.Request request;
-        private Network.WebSocketRequest wsRequest;
+        private final Network.Request request;
+        private final Network.WebSocketRequest wsRequest;
         private ChangeListener changeListener;
         private String data = null;
         private String failureCause = null;
-        private BrowserFamilyId browserFamilyId;
-        private Project project;
+        private final BrowserFamilyId browserFamilyId;
+        private final Project project;
 
         public ModelItem(Network.Request request, Network.WebSocketRequest wsRequest,
                 BrowserFamilyId browserFamilyId, Project project) {
@@ -1230,7 +1230,7 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
 
     private static class MyProvider implements IOContainer.Provider {
 
-        private JPanel parent;
+        private final JPanel parent;
 
         public MyProvider(JPanel parent) {
             this.parent = parent;
