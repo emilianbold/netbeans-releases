@@ -60,7 +60,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=DependentFileQueryImplementation.class)
 public class DependentFileQueryImpl implements DependentFileQueryImplementation {
 
-    private static RequestProcessor RP = new RequestProcessor(DependentFileQueryImpl.class);
+    private static final RequestProcessor RP = new RequestProcessor(DependentFileQueryImpl.class);
     
     @Override
     public Dependency isDependent(FileObject master, FileObject dependent) {
@@ -75,7 +75,7 @@ public class DependentFileQueryImpl implements DependentFileQueryImplementation 
      */
     static class DependencyInfo {
 
-        private WeakHashMap<Project, Map<FileObject, List<FileObject>>> dependecies =
+        private final WeakHashMap<Project, Map<FileObject, List<FileObject>>> dependecies =
                 new WeakHashMap<Project, Map<FileObject, List<FileObject>>>();
 
         public Dependency isDependent(FileObject master, FileObject dependent) {

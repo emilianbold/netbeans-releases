@@ -68,6 +68,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     private final Language JS_LANGUAGE;
     private final LinkedList<StackItem> stack;
     private String lastTagOpen = null;
+    private boolean hasKnockout = false;
 
     public KOJsEmbeddingProviderPlugin() {
         JS_LANGUAGE = Language.find(KOUtils.JAVASCRIPT_MIMETYPE); //NOI18N
@@ -75,26 +76,20 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     }
 
     @Override
-//    public boolean startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence, List<Embedding> embeddings) {
-    public boolean startProcessing(Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence, List<Embedding> embeddings) {
+    public boolean startProcessing(Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence,
+            List<Embedding> embeddings) {
         this.snapshot = snapshot;
         this.tokenSequence = tokenSequence;
         this.embeddings = embeddings;
-
-//        KOModel model = KOModel.getModel(parserResult);
-//        if(!model.containsKnockout()) {
-//            return false;
-//        }
-        
-        embeddings.add(snapshot.create("var $root = ko.$bindings;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
-        embeddings.add(snapshot.create("var $data = $root;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
-        embeddings.add(snapshot.create("var $parent = undefined;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
-
         return true;
     }
 
     @Override
     public void endProcessing() {
+        if (hasKnockout) {
+            addEmbedding("});\n"); // NOI18N
+        }
+        hasKnockout = false;
         stack.clear();
         lastTagOpen = null;
     }
@@ -119,7 +114,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                     if (top.balance == 0) {
                         processed = true;
                         stack.pop();
-                        embeddings.add(snapshot.create("});\n", KOUtils.JAVASCRIPT_MIMETYPE));  //NOI18N
+                        addEmbedding("});\n"); // NOI18N
                     }
                 }
                 break;
@@ -132,24 +127,24 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                         if (embedded.token().id() == KODataBindTokenId.KEY) {
                             if ("with".equals(embedded.token().text().toString()) // NOI18N
                                     || "foreach".equals(embedded.token().text().toString())) { // NOI18N
-                                embeddings.add(snapshot.create("(function(){\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
-                                embeddings.add(snapshot.create("var $parent = $data;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                                addEmbedding("(function(){\n"); // NOI18N
+                                addEmbedding("var $parent = $data;\n"); // NOI18N
                                 stack.push(new StackItem(lastTagOpen));
                                 setData = true;
                             }
                         }
                         if (embedded.token().id() == KODataBindTokenId.VALUE) {
                             if (setData) {
-                                embeddings.add(snapshot.create("var $data = (", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                                addEmbedding("var $data = ("); // NOI18N
                                 embeddings.add(snapshot.create(embedded.offset(), embedded.token().length(), KOUtils.JAVASCRIPT_MIMETYPE));
-                                embeddings.add(snapshot.create(");\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                                addEmbedding(");\n"); // NOI18N
                                 setData = false;
                             }
                         }
                         if (embedded.embedded(JS_LANGUAGE) != null) {
                             processed = true;
                             //has javascript embedding
-                            embeddings.add(snapshot.create("(function(){\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                            addEmbedding("(function(){\n"); // NOI18N
 
                             CharSequence seq = embedded.token().text();
                             int emptyLength = 0;
@@ -166,13 +161,25 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                                 embeddings.add(snapshot.create(embedded.offset(), embedded.token().length(), KOUtils.JAVASCRIPT_MIMETYPE));
                             }
 
-                            embeddings.add(snapshot.create(";\n});\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                            addEmbedding(";\n});\n"); // NOI18N
                         }
                     }
                     break;
                 }
         }
         return processed;
+    }
+
+    
+    private void addEmbedding(String value) {
+        if (!hasKnockout) {
+            embeddings.add(snapshot.create("(function(){\n", KOUtils.JAVASCRIPT_MIMETYPE));
+            embeddings.add(snapshot.create("var $root = ko.$bindings;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+            embeddings.add(snapshot.create("var $data = $root;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+            embeddings.add(snapshot.create("var $parent = undefined;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+        }
+        hasKnockout = true;
+        embeddings.add(snapshot.create(value, KOUtils.JAVASCRIPT_MIMETYPE));
     }
 
     private static class StackItem {

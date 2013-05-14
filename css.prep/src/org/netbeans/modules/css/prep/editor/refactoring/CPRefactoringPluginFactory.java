@@ -61,11 +61,11 @@ public class CPRefactoringPluginFactory implements RefactoringPluginFactory {
 	    if (null != refactoring.getRefactoringSource().lookup(RefactoringElementContext.class)) {
 		return new CPRenameRefactoringPlugin((RenameRefactoring)refactoring);
 	    } else {
-                //folder refactoring
-                FileObject file = refactoring.getRefactoringSource().lookup(FileObject.class);
-                if(file != null && file.isFolder()) {
-                    return new CPRenameRefactoringPlugin((RenameRefactoring)refactoring);
-                }
+                //folder refactoring - not yet supported
+//                FileObject file = refactoring.getRefactoringSource().lookup(FileObject.class);
+//                if(file != null && file.isFolder()) {
+//                    return new CPRenameRefactoringPlugin((RenameRefactoring)refactoring);
+//                }
             }
 	} else if(refactoring instanceof WhereUsedQuery) {
             if (null != refactoring.getRefactoringSource().lookup(RefactoringElementContext.class)) {
