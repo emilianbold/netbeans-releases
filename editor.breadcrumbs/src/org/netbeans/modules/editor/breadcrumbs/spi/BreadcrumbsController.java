@@ -42,6 +42,9 @@
 package org.netbeans.modules.editor.breadcrumbs.spi;
 
 import java.awt.Image;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -52,6 +55,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.SideBarFactory;
+import org.netbeans.modules.editor.breadcrumbs.BreadCrumbsNodeImpl;
 import org.netbeans.modules.editor.breadcrumbs.HolderImpl;
 import org.netbeans.modules.editor.breadcrumbs.SideBarFactoryImpl;
 import org.netbeans.modules.editor.breadcrumbs.support.BreadCrumbsScheduler;
@@ -62,6 +66,7 @@ import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex.Action;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -72,6 +77,46 @@ public class BreadcrumbsController {
     private BreadcrumbsController() {
     }
 
+    private static final RequestProcessor WORKER = new RequestProcessor(BreadcrumbsController.class.getName(), 1, false, false);
+    
+    /**
+     * 
+     * @param doc
+     * @param selected 
+     * @since 1.8
+     */
+    public static void setBreadcrumbs(@NonNull final Document doc, @NonNull final BreadcrumbsElement selected) {
+        WORKER.post(new Runnable() {
+            @Override public void run() {
+                List<BreadcrumbsElement> path = new ArrayList<>();
+                
+                BreadcrumbsElement el = selected;
+                
+                while (el != null) {
+                    path.add(el);
+                    el = el.getParent();
+                }
+                
+                Node root = new BreadCrumbsNodeImpl(path.remove(path.size() - 1));
+                Node last = root;
+                
+                Collections.reverse(path);
+               
+                for (BreadcrumbsElement current : path) {
+                    for (Node n : last.getChildren().getNodes(true)) {
+                        if (n.getLookup().lookup(BreadcrumbsElement.class) == current) {
+                            last = n;
+                            break;
+                        }
+                    }
+                }
+                
+                setBreadcrumbs(doc, root, last);
+            }
+        });
+    }
+    
+    @Deprecated
     public static void setBreadcrumbs(@NonNull Document doc, @NonNull final Node root, @NonNull final Node selected) {
         Parameters.notNull("doc", doc);
         Parameters.notNull("root", root);
