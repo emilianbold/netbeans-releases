@@ -136,15 +136,6 @@ implements CloneableEditorSupport.Env {
 
         Document doc = support.openDocument();
         assertNotNull("Document is opened", doc);
-        
-        // For FilterDocument the test must check GC of real (delegated) document as well
-        // Without this the test would not work for real docs because they would be held from
-        // EditorSupportLineSet->LineListener->root field (made a weak-ref in order to make
-        // this test to pass).
-        Document nonFilterDoc = null;
-        if (doc instanceof FilterDocument) {
-            nonFilterDoc = doc.getDefaultRootElement().getDocument();
-        }
 
         Object o = new Object();
         R r = new R(o);
@@ -157,11 +148,7 @@ implements CloneableEditorSupport.Env {
 
         Reference<?> ref = new WeakReference<Object>(doc);
         doc = null;
-        Reference<?> nonFilterRef = new WeakReference<Object>(nonFilterDoc);
-        nonFilterDoc = null;
-
         assertGC("Document can disappear",ref);
-        assertGC("Non filtered document can disappear", nonFilterRef);
 
         doc = support.getDocument();
         assertNull("No document is opened", doc);
