@@ -110,6 +110,7 @@ public class ProjectsRootNode extends AbstractNode {
 
     private static final Logger LOG = Logger.getLogger(ProjectsRootNode.class.getName());
     private static final Set<ProjectsRootNode> all = new WeakSet<ProjectsRootNode>();
+    private static final RequestProcessor RP = new RequestProcessor(ProjectsRootNode.class);
 
     static final int PHYSICAL_VIEW = 0;
     static final int LOGICAL_VIEW = 1;
@@ -603,7 +604,8 @@ public class ProjectsRootNode extends AbstractNode {
                     newDir = newProj.getProjectDirectory();
                 } else {
                     newDir = null;
-                    EventQueue.invokeLater(new Runnable() {
+                    //#228790 use RP instead of EventQueue.invokeLater, job can block on project write mutex
+                    RP.post(new Runnable() {
                         @Override
                         public void run() {
                             OpenProjectList.getDefault().close(new Project[] { pair.project }, false);
