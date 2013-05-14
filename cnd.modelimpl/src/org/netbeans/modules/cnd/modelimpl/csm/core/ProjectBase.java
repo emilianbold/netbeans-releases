@@ -2685,6 +2685,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     putContainer = true;
                 } else {
                     aUid = impl.getUID();
+                    impl.attachToProject(this);
                 }
             }
             if (putContainer) {
@@ -2692,6 +2693,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             }
         } else {
             aUid = impl.getUID();
+            impl.attachToProject(this);
         }
         if (aUid != null) {
             putNativeFileItem(aUid, nativeFile);

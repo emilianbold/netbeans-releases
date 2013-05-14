@@ -43,43 +43,51 @@
  */
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
-import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentMacros;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentIncludes;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentReferences;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentDeclarations;
-import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentInstantiations;
-import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser;
-import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParserResult;
-import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
-import org.netbeans.modules.cnd.antlr.Parser;
-import org.netbeans.modules.cnd.antlr.Token;
-import org.netbeans.modules.cnd.antlr.TokenStream;
-import org.netbeans.modules.cnd.antlr.collections.AST;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import org.netbeans.modules.cnd.api.model.*;
-import org.netbeans.modules.cnd.api.model.util.CsmTracer;
-import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
-import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
-import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
-import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
-
-import java.io.*;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
-import java.util.*;
+import java.util.AbstractCollection;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
-import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
-import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
-import org.netbeans.modules.cnd.modelimpl.csm.*;
+import org.netbeans.modules.cnd.antlr.Parser;
+import org.netbeans.modules.cnd.antlr.Token;
+import org.netbeans.modules.cnd.antlr.TokenStream;
+import org.netbeans.modules.cnd.antlr.collections.AST;
+import org.netbeans.modules.cnd.api.model.CsmDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
+import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmInclude;
+import org.netbeans.modules.cnd.api.model.CsmInstantiation;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
+import org.netbeans.modules.cnd.api.model.CsmModelState;
+import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
+import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmScopeElement;
+import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.CsmVisibility;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmTracer;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -87,23 +95,42 @@ import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.support.APTDriver;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheEntry;
 import org.netbeans.modules.cnd.apt.support.APTFileCacheManager;
+import org.netbeans.modules.cnd.apt.support.APTHandlersSupport;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageFilter;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
 import org.netbeans.modules.cnd.modelimpl.content.file.FakeIncludePair;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentDeclarations;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentIncludes;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentInstantiations;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentMacros;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileComponentReferences;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContentSignature;
+import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.EnumImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.FunctionImplEx;
+import org.netbeans.modules.cnd.modelimpl.csm.NamespaceDefinitionImpl;
+import org.netbeans.modules.cnd.modelimpl.debug.Diagnostic;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
+import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
+import org.netbeans.modules.cnd.modelimpl.parser.CPPParserEx;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTIndexingWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParser;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.CsmParserResult;
 import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider.ParserError;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc;
 import org.netbeans.modules.cnd.modelimpl.platform.FileBufferDoc.ChangedSegment;
 import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
+import org.netbeans.modules.cnd.modelimpl.syntaxerr.spi.ReadOnlyTokenBuffer;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceModel;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceUtils;
 import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
@@ -241,6 +268,21 @@ public final class FileImpl implements CsmFile,
     
     /*tests-only*/void debugInvalidate() {
         this.state = State.INITIAL;
+    }
+
+    void attachToProject(final ProjectBase project) {
+        projectLock.writeLock().lock();
+        try {
+            if (projectRef == project) {
+                return;
+            }
+            if (projectRef instanceof Reference<?> && ((Reference) projectRef).get() == project) {
+                return;
+            }
+            projectRef = new WeakReference<ProjectBase>(project);
+        } finally {
+            projectLock.writeLock().unlock();
+        }
     }
 
     /*package*/static enum State {
@@ -873,6 +915,9 @@ public final class FileImpl implements CsmFile,
         RepositoryUtils.disposeUID(uid, this);
         projectLock.writeLock().lock();
         try {
+            if (projectRef instanceof Reference<?>) {
+                projectRef = ((Reference)projectRef).get();
+            }
             if (projectRef == null) {
                 // restore container from it's UID
                 this.projectRef = (ProjectBase) UIDCsmConverter.UIDtoProject(this.projectUID);

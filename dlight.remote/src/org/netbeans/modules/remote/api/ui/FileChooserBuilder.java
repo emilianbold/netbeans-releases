@@ -41,11 +41,15 @@
  */
 package org.netbeans.modules.remote.api.ui;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.Dialog;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.HeadlessException;
+import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -53,12 +57,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
+import javax.accessibility.AccessibleContext;
 import javax.swing.Icon;
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import static javax.swing.JFileChooser.DIRECTORY_CHANGED_PROPERTY;
+import javax.swing.JOptionPane;
+import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
+import javax.swing.plaf.FileChooserUI;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -76,18 +87,85 @@ public final class FileChooserBuilder {
 
     // TODO: think of a better name
     public abstract static class JFileChooserEx extends JFileChooser {
+        protected File curFile;
+        protected String currentDirectoryPath;
 
         protected JFileChooserEx(String currentDirectoryPath) {
-            super(currentDirectoryPath);
+            super((String)null);
+//            super(currentDirectoryPath);
+            this.currentDirectoryPath = currentDirectoryPath;// == null ? getFileSystemView().getDefaultDirectory() : getFileSystemView().createFileObject(currentDirectoryPath);
         }
 
         public JFileChooserEx(String currentDirectoryPath, FileSystemView fsv) {
-            super(currentDirectoryPath, fsv);
+            super((String)null, fsv);
+            //super(currentDirectoryPath, fsv);
+            this.currentDirectoryPath = currentDirectoryPath;// == null ?  getFileSystemView().getDefaultDirectory() : getFileSystemView().createFileObject(currentDirectoryPath);
+        }
+        
+        public void setFileFilters(FileFilter[] filters) {
+            if (filters != null) {
+                for (int i = 0; i < filters.length; i++) {
+                    addChoosableFileFilter(filters[i]);
+                }
+                setFileFilter(filters[0]);
+            }         
         }
 
         public abstract void setCurrentDirectory(FileObject dir);
         public abstract FileObject getSelectedFileObject();
         public abstract FileObject[] getSelectedFileObjects();
+
+        @Override
+        public File getCurrentDirectory() {
+            if (curFile == null) {
+                if (currentDirectoryPath != null) {
+                    curFile = getFileSystemView().createFileObject(currentDirectoryPath);
+                } else {
+                    curFile =getFileSystemView().getDefaultDirectory();
+                }
+            }
+            return curFile;
+        }
+
+        @Override
+        public void setCurrentDirectory(File dir) {            
+            File oldValue = curFile;
+
+            if (curFile != null) {
+                /* Verify the toString of object */
+                if (this.curFile.equals(dir)) {
+                    return;
+                }
+            }
+
+            File prev = null;
+            while (!isTraversable(dir) && prev != dir) {
+                prev = dir;
+                dir = getFileSystemView().getParentDirectory(dir);
+            }
+            curFile = dir;
+
+            firePropertyChange(DIRECTORY_CHANGED_PROPERTY, oldValue, curFile);            
+        }
+        
+        @Override
+        public final void updateUI() {
+            if (isAcceptAllFileFilterUsed()) {
+                removeChoosableFileFilter(getAcceptAllFileFilter());
+            }
+            FileChooserUI fileChooserUI = new FileChooserUIImpl(this);
+            if (getFileSystemView() == null) {
+                // We were probably deserialized
+                setFileSystemView(FileSystemView.getFileSystemView());
+            }
+            setUI(fileChooserUI);
+
+            if(isAcceptAllFileFilterUsed()) {
+                addChoosableFileFilter(getAcceptAllFileFilter());
+            }
+    }        
+        
+        
     }
 
     private static final String openDialogTitleTextKey = "FileChooser.openDialogTitleText"; // NOI18N
@@ -172,12 +250,10 @@ public final class FileChooserBuilder {
         public void setCurrentDirectory(FileObject dir) {
             if (dir != null && dir.isFolder()) {
                 File file = FileUtil.toFile(dir);
-                if (file != null) {
-                    setCurrentDirectory(file);
-                }
+                setCurrentDirectory(file);
             }
         }
-
+                
         /** 
          * See bz#82821 for more details,
          * C/C++ file choosers do no respect nb.native.filechooser

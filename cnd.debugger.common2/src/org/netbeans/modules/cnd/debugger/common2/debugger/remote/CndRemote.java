@@ -146,6 +146,29 @@ public final class CndRemote {
     public static void validate(final String name, final Runnable continuation) {
         validate(name, continuation, null);
     }
+    
+    public static boolean syncValidate(final String name) {
+	if (name != null && name.equals("localhost")) { // NOI18N
+	    return true;
+	}
+        
+        Host host = Host.byName(name);
+
+        final ServerRecord serverRecord = ServerList.get(host.executionEnvironment());
+
+        serverRecord.validate(true);
+        // No need to continue if connection is not available
+        if (!serverRecord.isOnline()) {
+            showErrorDialog(serverRecord);
+            return false;
+        }
+        ExecutionEnvironment exEnv = serverRecord.getExecutionEnvironment();
+        CompilerSetManager csm = CompilerSetManager.get(exEnv);
+        csm.initialize(true, true, null);
+        // initialize host info
+        PlatformInfo.getDefault(exEnv);
+        return true;
+    }
 
     /**
      * If the host 'name' is offline, bring it online and get it's
@@ -192,20 +215,22 @@ public final class CndRemote {
 		}
 	    }
 
-            private void showErrorDialog(ServerRecord serverRecord) {
-                final String message = MessageFormat.format(Catalog.get("ERR_Cant_Cnnect"), serverRecord.getDisplayName()); // NOI18N
-                final String title = Catalog.get("DLG_TITLE_Cant_Connect"); //NOI18N
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        JOptionPane.showMessageDialog(
-                            WindowManager.getDefault().getMainWindow(),
-                            message, title, JOptionPane.ERROR_MESSAGE);
-                    }
-                });
-            }
+            
 	};
 	RequestProcessor.Task task = validatorRP.post(validator);
+    }
+    
+    private static void showErrorDialog(ServerRecord serverRecord) {
+        final String message = MessageFormat.format(Catalog.get("ERR_Cant_Cnnect"), serverRecord.getDisplayName()); // NOI18N
+        final String title = Catalog.get("DLG_TITLE_Cant_Connect"); //NOI18N
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                JOptionPane.showMessageDialog(
+                        WindowManager.getDefault().getMainWindow(),
+                        message, title, JOptionPane.ERROR_MESSAGE);
+            }
+        });
     }
 
     public static String[] getServerListIDs() {
