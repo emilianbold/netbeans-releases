@@ -49,66 +49,73 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
-import org.openide.util.actions.SystemAction;
+import org.openide.LifecycleManager;
+import org.openide.loaders.DataObject;
 
-/** Used to call "File|Save All" main menu item or
- * "org.openide.actions.SaveAllAction".
+/**
+ * Used to call "File|Save All" main menu item or to do an API call.
  * <br>
- * After action is performed it waits until action is disabled which should
- * means the action is finished.
+ * After action is performed it waits until it is finished.
+ *
  * @see Action
- * @author Jiri.Skrivanek@sun.com
+ * @author Jiri Skrivanek
  */
 public class SaveAllAction extends Action {
 
-    /** "File|Save All" */
-    private static final String saveAllMenu = 
-                       Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/File")
-                       + "|"
-                       + Bundle.getStringTrimmed("org.openide.loaders.Bundle", "SaveAll");
-    
-    private static final String systemActionClassname = "org.openide.actions.SaveAllAction";
+    /**
+     * "File|Save All"
+     */
+    private static final String saveAllMenu =
+            Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/File")
+            + "|"
+            + Bundle.getStringTrimmed("org.openide.loaders.Bundle", "SaveAll");
+    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1
+            ? KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK)
+            : KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
 
-    private static final KeyStroke keystroke = System.getProperty("os.name").toLowerCase().indexOf("mac") > -1 ?
-            KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.META_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK) :
-            KeyStroke.getKeyStroke(KeyEvent.VK_X, KeyEvent.CTRL_DOWN_MASK | KeyEvent.SHIFT_DOWN_MASK);
-    
-    /** Creates new SaveAllAction instance. */
+    /**
+     * Creates new SaveAllAction instance.
+     */
     public SaveAllAction() {
-        super(saveAllMenu, null, systemActionClassname, keystroke);
+        super(saveAllMenu, null, null, keystroke);
     }
-    
-    /** Performs action through main menu and wait until action is not finished. */
+
+    /**
+     * Performs action through main menu and wait until action is not finished.
+     */
+    @Override
     public void performMenu() {
         super.performMenu();
         waitFinished();
     }
-    
-    /** Performs action through API call and wait until action is not finished. */
+
+    /**
+     * Performs action through API call and wait until action is not finished.
+     */
+    @Override
     public void performAPI() {
-        super.performAPI();
+        LifecycleManager.getDefault().saveAll();
         waitFinished();
     }
 
-    /** Waits until SaveAllAction is finished. Actually it waits until system
-     * action is disabled. */
+    /**
+     * Waits until SaveAllAction is finished.
+     */
     private void waitFinished() {
         try {
-            Waiter waiter = new Waiter(new Waitable() {
+            new Waiter(new Waitable() {
+                @Override
                 public Object actionProduced(Object systemAction) {
-                    return ((SystemAction)systemAction).isEnabled() ? null:Boolean.TRUE;
+                    return DataObject.getRegistry().getModifiedSet().isEmpty() ? Boolean.TRUE : null;
                 }
+
+                @Override
                 public String getDescription() {
-                    return("Wait SaveAllAction is finished.");
+                    return "SaveAllAction is finished";
                 }
-            });
-            SystemAction saveAllAction = SystemAction.get(Class.forName(systemActionClassname).asSubclass(SystemAction.class));
-            waiter.waitAction(saveAllAction);
-        } catch(InterruptedException e) {
+            }).waitAction(null);
+        } catch (InterruptedException e) {
             throw new JemmyException("Waiting interrupted.", e);
-        } catch (ClassNotFoundException e) {
-            throw new JemmyException("Class not found.", e);
         }
     }
-    
 }
