@@ -215,14 +215,14 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
 
     static final Set<LatteElement> DEFAULT_VARIABLES = new HashSet<>();
     static {
-        DEFAULT_VARIABLES.add(LatteElement.IteratorItemFactory.create("$control")); //NOI18N
-        DEFAULT_VARIABLES.add(LatteElement.IteratorItemFactory.create("$presenter")); //NOI18N
-        DEFAULT_VARIABLES.add(LatteElement.IteratorItemFactory.create("$user")); //NOI18N
-        DEFAULT_VARIABLES.add(LatteElement.IteratorItemFactory.create("$netteHttpResponse")); //NOI18N
-        DEFAULT_VARIABLES.add(LatteElement.IteratorItemFactory.create("$netteCacheStorage")); //NOI18N
-        DEFAULT_VARIABLES.add(LatteElement.IteratorItemFactory.create("$baseUri")); //NOI18N
-        DEFAULT_VARIABLES.add(LatteElement.IteratorItemFactory.create("$basePath")); //NOI18N
-        DEFAULT_VARIABLES.add(LatteElement.IteratorItemFactory.create("$flashes")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.VariableFactory.create("$control")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.VariableFactory.create("$presenter")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.VariableFactory.create("$user")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.VariableFactory.create("$netteHttpResponse")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.VariableFactory.create("$netteCacheStorage")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.VariableFactory.create("$baseUri")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.VariableFactory.create("$basePath")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.VariableFactory.create("$flashes")); //NOI18N
     }
 
     @Override

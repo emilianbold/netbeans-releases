@@ -114,6 +114,15 @@ public interface LatteElement extends ElementHandle {
 
     }
 
+    public static class VariableFactory {
+        private static final LatteDocumentationFactory DF = LatteDocumentationFactory.VariableDocumentationFactory.getInstance();
+
+        public static LatteElement create(String name) {
+            return new LatteElementSimple(name, DF);
+        }
+
+    }
+
     abstract static class BaseLatteElementItem implements LatteElement {
         private final String name;
         private final LatteDocumentationFactory documentationFactory;

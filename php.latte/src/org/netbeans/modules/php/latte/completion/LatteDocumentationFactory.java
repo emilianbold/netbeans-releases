@@ -142,4 +142,22 @@ public interface LatteDocumentationFactory {
 
     }
 
+    public static class VariableDocumentationFactory extends BaseDocumentationFactory {
+
+        private static final LatteDocumentationFactory INSTANCE = new VariableDocumentationFactory();
+
+        public static LatteDocumentationFactory getInstance() {
+            return INSTANCE;
+        }
+
+        private VariableDocumentationFactory() {
+        }
+
+        @Override
+        protected String getDocumentationKey() {
+            return "VARIABLE_"; //NOI18N
+        }
+
+    }
+
 }
