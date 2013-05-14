@@ -2951,9 +2951,9 @@ public class JavaCompletionProvider implements CompletionProvider {
                             }
                         }
                     }
-                    addChainedMembers(env, locals);
                 }
             } else {
+                addChainedMembers(env, locals);
                 addAllStaticMemberNames(env);
             }
             final TypeElement enclClass = scope.getEnclosingClass();
