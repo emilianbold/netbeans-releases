@@ -152,6 +152,10 @@ public enum LatteCompletionContext {
     }
 
     protected void completeVariables(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+        completeDefaultVariables(completionProposals, request);
+    }
+
+    protected void completeDefaultVariables(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
         for (LatteElement variable : LatteCompletionHandler.DEFAULT_VARIABLES) {
             if (startsWith(variable.getName(), request.prefix)) {
                 completionProposals.add(new LatteCompletionProposal.VariableCompletionProposal(variable, request));
