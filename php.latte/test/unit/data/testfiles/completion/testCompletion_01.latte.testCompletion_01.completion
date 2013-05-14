@@ -48,3 +48,11 @@ METHOD     syntax mode                                Macro
 METHOD     use Class                                  Macro
 METHOD     var $name = $value                         Macro
 METHOD     while true                                 Macro
+VARIABLE   $basePath                                  Variable
+VARIABLE   $baseUri                                   Variable
+VARIABLE   $control                                   Variable
+VARIABLE   $flashes                                   Variable
+VARIABLE   $netteCacheStorage                         Variable
+VARIABLE   $netteHttpResponse                         Variable
+VARIABLE   $presenter                                 Variable
+VARIABLE   $user                                      Variable
