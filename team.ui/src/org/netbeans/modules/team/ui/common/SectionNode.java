@@ -57,6 +57,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
+import org.netbeans.modules.team.ui.Utilities;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.util.treelist.ProgressLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
@@ -87,7 +88,7 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
      * the property change is fired then children of this node are refreshed.
      */
     public SectionNode( String displayName, TreeListNode parent, ProjectHandle project, String propertyName ) {
-        super( true, false, parent );
+        super( true, Utilities.isMoreProjectsDashboard(), parent );
         this.displayName = displayName;
         this.propertyName = propertyName;
         this.project = project;
