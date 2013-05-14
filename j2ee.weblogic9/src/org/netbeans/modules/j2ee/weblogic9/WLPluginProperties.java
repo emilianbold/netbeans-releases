@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.j2ee.weblogic9;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -53,6 +54,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -174,9 +176,10 @@ public final class WLPluginProperties {
     
     private static final  Pattern ADMIN_SERVER_PATTERN = 
         Pattern.compile("(?:[a-z]+\\:)?admin-server-name");         // NOI18N
-    
-    // TODO read from domain-registry.xml instead?
+
     private static final String DOMAIN_LIST = "common/nodemanager/nodemanager.domains"; // NOI18N
+
+    private static final String DOMAIN_REGISTRY = "domain-registry.xml"; // NOI18N
 
     private static final String INSTALL_ROOT_KEY = "installRoot"; // NOI18N
 
@@ -307,58 +310,11 @@ public final class WLPluginProperties {
      */
     public static String[] getRegisteredDomainPaths(String serverRoot) {
         // init the resulting vector
-        List<String> result = new ArrayList<String>();
-
-        // is the server root was not defined, return an empty array of domains
-        if (serverRoot == null) {
-            return new String[] {};
+        List<String> result = new ArrayList<String>(getDomainsFromRegistry(serverRoot));
+        if (result.isEmpty()) {
+            result.addAll(getDomainsFromNodeManager(serverRoot));
         }
-
-        // init the input stream for the file and the w3c document object
-        File file = new File(serverRoot + File.separator
-                + DOMAIN_LIST.replaceAll("/", Matcher.quoteReplacement(File.separator)));
-        if (!file.exists() || !file.canRead()) {
-            return new String[] {};
-        }
-
-        BufferedReader lnr = null;
-
-        // read the list file line by line fetching out the domain paths
-        try {
-            // create a new reader for the FileInputStream
-            lnr = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
-
-            // read the lines
-            String line;
-            while ((line = lnr.readLine()) != null) {
-                // skip the comments
-                if (line.startsWith("#")) {  // NOI18N
-                    continue;
-                }
-
-                // fetch the domain path
-                String path = line.split("=")[1].replaceAll("\\\\\\\\", "/").replaceAll("\\\\:", ":"); // NOI18N
-
-                // add the path to the resulting set
-                result.add(path);
-            }
-        } catch (FileNotFoundException e) {
-            LOGGER.log(Level.INFO, null, e);   // NOI18N
-        } catch (IOException e) {
-            LOGGER.log(Level.INFO, null, e);   // NOI18N
-        } finally {
-            try {
-                // close the stream
-                if (lnr != null) {
-                    lnr.close();
-                }
-            } catch (IOException e) {
-                LOGGER.log(Level.INFO, null, e);  // NOI18N
-            }
-        }
-
-        // convert the vector to an array and return
-        return (String[]) result.toArray(new String[result.size()]);
+        return result.toArray(new String[result.size()]);
     }
     
     /**
@@ -378,7 +334,7 @@ public final class WLPluginProperties {
         try {
             // open the stream from the instances config file
             File config = new File(configPath);
-            if ( !config.exists()){
+            if (!config.exists()){
                 LOGGER.log(Level.FINE, "Domain config file "
                         + "is not found. Probably server configuration was "
                         + "changed externally"); // NOI18N
@@ -796,7 +752,125 @@ public final class WLPluginProperties {
         }
         return null;
     }     
-        
+
+    private static List<String> getDomainsFromNodeManager(String serverRoot) {
+        // is the server root was not defined, return an empty array of domains
+        if (serverRoot == null) {
+            return Collections.emptyList();
+        }
+
+        // init the input stream for the file and the w3c document object
+        File file = new File(serverRoot + File.separator
+                + DOMAIN_LIST.replaceAll("/", Matcher.quoteReplacement(File.separator)));
+        if (!file.exists() || !file.canRead()) {
+            return Collections.emptyList();
+        }
+
+        List<String> result = new ArrayList<String>();
+        BufferedReader lnr = null;
+
+        // read the list file line by line fetching out the domain paths
+        try {
+            // create a new reader for the FileInputStream
+            lnr = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+
+            // read the lines
+            String line;
+            while ((line = lnr.readLine()) != null) {
+                // skip the comments
+                if (line.startsWith("#")) {  // NOI18N
+                    continue;
+                }
+
+                // fetch the domain path
+                String path = line.split("=")[1].replaceAll("\\\\\\\\", "/").replaceAll("\\\\:", ":"); // NOI18N
+
+                // add the path to the resulting set
+                result.add(path);
+            }
+        } catch (FileNotFoundException e) {
+            LOGGER.log(Level.INFO, null, e);   // NOI18N
+        } catch (IOException e) {
+            LOGGER.log(Level.INFO, null, e);   // NOI18N
+        } finally {
+            try {
+                // close the stream
+                if (lnr != null) {
+                    lnr.close();
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.INFO, null, e);  // NOI18N
+            }
+        }
+        return result;
+    }
+
+    private static List<String> getDomainsFromRegistry(String serverRoot) {
+        // is the server root was not defined, return an empty array of domains
+        if (serverRoot == null) {
+            return Collections.emptyList();
+        }
+
+        File mwHome = getMiddlewareHome(new File(serverRoot));
+        if (mwHome == null) {
+            return Collections.emptyList();
+        }
+        // init the input stream for the file and the w3c document object
+        File file = new File(mwHome, DOMAIN_REGISTRY);
+        if (!file.exists() || !file.canRead()) {
+            return Collections.emptyList();
+        }
+
+        List<String> result = new ArrayList<String>();
+        // init the input stream for the file and the w3c document object
+        InputStream inputStream = null;
+        Document document = null;
+
+        try {
+            inputStream = new BufferedInputStream(new FileInputStream(file));
+
+            // parse the document
+            document = DocumentBuilderFactory.newInstance()
+                    .newDocumentBuilder().parse(inputStream);
+
+            // get the root element
+            Element root = document.getDocumentElement();
+
+            // get the child nodes
+            NodeList children = root.getChildNodes();
+
+            for (int j = 0; j < children.getLength(); j++) {
+                Node child = children.item(j);
+                if ("domain".equals(child.getNodeName())) { // NOI18N
+                    Node attr = child.getAttributes().getNamedItem("location"); // NOI18N
+                    if (attr != null) {
+                        String location = attr.getNodeValue();
+                        if (location != null) {
+                            result.add(location);
+                        }
+                    }
+                }
+            }
+        } catch (FileNotFoundException e) {
+            LOGGER.log(Level.INFO, null, e);
+        } catch (IOException e) {
+            LOGGER.log(Level.INFO, null, e);
+        } catch (ParserConfigurationException e) {
+            LOGGER.log(Level.INFO, null, e);
+        } catch (SAXException e) {
+            LOGGER.log(Level.INFO, null, e);
+        } finally {
+            try {
+                if (inputStream != null) {
+                    inputStream.close();
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.INFO, null, e);
+            }
+        }
+        return result;
+    }
+
     private static boolean hasRequiredChildren(File candidate, Collection requiredChildren) {
         if (null == candidate)
             return false;
