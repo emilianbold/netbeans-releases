@@ -66,6 +66,7 @@ public interface LatteElement extends ElementHandle {
     public String getDocumentationText();
 
     public static class MacroFactory {
+        private static final String END_MACRO_MARKER = "/"; //NOI18N
         private static final LatteDocumentationFactory DF = LatteDocumentationFactory.MacroDocumentationFactory.getInstance();
 
         public static LatteElement create(String name, String macroParameter, String customTemplate) {
@@ -74,6 +75,10 @@ public interface LatteElement extends ElementHandle {
 
         public static LatteElement create(String name) {
             return new LatteElementSimple(name, DF);
+        }
+
+        public static LatteElement createEnd(String name) {
+            return new LatteElementSimple(END_MACRO_MARKER + name, DF);
         }
 
     }
@@ -160,7 +165,7 @@ public interface LatteElement extends ElementHandle {
 
         @Override
         public String getDocumentationText() {
-            LatteDocumentation documentation = documentationFactory.create(getName());
+            LatteDocumentation documentation = documentationFactory.create(name.startsWith(MacroFactory.END_MACRO_MARKER) ? name.substring(1) : name);
             return documentation.getHeader() + documentation.getContent();
         }
 

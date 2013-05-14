@@ -76,7 +76,7 @@ import org.netbeans.modules.php.latte.utils.LatteLexerUtils;
  */
 public class LatteCompletionHandler implements CodeCompletionHandler {
     private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<>(
-            Arrays.asList('=', ';', '+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t', '\n'));
+            Arrays.asList('=', ';', '+', '-', '*', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t', '\n'));
     static final Set<LatteElement> MACROS = new HashSet<>();
     static {
         MACROS.add(LatteElement.MacroFactory.create("link", "Presenter:action", "link ${Presenter}:${action}")); //NOI18N
@@ -126,6 +126,27 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
         MACROS.add(LatteElement.MacroFactory.create("!_")); //NOI18N
         MACROS.add(LatteElement.MacroFactory.create("=")); //NOI18N
         MACROS.add(LatteElement.MacroFactory.create("#")); //NOI18N
+    }
+
+    static final Set<LatteElement> END_MACROS = new HashSet<>();
+    static {
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("if")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("ifset")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("ifCurrent")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("for")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("foreach")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("while")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("first")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("last")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("sep")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("capture")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("cache")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("syntax")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("_")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("block")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("form")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("label")); //NOI18N
+        END_MACROS.add(LatteElement.MacroFactory.createEnd("snippet")); //NOI18N
     }
 
     static final Set<LatteElement> HELPERS = new HashSet<>();
@@ -366,7 +387,8 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
 
         private static boolean isValidTokenId(LatteMarkupTokenId id) {
             return LatteMarkupTokenId.T_SYMBOL.equals(id) || LatteMarkupTokenId.T_VARIABLE.equals(id)
-                    || LatteMarkupTokenId.T_MACRO_START.equals(id) || LatteMarkupTokenId.T_MACRO_END.equals(id);
+                    || LatteMarkupTokenId.T_MACRO_START.equals(id) || LatteMarkupTokenId.T_MACRO_END.equals(id)
+                    || LatteMarkupTokenId.T_ERROR.equals(id);
         }
 
     }

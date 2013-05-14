@@ -124,9 +124,22 @@ public abstract class LatteCompletionProposal implements CompletionProposal {
         return element.getTemplate();
     }
 
-    static class MacroCompletionProposal extends LatteCompletionProposal {
+    abstract static class MacroCompletionProposal extends LatteCompletionProposal {
 
         public MacroCompletionProposal(LatteElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.METHOD;
+        }
+
+    }
+
+    static class StartMacroCompletionProposal extends MacroCompletionProposal {
+
+        public StartMacroCompletionProposal(LatteElement element, CompletionRequest request) {
             super(element, request);
         }
 
@@ -137,8 +150,27 @@ public abstract class LatteCompletionProposal implements CompletionProposal {
         }
 
         @Override
-        public ElementKind getKind() {
-            return ElementKind.METHOD;
+        public int getSortPrioOverride() {
+            return 50;
+        }
+
+    }
+
+    static class EndMacroCompletionProposal extends MacroCompletionProposal {
+
+        public EndMacroCompletionProposal(LatteElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        @NbBundle.Messages("EndMacroRhs=End Macro")
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return Bundle.EndMacroRhs();
+        }
+
+        @Override
+        public int getSortPrioOverride() {
+            return 100;
         }
 
     }
