@@ -55,6 +55,7 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
@@ -117,6 +118,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private final Object LOCK_CATEGORIES = new Object();
     private final Object LOCK_REPOSITORIES = new Object();
     private Map<Category, CategoryNode> mapCategoryToNode;
+    private final Map<String, RepositoryNode> mapRepositoryToNode;
     private List<CategoryNode> categoryNodes;
     private List<RepositoryNode> repositoryNodes;
     private AppliedFilters<IssueImpl> appliedTaskFilters;
@@ -153,6 +155,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         dashboardComponent.setBackground(ColorManager.getDefault().getDefaultBackground());
         dashboardComponent.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
         mapCategoryToNode = new HashMap<Category, CategoryNode>();
+        mapRepositoryToNode = new HashMap<String, RepositoryNode>();
         categoryNodes = new ArrayList<CategoryNode>();
         repositoryNodes = new ArrayList<RepositoryNode>();
 
@@ -237,13 +240,37 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    public void setSelection(Collection<? extends TreeListNode> toSelect) {
+    public void select(Collection<? extends TreeListNode> toSelect) {
         for (TreeListNode node : toSelect) {
             TreeListNode parent = node.getParent();
             if (parent != null && !parent.isExpanded()) {
                 parent.setExpanded(true);
             }
             treeList.setSelectedValue(node, true);
+        }
+    }
+
+    public void select(RepositoryImpl repository) {
+        RepositoryNode node = mapRepositoryToNode.get(repository.getId());
+        if (node != null) {
+            List<TreeListNode> l = new ArrayList<TreeListNode>(1);
+            l.add(node);
+            select(l);
+        }
+    }
+
+    public void select(QueryImpl query) {
+        RepositoryNode node = mapRepositoryToNode.get(query.getRepositoryImpl().getId());
+        if (node != null) {
+            List<TreeListNode> l = new ArrayList<TreeListNode>(1);
+            List<QueryNode> queryNodes = node.getQueryNodes();
+            for (QueryNode queryNode : queryNodes) {
+                if (queryNode.getQuery().equals(query)) {
+                    l.add(queryNode);
+                    break;
+                }
+            }
+            select(l);
         }
     }
 
@@ -567,6 +594,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             //add repository to the model - sorted
             RepositoryNode repositoryNode = new RepositoryNode(repository);
             repositoryNodes.add(repositoryNode);
+            mapRepositoryToNode.put(repository.getId(), repositoryNode);
             addRepositoryToModel(repositoryNode);
         }
     }
@@ -583,7 +611,8 @@ public final class DashboardViewer implements PropertyChangeListener {
         if (confirmDelete(title, message)) {
             for (RepositoryNode repositoryNode : toRemove) {
                 synchronized (LOCK_REPOSITORIES) {
-                    repositoryNodes.remove((RepositoryNode) repositoryNode);
+                    repositoryNodes.remove(repositoryNode);
+                    mapRepositoryToNode.remove(repositoryNode.getRepository().getId());
                 }
                 model.removeRoot(repositoryNode);
             }
@@ -612,6 +641,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 newNode = new ClosedRepositoryNode(repository);
             }
             repositoryNodes.add(newNode);
+            mapRepositoryToNode.put(repository.getId(), newNode);
             if (isRepositoryInFilter(newNode)) {
                 addRepositoryToModel(newNode);
             }
@@ -908,12 +938,14 @@ public final class DashboardViewer implements PropertyChangeListener {
         synchronized (LOCK_REPOSITORIES) {
             //remove unavailable repositories from model
             repositoryNodes.removeAll(toRemove);
+            mapRepositoryToNode.keySet().removeAll(toRemove);
             for (RepositoryNode repositoryNode : toRemove) {
                 model.removeRoot(repositoryNode);
             }
             //add new repositories to model
             for (RepositoryNode newRepository : toAdd) {
                 repositoryNodes.add(newRepository);
+                mapRepositoryToNode.put(newRepository.getRepository().getId(), newRepository);
                 if (isRepositoryInFilter(newRepository)) {
                     addRepositoryToModel(newRepository);
                 }
@@ -1047,9 +1079,11 @@ public final class DashboardViewer implements PropertyChangeListener {
         synchronized (LOCK_REPOSITORIES) {
             removeNodesFromModel(RepositoryNode.class);
             repositoryNodes = repoNodes;
+            mapRepositoryToNode.clear();
             Collections.sort(this.repositoryNodes);
             int index = model.getRootNodes().indexOf(titleRepositoryNode) + 1;
             for (RepositoryNode repositoryNode : repositoryNodes) {
+                mapRepositoryToNode.put(repositoryNode.getRepository().getId(), repositoryNode);
                 if (isRepositoryInFilter(repositoryNode)) {
                     taskHits += repositoryNode.getFilterHits();
                     addRootToModel(index++, repositoryNode);
