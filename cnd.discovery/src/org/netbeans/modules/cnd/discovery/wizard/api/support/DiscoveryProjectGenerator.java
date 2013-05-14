@@ -113,7 +113,7 @@ public final class DiscoveryProjectGenerator {
             return false;
         }
         final CsmProject p = model.getProject(np);
-        if (p == null || p.isValid()) {
+        if (p == null || !p.isValid()) {
             if (logger != null) {
                 logger.log(Level.INFO, "Not found model project for fixing of excluded header files for project {0}", np); // NOI18N
             }
