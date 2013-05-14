@@ -115,7 +115,7 @@ public class NetworkProxyReloader extends ProxySettings.Reloader {
                     LOGGER.log(Level.WARNING, "Cannot create URI from: " + ProxySettings.HTTP_CONNECTION_TEST_URL, ex); //NOI18N
                 }
 
-                if (testHttpProxy != null && !testHttpProxy.isEmpty()) {
+                if (testHttpProxy != null && !testHttpProxy.isEmpty() && testHttpProxy.get(0).address() != null) {
                     testHttpProxyHost = ((InetSocketAddress) testHttpProxy.get(0).address()).getHostName();
                     testHttpProxyPort = Integer.toString(((InetSocketAddress) testHttpProxy.get(0).address()).getPort());
                 } else {
