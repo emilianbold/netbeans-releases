@@ -264,7 +264,7 @@ public class BrowserConsoleLogger implements Console.Listener {
                 
                 String urlStr = sf.getURLString();
                 urlStr = getProjectPath(project, urlStr);
-                sb.append(" ("+urlStr+":"+sf.getLine()+":"+sf.getColumn()+")");
+                sb.append(" (").append(urlStr).append(":").append(sf.getLine()).append(":").append(sf.getColumn()).append(")");
                 MyListener l = new MyListener(project, sf.getURLString(), sf.getLine(), sf.getColumn());
                 if (l.isValidHyperlink()) {
                     ow.println(sb.toString(), l);
