@@ -225,6 +225,9 @@ public final class NotifyExcPanel extends JPanel implements ActionListener {
                 
                 try {
                     Object o = ((Callable<?>)h).call();
+                    if (o == null) {
+                        continue;
+                    }
                     assert o instanceof JButton;
                     JButton b = (JButton) o;
                     extraH += b.getPreferredSize ().height;

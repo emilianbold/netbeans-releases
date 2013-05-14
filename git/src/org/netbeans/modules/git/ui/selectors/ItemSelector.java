@@ -42,6 +42,8 @@
 package org.netbeans.modules.git.ui.selectors;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -57,6 +59,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -98,6 +101,8 @@ public class ItemSelector<I extends Item> implements ListSelectionListener {
             model.addElement(i);
         }
         panel.list.setModel(model);        
+        //inform listeners like select all/none buttons
+        changeSupport.fireChange();
     }
     
     @SuppressWarnings("unchecked")
@@ -130,6 +135,20 @@ public class ItemSelector<I extends Item> implements ListSelectionListener {
         return panel.list.getModel().getSize() == 0;
     }
     
+    /**
+     * Selects all or deselects all items in the list of items.
+     *
+     * @param newState true, if select all, false if select none
+     */
+    private void selectAll(boolean newState) {
+        for (int i = 0; i < panel.list.getModel().getSize(); i++) {
+            Item item = (Item) panel.list.getModel().getElementAt(i);
+            item.isSelected = newState;
+        }
+        panel.list.repaint();
+        changeSupport.fireChange();
+    }
+    
     private void attachListeners () {
         panel.list.addMouseListener(new MouseAdapter() {
             @Override
@@ -143,6 +162,39 @@ public class ItemSelector<I extends Item> implements ListSelectionListener {
                 if(e.getKeyCode() == KeyEvent.VK_SPACE) {
                     switchSelection(panel.list.getSelectedIndex());
                 }
+            }
+        });
+     
+        panel.btnSelectAll.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectAll(true);
+            }
+        });
+        panel.btnSelectNone.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                selectAll(false);
+            }
+        });
+
+        changeSupport.addChangeListener(new ChangeListener() {
+
+            @Override
+            public void stateChanged(ChangeEvent e) {
+                int selectedItemsCount = 0;
+                int maxItemsCount = panel.list.getModel().getSize();
+                for (int i = 0; i < maxItemsCount; i++) {
+                    Item item = (Item) panel.list.getModel().getElementAt(i);
+                    if (item.isSelected) {
+                        selectedItemsCount++;
+                    }
+                }
+                //sync the buttons
+                panel.btnSelectAll.setEnabled(selectedItemsCount<maxItemsCount);
+                panel.btnSelectNone.setEnabled(selectedItemsCount>0);
             }
         });
     };   
