@@ -108,6 +108,7 @@ public enum LatteCompletionContext {
             }
         }
     }
+
     protected void completeIteratorItems(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
         for (LatteElement iteratorItem : LatteCompletionHandler.ITERATOR_FIELD_ITEMS) {
             if (startsWith(iteratorItem.getName(), request.prefix)) {
@@ -121,8 +122,8 @@ public enum LatteCompletionContext {
         }
     }
 
-
     private static boolean startsWith(String theString, String prefix) {
         return prefix.length() == 0 ? true : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
+
 }
