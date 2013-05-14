@@ -67,31 +67,75 @@ public interface LatteElement extends ElementHandle {
 
     public static class Factory {
 
+        public static LatteElement create(String name, LatteDocumentationFactory documentationFactory) {
+            return new LatteElementSimple(name, documentationFactory);
+        }
+
+        public static LatteElement create(String name, List<Parameter> parameters, LatteDocumentationFactory documentationFactory) {
+            return new LatteElementExtended(name, parameters, documentationFactory);
+        }
+
+        public static LatteElement create(String name, String customTemplate, LatteDocumentationFactory documentationFactory) {
+            return new LatteElementExtended(name, Collections.<Parameter>emptyList(), customTemplate, documentationFactory);
+        }
+
+        public static LatteElement createMacro(String name, String macroParameter, String customTemplate, LatteDocumentationFactory documentationFactory) {
+            return new LatteElementExtended(name, Arrays.asList(new Parameter[] {new MacroParameter(macroParameter)}), customTemplate, documentationFactory);
+        }
+
+    }
+
+    public static class MacroFactory {
+        private static final LatteDocumentationFactory DF = LatteDocumentationFactory.MacroDocumentationFactory.getInstance();
+
+        public static LatteElement create(String name, String macroParameter, String customTemplate) {
+            return new LatteElementExtended(name, Arrays.asList(new Parameter[] {new MacroParameter(macroParameter)}), customTemplate, DF);
+        }
+
         public static LatteElement create(String name) {
-            return new LatteElementSimple(name, LatteDocumentation.Factory.createFromBundle(name, name));
+            return new LatteElementSimple(name, DF);
+        }
+
+    }
+
+    public static class HelperFactory {
+        private static final LatteDocumentationFactory DF = LatteDocumentationFactory.HelperDocumentationFactory.getInstance();
+
+        public static LatteElement create(String name) {
+            return new LatteElementSimple(name, DF);
         }
 
         public static LatteElement create(String name, List<Parameter> parameters) {
-            return new LatteElementExtended(name, parameters, LatteDocumentation.Factory.createFromBundle(name, name));
+            return new LatteElementExtended(name, parameters, DF);
         }
 
-        public static LatteElement create(String name, String customTemplate) {
-            return new LatteElementExtended(name, Collections.<Parameter>emptyList(), customTemplate, LatteDocumentation.Factory.createFromBundle(name, name));
+    }
+
+    public static class KeywordFactory {
+        private static final LatteDocumentationFactory DF = LatteDocumentationFactory.KeywordDocumentationFactory.getInstance();
+
+        public static LatteElement create(String name) {
+            return new LatteElementSimple(name, DF);
         }
 
-        public static LatteElement createMacro(String name, String macroParameter, String customTemplate) {
-            return new LatteElementExtended(name, Arrays.asList(new Parameter[] {new MacroParameter(macroParameter)}), customTemplate, LatteDocumentation.Factory.createFromBundle(name, name));
+    }
+
+    public static class IteratorItemFactory {
+        private static final LatteDocumentationFactory DF = LatteDocumentationFactory.IteratorItemDocumentationFactory.getInstance();
+
+        public static LatteElement create(String name) {
+            return new LatteElementSimple(name, DF);
         }
 
     }
 
     abstract static class BaseLatteElementItem implements LatteElement {
         private final String name;
-        private final LatteDocumentation documentation;
+        private final LatteDocumentationFactory documentationFactory;
 
-        public BaseLatteElementItem(String name, LatteDocumentation documentation) {
+        public BaseLatteElementItem(String name, LatteDocumentationFactory documentationFactory) {
             this.name = name;
-            this.documentation = documentation;
+            this.documentationFactory = documentationFactory;
         }
 
         @Override
@@ -136,6 +180,7 @@ public interface LatteElement extends ElementHandle {
 
         @Override
         public String getDocumentationText() {
+            LatteDocumentation documentation = documentationFactory.create(getName());
             return documentation.getHeader() + documentation.getContent();
         }
 
@@ -143,8 +188,8 @@ public interface LatteElement extends ElementHandle {
 
     static class LatteElementSimple extends BaseLatteElementItem {
 
-        public LatteElementSimple(String name, LatteDocumentation documentation) {
-            super(name, documentation);
+        public LatteElementSimple(String name, LatteDocumentationFactory documentationFactory) {
+            super(name, documentationFactory);
         }
 
         @Override
@@ -162,12 +207,12 @@ public interface LatteElement extends ElementHandle {
         private final List<Parameter> parameters;
         private final String customTemplate;
 
-        public LatteElementExtended(String name, List<Parameter> parameters, LatteDocumentation documentation) {
-            this(name, parameters, null, documentation);
+        public LatteElementExtended(String name, List<Parameter> parameters, LatteDocumentationFactory documentationFactory) {
+            this(name, parameters, null, documentationFactory);
         }
 
-        public LatteElementExtended(String name, List<Parameter> parameters, String customTemplate, LatteDocumentation documentation) {
-            super(name, documentation);
+        public LatteElementExtended(String name, List<Parameter> parameters, String customTemplate, LatteDocumentationFactory documentationFactory) {
+            super(name, documentationFactory);
             this.parameters = parameters;
             this.customTemplate = customTemplate;
         }
