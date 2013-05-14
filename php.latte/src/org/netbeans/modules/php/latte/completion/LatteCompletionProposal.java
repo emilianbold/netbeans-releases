@@ -231,6 +231,24 @@ public abstract class LatteCompletionProposal implements CompletionProposal {
 
     }
 
+    static class VariableCompletionProposal extends LatteCompletionProposal {
+        public VariableCompletionProposal(LatteElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        @NbBundle.Messages("VariableRhs=Variable")
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return Bundle.VariableRhs();
+        }
+
+        @Override
+        public ElementKind getKind() {
+            return ElementKind.VARIABLE;
+        }
+
+    }
+
     public static class CompletionRequest {
         public int anchorOffset;
         public String prefix;

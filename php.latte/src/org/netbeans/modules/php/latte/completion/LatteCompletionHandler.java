@@ -76,7 +76,7 @@ import org.netbeans.modules.php.latte.utils.LatteLexerUtils;
  */
 public class LatteCompletionHandler implements CodeCompletionHandler {
     private static final Collection<Character> AUTOPOPUP_STOP_CHARS = new TreeSet<>(
-            Arrays.asList('=', ';', '+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t', '\n', '$'));
+            Arrays.asList('=', ';', '+', '-', '*', '/', '%', '(', ')', '[', ']', '{', '}', '?', ' ', '\t', '\n'));
     static final Set<LatteElement> MACROS = new HashSet<>();
     static {
         MACROS.add(LatteElement.MacroFactory.create("link", "Presenter:action", "link ${Presenter}:${action}")); //NOI18N
@@ -190,6 +190,18 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
         ITERATOR_METHOD_ITEMS.add(LatteElement.IteratorItemFactory.create("getCounter()")); //NOI18N
         ITERATOR_METHOD_ITEMS.add(LatteElement.IteratorItemFactory.create("isOdd()")); //NOI18N
         ITERATOR_METHOD_ITEMS.add(LatteElement.IteratorItemFactory.create("isEven()")); //NOI18N
+    }
+
+    static final Set<LatteElement> DEFAULT_VARIABLES = new HashSet<>();
+    static {
+        DEFAULT_VARIABLES.add(LatteElement.IteratorItemFactory.create("$control")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.IteratorItemFactory.create("$presenter")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.IteratorItemFactory.create("$user")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.IteratorItemFactory.create("$netteHttpResponse")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.IteratorItemFactory.create("$netteCacheStorage")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.IteratorItemFactory.create("$baseUri")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.IteratorItemFactory.create("$basePath")); //NOI18N
+        DEFAULT_VARIABLES.add(LatteElement.IteratorItemFactory.create("$flashes")); //NOI18N
     }
 
     @Override
@@ -353,7 +365,8 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
         }
 
         private static boolean isValidTokenId(LatteMarkupTokenId id) {
-            return LatteMarkupTokenId.T_SYMBOL.equals(id) || LatteMarkupTokenId.T_MACRO_START.equals(id) || LatteMarkupTokenId.T_MACRO_END.equals(id);
+            return LatteMarkupTokenId.T_SYMBOL.equals(id) || LatteMarkupTokenId.T_VARIABLE.equals(id)
+                    || LatteMarkupTokenId.T_MACRO_START.equals(id) || LatteMarkupTokenId.T_MACRO_END.equals(id);
         }
 
     }

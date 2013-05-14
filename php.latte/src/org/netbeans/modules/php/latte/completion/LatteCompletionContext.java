@@ -62,6 +62,7 @@ public enum LatteCompletionContext {
         @Override
         public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
             completeMacros(completionProposals, request);
+            completeVariables(completionProposals, request);
         }
     },
     HELPER {
@@ -74,6 +75,12 @@ public enum LatteCompletionContext {
         @Override
         public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
             completeIteratorItems(completionProposals, request);
+        }
+    },
+    VARIABLE {
+        @Override
+        public void complete(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+            completeVariables(completionProposals, request);
         }
     },
     NONE {
@@ -118,6 +125,14 @@ public enum LatteCompletionContext {
         for (LatteElement iteratorItem : LatteCompletionHandler.ITERATOR_METHOD_ITEMS) {
             if (startsWith(iteratorItem.getName(), request.prefix)) {
                 completionProposals.add(new LatteCompletionProposal.IteratorMethodItemCompletionProposal(iteratorItem, request));
+            }
+        }
+    }
+
+    protected void completeVariables(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+        for (LatteElement variable : LatteCompletionHandler.DEFAULT_VARIABLES) {
+            if (startsWith(variable.getName(), request.prefix)) {
+                completionProposals.add(new LatteCompletionProposal.VariableCompletionProposal(variable, request));
             }
         }
     }
