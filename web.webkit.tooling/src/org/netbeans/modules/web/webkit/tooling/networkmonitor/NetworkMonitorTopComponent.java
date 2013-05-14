@@ -70,7 +70,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
-import javax.swing.plaf.ComponentUI;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
@@ -590,12 +589,8 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
             if (request.getResponseCode() != -1 && request.getResponseCode() >= 400) {
                 return true;
             }
-
-            if (request.isFailed()) {
-                return true;
-            }
             
-            return false;
+            return request.isFailed();
         }
 
         public boolean hasPostData() {
@@ -1202,9 +1197,8 @@ public final class NetworkMonitorTopComponent extends TopComponent implements Li
         @Override
         public boolean getScrollableTracksViewportWidth() {
             Component parent = getParent();
-            ComponentUI ui = getUI();
 
-            return parent != null ? (ui.getPreferredSize(this).width <= parent
+            return parent != null ? (getUI().getPreferredSize(this).width <= parent
                     .getSize().width) : true;
         }
 
