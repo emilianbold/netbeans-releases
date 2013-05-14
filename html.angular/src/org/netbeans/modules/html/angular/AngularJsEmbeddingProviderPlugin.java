@@ -87,6 +87,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     private enum AngularAttribute  {
         controller,
         model,
+        repeat
     }
 
     private AngularAttribute interestedAttr;
@@ -106,7 +107,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         this.snapshot = snapshot;
         this.tokenSequence = tokenSequence;
         this.embeddings = embeddings;
-
+        this.stack.clear();
 //        AngularModel model = AngularModel.getModel(parserResult);
 //        if(!model.isAngularPage()) {
 //            return false;
@@ -165,9 +166,16 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             break;
                         case model:
                             processed = processModel(value);
+                            break;
+                        case repeat:
+                            processed = processRepeat(value);
+                            break;
                         default:        
                     }
-                    stack.push(new StackItem(lastTagOpen));
+                    if (processed && (interestedAttr == AngularAttribute.controller 
+                            || interestedAttr == AngularAttribute.repeat)) {
+                        stack.push(new StackItem(lastTagOpen));
+                    }
                 }
                 break;
             case EL_OPEN_DELIMITER:
@@ -236,9 +244,13 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         //use the last assignment
                         TypeUsage typeUsage = typeUsages.get(typeUsages.size() - 1);
                         String type = typeUsage.getType();
-                        sb.append(" = new ");   //NOI18N
-                        sb.append(type);
-                        sb.append("()");    //NOI18N
+                        if (type.indexOf('@') == -1) {
+                            // don't use unresolved types
+                            // TODO there should be the unresolved type resolved
+                            sb.append(" = new ");   //NOI18N
+                            sb.append(type);
+                            sb.append("()");    //NOI18N
+                        }
 
                     }
             }
@@ -249,21 +261,59 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         return true;
     }
     
-    private boolean processModel(String name) {
-        boolean processed = false;
+    private boolean processModel(String name) {     
         if (name.isEmpty()) {
             embeddings.add(snapshot.create("( function () {", Constants.JAVASCRIPT_MIMETYPE));
             embeddings.add(snapshot.create(tokenSequence.offset(), tokenSequence.token().length(), Constants.JAVASCRIPT_MIMETYPE));
             embeddings.add(snapshot.create(";})();", Constants.JAVASCRIPT_MIMETYPE));
-            processed = true;
         } else {
             if (propertyToFqn.containsKey(name)) {
                 embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-                embeddings.add(snapshot.create(tokenSequence.offset(), tokenSequence.token().length(), Constants.JAVASCRIPT_MIMETYPE));
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1, name.length(), Constants.JAVASCRIPT_MIMETYPE));
                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-                processed = true;
-            } 
+            }  else {
+                // need to create local variable
+                if (name.indexOf(' ') == -1 && name.indexOf('(') == -1) {
+                    embeddings.add(snapshot.create("var ", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                }
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1, name.length(), Constants.JAVASCRIPT_MIMETYPE));
+                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+            }
         }
-        return processed;
+        return true;
+    }
+    
+    private boolean processRepeat(String expression) {
+        String[] parts = expression.split("\\|");
+        if (parts.length > 0) {
+            if (parts[0].contains(" in ")) {
+                String[] forParts = parts[0].trim().split(" ");
+                embeddings.add(snapshot.create("for ( var ", Constants.JAVASCRIPT_MIMETYPE));                
+                if (forParts.length == 3 && propertyToFqn.containsKey(forParts[2])) {                    
+                    int lastPartPos = expression.indexOf(forParts[2]);
+                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, lastPartPos, Constants.JAVASCRIPT_MIMETYPE));
+                    embeddings.add(snapshot.create(propertyToFqn.get(forParts[2]) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                    embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos, forParts[2].length(), Constants.JAVASCRIPT_MIMETYPE));
+                } else {
+                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, parts[0].length(), Constants.JAVASCRIPT_MIMETYPE));
+                }
+                embeddings.add(snapshot.create(") {", Constants.JAVASCRIPT_MIMETYPE));
+                return true;
+            }
+//            int partIndex = 1;
+//            int lastPartPos = parts[0].length() + 1;
+//            while (partIndex < parts.length) {
+//                if (parts[partIndex].contains(":")) {
+//                    String[] conditionParts = parts[partIndex].trim().split(":");
+//                    if(conditionParts.length > 1 && propertyToFqn.containsKey(conditionParts[1])) {
+//                        embeddings.add(snapshot.create(tokenSequence.offset() + 1, lastPartPos, Constants.JAVASCRIPT_MIMETYPE));
+//                    embeddings.add(snapshot.create(propertyToFqn.get(forParts[2]) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+//                    embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos, forParts[2].length(), Constants.JAVASCRIPT_MIMETYPE));
+//                    }
+//                }
+//                lastPartPos = parts[partIndex].length();
+//            }
+        }
+        return false;
     }
 }
