@@ -59,6 +59,7 @@ import javax.lang.model.util.Elements;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
@@ -67,6 +68,7 @@ import org.netbeans.api.project.*;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.j2seproject.api.J2SEProjectPlatform;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.modules.javafx2.platform.api.JavaFxRuntimeInclusion;
@@ -885,6 +887,18 @@ public final class JFXProjectUtils {
      * @param prj the project to update
      */
     public static void updateClassPathExtension(@NonNull final Project project) throws IOException {
+        final Lookup lookup = project.getLookup();
+        final J2SEPropertyEvaluator eval = lookup.lookup(J2SEPropertyEvaluator.class);;
+        if (eval != null) {
+            // if project has Default_JavaFX_Platform, change it to default Java Platform
+            String platformName = eval.evaluator().getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
+            if(JFXProjectProperties.isEqual(platformName, JavaFXPlatformUtils.DEFAULT_JAVAFX_PLATFORM)) {
+                final J2SEProjectPlatform platformSetter = lookup.lookup(J2SEProjectPlatform.class);
+                if(platformSetter != null) {
+                    platformSetter.setProjectPlatform(JavaPlatformManager.getDefault().getDefaultPlatform());
+                }
+            }
+        }
         final EditableProperties ep = new EditableProperties(true);
         final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         try {
@@ -1094,11 +1108,6 @@ public final class JFXProjectUtils {
      * @param ep EditableProperties containing properties to be updated
      */
     public static void updateClassPathExtensionProperties(@NonNull final EditableProperties ep) {
-        String platformName = ep.getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
-        if(JFXProjectProperties.isEqual(platformName, JavaFXPlatformUtils.DEFAULT_JAVAFX_PLATFORM)) {
-            // automatically replace Default_JavaFX_Platform by default_platform
-            ep.setProperty(JFXProjectProperties.PLATFORM_ACTIVE, JavaFXPlatformUtils.DEFAULT_PLATFORM);
-        }
         ep.remove(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME);
         ep.remove(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK);
         Collection<String> extendExtProp = getUpdatedExtensionProperty(ep);

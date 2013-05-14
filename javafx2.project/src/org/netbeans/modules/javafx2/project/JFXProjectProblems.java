@@ -196,17 +196,6 @@ public class JFXProjectProblems implements ProjectProblemsProvider, PropertyChan
         return isTrue(eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED));
     }
 
-    private static boolean needsJFXRT(@NonNull final J2SEPropertyEvaluator eval) {
-        if (eval == null) {
-            return false;
-        }
-        //Don't use JFXProjectProperties.isTrue to prevent JFXProjectProperties from being loaded
-        //JFXProjectProperties.JAVAFX_ENABLED is inlined by compliler
-        return isTrue(eval.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED)) ||
-                isTrue(eval.evaluator().getProperty(JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH));
-                //eval.evaluator().getProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION) != null;
-    }
-
     private static boolean isTrue(@NullAllowed final String value) {
         return  value != null && (
            "true".equalsIgnoreCase(value) ||    //NOI18N
