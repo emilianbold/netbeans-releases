@@ -139,11 +139,19 @@ public enum LatteCompletionContext {
     }
 
     protected void completeIteratorItems(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+        completeIteratorFieldItems(completionProposals, request);
+        completeIteratorMethodItems(completionProposals, request);
+    }
+
+    private void completeIteratorFieldItems(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
         for (LatteElement iteratorItem : LatteCompletionHandler.ITERATOR_FIELD_ITEMS) {
             if (startsWith(iteratorItem.getName(), request.prefix)) {
                 completionProposals.add(new LatteCompletionProposal.IteratorFieldItemCompletionProposal(iteratorItem, request));
             }
         }
+    }
+
+    private void completeIteratorMethodItems(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
         for (LatteElement iteratorItem : LatteCompletionHandler.ITERATOR_METHOD_ITEMS) {
             if (startsWith(iteratorItem.getName(), request.prefix)) {
                 completionProposals.add(new LatteCompletionProposal.IteratorMethodItemCompletionProposal(iteratorItem, request));
@@ -155,7 +163,7 @@ public enum LatteCompletionContext {
         completeDefaultVariables(completionProposals, request);
     }
 
-    protected void completeDefaultVariables(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+    private void completeDefaultVariables(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
         for (LatteElement variable : LatteCompletionHandler.DEFAULT_VARIABLES) {
             if (startsWith(variable.getName(), request.prefix)) {
                 completionProposals.add(new LatteCompletionProposal.VariableCompletionProposal(variable, request));
