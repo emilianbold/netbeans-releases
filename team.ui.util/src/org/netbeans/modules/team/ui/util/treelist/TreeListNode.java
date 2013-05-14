@@ -83,6 +83,7 @@ public abstract class TreeListNode {
         rp.post(run);
     }
     private int lastRowWidth = -1;
+    private final boolean showExpander;
 
     /**
      * C'tor
@@ -91,10 +92,27 @@ public abstract class TreeListNode {
      * @param parent Node's parent or null if this node is root.
      */
     public TreeListNode(boolean expandable, TreeListNode parent) {
+        this(expandable, true, parent);
+    }
+    
+    /**
+     * C'tor
+     *
+     * @param expandable True if the node provides some children
+     * @param showExpander False in case the expanded/collapsed icon 
+     *        shouldn't be shown even though the node is expandable
+     * @param parent Node's parent or null if this node is root.
+     */
+    public TreeListNode(boolean expandable, boolean showExpander, TreeListNode parent) {
         this.expandable = expandable;
+        this.showExpander = showExpander;
         this.parent = parent;
     }
 
+    final boolean showExpander() {
+        return showExpander;
+    }
+    
     public final boolean isExpandable() {
         return expandable;
     }

@@ -77,7 +77,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author tomas
  */
-public class DashboardProviderImpl extends DashboardProvider<KenaiServer, KenaiProject> {
+public class DashboardProviderImpl extends DashboardProvider<KenaiProject> {
     
     private final KenaiServer server;
     private static final RequestProcessor RP = new RequestProcessor("Kenai logout", 5); //NOI18N
@@ -149,9 +149,9 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiServer, KenaiP
     @Override
     public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<KenaiProject> project) {
         if (server.getUrl().toString().equals("https://netbeans.org")) { //NOI18N
-            return new SourceListNode(pn, this, new OpenNetBeansIDEProjects(server.getKenai(), pn));
+            return new SourceListNode(pn, project, this, new OpenNetBeansIDEProjects(server.getKenai(), pn));
         } else {
-            return new SourceListNode(pn, this, (LeafNode[]) null);
+            return new SourceListNode(pn, project, this, (LeafNode[]) null);
         }
     }
 
@@ -161,7 +161,7 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiServer, KenaiP
     }            
 
     @Override
-    public ProjectAccessor<KenaiServer, KenaiProject> getProjectAccessor() {
+    public ProjectAccessor<KenaiProject> getProjectAccessor() {
         return ProjectAccessorImpl.getDefault();
     }
 
@@ -200,11 +200,6 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiServer, KenaiP
     @Override
     public Collection<ProjectHandle<KenaiProject>> getMyProjects() {
         return server.getMyProjects();
-    }
-
-    @Override
-    public KenaiServer forProject(ProjectHandle<KenaiProject> project) {
-        return KenaiServer.forKenai(project.getTeamProject().getKenai());
     }
     
 }

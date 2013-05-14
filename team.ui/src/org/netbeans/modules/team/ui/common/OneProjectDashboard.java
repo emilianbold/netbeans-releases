@@ -55,6 +55,7 @@ import java.util.*;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.*;
+import org.netbeans.modules.team.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
@@ -65,10 +66,11 @@ import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeList;
 import org.netbeans.modules.team.ui.util.treelist.TreeListModel;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -81,8 +83,23 @@ import org.openide.windows.TopComponent;
  *
  * @author S. Aubrecht, Tomas Stupka
  */
-final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
+final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 
+    /**
+     * Name of the property that will be fired when some change in opened projects
+     * in Dashboard occurs. Firing this property doesn't neccessary mean that number
+     * of opened project has changed.
+     */
+    public static final String PROP_OPENED_PROJECTS = "openedProjects"; // NOI18N
+
+    /**
+     * fired when user clicks refresh
+     */
+    public static final String PROP_REFRESH_REQUEST = "refreshRequest";// NOI18N
+    
+    public static final String PREF_ALL_PROJECTS = "allProjects"; //NOI18N
+    public static final String PREF_COUNT = "count"; //NOI18N
+    public static final String PREF_ID = "id"; //NOI18N
     private LoginHandle login;
     private final TreeListModel model = new TreeListModel();
     private static final ListModel EMPTY_MODEL = new AbstractListModel() {
@@ -97,10 +114,11 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
     };
     private RequestProcessor requestProcessor = new RequestProcessor("Team Dashboard"); // NOI18N
     private final TreeList treeList = new TreeList(model);
+                
     private final ArrayList<ProjectHandle> memberProjects = new ArrayList<ProjectHandle>(50);
     private final ArrayList<ProjectHandle> openProjects = new ArrayList<ProjectHandle>(50);
     //TODO: this should not be public
-    private final JScrollPane dashboardComponent;
+    public final JScrollPane dashboardComponent;
     private final PropertyChangeListener userListener;
     private boolean opened = false;
     private boolean memberProjectsLoaded = false;
@@ -115,10 +133,11 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
     private final ErrorNode memberProjectsError;
     private final ErrorNode otherProjectsError;
 
-    private final CategoryNode openProjectsNode;
-    private final CategoryNode myProjectsNode;
-    private final EmptyNode noOpenProjects = new EmptyNode(NbBundle.getMessage(DefaultDashboard.class, "NO_PROJECTS_OPEN"),NbBundle.getMessage(DefaultDashboard.class, "LBL_OpeningProjects"));
-    private final EmptyNode noMyProjects = new EmptyNode(NbBundle.getMessage(DefaultDashboard.class, "NO_MY_PROJECTS"), NbBundle.getMessage(DefaultDashboard.class, "LBL_OpeningMyProjects"));
+//    private final CategoryNode openProjectsNode;
+//    private final CategoryNode myProjectsNode;
+//    private final EmptyNode noOpenProjects = new EmptyNode(NbBundle.getMessage(DefaultDashboard.class, "NO_PROJECTS_OPEN"),NbBundle.getMessage(DefaultDashboard.class, "LBL_OpeningProjects"));
+//    private final EmptyNode noMyProjects = new EmptyNode(NbBundle.getMessage(DefaultDashboard.class, "NO_MY_PROJECTS"), NbBundle.getMessage(DefaultDashboard.class, "LBL_OpeningMyProjects"));
+    private SelectedProjectNode noProjectPicker;
 
     private final Object LOCK = new Object();
 
@@ -127,8 +146,9 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
     private TeamServer server;
     private final DashboardProvider<P> dashboardProvider;
 
-    public DefaultDashboard(TeamServer server, DashboardProvider<P> dashboardProvider) {
+    public OneProjectDashboard(TeamServer server, DashboardProvider<P> dashboardProvider) {
         this.dashboardProvider = dashboardProvider;
+        noProjectPicker = new SelectedProjectNode(NbBundle.getMessage(DashboardSupport.class, "NO_PROJECTS_OPEN"), null, new SwitchProjectAction());
         dashboardComponent = new JScrollPane() {
             @Override
             public void requestFocus() {
@@ -168,23 +188,24 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
                 dashboardProvider.createLogoutAction(),
                 dashboardProvider.getProjectAccessor().getNewTeamProjectAction(),
                 dashboardProvider.getProjectAccessor().getOpenNonMemberProjectAction());
+        model.addRoot(-1, noProjectPicker);
         model.addRoot(-1, userNode);
-        openProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DefaultDashboard.class, "LBL_OpenProjects"), null); // NOI18N
-        model.addRoot(-1, openProjectsNode);
-        model.addRoot(-1, noOpenProjects);
+//        openProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DefaultDashboard.class, "LBL_OpenProjects"), null); // NOI18N
+//        model.addRoot(-1, openProjectsNode);
+//        model.addRoot(-1, noOpenProjects);
 
-        myProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DefaultDashboard.class, "LBL_MyProjects"), // NOI18N
-                ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/bookmark.png", true)); // NOI18N
-        if (login!=null) {
-            if (!model.getRootNodes().contains(myProjectsNode)) {
-                model.addRoot(-1, myProjectsNode);
-            }
-            if (!model.getRootNodes().contains(noMyProjects)) {
-                model.addRoot(-1, noMyProjects);
-            }
-        }
+//        myProjectsNode = new CategoryNode(org.openide.util.NbBundle.getMessage(DefaultDashboard.class, "LBL_MyProjects"), // NOI18N
+//                ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/bookmark.png", true)); // NOI18N
+//        if (login!=null) {
+//            if (!model.getRootNodes().contains(myProjectsNode)) {
+//                model.addRoot(-1, myProjectsNode);
+//            }
+//            if (!model.getRootNodes().contains(noMyProjects)) {
+//                model.addRoot(-1, noMyProjects);
+//            }
+//        }
 
-        memberProjectsError = new ErrorNode(NbBundle.getMessage(DefaultDashboard.class, "ERR_OpenMemberProjects"), new AbstractAction() {
+        memberProjectsError = new ErrorNode(NbBundle.getMessage(DashboardSupport.class, "ERR_OpenMemberProjects"), new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 clearError(memberProjectsError);
@@ -192,7 +213,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
             }
         });
 
-        otherProjectsError = new ErrorNode(NbBundle.getMessage(DefaultDashboard.class, "ERR_OpenProjects"), new AbstractAction() {
+        otherProjectsError = new ErrorNode(NbBundle.getMessage(DashboardSupport.class, "ERR_OpenProjects"), new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 clearError(otherProjectsError);
@@ -200,7 +221,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
             }
         });
         AccessibleContext accessibleContext = treeList.getAccessibleContext();
-        String a11y = NbBundle.getMessage(DefaultDashboard.class, "A11Y_TeamProjects");
+        String a11y = NbBundle.getMessage(DashboardSupport.class, "A11Y_TeamProjects");
         accessibleContext.setAccessibleName(a11y);
         accessibleContext.setAccessibleDescription(a11y);
         setServer(server);
@@ -321,16 +342,16 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
                 removeMemberProjectsFromModel(memberProjects);
                 memberProjects.clear();
 
-                model.removeRoot(myProjectsNode);
-                model.removeRoot(noMyProjects);
+//                model.removeRoot(myProjectsNode);
+//                model.removeRoot(noMyProjects);
             } else {
-                if (!model.getRootNodes().contains(myProjectsNode)) {
-                    model.addRoot(-1, myProjectsNode);
+//                if (!model.getRootNodes().contains(myProjectsNode)) {
+//                    model.addRoot(-1, myProjectsNode);
+//                }
+//                if (!model.getRootNodes().contains(noMyProjects)) {
+//                    model.addRoot(-1, noMyProjects);
+//                }
                 }
-                if (!model.getRootNodes().contains(noMyProjects)) {
-                    model.addRoot(-1, noMyProjects);
-                }
-            }
 //            removeMemberProjectsFromModel(memberProjects);
 //            memberProjects.clear();
             memberProjectsLoaded = false;
@@ -390,7 +411,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
                         }
                     }
                 }
-                changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
+                changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
             }
         });
     }
@@ -411,7 +432,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
             }
         }
         project.firePropertyChange(ProjectHandle.PROP_CLOSE, null, null);
-        changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
+        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
     }
 
     private Action createWhatIsTeamAction() {
@@ -420,7 +441,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
             public void actionPerformed(ActionEvent e) {
                 try {
                     URLDisplayer.getDefault().showURL(
-                            new URL(NbBundle.getMessage(DefaultDashboard.class, "URL_TeamOverview"))); //NOI18N
+                            new URL(NbBundle.getMessage(DashboardSupport.class, "URL_TeamOverview"))); //NOI18N
                 } catch( MalformedURLException ex ) {
                     //shouldn't happen
                     Exceptions.printStackTrace(ex);
@@ -436,7 +457,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
     void refreshProjects() {
         myProjectLoadingStarted();
         projectLoadingStarted();
-        changeSupport.firePropertyChange(DashboardSupport.PROP_REFRESH_REQUEST, null, null);
+        changeSupport.firePropertyChange(PROP_REFRESH_REQUEST, null, null);
         synchronized( LOCK ) {
             removeMemberProjectsFromModel(memberProjects);
             memberProjects.clear();
@@ -512,17 +533,17 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
     private void fillModel() {
         synchronized( LOCK ) {
             if( !model.getRootNodes().contains(userNode) ) {
-                model.addRoot(0, userNode);
-                model.addRoot(1, openProjectsNode);
-                if (login!=null&& !model.getRootNodes().contains(myProjectsNode)) {
-                    model.addRoot(-1, myProjectsNode);
+//                model.addRoot(0, userNode);
+//                model.addRoot(1, openProjectsNode);
+//                if (login!=null&& !model.getRootNodes().contains(myProjectsNode)) {
+//                    model.addRoot(-1, myProjectsNode);
+//                }
                 }
-            }
             if(login!=null?model.getSize() > 3:model.getSize()>2 ) {
                 return;
             }
-            addProjectsToModel(-1, openProjects);
-            addMemberProjectsToModel(-1, memberProjects);
+//            addProjectsToModel(-1, openProjects);
+//            addMemberProjectsToModel(-1, memberProjects);
         }
     }
 
@@ -533,7 +554,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
                 boolean isEmpty;
 
                 synchronized( LOCK ) {
-                    isEmpty = null == DefaultDashboard.this.login && openProjects.isEmpty();
+                    isEmpty = null == OneProjectDashboard.this.login && openProjects.isEmpty();
                 }
 
                 boolean isTreeListShowing = dashboardComponent.getViewport().getView() == treeList;
@@ -574,14 +595,14 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
         JPanel res = new JPanel( new GridBagLayout() );
         res.setOpaque(false);
 
-        JLabel lbl = new TreeLabel(NbBundle.getMessage(DefaultDashboard.class, "LBL_No_Team_Project_Open")); //NOI18N
+        JLabel lbl = new TreeLabel(NbBundle.getMessage(DashboardSupport.class, "LBL_No_Team_Project_Open")); //NOI18N
         lbl.setForeground(ColorManager.getDefault().getDisabledColor());
         lbl.setHorizontalAlignment(JLabel.CENTER);
-        LinkButton btnWhatIs = new LinkButton(NbBundle.getMessage(DefaultDashboard.class, "LBL_WhatIsTeam"), createWhatIsTeamAction() ); //NOI18N
+        LinkButton btnWhatIs = new LinkButton(NbBundle.getMessage(DashboardSupport.class, "LBL_WhatIsTeam"), createWhatIsTeamAction() ); //NOI18N
 
         model.removeRoot(userNode);
-        model.removeRoot(myProjectsNode);
-        model.removeRoot(openProjectsNode);
+//        model.removeRoot(myProjectsNode);
+//        model.removeRoot(openProjectsNode);
         userNode.set(null, false);
         res.add( userNode.getComponent(UIManager.getColor("List.foreground"), ColorManager.getDefault().getDefaultBackground(), false, false, 200), new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(3, 4, 3, 4), 0, 0) ); //NOI18N
         res.add( new JLabel(), new GridBagConstraints(0, 1, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
@@ -596,15 +617,15 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
             return;
         }
         String teamName = server.getUrl().getHost();
-        Preferences prefs = NbPreferences.forModule(DefaultDashboard.class).node(DashboardSupport.PREF_ALL_PROJECTS + ("kenai.com".equals(teamName)?"":"-"+teamName)); //NOI18N
-        int count = prefs.getInt(DashboardSupport.PREF_COUNT, 0); //NOI18N
+        Preferences prefs = NbPreferences.forModule(DashboardSupport.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(teamName)?"":"-"+teamName)); //NOI18N
+        int count = prefs.getInt(PREF_COUNT, 0); //NOI18N
         if( 0 == count ) {
             projectLoadingFinished();
             return; //nothing to load
         }
         ArrayList<String> ids = new ArrayList<String>(count);
         for( int i=0; i<count; i++ ) {
-            String id = prefs.get(DashboardSupport.PREF_ID+i, null); //NOI18N
+            String id = prefs.get(PREF_ID+i, null); //NOI18N
             if( null != id && id.trim().length() > 0 ) {
                 ids.add( id.trim() );
             }
@@ -624,23 +645,24 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
 
     private void storeAllProjects() {
         String serverName = server.getUrl().getHost();
-        Preferences prefs = NbPreferences.forModule(DefaultDashboard.class).node(DashboardSupport.PREF_ALL_PROJECTS + ("kenai.com".equals(serverName)?"":"-"+serverName)); //NOI18N
+        Preferences prefs = NbPreferences.forModule(DashboardSupport.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(serverName)?"":"-"+serverName)); //NOI18N
         int index = 0;
         for( ProjectHandle project : openProjects ) {
             //do not store private projects
 //            if (!project.isPrivate()) {
-                prefs.put(DashboardSupport.PREF_ID+index++, project.getId()); //NOI18N
+                prefs.put(PREF_ID+index++, project.getId()); //NOI18N
 //            }
         }
         //store size
-        prefs.putInt(DashboardSupport.PREF_COUNT, index); //NOI18N
+        prefs.putInt(PREF_COUNT, index); //NOI18N
     }
 
     private void setOtherProjects(ArrayList<ProjectHandle> projects) {
         synchronized( LOCK ) {
             removeProjectsFromModel( openProjects );
-            if (!projects.isEmpty()) {
-                model.removeRoot(noOpenProjects);
+            if (projects.isEmpty()) {
+//                model.removeRoot(noOpenProjects);
+                model.addRoot(-1, noProjectPicker);
             }
             openProjects.clear();
             for( ProjectHandle p : projects ) {
@@ -650,7 +672,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
             }
             Collections.sort(openProjects);
             otherProjectsLoaded = true;
-            addProjectsToModel( -1, openProjects );
+//            addProjectsToModel( -1, openProjects );
             userNode.set(login, !openProjects.isEmpty());
             storeAllProjects();
 
@@ -660,7 +682,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
                 switchContent();
             }
         }
-        changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
+        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
     }
 
     private void switchMemberProjects() {
@@ -674,7 +696,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     public void bookmarkingStarted() {
-        userNode.loadingStarted(NbBundle.getMessage(DefaultDashboard.class, "LBL_Bookmarking"));
+        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_Bookmarking"));
     }
 
     public void bookmarkingFinished() {
@@ -682,7 +704,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     public void deletingStarted() {
-        userNode.loadingStarted(NbBundle.getMessage(DefaultDashboard.class, "LBL_Deleting"));
+        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_Deleting"));
     }
 
     public void deletingFinished() {
@@ -690,7 +712,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     public void loggingStarted() {
-        userNode.loadingStarted(NbBundle.getMessage(DefaultDashboard.class, "LBL_Authenticating"));
+        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_Authenticating"));
     }
 
     public void loggingFinished() {
@@ -698,7 +720,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     public void xmppStarted() {
-        userNode.loadingStarted(NbBundle.getMessage(DefaultDashboard.class, "LBL_ConnectingXMPP"));
+        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_ConnectingXMPP"));
     }
 
     public void xmppFinsihed() {
@@ -706,23 +728,23 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
     }
 
     private void projectLoadingStarted() {
-        noOpenProjects.loadingStarted();
+//        noOpenProjects.loadingStarted();
     }
 
     private void projectLoadingFinished() {
-        noOpenProjects.loadingFinished();
+//        noOpenProjects.loadingFinished();
     }
 
     private void myProjectLoadingStarted() {
-        noMyProjects.loadingStarted();
+//        noMyProjects.loadingStarted();
     }
 
     private void myProjectLoadingFinished() {
-        noMyProjects.loadingFinished();
+//        noMyProjects.loadingFinished();
     }
 
     public void myProjectsProgressStarted() {
-        userNode.loadingStarted(NbBundle.getMessage(DefaultDashboard.class, "LBL_LoadingIssues"));
+        userNode.loadingStarted(NbBundle.getMessage(DashboardSupport.class, "LBL_LoadingIssues"));
     }
 
     public void myProjectsProgressFinished() {
@@ -752,9 +774,9 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
 
             removeMemberProjectsFromModel(memberProjects );
 
-            if(!projects.isEmpty() ) {
-                model.removeRoot(noMyProjects);
-            }
+//            if(!projects.isEmpty() ) {
+//                model.removeRoot(noMyProjects);
+//            }
             
             memberProjects.clear();
             memberProjects.addAll(projects);
@@ -766,7 +788,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
             }
             Collections.sort(memberProjects);
 //            storeAllProjects();
-            addMemberProjectsToModel(-1, memberProjects );
+//            addMemberProjectsToModel(-1, memberProjects );
             userNode.set(login, !memberProjects.isEmpty());
 
             switchMemberProjects();
@@ -775,20 +797,60 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
                 switchContent();
             }
         }
-        changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
+        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
     }
 
-    private void addProjectsToModel( int index, List<ProjectHandle> projects ) {
-        int counter = 2;
-        for( ProjectHandle p : projects ) {
-            model.addRoot(counter++, new ProjectNode(p, this));
+//    private void addProjectsToModel( int index, List<ProjectHandle> projects ) {
+//        int counter = 2;
+//        for( ProjectHandle p : projects ) {
+//            model.addRoot(counter++, new ProjectNode(p, this));
+//        }
+//    }
+
+//    private void addMemberProjectsToModel( int index, List<ProjectHandle> projects ) {
+//        for( ProjectHandle p : projects ) {
+//            model.addRoot(index, dashboardProvider.createMyProjectNode(p) );
+//        }
+//    }
+
+    private void switchProject(ProjectHandle project) {
+//        ArrayList<TreeListNode> nodesToRemove = new ArrayList<TreeListNode>(1);
+//        for( TreeListNode root : model.getRootNodes() ) {
+//            if( root == pickerNode) 
+//            {
+//                nodesToRemove.add(root);
+//            }
+//        }
+        for( TreeListNode node : model.getRootNodes() ) {
+            model.removeRoot(node);
         }
+        SelectedProjectNode picker = new SelectedProjectNode(project.getDisplayName(), server.getIcon(), new SwitchProjectAction());
+        model.addRoot(2, picker);
+        int idx = 2;
+        List<TreeListNode> children = createProjectChildren(project);
+        for (TreeListNode n : children) {
+            model.addRoot(idx++, n);   
+    }
     }
 
-    private void addMemberProjectsToModel( int index, List<ProjectHandle> projects ) {
-        for( ProjectHandle p : projects ) {
-            model.addRoot(index, dashboardProvider.createMyProjectNode(p) );
+    protected List<TreeListNode> createProjectChildren(ProjectHandle project) {
+        ArrayList<TreeListNode> children = new ArrayList<TreeListNode>();
+        DashboardProvider<P> provider = getDashboardProvider();
+        children.add( provider.createProjectLinksNode(null, project) ); 
+        if( null != provider.getMemberAccessor() ) {
+            children.add( new MemberListNode(null, project, provider) );
         }
+        BuilderAccessor builds = provider.getBuilderAccessor();
+        if (builds != null && builds.isEnabled(project)) {
+            children.add(new BuildListNode(null, project, builds));
+        }
+        if( null != provider.getQueryAccessor() ) {
+            children.add( new QueryListNode(null, project, provider) );
+        }
+        if( null != provider.getSourceAccessor() ) {
+            children.add( provider.createSourceListNode(null, project) );
+        }
+        return children;
     }
 
     private void removeProjectsFromModel( List<ProjectHandle> projects ) {
@@ -806,12 +868,12 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
         for( TreeListNode node : nodesToRemove ) {
             model.removeRoot(node);
         }
-        if (i==projects.size()) {
-            if (!model.getRootNodes().contains(noOpenProjects)) {
-                model.addRoot(2, noOpenProjects);
+//        if (i==projects.size()) {
+//            if (!model.getRootNodes().contains(noOpenProjects)) {
+//                model.addRoot(2, noOpenProjects);
+//            }
+//        }
             }
-        }
-    }
 
     private void removeMemberProjectsFromModel( List<ProjectHandle> projects ) {
         ArrayList<TreeListNode> nodesToRemove = new ArrayList<TreeListNode>(projects.size());
@@ -828,11 +890,11 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
             model.removeRoot(node);
         }
         if (i==projects.size()) {
-            if (!model.getRootNodes().contains(noMyProjects) && login!=null) {
-                model.addRoot(-1, noMyProjects);
+//            if (!model.getRootNodes().contains(noMyProjects) && login!=null) {
+//                model.addRoot(-1, noMyProjects);
+//            }
             }
         }
-    }
 
     private void showError( ErrorNode node ) {
         synchronized( LOCK ) {
@@ -855,6 +917,27 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
 
     Collection<ProjectHandle<P>> getMyProjects() {
         return dashboardProvider.getMyProjects();
+    }
+
+    void switchProject() {
+        MegaMenu panel = new MegaMenu(memberProjects.toArray(new ProjectHandle[memberProjects.size()]));
+        DialogDescriptor dd = new DialogDescriptor(
+                panel,
+                "Select Project",
+                true,
+                new Object[]{DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION},
+                DialogDescriptor.OK_OPTION,
+                DialogDescriptor.DEFAULT_ALIGN,
+                null,
+                null);
+
+        Object result = DialogDisplayer.getDefault().notify(dd);
+        if(result == DialogDescriptor.OK_OPTION) {
+            ProjectHandle project = panel.getProject();
+            if(project != null) {
+                switchProject( project);
+            }
+        }
     }
 
     private class OtherProjectsLoader implements Runnable, Cancellable {
@@ -978,4 +1061,17 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
             return true;
         }
     }
+
+    @NbBundle.Messages({"LBL_Switch=Select project"})
+    private class SwitchProjectAction extends AbstractAction {
+
+        public SwitchProjectAction() {
+            super(Bundle.LBL_Switch());
+}
+
+        @Override
+        public void actionPerformed(ActionEvent arg0) {
+            switchProject();
+        }
+    }    
 }

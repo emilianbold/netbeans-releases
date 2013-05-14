@@ -73,7 +73,7 @@ import org.netbeans.modules.kenai.ui.KenaiPopupActionsProvider;
 import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.DashboardSupport;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
@@ -259,7 +259,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
 
                         public void actionPerformed(final ActionEvent e) {
                             final ProjectHandleImpl pHandle = new ProjectHandleImpl(instProj);
-                            final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
+                            final DashboardSupport<KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);
                             dashboard.addProject(pHandle, false, false);
                             Utilities.getRequestProcessor().post(new Runnable() {
 
@@ -278,7 +278,7 @@ public class IssuesInformationPanel extends javax.swing.JPanel implements Refres
                             try {
                                 if (instProj.getFeatures(Type.ISSUES).length > 0) {
                                     final ProjectHandleImpl pHandle = new ProjectHandleImpl(instProj);
-                                    final DefaultDashboard<KenaiServer, KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);                                    
+                                    final DashboardSupport<KenaiProject> dashboard = KenaiServer.getDashboard(pHandle);                                    
                                     dashboard.addProject(pHandle, false, false);
                                     Utilities.getRequestProcessor().post(new Runnable() {
 

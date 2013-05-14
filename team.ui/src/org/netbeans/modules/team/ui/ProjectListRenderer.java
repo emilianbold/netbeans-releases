@@ -1,5 +1,3 @@
-package org.netbeans.modules.team.ui.common;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -42,57 +40,56 @@ package org.netbeans.modules.team.ui.common;
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.team.ui;
 
-
-import java.awt.Color;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
-import javax.swing.Action;
-import javax.swing.JComponent;
+import java.awt.Component;
+import java.awt.Font;
 import javax.swing.JLabel;
-import javax.swing.JPanel;
-import org.netbeans.modules.team.ui.spi.DashboardProvider;
-import org.netbeans.modules.team.ui.spi.SourceHandle;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.team.ui.common.ColorManager;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.netbeans.modules.team.ui.util.treelist.LeafNode;
-import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
-import org.openide.util.NbBundle;
 
 /**
- * Node to open a directory in the favorites tab
  *
- * @author Jan Becicka
+ * @author Tomas Stupka
  */
-public class OpenFavoritesNode<P> extends LeafNode {
+public class ProjectListRenderer implements ListCellRenderer {
 
-    private final SourceHandle src;
-
-    private JPanel panel;
-    private LinkButton btn;
-    private final DashboardProvider<P> dashboard;
-
-    public OpenFavoritesNode(SourceHandle src, TreeListNode parent, DashboardProvider<P> dashboard ) {
-        super( parent );
-        this.src=src;
-        this.dashboard = dashboard;
+    public ProjectListRenderer() {
     }
 
     @Override
-    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
-        if( null == panel ) {
-            panel = new JPanel(new GridBagLayout());
-            panel.setOpaque(false);
-            btn = new LinkButton(NbBundle.getMessage(QueryListNode.class, "LBL_OpenFavorites"), getDefaultAction()); //NOI18N
-            panel.add( btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,45,0,0), 0, 0));
-            panel.add( new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
+    public Component getListCellRendererComponent(
+                                       JList list,
+                                       Object value,
+                                       int index,
+                                       boolean isSelected,
+                                       boolean cellHasFocus) {
+
+        JLabel ret = new JLabel();
+        ret.setBorder(new EmptyBorder(1,1,1,1));
+        ret.setOpaque(true);
+
+        if (value instanceof ProjectHandle) {
+            ret.setFont(ret.getFont().deriveFont(Font.BOLD));
+            final ProjectHandle project = (ProjectHandle) value;
+            ret.setText(project.getDisplayName());
+            ret.setToolTipText(project.getDisplayName().toString());
+        } else {
+            ret.setIcon(null);
+            ret.setText(value==null?null:value.toString());
         }
-        btn.setForeground(foreground, isSelected);
-        return panel;
-    }
 
-    @Override
-    public Action getDefaultAction() {
-        return dashboard.getSourceAccessor().getOpenFavoritesAction(src);
+        if (isSelected) {
+            ret.setBackground(list.getSelectionBackground());
+            ret.setForeground(list.getSelectionForeground());
+        } else {
+            ret.setBackground(ColorManager.getDefault().getDefaultBackground());
+            ret.setForeground(list.getForeground());
+        }
+        return ret;
     }
 }

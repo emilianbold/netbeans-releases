@@ -45,7 +45,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
-import org.netbeans.modules.team.ui.Dashboard;
+import org.netbeans.modules.team.ui.TeamView;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.openide.util.Mutex;
@@ -91,9 +91,9 @@ public final class LoginAction extends AbstractAction {
             @Override
             public void run () {
                 if (b) {
-                    putValue(NAME, NbBundle.getMessage(Dashboard.class, "CTL_LogoutAction")); //NOI18N
+                    putValue(NAME, NbBundle.getMessage(TeamView.class, "CTL_LogoutAction")); //NOI18N
                 } else {
-                    putValue(NAME, NbBundle.getMessage(Dashboard.class, "CTL_LoginAction")); //NOI18N
+                    putValue(NAME, NbBundle.getMessage(TeamView.class, "CTL_LoginAction")); //NOI18N
                 }
             }
         });

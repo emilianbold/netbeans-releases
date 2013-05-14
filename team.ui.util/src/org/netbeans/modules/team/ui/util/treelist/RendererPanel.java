@@ -62,6 +62,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 
 /**
  * Wrapper for node renderers. Defines appropriate foreground/background colors,
@@ -97,7 +98,7 @@ final class RendererPanel extends JPanel {
         this.node = node;
         isRoot = node.getParent() == null;
         setOpaque(!isRoot || !colorManager.isAqua() || !node.isExpandable());
-        if (node.isExpandable()) {
+        if (node.isExpandable() && node.showExpander()) {
             expander = new LinkButton(EMPTY_ICON, new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     node.setExpanded(!node.isExpanded());
@@ -110,7 +111,7 @@ final class RendererPanel extends JPanel {
         }
         depth = getDepth();
     }
-
+    
     private int getDepth() {
         int d = 1;
         TreeListNode parent = node;
@@ -180,7 +181,7 @@ final class RendererPanel extends JPanel {
             super.paintComponent(g);
         }
     }
-
+    
     @Override
     public String getToolTipText(MouseEvent event) {
         Component c = SwingUtilities.getDeepestComponentAt(this, event.getX(), event.getY());
