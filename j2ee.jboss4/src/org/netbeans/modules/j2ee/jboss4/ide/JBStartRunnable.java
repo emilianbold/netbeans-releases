@@ -221,7 +221,9 @@ class JBStartRunnable implements Runnable {
                             append(",server=y,suspend=n"); // NOI18N
 
         } else if (startServer.getMode() == JBStartServer.MODE.PROFILE) {
-            if (properties.isVersion(JBPluginUtils.JBOSS_6_0_0)) {
+            if (properties.isVersion(JBPluginUtils.JBOSS_7_0_0)) {
+                javaOptsBuilder.append(" ").append("-Djava.util.logging.manager=org.jboss.logmanager.LogManager");
+            } else if (properties.isVersion(JBPluginUtils.JBOSS_6_0_0)) {
                 javaOptsBuilder.append(" ").append("-Djboss.platform.mbeanserver")
                         .append(" ").append("-Djavax.management.builder.initial=org.jboss.system.server.jmx.MBeanServerBuilderImpl");
             }
