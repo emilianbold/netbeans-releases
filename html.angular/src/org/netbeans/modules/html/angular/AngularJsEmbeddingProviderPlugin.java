@@ -273,9 +273,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
             }  else {
                 // need to create local variable
-//                if (name.indexOf(' ') == -1 && name.indexOf('(') == -1) {
-//                    embeddings.add(snapshot.create("var ", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-//                }
+                if (name.indexOf(' ') == -1 && name.indexOf('(') == -1 && name.indexOf('.') == -1) {
+                    embeddings.add(snapshot.create("var ", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                }
                 embeddings.add(snapshot.create(tokenSequence.offset() + 1, name.length(), Constants.JAVASCRIPT_MIMETYPE));
                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
             }
