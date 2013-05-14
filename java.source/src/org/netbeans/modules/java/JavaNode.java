@@ -53,7 +53,7 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeEvent;
@@ -97,24 +97,15 @@ public final class JavaNode extends DataNode implements ChangeListener {
     private static final String JAVA_ICON_BASE = "org/netbeans/modules/java/resources/class.png"; // NOI18N
     private static final String CLASS_ICON_BASE = "org/netbeans/modules/java/resources/clazz.gif"; // NOI18N
 
-    private static final Image NEEDS_COMPILE;
-    private static final Image IS_EXECUTABLE_CLASS;
+    private static final AtomicReference<Image> NEEDS_COMPILE = new AtomicReference<>();
+    private static final AtomicReference<Image> IS_EXECUTABLE_CLASS = new AtomicReference<>();
 
     private static final Logger LOG = Logger.getLogger(JavaNode.class.getName());
     
-    static {
-        URL needsCompileIconURL = JavaNode.class.getClassLoader().getResource(NEEDS_COMPILE_BADGE_URL);
-        String needsCompileTP = "<img src=\"" + needsCompileIconURL + "\">&nbsp;" + getMessage(JavaNode.class, "TP_NeedsCompileBadge");
-        NEEDS_COMPILE = assignToolTipToImage(loadImage(NEEDS_COMPILE_BADGE_URL), needsCompileTP); // NOI18N
-        URL executableIconURL = JavaNode.class.getClassLoader().getResource(EXECUTABLE_BADGE_URL);
-        String executableTP = "<img src=\"" + executableIconURL + "\">&nbsp;" + getMessage(JavaNode.class, "TP_ExecutableBadge");
-        IS_EXECUTABLE_CLASS = assignToolTipToImage(loadImage(EXECUTABLE_BADGE_URL), executableTP); // NOI18N
-    }
-
     private Status status;
-    private final AtomicBoolean isCompiled;
+    private final AtomicReference<Image> isCompiled;
     private ChangeListener executableListener;
-    private final AtomicBoolean isExecutable;
+    private final AtomicReference<Image> isExecutable;
 
     /** Create a node for the Java data object using the default children.
     * @param jdo the data object to represent
@@ -124,9 +115,9 @@ public final class JavaNode extends DataNode implements ChangeListener {
         this.setIconBaseWithExtension(isJavaSource ? JAVA_ICON_BASE : CLASS_ICON_BASE);
         Logger.getLogger("TIMER").log(Level.FINE, "JavaNode", new Object[] {jdo.getPrimaryFile(), this});
         if (isJavaSource) {
-            this.isCompiled = new AtomicBoolean(true);                                        
+            this.isCompiled = new AtomicReference<Image>(null);                                        
             WORKER.post(new BuildStatusTask(this));
-            this.isExecutable = new AtomicBoolean(false);
+            this.isExecutable = new AtomicReference<Image>(null);
             WORKER.post(new ExecutableTask(this));
             
             jdo.addPropertyChangeListener(new PropertyChangeListener() {
@@ -320,18 +311,34 @@ public final class JavaNode extends DataNode implements ChangeListener {
     }
     
     private Image enhanceIcon(Image i) {
-        if (isCompiled != null && !isCompiled.get()) {
-            i = ImageUtilities.mergeImages(i, NEEDS_COMPILE, 16, 0);
+        Image needsCompile = isCompiled != null ? isCompiled.get() : null;
+        
+        if (needsCompile != null) {
+            i = ImageUtilities.mergeImages(i, needsCompile, 16, 0);
         }
         
-        if (isExecutable != null && isExecutable.get()) {
-            i = ImageUtilities.mergeImages(i, IS_EXECUTABLE_CLASS, 10, 6);
+        Image executable = isExecutable != null ? isExecutable.get() : null;
+        
+        if (executable != null) {
+            i = ImageUtilities.mergeImages(i, executable, 10, 6);
         }
         
         return i;
     }
     
     private static final RequestProcessor WORKER = new RequestProcessor("Java Node Badge Processor", 1);
+    
+    private static Image notCompiledBadge() {
+        Image result = NEEDS_COMPILE.get();
+        
+        if (result == null) {
+            URL needsCompileIconURL = JavaNode.class.getClassLoader().getResource(NEEDS_COMPILE_BADGE_URL);
+            String needsCompileTP = "<img src=\"" + needsCompileIconURL + "\">&nbsp;" + getMessage(JavaNode.class, "TP_NeedsCompileBadge");
+            NEEDS_COMPILE.set(result = assignToolTipToImage(loadImage(NEEDS_COMPILE_BADGE_URL), needsCompileTP)); // NOI18N
+        }
+        
+        return result;
+    }
     
     private static class BuildStatusTask implements Runnable {
         private JavaNode node;
@@ -358,13 +365,25 @@ public final class JavaNode extends DataNode implements ChangeListener {
 
             boolean isPackageInfo = "package-info.java".equals(node.getDataObject().getPrimaryFile().getNameExt());
             boolean newIsCompiled = _status != null && !isPackageInfo ?  _status.isBuilt() : true;
-            boolean oldIsCompiled = node.isCompiled.getAndSet(newIsCompiled);
+            boolean oldIsCompiled = node.isCompiled.getAndSet(newIsCompiled ? null : notCompiledBadge()) == null;
 
             if (newIsCompiled != oldIsCompiled) {
                 node.fireIconChange();
                 node.fireOpenedIconChange();
             }
         }
+    }
+    
+    private static Image executableBadge() {
+        Image result = IS_EXECUTABLE_CLASS.get();
+        
+        if (result == null) {
+            URL executableIconURL = JavaNode.class.getClassLoader().getResource(EXECUTABLE_BADGE_URL);
+            String executableTP = "<img src=\"" + executableIconURL + "\">&nbsp;" + getMessage(JavaNode.class, "TP_ExecutableBadge");
+            IS_EXECUTABLE_CLASS.set(result = assignToolTipToImage(loadImage(EXECUTABLE_BADGE_URL), executableTP)); // NOI18N
+        }
+        
+        return result;
     }
     
     private static class ExecutableTask implements Runnable {
@@ -409,7 +428,7 @@ public final class JavaNode extends DataNode implements ChangeListener {
             if (root != null) {
                 try {
                     boolean newIsExecutable = ExecutableFilesIndex.DEFAULT.isMainClass(root.getURL(), file.getURL());
-                    boolean oldIsExecutable = node.isExecutable.getAndSet(newIsExecutable);
+                    boolean oldIsExecutable = node.isExecutable.getAndSet(newIsExecutable ? executableBadge() : null) != null;
 
                     if (newIsExecutable != oldIsExecutable) {
                         node.fireIconChange();
