@@ -167,7 +167,7 @@ public class AsynchronousGenerator extends AsyncConverter implements CodeGenerat
             return;
         }
         
-        if ( !checkRestMethod(fqn,contextElement, controller.getFileObject()) ){
+        if (isAsync(contextElement)) {
             Toolkit.getDefaultToolkit().beep();
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(AsynchronousGenerator.class, 
