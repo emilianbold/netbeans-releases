@@ -111,7 +111,7 @@ public class FromDBTest extends CRUDTest {
             assertEquals("Missing files in package " + packageName, 4, files.size()); //NOI18N
         }
         //make sure all REST services nodes are visible in project log. view
-        assertEquals("missing nodes?", 7, getRestNode().getChildren().length);
+        waitRestNodeChildren(7);
     }
 
     /**
