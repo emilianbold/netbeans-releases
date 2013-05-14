@@ -195,7 +195,7 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
             embeddings.add(snapshot.create("(function(){\n", JS_MIMETYPE)); //NOI18N
             int diff = Utils.isAttributeValueQuoted(ts.token().text()) ? 1 : 0;
             embeddings.add(snapshot.create(ts.offset() + diff, ts.token().length() - diff * 2, JS_MIMETYPE));
-            embeddings.add(snapshot.create("\n});\n", JS_MIMETYPE)); //NOI18N
+            embeddings.add(snapshot.create(";\n});\n", JS_MIMETYPE)); //NOI18N
         }
     }
 

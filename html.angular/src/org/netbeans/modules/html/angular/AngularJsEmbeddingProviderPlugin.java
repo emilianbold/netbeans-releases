@@ -70,11 +70,13 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     private static class StackItem {
 
         final String tag;
+        final String finishText;
         int balance;
 
-        public StackItem(String tag) {
+        public StackItem(String tag, String finishText) {
             this.tag = tag;
             this.balance = 1;
+            this.finishText = finishText;
         }
     }
     private final LinkedList<StackItem> stack;
@@ -87,6 +89,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     private enum AngularAttribute  {
         controller,
         model,
+        repeat
     }
 
     private AngularAttribute interestedAttr;
@@ -106,7 +109,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         this.snapshot = snapshot;
         this.tokenSequence = tokenSequence;
         this.embeddings = embeddings;
-
+        this.stack.clear();
 //        AngularModel model = AngularModel.getModel(parserResult);
 //        if(!model.isAngularPage()) {
 //            return false;
@@ -141,7 +144,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     if (top.balance == 0) {
                         processed = true;
                         stack.pop();
-                        embeddings.add(snapshot.create("});\n", Constants.JAVASCRIPT_MIMETYPE));  //NOI18N
+                        embeddings.add(snapshot.create(top.finishText, Constants.JAVASCRIPT_MIMETYPE));  //NOI18N
                     }
                 }
                 break;
@@ -162,12 +165,17 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     switch (interestedAttr) {
                         case controller:
                             processed = processController(value);
+                            stack.push(new StackItem(lastTagOpen, "});\n")); //NOI18N
                             break;
                         case model:
                             processed = processModel(value);
+                            break;
+                        case repeat:
+                            processed = processRepeat(value);
+                            stack.push(new StackItem(lastTagOpen, "}\n")); //NOI18N
+                            break;
                         default:        
                     }
-                    stack.push(new StackItem(lastTagOpen));
                 }
                 break;
             case EL_OPEN_DELIMITER:
@@ -236,9 +244,13 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         //use the last assignment
                         TypeUsage typeUsage = typeUsages.get(typeUsages.size() - 1);
                         String type = typeUsage.getType();
-                        sb.append(" = new ");   //NOI18N
-                        sb.append(type);
-                        sb.append("()");    //NOI18N
+                        if (type.indexOf('@') == -1) {
+                            // don't use unresolved types
+                            // TODO there should be the unresolved type resolved
+                            sb.append(" = new ");   //NOI18N
+                            sb.append(type);
+                            sb.append("()");    //NOI18N
+                        }
 
                     }
             }
@@ -249,20 +261,72 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         return true;
     }
     
-    private boolean processModel(String name) {
-        boolean processed = false;
+    private boolean processModel(String name) {     
         if (name.isEmpty()) {
             embeddings.add(snapshot.create("( function () {", Constants.JAVASCRIPT_MIMETYPE));
             embeddings.add(snapshot.create(tokenSequence.offset(), tokenSequence.token().length(), Constants.JAVASCRIPT_MIMETYPE));
             embeddings.add(snapshot.create(";})();", Constants.JAVASCRIPT_MIMETYPE));
-            processed = true;
         } else {
             if (propertyToFqn.containsKey(name)) {
                 embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-                embeddings.add(snapshot.create(tokenSequence.offset(), tokenSequence.token().length(), Constants.JAVASCRIPT_MIMETYPE));
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1, name.length(), Constants.JAVASCRIPT_MIMETYPE));
                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+            }  else {
+                // need to create local variable
+                if (name.indexOf(' ') == -1 && name.indexOf('(') == -1 && name.indexOf('.') == -1) {
+                    embeddings.add(snapshot.create("var ", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                }
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1, name.length(), Constants.JAVASCRIPT_MIMETYPE));
+                embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+            }
+        }
+        return true;
+    }
+    
+    private boolean processRepeat(String expression) {
+        boolean processed = false;
+        // split the expression with |
+        // we expect that the first part is the for cycle and the rest are conditions
+        // and attributes like orderby, filter etc.
+        String[] parts = expression.split("\\|");
+        if (parts.length > 0) {
+            // try to create the for cycle in virtual source
+            if (parts[0].contains(" in ")) {
+                // we understand only "in"  now
+                String[] forParts = parts[0].trim().split(" ");   // this is the should contain [new variale, in, collection name]
+                embeddings.add(snapshot.create("for (var ", Constants.JAVASCRIPT_MIMETYPE));                
+                if (forParts.length == 3 && propertyToFqn.containsKey(forParts[2])) {
+                    // if we know the collection from a controller ....
+                    int lastPartPos = expression.indexOf(forParts[2]); // the start position of the collection name
+                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, lastPartPos, Constants.JAVASCRIPT_MIMETYPE));
+                    embeddings.add(snapshot.create(propertyToFqn.get(forParts[2]) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                    embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos, forParts[2].length(), Constants.JAVASCRIPT_MIMETYPE));
+                } else {
+                    // if we don't know the collection from a controller, put it to the virtual source at it is
+                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, parts[0].length(), Constants.JAVASCRIPT_MIMETYPE));
+                }
+                embeddings.add(snapshot.create(") {", Constants.JAVASCRIPT_MIMETYPE));
+                // the for cycle should be closed in appropriate CLOSE_TAG token
                 processed = true;
-            } 
+            }
+            int partIndex = 1;
+            int lastPartPos = parts[0].length() + 1;
+            while (partIndex < parts.length) { // are there any condition / attributes of the cycle?
+                if (parts[partIndex].contains(":")) {
+                    String[] conditionParts = parts[partIndex].trim().split(":");
+                    String propName = conditionParts[1].trim();
+                    int position = lastPartPos + parts[partIndex].indexOf(propName) + 1;
+                    if(conditionParts.length > 1) {
+                        if (propertyToFqn.containsKey(propName)) {
+                            embeddings.add(snapshot.create(propertyToFqn.get(propName) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N                            
+                        }
+                        embeddings.add(snapshot.create(tokenSequence.offset() + position, propName.length(), Constants.JAVASCRIPT_MIMETYPE));
+                        embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                    }
+                }
+                lastPartPos = lastPartPos + parts[partIndex].length() + 1;
+                partIndex++;
+            }
         }
         return processed;
     }
