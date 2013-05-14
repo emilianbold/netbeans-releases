@@ -186,7 +186,7 @@ public abstract class LatteCompletionProposal implements CompletionProposal {
 
     }
 
-    static class IteratorItemCompletionProposal extends LatteCompletionProposal {
+    abstract static class IteratorItemCompletionProposal extends LatteCompletionProposal {
 
         public IteratorItemCompletionProposal(LatteElement element, CompletionRequest request) {
             super(element, request);
@@ -199,13 +199,34 @@ public abstract class LatteCompletionProposal implements CompletionProposal {
         }
 
         @Override
+        public ImageIcon getIcon() {
+            return null;
+        }
+
+    }
+
+    static class IteratorFieldItemCompletionProposal extends IteratorItemCompletionProposal {
+
+        public IteratorFieldItemCompletionProposal(LatteElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
         public ElementKind getKind() {
             return ElementKind.FIELD;
         }
 
+    }
+
+    static class IteratorMethodItemCompletionProposal extends IteratorItemCompletionProposal {
+
+        public IteratorMethodItemCompletionProposal(LatteElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
         @Override
-        public ImageIcon getIcon() {
-            return null;
+        public ElementKind getKind() {
+            return ElementKind.METHOD;
         }
 
     }

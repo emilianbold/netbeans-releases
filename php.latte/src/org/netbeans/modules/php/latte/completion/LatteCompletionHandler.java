@@ -174,13 +174,22 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
         KEYWORDS.add(LatteElement.Factory.create("break")); //NOI18N
     }
 
-    static final Set<LatteElement> ITERATOR_ITEMS = new HashSet<>();
+    static final Set<LatteElement> ITERATOR_FIELD_ITEMS = new HashSet<>();
     static {
-        ITERATOR_ITEMS.add(LatteElement.Factory.create("first")); //NOI18N
-        ITERATOR_ITEMS.add(LatteElement.Factory.create("last")); //NOI18N
-        ITERATOR_ITEMS.add(LatteElement.Factory.create("counter")); //NOI18N
-        ITERATOR_ITEMS.add(LatteElement.Factory.create("odd")); //NOI18N
-        ITERATOR_ITEMS.add(LatteElement.Factory.create("even")); //NOI18N
+        ITERATOR_FIELD_ITEMS.add(LatteElement.Factory.create("first")); //NOI18N
+        ITERATOR_FIELD_ITEMS.add(LatteElement.Factory.create("last")); //NOI18N
+        ITERATOR_FIELD_ITEMS.add(LatteElement.Factory.create("counter")); //NOI18N
+        ITERATOR_FIELD_ITEMS.add(LatteElement.Factory.create("odd")); //NOI18N
+        ITERATOR_FIELD_ITEMS.add(LatteElement.Factory.create("even")); //NOI18N
+    }
+
+    static final Set<LatteElement> ITERATOR_METHOD_ITEMS = new HashSet<>();
+    static {
+        ITERATOR_METHOD_ITEMS.add(LatteElement.Factory.create("isFirst()")); //NOI18N
+        ITERATOR_METHOD_ITEMS.add(LatteElement.Factory.create("isLast()")); //NOI18N
+        ITERATOR_METHOD_ITEMS.add(LatteElement.Factory.create("getCounter()")); //NOI18N
+        ITERATOR_METHOD_ITEMS.add(LatteElement.Factory.create("isOdd()")); //NOI18N
+        ITERATOR_METHOD_ITEMS.add(LatteElement.Factory.create("isEven()")); //NOI18N
     }
 
     @Override

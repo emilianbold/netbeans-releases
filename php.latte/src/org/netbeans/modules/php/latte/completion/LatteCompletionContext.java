@@ -108,16 +108,22 @@ public enum LatteCompletionContext {
             }
         }
     }
+
     protected void completeIteratorItems(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
-        for (LatteElement iteratorItem : LatteCompletionHandler.ITERATOR_ITEMS) {
+        for (LatteElement iteratorItem : LatteCompletionHandler.ITERATOR_FIELD_ITEMS) {
             if (startsWith(iteratorItem.getName(), request.prefix)) {
-                completionProposals.add(new LatteCompletionProposal.IteratorItemCompletionProposal(iteratorItem, request));
+                completionProposals.add(new LatteCompletionProposal.IteratorFieldItemCompletionProposal(iteratorItem, request));
+            }
+        }
+        for (LatteElement iteratorItem : LatteCompletionHandler.ITERATOR_METHOD_ITEMS) {
+            if (startsWith(iteratorItem.getName(), request.prefix)) {
+                completionProposals.add(new LatteCompletionProposal.IteratorMethodItemCompletionProposal(iteratorItem, request));
             }
         }
     }
 
-
     private static boolean startsWith(String theString, String prefix) {
         return prefix.length() == 0 ? true : theString.toLowerCase().startsWith(prefix.toLowerCase());
     }
+
 }
