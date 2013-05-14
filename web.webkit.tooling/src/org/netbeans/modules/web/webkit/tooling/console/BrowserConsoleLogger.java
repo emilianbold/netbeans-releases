@@ -77,7 +77,6 @@ import org.openide.util.Utilities;
 import org.openide.windows.FoldHandle;
 import org.openide.windows.IOColorPrint;
 import org.openide.windows.IOColors;
-import org.openide.windows.IOContainer;
 import org.openide.windows.IOFolding;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
