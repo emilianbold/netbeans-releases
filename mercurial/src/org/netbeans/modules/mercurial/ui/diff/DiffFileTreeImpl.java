@@ -120,6 +120,9 @@ class DiffFileTreeImpl extends FileTreeView<DiffNode> {
         Map<File, Collection<DiffNode>> sortedNodes = new HashMap<File, Collection<DiffNode>>();
         for (DiffNode n : nodes) {
             File repository = Mercurial.getInstance().getRepositoryRoot(n.getFile());
+            if (repository == null) {
+                continue;
+            }
             Collection<DiffNode> repositorySetups = sortedNodes.get(repository);
             if (repositorySetups == null) {
                 repositorySetups = new TreeSet<DiffNode>(new PathComparator());

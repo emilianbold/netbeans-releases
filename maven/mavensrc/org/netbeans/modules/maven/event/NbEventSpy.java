@@ -51,6 +51,7 @@ import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.logging.Logger;
 import org.codehaus.plexus.util.Base64;
+import org.json.simple.JSONObject;
 
 /**
  *
@@ -85,12 +86,11 @@ public class NbEventSpy extends AbstractEventSpy {
         super.onEvent(event); 
         if (event instanceof ExecutionEvent) {
             ExecutionEvent ex = (ExecutionEvent) event;
-            StringBuffer sb = new StringBuffer();
+            JSONObject root = new JSONObject();
+            
             //use base64 for complex structures or unknown values?
-            sb.append("{");
             {
-                sb.append("\"type\":\"").append(ex.getType().name()).append("\"");
-
+                root.put("type", ex.getType().name());
                 //the depth is as follows
                 //Session -> Project -> [Fork -> ForkedProject] -> Mojo                
                 
@@ -103,18 +103,16 @@ public class NbEventSpy extends AbstractEventSpy {
                     //only in Project* related event types
                     //project skipped called without ProjectStarted
                     MavenProject mp = ex.getProject();
-                    sb.append(" \"prj\":{");
-                    {
-                        sb.append("\"id\": \"").append(mp.getGroupId()).append(":").append(mp.getArtifactId()).append(":").append(mp.getVersion()).append("\" ");
-                        if (mp.getFile() != null) { //file is null in superpom
-                            sb.append("\"file\":\"").append(mp.getFile().getParentFile().getAbsolutePath()).append("\"");
-                        }
+                    JSONObject prj = new JSONObject();
+                    prj.put("id", mp.getGroupId() + ":" + mp.getArtifactId()+ ":" + mp.getVersion());
+                    if (mp.getFile() != null) { //file is null in superpom
+                        prj.put("file", mp.getFile().getParentFile().getAbsolutePath());
                     }
-                    sb.append("}");
+                    root.put("prj", prj);
                 }
                 if (ExecutionEvent.Type.SessionStarted.equals(ex.getType()) || ExecutionEvent.Type.SessionEnded.equals(ex.getType())) {
                     //only in session events
-                    sb.append(" \"prjcount\":").append(ex.getSession().getProjects().size());
+                    root.put("prjcount", ex.getSession().getProjects().size());
                 }
                 if (ex.getMojoExecution() != null && 
                         (ExecutionEvent.Type.MojoStarted.equals(ex.getType()) ||
@@ -125,63 +123,56 @@ public class NbEventSpy extends AbstractEventSpy {
                     //only in mojo events
                     //MojoSkipped .. only if requires online but build was offline, called without MojoStarted
                     MojoExecution me = ex.getMojoExecution();
-                    sb.append(" \"mojo\": {");
-                    {
-                        sb.append("\"id\":\"").append(me.getGroupId()).append(":").append(me.getArtifactId()).append(":").append(me.getVersion()).append("\" ");
-                        if (me.getGoal() != null) {
-                            sb.append("\"goal\":\"").append(me.getGoal()).append("\" ");
-                        }
-                        if (me.getSource() != null) {
-                            sb.append("\"source\":\"").append(me.getSource().name()).append("\" ");
-                        }
-                        if (me.getExecutionId() != null) {
-                            sb.append("\"execId\":\"").append(me.getExecutionId()).append("\" ");
-                        }
-                        if (me.getLifecyclePhase() != null) {
-                            sb.append("\"phase\":\"").append(me.getLifecyclePhase()).append("\"");
-                        }
-                        PluginExecution exec = me.getPlugin().getExecutionsAsMap().get(me.getExecutionId());
-                        if (exec != null) {
-                            InputLocation execLoc = exec.getLocation(""); //apparently getLocation("id" never returns a thing)
-                            if (execLoc != null) {
-                                sb.append("\"loc\": {");
-                                {
-                                    sb.append("\"ln\":").append(execLoc.getLineNumber()).append(" ");
-                                    sb.append("\"col\":").append(execLoc.getColumnNumber()).append(" ");
-                                    String loc = execLoc.getSource().getLocation();
-                                    if (loc != null) {
-                                        //is path
-                                        sb.append("\"loc\":\"").append(loc).append("\" ");
-                                    }
-                                    String mid = execLoc.getSource().getModelId();
-                                    if (mid != null) {
-                                        sb.append("\"id\":\"").append(mid).append("\" ");
-                                    }
-                                }
-                                sb.append("}");
+                    JSONObject mojo = new JSONObject();
+                    mojo.put("id",  me.getGroupId() + ":" + me.getArtifactId()+ ":" + me.getVersion());
+                    if (me.getGoal() != null) {
+                        mojo.put("goal", me.getGoal());
+                    }
+                    if (me.getSource() != null) {
+                        mojo.put("source", me.getSource().name());
+                    }
+                    if (me.getExecutionId() != null) {
+                        mojo.put("execId", me.getExecutionId());
+                    }
+                    if (me.getLifecyclePhase() != null) {
+                        mojo.put("phase", me.getLifecyclePhase());
+                    }
+                    PluginExecution exec = me.getPlugin().getExecutionsAsMap().get(me.getExecutionId());
+                    if (exec != null) {
+                        InputLocation execLoc = exec.getLocation(""); //apparently getLocation("id" never returns a thing)
+                        if (execLoc != null) {
+                            JSONObject loc = new JSONObject();
+                            loc.put("ln", execLoc.getLineNumber());
+                            loc.put("col", execLoc.getColumnNumber());
+                            String locS = execLoc.getSource().getLocation();
+                            if (locS != null) {
+                                //is path
+                                loc.put("loc", locS);
                             }
+                            String mid = execLoc.getSource().getModelId();
+                            if (mid != null) {
+                                loc.put("id", mid);
+                            }
+                            mojo.put("loc", loc);
                         }
                     }
-                    sb.append("}");
+                    root.put("mojo", mojo);    
                 }
                 if (ExecutionEvent.Type.MojoFailed.equals(ex.getType()) && ex.getException() != null) {
                     Exception exc = ex.getException();
                     if (exc instanceof LifecycleExecutionException) {
+                        JSONObject excep = new JSONObject();
                         //all mojo failed events in current codebase are lifecycle execs.
-                        sb.append("\"exc\": {");
-                        {
-                            String message = exc.getCause().getMessage();
-                            byte[] enc = Base64.encodeBase64(message.getBytes("UTF-8")); //NOW are these conversions correct?
-                            String encString = new String(enc, "UTF-8");
-                            sb.append("\"msg\":\"").append(encString).append("\"");
-                        }
-                        sb.append("}");
+                        String message = exc.getCause().getMessage();
+                        byte[] enc = Base64.encodeBase64(message.getBytes("UTF-8")); //NOW are these conversions correct?
+                        String encString = new String(enc, "UTF-8");
+                        excep.put("msg", encString);
+                        root.put("exc", excep);
                     }
                     
                 }
             }    
-            sb.append("}");
-            logger.info("NETBEANS-ExecEvent:"  + sb);
+            logger.info("NETBEANS-ExecEvent:"  + root.toString());
         }
 //        if (event instanceof RepositoryEvent) {
 //            RepositoryEvent re = (RepositoryEvent) event;
