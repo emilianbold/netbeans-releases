@@ -186,8 +186,15 @@ public final class BrowserUISupport {
      * @see BrowserPickerPopup
      */
     public static JComboBox createBrowserPickerComboBox( @NullAllowed String selectedBrowserId,
+            boolean showIDEGlobalBrowserOption, boolean includePhoneGap, 
+            ComboBoxModel model) {
+        return new BrowserCombo( selectedBrowserId, showIDEGlobalBrowserOption, includePhoneGap, model);
+    }
+
+    public static JComboBox createBrowserPickerComboBox( @NullAllowed String selectedBrowserId,
             boolean showIDEGlobalBrowserOption, boolean includePhoneGap ) {
-        return new BrowserCombo( selectedBrowserId, showIDEGlobalBrowserOption, includePhoneGap );
+        return createBrowserPickerComboBox(selectedBrowserId, showIDEGlobalBrowserOption, includePhoneGap,
+            BrowserUISupport.createBrowserModel( selectedBrowserId, showIDEGlobalBrowserOption, includePhoneGap ));
     }
 
     private static WebBrowser findWebBrowserById(String id) {
