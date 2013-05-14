@@ -65,26 +65,6 @@ public interface LatteElement extends ElementHandle {
 
     public String getDocumentationText();
 
-    public static class Factory {
-
-        public static LatteElement create(String name, LatteDocumentationFactory documentationFactory) {
-            return new LatteElementSimple(name, documentationFactory);
-        }
-
-        public static LatteElement create(String name, List<Parameter> parameters, LatteDocumentationFactory documentationFactory) {
-            return new LatteElementExtended(name, parameters, documentationFactory);
-        }
-
-        public static LatteElement create(String name, String customTemplate, LatteDocumentationFactory documentationFactory) {
-            return new LatteElementExtended(name, Collections.<Parameter>emptyList(), customTemplate, documentationFactory);
-        }
-
-        public static LatteElement createMacro(String name, String macroParameter, String customTemplate, LatteDocumentationFactory documentationFactory) {
-            return new LatteElementExtended(name, Arrays.asList(new Parameter[] {new MacroParameter(macroParameter)}), customTemplate, documentationFactory);
-        }
-
-    }
-
     public static class MacroFactory {
         private static final LatteDocumentationFactory DF = LatteDocumentationFactory.MacroDocumentationFactory.getInstance();
 
