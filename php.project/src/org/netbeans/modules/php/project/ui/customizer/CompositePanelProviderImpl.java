@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.editor.indent.project.api.Customizers;
 import org.netbeans.modules.php.api.framework.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -58,7 +59,7 @@ import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraryCustomizerPanel;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
@@ -73,7 +74,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     public static final String SOURCES = "Sources"; // NOI18N
     public static final String RUN = "Run"; // NOI18N
     public static final String BROWSER = "Browser"; // NOI18N
-    public static final String JS_FILES = "JS_FILES"; // NOI18N
     public static final String PHP_INCLUDE_PATH = "PhpIncludePath"; // NOI18N
     public static final String IGNORE_PATH = "IgnorePath"; // NOI18N
     public static final String FRAMEWORKS = "Frameworks"; // NOI18N
@@ -114,11 +114,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     Bundle.CompositePanelProviderImpl_category_browser_title(),
                     null,
                     categories);
-        } else if (JS_FILES.equals(name)) {
-            toReturn = ProjectCustomizer.Category.create(
-                    JS_FILES,
-                    JavaScriptLibraryCustomizerPanel.getCategoryDisplayName(),
-                    null);
         } else if (PHP_INCLUDE_PATH.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     PHP_INCLUDE_PATH,
@@ -157,21 +152,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             return new CustomizerRun(uiProps, category);
         } else if (BROWSER.equals(nm)) {
             return new CustomizerBrowser(category, uiProps);
-        } else if (JS_FILES.equals(nm)) {
-            return new JavaScriptLibraryCustomizerPanel(category, new JavaScriptLibraryCustomizerPanel.CustomizerSupport() {
-                @Override
-                public File getWebRoot() {
-                    return uiProps.getResolvedWebRootFolder();
-                }
-                @Override
-                public void setLibrariesFolder(String librariesFolder) {
-                    // noop
-                }
-                @Override
-                public void setSelectedLibraries(List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries) {
-                    // noop
-                }
-            });
         } else if (PHP_INCLUDE_PATH.equals(nm)) {
             return new CustomizerPhpIncludePath(category, uiProps);
         } else if (IGNORE_PATH.equals(nm)) {
@@ -218,8 +198,23 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         projectType = UiUtils.CUSTOMIZER_PATH,
         position = 190
     )
-    public static CompositePanelProviderImpl createJsFiles() {
-        return new CompositePanelProviderImpl(JS_FILES);
+    public static ProjectCustomizer.CompositeCategoryProvider createJsFiles() {
+        return JavaScriptLibraries.createCustomizer(new JavaScriptLibraries.CustomizerSupport() {
+            @Override
+            public File getWebRoot(Lookup context) {
+                PhpProjectProperties projectProperties = context.lookup(PhpProjectProperties.class);
+                assert projectProperties != null;
+                return projectProperties.getResolvedWebRootFolder();
+            }
+            @Override
+            public void setLibrariesFolder(@NonNull Lookup context, String librariesFolder) {
+                // noop
+            }
+            @Override
+            public void setSelectedLibraries(@NonNull Lookup context, List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries) {
+                // noop
+            }
+        });
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(

@@ -39,68 +39,37 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.webkit.debugging.api.console;
+package org.netbeans.modules.web.clientproject.api.jslibs;
 
-import java.util.ArrayList;
-import java.util.List;
-import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
-import org.netbeans.modules.web.webkit.debugging.api.debugger.PropertyDescriptor;
-import org.netbeans.modules.web.webkit.debugging.api.debugger.RemoteObject;
+import javax.swing.JComponent;
+import org.netbeans.api.project.Project;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 
-/**
- *
- * @author Martin
- */
-class RemoteObjectMessage extends ConsoleMessage {
-    
-    private final RemoteObject ro;
-    private final WebKitDebugging webKit;
-    
-    RemoteObjectMessage(WebKitDebugging webKit, RemoteObject ro) {
-        super(ro.getOwningProperty());
-        this.webKit = webKit;
-        this.ro = ro;
+final class JavaScriptLibraryCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+
+    private final JavaScriptLibraries.CustomizerSupport customizerSupport;
+
+
+    public JavaScriptLibraryCustomizer(JavaScriptLibraries.CustomizerSupport customizerSupport) {
+        assert customizerSupport != null;
+        this.customizerSupport = customizerSupport;
+    }
+
+    @NbBundle.Messages("JavaScriptLibraryCustomizer.displayName=JavaScript Files")
+    @Override
+    public ProjectCustomizer.Category createCategory(Lookup context) {
+        return ProjectCustomizer.Category.create(
+                JavaScriptLibraries.CUSTOMIZER_IDENT,
+                Bundle.JavaScriptLibraryCustomizer_displayName(),
+                null);
     }
 
     @Override
-    public String getType() {
-        return ro.getType().getName();
+    public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
+        assert context.lookup(Project.class) != null : "Cannot find project in lookup: " + context;
+        return new JavaScriptLibraryCustomizerPanel(category, customizerSupport, context);
     }
 
-    @Override
-    public String getText() {
-        if (ro.getType() == RemoteObject.Type.OBJECT) {
-            String className = ro.getClassName();
-            if (className != null &&
-                className.startsWith("HTML") && className.endsWith("Element")) {
-                
-                List<PropertyDescriptor> properties = webKit.getRuntime().getRemoteObjectProperties(ro, true);
-                for (PropertyDescriptor pd : properties) {
-                    if ("outerHTML".equals(pd.getName())) {
-                        return pd.getValue().getValueAsString();
-                    }
-                }
-            }
-            return ro.getDescription();
-        }
-        return ro.getValueAsString();
-    }
-
-    @Override
-    public List<ConsoleMessage> getSubMessages() {
-        if (ro.getType() == RemoteObject.Type.OBJECT) {
-            List<PropertyDescriptor> properties = ro.getProperties();
-            List<ConsoleMessage> propMessages = new ArrayList<ConsoleMessage>(properties.size());
-            for (PropertyDescriptor pd : properties) {
-                // #229457 - prevent NPE
-                if (pd.getValue() != null) {
-                    propMessages.add(new PropertyMessage(webKit, pd));
-                }
-            }
-            return propMessages;
-        } else {
-            return super.getSubMessages();
-        }
-    }
-    
 }
