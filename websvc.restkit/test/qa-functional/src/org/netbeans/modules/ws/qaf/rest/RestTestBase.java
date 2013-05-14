@@ -59,7 +59,10 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase;
 import org.netbeans.modules.ws.qaf.utilities.ContentComparator;
 import org.netbeans.modules.ws.qaf.utilities.FilteringLineDiff;
@@ -197,6 +200,29 @@ public abstract class RestTestBase extends WebServicesTestBase {
             restNode.expand();
         }
         return restNode;
+    }
+    
+    /**
+     * Waits for defined number of children under RESTful Web Services node. It
+     * throws TimeoutExpiredException if timeout passes.
+     */
+    protected void waitRestNodeChildren(final int count) {
+        final Node restNode = getRestNode();
+        try {
+            new Waiter(new Waitable() {
+                @Override
+                public Object actionProduced(Object obj) {
+                    return restNode.getChildren().length == count ? Boolean.TRUE : null;
+                }
+
+                @Override
+                public String getDescription() {
+                    return count + " children under " + restNode.getText(); //NOI18N
+                }
+            }).waitAction(null);
+        } catch (InterruptedException ie) {
+            throw new JemmyException("Interrupted.", ie); //NOI18N
+        }
     }
 
     /**
