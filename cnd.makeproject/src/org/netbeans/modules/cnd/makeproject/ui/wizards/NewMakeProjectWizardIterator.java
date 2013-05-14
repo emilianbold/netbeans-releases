@@ -247,7 +247,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
         return selectHostWizardProvider;
     }
 
-    private synchronized void setupPanelsAndStepsIfNeed() {        
+    private void setupPanelsAndStepsIfNeed() {        
         if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QT_APPLICATION || wizardtype == TYPE_QT_DYNAMIC_LIB || wizardtype == TYPE_QT_STATIC_LIB) {
             if (panels == null) {
                 panels = new ArrayList<WizardDescriptor.Panel<WizardDescriptor>>();
