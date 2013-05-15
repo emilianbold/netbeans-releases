@@ -229,7 +229,8 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                     runButton.setText(text);
                     boolean enabled = false;
                     ActionProvider provider = actionProviderForFileObject(lastRelatedFileObject);
-                    if (provider != null) {
+                    if (provider != null
+                            && Arrays.asList(provider.getSupportedActions()).contains(ActionProvider.COMMAND_RUN_SINGLE)) {
                         Lookup context = contextForFileObject(lastRelatedFileObject);
                         enabled = provider.isActionEnabled(ActionProvider.COMMAND_RUN_SINGLE, context);
                     }
