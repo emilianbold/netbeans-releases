@@ -218,7 +218,7 @@ public final class ProjectPropertiesSupport {
     }
 
     public static boolean isCopySourcesOnOpen(PhpProject project) {
-        return getBoolean(project, PhpProjectProperties.COPY_SRC_ON_OPEN, true);
+        return getBoolean(project, PhpProjectProperties.COPY_SRC_ON_OPEN, false);
     }
 
     /**
