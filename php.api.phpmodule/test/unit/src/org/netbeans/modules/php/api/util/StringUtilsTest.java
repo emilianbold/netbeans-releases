@@ -141,4 +141,11 @@ public class StringUtilsTest extends NbTestCase {
         assertEquals("hello9", StringUtils.webalize("hello9"));
     }
 
+    public void testCapitalize() {
+        assertEquals("Foobarbaz", StringUtils.capitalize("foobarbaz"));
+        assertEquals("Foobarbaz", StringUtils.capitalize("Foobarbaz"));
+        assertEquals("FOOBARBAZ", StringUtils.capitalize("FOOBARBAZ"));
+        assertEquals("FoobarbaZ", StringUtils.capitalize("foobarbaZ"));
+    }
+
 }
