@@ -79,7 +79,7 @@ public class TemplatePanel implements WizardDescriptor.Panel, WizardDescriptor.F
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(TemplatePanel.class);
+        return new HelpCtx("org.netbeans.modules.web.jsf.wizards.TemplatePanel");
     }
 
     @Override

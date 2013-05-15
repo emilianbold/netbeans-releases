@@ -129,7 +129,7 @@ public final class JsfPopupAction extends SystemAction implements Presenter.Popu
             AddManagedBeanDialog dialogPanel = new AddManagedBeanDialog(data);
             AddDialog dialog = new AddDialog(dialogPanel,
                     NbBundle.getMessage(JsfPopupAction.class,"TTL_AddManagedBean"), //NOI18N
-                    new HelpCtx(AddManagedBeanDialog.class));
+                    new HelpCtx("org.netbeans.modules.web.jsf.dialogs.AddManagedBeanDialog")); //NOI18N
             dialog.disableAdd(); // disable Add button
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
             d.setVisible(true);
@@ -176,7 +176,7 @@ public final class JsfPopupAction extends SystemAction implements Presenter.Popu
             AddNavigationRuleDialog dialogPanel = new AddNavigationRuleDialog(data);
             AddDialog dialog = new AddDialog(dialogPanel,
                     NbBundle.getMessage(JsfPopupAction.class,"TTL_AddNavigationRule"), //NOI18N
-                    new HelpCtx(AddNavigationRuleDialog.class));
+                    new HelpCtx("org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog")); //NOI18N
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
             d.setVisible(true);
             if (dialog.getValue().equals(dialog.ADD_OPTION)) {
@@ -219,7 +219,7 @@ public final class JsfPopupAction extends SystemAction implements Presenter.Popu
                     JSFEditorUtilities.getNavigationRule((BaseDocument)doc, target.getCaretPosition()));
             AddDialog dialog = new AddDialog(dialogPanel,
                     NbBundle.getMessage(JsfPopupAction.class,"TTL_AddNavigationCase"),    //NOI18N
-                    new HelpCtx(AddNavigationCaseDialog.class));
+                    new HelpCtx("org.netbeans.modules.web.jsf.dialogs.AddNavigationCaseDialog"));  //NOI18N
             dialog.disableAdd(); // disable Add button
             java.awt.Dialog d = org.openide.DialogDisplayer.getDefault().createDialog(dialog);
             d.setVisible(true);
