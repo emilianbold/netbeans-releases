@@ -168,7 +168,7 @@ public enum LatteCompletionContext {
     private void completeDefaultVariables(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
         for (LatteElement variable : LatteCompletionHandler.DEFAULT_VARIABLES) {
             if (startsWith(variable.getName(), request.prefix)) {
-                completionProposals.add(new LatteCompletionProposal.VariableCompletionProposal(variable, request));
+                completionProposals.add(new LatteCompletionProposal.DefaultVariableCompletionProposal(variable, request));
             }
         }
     }
@@ -177,7 +177,9 @@ public enum LatteCompletionContext {
         List<VariableCompletionProvider> variableProviders = CompletionProviders.getVariableProviders();
         for (VariableCompletionProvider variableProvider : variableProviders) {
             for (String variable : variableProvider.getVariables(request.parserResult.getSnapshot().getSource().getFileObject())) {
-                completionProposals.add(new LatteCompletionProposal.VariableCompletionProposal(LatteElement.VariableFactory.create(variable), request));
+                if (startsWith(variable, request.prefix)) {
+                    completionProposals.add(new LatteCompletionProposal.UserVariableCompletionProposal(LatteElement.VariableFactory.create(variable), request));
+                }
             }
         }
     }

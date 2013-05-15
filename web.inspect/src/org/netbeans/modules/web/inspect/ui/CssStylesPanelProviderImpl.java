@@ -49,7 +49,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashSet;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -229,7 +228,8 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                     runButton.setText(text);
                     boolean enabled = false;
                     ActionProvider provider = actionProviderForFileObject(lastRelatedFileObject);
-                    if (provider != null) {
+                    if (provider != null
+                            && Arrays.asList(provider.getSupportedActions()).contains(ActionProvider.COMMAND_RUN_SINGLE)) {
                         Lookup context = contextForFileObject(lastRelatedFileObject);
                         enabled = provider.isActionEnabled(ActionProvider.COMMAND_RUN_SINGLE, context);
                     }
@@ -411,7 +411,6 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     public static class SelectionView extends CssStylesPanelProviderImpl {
 
         private static final String SELECTION_PANEL_ID = "selection"; //NOI18N
-        private static final Collection<String> MIME_TYPES = new HashSet(Arrays.asList(new String[]{"text/html", "text/xhtml", "text/x-jsp", "text/x-php5"})); // NOI18N
 
         @Override
         public String getPanelID() {
