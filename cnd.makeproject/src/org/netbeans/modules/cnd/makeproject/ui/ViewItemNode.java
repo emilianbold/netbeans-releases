@@ -59,6 +59,7 @@ import java.util.WeakHashMap;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.actions.NewTestActionFactory;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
@@ -75,6 +76,7 @@ import org.openide.nodes.FilterNode;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 
@@ -92,6 +94,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
     private Folder folder;
     private Item item;
     private final MakeProject project;
+    private final ProjectNodesRefreshSupport.ProjectNodeRefreshListener refreshListener;
 
     public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject, MakeProject project) {
         super(dataObject.getNodeDelegate());//, null, Lookups.fixed(item));
@@ -100,6 +103,20 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         this.item = item;
         setShortDescription(item.getNormalizedPath());
         this.project = project;
+        this.refreshListener = new ProjectNodesRefreshSupport.ProjectNodeRefreshListener() {
+            @Override
+            public void refresh(Project project) {
+                if (getParentNode() == null) {
+                    return;
+                }
+                if (project == ViewItemNode.this.project) {
+                    EventQueue.invokeLater(new VisualUpdater());
+                }
+            }
+        };
+        ProjectNodesRefreshSupport.addProjectNodeRefreshListener(WeakListeners.create(
+                ProjectNodesRefreshSupport.ProjectNodeRefreshListener.class, refreshListener, ProjectNodesRefreshSupport.class));
+
     }
 
     @Override
