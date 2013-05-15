@@ -246,7 +246,7 @@ public final class DiscoveryProjectGenerator {
                                             if (!MIMENames.isCppOrCOrFortran(item.getMIMEType())) {
                                                 needCheck.add(path);
                                             }
-                                            ProjectBridge.setExclude((Item) item, true);
+                                            ProjectBridge.setExclude((Item) item, prefferedFolder.isDiskFolder());
                                             ProjectBridge.excludeItemFromOtherConfigurations(item);
                                         }
                                     }
