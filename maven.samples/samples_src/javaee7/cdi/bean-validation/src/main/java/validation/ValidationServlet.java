@@ -50,7 +50,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.transaction.*;
 import java.io.IOException;
 
-@WebServlet(name = "ValidationServlet", urlPatterns = {"/ValidationServlet"})
+@WebServlet(name = "ValidationServlet", urlPatterns = {"/"})
 public class ValidationServlet extends HttpServlet {
 
     public static ServletOutputStream m_out;

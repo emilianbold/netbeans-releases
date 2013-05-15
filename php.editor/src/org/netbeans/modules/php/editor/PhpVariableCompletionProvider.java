@@ -41,8 +41,31 @@
  */
 package org.netbeans.modules.php.editor;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.php.api.util.StringUtils;
+import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.model.ModelUtils;
+import org.netbeans.modules.php.editor.model.TypeScope;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Variable;
+import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.netbeans.modules.php.latte.spi.completion.VariableCompletionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
@@ -53,10 +76,156 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = VariableCompletionProvider.class, path = "Latte/Completion/Variables") //NOI18N
 public class PhpVariableCompletionProvider implements VariableCompletionProvider {
+    private static final Logger LOGGER = Logger.getLogger(PhpVariableCompletionProvider.class.getName());
+    private static final String DOTTED_RELATIVE_PRESENTER_PATH = "../../presenters/"; //NOI18N
+    private static final String COMMON_RELATIVE_PRESENTER_PATH = "../" + DOTTED_RELATIVE_PRESENTER_PATH; //NOI18N
+    private static final String PRESENTER_CLASS_SUFFIX = "Presenter"; //NOI18N
+    private static final String PRESENTER_FILE_SUFFIX = PRESENTER_CLASS_SUFFIX + ".php"; //NOI18N
+    private static final String LATTE_EXTENSION = "latte"; //NOI18N
+    private static final String ACTION_METHOD_PREFIX = "action"; //NOI18N
+
+    private final Set<String> result = new HashSet<>();
+    private FileObject templateFile;
 
     @Override
     public Set<String> getVariables(FileObject templateFile) {
-        return new HashSet<>();
+        if (isView(templateFile)) {
+            this.templateFile = templateFile;
+            processTemplateFile(templateFile);
+        }
+        return result;
+    }
+
+    private void processTemplateFile(FileObject templateFile) {
+        FileObject presenterFile = getPresenterFile(templateFile);
+        if (presenterFile != null) {
+            try {
+                parsePresenter(presenterFile);
+            } catch (ParseException ex) {
+                LOGGER.log(Level.FINE, null, ex);
+            }
+        }
+    }
+
+    private void parsePresenter(FileObject presenterFile) throws ParseException {
+        ParserManager.parse(Collections.singleton(Source.create(presenterFile)), new UserTask() {
+
+            @Override
+            public void run(ResultIterator resultIterator) throws Exception {
+                PHPParseResult parseResult = (PHPParseResult) resultIterator.getParserResult();
+                PresenterVisitor presenterVisitor = new PresenterVisitor(templateFile);
+                presenterVisitor.scan(parseResult.getProgram());
+                MethodDeclaration action = presenterVisitor.getAction();
+                if (action != null) {
+                    VariableVisitor variableVisitor = new VariableVisitor(parseResult.getModel());
+                    action.accept(variableVisitor);
+                    result.addAll(variableVisitor.getVariables());
+                }
+            }
+        });
+    }
+
+    private static boolean isView(FileObject templateFile) {
+        assert templateFile != null;
+        return LATTE_EXTENSION.equals(templateFile.getExt());
+    }
+
+    private static FileObject getPresenterFile(FileObject templateFile) {
+        String templateName = templateFile.getName();
+        String presenterName;
+        String relativePath;
+        if (templateName.contains(".")) { //NOI18N
+            String[] parts = templateName.split("\\."); //NOI18N
+            assert parts.length > 0;
+            presenterName = parts[0];
+            relativePath = DOTTED_RELATIVE_PRESENTER_PATH;
+        } else {
+            presenterName = templateFile.getParent().getName();
+            relativePath = COMMON_RELATIVE_PRESENTER_PATH;
+        }
+        return templateFile.getFileObject(relativePath + StringUtils.capitalize(presenterName) + PRESENTER_FILE_SUFFIX);
+    }
+
+    private static String extractActionName(FileObject templateFile) {
+        String result = templateFile.getName();
+        if (result.contains(".")) { //NOI18N
+            String[] parts = result.split("\\."); //NOI18N
+            assert parts.length > 1;
+            result = parts[1];
+        }
+        return result;
+    }
+
+    private static final class PresenterVisitor extends DefaultVisitor {
+        private final String actionName;
+        private MethodDeclaration action;
+
+        public PresenterVisitor(FileObject templateFile) {
+            actionName = extractActionName(templateFile);
+        }
+
+        @Override
+        public void visit(ClassDeclaration node) {
+            if (CodeUtils.extractClassName(node).toLowerCase().endsWith(PRESENTER_CLASS_SUFFIX.toLowerCase())) {
+                super.visit(node);
+            }
+        }
+
+        @Override
+        public void visit(MethodDeclaration node) {
+            if (CodeUtils.extractMethodName(node).toLowerCase().equalsIgnoreCase(ACTION_METHOD_PREFIX + actionName)) {
+                action = node;
+            }
+        }
+
+        public MethodDeclaration getAction() {
+            return action;
+        }
+
+    }
+
+    private static final class VariableVisitor extends DefaultVisitor {
+        private static final String TEMPLATE_DISPATCHER_TYPE = "Nette\\Templating\\ITemplate"; //NOI18N
+        private static final String VARIABLE_PREFIX = "$"; //NOI18N
+        private final Set<FieldAccess> fieldAccesses = new HashSet<>();
+        private final Model model;
+
+        public VariableVisitor(Model model) {
+            this.model = model;
+        }
+
+        @Override
+        public void visit(Assignment node) {
+            VariableBase leftHandSide = node.getLeftHandSide();
+            if (leftHandSide instanceof FieldAccess) {
+                fieldAccesses.add((FieldAccess) leftHandSide);
+            }
+        }
+
+        public Set<String> getVariables() {
+            Set<String> result = new HashSet<>();
+            List<? extends TypeScope> templateTypes = model.getIndexScope().findTypes(QualifiedName.create(TEMPLATE_DISPATCHER_TYPE));
+            TypeScope templateType = ModelUtils.getFirst(templateTypes);
+            for (FieldAccess fieldAccess : fieldAccesses) {
+                Collection<? extends TypeScope> types = ModelUtils.resolveType(model, fieldAccess.getDispatcher(), false);
+                TypeScope dispatcherType = ModelUtils.getFirst(types);
+                if (existsTemplateTypeAndDispatcherTypeMatches(templateType, dispatcherType) || addAllPossibleVariables(templateType)) {
+                    Variable field = fieldAccess.getField();
+                    String varName = CodeUtils.extractVariableName(field);
+                    result.add(VARIABLE_PREFIX + varName); //NOI18N
+                }
+            }
+            return result;
+        }
+
+        private static boolean existsTemplateTypeAndDispatcherTypeMatches(TypeScope templateType, TypeScope dispatcherType) {
+            return templateType != null && dispatcherType != null && (dispatcherType.isSubTypeOf(templateType) || dispatcherType.equals(templateType));
+        }
+
+        private static boolean addAllPossibleVariables(TypeScope templateType) {
+            return templateType == null;
+        }
+
     }
 
 }

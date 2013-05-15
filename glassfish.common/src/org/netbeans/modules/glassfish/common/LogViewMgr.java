@@ -79,7 +79,7 @@ import org.openide.windows.*;
  * checks for changes at the specified intervals and outputs the changes to
  * the given I/O panel in NetBeans.
  *
- * It is now particularly tuned, in the case of files, for GlassFish V3 storedLog
+ * It is now particularly tuned, in the case of files, for GlassFish V3 log
  * files.
  *
  * FIXME Refactor: LogViewMgr should be a special case of SimpleIO
@@ -107,7 +107,7 @@ public class LogViewMgr {
             new HashMap<String, WeakReference<LogViewMgr>>();
 
     /**
-     * Server URI for this storedLog view
+     * Server URI for this log view
      */
     private final String uri;
 
@@ -117,12 +117,12 @@ public class LogViewMgr {
     private InputOutput io;
 
     /**
-     * Active readers for this storedLog view.  This list contains references either
-     * to nothing (which means storedLog is not active), a single file reader to
-     * monitor server.storedLog if the server is running outside the IDE, or two
+     * Active readers for this log view.  This list contains references either
+     * to nothing (which means log is not active), a single file reader to
+     * monitor server log if the server is running outside the IDE, or two
      * stream readers for servers started within the IDE.
      *
-     * !PW not sure this complexity is worth it.  Reading server.storedLog correctly
+     * !PW not sure this complexity is worth it.  Reading server log correctly
      * is a major pain compared to reading server I/O streams directly.  But we
      * don't have that luxury for servers created outside the IDE, so this is a
      * feeble attempt to have our cake and eat it too :)  I'll probably regret
@@ -463,7 +463,7 @@ public class LogViewMgr {
                 reader = new BufferedReader(new InputStreamReader(
                         serverLog.getInputStream()));
 
-                // ignoreEof is true for storedLog files and false for process streams.
+                // ignoreEof is true for log files and false for process streams.
                 // FIXME Should differentiate filter types more cleanly.
                 Filter filter = ignoreEof ? new LogFileFilter(localizedLevels) : 
                     (uri.contains("]deployer:gfv3ee6") ? new LogFileFilter(localizedLevels) :new StreamFilter());
@@ -561,7 +561,7 @@ public class LogViewMgr {
                 String dir = instance.getProperty(
                         GlassfishModule.DOMAINS_FOLDER_ATTR);
                 if (null == dir) {
-                    // this storedLog cannot rotate... it isn't based on a file
+                    // this log cannot rotate... it isn't based on a file
                     return retVal;
                 }
                 try {
@@ -770,7 +770,7 @@ public class LogViewMgr {
         }
 
         /**
-         * GlassFish server storedLog format, when read from process stream:
+         * GlassFish server log format, when read from process stream:
          *
          * Aug 13, 2008 3:01:49 PM com.sun.enterprise.glassfish.bootstrap.ASMain main
          * INFO: Launching GlassFish on Apache Felix OSGi platform
@@ -846,7 +846,7 @@ public class LogViewMgr {
         }
 
         /**
-         * GlassFish server storedLog entry format (unformatted), when read from file:
+         * GlassFish server log entry format (unformatted), when read from file:
          *
          * [#|
          *    2008-07-20T16:59:11.738-0700|
@@ -1117,18 +1117,18 @@ public class LogViewMgr {
      */
     private static class LogStateListener implements FetchLogEventListener {
 
-        /** GlassFish server instance associated with storedLog fetcher
+        /** GlassFish server instance associated with log fetcher
          *  and it's state change listener. */
         private final GlassfishInstance instance;
 
-        /** Log fetcher associated with storedLog fetcher state change listener. */
+        /** Log fetcher associated with log fetcher state change listener. */
         private final FetchLogPiped log;
 
         /**
-         * Creates an instance of storedLog fetcher state change listener.
-         * @param instance GlassFish server instance associated with storedLog fetcher
+         * Creates an instance of log fetcher state change listener.
+         * @param instance GlassFish server instance associated with log fetcher
          *                 and it's state change listener.
-         * @param storedLog Log fetcher associated with storedLog fetcher state change
+         * @param log Log fetcher associated with log fetcher state change
          *            listener.
          */
         LogStateListener(GlassfishInstance instance, FetchLogPiped log) {
@@ -1137,10 +1137,10 @@ public class LogViewMgr {
         }
 
         /**
-         * Remove storedLog fetcher from instance to storedLog fetcher mapping
-         * when storedLog fetcher task is finished or has failed.
+         * Remove log fetcher from instance to log fetcher mapping
+         * when log fetcher task is finished or has failed.
          * <p/>
-         * @param event GlassFish storedLog fetcher state change event.
+         * @param event GlassFish log fetcher state change event.
          */
         @Override
         public void stateChanged(final FetchLogEvent event) {
@@ -1216,13 +1216,13 @@ public class LogViewMgr {
     /**
      * Get GlassFish stored log fetcher for given server instance.
      * <p/>
-     * GlassFish storedLog fetchers are reused so only one storedLog fetcher exists for
+     * GlassFish log fetchers are reused so only one log fetcher exists for
      * each running server instance.
      * <p/>
      * @param instance GlassFish server instance used as key to retrieve
-     *                 storedLog fetcher.
-     * @return GlassFish storedLog fetcher stored for given server instance or newly
-     *         cerated one when no storedLog fetcher was found.
+     *                 log fetcher.
+     * @return GlassFish log fetcher stored for given server instance or newly
+     *         cerated one when no log fetcher was found.
      * @throws IOException 
      */
     static private FetchLog getServerLogStream(
