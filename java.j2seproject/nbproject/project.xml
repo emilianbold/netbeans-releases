@@ -451,6 +451,7 @@ made subject to such option by the copyright holder.
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.hudsonfindbugs</friend>
+                <friend>org.netbeans.modules.java.j2sedeploy</friend>
                 <friend>org.netbeans.modules.javafx2.project</friend>
                 <friend>org.netbeans.modules.javawebstart</friend>
                 <friend>org.netbeans.modules.swingapp</friend>
