@@ -63,7 +63,7 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     private final ExecutionEnvironment env;
     private volatile Component parentWindow = null;
     private String passphrase = null;
-    private volatile String password = null;
+    private volatile char[] password = null;
     private final boolean allowInterraction;
 
     public RemoteUserInfo(ExecutionEnvironment env, boolean allowToAskForPassword) {
@@ -95,9 +95,10 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             return new String(saved);
         }
 
-        String result = password;
+        String result = new String(password);
         // Never store password in memory
         // Only for short a period. Between prompt and following get.
+        Arrays.fill(password, 'x');
         password = null;
         return result;
     }
@@ -122,9 +123,8 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             }
 
             if (result) {
-                char[] clearPassword = pwdDlg.getPassword();
-                pm.storePassword(env, clearPassword, pwdDlg.isRememberPassword());
-                Arrays.fill(clearPassword, (char) 0);
+                password = pwdDlg.getPassword();
+                pm.storePassword(env, password, pwdDlg.isRememberPassword());
                 pwdDlg.clearPassword();
                 return true;
             } else {
