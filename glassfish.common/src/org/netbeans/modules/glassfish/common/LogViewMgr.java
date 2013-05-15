@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -59,6 +59,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.swing.Action;
 import org.glassfish.tools.ide.server.FetchLog;
+import org.glassfish.tools.ide.server.FetchLogEvent;
+import org.glassfish.tools.ide.server.FetchLogEventListener;
 import org.glassfish.tools.ide.server.FetchLogPiped;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.actions.*;
@@ -77,7 +79,7 @@ import org.openide.windows.*;
  * checks for changes at the specified intervals and outputs the changes to
  * the given I/O panel in NetBeans.
  *
- * It is now particularly tuned, in the case of files, for GlassFish V3 log
+ * It is now particularly tuned, in the case of files, for GlassFish V3 storedLog
  * files.
  *
  * FIXME Refactor: LogViewMgr should be a special case of SimpleIO
@@ -105,7 +107,7 @@ public class LogViewMgr {
             new HashMap<String, WeakReference<LogViewMgr>>();
 
     /**
-     * Server URI for this log view
+     * Server URI for this storedLog view
      */
     private final String uri;
 
@@ -115,12 +117,12 @@ public class LogViewMgr {
     private InputOutput io;
 
     /**
-     * Active readers for this log view.  This list contains references either
-     * to nothing (which means log is not active), a single file reader to
-     * monitor server.log if the server is running outside the IDE, or two
+     * Active readers for this storedLog view.  This list contains references either
+     * to nothing (which means storedLog is not active), a single file reader to
+     * monitor server.storedLog if the server is running outside the IDE, or two
      * stream readers for servers started within the IDE.
      *
-     * !PW not sure this complexity is worth it.  Reading server.log correctly
+     * !PW not sure this complexity is worth it.  Reading server.storedLog correctly
      * is a major pain compared to reading server I/O streams directly.  But we
      * don't have that luxury for servers created outside the IDE, so this is a
      * feeble attempt to have our cake and eat it too :)  I'll probably regret
@@ -461,7 +463,7 @@ public class LogViewMgr {
                 reader = new BufferedReader(new InputStreamReader(
                         serverLog.getInputStream()));
 
-                // ignoreEof is true for log files and false for process streams.
+                // ignoreEof is true for storedLog files and false for process streams.
                 // FIXME Should differentiate filter types more cleanly.
                 Filter filter = ignoreEof ? new LogFileFilter(localizedLevels) : 
                     (uri.contains("]deployer:gfv3ee6") ? new LogFileFilter(localizedLevels) :new StreamFilter());
@@ -559,7 +561,7 @@ public class LogViewMgr {
                 String dir = instance.getProperty(
                         GlassfishModule.DOMAINS_FOLDER_ATTR);
                 if (null == dir) {
-                    // this log cannot rotate... it isn't based on a file
+                    // this storedLog cannot rotate... it isn't based on a file
                     return retVal;
                 }
                 try {
@@ -768,7 +770,7 @@ public class LogViewMgr {
         }
 
         /**
-         * GlassFish server log format, when read from process stream:
+         * GlassFish server storedLog format, when read from process stream:
          *
          * Aug 13, 2008 3:01:49 PM com.sun.enterprise.glassfish.bootstrap.ASMain main
          * INFO: Launching GlassFish on Apache Felix OSGi platform
@@ -844,7 +846,7 @@ public class LogViewMgr {
         }
 
         /**
-         * GlassFish server log entry format (unformatted), when read from file:
+         * GlassFish server storedLog entry format (unformatted), when read from file:
          *
          * [#|
          *    2008-07-20T16:59:11.738-0700|
@@ -1110,22 +1112,121 @@ public class LogViewMgr {
         return recognizers;
     }
 
+    /**
+     * Log fetcher state change listener.
+     */
+    private static class LogStateListener implements FetchLogEventListener {
+
+        /** GlassFish server instance associated with storedLog fetcher
+         *  and it's state change listener. */
+        private final GlassfishInstance instance;
+
+        /** Log fetcher associated with storedLog fetcher state change listener. */
+        private final FetchLogPiped log;
+
+        /**
+         * Creates an instance of storedLog fetcher state change listener.
+         * @param instance GlassFish server instance associated with storedLog fetcher
+         *                 and it's state change listener.
+         * @param storedLog Log fetcher associated with storedLog fetcher state change
+         *            listener.
+         */
+        LogStateListener(GlassfishInstance instance, FetchLogPiped log) {
+            this.instance = instance;
+            this.log = log;
+        }
+
+        /**
+         * Remove storedLog fetcher from instance to storedLog fetcher mapping
+         * when storedLog fetcher task is finished or has failed.
+         * <p/>
+         * @param event GlassFish storedLog fetcher state change event.
+         */
+        @Override
+        public void stateChanged(final FetchLogEvent event) {
+            switch (event.getState()) {
+                case COMPLETED: case FAILED:
+                    FetchLog oldLog = null;
+                    synchronized (serverInputStreams) {
+                        FetchLog storedLog = serverInputStreams.get(instance);
+                        if (this.log.equals(storedLog)) {
+                            oldLog = serverInputStreams.remove(instance);
+                        }
+                    }
+                    if (oldLog != null) {
+                        oldLog.close();
+                    }
+            }
+        }
+        
+    }
+
+    /** Internal GlassFish server instance to log fetcher mapping.*/
     private static final Map<GlassfishInstance, FetchLog> serverInputStreams
             = new HashMap<GlassfishInstance, FetchLog>();
 
     /**
-     * Get GlassFish log fetcher for given server instance.
+     * Add log fetcher into local instance to fetcher mapping.
      * <p/>
-     * GlassFish log fetchers are reused so only one log fetcher exists for
+     * Log fetcher life cycle is linked with internal fetcher mapping. Fetcher
+     * removed from map must be cleaned up.
+     * Do not access internal GlassFish server instance to log fetcher mapping
+     * without using those access methods!
+     * <p/>
+     * @param instance GlassFish server instance used as key in local
+     *                 instance to fetcher mapping.
+     * @param log New GlassFish log fetcher for given server instance
+     *            to be stored into mapping.
+     */
+    private static void addLog(final GlassfishInstance instance,
+            final FetchLogPiped log) {
+        FetchLog oldLog;
+        synchronized (serverInputStreams) {
+            oldLog = serverInputStreams.put(instance, log);
+        }
+        log.addListener(new LogStateListener(instance, log));
+        if (oldLog != null) {
+            oldLog.close();
+        }
+    }
+
+    /**
+     * Remove log fetcher from local instance to fetcher mapping.
+     * <p/>
+     * Log fetcher life cycle is linked with internal fetcher mapping. Fetcher
+     * removed from map must be cleaned up.
+     * Do not access internal GlassFish server instance to log fetcher mapping
+     * without using those access methods!
+     * <p/>
+     * @param instance GlassFish server instance used as key in local
+     *                 instance to fetcher mapping.
+     * @param log New GlassFish log fetcher for given server instance
+     *            to be stored into mapping.
+     */
+    public static void removeLog(final GlassfishInstance instance) {
+        FetchLog oldLog;
+        synchronized (serverInputStreams) {
+            oldLog = serverInputStreams.remove(instance);
+        }
+        if (oldLog != null) {
+            oldLog.close();
+        }
+    }
+    
+    /**
+     * Get GlassFish stored log fetcher for given server instance.
+     * <p/>
+     * GlassFish storedLog fetchers are reused so only one storedLog fetcher exists for
      * each running server instance.
      * <p/>
      * @param instance GlassFish server instance used as key to retrieve
-     *                 log fetcher.
-     * @return GlassFish log fetcher stored for given server instance or newly
-     *         cerated one when no log fetcher was found.
+     *                 storedLog fetcher.
+     * @return GlassFish storedLog fetcher stored for given server instance or newly
+     *         cerated one when no storedLog fetcher was found.
      * @throws IOException 
      */
-    static private FetchLog getServerLogStream(GlassfishInstance instance) {
+    static private FetchLog getServerLogStream(
+            final GlassfishInstance instance) {
         FetchLog log;
         FetchLog deadLog = null;
         synchronized (serverInputStreams) {
@@ -1139,38 +1240,20 @@ public class LogViewMgr {
                     } else {
                         // Postpone cleanup after synchronized block.
                         deadLog = log;
-                        serverInputStreams.remove(instance);
+                        removeLog(instance);
                     }
                 } else {
                     return log;
                 }
             }
-            log = FetchLog.create(instance);
-            serverInputStreams.put(instance, log);
+            log = FetchLogPiped.create(
+                    GlassFishExecutors.fetchLogExecutor(), instance);
+            addLog(instance, (FetchLogPiped)log);
         }
         if (deadLog != null) {
             deadLog.close();
         }
         return log;
-    }
-
-    /**
-     * Remove GlassFish log fetcher for given server instance.
-     * <p/>
-     * Removes log fetcher from internal storage and destroys log fetcher
-     * instance.
-     * <p/>
-     * @param instance GlassFish server instance used as key to select
-     *                 log fetcher to be removed and destroyed.
-     */
-    static public void removeServerLogStream(GlassfishInstance instance) {
-        FetchLog log;
-        synchronized (serverInputStreams) {
-            log = serverInputStreams.remove(instance);
-        }
-        if (log != null) {
-            log.close();
-        }
     }
 
 }

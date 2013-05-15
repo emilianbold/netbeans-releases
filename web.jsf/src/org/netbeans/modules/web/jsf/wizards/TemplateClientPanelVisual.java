@@ -427,8 +427,9 @@ public class TemplateClientPanelVisual extends javax.swing.JPanel implements Hel
         return foundNodes;
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(TemplateClientPanelVisual.class);
+        return new HelpCtx("org.netbeans.modules.web.jsf.wizards.TemplateClientPanelVisual");
     }
     
     public InputStream getTemplateClient(){

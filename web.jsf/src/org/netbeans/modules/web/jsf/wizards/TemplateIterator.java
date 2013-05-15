@@ -261,7 +261,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
         templatePanel = new TemplatePanel(wiz);
         // creates simple wizard panel with bottom panel
         WizardDescriptor.Panel firstPanel = new JSFValidationPanel(
-                Templates.createSimpleTargetChooser(project, sourceGroups, templatePanel));
+                Templates.buildSimpleTargetChooser(project, sourceGroups).bottomPanel(templatePanel).create());
         JComponent c = (JComponent) firstPanel.getComponent();
         Dimension d = c.getPreferredSize();
         d.setSize(d.getWidth(), d.getHeight() + 65);
