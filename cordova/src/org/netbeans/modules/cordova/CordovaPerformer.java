@@ -76,6 +76,7 @@ import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
 import org.netbeans.modules.cordova.project.PhoneGapBrowserFactory;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
@@ -115,29 +116,35 @@ public class CordovaPerformer implements BuildPerformer {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
     }
     
-    public void createPlatforms(Project project) {
+    public Task createPlatforms(Project project) {
+        Task task1 = null;
+        Task task2 = null;
         if (PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).isReady()) {
-            perform("create-android", project);
+            task1 = perform("create-android", project);
         }
         if (PlatformManager.getPlatform(PlatformManager.IOS_TYPE).isReady()) {
-            perform("create-ios", project);
+            task2 = perform("create-ios", project);
         }
+        
+        Task t = new CompoundTask(task1, task2);
+        return t;
     }
     
     @Override
-    public void perform(final String target, final Project project) {
+    public ExecutorTask perform(final String target, final Project project) {
         if (!CordovaPlatform.getDefault().isReady()) {
             throw new IllegalStateException();
         }
+        final ExecutorTask runTarget[] = new ExecutorTask[1];
         Runnable run = new Runnable() {
             @Override
             public void run() {
                 generateBuildScripts(project);
                 FileObject buildFo = project.getProjectDirectory().getFileObject(PATH_BUILD_XML);//NOI18N
                 try {
-                    ExecutorTask runTarget = ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));
+                    runTarget[0] = ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));
                     if (target.equals(BuildPerformer.RUN_IOS)) {
-                        if (runTarget.result() == 0) {
+                        if (runTarget[0].result() == 0) {
                             ProjectBrowserProvider provider = project.getLookup().lookup(ProjectBrowserProvider.class);
                             if (provider != null) {
                                 WebBrowser activeConfiguration = provider.getActiveBrowser();
@@ -167,6 +174,7 @@ public class CordovaPerformer implements BuildPerformer {
         } else {
             run.run();
         }
+        return runTarget[0];
     }
 
     private Properties properties(Project p) {
@@ -209,7 +217,7 @@ public class CordovaPerformer implements BuildPerformer {
         props.put(PROP_ANDROID_SDK_HOME, PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation());
 
         ProjectBrowserProvider provider = p.getLookup().lookup(ProjectBrowserProvider.class);
-        if (provider != null) {
+        if (provider != null && provider.getActiveBrowser().getBrowserFamily()==BrowserFamilyId.PHONEGAP) {
             WebBrowser activeConfiguration = provider.getActiveBrowser();
             MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(p, activeConfiguration.getId());
 
@@ -385,6 +393,26 @@ public class CordovaPerformer implements BuildPerformer {
         transport = null;
         webKitDebugging = null;
         PageInspector.getDefault().inspectPage(Lookup.EMPTY);
+    }
+
+    private class CompoundTask extends Task {
+
+        private final Task task1;
+        private final Task task2;
+
+        public CompoundTask(Task task1, Task task2) {
+            this.task1 = task1;
+            this.task2 = task2;
+        }
+        @Override
+        public void waitFinished() {
+            if (task1!=null) {
+                task1.waitFinished();
+            }
+            if (task2!=null) {
+                task2.waitFinished();
+            }
+        }
     }
 
 }

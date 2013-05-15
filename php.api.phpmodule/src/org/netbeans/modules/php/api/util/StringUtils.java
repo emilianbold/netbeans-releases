@@ -201,6 +201,19 @@ public final class StringUtils {
         return sb.toString();
     }
 
+    /**
+     * Capitalizes first character of the passed input.
+     * <p>
+     * Example: foobarbaz -> Foobarbaz
+     * @param input text to be capitalized, never null
+     * @return capitalized input string, never null
+     * @since 2.21
+     */
+    public static String capitalize(String input) {
+        Parameters.notNull("input", input); //NOI18N
+        return input.substring(0, 1).toUpperCase() + input.substring(1);
+    }
+
     private static Pattern getPattern0(String text, String prefix, String suffix) {
         assert text != null;
         assert prefix != null;
