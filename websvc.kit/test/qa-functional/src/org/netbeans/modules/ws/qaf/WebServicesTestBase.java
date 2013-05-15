@@ -133,8 +133,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         public String getProjectTypeName() {
             switch (this) {
                 case JAVASE_APPLICATION:
-                    //Java Application
-                    return Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard/emptyJ2SE.xml");
+                    return "Java Application";
                 case WEB:
                     //Web Application
                     return Bundle.getStringTrimmed("org.netbeans.modules.web.project.ui.wizards.Bundle", "Templates/Project/Web/emptyWeb.xml");
@@ -208,7 +207,8 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
 
         J2EE14,
         JAVAEE5,
-        JAVAEE6;
+        JAVAEE6,
+        JAVAEE7;
 
         @Override
         public String toString() {
@@ -222,6 +222,9 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 case JAVAEE6:
                     //Java EE 6
                     return Bundle.getStringTrimmed("org.netbeans.api.j2ee.core.Bundle", "JavaEE6Full.displayName");
+                case JAVAEE7:
+                    //Java EE 7
+                    return "Java EE 7";
             }
             throw new AssertionError("Unknown type: " + this); //NOI18N
         }
@@ -398,7 +401,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                     // open otuput window
                     OutputOperator.invoke();
                     // not display browser on run for Maven projects
-                    if (ProjectType.MAVEN_WEB.equals(getProjectType()) || ProjectType.MAVEN_EJB.equals(getProjectType())) {
+                    if (ProjectType.MAVEN_WEB.equals(getProjectType())) {
                         //Properties
                         String propLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.Bundle", "LBL_Properties_Action");
                         new ActionNoBlock(null, propLabel).performPopup(getProjectRootNode());
@@ -495,7 +498,11 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 jcboVersion.selectItem(javaeeVersion.toString());
             } else {
                 // cannot use display name for Maven project
-                if (JavaEEVersion.JAVAEE5.equals(javaeeVersion)) {
+                if (JavaEEVersion.JAVAEE7.equals(javaeeVersion)) {
+                    jcboVersion.selectItem("1.7");
+                } else if (JavaEEVersion.JAVAEE6.equals(javaeeVersion)) {
+                    jcboVersion.selectItem("1.6");
+                } else if (JavaEEVersion.JAVAEE5.equals(javaeeVersion)) {
                     jcboVersion.selectItem("1.5");
                 } else if (JavaEEVersion.J2EE14.equals(javaeeVersion)) {
                     jcboVersion.selectItem("1.4");
@@ -593,6 +600,7 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         String webLabel = "Web Applications";
         Node appsNode = null;
         switch (getProjectType()) {
+            case APPCLIENT:
             case SAMPLE:
             case WEB:
             case MAVEN_WEB:
@@ -611,9 +619,6 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
                 } else {
                     appsNode = new Node(serverNode, applicationsLabel + "|" + "EJB Modules");
                 }
-                break;
-            case APPCLIENT:
-                appsNode = new Node(serverNode, applicationsLabel + "|" + "App Client Modules");
                 break;
         }
         appsNode.expand();
@@ -725,6 +730,12 @@ public abstract class WebServicesTestBase extends J2eeTestCase {
         } else {
             //Ant projects
             oto.waitText("(total time: "); //NOI18N
+            if (actionName.toLowerCase().contains("clean") && oto.getText().contains("Unable to delete")) {
+                // repeat clean if file is locked
+                new EventTool().waitNoEvent(2000);
+                performProjectAction(projectName, actionName);
+                return;
+            }
             dumpOutput();
             assertTrue("Build failed", oto.getText().indexOf("BUILD SUCCESSFUL") > -1); //NOI18N
         }

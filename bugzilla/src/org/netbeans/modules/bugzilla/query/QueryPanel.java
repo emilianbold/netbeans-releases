@@ -80,24 +80,21 @@ public class QueryPanel extends javax.swing.JPanel {
     final ExpandablePanel byDetails;
     final ExpandablePanel byPeople;
     final ExpandablePanel byLastChange;
-    private QueryController controller;
     private static final Color ERROR_COLOR = new Color(153,0,0);
-    private Color defaultTextColor;
+    private final Color defaultTextColor;
 
     /** Creates new form QueryPanel */
-    public QueryPanel(JComponent tableComponent, QueryController controller) {
+    public QueryPanel(JComponent tableComponent) {
         initComponents();
-        this.controller = controller;
 
         Color bkColor = UIUtils.getSectionPanelBackground();
-        gotoPanel.setBackground( bkColor );
         tablePanel.setBackground( bkColor );
         urlPanel.setBackground( bkColor );
         criteriaPanel.setBackground( bkColor );
 
         Font f = new JLabel().getFont();
         int s = f.getSize();
-        nameLabel.setFont(jLabel1.getFont().deriveFont(s * 1.7f));
+        nameLabel.setFont(nameLabel.getFont().deriveFont(s * 1.7f));
         defaultTextColor = noContentLabel.getForeground();
 
         tablePanel.add(tableComponent);
@@ -129,14 +126,12 @@ public class QueryPanel extends javax.swing.JPanel {
         cancelChangesButton.setVisible(false);
         filterComboBox.setVisible(false);
         filterLabel.setVisible(false);
-        refreshCheckBox.setVisible(false);
         noContentPanel.setVisible(false);
 
         bugAssigneeCheckBox.setOpaque(false);
         reporterCheckBox.setOpaque(false);
         ccCheckBox.setOpaque(false);
         commenterCheckBox.setOpaque(false);
-        refreshCheckBox.setOpaque(false);
 
         summaryComboBox.setModel(new DefaultComboBoxModel());
         commentComboBox.setModel(new DefaultComboBoxModel());
@@ -211,7 +206,6 @@ public class QueryPanel extends javax.swing.JPanel {
         filterLabel = new javax.swing.JLabel();
         criteriaPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        jLabel1 = new javax.swing.JLabel();
         separatorLabel1 = new javax.swing.JLabel();
         separatorLabel2 = new javax.swing.JLabel();
         separatorLabel3 = new javax.swing.JLabel();
@@ -221,7 +215,6 @@ public class QueryPanel extends javax.swing.JPanel {
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
         noContentPanel = new javax.swing.JPanel();
         noContentLabel = new javax.swing.JLabel();
 
@@ -747,7 +740,7 @@ public class QueryPanel extends javax.swing.JPanel {
             .addGroup(tableFieldsPanelLayout.createSequentialGroup()
                 .addComponent(tableHeaderPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tablePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 350, Short.MAX_VALUE)
+                .addComponent(tablePanel, javax.swing.GroupLayout.DEFAULT_SIZE, 356, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -825,10 +818,8 @@ public class QueryPanel extends javax.swing.JPanel {
             .addComponent(urlPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addComponent(byDetailsContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(criteriaPanelLayout.createSequentialGroup()
-                .addComponent(byLastChangeContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(criteriaPanelLayout.createSequentialGroup()
                 .addGroup(criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(byLastChangeContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(criteriaPanelLayout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -873,39 +864,6 @@ public class QueryPanel extends javax.swing.JPanel {
             }
         });
 
-        gotoPanel.setBackground(new java.awt.Color(224, 224, 224));
-
-        jLabel1.setLabelFor(idTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel1.text_1")); // NOI18N
-
-        idTextField.setColumns(6);
-
-        org.openide.awt.Mnemonics.setLocalizedText(gotoIssueButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.gotoIssueButton.text")); // NOI18N
-
-        javax.swing.GroupLayout gotoPanelLayout = new javax.swing.GroupLayout(gotoPanel);
-        gotoPanel.setLayout(gotoPanelLayout);
-        gotoPanelLayout.setHorizontalGroup(
-            gotoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(gotoPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(idTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(gotoIssueButton)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        gotoPanelLayout.setVerticalGroup(
-            gotoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(gotoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(gotoIssueButton)
-                .addComponent(jLabel1)
-                .addComponent(idTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-        );
-
-        idTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.idTextField.AccessibleContext.accessibleDescription")); // NOI18N
-        gotoIssueButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.gotoIssueButton.AccessibleContext.accessibleDescription")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(separatorLabel1, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.separatorLabel1.text")); // NOI18N
         separatorLabel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
@@ -926,7 +884,6 @@ public class QueryPanel extends javax.swing.JPanel {
         searchPanel.setLayout(searchPanelLayout);
         searchPanelLayout.setHorizontalGroup(
             searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(gotoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, searchPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(searchButton)
@@ -954,10 +911,9 @@ public class QueryPanel extends javax.swing.JPanel {
         searchPanelLayout.setVerticalGroup(
             searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(searchPanelLayout.createSequentialGroup()
-                .addComponent(gotoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addContainerGap()
                 .addComponent(criteriaPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                         .addComponent(searchButton)
@@ -1029,20 +985,8 @@ public class QueryPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel6.text")); // NOI18N
         jLabel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        org.openide.awt.Mnemonics.setLocalizedText(refreshCheckBox, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.refreshCheckBox.text")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel7.text")); // NOI18N
         jLabel7.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-
-        org.openide.awt.Mnemonics.setLocalizedText(findIssuesButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.findIssuesButton.text")); // NOI18N
-        findIssuesButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                findIssuesButtonActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel8, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel8.text")); // NOI18N
-        jLabel8.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
         org.openide.awt.Mnemonics.setLocalizedText(cloneQueryButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.cloneQueryButton.text")); // NOI18N
         cloneQueryButton.addActionListener(new java.awt.event.ActionListener() {
@@ -1061,8 +1005,6 @@ public class QueryPanel extends javax.swing.JPanel {
                     .addGroup(queryHeaderPanelLayout.createSequentialGroup()
                         .addComponent(nameLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(refreshCheckBox)
-                        .addGap(18, 18, 18)
                         .addComponent(lastRefreshLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lastRefreshDateLabel))
@@ -1083,11 +1025,8 @@ public class QueryPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jLabel7)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(findIssuesButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(6, 6, 6)
-                        .addComponent(jLabel8)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(cloneQueryButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(cloneQueryButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         queryHeaderPanelLayout.setVerticalGroup(
@@ -1101,9 +1040,8 @@ public class QueryPanel extends javax.swing.JPanel {
                         .addContainerGap()
                         .addGroup(queryHeaderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(lastRefreshDateLabel)
-                            .addComponent(lastRefreshLabel)
-                            .addComponent(refreshCheckBox))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
+                            .addComponent(lastRefreshLabel))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
                 .addGroup(queryHeaderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1113,8 +1051,6 @@ public class QueryPanel extends javax.swing.JPanel {
                     .addComponent(removeButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(seenButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel7)
-                    .addComponent(findIssuesButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(cloneQueryButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
@@ -1125,7 +1061,6 @@ public class QueryPanel extends javax.swing.JPanel {
         removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.removeButton.AccessibleContext.accessibleDescription")); // NOI18N
         refreshButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.seenButton.AccessibleContext.accessibleDescription")); // NOI18N
         modifyButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.modifyButton.AccessibleContext.accessibleDescription")); // NOI18N
-        refreshCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.refreshCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
 
         noContentPanel.setBackground(javax.swing.UIManager.getDefaults().getColor("TextArea.background"));
         noContentPanel.setLayout(new java.awt.GridBagLayout());
@@ -1153,7 +1088,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(tableFieldsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(noContentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(noContentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 22, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -1198,10 +1133,6 @@ public class QueryPanel extends javax.swing.JPanel {
         // TODO add your handling code here:
     }//GEN-LAST:event_refreshConfigurationButtonActionPerformed
 
-    private void findIssuesButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findIssuesButtonActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_findIssuesButtonActionPerformed
-
     private void cloneQueryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cloneQueryButtonActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_cloneQueryButtonActionPerformed
@@ -1242,20 +1173,14 @@ public class QueryPanel extends javax.swing.JPanel {
     private javax.swing.JPanel criteriaPanel;
     final javax.swing.JComboBox filterComboBox = new javax.swing.JComboBox();
     private javax.swing.JLabel filterLabel;
-    public final org.netbeans.modules.bugtracking.util.LinkButton findIssuesButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-    final javax.swing.JButton gotoIssueButton = new javax.swing.JButton();
-    final javax.swing.JPanel gotoPanel = new javax.swing.JPanel();
-    final javax.swing.JTextField idTextField = new javax.swing.JTextField();
     final javax.swing.JLabel issueTypeLabel = new javax.swing.JLabel();
     final javax.swing.JList issueTypeList = new javax.swing.JList();
     final javax.swing.JScrollPane issueTypeScrollPane = new HackedScrollPane();
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JScrollPane jScrollPane1;
     final javax.swing.JButton keywordsButton = new javax.swing.JButton();
     final javax.swing.JComboBox keywordsComboBox = new javax.swing.JComboBox();
@@ -1279,7 +1204,6 @@ public class QueryPanel extends javax.swing.JPanel {
     final javax.swing.JScrollPane productScrollPane = new javax.swing.JScrollPane();
     private javax.swing.JPanel queryHeaderPanel;
     final org.netbeans.modules.bugtracking.util.LinkButton refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-    final javax.swing.JCheckBox refreshCheckBox = new javax.swing.JCheckBox();
     final org.netbeans.modules.bugtracking.util.LinkButton refreshConfigurationButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     public final org.netbeans.modules.bugtracking.util.LinkButton removeButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JCheckBox reporterCheckBox = new javax.swing.JCheckBox();
@@ -1357,7 +1281,6 @@ public class QueryPanel extends javax.swing.JPanel {
         changedWhereLabel.setEnabled(enable);
         changedBlaBlaLabel.setEnabled(enable);
         changedHintLabel.setEnabled(enable);
-        refreshCheckBox.setEnabled(enable);
     }
 
     void switchQueryFields(boolean showAdvanced) {

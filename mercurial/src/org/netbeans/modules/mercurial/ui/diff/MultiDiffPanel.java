@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.mercurial.ui.diff;
 
+import org.netbeans.modules.versioning.util.common.FileViewComponent;
 import org.openide.util.Cancellable;
 import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -103,7 +104,9 @@ import org.openide.nodes.Node;
 import org.openide.windows.TopComponent;
 import static org.netbeans.modules.versioning.util.CollectionUtils.copyArray;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Mutex;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -141,8 +144,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private final String contextName;
     
     private int currentType;
-    private int currentIndex = -1;
-    private int currentModelIndex = -1;
+    private Setup currentSetup;
     
     private RequestProcessor.Task prepareTask;
     private DiffPrepareTask dpt;
@@ -156,7 +158,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private RequestProcessor.Task   refreshTask;
 
     private JComponent              diffView;
-    private DiffFileTable           fileTable;
+    private FileViewComponent<DiffNode> activeComponent;
+    private FileViewComponent<DiffNode> fileListComponent;
+    private FileViewComponent<DiffNode> fileTreeComponent;
     private boolean                 dividerSet;
 
     /**
@@ -180,6 +184,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private RequestProcessor.Task refreshComboTask;
     private static final Logger LOG = Logger.getLogger(MultiDiffPanel.class.getName());
     
+    private static final int VIEW_MODE_TABLE = 1;
+    private static final int VIEW_MODE_TREE = 2;
+    
     /**
      * Creates diff panel and immediatelly starts loading...
      */
@@ -200,10 +207,10 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         setAquaBackground();
 
         diffViewPanel = null;
-        initFileTable();
+        initFileComponent();
         initToolbarButtons();
         initNextPrevActions();
-        splitPane.setDividerLocation(fileTable.getTable().getTableHeader().getPreferredSize().height);
+        splitPane.setDividerLocation(getActiveFileComponent().getPreferredHeaderHeight());
         initSelectionCombos();
         refreshComboTask = Mercurial.getInstance().getRequestProcessor().create(new RefreshComboTask());
         refreshSelectionCombos();
@@ -237,7 +244,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
      * It hides All, Local, Remote toggles and file chooser combo.
      */
     public MultiDiffPanel(File file, HgRevision rev1, HgRevision rev2, boolean forceNonEditable) {
-        this(file, rev1, rev2, null, forceNonEditable);
+        this(file, rev1, rev2, new FileInformation(), forceNonEditable);
     }
 
     /**
@@ -262,8 +269,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 
         // mimics refreshSetups()
         Setup[] localSetups = new Setup[] {new Setup(file, rev1, rev2, fi, forceNonEditable)};
+        localSetups[0].setNode(new DiffNode(localSetups[0], new HgFileNode(file)));
         setSetups(localSetups, DiffUtils.setupsToEditorCookies(localSetups));
-        setDiffIndex(0, 0, false);
+        setDiffIndex(localSetups[0], 0, false);
         dpt = new DiffPrepareTask(setups);
         prepareTask = Mercurial.getInstance().getRequestProcessor().post(dpt);
     }
@@ -278,15 +286,23 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     private void setSetups(Setup[] setups, EditorCookie[] editorCookies) {
+        if (this.setups != null) {
+            for (Setup setup : this.setups) {
+                if (setup != null) {
+                    setup.getFirstSource().close();
+                    setup.getSecondSource().close();
+                }
+            }
+        }
         this.setups = setups;
         this.editorCookies = editorCookies;
     }
 
-    private boolean fileTableSetSelectedIndexContext;
+    private boolean fileComponentSetSelectedIndexContext;
 
-    public void tableRowSelected(int viewIndex) {
-        if (fileTableSetSelectedIndexContext) return;
-        setDiffIndex(viewIndex, 0, true);
+    void nodeSelected (DiffNode node) {
+        if (fileComponentSetSelectedIndexContext) return;
+        setDiffIndex(node == null ? null : node.getSetup(), 0, true);
     }
     
     UndoRedo getUndoRedo() {
@@ -379,7 +395,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     /**
      * Called by the enclosing TopComponent to interrupt the fetching task.
      */
-    void componentClosed() {
+    public void componentClosed() {
         setSetups((Setup[]) null, null);
         /**
          * must disable these actions, otherwise key shortcuts would trigger them even after tab closure
@@ -390,7 +406,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         cancelBackgroundTasks(); 
     }
 
-    JPopupMenu getPopup() {
+    public JPopupMenu getPopup() {
         JPopupMenu menu = null;
 
         if (isLocal()) {
@@ -463,27 +479,40 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     public void requestActive() {
-        if (fileTable != null) {
-            fileTable.getTable().requestFocusInWindow();
+        FileViewComponent comp = getActiveFileComponent();
+        if (comp != null) {
+            comp.getComponent().requestFocusInWindow();
         } else if (diffView != null) {
             diffView.requestFocusInWindow();
         }
     }
 
-    private void initFileTable() {
-        fileTable = new DiffFileTable(this);
-        splitPane.setTopComponent(fileTable.getComponent());
+    private void initFileComponent() {
+        fileListComponent = new DiffFileTable(this);
+        fileTreeComponent = new DiffFileTreeImpl(this);
+        int viewMode = HgModuleConfig.getDefault().getDiffViewMode(VIEW_MODE_TABLE);
+        if (viewMode == VIEW_MODE_TREE) {
+            treeButton.setSelected(true);
+            setActiveComponent(fileTreeComponent);
+        } else {
+            listButton.setSelected(true);
+            setActiveComponent(fileListComponent);
+        }
         splitPane.setBottomComponent(getInfoPanelLoading());
     }
 
     private void initToolbarButtons() {
         if (context != null) {
             commitButton.addActionListener(this);
+            listButton.addActionListener(this);
+            treeButton.addActionListener(this);
             commitButton.setToolTipText(NbBundle.getMessage(MultiDiffPanel.class, "CTL_CommitDiff_Tooltip"));
             commitButton.setEnabled(false);     //until the diff is loaded
         } else {
             commitButton.setVisible(false);
             refreshButton.setVisible(false);
+            listButton.setVisible(false);
+            treeButton.setVisible(false);
         }
     }
 
@@ -520,14 +549,21 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     }
 
     private void refreshComponents() {
-        DiffController view = setups != null && currentModelIndex != -1 ? setups[currentModelIndex].getView() : null;
+        if (currentSetup == null) {
+            nextAction.setEnabled(false);
+            prevAction.setEnabled(false);
+            return;
+        }
+        DiffController view = currentSetup.getView();
         int currentDifferenceIndex = view != null ? view.getDifferenceIndex() : -1;
         if (view != null) {
-            nextAction.setEnabled(currentIndex < setups.length - 1 || currentDifferenceIndex < view.getDifferenceCount() - 1);
+            nextAction.setEnabled(showingFileComponent() && getActiveFileComponent().hasNextNode(currentSetup.getNode())
+                    || currentDifferenceIndex < view.getDifferenceCount() - 1);
         } else {
             nextAction.setEnabled(false);
         }
-        prevAction.setEnabled(currentIndex > 0 || currentDifferenceIndex > 0);
+        prevAction.setEnabled(showingFileComponent() && getActiveFileComponent().hasPreviousNode(currentSetup.getNode())
+                || currentDifferenceIndex > 0);
     }
     
     @Override
@@ -556,13 +592,15 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             return;
         }
         dividerSet = true;
-        JTable jt = fileTable.getTable();
-        int optimalLocation = jt.getPreferredSize().height + jt.getTableHeader().getPreferredSize().height;
+        FileViewComponent fileComp = getActiveFileComponent();
+        int preferredHeaderHeight = fileComp.getPreferredHeaderHeight();
+        int preferredHeight = fileComp.getPreferredHeight();
+        int optimalLocation = preferredHeight + preferredHeaderHeight + 5;
         if (optimalLocation > dim.height / 3) {
             optimalLocation = dim.height / 3;
         }
-        if (optimalLocation <= jt.getTableHeader().getPreferredSize().height) {
-            optimalLocation = jt.getTableHeader().getPreferredSize().height * 3;
+        if (optimalLocation <= preferredHeaderHeight) {
+            optimalLocation = preferredHeaderHeight * 3;
         }
         splitPane.setDividerLocation(optimalLocation);
     }
@@ -597,31 +635,29 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         }
     }
     
-    private void setDiffIndex(int idx, int location, boolean restartPrepareTask) {
-        currentIndex = idx;
-        DiffController view = null;
+    private void setDiffIndex(Setup selectedSetup, int location, boolean restartPrepareTask) {
+        currentSetup = selectedSetup;
         
-        if (currentIndex != -1) {
+        if (currentSetup != null) {
             if (restartPrepareTask && dpt != null) {
                 dpt.cancel();
-                dpt.setTableIndex(currentIndex);
+                dpt.setSelectedSetup(currentSetup);
                 prepareTask.schedule(100);
             }
-            currentModelIndex = showingFileTable() ? fileTable.getModelIndex(currentIndex) : 0;
-            view = setups[currentModelIndex].getView();
+            DiffController view = currentSetup.getView();
 
             TopComponent tc = (TopComponent) getClientProperty(TopComponent.class);
             if (tc != null) {
-                Node node = setups[currentModelIndex].getNode();
+                Node node = currentSetup.getNode();
                 tc.setActivatedNodes(new Node[] {node == null ? Node.EMPTY : node});
             }
             
             diffView = null;
             if (view != null) {
-                if (showingFileTable()) {
-                    fileTableSetSelectedIndexContext = true;
-                    fileTable.setSelectedIndex(currentIndex);
-                    fileTableSetSelectedIndexContext = false;
+                if (showingFileComponent()) {
+                    fileComponentSetSelectedIndexContext = true;
+                    getActiveFileComponent().setSelectedNode(currentSetup.getNode());
+                    fileComponentSetSelectedIndexContext = false;
                 }
                 diffView = view.getJComponent();
                 diffView.getActionMap().put("jumpNext", nextAction);  // NOI18N
@@ -638,7 +674,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 displayDiffView();
             }
         } else {
-            currentModelIndex = -1;
             diffView = new NoContentPanel(NbBundle.getMessage(MultiDiffPanel.class, "MSG_DiffPanel_NoFileSelected"));
             displayDiffView();
         }
@@ -648,8 +683,8 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         refreshComponents();
     }
 
-    private boolean showingFileTable() {
-        return fileTable != null;
+    private boolean showingFileComponent() {
+        return getActiveFileComponent() != null;
     }
 
     private void displayDiffView() {
@@ -665,8 +700,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     @Override
     public void actionPerformed(ActionEvent e) {
         Object source = e.getSource();
-        if (source == commitButton) onCommitButton();
-        else if (source == cmbDiffTreeSecond) {
+        if (source == commitButton) {
+            onCommitButton();
+        } else if (source == cmbDiffTreeSecond) {
             HgRevision oldSelection = revisionLeft;
             HgRevision newSelection = getSelectedRevision(cmbDiffTreeSecond);
             if (newSelection != null) {
@@ -686,7 +722,18 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             if (refresh) {
                 refreshStatuses();
             }
+        } else if (source == listButton) {
+            setActiveComponent(fileListComponent);
+            setActiveDiff();
+        } else if (source == treeButton) {
+            setActiveComponent(fileTreeComponent);
+            setActiveDiff();
         }
+    }
+
+    private void setActiveDiff () {
+        DiffNode selectedNode = activeComponent.getSelectedNode();
+        setDiffIndex(selectedNode == null ? null : selectedNode.getSetup(), 0, false);
     }
     
     private HgRevision getSelectedRevision (JComboBox cmbDiffTree) {
@@ -773,46 +820,41 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
 
     /** Next that is driven by visibility. It continues to next not yet visible difference. */
     private void onNextButton() {
-        if (showingFileTable()) {
-            currentIndex = fileTable.getSelectedIndex();
-            currentModelIndex = fileTable.getSelectedModelIndex();
-        }
-
-        DiffController view = setups[currentModelIndex].getView();
+        DiffController view = currentSetup.getView();
+        DiffNode next = showingFileComponent() ? getActiveFileComponent().getNextNode(currentSetup.getNode()) : null;
         if (view != null) {
             int currentDifferenceIndex = view.getDifferenceIndex();
             if (++currentDifferenceIndex >= view.getDifferenceCount()) { // also passes for view.getDifferenceCount() == 0
-                if (++currentIndex >= setups.length) {
-                    currentIndex--;
-                } else {
-                    setDiffIndex(currentIndex, 0, true);
+                if (next != null) {
+                    setDiffIndex(next.getSetup(), 0, true);
                 }
             } else {
                 view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
             }
         } else {
-            if (++currentIndex >= setups.length) currentIndex = 0;
-            setDiffIndex(currentIndex, 0, true);
+            if (next != null) {
+                setDiffIndex(next.getSetup(), 0, true);
+            }
         }
         refreshComponents();
     }
 
     private void onPrevButton() {
-        DiffController view = setups[currentModelIndex].getView();
+        DiffController view = currentSetup.getView();
+        DiffNode prev = showingFileComponent() ? getActiveFileComponent().getPreviousNode(currentSetup.getNode()) : null;
         if (view != null) {
             int currentDifferenceIndex = view.getDifferenceIndex();
             if (--currentDifferenceIndex < 0) {
-                if (--currentIndex < 0) {
-                    currentIndex++;
-                } else {
-                    setDiffIndex(currentIndex, -1, true);
+                if (prev != null) {
+                    setDiffIndex(prev.getSetup(), -1, true);
                 }
             } else if (currentDifferenceIndex < view.getDifferenceCount()) {
                 view.setLocation(DiffController.DiffPane.Modified, DiffController.LocationType.DifferenceIndex, currentDifferenceIndex);
             }
         } else {
-            if (--currentIndex < 0) currentIndex = setups.length - 1;
-            setDiffIndex(currentIndex, -1, true);
+            if (prev != null) {
+                setDiffIndex(prev.getSetup(), -1, true);
+            }
         }
         refreshComponents();
     }
@@ -862,22 +904,25 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         } else {
             localSetups = computeSetupsBetweenRevisions();
         }
+        Arrays.sort(localSetups, new Comparator<Setup>() {
+            @Override
+            public int compare (Setup o1, Setup o2) {
+                return o2.getNode().getLocation().compareTo(o1.getNode().getLocation());
+            }
+        });
         final EditorCookie[] cookies = DiffUtils.setupsToEditorCookies(localSetups);
+        final DiffNode[] nodes = setupsToNodes(localSetups);
+        final Object modelDataList = fileListComponent.prepareModel(nodes);
+        final Object modelDataTree = fileTreeComponent.prepareModel(nodes);
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 dividerSet = false;
                 displayStatuses = localDisplayStatuses;
                 setSetups(localSetups, cookies);
-                boolean propertyColumnVisible = false;
-                for (Setup setup : setups) {
-                    if (setup.getPropertyName() != null) {
-                        propertyColumnVisible = true;
-                        break;
-                    }
-                }
-                fileTable.setColumns(propertyColumnVisible ? new String[]{DiffNode.COLUMN_NAME_NAME, DiffNode.COLUMN_NAME_PROPERTY, DiffNode.COLUMN_NAME_STATUS, DiffNode.COLUMN_NAME_LOCATION} : new String[]{DiffNode.COLUMN_NAME_NAME, DiffNode.COLUMN_NAME_STATUS, DiffNode.COLUMN_NAME_LOCATION});
-                fileTable.setTableModel(setups, editorCookies);
+                FileViewComponent<DiffNode> activeFileComponent = getActiveFileComponent();
+                fileListComponent.setModel(nodes, editorCookies, modelDataList);
+                fileTreeComponent.setModel(nodes, editorCookies, modelDataTree);
                 if (setups.length == 0) {
                     String noContentLabel;
                     switch (currentType) {
@@ -894,10 +939,12 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                             throw new IllegalStateException("Unknown DIFF type:" + currentType);
                     }
                     setSetups((Setup[]) null, null);
-                    fileTable.getComponent().setEnabled(false);
-                    fileTable.getComponent().setPreferredSize(null);
-                    Dimension dim = fileTable.getComponent().getPreferredSize();
-                    fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
+                    fileListComponent.getComponent().setEnabled(false);
+                    fileListComponent.getComponent().setPreferredSize(null);
+                    fileTreeComponent.getComponent().setEnabled(false);
+                    fileTreeComponent.getComponent().setPreferredSize(null);
+                    Dimension dim = activeFileComponent.getComponent().getPreferredSize();
+                    activeFileComponent.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
                     diffView = null;
                     diffView = new NoContentPanel(noContentLabel);
                     displayDiffView();
@@ -907,13 +954,17 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                     revalidate();
                     repaint();
                 } else {
-                    fileTable.getComponent().setEnabled(true);
-                    fileTable.getComponent().setPreferredSize(null);
-                    Dimension dim = fileTable.getComponent().getPreferredSize();
-                    fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
-                    setDiffIndex(0, 0, false);
+                    fileListComponent.getComponent().setEnabled(true);
+                    fileListComponent.getComponent().setPreferredSize(null);
+                    fileTreeComponent.getComponent().setEnabled(true);
+                    fileTreeComponent.getComponent().setPreferredSize(null);
+                    Dimension dim = activeFileComponent.getComponent().getPreferredSize();
+                    activeFileComponent.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
+                    Setup toSelect = activeFileComponent.getNodeAtPosition(0).getSetup();
+                    setDiffIndex(toSelect, 0, false);
                     commitButton.setEnabled(isLocalToBase());
                     dpt = new DiffPrepareTask(setups);
+                    dpt.setSelectedSetup(toSelect);
                     prepareTask = Mercurial.getInstance().getRequestProcessor().post(dpt);
                 }
             }
@@ -929,6 +980,14 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 Mercurial.LOG.log(Level.FINE, null, ex);
             }
         }
+    }
+    
+    private static DiffNode[] setupsToNodes (Setup[] setups) {
+        DiffNode[] nodes = new DiffNode[setups.length];
+        for (int i = 0; i < setups.length; i++) {
+            nodes[i] = setups[i].getNode();
+        }
+        return nodes;
     }
 
     private boolean isLocal () {
@@ -991,7 +1050,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             if (!revLeft.getChangesetId().equals(revRight.getChangesetId())) {
                 Map<File, FileInformation> statuses = HgCommand.getStatus(repository, new ArrayList<File>(context.getRootFiles()),
                         revisionLeft.getChangesetId(), revisionRight.getChangesetId(), false, isLocalToBase());
-                statuses.keySet().retainAll(HgUtils.flattenFiles(context.getRootFiles().toArray(
+                statuses.keySet().retainAll(Utils.flattenFiles(context.getRootFiles().toArray(
                         new File[context.getRootFiles().size()]), statuses.keySet()));
                 List<Setup> newSetups = new ArrayList<Setup>(statuses.size());
                 for (Map.Entry<File, FileInformation> e : statuses.entrySet()) {
@@ -1013,7 +1072,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                         newSetups.add(setup);
                     }
                 }
-                Collections.sort(newSetups, new SetupsComparator());
                 return newSetups.toArray(new Setup[newSetups.size()]);
             }
         } catch (HgException.HgCommandCanceledException ex) {
@@ -1045,6 +1103,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         if (fixedRevisions) {
             treeSelectionPanel.setVisible(false);
         } else {
+            cmbDiffTreeFirst.setMinimumSize(cmbDiffTreeFirst.getMinimumSize());
+            cmbDiffTreeSecond.setMinimumSize(cmbDiffTreeSecond.getMinimumSize());
+            treeSelectionPanel.setMinimumSize(treeSelectionPanel.getMinimumSize());
             cmbDiffTreeFirst.setRenderer(new HgRevisionCellRenderer());
             cmbDiffTreeFirst.setModel(new DefaultComboBoxModel(new HgRevision[] { revisionRight }));
             cmbDiffTreeFirst.addActionListener(this);
@@ -1052,6 +1113,22 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             cmbDiffTreeSecond.setModel(new DefaultComboBoxModel(new HgRevision[] { revisionLeft }));
             cmbDiffTreeSecond.addActionListener(this);
         }
+    }
+
+    private FileViewComponent<DiffNode> getActiveFileComponent () {
+        return activeComponent;
+    }
+
+    private void setActiveComponent (FileViewComponent<DiffNode> fileComponent) {
+        if (activeComponent == fileComponent) {
+            return;
+        }
+        activeComponent = fileComponent;
+        HgModuleConfig.getDefault().setDiffViewMode(activeComponent == fileListComponent
+                ? VIEW_MODE_TABLE : VIEW_MODE_TREE);
+        int gg = splitPane.getDividerLocation();
+        splitPane.setTopComponent(getActiveFileComponent().getComponent());
+        splitPane.setDividerLocation(gg);
     }
     
     private class RefreshComboTask implements Runnable {
@@ -1153,47 +1230,46 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private class DiffPrepareTask implements Runnable, Cancellable {
         
         private final Setup[] prepareSetups;
-        private int tableIndex; // index of a row in the table - viewIndex, needs to be translated to modelIndex
+        private Setup selectedSetup;
         private boolean canceled;
 
         public DiffPrepareTask(Setup [] prepareSetups) {
             this.prepareSetups = prepareSetups;
-            this.tableIndex = 0;
+            this.selectedSetup = prepareSetups[0];
         }
 
         @Override
         public void run() {
             canceled = false;
             IOException exception = null;
-            int[] indexes = prepareIndexesToRefresh();
-            for (int i : indexes) {
+            DiffNode[] neighbourNodes = prepareSetupsToRefresh();
+            for (DiffNode n : neighbourNodes) {
+                final Setup s = n.getSetup();
                 if (prepareSetups != setups || Thread.interrupted()) return;
-                int modelIndex = fileTable == null ? i : fileTable.getModelIndex(i);
-                if (prepareSetups[modelIndex].getView() != null) {
+                if (s.getView() != null) {
                     continue;
                 }
                 try {
-                    prepareSetups[modelIndex].initSources();  // slow network I/O
-                    final int fi = modelIndex;
+                    s.initSources();  // slow network I/O
                     if (Thread.interrupted() || canceled) {
                         return;
                     }
-                    StreamSource ss1 = prepareSetups[fi].getFirstSource();
-                    StreamSource ss2 = prepareSetups[fi].getSecondSource();
+                    StreamSource ss1 = s.getFirstSource();
+                    StreamSource ss2 = s.getSecondSource();
                     final DiffController view = DiffController.createEnhanced(ss1, ss2);  // possibly executing slow external diff
                     view.addPropertyChangeListener(MultiDiffPanel.this);
                     if (Thread.interrupted() || canceled) {
                         return;
                     }
-                    prepareSetups[fi].setView(view);
+                    s.setView(view);
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
                             if (prepareSetups != setups) {
                                 return;
                             }
-                            if (currentModelIndex == fi) {
-                                setDiffIndex(currentIndex, 0, false);
+                            if (MultiDiffPanel.this.currentSetup == s) {
+                                setDiffIndex(s, 0, false);
                             }
                             if (splitPane != null) {
                                 updateSplitLocation();
@@ -1218,25 +1294,19 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
             }
         }
 
-        private int[] prepareIndexesToRefresh () {
-            int index = tableIndex;
-            int min = Math.max(0, index - 2);
-            int max = Math.min(prepareSetups.length - 1, index + 2);
-            int[] indexes = new int[max - min + 1];
-            // adding tableIndex, tableIndex - 1, tableIndex + 1, tableIndex - 2, tableIndex + 2, etc.
-            for (int i = index, j = index + 1, k = 0; i >= min || j <= max; --i, ++j) {
-                if (i >= min) {
-                    indexes[k++] = i;
+        private DiffNode[] prepareSetupsToRefresh () {
+            return Mutex.EVENT.readAccess(new Mutex.Action<DiffNode[]>() {
+                @Override
+                public DiffNode[] run () {
+                    return showingFileComponent()
+                            ? getActiveFileComponent().getNeighbouringNodes(selectedSetup.getNode(), 2)
+                            : new DiffNode[] { selectedSetup.getNode() };
                 }
-                if (j <= max) {
-                    indexes[k++] = j;
-                }
-            }
-            return indexes;
+            });
         }
 
-        private void setTableIndex(int index) {
-            this.tableIndex = index;
+        private void setSelectedSetup (Setup setup) {
+            this.selectedSetup = setup;
         }
 
         @Override
@@ -1279,9 +1349,11 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        viewTypeGroup = new javax.swing.ButtonGroup();
         controlsToolBar = new javax.swing.JToolBar();
+        listButton = new javax.swing.JToggleButton();
+        treeButton = new javax.swing.JToggleButton();
         jPanel4 = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
         nextButton = new javax.swing.JButton();
         prevButton = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
@@ -1298,35 +1370,29 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         controlsToolBar.setFloatable(false);
         controlsToolBar.setRollover(true);
 
-        jPanel4.setMaximumSize(new java.awt.Dimension(12, 32767));
+        viewTypeGroup.add(listButton);
+        listButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/file_view.png"))); // NOI18N
+        listButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.listButton.toolTipText")); // NOI18N
+        listButton.setFocusable(false);
+        controlsToolBar.add(listButton);
 
-        jPanel3.setMaximumSize(new java.awt.Dimension(12, 32767));
+        viewTypeGroup.add(treeButton);
+        treeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/logical_view.png"))); // NOI18N
+        treeButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.treeButton.toolTipText")); // NOI18N
+        treeButton.setFocusable(false);
+        controlsToolBar.add(treeButton);
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 12, Short.MAX_VALUE)
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 21, Short.MAX_VALUE)
-        );
+        jPanel4.setMaximumSize(new java.awt.Dimension(80, 32767));
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+            .addGap(0, 80, Short.MAX_VALUE)
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+            .addGap(0, 31, Short.MAX_VALUE)
         );
 
         controlsToolBar.add(jPanel4);
@@ -1334,15 +1400,11 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         nextButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/diff-next.png"))); // NOI18N
         nextButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_Next_Tooltip")); // NOI18N
         nextButton.setFocusable(false);
-        nextButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        nextButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         controlsToolBar.add(nextButton);
 
         prevButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/diff-prev.png"))); // NOI18N
         prevButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "CTL_DiffPanel_Prev_Tooltip")); // NOI18N
         prevButton.setFocusable(false);
-        prevButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        prevButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         controlsToolBar.add(prevButton);
 
         jPanel2.setMaximumSize(new java.awt.Dimension(30, 32767));
@@ -1355,7 +1417,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 21, Short.MAX_VALUE)
+            .addGap(0, 31, Short.MAX_VALUE)
         );
 
         controlsToolBar.add(jPanel2);
@@ -1363,8 +1425,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/refresh.png"))); // NOI18N
         refreshButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "refreshButton.toolTipText")); // NOI18N
         refreshButton.setFocusable(false);
-        refreshButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        refreshButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 refreshButtonActionPerformed(evt);
@@ -1382,7 +1442,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         );
         jPanel5Layout.setVerticalGroup(
             jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 21, Short.MAX_VALUE)
+            .addGap(0, 31, Short.MAX_VALUE)
         );
 
         controlsToolBar.add(jPanel5);
@@ -1390,8 +1450,6 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         commitButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/mercurial/resources/icons/commit.png"))); // NOI18N
         commitButton.setToolTipText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MSG_CommitDiff_Tooltip")); // NOI18N
         commitButton.setFocusable(false);
-        commitButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
-        commitButton.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         controlsToolBar.add(commitButton);
 
         cmbDiffTreeFirst.setEnabled(false);
@@ -1413,12 +1471,12 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
                 .addContainerGap()
                 .addComponent(jLabel1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cmbDiffTreeFirst, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(cmbDiffTreeFirst, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(cmbDiffTreeSecond, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, 0))
+                .addComponent(cmbDiffTreeSecond, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         treeSelectionPanelLayout.setVerticalGroup(
             treeSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1439,19 +1497,17 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(controlsToolBar, javax.swing.GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(treeSelectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE)
+            .addComponent(splitPane)
+            .addComponent(treeSelectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(controlsToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(controlsToolBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(treeSelectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 277, Short.MAX_VALUE))
+                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 276, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -1468,14 +1524,16 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JToggleButton listButton;
     private javax.swing.JButton nextButton;
     private javax.swing.JButton prevButton;
     private javax.swing.JButton refreshButton;
     private javax.swing.JSplitPane splitPane;
+    private javax.swing.JToggleButton treeButton;
     private javax.swing.JPanel treeSelectionPanel;
+    private javax.swing.ButtonGroup viewTypeGroup;
     // End of variables declaration//GEN-END:variables
     
 }

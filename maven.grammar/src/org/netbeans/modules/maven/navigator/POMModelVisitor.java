@@ -50,6 +50,8 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -114,10 +116,12 @@ import org.netbeans.modules.xml.xam.Model;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeOperation;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 
@@ -1200,12 +1204,12 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     static class ListObjectCH<T extends POMComponent> extends POMCutHolder {
-        private POMQName qname;
-        private POMQName childName;
-        private String displayName;
-        private Class type;
-        private KeyGenerator<T> keygen;
-        private POMModelPanel.Configuration configuration;
+        private final POMQName qname;
+        private final POMQName childName;
+        private final String displayName;
+        private final Class type;
+        private final KeyGenerator<T> keygen;
+        private final POMModelPanel.Configuration configuration;
 
         private ListObjectCH(POMCutHolder parent, POMQName qname, POMQName childName, Class type, KeyGenerator<T> keygen, String displayName, POMModelPanel.Configuration configuration) {
             super(parent);
@@ -1251,7 +1255,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
 
-    private static Image[] ICONS = new Image[] {
+    private static final Image[] ICONS = new Image[] {
         ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/value.png"), // NOI18N
         ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/value2.png"), // NOI18N
         ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/value3.png"), // NOI18N
@@ -1593,31 +1597,42 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
     }
 
-    static class PomListChildren<T extends POMComponent> extends Children.Keys<Object> {
-        private Object[] one = new Object[] {new Object()};
-        private POMCutHolder holder;
-        private POMQNames names;
-        private Class type;
-        private KeyGenerator<T> keyGenerator;
-        private POMQName childName;
-        private POMModelPanel.Configuration configuration;
-        public PomListChildren(POMCutHolder holder, POMQNames names, Class type, KeyGenerator<T> generator, POMModelPanel.Configuration configuration, POMQName childName) {
-            setKeys(one);
+    static class PomListChildren<T extends POMComponent> extends Children.Keys<Lookup> {
+        private final Object[] one = new Object[] {new Object()};
+        private final POMCutHolder holder;
+        private final POMQNames names;
+        private final Class type;
+        private final KeyGenerator<T> keyGenerator;
+        private final POMQName childName;
+        private final POMModelPanel.Configuration configuration;
+        private List<Lookup> keys;
+        public PomListChildren(POMCutHolder holder, POMQNames names, Class type, KeyGenerator<T> generator, POMModelPanel.Configuration configuration, POMQName childName) {          
             this.holder = holder;
             this.names = names;
             this.type = type;
             this.keyGenerator = generator;
             this.childName = childName;
             this.configuration = configuration;
-        }
+            this.configuration.addPropertyChangeListener(new PropertyChangeListener() {
 
-        public void reshow() {
-            this.refreshKey(one);
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (POMModelPanel.Configuration.PROP_SORT_LISTS.equals(evt.getPropertyName())) {
+                        resort();
+                    }
+                }
+            });
         }
 
         @Override
-        protected Node[] createNodes(Object key) {
-            List<Node> toRet = new ArrayList<Node>();
+        protected void addNotify() {
+            super.addNotify(); //To change body of generated methods, choose Tools | Templates.
+            setKeysImpl();
+            
+        }
+
+        private void setKeysImpl() {
+            List<Lookup> toSet = new ArrayList<Lookup>();
             LinkedHashMap<Object, List<T>> cut = new LinkedHashMap<Object, List<T>>();
 
             int level = 0;
@@ -1658,10 +1673,52 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
                 }
                 growToSize(holder.getCutsSize(), cutHolder);
 
-                toRet.add(new ObjectNode(Lookups.fixed(cutHolder, childName), new PomChildren(cutHolder, names, type, configuration), itemName));
+                toSet.add(Lookups.fixed(cutHolder, childName, new PomChildren(cutHolder, names, type, configuration), itemName));
             }
+            
+            this.keys = toSet; //keys is the unsorted, natural order stuff..
+            if (configuration.isSortLists()) {
+                toSet = new ArrayList<Lookup>();
+                toSet.addAll(keys);
+                Collections.sort(toSet, lkpComparator);
+            }
+            setKeys(toSet);
+        }
+        
+        public void resort() {
+            if (keys != null) {
+                if (configuration.isSortLists()) {
+                    ArrayList<Lookup> toSet = new ArrayList<Lookup>();
+                    toSet.addAll(keys);
+                    Collections.sort(toSet, lkpComparator);
+                    setKeys(toSet);
+                } else {
+                    setKeys(keys);
+                }
+            }
+        }
+        
+        private final Comparator<Lookup> lkpComparator = new Comparator<Lookup>() {
 
-            return toRet.toArray(new Node[0]);
+                    @Override
+                    public int compare(Lookup o1, Lookup o2) {
+                        String s1 = o1.lookup(String.class);
+                        String s2 = o2.lookup(String.class);
+                        return s1.compareTo(s2);
+                    }
+                };
+
+        @Override
+        protected Node[] createNodes(Lookup key) {
+            POMCutHolder cutHolder = key.lookup(POMCutHolder.class);
+            assert cutHolder != null;
+            POMQName chldName = key.lookup(POMQName.class);
+            assert chldName != null;
+            PomChildren children = key.lookup(PomChildren.class);
+            assert children != null;
+            String itemName = key.lookup(String.class);
+            assert itemName != null;
+            return new Node[] {new ObjectNode(Lookups.fixed(cutHolder, chldName), children, itemName)};
         }
 
         private void fillValues(int current, List<T> list, T value) {
@@ -1673,9 +1730,9 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
     }
 
     static class PomStringListChildren extends Children.Keys<Object> {
-        private Object[] one = new Object[] {new Object()};
-        private POMCutHolder holder;
-        private POMQName childName;
+        private final Object[] one = new Object[] {new Object()};
+        private final POMCutHolder holder;
+        private final POMQName childName;
         private final String displayName;
 
         public PomStringListChildren(POMCutHolder holder, POMQName childName, String displayName) {
@@ -1741,7 +1798,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
 
 
     static class SelectAction extends AbstractAction implements Presenter.Popup {
-        private Node node;
+        private final Node node;
         private int layer = -1;
 
         SelectAction(Node node) {
@@ -1789,5 +1846,5 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         }
 
     }
-
+   
 }

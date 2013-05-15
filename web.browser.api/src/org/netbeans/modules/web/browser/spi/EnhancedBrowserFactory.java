@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.web.browser.spi;
 
+import java.awt.Image;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 
 /**
@@ -49,6 +50,45 @@ import org.netbeans.modules.web.browser.api.BrowserFamilyId;
  */
 public interface EnhancedBrowserFactory {
 
+    /**
+     * Type of browser.
+     */
     BrowserFamilyId getBrowserFamilyId();
-    
+
+    /**
+     * Image icon representing this browser. 24x24 size expected.
+     * @return can return null (in which case a fallback icon will be used as
+     * implemented in WebBrowser itself)
+     */
+    Image getIconImage();
+
+    /**
+     * Display name of browser.
+     * 
+     * @return can return null (in which case display name of the node which
+     * represents registration of this browser in the SystemFileSystem will be
+     * used instead)
+     */
+    String getDisplayName();
+
+    /**
+     * An ID which uniquely identifies this browser and can be persisted for
+     * future references to this browser.
+     * @return can be null (in which case browser instance is expected
+     * to be registered as file in default filesystem and its Lookup.Item.getId
+     * is used instead.)
+     */
+    String getId();
+
+    /**
+     * Is this factory producing browsers with tight NetBeans integration.
+     * @return
+     */
+    boolean hasNetBeansIntegration();
+
+    /**
+     * Can this factory produce a browser for current OS? This is an API alternative
+     * to using "hidden" attribute in registrations via module layer.
+     */
+    boolean canCreateHtmlBrowserImpl();
 }

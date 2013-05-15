@@ -20,6 +20,7 @@ CLASS      IllegalMonitorStateException               null
 CLASS      IllegalPropertyAccessException             null
 CLASS      IllegalStateException                      null
 CLASS      IllegalThreadStateException                null
+CLASS      IllformedLocaleException                   null
 CLASS      IncompatibleClassChangeError               null
 CLASS      IncorrectClosureArgumentsExcep             null
 CLASS      IndentPrinter                              null

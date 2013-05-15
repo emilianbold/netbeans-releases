@@ -178,7 +178,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.61</specification-version>
+                        <specification-version>1.81</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -382,7 +382,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.14</specification-version>
+                        <specification-version>1.49</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -391,7 +391,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.13</specification-version>
+                        <specification-version>2.23</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -399,7 +399,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.20</specification-version>
+                        <specification-version>1.31</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -408,7 +408,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.18</specification-version>
+                        <specification-version>1.23</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

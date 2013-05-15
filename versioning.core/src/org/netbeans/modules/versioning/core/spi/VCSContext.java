@@ -148,7 +148,9 @@ public final class VCSContext {
             if (ctx != null) return ctx;
         }
         Set<VCSFileProxy> rootFiles = new HashSet<VCSFileProxy>(nodes.length);
-        Set<VCSFileProxy> rootFileExclusions = new HashSet<VCSFileProxy>(5);
+        Set<SourceGroup> sourceGroups = new HashSet<SourceGroup>();
+        Map<FileObject, VCSFileProxy> rootFileExclusions = new LinkedHashMap<FileObject, VCSFileProxy>(5);
+        int numberOfProjects = 0;
         for (int i = 0; i < nodes.length; i++) {
             Node node = nodes[i];
             File aFile = node.getLookup().lookup(File.class);
@@ -163,10 +165,17 @@ public final class VCSContext {
             }
             Project project =  node.getLookup().lookup(Project.class);
             if (project != null) {
-                addProjectFiles(rootFiles, rootFileExclusions, project);
+                ++numberOfProjects;
+                addProjectFiles(rootFiles, rootFileExclusions, project, sourceGroups);
                 continue;
             }
             addFileObjects(node, rootFiles);
+        }
+        if (numberOfProjects > 1) {
+            // some projects - especially nested ones include and exclude their 
+            // parent's source roots, so when a parent is selected, no nested project
+            // should be allowed to exclude the parent's root files.
+            removeContainedExclusions(rootFileExclusions, sourceGroups);
         }
 
         if (rootFiles.isEmpty()) {
@@ -191,8 +200,8 @@ public final class VCSContext {
         } else if(projectOwners.size() == 1) {
             // context contais one owner -> remove unversioned files
             for (VCSFileProxy unversionedFile : unversionedFiles) {
-                for (Iterator<VCSFileProxy> i = rootFileExclusions.iterator(); i.hasNext(); ) {
-                    VCSFileProxy exclusion = i.next();
+                for (Iterator<Map.Entry<FileObject, VCSFileProxy>> i = rootFileExclusions.entrySet().iterator(); i.hasNext(); ) {
+                    VCSFileProxy exclusion = i.next().getValue();
                     if (Utils.isAncestorOrEqual(unversionedFile, exclusion)) {
                         i.remove();
                     }
@@ -205,7 +214,7 @@ public final class VCSContext {
             rootFiles.clear();
         }
 
-        VCSContext ctx = new VCSContext(nodes, rootFiles, rootFileExclusions);
+        VCSContext ctx = new VCSContext(nodes, rootFiles, rootFileExclusions.values());
         contextCached = new WeakReference<VCSContext>(ctx);
         contextNodesCached = new WeakReference<Node []>(nodes);
         return ctx;
@@ -309,9 +318,12 @@ public final class VCSContext {
         contextCached.clear();
     }
         
-    private static void addProjectFiles(Collection<VCSFileProxy> rootFiles, Collection<VCSFileProxy> rootFilesExclusions, Project project) {
+    private static void addProjectFiles (Collection<VCSFileProxy> rootFiles,
+            Map<FileObject, VCSFileProxy> rootFilesExclusions, Project project,
+            Set<SourceGroup> srcGroups) {
         Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+        srcGroups.addAll(Arrays.asList(sourceGroups));
         for (int j = 0; j < sourceGroups.length; j++) {
             SourceGroup sourceGroup = sourceGroups[j];
             FileObject srcRootFo = sourceGroup.getRootFolder();
@@ -341,7 +353,7 @@ public final class VCSContext {
                         if(rootChildFo != null && 
                            SharabilityQuery.getSharability(rootChildFo) != Sharability.NOT_SHARABLE) 
                         {
-                            rootFilesExclusions.add(child);
+                            rootFilesExclusions.put(rootChildFo, child);
                         }
                     }
                 } catch (IllegalArgumentException ex) {
@@ -367,6 +379,17 @@ public final class VCSContext {
                         }
                     }
                     logger.log(Level.WARNING, null, ex);
+                }
+            }
+        }
+    }
+
+    private static void removeContainedExclusions (Map<FileObject, VCSFileProxy> rootFilesExclusions, Set<SourceGroup> sourceGroups) {
+        for (SourceGroup sourceGroup : sourceGroups) {
+            for (Iterator<Map.Entry<FileObject, VCSFileProxy>> it = rootFilesExclusions.entrySet().iterator(); it.hasNext(); ) {
+                FileObject exclusion = it.next().getKey();
+                if (sourceGroup.contains(exclusion)) {
+                    it.remove();
                 }
             }
         }
@@ -417,7 +440,7 @@ public final class VCSContext {
         return files;
     }    
 
-    private VCSContext(Set<VCSFileProxy> rootFiles, Set<VCSFileProxy> exclusions, Object... elements) {
+    private VCSContext(Set<VCSFileProxy> rootFiles, Collection<VCSFileProxy> exclusions, Object... elements) {
         Set<VCSFileProxy> tempRootFiles = new HashSet<VCSFileProxy>(rootFiles);
         Set<VCSFileProxy> tempExclusions = new HashSet<VCSFileProxy>(exclusions);
         this.unfilteredRootFiles = Collections.unmodifiableSet(new HashSet<VCSFileProxy>(tempRootFiles));
@@ -429,11 +452,11 @@ public final class VCSContext {
         this.elements = Lookups.fixed(elements);
     }
 
-    private VCSContext(Node [] nodes, Set<VCSFileProxy> rootFiles, Set<VCSFileProxy> exclusions) {
+    private VCSContext(Node [] nodes, Set<VCSFileProxy> rootFiles, Collection<VCSFileProxy> exclusions) {
         this(rootFiles, exclusions, nodes != null ? (Object[]) nodes : new Node[0]);
     }
 
-    private VCSContext(Set<? extends FileObject> elements, Set<VCSFileProxy> rootFiles, Set<VCSFileProxy> exclusions) {
+    private VCSContext(Set<? extends FileObject> elements, Set<VCSFileProxy> rootFiles, Collection<VCSFileProxy> exclusions) {
         this(rootFiles, exclusions, elements != null ? elements : Collections.EMPTY_SET);
     }
 

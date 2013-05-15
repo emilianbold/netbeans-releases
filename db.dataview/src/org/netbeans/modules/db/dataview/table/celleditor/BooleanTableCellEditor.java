@@ -58,9 +58,7 @@ public class BooleanTableCellEditor extends ResultSetTableCellEditor implements 
 
     @Override
     public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
-        this.table = table;
         Component c = super.getTableCellEditorComponent(table, value, isSelected, row, column);
-        setEditable(column, c, table.isCellEditable(row, column));
         if (suppressEditorBorder && c instanceof JComponent) {
             ((JComponent) c).setBorder(BorderFactory.createEmptyBorder());
         }

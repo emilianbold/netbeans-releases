@@ -178,15 +178,7 @@ public class JPDAStart implements Runnable {
                 properties.put("name", getName()); //NOI18N
                 properties.put("jdksources", jdkSourcePath); //NOI18N
                 properties.put("baseDir", FileUtil.toFile(project.getProjectDirectory())); // NOI18N
-                boolean isTest = ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equalsIgnoreCase(actionName);
-                boolean appCos;
-                if (isTest) {
-                    appCos = RunUtils.hasTestCompileOnSaveEnabled(project) ||
-                             RunUtils.hasApplicationCompileOnSaveEnabled(project);
-                } else {
-                    appCos = RunUtils.hasApplicationCompileOnSaveEnabled(project);
-                }
-                if (appCos) {
+                if (RunUtils.isCompileOnSaveEnabled(project)) {
                     properties.put ("listeningCP", "sourcepath"); // NOI18N
                 }
                 

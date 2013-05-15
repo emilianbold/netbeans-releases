@@ -105,6 +105,58 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="CustomizerProvider3">
+            <api name="java-api-common"/>
+            <summary>Enable programmatical closing of project customizer dialog.</summary>
+            <version major="1" minor="52"/>
+            <date day="13" month="5" year="2013"/>
+            <author login="psomol"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Addded interface <code>CustomizerProvider3</code> extending <code>CustomizerProvider2</code>
+                    that enables to close project's customizer if it is currently open using
+                    method <code>cancelCustomizer()</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.ui" name="PlatformUiSupport"/>
+            <issue number="229161"/>
+        </change>
+        <change id="platform-filter">
+            <api name="java-api-common"/>
+            <summary>Added PlatformFilter interface.</summary>
+            <version major="1" minor="49"/>
+            <date day="30" month="4" year="2013"/>
+            <author login="psomol"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Added interface <code>PlatformFilter</code> to enable filtering out
+                    Java Platforms from UI lists. The primary usecase is to enable
+                    projects that are extensions of SE project to hook into project
+                    UI provided by SE project. More specifically, FX projects need
+                    to hide non-FX platforms in Project Properties panels belonging to SE.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.ui" name="PlatformFilter"/>
+            <issue number="212238"/>
+        </change>
+        <change id="api-package-modification">
+            <api name="java-api-common"/>
+            <summary>New API <code>PackageModificationImplementation</code></summary>
+            <version major="1" minor="49"/>
+            <date day="10" month="4" year="2013"/>
+            <author login="mkozeny"/>
+            <compatibility semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added new API <code>PackageModificationImplementation</code> which serves as backend for action to set given package as public or private.
+                    Only applies on packages/folders that are handled by <code>AccessibilityQuery</code> (a non null result is returned from the query) that are in projects
+                    providing this interface's implementation in project lookup.
+                </p>
+            </description>
+            <issue number="228409"/>
+        </change>
         <change id="jre-profiles">
             <api name="java-api-common"/>
             <summary>Added UI support for JRE profiles.</summary>

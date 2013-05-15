@@ -46,10 +46,13 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Logger;
 
 import org.netbeans.modules.csl.api.Error;
@@ -67,6 +70,8 @@ import org.netbeans.modules.parsing.spi.indexing.ErrorsCache;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.Convertor;
 import org.netbeans.modules.parsing.spi.indexing.ErrorsCache.ErrorKind;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
+import org.netbeans.spi.tasklist.TaskScanningScope;
+import org.openide.filesystems.FileObject;
 
 
 /**
@@ -83,9 +88,17 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
     public static final String FIELD_GROUP_NAME = "groupName"; //NOI18N
     public static final String FIELD_DESCRIPTION = "description"; //NOI18N
     public static final String FIELD_LINE_NUMBER = "lineNumber"; //NOI18N
+    
+    /**
+     * Special feature, which runs only processing that result in error badge markers. Serves as an optimization
+     * for background scanning when action item list is invisible or the indexed root is out of its scope.
+     */
+    public static final String FEATURE_ERROR_BADGES = "errorBadges"; // NOI18N
 
     private static final Map<Indexable, Collection<SimpleError>> errors = new IdentityHashMap<Indexable, Collection<SimpleError>>();
     private static final Map<Indexable, List<Integer>> lineStartOffsetsCache = new IdentityHashMap<Indexable, List<Integer>>();
+
+    private static final Map<URL, Boolean> tlInScope = new WeakHashMap<URL, Boolean>();
     
     @Override
     public boolean scanStarted(final Context context) {
@@ -97,6 +110,7 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
         if (!context.checkForEditorModifications()) {
             commitErrors(context.getRootURI(), errors, lineStartOffsetsCache);
         }
+        tlInScope.remove(context.getRootURI());
     }
 
     private static void commitErrors(URL root, Map<Indexable, Collection<SimpleError>> errors, Map<Indexable, List<Integer>> lineStartOffsetsCache) {
@@ -216,10 +230,38 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
             Result              parserResult,
             Context             context
         ) {
-            
+            boolean process = true;
+
             if (context.checkForEditorModifications()) {
                 return;
             }
+            FileObject root = context.getRoot();
+            
+            // Avoid indexing, if the tasklist is not visible, or the file is out of scope
+            // some ErrorFilter impls (HTML actually) use CPU-intensive hints, and they
+            // slow down the scanning even though the user is not interested in the result.
+            boolean allTasks = TasklistStateBackdoor.getInstance().isObserved();
+
+            if (allTasks && root != null) {
+                FileObject indexedFile = root.getFileObject(indexable.getRelativePath());
+                // TSScope.isInScope is rater expensive for everything but current editor scope
+                if (TasklistStateBackdoor.getInstance().isCurrentEditorScope()) {
+                    process = TasklistStateBackdoor.getInstance().getScope().isInScope(indexedFile);
+                } else {
+                    Boolean inScope = tlInScope.get(context.getRootURI());
+                    if (inScope == null) {
+                        // cache the result for the whole run of the embedding scanner.
+                        // the cache will be cleared by parsingFinished on the TLIndexerFactory.
+                        inScope = Boolean.TRUE;
+                        TaskScanningScope scope = TasklistStateBackdoor.getInstance().getScope();
+                        if (scope != null) {
+                            inScope = scope.isInScope(indexedFile);
+                        }
+                        tlInScope.put(context.getRootURI(), inScope);
+                    }
+                    process = inScope;
+                }
+            }            
             
             ParserResult gsfParserResult = (ParserResult) parserResult;
 
@@ -244,12 +286,40 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
             }
             
             //filter all the errors and retain only those suitable for the tasklist
-            List<? extends Error> filteredErrors = ErrorFilterQuery.getFilteredErrors(gsfParserResult, ErrorFilter.FEATURE_TASKLIST);
-            
+            List<Error> filteredErrors  = new ArrayList<Error>();
+
+            if (allTasks && process) {
+                List<? extends Error> e = ErrorFilterQuery.getFilteredErrors(gsfParserResult,  ErrorFilter.FEATURE_TASKLIST);
+                if (e != null) {
+                    filteredErrors.addAll(e);
+                }
+            }
+            List<? extends Error> lst  = ErrorFilterQuery.getFilteredErrors(gsfParserResult,  FEATURE_ERROR_BADGES);
             //convert the Error-s to SimpleError-s instancies. For more info look at the SimpleError class javadoc
             List<SimpleError> simplifiedErrors = new ArrayList<SimpleError>();
+            Set<String> seenErrorKeys = new HashSet<String>();
+            if (lst != null) {
+                filteredErrors.addAll(lst);
+            } else {
+                // must translate diagnostics offsets into file/document offsets.
+                for (Error err : gsfParserResult.getDiagnostics()) {
+                    int startPos = err.getStartPosition();
+                    startPos = gsfParserResult.getSnapshot().getOriginalOffset(startPos);
+                    String ek = Integer.toString(startPos) + ":" + err.getKey(); // NOI18N
+                    if (!seenErrorKeys.add(ek)) {
+                        continue;
+                    }
+                    simplifiedErrors.add(simplify(err, startPos));
+                }
+            }
+            
             for(Error e : filteredErrors) {
-                simplifiedErrors.add(simplify(e));
+                String ek = Integer.toString(e.getStartPosition()) + ":" + e.getKey(); // NOI18N
+                // since ErrorFilterQuery is called 2x, avoid potential duplicates from buggy implementations of ErrorFilter
+                if (!seenErrorKeys.add(ek)) {
+                    continue;
+                }
+                simplifiedErrors.add(simplify(e, -1));
             }
             
             storedErrors.addAll(simplifiedErrors);
@@ -321,10 +391,10 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                 
     }
     
-    private static SimpleError simplify(Error error) {
+    private static SimpleError simplify(Error error, int pos) {
         return new SimpleError(error.getDisplayName(), 
                 error.getDescription(), 
-                error.getStartPosition(), 
+                pos == -1 ? error.getStartPosition() : pos,
                 error.getSeverity(),
                 error instanceof Badging && ((Badging) error).showExplorerBadge());
     }

@@ -6,11 +6,21 @@
             <code-name-base>org.netbeans.modules.glassfish.common</code-name-base>
             <module-dependencies>
                 <dependency>
-                    <code-name-base>org.netbeans.libs.glassfish.sdk</code-name-base>
+                    <code-name-base>org.netbeans.api.annotations.common</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <release-version>1</release-version>
+                        <specification-version>1.17</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.api.java.classpath</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.36</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -20,6 +30,14 @@
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.12</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.libs.glassfish.sdk</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.5</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -49,11 +67,29 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.java.j2seplatform</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.29</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.modules.java.platform</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.29</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.keyring</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.0</specification-version>
+                        <specification-version>1.14</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -187,8 +223,8 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
+            <!-- Verifier code should be cleaned up in trunk after 7.3.1 release -->
             <friend-packages>
-                <friend>org.netbeans.modules.glassfish.eecommon</friend>
                 <friend>org.netbeans.modules.glassfish.grails</friend>
                 <friend>org.netbeans.modules.glassfish.javaee</friend>
                 <friend>org.netbeans.modules.glassfish.jruby</friend>
@@ -198,7 +234,15 @@
                 <friend>org.netbeans.modules.j2ee.sun.ddui</friend>
                 <friend>org.netbeans.modules.jbi.fuji.server.gfsupport</friend>
                 <friend>org.netbeans.modules.jbi.fuji.server.plugin</friend>
+                <friend>org.netbeans.modules.web.kit</friend>
+                <!-- Temporary for 7.3.1 -->
+                <friend>org.netbeans.modules.glassfish.javaee.verifier</friend>
+
                 <package>org.netbeans.modules.glassfish.spi</package>
+                <!-- Temporary for 7.3.1 -->
+                <package>org.netbeans.modules.glassfish.common</package>
+                <package>org.netbeans.modules.glassfish.common.ui</package>
+                <package>org.netbeans.modules.glassfish.common.utils</package>
             </friend-packages>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">

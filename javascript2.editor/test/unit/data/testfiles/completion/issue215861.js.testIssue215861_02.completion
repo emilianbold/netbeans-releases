@@ -2,6 +2,7 @@ Code completion result for source line:
 console.log("Browser2 "+navigator.|);
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
 METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
 METHOD     defineProperty(O: Object, P: S  [PUBLIC,   JS Platform
@@ -39,7 +40,6 @@ FIELD      platform: String                [PUBLIC]   JS Platform
 FIELD      plugins: Array                  [PUBLIC]   JS Platform
 FIELD      product: String                 [PUBLIC]   JS Platform
 FIELD      productSub: String              [PUBLIC]   JS Platform
-FIELD      prototype                       [PUBLIC]   JS Platform
 FIELD      userAgent: String               [PUBLIC]   JS Platform
 FIELD      vendor: String                  [PUBLIC]   JS Platform
 FIELD      vendorSub: String               [PUBLIC]   JS Platform

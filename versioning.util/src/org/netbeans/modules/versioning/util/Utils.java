@@ -401,9 +401,7 @@ public final class Utils {
      */
     public static void insert(Preferences prefs, String key, String value, int maxLength) {
         List<String> newValues = getStringList(prefs, key);
-        if(newValues.contains(value)) {
-            newValues.remove(value);
-        }
+        newValues.removeAll(Collections.<String>singleton(value));
         newValues.add(0, value);
         if (maxLength > -1 && newValues.size() > maxLength) {
             newValues.subList(maxLength, newValues.size()).clear();
@@ -433,7 +431,7 @@ public final class Utils {
      */
     public static void removeFromArray(Preferences prefs, String key, String value) {
         List<String> newValues = getStringList(prefs, key);
-        newValues.remove(value);
+        newValues.removeAll(Collections.<String>singleton(value));
         put(prefs, key, newValues);
     }
 
@@ -461,6 +459,36 @@ public final class Utils {
                 allFiles.toArray(new File[allFiles.size()])
             };
         }
+    }
+
+    /**
+     * Flattens the given collection of files and removes those that do not respect the flat folder logic,
+     * i.e. those that lie deeper under a flat folder.
+     * @param roots selected files with flat folders
+     */
+    public static Set<File> flattenFiles (File[] roots, Collection<File> files) {
+        File[][] split = Utils.splitFlatOthers(roots);
+        Set<File> filteredFiles = new HashSet<File>(files);
+        if (split[0].length > 0) {
+            outer:
+            for (Iterator<File> it = filteredFiles.iterator(); it.hasNext(); ) {
+                File f = it.next();
+                // file is directly under a flat folder
+                for (File flat : split[0]) {
+                    if (f.getParentFile().equals(flat)) {
+                        continue outer;
+                    }
+                }
+                // file lies under a recursive folder
+                for (File folder : split[1]) {
+                    if (Utils.isAncestorOrEqual(folder, f)) {
+                        continue outer;
+                    }
+                }
+                it.remove();
+            }
+        }
+        return filteredFiles;
     }
 
     /**

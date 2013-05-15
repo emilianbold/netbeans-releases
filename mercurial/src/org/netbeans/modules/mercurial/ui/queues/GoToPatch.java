@@ -44,6 +44,8 @@ package org.netbeans.modules.mercurial.ui.queues;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.awt.EventQueue;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.LinkedList;
 import java.util.List;
@@ -65,6 +67,7 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
+import org.openide.awt.MouseUtils;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -118,6 +121,14 @@ class GoToPatch {
                     } else {
                         setInfo(null);
                     }
+                }
+            }
+        });
+        panel.lstPatches.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked (MouseEvent e) {
+                if (MouseUtils.isDoubleClick(e) && okButton.isEnabled()) {
+                    okButton.doClick();
                 }
             }
         });

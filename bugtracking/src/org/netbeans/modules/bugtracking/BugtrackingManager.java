@@ -54,9 +54,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
+import org.netbeans.modules.bugtracking.ide.spi.IDEServices;
+import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
+import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
-import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
+import org.netbeans.modules.bugtracking.team.spi.RecentIssue;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -73,7 +75,7 @@ public final class BugtrackingManager implements LookupListener {
 
     public static final Logger LOG = Logger.getLogger("org.netbeans.modules.bugtracking.BugtrackingManager"); // NOI18N
 
-    private RequestProcessor rp = new RequestProcessor("Bugtracking manager"); // NOI18N
+    private final RequestProcessor rp = new RequestProcessor("Bugtracking manager"); // NOI18N
 
     /**
      * Holds all registered connectors.
@@ -86,8 +88,11 @@ public final class BugtrackingManager implements LookupListener {
     private Lookup.Result<BugtrackingConnector> connectorsLookup;
 
     private Map<String, List<RecentIssue>> recentIssues;
-    private KenaiAccessor[] kenaiAccessors;
+    private TeamAccessor[] teamAccessors;
 
+    private IDEServices ideServices;
+    private ProjectServices projectServices;
+    
     public synchronized static BugtrackingManager getInstance() {
         if(instance == null) {
             instance = new BugtrackingManager();
@@ -163,12 +168,12 @@ public final class BugtrackingManager implements LookupListener {
         return Collections.unmodifiableMap(getRecentIssues());
     }
 
-    public KenaiAccessor[] getKenaiAccessors() {
-        if (kenaiAccessors == null) {
-            Collection<? extends KenaiAccessor> coll = Lookup.getDefault().lookupAll(KenaiAccessor.class);
-            kenaiAccessors = coll.toArray(new KenaiAccessor[coll.size()]);
+    public TeamAccessor[] getTeamAccessors() {
+        if (teamAccessors == null) {
+            Collection<? extends TeamAccessor> coll = Lookup.getDefault().lookupAll(TeamAccessor.class);
+            teamAccessors = coll.toArray(new TeamAccessor[coll.size()]);
         }
-        return kenaiAccessors;
+        return teamAccessors;
     }
 
     private Map<String, List<RecentIssue>> getRecentIssues() {
@@ -208,4 +213,19 @@ public final class BugtrackingManager implements LookupListener {
         }
         return null;
     }
+
+    public synchronized IDEServices getIDEServices() {
+        if(ideServices == null) {
+            ideServices = Lookup.getDefault().lookup(IDEServices.class);
+        }
+        return ideServices;
+    }
+    
+    public synchronized ProjectServices getProjectServices() {
+        if(projectServices == null) {
+            projectServices = Lookup.getDefault().lookup(ProjectServices.class);
+        }
+        return projectServices;
+    }
+    
 }

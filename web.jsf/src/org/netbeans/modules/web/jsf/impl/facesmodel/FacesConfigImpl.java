@@ -399,4 +399,34 @@ public class FacesConfigImpl extends IdentifiableComponentImpl implements FacesC
     public List<FacesConfigElement> getFacesConfigElements() {
         return getChildren(FacesConfigElement.class);
     }
+
+    @Override
+    public List<FlowDefinition> getFlowDefinitions() {
+        return getChildren(FlowDefinition.class);
+    }
+
+    @Override
+    public void addFlowDefinition(FlowDefinition facesFlowDefinition) {
+        appendChild(FLOW_DEFINITION, facesFlowDefinition);
+    }
+
+    @Override
+    public void removeFlowDefinition(FlowDefinition facesFlowDefinition) {
+        removeChild(FLOW_DEFINITION, facesFlowDefinition);
+    }
+
+    @Override
+    public List<ProtectedViews> getProtectedViews() {
+        return getChildren(ProtectedViews.class);
+    }
+
+    @Override
+    public void addProtectedView(ProtectedViews protectedView) {
+        appendChild(PROTECTED_VIEWS, protectedView);
+    }
+
+    @Override
+    public void removeProtectedView(ProtectedViews protectedView) {
+        removeChild(PROTECTED_VIEWS, protectedView);
+    }
 }

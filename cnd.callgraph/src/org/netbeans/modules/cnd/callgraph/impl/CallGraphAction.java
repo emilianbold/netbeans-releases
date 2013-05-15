@@ -59,7 +59,6 @@ import org.openide.windows.TopComponent;
  */
 @ActionID(id = "org.netbeans.modules.cnd.callgraph.impl.CallGraphAction", category = "Window")
 @ActionRegistration(lazy = true, displayName = "#CTL_CallGraphAction", iconBase=CallGraphTopComponent.ICON_PATH)
-@ActionReference(path = "Menu/Window/Output", name = "CallGraphAction", position = 2500)
 public class CallGraphAction extends CallableSystemAction {
 
     public CallGraphAction() {

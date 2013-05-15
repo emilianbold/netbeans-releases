@@ -49,8 +49,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorManager;
 import java.io.IOException;
+import java.io.Reader;
 import javax.swing.Action;
 import javax.swing.JComboBox;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.output2.Controller;
 import org.netbeans.core.output2.NbIOProvider;
@@ -119,6 +121,16 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
         cmbImportantLinkColor = new ColorComboBox();
         jLabel1 = new javax.swing.JLabel();
         lblUnwrappedOnly = new javax.swing.JLabel();
+        lblInputColor = new javax.swing.JLabel();
+        cmbInputColor = new ColorComboBox();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        cmbDebugColor = new ColorComboBox();
+        cmbWarningColor = new ColorComboBox();
+        cmbFailureColor = new ColorComboBox();
+        cmbSuccessColor = new ColorComboBox();
         previewPanel = new javax.swing.JPanel();
         btnRestore = new javax.swing.JButton();
 
@@ -212,6 +224,47 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(lblUnwrappedOnly, org.openide.util.NbBundle.getMessage(OutputSettingsPanel.class, "OutputSettingsPanel.lblUnwrappedOnly.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(lblInputColor, org.openide.util.NbBundle.getMessage(OutputSettingsPanel.class, "OutputSettingsPanel.lblInputColor.text")); // NOI18N
+
+        cmbInputColor.setToolTipText(org.openide.util.NbBundle.getMessage(OutputSettingsPanel.class, "OutputSettingsPanel.cmbInputColor.toolTipText")); // NOI18N
+        cmbInputColor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbInputColorActionPerformed(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(OutputSettingsPanel.class, "OutputSettingsPanel.jLabel2.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(OutputSettingsPanel.class, "OutputSettingsPanel.jLabel3.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(OutputSettingsPanel.class, "OutputSettingsPanel.jLabel4.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(OutputSettingsPanel.class, "OutputSettingsPanel.jLabel5.text")); // NOI18N
+
+        cmbDebugColor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbDebugColorActionPerformed(evt);
+            }
+        });
+
+        cmbWarningColor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbWarningColorActionPerformed(evt);
+            }
+        });
+
+        cmbFailureColor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbFailureColorActionPerformed(evt);
+            }
+        });
+
+        cmbSuccessColor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbSuccessColorActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -226,23 +279,43 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
                     .addComponent(lblBackgroundColor)
                     .addComponent(lblFontSize)
                     .addComponent(jLabel1)
-                    .addComponent(lblLinkStyle))
+                    .addComponent(lblLinkStyle)
+                    .addComponent(lblInputColor))
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel2Layout.createSequentialGroup()
                         .addComponent(fldFontFamily)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(btnSelectFont))
-                    .addComponent(lblUnwrappedOnly)
-                    .addComponent(spnFontSize, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cmbBackgroundColor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(cmbStandardColor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(cmbErrorColor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(cmbLinkColor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(cmbImportantLinkColor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(cmbLinkStyle, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(lblUnwrappedOnly, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(cmbLinkStyle, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(cmbImportantLinkColor, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(cmbLinkColor, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(cmbInputColor, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(cmbErrorColor, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(cmbStandardColor, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(spnFontSize, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(cmbBackgroundColor, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(18, 18, 18)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel2)
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel4)
+                            .addComponent(jLabel5))
+                        .addGap(21, 21, 21)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(cmbFailureColor, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(cmbWarningColor, javax.swing.GroupLayout.Alignment.LEADING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(cmbDebugColor, 0, 238, Short.MAX_VALUE)
+                            .addComponent(cmbSuccessColor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addGap(1, 1, 1))
         );
+
+        jPanel2Layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {cmbBackgroundColor, cmbDebugColor});
+
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
@@ -260,15 +333,27 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
                 .addGap(18, 18, 18)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblBackgroundColor)
-                    .addComponent(cmbBackgroundColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(cmbBackgroundColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2)
+                    .addComponent(cmbDebugColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cmbStandardColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblStandardColor))
+                    .addComponent(lblStandardColor)
+                    .addComponent(jLabel3)
+                    .addComponent(cmbWarningColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cmbErrorColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(lblErrorColor))
+                    .addComponent(lblErrorColor)
+                    .addComponent(jLabel4)
+                    .addComponent(cmbFailureColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(lblInputColor)
+                    .addComponent(cmbInputColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel5)
+                    .addComponent(cmbSuccessColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblLinkColor)
@@ -303,14 +388,11 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(previewPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(lblTitle)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 103, Short.MAX_VALUE)
-                                .addComponent(btnRestore)))
-                        .addContainerGap())))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(lblTitle)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(btnRestore))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -322,7 +404,7 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(previewPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 81, Short.MAX_VALUE)
+                .addComponent(previewPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 51, Short.MAX_VALUE)
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -401,6 +483,41 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
         outputOptions.setLinkStyle(linkStyleModel.getLinkStyle());
     }//GEN-LAST:event_cmbLinkStyleActionPerformed
 
+    private void cmbInputColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbInputColorActionPerformed
+        Color input = ((ColorComboBox) cmbInputColor).getSelectedColor();
+        if (input != null) {
+            outputOptions.setColorInput(input);
+        }
+    }//GEN-LAST:event_cmbInputColorActionPerformed
+
+    private void cmbDebugColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbDebugColorActionPerformed
+        Color debug = ((ColorComboBox) cmbDebugColor).getSelectedColor();
+        if (debug != null) {
+            outputOptions.setColorDebug(debug);
+        }
+    }//GEN-LAST:event_cmbDebugColorActionPerformed
+
+    private void cmbWarningColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbWarningColorActionPerformed
+        Color warning = ((ColorComboBox) cmbWarningColor).getSelectedColor();
+        if (warning != null) {
+            outputOptions.setColorWarning(warning);
+        }
+    }//GEN-LAST:event_cmbWarningColorActionPerformed
+
+    private void cmbFailureColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbFailureColorActionPerformed
+        Color failure = ((ColorComboBox) cmbFailureColor).getSelectedColor();
+        if (failure != null) {
+            outputOptions.setColorFailure(failure);
+        }
+    }//GEN-LAST:event_cmbFailureColorActionPerformed
+
+    private void cmbSuccessColorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbSuccessColorActionPerformed
+        Color success = ((ColorComboBox) cmbSuccessColor).getSelectedColor();
+        if (success != null) {
+            outputOptions.setColorSuccess(success);
+        }
+    }//GEN-LAST:event_cmbSuccessColorActionPerformed
+
     void load() {
         if (previewInputOutput == null) {
             initPreview();
@@ -437,18 +554,28 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnRestore;
     private javax.swing.JButton btnSelectFont;
     private javax.swing.JComboBox cmbBackgroundColor;
+    private javax.swing.JComboBox cmbDebugColor;
     private javax.swing.JComboBox cmbErrorColor;
+    private javax.swing.JComboBox cmbFailureColor;
     private javax.swing.JComboBox cmbImportantLinkColor;
+    private javax.swing.JComboBox cmbInputColor;
     private javax.swing.JComboBox cmbLinkColor;
     private javax.swing.JComboBox cmbLinkStyle;
     private javax.swing.JComboBox cmbStandardColor;
+    private javax.swing.JComboBox cmbSuccessColor;
+    private javax.swing.JComboBox cmbWarningColor;
     private javax.swing.JTextField fldFontFamily;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JLabel lblBackgroundColor;
     private javax.swing.JLabel lblErrorColor;
     private javax.swing.JLabel lblFontFamily;
     private javax.swing.JLabel lblFontSize;
+    private javax.swing.JLabel lblInputColor;
     private javax.swing.JLabel lblLinkColor;
     private javax.swing.JLabel lblLinkStyle;
     private javax.swing.JLabel lblStandardColor;
@@ -462,6 +589,8 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
         previewInputOutput = initPreviewInputOutput();
         outputOptions = ((Lookup.Provider) previewInputOutput).
                 getLookup().lookup(OutputOptions.class);
+        final Reader in = previewInputOutput.getIn();
+        previewInputOutput.setInputVisible(true); // Instead of reading from in.
         previewInputOutput.getOut().println("Standard Output");         //NOI18N
         previewInputOutput.getErr().println("Error Output");            //NOI18N
         OutputListener ol = new OutputListenerImpl();
@@ -471,7 +600,7 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
             previewInputOutput.getOut().println();
             IOColorPrint.print(previewInputOutput, "Important Link", //NOI18N
                     ol, true, null);
-            previewInputOutput.getOut().print(" ");                     //NOI18N
+            previewInputOutput.getOut().println();
         } catch (IOException ex) {
             ex.printStackTrace(previewInputOutput.getErr());
         }
@@ -482,6 +611,18 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
             public void propertyChange(PropertyChangeEvent evt) {
                 controller.changed();
                 updateControlsByModel();
+            }
+        });
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                Component component = previewPanel.getComponent(0);
+                if (component instanceof AbstractOutputTab) {
+                    ((AbstractOutputTab) component).inputSent("Input from keyboard");
+                }
+                try {
+                    in.close();
+                } catch (IOException ex) {}
             }
         });
     }
@@ -503,8 +644,13 @@ public final class OutputSettingsPanel extends javax.swing.JPanel {
         spnFontSize.setValue(outputOptions.getFont().getSize());
         selectColor(cmbStandardColor, outputOptions.getColorStandard());
         selectColor(cmbErrorColor, outputOptions.getColorError());
+        selectColor(cmbInputColor, outputOptions.getColorInput());
         selectColor(cmbBackgroundColor, outputOptions.getColorBackground());
         selectColor(cmbLinkColor, outputOptions.getColorLink());
+        selectColor(cmbDebugColor, outputOptions.getColorDebug());
+        selectColor(cmbWarningColor, outputOptions.getColorWarning());
+        selectColor(cmbFailureColor, outputOptions.getColorFailure());
+        selectColor(cmbSuccessColor, outputOptions.getColorSuccess());
         selectColor(cmbImportantLinkColor,
                 outputOptions.getColorLinkImportant());
         cmbLinkStyle.setSelectedItem(

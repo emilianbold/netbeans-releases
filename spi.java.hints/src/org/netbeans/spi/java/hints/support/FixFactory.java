@@ -38,6 +38,7 @@ import java.util.EnumSet;
 import java.util.Set;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.editor.hints.Fix;
@@ -126,14 +127,15 @@ public final class FixFactory {
         protected void performRewrite(TransformationContext ctx) {
             WorkingCopy wc = ctx.getWorkingCopy();
             TreePath path = ctx.getPath();
-            ModifiersTree mt = (ModifiersTree) path.getLeaf();
-            Set<Modifier> modifiers = (mt.getFlags().isEmpty()) ?
-                EnumSet.noneOf(Modifier.class) :
-                EnumSet.copyOf(mt.getFlags());
-            modifiers.addAll(toAdd);
-            modifiers.removeAll(toRemove);
-            ModifiersTree newMod = wc.getTreeMaker().Modifiers(modifiers, mt.getAnnotations());
-            wc.rewrite(mt, newMod);
+            TreeMaker make = wc.getTreeMaker();
+            ModifiersTree newMods = (ModifiersTree) path.getLeaf();
+            for (Modifier a : toAdd) {
+                newMods = make.addModifiersModifier(newMods, a);
+            }
+            for (Modifier r : toRemove) {
+                newMods = make.removeModifiersModifier(newMods, r);
+            }
+            wc.rewrite(path.getLeaf(), newMods);
         }
 
         @Override

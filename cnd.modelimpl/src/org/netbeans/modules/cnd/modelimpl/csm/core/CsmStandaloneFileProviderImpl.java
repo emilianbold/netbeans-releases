@@ -160,7 +160,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         }        
         String absPath = CndFileUtils.normalizePath(fo);
         ProjectBase project = null;
-        synchronized (this) {
+        //synchronized (this) {
             // findFile is expensive - don't call it twice!
             CsmFile csmFile = ModelImpl.instance().findFile(FSPath.toFSPath(fo), true, false);
             if (csmFile != null) {
@@ -181,7 +181,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
                     }
                 }
             }
-        }
+        //}
         if (project != null && project.isValid()) {
             try {
                 CsmFile out = project.getFile(absPath, false);
@@ -244,25 +244,27 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
     }
 
     @Override
-    synchronized public void notifyClosed(CsmFile csmFile) {
+    public void notifyClosed(CsmFile csmFile) {
         //if (TRACE) {trace("checking file %s", csmFile.toString());} //NOI18N
         String closedFilePath = csmFile.getAbsolutePath().toString();
-        for (CsmProject csmProject : ModelImpl.instance().projects()) {
-            Object platformProject = csmProject.getPlatformProject();
-            if (platformProject instanceof NativeProjectImpl) {
-                NativeProjectImpl nativeProject = (NativeProjectImpl) platformProject;
-                if (nativeProject.getProjectRoot().equals(closedFilePath)) {
-                    for (CsmFile csmf : csmProject.getAllFiles()) {
-                        FileObject fo = ((FileImpl) csmf).getFileObject();
-                        DataObject dao = NativeProjectProvider.getDataObject(fo);
-                        if (dao != null) {
-                            NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
-                            if (set != null) {
-                                set.remove(nativeProject.findFileItem(fo));
+        synchronized (lock) {
+            for (CsmProject csmProject : ModelImpl.instance().projects()) {
+                Object platformProject = csmProject.getPlatformProject();
+                if (platformProject instanceof NativeProjectImpl) {
+                    NativeProjectImpl nativeProject = (NativeProjectImpl) platformProject;
+                    if (nativeProject.getProjectRoot().equals(closedFilePath)) {
+                        for (CsmFile csmf : csmProject.getAllFiles()) {
+                            FileObject fo = ((FileImpl) csmf).getFileObject();
+                            DataObject dao = NativeProjectProvider.getDataObject(fo);
+                            if (dao != null) {
+                                NativeFileItemSet set = dao.getLookup().lookup(NativeFileItemSet.class);
+                                if (set != null) {
+                                    set.remove(nativeProject.findFileItem(fo));
+                                }
                             }
                         }
+                        scheduleProjectRemoval(csmProject);
                     }
-                    scheduleProjectRemoval(csmProject);
                 }
             }
         }

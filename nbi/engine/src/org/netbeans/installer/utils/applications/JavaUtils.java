@@ -47,6 +47,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.FileProxy;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
@@ -155,13 +156,7 @@ public class JavaUtils {
     }
     
     public static JavaInfo getInfo(final File javaHome) {
-        File location = javaHome;
-        try {
-            location = javaHome.getCanonicalFile();
-        } catch (IOException e) {
-            ErrorManager.notifyDebug(ResourceUtils.getString(
-                    JavaUtils.class, ERROR_CANNOT_CANONIZE_KEY, javaHome), e);
-        }
+        File location = FileUtils.getNormalizedPathFile(javaHome);
         
         if (knownJdks.get(location) != null) {
             return knownJdks.get(location);

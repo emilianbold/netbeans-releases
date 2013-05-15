@@ -216,10 +216,10 @@ public final class WhereUsedSupport {
         final Collection<? extends PhpElement> allDeclarations = occurence != null ? occurence.getAllDeclarations() : Collections.<PhpElement>emptyList();
         boolean canContinue = occurence != null && allDeclarations.size() > 0 && allDeclarations.size() < 5;
         if (canContinue && EnumSet.of(Occurence.Accuracy.EXACT, Occurence.Accuracy.MORE, Occurence.Accuracy.UNIQUE).contains(occurence.degreeOfAccuracy())) {
+            FileObject parserFo = info.getSnapshot().getSource().getFileObject();
             for (final PhpElement declarationElement : allDeclarations) {
                 try {
                     final FileObject fileObject = declarationElement.getFileObject();
-                    FileObject parserFo = info.getSnapshot().getSource().getFileObject();
                     if (fileObject != null && parserFo != fileObject) {
                         ParserManager.parse(Collections.singleton(Source.create(fileObject)), new UserTask() {
 
@@ -240,7 +240,7 @@ public final class WhereUsedSupport {
                     return null;
                 }
             }
-            final Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(info));
+            final Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.getDependent(parserFo));
             FileObject fileObject = info.getSnapshot().getSource().getFileObject();
             return getInstance(declarations, indexQuery, fileObject, offset);
         }

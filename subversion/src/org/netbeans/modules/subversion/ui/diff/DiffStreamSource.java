@@ -61,7 +61,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.tigris.subversion.svnclientadapter.SVNClientException;
 
 /**
  * Stream source for diffing CVS managed files.

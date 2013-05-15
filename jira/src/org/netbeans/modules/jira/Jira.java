@@ -45,12 +45,11 @@ package org.netbeans.modules.jira;
 import com.atlassian.connector.eclipse.internal.jira.core.JiraClientFactory;
 import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
 import com.atlassian.connector.eclipse.internal.jira.core.service.JiraClient;
-import com.atlassian.connector.eclipse.internal.jira.core.service.JiraException;
 import java.util.logging.Logger;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
 import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
-import org.netbeans.modules.jira.issue.JiraTaskListProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.repository.JiraRepository;
@@ -72,9 +71,10 @@ public class Jira {
     private RequestProcessor rp;
 
     private BugtrackingFactory<JiraRepository, JiraQuery, NbJiraIssue> bf;
-    private JiraRepositoryProvider brp;
-    private JiraQueryProvider bqp;
-    private JiraIssueProvider bip;
+    private JiraRepositoryProvider jrp;
+    private JiraQueryProvider jqp;
+    private JiraIssueProvider jip;
+    private IssueNode.ChangesProvider<NbJiraIssue> jcp;
     
     private Jira() {
         ModuleLifecycleManager.instantiated = true;
@@ -83,13 +83,6 @@ public class Jira {
     public static synchronized Jira getInstance() {
         if(instance == null) {
             instance = new Jira();
-            // lazy ping tasklist issue provider to load issues ...
-            instance.getRequestProcessor().post(new Runnable() {
-                @Override
-                public void run() {
-                    JiraTaskListProvider.getInstance();
-                }
-            });
         }
         return instance;
     }
@@ -146,24 +139,36 @@ public class Jira {
     }    
     
     public JiraIssueProvider getIssueProvider() {
-        if(bip == null) {
-            bip = new JiraIssueProvider();
+        if(jip == null) {
+            jip = new JiraIssueProvider();
         }
-        return bip; 
+        return jip; 
     }
     public JiraQueryProvider getQueryProvider() {
-        if(bqp == null) {
-            bqp = new JiraQueryProvider();
+        if(jqp == null) {
+            jqp = new JiraQueryProvider();
         }
-        return bqp; 
+        return jqp; 
     }
     public JiraRepositoryProvider getRepositoryProvider() {
-        if(brp == null) {
-            brp = new JiraRepositoryProvider();
+        if(jrp == null) {
+            jrp = new JiraRepositoryProvider();
         }
-        return brp; 
+        return jrp; 
     }
 
+    public IssueNode.ChangesProvider<NbJiraIssue> getChangesProvider() {
+        if(jcp == null) {
+            jcp = new IssueNode.ChangesProvider<NbJiraIssue>() {
+                @Override
+                public String getRecentChanges(NbJiraIssue i) {
+                    return i.getRecentChanges();
+                }
+            };
+        }
+        return jcp;
+    }    
+    
     public UndoRedoSupport getUndoRedoSupport(NbJiraIssue issue) {
         return getBugtrackingFactory().getUndoRedoSupport(JiraUtils.getRepository(issue.getRepository()), issue);
     }

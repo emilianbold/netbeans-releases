@@ -64,7 +64,6 @@ import org.openide.util.actions.CallableSystemAction;
  */
 @ActionID(id = "org.netbeans.modules.cnd.navigation.macroview.MacroExpansionAction", category = "Window")
 @ActionRegistration(lazy = true, displayName = "#CTL_MacroExpansionAction", iconBase=MacroExpansionTopComponent.ICON_PATH)
-@ActionReference(path = "Menu/Window/Other", name = "MacroExpansionAction", position = 1100)
 public class MacroExpansionAction extends CallableSystemAction {
 
     public MacroExpansionAction() {

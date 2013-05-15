@@ -43,6 +43,8 @@
 package org.netbeans.modules.php.api.phpmodule;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -77,6 +79,7 @@ public final class PhpModuleProperties {
      * Get encoding of the {@link PhpModule}.
      * @return encoding of the {@link PhpModule}
      */
+    @NonNull
     public String getEncoding() {
         return encoding;
     }
@@ -100,6 +103,7 @@ public final class PhpModuleProperties {
      * Get test directory.
      * @return test directory
      */
+    @CheckForNull
     public FileObject getTests() {
         return tests;
     }
@@ -120,8 +124,9 @@ public final class PhpModuleProperties {
 
     /**
      * Get web root directory.
-     * @return web root directory
+     * @return web root directory, can be {@code null} for {@link PhpModule#isBroken() broken} PHP module
      */
+    @CheckForNull
     public FileObject getWebRoot() {
         return webRoot;
     }
@@ -142,8 +147,9 @@ public final class PhpModuleProperties {
 
     /**
      * Get index file.
-     * @return index file
+     * @return index file, can be {@code null} if not configured
      */
+    @CheckForNull
     public FileObject getIndexFile() {
         return indexFile;
     }
@@ -164,8 +170,9 @@ public final class PhpModuleProperties {
 
     /**
      * Get project URL.
-     * @return project URL
+     * @return project URL, can be {@code null} if not configured
      */
+    @CheckForNull
     public String getUrl() {
         return url;
     }
@@ -188,6 +195,7 @@ public final class PhpModuleProperties {
      * Get project Include path.
      * @return project Include path
      */
+    @NonNull
     public List<String> getIncludePath() {
         return includePath;
     }

@@ -684,8 +684,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                             if (topID == OPERATOR && top.getParameterCount() == 0 &&
                                                     top.getTokenCount() == 1 &&
                                                     (top.getTokenID(0) == CppTokenId.STAR ||
-                                                    top.getTokenID(0) == CppTokenId.AMP)) {
-                                                // we have variable and then * or &,
+                                                    top.getTokenID(0) == CppTokenId.AMP ||
+                                                    (supportTemplates && top.getTokenID(0) == CppTokenId.AMPAMP))) {
+                                                // we have variable and then * or &, or &&
                                                 // join into TYPE_REFERENCE
                                                 popExp(); // pop '&' or '*' (top)
                                                 popExp(); // pop second (top2)
@@ -1182,53 +1183,56 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                         break;
 
                     case STAR:
+                    case AMPAMP:
                     case AMP: {
-                        boolean pointer = false;
-                        // special handling of * and &, because it can be not operator
-                        // while dereference and address-of expression
-                        // try to handle it the same ways as UNARY_OPERATOR
-                        switch (topID) {
-                            case GENERIC_TYPE_OPEN:
-                            case MEMBER_POINTER_OPEN: // next is operator as well
-                            case METHOD_OPEN:
-                            case ARRAY_OPEN:
-                            case PARENTHESIS_OPEN:
-                            case SPECIAL_PARENTHESIS_OPEN:
-                            //case OPERATOR: ??? collision with usual operator behavior
-                            //case UNARY_OPERATOR:
-                            case NO_EXP:
-                            case CONVERSION:
-                                // member pointer operator
-                                CsmCompletionExpression opExp = createTokenExp(MEMBER_POINTER_OPEN);
-                                pushExp(opExp); // add operator as new exp
-                                pointer = true;
-                                break;
-                            case TYPE:
-                            case TYPE_REFERENCE:
-                            case GENERIC_TYPE:
-                            case SCOPE_OPEN:
-                                // we have type or type reference and then * or &,
-                                // join into TYPE_REFERENCE
-                                popExp();
-                                CsmCompletionExpression exp = createTokenExp(TYPE_REFERENCE);
-                                exp.addParameter(top);
-                                pushExp(exp);
-                                pointer = true;
-                                break;
-                            case OPERATOR:
-                                if ((top.getTokenCount() == 1 && isEqOperator(top.getTokenID(0))) ||
-                                        (top.getTokenID(0) == CppTokenId.COLON)) {
+                        if (tokenID != CppTokenId.AMPAMP || supportTemplates) {
+                            boolean pointer = false;
+                            // special handling of *, & and && because it can be not operator
+                            // while dereference and address-of expression
+                            // try to handle it the same ways as UNARY_OPERATOR
+                            switch (topID) {
+                                case GENERIC_TYPE_OPEN:
+                                case MEMBER_POINTER_OPEN: // next is operator as well
+                                case METHOD_OPEN:
+                                case ARRAY_OPEN:
+                                case PARENTHESIS_OPEN:
+                                case SPECIAL_PARENTHESIS_OPEN:
+                                //case OPERATOR: ??? collision with usual operator behavior
+                                //case UNARY_OPERATOR:
+                                case NO_EXP:
+                                case CONVERSION:
                                     // member pointer operator
-                                    CsmCompletionExpression memPtrExp = createTokenExp(MEMBER_POINTER_OPEN);
-                                    pushExp(memPtrExp); // add operator as new exp
+                                    CsmCompletionExpression opExp = createTokenExp(MEMBER_POINTER_OPEN);
+                                    pushExp(opExp); // add operator as new exp
                                     pointer = true;
-                                }
+                                    break;
+                                case TYPE:
+                                case TYPE_REFERENCE:
+                                case GENERIC_TYPE:
+                                case SCOPE_OPEN:
+                                    // we have type or type reference and then * or &,
+                                    // join into TYPE_REFERENCE
+                                    popExp();
+                                    CsmCompletionExpression exp = createTokenExp(TYPE_REFERENCE);
+                                    exp.addParameter(top);
+                                    pushExp(exp);
+                                    pointer = true;
+                                    break;
+                                case OPERATOR:
+                                    if ((top.getTokenCount() == 1 && isEqOperator(top.getTokenID(0))) ||
+                                            (top.getTokenID(0) == CppTokenId.COLON)) {
+                                        // member pointer operator
+                                        CsmCompletionExpression memPtrExp = createTokenExp(MEMBER_POINTER_OPEN);
+                                        pushExp(memPtrExp); // add operator as new exp
+                                        pointer = true;
+                                    }
+                                    break;
+                            }
+                            if (pointer) {
                                 break;
-                        }
-                        if (pointer) {
-                            break;
-                        } else {
-                            // else "nobreak" to allow to be handled as normal operators
+                            } else {
+                                // else "nobreak" to allow to be handled as normal operators
+                            }
                         }
                     }
                     case EQ: // Assignment operators
@@ -1249,8 +1253,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case EQEQ:
                     case NOTEQ:
 
-                    case AMPAMP: // Binary, result is boolean
-                    case BARBAR:
+                    case BARBAR:// Binary, result is boolean
 
                     case LTLT: // Always binary
                     case SLASH:

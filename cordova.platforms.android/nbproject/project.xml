@@ -37,7 +37,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.7</specification-version>
+                        <specification-version>1.16</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -67,11 +67,19 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.web.browser.api</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.17</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.web.clientproject.api</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.8</specification-version>
+                        <specification-version>1.29</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

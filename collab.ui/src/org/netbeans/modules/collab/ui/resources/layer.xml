@@ -91,10 +91,10 @@ made subject to such option by the copyright holder.
             -->
         </folder>
         <folder name="Window">
-            <folder name="Other">
+            <folder name="Tools">
                 <file name="Collaboration.shadow">
                     <attr name="originalFile" stringvalue="Actions/Collaboration/org-netbeans-modules-collab-ui-actions-ShowCollabExplorerAction.instance"/>
-                    <attr name="position" intvalue="130"/>
+                    <attr name="position" intvalue="655"/>
                 </file>
             </folder>
             <!-- TAF: Experiment

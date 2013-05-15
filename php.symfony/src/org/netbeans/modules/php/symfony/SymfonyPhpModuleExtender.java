@@ -51,13 +51,13 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpInterpreter;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.spi.framework.PhpModuleExtender;
 import org.netbeans.modules.php.symfony.ui.wizards.NewProjectConfigurationPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * @author Tomas Mysik
@@ -87,7 +87,7 @@ public class SymfonyPhpModuleExtender extends PhpModuleExtender {
 
         // generate apps
         for (Pair<String, String[]> app : getPanel().getApps()) {
-            symfonyScript.initApp(phpModule, app.first, app.second);
+            symfonyScript.initApp(phpModule, app.first(), app.second());
         }
 
         // prefetch commands

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -57,7 +57,9 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
+import java.util.logging.Logger;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.modules.db.test.TestBase;
 
@@ -296,6 +298,11 @@ public class DbDriverManagerTest extends TestBase {
 
         public int getMajorVersion() {
             return 0;
+        }
+
+        @Override
+        public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+            throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
         }
     }
     

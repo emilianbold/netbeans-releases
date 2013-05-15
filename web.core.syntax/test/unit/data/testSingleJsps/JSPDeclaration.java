@@ -6,7 +6,6 @@ class SimplifiedJSPServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
  private int property = 1; 
 
-
 	void mergedScriptlets(
 		HttpServletRequest request,
 		HttpServletResponse response,
@@ -19,9 +18,7 @@ class SimplifiedJSPServlet extends HttpServlet {
 		PageContext pageContext,
 		Throwable exception
 	) throws Throwable {
-
   System.err.println(this.property);
-
 
 	}
 }

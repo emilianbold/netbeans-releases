@@ -86,6 +86,7 @@ public interface CsmFinder {
     * @param begining of the name of the class. The namespace name must be omitted.
     * @param exactMatch whether the given name is the exact requested name
     *   of the class or not.
+    * @param searchNested whether elements must be searched in unnamed nested namespaces as well
     * @return list of the matching classes
     */
     public List<CsmClassifier> findClasses(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested);
@@ -95,6 +96,7 @@ public interface CsmFinder {
     * @param begining of the name of the element. The namespace name must be omitted.
     * @param exactMatch whether the given name is the exact requested name
     *   of the element or not.
+    * @param searchNested whether elements must be searched in unnamed nested namespaces as well
     * @return list of the matching elements
     */
     public List<CsmObject> findNamespaceElements(CsmNamespace nmsp, String name, boolean exactMatch, boolean searchNested,boolean searchFirst);

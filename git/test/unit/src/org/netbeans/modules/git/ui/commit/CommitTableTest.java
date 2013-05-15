@@ -42,13 +42,10 @@
 
 package org.netbeans.modules.git.ui.commit;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
-import java.util.EnumSet;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.git.FileInformation;
-import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
 import org.netbeans.modules.git.GitTestKit;
 
 /**
@@ -70,7 +67,7 @@ public class CommitTableTest extends NbTestCase {
     public void testNoFiles() {
        GitCommitTable t = new GitCommitTable();
         
-       t.setNodes(new GitFileNode[0]);
+       t.setNodes(new GitLocalFileNode[0]);
        assertFalse(t.containsCommitable());  
        assertNotNull(t.getErrorMessage());
     }
@@ -78,7 +75,7 @@ public class CommitTableTest extends NbTestCase {
     public void testModifiedFile() throws IOException {
        GitCommitTable t = new GitCommitTable();
         
-       t.setNodes(new GitFileNode[] { GitTestKit.createFileNode(getWorkDir(), "file", FileInformation.Status.MODIFIED_HEAD_WORKING_TREE)});
+       t.setNodes(new GitLocalFileNode[] { GitTestKit.createFileNode(getWorkDir(), "file", FileInformation.Status.MODIFIED_HEAD_WORKING_TREE)});
        assertTrue(t.containsCommitable());         
        assertNull(t.getErrorMessage());
     }
@@ -86,7 +83,7 @@ public class CommitTableTest extends NbTestCase {
     public void testRemovedFile() throws IOException {
        GitCommitTable t = new GitCommitTable();
         
-       t.setNodes(new GitFileNode[] { GitTestKit.createFileNode(getWorkDir(), "file", FileInformation.STATUS_REMOVED)});
+       t.setNodes(new GitLocalFileNode[] { GitTestKit.createFileNode(getWorkDir(), "file", FileInformation.STATUS_REMOVED)});
        assertTrue(t.containsCommitable());         
        assertNull(t.getErrorMessage());
     }
@@ -94,7 +91,7 @@ public class CommitTableTest extends NbTestCase {
     public void testExcludedFile() throws IOException {
        GitCommitTable t = new GitCommitTable();
         
-       t.setNodes(new GitFileNode[] { GitTestKit.createFileNode(getWorkDir(), "file", FileInformation.Status.MODIFIED_HEAD_WORKING_TREE, true)});
+       t.setNodes(new GitLocalFileNode[] { GitTestKit.createFileNode(getWorkDir(), "file", FileInformation.Status.MODIFIED_HEAD_WORKING_TREE, true)});
        assertFalse(t.containsCommitable());         
        assertNotNull(t.getErrorMessage());
     }
@@ -102,7 +99,7 @@ public class CommitTableTest extends NbTestCase {
     public void testConflictFile() throws IOException {
        GitCommitTable t = new GitCommitTable();
         
-       t.setNodes(new GitFileNode[] { GitTestKit.createFileNode(getWorkDir(), "file", FileInformation.Status.IN_CONFLICT)});
+       t.setNodes(new GitLocalFileNode[] { GitTestKit.createFileNode(getWorkDir(), "file", FileInformation.Status.IN_CONFLICT)});
        assertFalse(t.containsCommitable());         
        assertNotNull(t.getErrorMessage());
     }
@@ -110,7 +107,7 @@ public class CommitTableTest extends NbTestCase {
     public void testExcludedConflictFile() throws IOException {
        GitCommitTable t = new GitCommitTable();
         
-       t.setNodes(new GitFileNode[] { GitTestKit.createFileNode(getWorkDir(), "file", FileInformation.Status.IN_CONFLICT, true)});
+       t.setNodes(new GitLocalFileNode[] { GitTestKit.createFileNode(getWorkDir(), "file", FileInformation.Status.IN_CONFLICT, true)});
        assertFalse(t.containsCommitable());         
        assertNotNull(t.getErrorMessage());
     }
@@ -118,7 +115,7 @@ public class CommitTableTest extends NbTestCase {
     public void testModifiedConflictFile() throws IOException {
        GitCommitTable t = new GitCommitTable();
         
-       t.setNodes(new GitFileNode[] { GitTestKit.createFileNode(getWorkDir(), "mfile", FileInformation.Status.MODIFIED_HEAD_WORKING_TREE), GitTestKit.createFileNode(getWorkDir(), "cfile", FileInformation.Status.IN_CONFLICT)});
+       t.setNodes(new GitLocalFileNode[] { GitTestKit.createFileNode(getWorkDir(), "mfile", FileInformation.Status.MODIFIED_HEAD_WORKING_TREE), GitTestKit.createFileNode(getWorkDir(), "cfile", FileInformation.Status.IN_CONFLICT)});
        assertFalse(t.containsCommitable());         
        assertNotNull(t.getErrorMessage());
     }
@@ -126,7 +123,7 @@ public class CommitTableTest extends NbTestCase {
     public void testModifiedExcludedConflictFile() throws IOException {
        GitCommitTable t = new GitCommitTable();
         
-       t.setNodes(new GitFileNode[] { GitTestKit.createFileNode(getWorkDir(), "mfile", FileInformation.Status.MODIFIED_HEAD_WORKING_TREE), GitTestKit.createFileNode(getWorkDir(), "cfile", FileInformation.Status.IN_CONFLICT, true)});
+       t.setNodes(new GitLocalFileNode[] { GitTestKit.createFileNode(getWorkDir(), "mfile", FileInformation.Status.MODIFIED_HEAD_WORKING_TREE), GitTestKit.createFileNode(getWorkDir(), "cfile", FileInformation.Status.IN_CONFLICT, true)});
        assertTrue(t.containsCommitable());         
        assertNull(t.getErrorMessage());
     }

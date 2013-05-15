@@ -54,6 +54,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.openide.DialogDescriptor;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.NotifyDescriptor;
 import org.openide.util.HelpCtx;
 

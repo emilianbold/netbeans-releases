@@ -122,6 +122,10 @@ public abstract class PHPFormatterTestBase extends PHPCodeCompletionTestBase {
     }
 
     protected void reformatFileContents(String file, Map<String, Object> options, boolean isTemplate) throws Exception {
+        reformatFileContents(file, options, isTemplate, new IndentPrefs(4, 4));
+    }
+
+    private void reformatFileContents(String file, Map<String, Object> options, boolean isTemplate, IndentPrefs indentPrefs) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
 
@@ -167,12 +171,10 @@ public abstract class PHPFormatterTestBase extends PHPCodeCompletionTestBase {
             doc.putProperty(TokenFormatter.TEMPLATE_HANDLER_PROPERTY, new Object());
         }
 
-
-        IndentPrefs preferences = new IndentPrefs(4, 4);
-        Formatter formatter = getFormatter(preferences);
+        Formatter formatter = getFormatter(indentPrefs);
         //assertNotNull("getFormatter must be implemented", formatter);
 
-        setupDocumentIndentation(doc, preferences);
+        setupDocumentIndentation(doc, indentPrefs);
 
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
         for (String option : options.keySet()) {

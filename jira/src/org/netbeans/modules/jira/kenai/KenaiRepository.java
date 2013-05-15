@@ -55,10 +55,10 @@ import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
 import java.util.*;
 import org.eclipse.core.runtime.CoreException;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiAccessor;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiProject;
-import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.jira.JiraConnector;
@@ -81,16 +81,16 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
     private KenaiQuery myIssues;
     private KenaiQuery allIssues;
     private String host;
-    private final KenaiProject kenaiProject;
+    private final TeamProject kenaiProject;
 
-    public KenaiRepository(KenaiProject kenaiProject, String repoName, String url, String host, String project) {
+    public KenaiRepository(TeamProject kenaiProject, String repoName, String url, String host, String project) {
         // use name for id, can't be changed anyway
         super(createInfo(repoName, url));
         icon = ImageUtilities.loadImage(ICON_PATH, true);
         this.projectName = project;
         this.host = host;
         this.kenaiProject = kenaiProject;
-        KenaiAccessor kenaiAccessor = KenaiUtil.getKenaiAccessor(url);
+        TeamAccessor kenaiAccessor = TeamUtil.getTeamAccessor(url);
         if (kenaiAccessor != null) {
             kenaiAccessor.addPropertyChangeListener(this, kenaiProject.getWebLocation().toString());
         }
@@ -160,6 +160,10 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
         return queries;
     }
+    
+    public TeamProject getKenaiProject() {
+        return kenaiProject;
+    }    
 
     public JiraQuery getMyIssuesQuery() throws MissingResourceException {
         JiraConfiguration configuration = getConfiguration();
@@ -247,7 +251,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     protected void getRemoteFilters() {
-        if(!KenaiUtil.isLoggedIn(kenaiProject.getWebLocation())) {
+        if(!TeamUtil.isLoggedIn(kenaiProject.getWebLocation())) {
             return;
         }
         super.getRemoteFilters();
@@ -260,7 +264,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
     
     @Override
     public boolean authenticate(String errroMsg) {
-        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
+        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), true);
         if(pa == null) {
             return false;
         }
@@ -273,16 +277,16 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
         return true;
     }
 
-    private static String getKenaiUser(KenaiProject kenaiProject) {
-        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
+    private static String getKenaiUser(TeamProject kenaiProject) {
+        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
         if(pa != null) {
             return pa.getUserName();
         }
         return "";                                                              // NOI18N
     }
 
-    private static char[] getKenaiPassword(KenaiProject kenaiProject) {
-        PasswordAuthentication pa = KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
+    private static char[] getKenaiPassword(TeamProject kenaiProject) {
+        PasswordAuthentication pa = TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false);
         if(pa != null) {
             return pa.getPassword();
         }
@@ -325,7 +329,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     public Collection<RepositoryUser> getUsers() {
-         Collection<RepositoryUser> users = KenaiUtil.getProjectMembers(kenaiProject);
+         Collection<RepositoryUser> users = TeamUtil.getProjectMembers(kenaiProject);
          if (users.isEmpty()) {
              // fallback - try cache
              users = super.getUsers();
@@ -339,7 +343,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if(evt.getPropertyName().equals(KenaiAccessor.PROP_LOGIN)) {
+        if(evt.getPropertyName().equals(TeamAccessor.PROP_LOGIN)) {
 //            if(myIssues != null) {
 //                KenaiQueryController c = (KenaiQueryController) myIssues.getController();
 //                c.populate(getQueryUrl());
@@ -350,7 +354,7 @@ public class KenaiRepository extends JiraRepository implements PropertyChangeLis
             String user;
             char[] psswd;
             PasswordAuthentication pa =
-                KenaiUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
+                TeamUtil.getPasswordAuthentication(kenaiProject.getWebLocation().toString(), false); // do not force login
             if(pa != null) {
                 user = pa.getUserName();
                 psswd = pa.getPassword();

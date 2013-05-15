@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 
 /**
  *

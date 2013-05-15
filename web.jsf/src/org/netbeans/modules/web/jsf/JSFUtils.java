@@ -56,6 +56,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.j2ee.common.Util;
@@ -63,6 +64,7 @@ import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.Version;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerLibrary;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
@@ -95,6 +97,7 @@ public class JSFUtils {
     // the name of jstl libraryr
     public static String DEFAULT_JSTL_1_1_NAME = "jstl11";  //NOI18N
 
+    public static final String EJB_STATELESS = "javax.ejb.Stateless"; //NOI18N
     public static final String FACES_EXCEPTION = "javax.faces.FacesException"; //NOI18N
     public static final String JSF_1_2__API_SPECIFIC_CLASS = "javax.faces.application.StateManagerWrapper"; //NOI18N
     public static final String JSF_2_0__API_SPECIFIC_CLASS = "javax.faces.application.ProjectStage"; //NOI18N
@@ -256,30 +259,72 @@ public class JSFUtils {
         return (tmpPath != null ? path + tmpPath : null);
     }
 
-    public static boolean isJSF12Plus(WebModule webModule) {
-        return isJSFPlus(webModule, JSF_1_2__API_SPECIFIC_CLASS);
+    /**
+     * Use {@link JSFVersion#get(org.netbeans.modules.web.api.webmodule.WebModule, boolean) } instead.
+     */
+    @Deprecated
+    public static boolean isJSF12Plus(WebModule webModule, boolean includingPlatformCP) {
+        return isJSFPlus(webModule, includingPlatformCP, JSF_1_2__API_SPECIFIC_CLASS);
     }
 
-    public static boolean isJSF20Plus(WebModule webModule) {
-        return isJSFPlus(webModule, JSF_2_0__API_SPECIFIC_CLASS);
+    /**
+     * Use {@link JSFVersion#get(org.netbeans.modules.web.api.webmodule.WebModule, boolean) } instead.
+     */
+    @Deprecated
+    public static boolean isJSF20Plus(WebModule webModule, boolean includingPlatformCP) {
+        return isJSFPlus(webModule, includingPlatformCP, JSF_2_0__API_SPECIFIC_CLASS);
     }
 
-    public static boolean isJSF21Plus(WebModule webModule) {
-        return isJSFPlus(webModule, JSF_2_1__API_SPECIFIC_CLASS);
+    /**
+     * Use {@link JSFVersion#get(org.netbeans.modules.web.api.webmodule.WebModule, boolean) } instead.
+     */
+    @Deprecated
+    public static boolean isJSF21Plus(WebModule webModule, boolean includingPlatformCP) {
+        return isJSFPlus(webModule, includingPlatformCP, JSF_2_1__API_SPECIFIC_CLASS);
     }
 
-    public static boolean isJSF22Plus(WebModule webModule) {
-        return isJSFPlus(webModule, JSF_2_2__API_SPECIFIC_CLASS);
+    /**
+     * Use {@link JSFVersion#get(org.netbeans.modules.web.api.webmodule.WebModule, boolean) } instead.
+     */
+    @Deprecated
+    public static boolean isJSF22Plus(WebModule webModule, boolean includingPlatformCP) {
+        return isJSFPlus(webModule, includingPlatformCP, JSF_2_2__API_SPECIFIC_CLASS);
     }
 
-    private static boolean isJSFPlus(WebModule webModule, String versionSpecificClass) {
+    /**
+     * Use {@link JSFVersion#get(org.netbeans.modules.web.api.webmodule.WebModule, boolean) } instead.
+     */
+    @Deprecated
+    private static boolean isJSFPlus(WebModule webModule, boolean includingPlatformCP, String versionSpecificClass) {
         if (webModule == null) {
             return false;
         }
 
         final ClassPath compileCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
-        if (compileCP != null) {
+        if (compileCP == null) {
+            return false;
+        }
+
+        if (includingPlatformCP) {
             return compileCP.findResource(versionSpecificClass.replace('.', '/') + ".class") != null; //NOI18N
+        } else {
+            Project project = FileOwnerQuery.getOwner(getFileObject(webModule));
+            if (project == null) {
+                return false;
+            }
+            List<File> platformClasspath = Arrays.asList(Util.getJ2eePlatformClasspathEntries(project, Util.getPlatform(project)));
+            List<URL> projectDeps = new ArrayList<URL>();
+            for (ClassPath.Entry entry : compileCP.entries()) {
+                File archiveOrDir = FileUtil.archiveOrDirForURL(entry.getURL());
+                if (archiveOrDir == null || !platformClasspath.contains(archiveOrDir)) {
+                    projectDeps.add(entry.getURL());
+                }
+            }
+            try {
+                return Util.containsClass(projectDeps, versionSpecificClass); //NOI18N
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
         return false;
     }

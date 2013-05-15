@@ -165,6 +165,7 @@ made subject to such option by the copyright holder.
 
         <echo message="ANTLR Parser Generator   Version 3.3" />
         <java classname="org.antlr.Tool" fork="true" failonerror="true">
+            <!--<arg value="-trace"/>-->
             <arg value="-o"/>
             <arg value="${antlr.output.dir}"/>
             <arg value="${antlr.grammar.dir}/FortranParser.g"/>
@@ -188,6 +189,7 @@ made subject to such option by the copyright holder.
 
         <echo message="ANTLR Parser Generator   Version 3.3" />
         <java classname="org.antlr.Tool" fork="true" failonerror="true">
+            <arg value="-trace"/>
             <arg value="-o"/>
             <arg value="${antlr3.cppparser.output.dir}"/>
             <arg value="${antlr3.cppparser.grammar.dir}/CXXParser.g"/>
@@ -208,6 +210,7 @@ made subject to such option by the copyright holder.
 
         <echo message="ANTLR Parser Generator   Version 3.3" />
         <java classname="org.antlr.Tool" fork="true" failonerror="true">
+            <!--<arg value="-trace"/>-->
             <arg value="-o"/>
             <arg value="${antlr3.evaluator.output.dir}"/>
             <arg value="${antlr3.evaluator.grammar.dir}/Evaluator.g"/>

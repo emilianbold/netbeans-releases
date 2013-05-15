@@ -333,6 +333,11 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                 return new CharSequence[0];
             }
         }
+
+        @Override
+        public String toString() {
+            return "{" + "global=" + global + ", scope=" + scope + super.toString() + '}'; //NOI18N
+        }
     }
     
     public static class SimpleDeclarationBuilder extends ScopedDeclarationBuilder {
@@ -359,7 +364,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         
         protected SimpleDeclarationBuilder(SimpleDeclarationBuilder builder) {
             super(builder);
-            typedefSpecifier = builder.typeSpecifier;
+            typedefSpecifier = builder.typedefSpecifier;
             friendSpecifier = builder.friendSpecifier;
             typeSpecifier = builder.typeSpecifier;
             inDeclSpecifiers = builder.inDeclSpecifiers;
@@ -530,7 +535,17 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         public CsmDeclaration create() {
             throw new UnsupportedOperationException("Should not be used."); // NOI18N
         }
-        
+
+        @Override
+        public String toString() {
+            return "SimpleDeclarationBuilder{" + "typedefSpecifier=" + typedefSpecifier + ", friendSpecifier=" + friendSpecifier + //NOI18N
+                    ", typeSpecifier=" + typeSpecifier + ", inDeclSpecifiers=" + inDeclSpecifiers + //NOI18N
+                    ", declaratorBuilder=" + declaratorBuilder + ", typeBuilder=" + typeBuilder + //NOI18N
+                    ", parametersListBuilder=" + parametersListBuilder + ", templateDescriptorBuilder=" + templateDescriptorBuilder + //NOI18N
+                    ", initializerBuilder=" + initializerBuilder + ", _static=" + _static + //NOI18N
+                    ", _extern=" + _extern + ", _const=" + _const + ", constructor=" + constructor + //NOI18N
+                    ", destructor=" + destructor + super.toString() + '}'; //NOI18N
+        }
     }
     
     public static class DeclaratorBuilder implements CsmObjectBuilder {
@@ -540,6 +555,7 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         private NameBuilder nameBuilder;
         
         public void setName(CharSequence name) {
+            assert CharSequences.isCompact(name) : "only compact strings allowed";
             this.name = name;
         }
 
@@ -566,7 +582,11 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
         public void setNameBuilder(NameBuilder nameBuilder) {
             this.nameBuilder = nameBuilder;
         }
-        
+
+        @Override
+        public String toString() {
+            return "DeclaratorBuilder{" + "level=" + level + ", name=" + name + ", nameBuilder=" + nameBuilder + '}'; //NOI18N
+        }
     }    
     
     ////////////////////////////////////////////////////////////////////////////

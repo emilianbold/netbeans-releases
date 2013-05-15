@@ -61,7 +61,7 @@ import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
@@ -217,16 +217,12 @@ public class IssueAccessorTest extends NbTestCase {
 
         public IATestRepository(String name) throws IOException {
             KenaiProject kp = kenai.getProject(name);
-            delegate = APIAccessor.IMPL.getImpl(KenaiUtil.getRepository(kp.getWebLocation().toString(), kp.getName()));
+            delegate = APIAccessor.IMPL.getImpl(TeamUtil.getRepository(kp.getWebLocation().toString(), kp.getName()));
         }
 
         @Override
         public RepositoryInfo getInfo() {
             return delegate.getInfo();
-        }
-        
-        public Lookup getLookup() {
-            return delegate.getLookup();
         }
         public Image getIcon() { throw new UnsupportedOperationException("Not supported yet."); }
         public TestIssue[] getIssues(String[] id) { throw new UnsupportedOperationException("Not supported yet."); }

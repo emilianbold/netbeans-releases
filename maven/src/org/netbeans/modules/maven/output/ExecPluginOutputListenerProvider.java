@@ -46,6 +46,7 @@ import org.netbeans.modules.maven.api.output.OutputProcessor;
 import org.netbeans.modules.maven.api.output.OutputUtils;
 import org.netbeans.modules.maven.api.output.OutputVisitor;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.windows.OutputListener;
@@ -63,7 +64,7 @@ public class ExecPluginOutputListenerProvider implements OutputProcessor {
         "mojo-execute#exec:exec", //NOI18N
         "mojo-execute#exec:java" //NOI18N
     };
-    private NbMavenProjectImpl project;
+    private final NbMavenProjectImpl project;
     
     /** Creates a new instance of ExecPluginOutputListenerProvider */
     public ExecPluginOutputListenerProvider(NbMavenProjectImpl proj) {
@@ -72,7 +73,12 @@ public class ExecPluginOutputListenerProvider implements OutputProcessor {
     
     @Override
     public void processLine(String line, OutputVisitor visitor) {
-        ClassPath[] cp = project.getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectClassPaths(ClassPath.EXECUTE);
+        OutputVisitor.Context context = visitor.getContext();
+        Project prj = project;
+        if (context != null && context.getCurrentProject() != null) {
+            prj = context.getCurrentProject();
+        }
+        ClassPath[] cp = prj.getLookup().lookup(ProjectSourcesClassPathProvider.class).getProjectClassPaths(ClassPath.EXECUTE);
         OutputListener list = OutputUtils.matchStackTraceLine(line, ClassPathSupport.createProxyClassPath(cp));
         if (list != null) {
             visitor.setOutputListener(list);

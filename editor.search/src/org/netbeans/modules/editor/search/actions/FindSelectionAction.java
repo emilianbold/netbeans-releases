@@ -46,6 +46,8 @@ package org.netbeans.modules.editor.search.actions;
 import java.awt.event.ActionEvent;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.JTextComponent;
@@ -55,7 +57,6 @@ import org.netbeans.editor.BaseKit;
 import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.search.EditorFindSupport;
-import org.netbeans.modules.editor.search.SearchNbEditorKit;
 import org.netbeans.spi.editor.AbstractEditorAction;
 
 /** Finds either selection or if there's no selection it finds
@@ -65,22 +66,24 @@ import org.netbeans.spi.editor.AbstractEditorAction;
 @EditorActionRegistration(name = BaseKit.findSelectionAction, iconResource = "org/netbeans/modules/editor/search/resources/find_selection.png") // NOI18N
 public class FindSelectionAction extends AbstractEditorAction {
     static final long serialVersionUID = -5601618936504699565L;
+    private static final Logger LOGGER = Logger.getLogger(FindSelectionAction.class.getName());
 
     public FindSelectionAction() {
         super();
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
         if (target != null) {
             EditorFindSupport findSupport = EditorFindSupport.getInstance();
             Caret caret = target.getCaret();
             int dotPos = caret.getDot();
-            HashMap props = new HashMap(findSupport.createDefaultFindProperties());
+            HashMap<String, Object> props = new HashMap<>(findSupport.createDefaultFindProperties());
             String searchWord = null;
             boolean revert = false;
             Boolean originalValue = null;
-            Map revertMap = (Map) props.get(EditorFindSupport.REVERT_MAP);
+            Map<String, Object> revertMap = (Map<String, Object>) props.get(EditorFindSupport.REVERT_MAP);
             Boolean revertValue = revertMap != null ? (Boolean) revertMap.get(EditorFindSupport.FIND_WHOLE_WORDS) : null;
             if (Utilities.isSelectionShowing(caret)) {
                 // valid selection
@@ -102,7 +105,7 @@ public class FindSelectionAction extends AbstractEditorAction {
                         revert = !Boolean.TRUE.equals(originalValue);
                     }
                 } catch (BadLocationException e) {
-                    e.printStackTrace();
+                    LOGGER.log(Level.WARNING, null, e);
                 }
             }
             if (searchWord != null) {
@@ -112,7 +115,7 @@ public class FindSelectionAction extends AbstractEditorAction {
                 }
                 props.put(EditorFindSupport.FIND_WHAT, searchWord);
                 if (revert) {
-                    revertMap = new HashMap();
+                    revertMap = new HashMap<>();
                     revertMap.put(EditorFindSupport.FIND_WHOLE_WORDS, originalValue != null ? originalValue : Boolean.FALSE);
                     props.put(EditorFindSupport.REVERT_MAP, revertMap);
                 }

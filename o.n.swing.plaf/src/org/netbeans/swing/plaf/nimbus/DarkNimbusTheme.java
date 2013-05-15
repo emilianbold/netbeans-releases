@@ -124,5 +124,23 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.editor.errorstripe.caret.color", new Color(230, 230, 230) ); //NOI18N
 
         UIManager.put( "nb.wizard.hideimage", Boolean.TRUE ); //NOI18N
+
+        //diff & diff sidebar
+        UIManager.put( "nb.diff.added.color", new Color(36, 52, 36) ); //NOI18N
+        UIManager.put( "nb.diff.changed.color", new Color(32, 40, 51) ); //NOI18N
+        UIManager.put( "nb.diff.deleted.color", new Color(51, 32, 36) ); //NOI18N
+        UIManager.put( "nb.diff.applied.color", new Color(36, 52, 36) ); //NOI18N
+        UIManager.put( "nb.diff.notapplied.color", new Color(32, 40, 51) ); //NOI18N
+        UIManager.put( "nb.diff.unresolved.color", new Color(51, 32, 36) ); //NOI18N
+
+        UIManager.put( "nb.diff.sidebar.changed.color", new Color(18, 30, 74) ); //NOI18N
+        UIManager.put( "nb.diff.sidebar.deleted.color", new Color(66, 30, 49) ); //NOI18N
+
+        UIManager.put( "nb.versioning.tooltip.background.color", new Color(18, 30, 74) ); //NOI18N
+
+        //form designer
+        UIManager.put( "nb.formdesigner.gap.fixed.color", new Color(112,112,112) ); //NOI18N
+        UIManager.put( "nb.formdesigner.gap.resizing.color", new Color(116,116,116) ); //NOI18N
+        UIManager.put( "nb.formdesigner.gap.min.color", new Color(104,104,104) ); //NOI18N
    }
 }

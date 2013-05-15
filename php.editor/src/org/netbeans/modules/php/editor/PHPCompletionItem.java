@@ -759,19 +759,19 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         @Override
         public String getLhsHtml(HtmlFormatter formatter) {
-            if (isDeprecated()) {
-                formatter.deprecated(true);
-            }
             formatter.type(true);
             formatter.appendText(getTypeName() == null ? "" : getTypeName()); //NOI18N
             formatter.type(false);
             formatter.appendText(" "); //NOI18N
             formatter.name(getKind(), true);
+            if (isDeprecated()) {
+                formatter.deprecated(true);
+            }
             formatter.appendText(getName());
-            formatter.name(getKind(), false);
             if (isDeprecated()) {
                 formatter.deprecated(false);
             }
+            formatter.name(getKind(), false);
             return formatter.getText();
         }
 

@@ -103,7 +103,6 @@ class ModelBuilder {
         if (!nScope.isDefaultNamespace()) {
             setCurrentScope(nScope);
         }
-        nScope.setBlockRange(node);
         return nScope;
     }
 

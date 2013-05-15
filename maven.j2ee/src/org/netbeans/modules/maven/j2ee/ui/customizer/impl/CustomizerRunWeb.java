@@ -44,14 +44,10 @@ package org.netbeans.modules.maven.j2ee.ui.customizer.impl;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
-import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
@@ -62,12 +58,11 @@ import org.netbeans.modules.maven.j2ee.ui.Server;
 import org.netbeans.modules.maven.j2ee.ui.customizer.BaseRunCustomizer;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
-import org.netbeans.modules.maven.j2ee.web.ClientSideDevelopmentSupport;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport.BrowserComboBoxModel;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport.BrowserComboBoxModel;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -108,33 +103,16 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
 
         initValues();
         initServerModel(serverCBox, serverLabel, J2eeModule.Type.WAR);
-        initVersionModel(javaeeVersionCBox, javaeeVersionLabel);
+        initVersionModel(javaeeVersionCBox, javaeeVersionLabel, J2eeModule.Type.WAR);
         initDeployOnSave(jCheckBoxDeployOnSave, dosDescription);
         initBrowser();
     }
     
     private void initBrowser() {
         String selectedBrowser = MavenProjectSupport.getBrowserID(project);
-        if (selectedBrowser == null) {
-            selectedBrowser = WebBrowserSupport.getDefaultBrowserId();
-        }
-        browserModel = WebBrowserSupport.createBrowserModel(selectedBrowser);
+        browserModel = BrowserUISupport.createBrowserModel(selectedBrowser, true);
         browserCBox.setModel(browserModel);
-        browserCBox.setRenderer(WebBrowserSupport.createBrowserRenderer());
-        
-        Preferences preferences = ProjectUtils.getPreferences(project, MavenProjectSupport.class, false);
-        preferences.addPreferenceChangeListener(new PreferenceChangeListener() {
-
-            @Override
-            public void preferenceChange(PreferenceChangeEvent evt) {
-                if (MavenJavaEEConstants.SELECTED_BROWSER.equals(evt.getKey())) {
-                    ClientSideDevelopmentSupport clientSideSupport = project.getLookup().lookup(ClientSideDevelopmentSupport.class);
-                    if (clientSideSupport != null) {
-                        clientSideSupport.resetBrowserSupport();
-                    }
-                }
-            }
-        });
+        browserCBox.setRenderer(BrowserUISupport.createBrowserRenderer());
     }
 
     @Override

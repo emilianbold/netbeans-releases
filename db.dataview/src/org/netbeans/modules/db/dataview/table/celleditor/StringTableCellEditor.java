@@ -65,6 +65,7 @@ import javax.swing.JTextField;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
+import javax.swing.table.TableModel;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXPanel;
 import org.netbeans.modules.db.dataview.table.ResultSetTableCellEditor;
@@ -90,7 +91,6 @@ public class StringTableCellEditor extends ResultSetTableCellEditor implements T
     public Component getTableCellEditorComponent(final JTable table, Object value, boolean isSelected, int row, int column) {
         this.table = table;
         final JComponent c = (JComponent) super.getTableCellEditorComponent(table, value, isSelected, row, column);
-        setEditable(column, c, table.isCellEditable(row, column));
 
         JXPanel panel = new JXPanel(new BorderLayout()) {
 
@@ -138,7 +138,11 @@ public class StringTableCellEditor extends ResultSetTableCellEditor implements T
 
     protected void editCell(JTable table, int row, int column) {
         JTextArea textArea = new JTextArea(20, 80);
-        Object value = table.getValueAt(row, column);
+        TableModel tm = table.getModel();
+        int modelRow = table.convertRowIndexToModel(row);
+        int modelColumn = table.convertColumnIndexToModel(column);
+        boolean editable = tm.isCellEditable(modelRow, modelColumn);
+        Object value = tm.getValueAt(modelRow, modelColumn);
         if (value != null) {
             textArea.setText(value.toString());
             textArea.setCaretPosition(0);
@@ -151,7 +155,7 @@ public class StringTableCellEditor extends ResultSetTableCellEditor implements T
         if (editable) {
             int result = JOptionPane.showOptionDialog(parent, pane, table.getColumnName(column), JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, null, null);
             if (result == JOptionPane.OK_OPTION) {
-                table.setValueAt(textArea.getText(), row, column);
+                tm.setValueAt(textArea.getText(), modelRow, modelColumn);
             }
         } else {
             JOptionPane.showMessageDialog(parent, pane, table.getColumnName(column), JOptionPane.PLAIN_MESSAGE, null);

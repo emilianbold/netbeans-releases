@@ -179,6 +179,8 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         assertNotNull(dataFile);
         
         TestUtilities.copyStringToFile(dataFile, code);
+        
+        SourceUtilsTestUtil.setSourceLevel(data, sourceLevel);
 
         SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cacheFO, getExtraClassPathElements());
         
@@ -205,6 +207,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     }
     
     private FileObject sourceRoot;
+    protected String sourceLevel = "1.5";
     protected CompilationInfo info;
     private Document doc;
     
@@ -360,15 +363,25 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
                 if (found == null) {
                     found = d;
                 } else {
-                    throw new IllegalStateException("More than one error: " + info.getDiagnostics().toString());
+                    throw new IllegalStateException("More than one error: " + diagnosticsToString(info.getDiagnostics()));
                 }
             }
         }
         if (found == null) {
-            throw new IllegalStateException("No error found: " + info.getDiagnostics().toString());
+            throw new IllegalStateException("No error found: " + diagnosticsToString(info.getDiagnostics()));
         }
         
         return found;
+    }
+    
+    private String diagnosticsToString(Iterable<? extends Diagnostic> diagnostics) {
+        StringBuilder result = new StringBuilder();
+        
+        for (Diagnostic<?> d : diagnostics) {
+            result.append(d.getCode()).append(":").append(d.getMessage(null)).append("\n");
+        }
+        
+        return result.toString();
     }
     
 }

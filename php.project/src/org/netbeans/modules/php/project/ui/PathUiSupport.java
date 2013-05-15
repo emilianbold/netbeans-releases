@@ -57,7 +57,9 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -81,20 +83,20 @@ public final class PathUiSupport {
     private PathUiSupport() {
     }
 
-    public static DefaultListModel createListModel(Iterator<BasePathSupport.Item> it) {
-        DefaultListModel model = new DefaultListModel();
+    public static DefaultListModel<BasePathSupport.Item> createListModel(Iterator<BasePathSupport.Item> it) {
+        DefaultListModel<BasePathSupport.Item> model = new DefaultListModel<BasePathSupport.Item>();
         while (it.hasNext()) {
             model.addElement(it.next());
         }
         return model;
     }
 
-    public static Iterator<BasePathSupport.Item> getIterator(DefaultListModel model) {
+    public static Iterator<BasePathSupport.Item> getIterator(DefaultListModel<BasePathSupport.Item> model) {
         // XXX Better performing impl. would be nice
         return getList(model).iterator();
     }
 
-    public static List<BasePathSupport.Item> getList(DefaultListModel model) {
+    public static List<BasePathSupport.Item> getList(DefaultListModel<BasePathSupport.Item> model) {
         return Collections.list(NbCollections.checkedEnumerationByFilter(model.elements(),
                 BasePathSupport.Item.class, true));
     }
@@ -102,7 +104,7 @@ public final class PathUiSupport {
     /** Moves items up in the list. The indices array will contain
      * indices to be selected after the change was done.
      */
-    public static int[] moveUp(DefaultListModel listModel, int[] indices) {
+    public static int[] moveUp(DefaultListModel<BasePathSupport.Item> listModel, int[] indices) {
 
         if (indices == null || indices.length == 0) {
             assert false : "MoveUp button should be disabled";
@@ -110,7 +112,7 @@ public final class PathUiSupport {
 
         // Move the items up
         for (int i = 0; i < indices.length; i++) {
-            Object item = listModel.get(indices[i]);
+            BasePathSupport.Item item = listModel.get(indices[i]);
             listModel.remove(indices[i]);
             listModel.add(indices[i] - 1, item);
         }
@@ -130,15 +132,16 @@ public final class PathUiSupport {
     /** Moves items down in the list. The indices array will contain
      * indices to be selected after the change was done.
      */
-    public static int[] moveDown(DefaultListModel listModel, int[] indices) {
+    public static int[] moveDown(DefaultListModel<BasePathSupport.Item> listModel, int[] indices) {
 
-        if (indices == null || indices.length == 0) {
+        assert indices != null;
+        if (indices.length == 0) {
             assert false : "MoveDown button should be disabled";
         }
 
         // Move the items up
         for (int i = indices.length - 1; i >= 0; i--) {
-            Object item = listModel.get(indices[i]);
+            BasePathSupport.Item item = listModel.get(indices[i]);
             listModel.remove(indices[i]);
             listModel.add(indices[i] + 1, item);
         }
@@ -158,9 +161,10 @@ public final class PathUiSupport {
 
     /** Removes selected indices from the model. Returns the index to be selected
      */
-    public static int[] remove(DefaultListModel listModel, int[] indices) {
+    public static int[] remove(DefaultListModel<BasePathSupport.Item> listModel, int[] indices) {
 
-        if (indices == null || indices.length == 0) {
+        assert indices != null;
+        if (indices.length == 0) {
             assert false : "Remove button should be disabled";
         }
 
@@ -180,7 +184,7 @@ public final class PathUiSupport {
         return new int[] {};
     }
 
-    public static int[] addFolders(DefaultListModel listModel, int[] indices, String[] files) {
+    public static int[] addFolders(DefaultListModel<BasePathSupport.Item> listModel, int[] indices, String[] files) {
 
         int lastIndex = indices == null || indices.length == 0 ? listModel.getSize() - 1 : indices[indices.length - 1];
         int[] indexes = new int[files.length];
@@ -199,8 +203,9 @@ public final class PathUiSupport {
         return indexes;
     }
 
-    public static class ClassPathListCellRenderer extends DefaultListCellRenderer {
-        private static final long serialVersionUID = 619725480128831307L;
+    public static class ClassPathListCellRenderer implements ListCellRenderer<BasePathSupport.Item> {
+
+        private static final long serialVersionUID = 78866546546546546L;
 
         private static final String RESOURCE_ICON_BROKEN_BADGE
                 = "org/netbeans/modules/php/project/ui/resources/brokenProjectBadge.gif"; //NOI18N
@@ -209,6 +214,7 @@ public final class PathUiSupport {
         private static ImageIcon ICON_FOLDER = null;
         private static ImageIcon ICON_BROKEN_FOLDER = null;
 
+        private final DefaultListCellRenderer delegate = new DefaultListCellRenderer();
         private final PropertyEvaluator evaluator;
         private final FileObject projectFolder;
 
@@ -231,14 +237,13 @@ public final class PathUiSupport {
         }
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+        public Component getListCellRendererComponent(JList<? extends BasePathSupport.Item> list, BasePathSupport.Item value, int index, boolean isSelected,
                 boolean cellHasFocus) {
-            BasePathSupport.Item item = (BasePathSupport.Item) value;
-
-            super.getListCellRendererComponent(list, getDisplayName(item), index, isSelected, cellHasFocus);
-            setIcon(getIcon(item));
-            setToolTipText(getToolTipText(item));
-            return this;
+            BasePathSupport.Item item = value;
+            JLabel component = (JLabel) delegate.getListCellRendererComponent(list, getDisplayName(item), index, isSelected, cellHasFocus);
+            component.setIcon(getIcon(item));
+            component.setToolTipText(getToolTipText(item));
+            return component;
         }
 
         private String getDisplayName(BasePathSupport.Item item) {
@@ -285,6 +290,8 @@ public final class PathUiSupport {
                     }
                     return item.getAbsoluteFilePath(projectFolder);
                     //break;
+                default:
+                    // noop
             }
             return null;
         }
@@ -312,8 +319,8 @@ public final class PathUiSupport {
     public static final class EditMediator implements ActionListener, ListSelectionListener {
 
         private final PhpProject project;
-        private final JList list;
-        private final DefaultListModel listModel;
+        private final JList<BasePathSupport.Item> list;
+        private final DefaultListModel<BasePathSupport.Item> listModel;
         private final ListSelectionModel selectionModel;
         private final ButtonModel addFolder;
         private final ButtonModel remove;
@@ -321,17 +328,17 @@ public final class PathUiSupport {
         private final ButtonModel moveDown;
         private final FileChooserDirectoryHandler directoryHandler;
 
-        private EditMediator(JList list, ButtonModel addFolder,
+        private EditMediator(JList<BasePathSupport.Item> list, ButtonModel addFolder,
                 ButtonModel remove, ButtonModel moveUp, ButtonModel moveDown,
                 FileChooserDirectoryHandler directoryHandler) {
             this(null, list, addFolder, remove, moveUp, moveDown, directoryHandler);
         }
 
-        private EditMediator(PhpProject project, JList list, ButtonModel addFolder, ButtonModel remove, FileChooserDirectoryHandler directoryHandler) {
+        private EditMediator(PhpProject project, JList<BasePathSupport.Item> list, ButtonModel addFolder, ButtonModel remove, FileChooserDirectoryHandler directoryHandler) {
             this(project, list, addFolder, remove, null, null, directoryHandler);
         }
 
-        private EditMediator(PhpProject project, JList list, ButtonModel addFolder,
+        private EditMediator(PhpProject project, JList<BasePathSupport.Item> list, ButtonModel addFolder,
                 ButtonModel remove, ButtonModel moveUp, ButtonModel moveDown,
                 FileChooserDirectoryHandler directoryHandler) {
             assert directoryHandler != null;
@@ -341,7 +348,7 @@ public final class PathUiSupport {
                 throw new IllegalArgumentException("The list's model has to be of class DefaultListModel");
             }
 
-            this.listModel = (DefaultListModel) list.getModel();
+            this.listModel = (DefaultListModel<BasePathSupport.Item>) list.getModel();
             this.selectionModel = list.getSelectionModel();
 
             this.addFolder = addFolder;
@@ -353,7 +360,7 @@ public final class PathUiSupport {
             this.directoryHandler = directoryHandler;
         }
 
-        public static void register(PhpProject project, JList list, ButtonModel addFolder,
+        public static void register(PhpProject project, JList<BasePathSupport.Item> list, ButtonModel addFolder,
                 ButtonModel remove, ButtonModel moveUp, ButtonModel moveDown,
                 FileChooserDirectoryHandler directoryHandler) {
 
@@ -370,7 +377,7 @@ public final class PathUiSupport {
             em.valueChanged(null);
         }
 
-        public static void register(PhpProject project, JList list, ButtonModel addFolder,
+        public static void register(PhpProject project, JList<BasePathSupport.Item> list, ButtonModel addFolder,
                 ButtonModel remove, FileChooserDirectoryHandler directoryHandler) {
 
             EditMediator em = new EditMediator(project, list, addFolder, remove, directoryHandler);
@@ -385,7 +392,7 @@ public final class PathUiSupport {
         }
 
         // for global include path (no project available)
-        public static void register(JList list, ButtonModel addFolder,
+        public static void register(JList<BasePathSupport.Item> list, ButtonModel addFolder,
                 ButtonModel remove, ButtonModel moveUp, ButtonModel moveDown,
                 FileChooserDirectoryHandler directoryHandler) {
 

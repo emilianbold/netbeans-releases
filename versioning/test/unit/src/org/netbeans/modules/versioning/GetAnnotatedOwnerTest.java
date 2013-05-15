@@ -46,6 +46,9 @@ package org.netbeans.modules.versioning;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import java.io.File;
 import java.io.IOException;
+import junit.framework.Test;
+import junit.framework.TestSuite;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.versioning.core.util.VCSSystemProvider;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
@@ -64,6 +67,7 @@ public class GetAnnotatedOwnerTest extends GetOwnerTest {
         MockLookup.setLayersAndInstances();
     }
     
+    @Override
     protected File getVersionedFolder() {
         if (versionedFolder == null) {
             versionedFolder = new File(dataRootDir, "workdir/root-" + TestAnnotatedVCS.VERSIONED_FOLDER_SUFFIX);
@@ -77,7 +81,15 @@ public class GetAnnotatedOwnerTest extends GetOwnerTest {
     protected Class getVCS() {
         return TestAnnotatedVCS.class;
     }
+    
+    public static Test suite () {
+        TestSuite suite = new NbTestSuite();
+        suite.addTest(new GetAnnotatedOwnerTest("testVCSSystemDoesntAwakeOnUnrelatedGetOwner"));
+        suite.addTest(new GetAnnotatedOwnerTest("testNoOwnerIfManagedByOtherSPI"));
+        return suite;
+    }
 
+    // must run as the first test in the suite
     public void testVCSSystemDoesntAwakeOnUnrelatedGetOwner() throws IOException {
         
         assertNull(TestAnnotatedVCS.INSTANCE);

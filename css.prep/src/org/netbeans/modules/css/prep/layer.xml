@@ -231,4 +231,12 @@
             </folder>
         </folder>
     </folder>
+    <folder name="OptionsExport">
+        <folder name="Advanced">
+            <file name="CssPreprocessors">
+                <attr name="include" stringvalue="config/Preferences/org/netbeans/modules/css/prep/css-prep.properties"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.css.prep.Bundle#ImportExport.CssPrep"/>
+            </file>
+        </folder>
+    </folder>
 </filesystem>

@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.mercurial.ui.diff;
 
+import org.netbeans.modules.versioning.util.common.FileViewComponent;
 import org.openide.explorer.view.NodeTableModel;
 import org.openide.util.NbBundle;
 import org.openide.nodes.Node;
@@ -80,11 +81,11 @@ import org.openide.util.WeakListeners;
  * 
  * @author Maros Sandor
  */
-class DiffFileTable implements MouseListener, ListSelectionListener, AncestorListener {
+class DiffFileTable implements FileViewComponent<DiffNode>, MouseListener, ListSelectionListener, AncestorListener {
     
-    private NodeTableModel tableModel;
-    private JTable table;
-    private JScrollPane     component;
+    private final NodeTableModel tableModel;
+    private final JTable table;
+    private final JScrollPane     component;
     private DiffNode [] nodes = new DiffNode[0];
     /**
      * editor cookies belonging to the files being diffed.
@@ -96,7 +97,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
     private EditorCookie[] editorCookies;
     
     private String []   tableColumns; 
-    private TableSorter sorter;
+    private final TableSorter sorter;
 
     /**
      * Defines labels for Diff view table columns.
@@ -108,9 +109,6 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         columnLabels.put(DiffNode.COLUMN_NAME_NAME, new String [] {
                 loc.getString("CTL_DiffTable_Column_Name_Title"), 
                 loc.getString("CTL_DiffTable_Column_Name_Desc")});
-        columnLabels.put(DiffNode.COLUMN_NAME_PROPERTY, new String [] {
-                loc.getString("CTL_DiffTable_Column_Property_Title"), 
-                loc.getString("CTL_DiffTable_Column_Property_Desc")});
         columnLabels.put(DiffNode.COLUMN_NAME_STATUS, new String [] { 
                 loc.getString("CTL_DiffTable_Column_Status_Title"), 
                 loc.getString("CTL_DiffTable_Column_Status_Desc")});
@@ -122,6 +120,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
     
     
     private static final Comparator NodeComparator = new Comparator() {
+        @Override
         public int compare(Object o1, Object o2) {
             Node.Property p1 = (Node.Property) o1;
             Node.Property p2 = (Node.Property) o2;
@@ -152,7 +151,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         table = new SortedTable(sorter);
         table.getSelectionModel().addListSelectionListener(this);
         table.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
-        table.setRowHeight(table.getRowHeight() * 6 / 5);
+        table.setRowHeight(table.getFontMetrics(table.getFont()).getHeight() * 6 / 5);
         component = new JScrollPane(table, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         component.getViewport().setBackground(table.getBackground());
         Color borderColor = UIManager.getColor("scrollpane_border"); // NOI18N
@@ -165,21 +164,110 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DiffFileTable.class, "ACSD_DiffTable")); // NOI18N
         setColumns(new String[] {
             DiffNode.COLUMN_NAME_NAME,
-            DiffNode.COLUMN_NAME_PROPERTY,
             DiffNode.COLUMN_NAME_STATUS,
             DiffNode.COLUMN_NAME_LOCATION}
         );
         table.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put(
                 KeyStroke.getKeyStroke(KeyEvent.VK_F10, KeyEvent.SHIFT_DOWN_MASK ), "org.openide.actions.PopupAction");
         table.getActionMap().put("org.openide.actions.PopupAction", new AbstractAction() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 showPopup(org.netbeans.modules.versioning.util.Utils.getPositionForPopup(table));
             }
         });
     }
 
+    @Override
+    public DiffNode getSelectedNode () {
+        DiffNode selected = null;
+        if (table.getSelectedRowCount() == 1) {
+            int modelRow = getSelectedModelIndex();
+            selected = nodes[modelRow];
+        }
+        return selected;
+    }
+
+    @Override
+    public void setSelectedNode (DiffNode toSelect) {
+        int index = Arrays.asList(nodes).indexOf(toSelect);
+        if (index >= 0) {
+            index = sorter.viewIndex(index);
+            setSelectedIndex(index);
+        }
+    }
+
+    @Override
+    public DiffNode getNodeAtPosition (int position) {
+        return nodes[sorter.modelIndex(position)];
+    }
+
+    @Override
+    public DiffNode[] getNeighbouringNodes (DiffNode node, int boundary) {
+        int index = Arrays.asList(nodes).indexOf(node);
+        DiffNode[] nodes;
+        if (index < 0) {
+            nodes = new DiffNode[0];
+        } else {
+            index = sorter.viewIndex(index);
+            int min = Math.max(0, index - 2);
+            int max = Math.min(table.getRowCount() - 1, index + 2);
+            nodes = new DiffNode[max - min + 1];
+            // adding tableIndex, tableIndex - 1, tableIndex + 1, tableIndex - 2, tableIndex + 2, etc.
+            for (int i = index, j = index + 1, k = 0; i >= min || j <= max; --i, ++j) {
+                if (i >= min) {
+                    nodes[k++] = getNodeAtPosition(i);
+                }
+                if (j <= max) {
+                    nodes[k++] = getNodeAtPosition(j);
+                }
+            }
+        }
+        return nodes;
+    }
+
+    @Override
+    public DiffNode getNextNode (DiffNode node) {
+        DiffNode next = null;
+        if (node != null) {
+            int index = Arrays.asList(nodes).indexOf(node);
+            if (index >= 0) {
+                index = sorter.viewIndex(index);
+                if (++index < table.getRowCount()) {
+                    next = nodes[getModelIndex(index)];
+                }
+            }
+        }
+        return next;
+    }
+
+    @Override
+    public DiffNode getPreviousNode (DiffNode node) {
+        DiffNode prev = null;
+        if (node != null) {
+            int index = Arrays.asList(nodes).indexOf(node);
+            if (index >= 0) {
+                index = sorter.viewIndex(index);
+                if (--index >= 0) {
+                    prev = nodes[getModelIndex(index)];
+                }
+            }
+        }
+        return prev;
+    }
+
+    @Override
+    public boolean hasNextNode (DiffNode node) {
+        return getNextNode(node) != null;
+    }
+
+    @Override
+    public boolean hasPreviousNode (DiffNode node) {
+        return getPreviousNode(node) != null;
+    }
+
     void setDefaultColumnSizes() {
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 int width = table.getWidth();
                 if (tableColumns.length == 3) {
@@ -190,29 +278,25 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
                             table.getColumnModel().getColumn(i).setPreferredWidth(width * 20 / 100);
                         }
                     }
-                } else if (tableColumns.length == 4) {
-                    for (int i = 0; i < tableColumns.length; i++) {
-                        if (DiffNode.COLUMN_NAME_LOCATION.equals(tableColumns[i])) {
-                            table.getColumnModel().getColumn(i).setPreferredWidth(width * 55 / 100);
-                        } else {
-                            table.getColumnModel().getColumn(i).setPreferredWidth(width * 15 / 100);
-                        }
-                    }
                 }
             }
         });
     }
 
+    @Override
     public void ancestorAdded(AncestorEvent event) {
         setDefaultColumnSizes();
     }
 
+    @Override
     public void ancestorMoved(AncestorEvent event) {
     }
 
+    @Override
     public void ancestorRemoved(AncestorEvent event) {
     }
 
+    @Override
     public JComponent getComponent() {
         return component;
     }
@@ -236,6 +320,16 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         }
         setDefaultColumnSizes();        
     }
+
+    @Override
+    public int getPreferredHeaderHeight () {
+        return getTable().getTableHeader().getPreferredSize().height;
+    }
+
+    @Override
+    public int getPreferredHeight () {
+        return getTable().getPreferredSize().height;
+    }
         
     private void setModelProperties(String [] columns) {
         Node.Property [] properties = new Node.Property[columns.length];
@@ -247,9 +341,15 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         tableModel.setProperties(properties);
     }
 
-    void setTableModel(Setup[] setups, EditorCookie[] editorCookies) {
+    @Override
+    public Object prepareModel (DiffNode[] nodes) {
+        return null; // no time expensive preparation needed
+    }
+    
+    @Override
+    public void setModel (DiffNode[] nodes, EditorCookie[] editorCookies, Object modelData) {
         this.editorCookies = editorCookies;
-        tableModel.setNodes(nodes = setupsToNodes(setups));
+        tableModel.setNodes(this.nodes = nodes);
         changeListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent e) {
@@ -286,37 +386,25 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
               new TableSorter.SortingSafeTableModelEvent(tableModel, index, 0));
     }
 
-    private static DiffNode[] setupsToNodes(Setup[] setups) {
-        DiffNode[] nodes = new DiffNode[setups.length];
-        for (int i = 0; i < setups.length; i++) {
-            nodes[i] = setups[i].getNode();
-        }
-        return nodes;
-    }
-
     void focus() {
         table.requestFocus();
     }
 
-    void setSelectedIndex(int currentIndex) {
+    private void setSelectedIndex(int currentIndex) {
         if (currentIndex == table.getSelectedRow()) return;
         table.getSelectionModel().setSelectionInterval(currentIndex, currentIndex);
         table.scrollRectToVisible(table.getCellRect(currentIndex, 0, true));
     }
 
-    public int getSelectedIndex() {
-        return table.getSelectedRow();
-    }
-
-    public int getSelectedModelIndex() {
+    private int getSelectedModelIndex() {
         return getModelIndex(table.getSelectedRow());
     }
 
-    public int getModelIndex(int viewIndex) {
+    private int getModelIndex(int viewIndex) {
         return viewIndex != -1 ? sorter.modelIndex(viewIndex) : -1;
     }
 
-    public JTable getTable() {
+    private JTable getTable() {
         return table;
     }
 
@@ -327,6 +415,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
             super(name, type, displayName, shortDescription);
         }
 
+        @Override
         public Object getValue() throws IllegalAccessException, InvocationTargetException {
             return null;
         }
@@ -349,6 +438,7 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
             }
         }
         SwingUtilities.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 // invoke later so the selection on the table will be set first
                 JPopupMenu menu = master.getPopup();
@@ -366,24 +456,29 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         }
     }
 
+    @Override
     public void mouseEntered(MouseEvent e) {
     }
 
+    @Override
     public void mouseExited(MouseEvent e) {
     }
 
+    @Override
     public void mousePressed(MouseEvent e) {
         if (e.isPopupTrigger()) {
             showPopup(e);
         }
     }
 
+    @Override
     public void mouseReleased(MouseEvent e) {
         if (e.isPopupTrigger()) {
             showPopup(e);
         }
     }
 
+    @Override
     public void mouseClicked(MouseEvent e) {
         if (SwingUtilities.isLeftMouseButton(e) && MouseUtils.isDoubleClick(e)) {
             int row = table.rowAtPoint(e.getPoint());
@@ -407,11 +502,11 @@ class DiffFileTable implements MouseListener, ListSelectionListener, AncestorLis
         int max = selectionModel.getMaxSelectionIndex();
         if (min != -1 && min == max) {
             // single selection
-            master.tableRowSelected(table.getSelectedRow());
+            master.nodeSelected(getSelectedNode());
         } else {
             List<DiffNode> selectedNodes = new ArrayList<DiffNode>();
             if (min == -1) {
-                master.tableRowSelected(-1);
+                master.nodeSelected(null);
             } else {
                 for (int i = min; i <= max; i++) {
                     if (selectionModel.isSelectedIndex(i)) {

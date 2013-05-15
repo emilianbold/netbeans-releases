@@ -1,1 +1,1 @@
-drop table simpletable;
+drop table IF EXISTS CASCADE simpletable;

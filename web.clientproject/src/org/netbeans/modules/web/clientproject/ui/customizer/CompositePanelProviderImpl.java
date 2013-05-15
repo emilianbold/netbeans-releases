@@ -43,11 +43,12 @@ package org.netbeans.modules.web.clientproject.ui.customizer;
 
 import java.io.File;
 import java.util.List;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraryCustomizerPanel;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.modules.web.clientproject.ClientSideProjectType;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
@@ -61,7 +62,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     public static final String SOURCES = "SOURCES"; // NOI18N
     public static final String RUN = "RUN"; // NOI18N
-    public static final String JS_FILES = "JS_FILES"; // NOI18N
 
     private final String name;
 
@@ -86,11 +86,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     RUN,
                     Bundle.CompositePanelProviderImpl_run_title(),
                     null);
-        } else if (JS_FILES.equals(name)) {
-            category = ProjectCustomizer.Category.create(
-                    JS_FILES,
-                    JavaScriptLibraryCustomizerPanel.getCategoryDisplayName(),
-                    null);
         }
         assert category != null : "No category for name: " + name; //NOI18N
         return category;
@@ -104,23 +99,6 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             return new SourcesPanel(category, uiProperties);
         } else if (RUN.equals(categoryName)) {
             return new RunPanel(category, uiProperties);
-        } else if (JS_FILES.equals(categoryName)) {
-            return new JavaScriptLibraryCustomizerPanel(category, new JavaScriptLibraryCustomizerPanel.CustomizerSupport() {
-                @Override
-                public File getWebRoot() {
-                    return uiProperties.getResolvedSiteRootFolder();
-                }
-                @Override
-                public void setLibrariesFolder(String librariesFolder) {
-                    assert librariesFolder != null;
-                    uiProperties.setJsLibFolder(librariesFolder);
-                }
-                @Override
-                public void setSelectedLibraries(List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries) {
-                    assert selectedLibraries != null;
-                    uiProperties.setNewJsLibraries(selectedLibraries);
-                }
-            });
         }
         assert false : "No component found for " + category.getDisplayName(); //NOI18N
         return new JPanel();
@@ -135,6 +113,13 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = ClientSideProjectType.TYPE,
+            position = 150)
+    public static ProjectCustomizer.CompositeCategoryProvider createCssPreprocessors() {
+        return CssPreprocessors.getDefault().createCustomizer();
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = ClientSideProjectType.TYPE,
             position = 300)
     public static CompositePanelProviderImpl createRunConfigs() {
         return new CompositePanelProviderImpl(RUN);
@@ -143,8 +128,29 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
             projectType = ClientSideProjectType.TYPE,
             position = 200)
-    public static CompositePanelProviderImpl createJavaScriptFiles() {
-        return new CompositePanelProviderImpl(JS_FILES);
+    public static ProjectCustomizer.CompositeCategoryProvider createJavaScriptFiles() {
+        return JavaScriptLibraries.createCustomizer(new JavaScriptLibraries.CustomizerSupport() {
+            @Override
+            public File getWebRoot(Lookup context) {
+                ClientSideProjectProperties projectProperties = context.lookup(ClientSideProjectProperties.class);
+                assert projectProperties != null;
+                return projectProperties.getResolvedSiteRootFolder();
+            }
+            @Override
+            public void setLibrariesFolder(Lookup context, String librariesFolder) {
+                assert librariesFolder != null;
+                ClientSideProjectProperties projectProperties = context.lookup(ClientSideProjectProperties.class);
+                assert projectProperties != null;
+                projectProperties.setJsLibFolder(librariesFolder);
+            }
+            @Override
+            public void setSelectedLibraries(Lookup context, List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries) {
+                assert selectedLibraries != null;
+                ClientSideProjectProperties projectProperties = context.lookup(ClientSideProjectProperties.class);
+                assert projectProperties != null;
+                projectProperties.setNewJsLibraries(selectedLibraries);
+            }
+        });
     }
 
 }

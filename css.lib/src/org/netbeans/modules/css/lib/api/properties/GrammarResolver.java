@@ -47,7 +47,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import static org.netbeans.modules.css.lib.api.properties.GrammarResolver.Log.*;
 import org.netbeans.modules.css.lib.properties.GrammarParseTreeBuilder;
-import org.netbeans.modules.web.common.api.Pair;
+import org.openide.util.Pair;
 
 /**
  * Resolves a css property value against its grammar.
@@ -67,7 +67,7 @@ public class GrammarResolver {
         
     }
     
-    static final Map<Log, AtomicBoolean> LOGGERS = new EnumMap<Log, AtomicBoolean>(Log.class);
+    static final Map<Log, AtomicBoolean> LOGGERS = new EnumMap<>(Log.class);
 
     static {
         for (Log log : Log.values()) {
@@ -116,11 +116,11 @@ public class GrammarResolver {
     private GrammarElement lastResolved;
 
 
-    private final Collection<GrammarResolverListener> LISTENERS  = new ArrayList<GrammarResolverListener>();
+    private final Collection<GrammarResolverListener> LISTENERS  = new ArrayList<>();
     
     private final GroupGrammarElement grammar;
     
-    private final Map<Feature, Object> FEATURES = new EnumMap<Feature, Object>(Feature.class);
+    private final Map<Feature, Object> FEATURES = new EnumMap<>(Feature.class);
     
     public GrammarResolver(GroupGrammarElement grammar) {
         this.grammar = grammar;
@@ -130,8 +130,8 @@ public class GrammarResolver {
     //if the class is supposed to be thread-safe.
     public synchronized GrammarResolverResult resolve(CharSequence input) {
         //reset internal state
-        resolvedTokens =  new ArrayList<ResolvedToken>();
-        resolvedSomething = new LinkedHashMap<GrammarElement, Pair<InputState, Collection<ValueGrammarElement>>>();
+        resolvedTokens =  new ArrayList<>();
+        resolvedSomething = new LinkedHashMap<>();
         lastResolved = null;
         tokenizer = new Tokenizer(input);
         
@@ -283,7 +283,7 @@ public class GrammarResolver {
         }
 
         tokenizer.move(state.tokenIndex);
-        resolvedTokens = new ArrayList<ResolvedToken>(state.consumed);
+        resolvedTokens = new ArrayList<>(state.consumed);
 
         if (LOG) {
             log(String.format("  state backup to: %s", state));
@@ -328,7 +328,7 @@ public class GrammarResolver {
         }
 
         Pair<InputState, Collection<ValueGrammarElement>> pair = resolvedSomething.get(lastResolved);
-        pair.getB().add(valueGrammarElement);
+        pair.second().add(valueGrammarElement);
     }
 
     private void groupMemberResolved(GrammarElement member, GroupGrammarElement group, InputState state, boolean root) {
@@ -340,14 +340,14 @@ public class GrammarResolver {
         if (LOG) {
             log(ALTERNATIVES, String.format("input matched %s, %s", member.path(), state));
         }
-        resolvedSomething.put(group, new Pair<InputState, Collection<ValueGrammarElement>>(state, new LinkedList<ValueGrammarElement>()));
+        resolvedSomething.put(group, Pair.<InputState, Collection<ValueGrammarElement>>of(state, new LinkedList<ValueGrammarElement>()));
         lastResolved = group;
     }
 
     private Set<ValueGrammarElement> getAlternatives() {
-        HashSet<ValueGrammarElement> alternatives = new HashSet<ValueGrammarElement>();
+        HashSet<ValueGrammarElement> alternatives = new HashSet<>();
         for (Pair<InputState, Collection<ValueGrammarElement>> tri : resolvedSomething.values()) {
-            for (ValueGrammarElement value : tri.getB()) {
+            for (ValueGrammarElement value : tri.second()) {
                 alternatives.add(value);
             }
         }
@@ -368,17 +368,17 @@ public class GrammarResolver {
                 }
             }
             
-            Collection<GrammarElement> grammarElementsToProcess = new ArrayList<GrammarElement>(group.elements());
+            Collection<GrammarElement> grammarElementsToProcess = new ArrayList<>(group.elements());
             
             //remember the grammar elements to process for the ALL and COLLECTION branch alternatives 
             Collection<GrammarElement> branchAlternativesGrammarElementsToProcess = null;
 
             //ALL and COLLECTIOn group: when multiple branches consumed similar input then we need to 
             //try to resolve the whole group using each of them
-            Set<GrammarElement> alreadyTriedAlternativeBranches = new HashSet<GrammarElement>();
+            Set<GrammarElement> alreadyTriedAlternativeBranches = new HashSet<>();
             
             Map<GrammarElement, InputState> branchesResults =
-                    new HashMap<GrammarElement, InputState>();
+                    new HashMap<>();
 
             collection_loop:
             for (;;) { //try to loop until the LIST group is resolved fully (or not at all)
@@ -508,7 +508,7 @@ public class GrammarResolver {
                         //collect all branches which matched the bestMatchConsumed and compare the
                         //resolved tokens. If in one step one branch consumed keyword (static element name)
                         //and the other resolved a property acceptor then the keyword one has a precendence.
-                        Map<GrammarElement, InputState> bestBranches = new LinkedHashMap<GrammarElement, InputState>();
+                        Map<GrammarElement, InputState> bestBranches = new LinkedHashMap<>();
                         for (GrammarElement member : group.elements()) {
                             InputState state = branchesResults.get(member);
                             if (state == null) {
@@ -523,7 +523,7 @@ public class GrammarResolver {
                         //now compare the branches
                         //compare just the parts consumed during this group element resolving
                         for (int j = inputLenBeforeEnteringGroupElement; j < bestMatchConsumed; j++) {
-                            Collection<GrammarElement> consumedUnit = new LinkedList<GrammarElement>();
+                            Collection<GrammarElement> consumedUnit = new LinkedList<>();
                             for (Entry<GrammarElement, InputState> entry : bestBranches.entrySet()) {
                                 ResolvedToken token = entry.getValue().consumed.get(j);
                                 if (token.getGrammarElement() instanceof UnitGrammarElement) {
@@ -577,7 +577,7 @@ public class GrammarResolver {
                                         log(b.toString());
                                     }
                                 // </editor-fold>
-                                    branchAlternativesGrammarElementsToProcess = new ArrayList<GrammarElement>(grammarElementsToProcess);
+                                    branchAlternativesGrammarElementsToProcess = new ArrayList<>(grammarElementsToProcess);
                                 }
                             }
                         }
@@ -622,7 +622,7 @@ public class GrammarResolver {
                                         log(b.toString());
                                     }
                                     // </editor-fold>
-                                    grammarElementsToProcess = new ArrayList<GrammarElement>(branchAlternativesGrammarElementsToProcess);
+                                    grammarElementsToProcess = new ArrayList<>(branchAlternativesGrammarElementsToProcess);
                                 }
                             }
 
@@ -764,7 +764,7 @@ public class GrammarResolver {
 
         public InputState() {
             this.tokenIndex = tokenizer.tokenIndex();
-            this.consumed = new ArrayList<ResolvedToken>(GrammarResolver.this.resolvedTokens);
+            this.consumed = new ArrayList<>(GrammarResolver.this.resolvedTokens);
         }
 
         @Override

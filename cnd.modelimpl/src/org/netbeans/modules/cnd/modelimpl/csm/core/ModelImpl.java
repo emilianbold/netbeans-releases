@@ -524,6 +524,14 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     //}
     }
 
+    void notifyClosing() {
+        if (TraceFlags.TRACE_MODEL_STATE) {
+            System.err.println("ModelImpl.closing");
+        }
+        waitModelTasks();
+        setState(CsmModelState.CLOSING);        
+    }
+    
     public void shutdown() {
 
         if (TraceFlags.TRACE_MODEL_STATE) {
@@ -636,7 +644,9 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         ParserQueue.instance().resume();
     }
 
-    public void disableProject(NativeProject nativeProject) {
+    @Override
+    public void disableProject(Object id) {
+        NativeProject nativeProject = (NativeProject) id;
         if (TraceFlags.TRACE_MODEL_STATE) {
             System.err.println("ModelImpl.disableProject " + nativeProject.getProjectDisplayName());
         }
@@ -649,7 +659,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
         }
     }
 
-    public void disableProject(ProjectBase csmProject) {
+    public void disableProjectBase(ProjectBase csmProject) {
         if (TraceFlags.TRACE_MODEL_STATE) {
             System.err.println("ModelImpl.disableProject " + csmProject);
         }
@@ -722,7 +732,10 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
 //	return lastLibs;
 //    }
     /** Enables/disables code model for the particular project */
-    public void enableProject(NativeProject nativeProject) {
+    @Override
+    public void enableProject(Object id) {
+        assert id instanceof NativeProject : "unexpected class " + id;
+        NativeProject nativeProject = (NativeProject) id;
         if (TraceFlags.TRACE_MODEL_STATE) {
             System.err.println("ModelImpl.enableProject " + nativeProject.getProjectDisplayName());
         }
@@ -771,16 +784,19 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
      * Boolean.FALSE if the project is disabled
      * null if the project is being created
      */
-    public Boolean isProjectEnabled(NativeProject nativeProject) {
-        if (projectsBeingCreated.contains(nativeProject)) {
+    @Override
+    public Boolean isProjectEnabled(Object nativeProject) {
+        assert nativeProject instanceof NativeProject : "unexpected class " + nativeProject;
+        if (projectsBeingCreated.contains((NativeProject)nativeProject)) {
             return null;
         }
-        ProjectBase project = getProject/*getProjectFast*/(nativeProject); // no sync here: just get what we have
+        ProjectBase project = getProject(nativeProject); // no sync here: just get what we have
         return (project != null) && (!project.isDisposing());
     }
 
-    public boolean isProjectDisabled(NativeProject id) {
-        return disabledProjects.contains(id);
+    public boolean isProjectDisabled(Object nativeProject) {
+        assert nativeProject instanceof NativeProject : "unexpected class " + nativeProject;
+        return disabledProjects.contains((NativeProject)nativeProject);
     }
 
     private void cleanCaches() {
@@ -866,7 +882,7 @@ public class ModelImpl implements CsmModel, LowMemoryListener {
     private final Object lock = new Lock();
     /** maps platform project to project */
     private final Map<Object, CsmUID<CsmProject>> platf2csm = new ConcurrentHashMap<Object, CsmUID<CsmProject>>();
-    private CsmModelState state;
+    private volatile CsmModelState state;
     private double warningThreshold = 0.98;
     //private double fatalThreshold = 0.99;
     private final Set<Object> disabledProjects = Collections.synchronizedSet(new HashSet<Object>());

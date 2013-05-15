@@ -770,6 +770,9 @@ public final class SQLCloneableEditor extends CloneableEditor implements MultiVi
                 @Override
                 public Boolean run() {
                     JEditorPane editorPane = getEditorPane();
+                    if (editorPane == null) {
+                        return false;
+                    }
                     return Boolean.valueOf(editorPane.getSelectionStart() < editorPane.getSelectionEnd());
                 }
             });

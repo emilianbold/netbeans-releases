@@ -64,8 +64,8 @@ public class ReleaseFilesExtra extends Task {
 
     public @Override void execute() throws BuildException {
         StringBuilder b = new StringBuilder();
-        for (Map.Entry<?,?> entry : ((Map<?,?>) getProject().getProperties()).entrySet()) {
-            String k = (String) entry.getKey();
+        for (Map.Entry<String,Object> entry : ((Map<String,Object>) getProject().getProperties()).entrySet()) {
+            String k = entry.getKey();
             if (k.startsWith("release.")) {
                 File f = getProject().resolveFile(k.substring(8).replaceFirst("!/.+$", ""));
                 if (!f.isFile()) {

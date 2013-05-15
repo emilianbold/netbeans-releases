@@ -41,63 +41,28 @@
  */
 package org.netbeans.modules.cordova.platforms;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.NetworkInterface;
 import java.net.URL;
-import java.net.UnknownHostException;
-import java.nio.channels.SelectionKey;
-import java.nio.charset.Charset;
 import java.util.Enumeration;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
-import org.json.simple.parser.ParseException;
-import org.netbeans.modules.netserver.api.WebSocketClient;
-import org.netbeans.modules.netserver.api.WebSocketReadHandler;
-import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
-import org.netbeans.modules.web.webkit.debugging.spi.Command;
-import org.netbeans.modules.web.webkit.debugging.spi.Response;
+import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
-import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author Jan Becicka
  */
-public abstract class MobileDebugTransport implements TransportImplementation, WebSocketReadHandler {
+public abstract class MobileDebugTransport implements TransportImplementation {
 
-    private WebSocketClient webSocket;
-    private ResponseCallback callBack;
+    protected ResponseCallback callBack;
     private String indexHtmlLocation;
+    private String bundleId;
+    private BrowserURLMapperImplementation.BrowserURLMapper mapper;
     
-    @Override
-    public boolean attach() {
-        try {
-            webSocket = createWebSocket(this);
-            webSocket.start();
-            return true;
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-            return false;
-        }
-    }
-
-    @Override
-    public boolean detach() {
-        webSocket.stop();
-        return true;
-    }
-
-    @Override
-    public void sendCommand(Command command) {
-        String toString = translate(command.toString());
-        webSocket.sendMessage(toString);
-    }
-
     @Override
     public void registerResponseCallback(ResponseCallback callback) {
         this.callBack = callback;
@@ -106,47 +71,46 @@ public abstract class MobileDebugTransport implements TransportImplementation, W
     @Override
     public URL getConnectionURL() {
         try {
+            if (indexHtmlLocation == null)
+                return null;
             return new URL(indexHtmlLocation);
         } catch (MalformedURLException ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    @Override
-    public void accepted(SelectionKey key) {
-        synchronized(webSocket) {
-            webSocket.notifyAll();
-        }
-    }
 
-    @Override
-    public void read(SelectionKey key, byte[] message, Integer dataType) {
-        final String string;
-        string = new String(message, Charset.forName("UTF-8")).trim(); //NOI18N
-        try {
-            final Object parse = JSONValue.parseWithException(string);
-            callBack.handleResponse(new Response((JSONObject) parse));
-        } catch (ParseException ex) {
-            Exceptions.attachMessage(ex, string);
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    @Override
-    public void closed(SelectionKey key) {
-        Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
-    }
-
-
-    public abstract WebSocketClient createWebSocket(WebSocketReadHandler handler) throws IOException;
-
+    /**
+     * TODO: hack to workaround #221791
+     * @param toString
+     * @return 
+     */
     public String translate(String toString) {
-        //TODO: hack to workaround #221791
         return toString.replaceAll("localhost", getLocalhostInetAddress().getHostAddress());
     }
 
     public void setBaseUrl(String documentURL) {
         this.indexHtmlLocation = documentURL;
+        if (mapper != null && documentURL != null) {
+            documentURL = documentURL.substring(0, documentURL.lastIndexOf("/www/") + "/www/".length()).replaceAll("file:///", "file:/").replaceAll("file:/", "file:///");
+            try {
+                mapper.setBrowserURLRoot(WebUtils.urlToString(new URL(documentURL)));
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
+    public void setBundleIdentifier(String name) {
+        this.bundleId=name;
+    }
+    
+    protected String getBundleIdentifier() {
+        return this.bundleId;
+    }
+    
+    public void setBrowserURLMapper(BrowserURLMapperImplementation.BrowserURLMapper mapper) {
+        this.mapper = mapper;
     }
     
     /**

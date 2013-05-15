@@ -285,7 +285,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
             @Override
             public void run() {
                 String fullUrl = url;
-                if (!(url.startsWith( "http://") || url.startsWith( "https://") || url.startsWith("file:/"))) { // NOI18N
+                if (!(url.startsWith( "http://") || url.startsWith( "https://") || url.startsWith("file:/") || url.startsWith("jar:file:/"))) { // NOI18N
                     fullUrl = "http://" + url; // NOI18N //NOI18N
                 }
                 getEngine().load( fullUrl );
@@ -592,7 +592,7 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
                 if( null == t1 )
                     return;
                 String location = eng.getLocation();
-                reportInvalidUrl( location );
+                reportInvalidUrl( location, t1 );
             }
         });
         eng.setCreatePopupHandler( new Callback<PopupFeatures, WebEngine>() {
@@ -886,16 +886,6 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
     }
 
     @Override
-    public boolean hasEnhancedMode() {
-        return enhancedMode;
-    }
-
-    @Override
-    public void setEnhancedMode(boolean mode) {
-        enhancedMode = mode;
-    }
-
-    @Override
     public void disablePageInspector() {
     }
 
@@ -907,10 +897,18 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
     public void close(boolean closeTab) {
     }
 
-    private void reportInvalidUrl( String location ) {
+    private void reportInvalidUrl( String location, Throwable ex ) {
+        if( null != ex ) {
+            Logger.getLogger( WebBrowserImpl.class.getName() ).log( Level.INFO, null, ex );
+        }
         NotifyDescriptor nd = new NotifyDescriptor.Message(
                 NbBundle.getMessage( WebBrowserImpl.class, "Err_InvalidURL", location),
                 NotifyDescriptor.PLAIN_MESSAGE );
         DialogDisplayer.getDefault().notifyLater( nd );
+    }
+
+    @Override
+    public boolean canReloadPage() {
+        return true;
     }
 }

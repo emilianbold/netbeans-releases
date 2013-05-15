@@ -65,7 +65,7 @@ import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.dd.spi.MetadataUnit;
 import org.netbeans.modules.j2ee.dd.spi.web.WebAppMetadataModelFactory;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;

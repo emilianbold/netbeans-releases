@@ -76,6 +76,12 @@ import org.openide.text.NbDocument;
  */
 public class AnnotationsAction extends AbstractSystemAction {
 
+    private static final String ICON_RESOURCE = "org/netbeans/modules/versioning/system/cvss/resources/icons/annotate.png"; //NOI18N
+    
+    public AnnotationsAction () {
+        super(ICON_RESOURCE);
+    }
+    
     protected String getBaseName(Node [] activatedNodes) {
         if (visible(activatedNodes)) {
             return "CTL_MenuItem_HideAnnotations";  // NOI18N
@@ -212,6 +218,6 @@ public class AnnotationsAction extends AbstractSystemAction {
     }
     @Override
     protected String iconResource() {
-        return "org/netbeans/modules/versioning/system/cvss/resources/icons/annotate.png"; // NOI18N
+        return ICON_RESOURCE;
     }
 }

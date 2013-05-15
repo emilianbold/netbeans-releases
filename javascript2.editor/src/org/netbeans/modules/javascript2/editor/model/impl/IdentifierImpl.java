@@ -67,5 +67,10 @@ public class IdentifierImpl implements Identifier {
     @Override
     public OffsetRange getOffsetRange() {
         return offsetRange;
-    }   
+    }
+
+    @Override
+    public String toString() {
+        return "IdentifierImpl{" + "name=" + name + ", offsetRange=" + offsetRange + '}';
+    }
 }

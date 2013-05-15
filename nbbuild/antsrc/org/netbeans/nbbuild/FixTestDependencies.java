@@ -248,7 +248,6 @@ public class FixTestDependencies extends Task {
     private Set<ModuleListParser.Entry> getModuleList(final ModuleType projectType) throws IOException {
         if (cachedEntries == null ) {
           // scan for all modules
-            @SuppressWarnings("unchecked")
             ModuleListParser listParser = new ModuleListParser(getProject().getProperties(), projectType, getProject());
             return  listParser.findAll();
         } else {

@@ -95,7 +95,7 @@ final class PreferredVMParser extends DefaultHandler {
     
     private Map<String,String> jdks;
     
-    private PreferredVMParser() {/* emtpy constructor */}
+    private PreferredVMParser() {/* empty constructor */}
     
     /** Returns vmMap of JDKs */
     static Map<String,String> parse(String vmXML) throws ProjectImporterException {

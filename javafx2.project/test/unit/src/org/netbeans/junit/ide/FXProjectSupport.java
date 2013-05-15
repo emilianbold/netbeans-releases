@@ -106,18 +106,9 @@ public class FXProjectSupport {
         String mainClass = null;
         try {
             System.setProperty(Utils.NO_PLATFORM_CHECK_PROPERTY, "true");
-            JavaPlatform platform;
-            if(!JavaFXPlatformUtils.isThereAnyJavaFXPlatform()) {
-                Utils.setIsTest(true);
-                platform = Utils.createJavaFXPlatform(
-                        Utils.DEFAULT_FX_PLATFORM_NAME, 
-                        projectParentDir.getAbsolutePath(), 
-                        getMockFXRuntime(projectParentDir.getAbsolutePath()).getAbsolutePath(), 
-                        projectParentDir.getAbsolutePath(), 
-                        projectParentDir.getAbsolutePath());
-                Utils.setIsTest(false);
-            } else {
-                platform = getAnyJavaFXPlatform();
+            JavaPlatform platform = JavaFXPlatformUtils.findJavaFXPlatform();
+            if(platform == null) {
+                throw new RuntimeException("No Java platform with JavaFX RT can be found.");
             }
             System.out.println("MockFXPlatform: " + platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME));
             File projectDir = new File(projectParentDir, name);
@@ -128,23 +119,10 @@ public class FXProjectSupport {
                     null, 
                     WizardType.APPLICATION);
             return org.netbeans.modules.project.ui.test.ProjectSupport.openProject(projectDir);
-        } catch (IOException e) {
+        } catch (Exception e) {
             ErrorManager.getDefault().notify(ErrorManager.EXCEPTION, e);
             return null;
         }
-    }
-
-    /** Returns FX enabled Java platform if such exists or null otherwise.
-     * @return FX enabled Java platform
-     */
-    public static JavaPlatform getAnyJavaFXPlatform() {
-        JavaPlatform[] platforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
-        for (JavaPlatform javaPlatform : platforms) {
-            if (JavaFXPlatformUtils.isJavaFXEnabled(javaPlatform)) {
-                return javaPlatform;
-            }
-        }
-        return null;
     }
     
     /** Waits until metadata scanning is finished. */

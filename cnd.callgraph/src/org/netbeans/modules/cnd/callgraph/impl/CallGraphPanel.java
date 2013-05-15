@@ -165,8 +165,17 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (JSplitPane.DIVIDER_LOCATION_PROPERTY.equals(evt.getPropertyName())) {
-                       dividerLocation = ((double)jSplitPane1.getDividerLocation())/
-                       ((double)(jSplitPane1.getWidth() - jSplitPane1.getDividerSize()));
+                        double width = jSplitPane1.getWidth();
+                        double size = jSplitPane1.getDividerSize();
+                        double location = jSplitPane1.getDividerLocation();
+                        if (width < size) {
+                            return;
+                        }
+                        double x = (location + size/2)/width;
+                        if (x < 0.0 || x > 1.0) {
+                            return;
+                        }
+                        dividerLocation = x;
                     }
                 }
             });

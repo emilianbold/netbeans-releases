@@ -78,6 +78,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -3098,29 +3100,10 @@ widthcheck:  {
         new AsyncInitSupport(comp4Init, initJob);
     }
 
-    /** JDK 7 */
-    private static Method fileToPath, pathToUri, pathsGet, pathToFile;
-    static {
-        try {
-            fileToPath = File.class.getMethod("toPath");
-        } catch (NoSuchMethodException x) {
-            // fine, JDK 6
-        }
-        if (fileToPath != null) {
-            try {
-                Class<?> path = Class.forName("java.nio.file.Path");
-                pathToUri = path.getMethod("toUri");
-                pathsGet = Class.forName("java.nio.file.Paths").getMethod("get", URI.class);
-                pathToFile = path.getMethod("toFile");
-            } catch (Exception x) {
-                throw new ExceptionInInitializerError(x);
-            }
-        }
-    }
-
     /**
      * Converts a file to a URI while being safe for UNC paths.
-     * Unlike {@link File#toURI} the result works with {@link URI#normalize()}
+     * Uses {@link File f}.{@link File#toPath() toPath}().{@link Path#toUri() toUri}()
+     * which results into {@link URI} that works with {@link URI#normalize()}
      * and {@link URI#resolve(URI)}.
      * @param f a file
      * @return a {@code file}-protocol URI which may use the host field
@@ -3128,52 +3111,49 @@ widthcheck:  {
      * @since 8.25
      */
     public static URI toURI(File f) {
-        if (fileToPath != null) {
+        URI u;
+        try {
+            u = f.toPath().toUri();
+        } catch (java.nio.file.InvalidPathException ex) {
+            u = f.toURI();
+            LOG.log(Level.FINE, "can't convert " + f + " falling back to " + u, ex);
+        }
+        if (u.toString().startsWith("file:///")) { 
             try {
-                URI u = (URI) pathToUri.invoke(fileToPath.invoke(f));
-                if (u.toString().startsWith("file:///")) { // #214131 workaround
-                    u = new URI(/* "file" */u.getScheme(), /* null */u.getUserInfo(), /* null (!) */u.getHost(), /* -1 */u.getPort(), /* "/..." */u.getPath(), /* null */u.getQuery(), /* null */u.getFragment());
-                }
-                return u;
-            } catch (Exception x) {
-                LOG.log(Level.FINE, "could not convert " + f + " to URI", x);
+                // #214131 workaround
+                return new URI(
+                    /* "file" */u.getScheme(), /* null */u.getUserInfo(), 
+                    /* null (!) */u.getHost(), /* -1 */u.getPort(), 
+                    /* "/..." */u.getPath(), /* null */u.getQuery(), 
+                    /* null */u.getFragment()
+                );
+            } catch (URISyntaxException ex) {
+                LOG.log(Level.FINE, "could not convert " + f + " to URI", ex);
             }
         }
-        String path = f.getAbsolutePath();
-        if (path.startsWith("\\\\")) { // UNC
-            if (!path.endsWith("\\") && f.isDirectory()) {
-                path += "\\";
-            }
-            try {
-                return new URI("file", null, path.replace('\\', '/'), null);
-            } catch (URISyntaxException x) {
-                LOG.log(Level.FINE, "could not convert " + f + " to URI", x);
-            }
-        }
-        return f.toURI();
+        return u;
     }
 
     /**
      * Converts a URI to a file while being safe for UNC paths.
-     * Unlike {@link File#File(URI)} UNC URIs with a host field are accepted.
+     * Uses {@link Paths#get(java.net.URI) Paths.get}(u).{@link Path#toFile() toFile}()
+     * which accepts UNC URIs with a host field.
      * @param u a {@code file}-protocol URI which may use the host field
      * @return a file
      * @see java.nio.file.Paths.get(java.net.URI)
      * @since 8.25
      */
     public static File toFile(URI u) throws IllegalArgumentException {
-        if (pathsGet != null) {
-            try {
-                return (File) pathToFile.invoke(pathsGet.invoke(null, u));
-            } catch (Exception x) {
-                LOG.log(Level.FINE, "could not convert " + u + " to File", x);
-            }
+        try {
+            return Paths.get(u).toFile();
+        } catch (Exception x) {
+            LOG.log(Level.FINE, "could not convert " + u + " to File", x);
         }
         String host = u.getHost();
         if (host != null && !host.isEmpty() && "file".equals(u.getScheme())) {
             return new File("\\\\" + host + u.getPath().replace('/', '\\'));
         }
-        return new File(u);
+        return new File(u);    
     }
 
     /**

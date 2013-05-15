@@ -46,7 +46,6 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.IfTree;
 import com.sun.source.tree.LineMap;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
@@ -71,8 +70,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import org.netbeans.api.java.source.CodeStyle;
-import org.netbeans.api.java.source.CodeStyle.BracesGenerationStyle;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
@@ -92,22 +89,11 @@ import org.netbeans.spi.java.hints.JavaFixUtilities;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.util.NbBundle;
-import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author lahvac
  */
-@Messages({
-    "DN_org.netbeans.modules.java.hints.suggestions.Tiny.mergeIfs=Combine nested if",
-    "DESC_org.netbeans.modules.java.hints.suggestions.Tiny.mergeIfs=Combine nested if",
-    "ERR_org.netbeans.modules.java.hints.suggestions.Tiny.mergeIfs=Can combine nested ifs",
-    "FIX_org.netbeans.modules.java.hints.suggestions.Tiny.mergeIfs=Combine nested if",
-    "DN_org.netbeans.modules.java.hints.suggestions.Tiny.extractIf=Split if",
-    "DESC_org.netbeans.modules.java.hints.suggestions.Tiny.extractIf=Splits if into two ifs",
-    "ERR_org.netbeans.modules.java.hints.suggestions.Tiny.extractIf=The if can be split into two ifs",
-    "FIX_org.netbeans.modules.java.hints.suggestions.Tiny.extractIf=Split if into two ifs"
-})
 public class Tiny {
 
     @Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.Tiny.flipEquals", description = "#DESC_org.netbeans.modules.java.hints.suggestions.Tiny.flipEquals", category="suggestions", hintKind=Kind.ACTION, severity=Severity.HINT)
@@ -427,62 +413,6 @@ public class Tiny {
             wc.rewrite(tp.getLeaf(), st);
         }
 
-    }
-
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.Tiny.mergeIfs", description = "#DESC_org.netbeans.modules.java.hints.suggestions.Tiny.mergeIfs", category="suggestions", hintKind=Kind.ACTION, severity=Severity.HINT)
-    @TriggerPattern(value="if ($firstCondition) if ($secondCondition) $body;")
-    public static ErrorDescription mergeIfs(HintContext ctx) {
-        int caret = ctx.getCaretLocation();
-        IfTree st = (IfTree) ctx.getPath().getLeaf();
-        int conditionEnd = (int) ctx.getInfo().getTrees().getSourcePositions().getEndPosition(ctx.getPath().getCompilationUnit(), st.getCondition());
-        
-        if (caret > conditionEnd) return null;
-        
-        Fix f = JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_org_netbeans_modules_java_hints_suggestions_Tiny_mergeIfs(), ctx.getPath(), "if ($firstCondition && $secondCondition) $body;");
-        
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_org_netbeans_modules_java_hints_suggestions_Tiny_mergeIfs(), f);
-    }
-    
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.suggestions.Tiny.extractIf", description = "#DESC_org.netbeans.modules.java.hints.suggestions.Tiny.extractIf", category="suggestions", hintKind=Kind.ACTION, severity=Severity.HINT)
-    @TriggerPattern(value="if ($firstCondition && $secondCondition) $body;")
-    public static ErrorDescription extractIf(HintContext ctx) {
-        int caret = ctx.getCaretLocation();
-        boolean braces = CodeStyle.getDefault(ctx.getInfo().getFileObject()).redundantIfBraces() != BracesGenerationStyle.ELIMINATE;
-        TreePath toSplit = null;
-        TreePath left = ctx.getVariables().get("$firstCondition");
-        long leftStart = ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getPath().getCompilationUnit(), left.getLeaf());
-        long leftEnd   = ctx.getInfo().getTrees().getSourcePositions().getEndPosition(ctx.getPath().getCompilationUnit(), left.getLeaf());
-
-        if (leftStart <= caret && caret <= leftEnd) {
-            toSplit = left;
-        }
-
-        TreePath right = ctx.getVariables().get("$secondCondition");
-        
-        if (toSplit == null) {
-            long rightStart = ctx.getInfo().getTrees().getSourcePositions().getStartPosition(ctx.getPath().getCompilationUnit(), right.getLeaf());
-            long rightEnd   = ctx.getInfo().getTrees().getSourcePositions().getEndPosition(ctx.getPath().getCompilationUnit(), right.getLeaf());
-
-            if (rightStart <= caret && caret <= rightEnd) {
-                toSplit = right;
-            }
-        }
-        
-        if (left.getLeaf().getKind() == Tree.Kind.PARENTHESIZED) {
-            ctx.getVariables().put("$firstCondition", new TreePath(left, ((ParenthesizedTree) left.getLeaf()).getExpression()));
-        }
-        
-        if (right.getLeaf().getKind() == Tree.Kind.PARENTHESIZED) {
-            ctx.getVariables().put("$secondCondition", new TreePath(left, ((ParenthesizedTree) right.getLeaf()).getExpression()));
-        }
-
-        if (toSplit == null)
-            return null;
-        
-        String targetPattern = braces ? "if ($firstCondition) { if ($secondCondition) $body; }" : "if ($firstCondition) if ($secondCondition) $body;";
-        Fix f = JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_org_netbeans_modules_java_hints_suggestions_Tiny_extractIf(), ctx.getPath(), targetPattern);
-        
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_org_netbeans_modules_java_hints_suggestions_Tiny_extractIf(), f);
     }
 
 }

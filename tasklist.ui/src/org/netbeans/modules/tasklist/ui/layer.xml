@@ -15,7 +15,7 @@
         <folder name="Window">
             <file name="org-netbeans-modules-tasklist-ui-TaskListAction.shadow">
                 <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-tasklist-ui-TaskListAction.instance"/>
-                <attr name="position" intvalue="550"/>
+                <attr name="position" intvalue="700"/>
             </file>
             
             </folder>

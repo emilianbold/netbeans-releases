@@ -47,16 +47,22 @@ package org.netbeans.modules.java.source.parsing;
 
 
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Utilities;
 
 
@@ -66,16 +72,22 @@ import org.openide.util.Utilities;
  *
  * @author Petr Hrebejk
  */
-public class CachingArchiveProvider {
+public final class CachingArchiveProvider {
 
     private static final String NAME_RT_JAR = "rt.jar";         //NOI18N
     private static final String PATH_CT_SYM = "lib/ct.sym";     //NOI18N
     private static final String PATH_RT_JAR_IN_CT_SYM = "META-INF/sym/rt.jar/"; //NOI18N
+    private static final boolean USE_CT_SYM = !Boolean.getBoolean("CachingArchiveProvider.disableCtSym");   //NOI18N
+    //@GuardedBy("CachingArchiveProvider.class")
     private static CachingArchiveProvider instance;
 
-    // Names to caching zip files
-    // XXX-PERF Consider swapping
-    HashMap<URL,Archive> archives;
+    /** Names to caching zip files.
+     *
+     */
+    //@GuardedBy("this")
+    private final Map<URI,Archive> archives;
+    //@GuardedBy("this")
+    private final Map<URI,URI> ctSymToJar;
 
     public static synchronized CachingArchiveProvider getDefault () {
         if (instance == null) {
@@ -83,48 +95,128 @@ public class CachingArchiveProvider {
         }
         return instance;
     }
+
+    /**
+     * Creates new instance of {@link CachingArchiveProvider} for unit test purposes.
+     * @return new <b>unshared</b> {@link CachingArchiveProvider}
+     */
+    static CachingArchiveProvider newInstance() {
+        return new CachingArchiveProvider();
+    }
         
     /** Creates a new instance CachingArchiveProvider 
-     *  Can be caleed only from UnitTests or {@link CachingArchiveProvider#getDefault} !!!!!
+     *  Can be called only from UnitTests or {@link CachingArchiveProvider#getDefault} !!!!!
      */
-    CachingArchiveProvider() {
-        archives = new HashMap<URL,Archive>();
+    private CachingArchiveProvider() {
+        archives = new HashMap<URI,Archive>();
+        ctSymToJar = new HashMap<URI,URI>();
     }
     
     /** Gets archive for given file.
+     * @param root the root to get archive for
+     * @param cacheFile if true the jar archive keeps the jar file opened.
+     * @return new {@link Archive}
      */
-    public synchronized Archive getArchive( URL root, boolean cacheFile)  {                
-        Archive archive = archives.get(root);
+    @CheckForNull
+    public synchronized Archive getArchive(@NonNull final URL root, final boolean cacheFile)  {
+        final URI rootURI = toURI(root);
+        Archive archive = archives.get(rootURI);
         if (archive == null) {
             archive = create(root, cacheFile);
             if (archive != null) {
-                archives.put(root, archive );
+                archives.put(rootURI, archive );
             }
         }
         return archive;
     }
-                        
-    public synchronized void removeArchive (final URL root) {
-        final Archive archive = archives.remove(root);
+
+    /**
+     * Frees the {@link Archive} for given root.
+     * @param root the root for which the {@link Archive} should be freed.
+     */
+    public synchronized void removeArchive (@NonNull final URL root) {
+        final URI rootURI = toURI(root);
+        final Archive archive = archives.remove(rootURI);
+        for (Iterator<Map.Entry<URI,URI>> it = ctSymToJar.entrySet().iterator(); it.hasNext();) {
+            final Map.Entry<URI,URI> e = it.next();
+            if (e.getValue().equals(rootURI)) {
+                it.remove();
+                break;
+            }
+        }
         if (archive != null) {
             archive.clear();
         }
     }
-    
-    public synchronized void clearArchive (final URL root) {
-        Archive archive = archives.get(root);
+
+    /**
+     * Clears the in memory cached {@link Archive} data for given root.
+     * @param root the root for which the {@link Archive} data should be cleared.
+     * @see Archive#clear()
+     */
+    public synchronized void clearArchive (@NonNull final URL root) {
+        Archive archive = archives.get(toURI(root));
         if (archive != null) {
             archive.clear();
         }
+    }
+
+    /**
+     * Maps ct.sym back to the base boot classpath root.
+     * @param archiveOrCtSym the root or ct.sym folder to transform.
+     * @return the boot classpath root corresponding to the ct.sym folder
+     * or the given boot classpath root.
+     */
+    @NonNull
+    public URL mapCtSymToJar (@NonNull final URL archiveOrCtSym) {
+        final URI result = ctSymToJar.get(toURI(archiveOrCtSym));
+        if (result != null) {
+            try {
+                return result.toURL();
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return archiveOrCtSym;
+    }
+
+    /**
+     * Checks if the given boot classpath root has the the ct.sym equivalent.
+     * @param root the root to check
+     * @return true if there is a ct.sym folder corresponding to given boot classpath
+     * root
+     */
+    public boolean hasCtSym (@NonNull final URL root) {
+        final URL fileURL = FileUtil.getArchiveFile(root);
+        if (fileURL == null) {
+            return false;
+        }
+        final File f = Utilities.toFile(fileURL);
+        if (f == null || !f.exists()) {
+            return false;
+        }
+        synchronized (this) {
+            final Pair<File,String> res = mapJarToCtSym(f, root);
+            return res.second() != null;
+        }
+
+    }
+
+    /**
+     * Frees all the archives.
+     */
+    synchronized void clear() {
+        archives.clear();
+        ctSymToJar.clear();
     }
         
     // Private methods ---------------------------------------------------------
     
     /** Creates proper archive for given file.
      */
-    private static Archive create( URL root, boolean cacheFile ) {
+    private Archive create( URL root, boolean cacheFile ) {
         String protocol = root.getProtocol();
-        if ("file".equals(protocol)) {
+        if ("file".equals(protocol)) {      //NOI18N
             File f = Utilities.toFile(URI.create(root.toExternalForm()));
             if (f.isDirectory()) {
                 return new FolderArchive (f);
@@ -133,16 +225,16 @@ public class CachingArchiveProvider {
                 return null;
             }
         }
-        if ("jar".equals(protocol)) {
+        if ("jar".equals(protocol)) {       //NOI18N
             URL inner = FileUtil.getArchiveFile(root);
             protocol = inner.getProtocol();
-            if ("file".equals(protocol)) {
+            if ("file".equals(protocol)) {  //NOI18N
                 File f = Utilities.toFile(URI.create(inner.toExternalForm()));
                 if (f.isFile()) {
-                    final Pair<File,String> resolved = replace(f);
+                    final Pair<File,String> resolved = mapJarToCtSym(f, root);
                     return new CachingArchive(
-                            resolved.first,
-                            resolved.second,
+                            resolved.first(),
+                            resolved.second(),
                             cacheFile);
                 }
                 else {
@@ -159,15 +251,13 @@ public class CachingArchiveProvider {
             return null;
         }
     }
-            
-    void clear() {
-        archives.clear();
-    }
-
+    
     @NonNull
-    private static Pair<File,String> replace(
-        @NonNull final File file) {
-        if (NAME_RT_JAR.equals(file.getName())) {
+    private Pair<File,String> mapJarToCtSym(
+        @NonNull final File file,
+        @NonNull final URL originalRoot) {
+        assert Thread.holdsLock(this);
+        if (USE_CT_SYM && NAME_RT_JAR.equals(file.getName())) {
             final FileObject fo = FileUtil.toFileObject(file);
             if (fo != null) {
                 for (JavaPlatform jp : JavaPlatformManager.getDefault().getInstalledPlatforms()) {
@@ -176,6 +266,20 @@ public class CachingArchiveProvider {
                             final FileObject ctSym = jdkFolder.getFileObject(PATH_CT_SYM);
                             File ctSymFile;
                             if (ctSym != null && (ctSymFile = FileUtil.toFile(ctSym)) != null) {
+                                try {
+                                    final URL root = FileUtil.getArchiveRoot(Utilities.toURI(ctSymFile).toURL());
+                                    ctSymToJar.put(
+                                            new URI(
+                                                String.format(
+                                                    "%s%s", //NOI18N
+                                                    root.toExternalForm(),
+                                                    PATH_RT_JAR_IN_CT_SYM)),
+                                            originalRoot.toURI());
+                                } catch (MalformedURLException e) {
+                                    Exceptions.printStackTrace(e);
+                                } catch (URISyntaxException e) {
+                                    Exceptions.printStackTrace(e);
+                                }
                                 return Pair.<File,String>of(ctSymFile,PATH_RT_JAR_IN_CT_SYM);
                             }
                         }
@@ -184,5 +288,14 @@ public class CachingArchiveProvider {
             }
         }
         return Pair.<File,String>of(file, null);
+    }
+
+    @NonNull
+    private static URI toURI (@NonNull final URL url) {
+        try {
+            return url.toURI();
+        } catch (URISyntaxException ex) {
+            throw new IllegalArgumentException(ex);
+        }
     }
 }

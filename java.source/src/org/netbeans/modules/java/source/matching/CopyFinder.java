@@ -52,6 +52,7 @@ import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -1512,6 +1513,20 @@ public class CopyFinder extends TreeScanner<Boolean, TreePath> {
 
         return scan(node.getBound(), t.getBound(), p);
     }
+
+    @Override
+    public Boolean visitLambdaExpression(LambdaExpressionTree node, TreePath p) {
+        if (p == null)
+            return super.visitLambdaExpression(node, p);
+
+        LambdaExpressionTree t = (LambdaExpressionTree) p.getLeaf();
+
+        if (!checkLists(node.getParameters(), t.getParameters(), p)) {
+            return false;
+        }
+        return scan(node.getBody(), t.getBody(), p);
+    }
+    
 //
 //    public Boolean visitOther(Tree node, TreePath p) {
 //        throw new UnsupportedOperationException("Not supported yet.");

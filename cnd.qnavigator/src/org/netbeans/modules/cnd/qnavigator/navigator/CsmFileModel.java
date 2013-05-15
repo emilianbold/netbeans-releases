@@ -56,10 +56,10 @@ import org.openide.nodes.Node;
  */
 public class CsmFileModel {
     static final Logger logger = Logger.getLogger("org.netbeans.modules.cnd.qnavigator"); // NOI18N
-    private List<IndexOffsetNode> lineNumberIndex = Collections.synchronizedList(new ArrayList<IndexOffsetNode>());
-    private List<CppDeclarationNode> list = Collections.synchronizedList(new ArrayList<CppDeclarationNode>());
-    private CsmFileFilter filter;
-    private Action[] actions;
+    private final List<IndexOffsetNode> lineNumberIndex = Collections.synchronizedList(new ArrayList<IndexOffsetNode>());
+    private final List<CppDeclarationNode> list = Collections.synchronizedList(new ArrayList<CppDeclarationNode>());
+    private final CsmFileFilter filter;
+    private final Action[] actions;
     private FileObject fileObject;
     private boolean isStandalone;
     private Project unopenedProject;
@@ -73,7 +73,7 @@ public class CsmFileModel {
         return list.toArray(new Node[0]);
     }
     
-    private void clear(){
+    void clear(){
         lineNumberIndex.clear();
         list.clear();
     }

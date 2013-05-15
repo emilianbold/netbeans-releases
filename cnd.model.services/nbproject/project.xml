@@ -158,6 +158,7 @@
                 <friend>org.netbeans.modules.cnd.cncppunit</friend>
                 <friend>org.netbeans.modules.cnd.completion</friend>
                 <friend>org.netbeans.modules.cnd.debugger.common2</friend>
+                <friend>org.netbeans.modules.cnd.discovery</friend>
                 <friend>org.netbeans.modules.cnd.gizmo</friend>
                 <friend>org.netbeans.modules.cnd.gotodeclaration</friend>
                 <friend>org.netbeans.modules.cnd.highlight</friend>

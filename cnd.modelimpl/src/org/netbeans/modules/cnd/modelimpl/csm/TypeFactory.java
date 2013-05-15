@@ -46,9 +46,11 @@ package org.netbeans.modules.cnd.modelimpl.csm;
 
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
+import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
@@ -83,7 +85,7 @@ public class TypeFactory {
     }
     
     public static TypeImpl createType(CsmClassifier classifier, AST ptrOperator, int arrayDepth, AST ast, CsmFile file, int startOffset, int endOffset) {
-        boolean refence = false;
+        int refence = 0;
         int pointerDepth = 0;
         if (ptrOperator != null &&
             (ptrOperator.getType() == CPPTokenTypes.CSM_CLASS_DECLARATION ||
@@ -129,8 +131,10 @@ public class TypeFactory {
                         pointerDepth++;
                         break;
                     case CPPTokenTypes.AND: // r-value reference
-                    case CPPTokenTypes.AMPERSAND:
-                        refence = true;
+                        refence = 2;
+                        break;
+                    case CPPTokenTypes.AMPERSAND: 
+                        refence = 1;
                         break;
                 }
             //}
@@ -159,24 +163,28 @@ public class TypeFactory {
         return createType(ast, null, file, ptrOperator, arrayDepth, parent, scope, inFunctionParameters, inTypedef);
     }
 
+    static int getReferenceValue(CsmType type) {
+        if (type.isRValueReference()) {
+            return 2;
+        } else if (type.isReference()) {
+            return 1;
+        }
+        return 0;
+    }
+    
     public static TypeImpl createType(AST ast, CsmClassifier classifier, CsmFile file,  AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
-        boolean refence = false;
+        return createType(ast, classifier, file, null, ptrOperator, arrayDepth, parent, scope, inFunctionParameters, inTypedef);
+    }
+
+    public static TypeImpl createType(AST ast, CsmClassifier classifier, CsmFile file, FileContent content, AST ptrOperator, int arrayDepth, CsmType parent, CsmScope scope, boolean inFunctionParameters, boolean inTypedef) {
+        int refence = 0;
         int pointerDepth = 0;
-        while( ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {
-            //for( AST token = ptrOperator.getFirstChild(); token != null; token = token.getNextSibling() ) {
-                AST token = ptrOperator.getFirstChild();
-                if (token != null) {
-                    switch( token.getType() ) {
-                        case CPPTokenTypes.STAR:
-                            ++pointerDepth;
-                            break;
-                        case CPPTokenTypes.AND: // r-value reference
-                        case CPPTokenTypes.AMPERSAND:
-                            refence = true;
-                            break;
-                    }
-                }
-            //}
+        
+        while( ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR ) {        
+            ASTPointerDepthCounter visitor = new ASTPointerDepthCounter();
+            TypeImpl.visitPointerOperator(visitor, ptrOperator);                    
+            pointerDepth += visitor.getPointerDepth();        
+            refence += visitor.getReference();            
             ptrOperator = ptrOperator.getNextSibling();
         }
 
@@ -199,13 +207,13 @@ public class TypeFactory {
         boolean functionPointerType = false;
         
         if (parent != null) {
-            type = NestedType.create(parent, file, parent.getPointerDepth(), parent.isReference(), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
+            type = NestedType.create(parent, file, parent.getPointerDepth(), getReferenceValue(parent), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
         } else if (TypeFunPtrImpl.isFunctionPointerParamList(ast, inFunctionParameters, inTypedef)) {
             type = new TypeFunPtrImpl(file, returnTypePointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeFunPtrImpl.getEndOffset(ast));
             ((TypeFunPtrImpl)type).init(ast, inFunctionParameters, inTypedef);
             functionPointerType = true;
         } else {
-            type = new TypeImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast));
+            type = new TypeImpl(file, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
         }
 
         // TODO: pass extra parameters to the constructor insdead of calling methods!!!
@@ -248,7 +256,7 @@ public class TypeFactory {
                     } else {
                         //Check for global type
                         if (tokFirstId.getType() ==  CPPTokenTypes.SCOPE) {
-                            type = NestedType.create(null, file, type.getPointerDepth(), type.isReference(), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
+                            type = NestedType.create(null, file, type.getPointerDepth(), getReferenceValue(type), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
                             tokFirstId = tokFirstId.getNextSibling();
                         }
                         //TODO: we have AstRenderer.getNameTokens, it is better to use it here
@@ -301,7 +309,7 @@ public class TypeFactory {
                                             || namePart.getType() == CPPTokenTypes.LITERAL_struct
                                             || namePart.getType() == CPPTokenTypes.LITERAL_class
                                             || namePart.getType() == CPPTokenTypes.LITERAL_union) {
-                                        CsmType t = AstRenderer.renderType(namePart, file, true);
+                                        CsmType t = AstRenderer.renderType(namePart, file, true, scope, true);
                                         type.addInstantiationParam(new TypeBasedSpecializationParameterImpl(t));
                                     }
                                     if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
@@ -332,7 +340,7 @@ public class TypeFactory {
         private int pointerDepth = 0;
         private int arrayDepth = 0;
 
-        private boolean reference;
+        private int reference;
         private boolean _const;
         
         private boolean typedef = false;
@@ -351,13 +359,33 @@ public class TypeFactory {
         public NameBuilder getNameBuilder() {
             return nameBuilder;
         }
-        
+                
         public void setClassifier(CsmClassifier cls) {
             this.cls = cls;
         }
+        
+        public CsmClassifier getClassifier() {
+            return cls;
+        }        
 
         public void setTypedef() {
             this.typedef = true;
+        }
+
+        public void setConst() {
+            this._const = true;
+        }
+        
+        public void incPointerDepth() {
+            this.pointerDepth++;
+        }
+        
+        public void setReference() {
+            this.reference = 1;
+        }
+
+        public void setRValueReference() {
+            this.reference = 2;
         }
         
         public void setSimpleTypeSpecifier(CharSequence specifier) {
@@ -393,7 +421,7 @@ public class TypeFactory {
                         type.setQName(nameList.toArray(new CharSequence[nameList.size()]));
                     } else {
                         List<CharSequence> nameList = new ArrayList<CharSequence>();
-                        type = NestedType.create(TemplateUtils.checkTemplateType(type, scope), getFile(), type.getPointerDepth(), type.isReference(), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
+                        type = NestedType.create(TemplateUtils.checkTemplateType(type, scope), getFile(), type.getPointerDepth(), getReferenceValue(type), type.getArrayDepth(), type.isConst(), type.getStartOffset(), type.getEndOffset());
                         nameList.add(namePart.getPart());
                         type.setClassifierText(namePart.getPart());
                         type.setQName(nameList.toArray(new CharSequence[nameList.size()]));                    
@@ -406,14 +434,27 @@ public class TypeFactory {
             } else if (specifierBuilder != null) {
                 CsmClassifier classifier = BuiltinTypes.getBuiltIn(specifierBuilder.toString());
                 type = new TypeImpl(classifier, pointerDepth, reference, arrayDepth, _const, getFile(), getStartOffset(), getEndOffset());
+            } else if (cls != null) {
+                type = new TypeImpl(cls, pointerDepth, reference, arrayDepth, _const, getFile(), getStartOffset(), getEndOffset());
+                type.setTypeOfTypedef();    
             }
             return TemplateUtils.checkTemplateType(type, scope);
         }
+
+        @Override
+        public String toString() {
+            return "TypeBuilder{" + "nameBuilder=" + nameBuilder + ", specifierBuilder=" + specifierBuilder + //NOI18N
+                    ", pointerDepth=" + pointerDepth + ", arrayDepth=" + arrayDepth + //NOI18N
+                    ", reference=" + reference + ", _const=" + _const + ", typedef=" + typedef + //NOI18N
+                    ", cls=" + cls + ", scope=" + scope + ", instantiationParams=" + instantiationParams + //NOI18N
+                    super.toString() + '}'; //NOI18N
+        }
     }
-   
-    public static CsmType createType(CsmType type, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
+    
+    public static CsmType createType(CsmType type, int pointerDepth, int reference, int arrayDepth, boolean _const) {
         if(type.getPointerDepth() == pointerDepth &&
-            type.isReference() == reference &&
+            type.isReference() == (reference > 0) &&
+            type.isRValueReference() == (reference == 2) &&
             type.getArrayDepth() == arrayDepth &&
             type.isConst() == _const) {
             return type;
@@ -450,7 +491,7 @@ public class TypeFactory {
     }
 
     public static CsmType createSimpleType(CsmClassifier cls, CsmFile file, int startOffset, int endOffset) {
-        TypeImpl type = new TypeImpl(file, 0, false, 0, false, startOffset, endOffset);
+        TypeImpl type = new TypeImpl(file, 0, 0, 0, false, startOffset, endOffset);
         type.setClassifierText(cls.getName());
         List<CharSequence> l = new ArrayList<CharSequence>();
         l.add(cls.getName());
@@ -459,15 +500,38 @@ public class TypeFactory {
         return type;
     }
     
+    public static CsmType createFunPtrType(CsmFile file, 
+                                           int pointerDepth, 
+                                           int reference, 
+                                           int arrayDepth, 
+                                           boolean _const, 
+                                           int startOffset, 
+                                           int endOffset,
+                                           Collection<CsmParameter> functionParams,
+                                           CsmType returnType)
+    {
+        return new TypeFunPtrImpl(
+                returnType.getClassifier(), 
+                file, 
+                pointerDepth,
+                reference, 
+                arrayDepth,
+                _const, 
+                startOffset, 
+                endOffset, 
+                functionParams
+        );
+    }
+    
     
     private static class TypeWrapper implements CsmType {
         protected CsmType type;
         protected int pointerDepth;
-        protected boolean reference;
+        protected int reference;
         protected int arrayDepth;
         protected boolean _const;
 
-        public TypeWrapper(CsmType type, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
+        public TypeWrapper(CsmType type, int pointerDepth, int reference, int arrayDepth, boolean _const) {
             this.type = type;
             this.pointerDepth = pointerDepth;
             this.reference = reference;
@@ -512,7 +576,12 @@ public class TypeFactory {
 
         @Override
         public boolean isReference() {
-            return reference;
+            return reference > 0;
+        }
+
+        @Override
+        public boolean isRValueReference() {
+            return reference == 2;
         }
 
         @Override
@@ -583,4 +652,46 @@ public class TypeFactory {
             return sb.toString();
         }
     }
+    
+    
+    private static class ASTPointerDepthCounter implements TypeImpl.ASTTokenVisitor {
+    
+        private int pointerDepth;
+        
+        private int reference;
+
+        @Override
+        public boolean visit(AST token) {
+            switch( token.getType() ) {
+                case CPPTokenTypes.STAR:
+                    ++pointerDepth;
+                    break;
+                case CPPTokenTypes.AND: // r-value reference
+                    reference = 2;
+                    break;
+                case CPPTokenTypes.AMPERSAND: 
+                    reference = 1;
+                    break;
+                    
+                default: {
+                    if (!AstRenderer.isConstQualifier(token.getType())) {
+                        // Original code looked only on first token, 
+                        // now we will break if token isn't pointer/reference
+                        // or const qualifier
+                        return false; 
+                    }
+                }
+            }
+            return true;
+        }        
+
+        public int getPointerDepth() {
+            return pointerDepth;
+        }
+
+        public int getReference() {
+            return reference;
+        }
+    }
+    
 }

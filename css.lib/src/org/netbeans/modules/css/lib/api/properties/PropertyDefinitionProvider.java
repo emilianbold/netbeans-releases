@@ -61,7 +61,7 @@ public interface PropertyDefinitionProvider {
     public static class Query {
         
         public static Collection<String> getPropertyNames(FileObject context) {
-            Collection<String> all = new ArrayList<String>();
+            Collection<String> all = new ArrayList<>();
             Collection<? extends PropertyDefinitionProvider> providers = Lookup.getDefault().lookupAll(PropertyDefinitionProvider.class);
             for(PropertyDefinitionProvider provider : providers) {
                 all.addAll(provider.getPropertyNames(context));

@@ -196,7 +196,7 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
     }
 
     @Override
-    public JComboBox getRunAsCombo() {
+    public JComboBox<String> getRunAsCombo() {
         return runAsCombo;
     }
 
@@ -277,7 +277,7 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
         argsLabel = new JLabel();
         argsTextField = new JTextField();
         runAsLabel = new JLabel();
-        runAsCombo = new JComboBox();
+        runAsCombo = new JComboBox<String>();
         indexFileLabel = new JLabel();
         indexFileTextField = new JTextField();
         indexFileBrowseButton = new JButton();
@@ -293,6 +293,7 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
 
         interpreterTextField.setEditable(false);
         interpreterTextField.setColumns(20);
+
         Mnemonics.setLocalizedText(interpreterBrowseButton, NbBundle.getMessage(RunAsScript.class, "LBL_BrowseInterpreter")); // NOI18N
         interpreterBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -302,6 +303,7 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
 
         defaultInterpreterCheckBox.setSelected(true);
         Mnemonics.setLocalizedText(defaultInterpreterCheckBox, NbBundle.getMessage(RunAsScript.class, "LBL_UseDefaultInterpreter")); // NOI18N
+
         Mnemonics.setLocalizedText(configureButton, NbBundle.getMessage(RunAsScript.class, "LBL_Configure")); // NOI18N
         configureButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -328,6 +330,7 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
                 indexFileBrowseButtonActionPerformed(evt);
             }
         });
+
         Mnemonics.setLocalizedText(workDirLabel, NbBundle.getMessage(RunAsScript.class, "RunAsScript.workDirLabel.text")); // NOI18N
 
         workDirTextField.setColumns(20);
@@ -338,9 +341,11 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
                 workDirBrowseButtonActionPerformed(evt);
             }
         });
+
         Mnemonics.setLocalizedText(phpOptionsLabel, NbBundle.getMessage(RunAsScript.class, "RunAsScript.phpOptionsLabel.text")); // NOI18N
 
         phpOptionsTextField.setColumns(20);
+
         Mnemonics.setLocalizedText(hintLabel, "dummy"); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
@@ -503,7 +508,7 @@ public final class RunAsScript extends RunAsPanel.InsidePanel {
     private JTextField interpreterTextField;
     private JLabel phpOptionsLabel;
     private JTextField phpOptionsTextField;
-    private JComboBox runAsCombo;
+    private JComboBox<String> runAsCombo;
     private JLabel runAsLabel;
     private JButton workDirBrowseButton;
     private JLabel workDirLabel;

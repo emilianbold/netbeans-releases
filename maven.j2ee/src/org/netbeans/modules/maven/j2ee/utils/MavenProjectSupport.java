@@ -64,12 +64,15 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
 import org.netbeans.modules.maven.api.problem.ProblemReporter;
+import org.netbeans.modules.maven.j2ee.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
+import org.netbeans.modules.maven.j2ee.ear.EarDDHelper;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
@@ -78,6 +81,7 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
@@ -116,6 +120,10 @@ public class MavenProjectSupport {
         if (instanceID != null && serverID == null) {
             assignServer(project, instanceID, initContextPath);
             
+        // We know both server name and server ID, just do the same as above
+        } else if (instanceID != null && serverID != null) {
+            assignServer(project, instanceID, initContextPath);
+            
         // We don't know anything which means we want to assign <No Server> value to the project
         } else if (instanceID == null && serverID == null) {
             assignServer(project, null, initContextPath);
@@ -131,7 +139,7 @@ public class MavenProjectSupport {
                 problems.addReport(createBrokenLibraryReport(project));
                 BrokenServerLibrarySupport.fixOrShowAlert(project, null);
             }
-            if (RunUtils.hasApplicationCompileOnSaveEnabled(project)) {
+            if (RunUtils.isCompileOnSaveEnabled(project)) {
                 Deployment.getDefault().enableCompileOnSaveSupport(moduleProvider);
             }
         }
@@ -156,8 +164,12 @@ public class MavenProjectSupport {
     
     private static void setServer(Project project, J2eeModuleProvider moduleProvider, String serverID) {
         if (moduleProvider != null) {
-            if (J2eeModule.Type.WAR.equals(moduleProvider.getJ2eeModule().getType())) {
-                MavenProjectSupport.createDDIfRequired(project, serverID);
+            J2eeModule.Type type = moduleProvider.getJ2eeModule().getType();
+            if (J2eeModule.Type.WAR.equals(type)) {
+                createWebXMLIfRequired(project, serverID);
+            }
+            if (J2eeModule.Type.EAR.equals(type)) {
+                createApplicationXMLIfRequired(project, serverID);
             }
             
             moduleProvider.setServerInstanceID(serverID);
@@ -320,8 +332,8 @@ public class MavenProjectSupport {
         }
     }
     
-    public static void createDDIfRequired(Project project) {
-        createDDIfRequired(project, null);
+    public static void createWebXMLIfRequired(Project project) {
+        createWebXMLIfRequired(project, null);
     }
     
     /**
@@ -331,17 +343,17 @@ public class MavenProjectSupport {
      * @param project project for which should DD be generated
      * @param serverID server ID of given project
      */
-    public static void createDDIfRequired(Project project, String serverID) {
+    public static void createWebXMLIfRequired(Project project, String serverID) {
         if (serverID == null) {
             serverID = readServerID(project);
         }
         // TODO change condition to use ConfigSupportImpl.isDescriptorRequired
         if (serverID != null && serverID.contains("WebLogic")) { //NOI18N
-            createDD(project);
+            createWebXML(project);
         }
     }
     
-    private static void createDD(Project project) {
+    private static void createWebXML(Project project) {
         WebModuleProviderImpl webModule = project.getLookup().lookup(WebModuleProviderImpl.class);
         
         if (webModule != null) {
@@ -367,6 +379,40 @@ public class MavenProjectSupport {
 
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
+            }
+        }
+    }
+    
+    /**
+     * Creates application.xml deployment descriptor if it's required for given project (see #228191)
+     * 
+     * @param project project for which should DD be generated
+     * @param serverID server ID of given project
+     */
+    public static void createApplicationXMLIfRequired(Project project, String serverID) {
+        if (serverID == null) {
+            serverID = readServerID(project);
+        }
+        // TODO change condition to use ConfigSupportImpl.isDescriptorRequired
+        if (serverID != null && serverID.contains("WebLogic")) { //NOI18N
+            createApplicationXML(project);
+        }
+    }
+    
+    private static void createApplicationXML(Project project) {
+        EarModuleProviderImpl earProvider = project.getLookup().lookup(EarModuleProviderImpl.class);
+        
+        if (earProvider != null) {
+            EarImplementation2 earImpl = earProvider.getEarImplementation();
+            
+            FileObject applicationXML = earImpl.getDeploymentDescriptor();
+            FileObject metaInf = earImpl.getMetaInf();
+
+            if (applicationXML == null) {
+                String j2eeVersion = readJ2eeVersion(project);
+                if (j2eeVersion != null) {
+                    EarDDHelper.setupDD(Profile.fromPropertiesString(j2eeVersion), metaInf, project, true);
+                }
             }
         }
     }
@@ -400,7 +446,33 @@ public class MavenProjectSupport {
     public static String readJ2eeVersion(Project project)  {
         return getPreferences(project, true).get(MavenJavaEEConstants.HINT_J2EE_VERSION, null);
     }
+
+    public static boolean isDeployOnSave(Project project)  {
+        String result = getPreferences(project, true).get(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, null);
+        if (result != null) {
+            return Boolean.parseBoolean(result);
+        } else {
+            return true;
+        }
+    }
     
+    public static void setDeployOnSave(Project project, Boolean value) {
+        if (value == null || value == true) {
+            getPreferences(project, true).remove(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE);
+        } else {
+            getPreferences(project, true).putBoolean(MavenJavaEEConstants.HINT_DEPLOY_ON_SAVE, value);
+        }
+        
+        CopyOnSave copyOnSave = project.getLookup().lookup(CopyOnSave.class);
+        if (copyOnSave != null) {
+            if (isDeployOnSave(project)) {
+                copyOnSave.initialize();
+            } else {
+                copyOnSave.cleanup();
+            }
+        }
+    }
+
     public static void setJ2eeVersion(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, true);
     }
@@ -414,7 +486,17 @@ public class MavenProjectSupport {
     }
     
     private static void setSettings(Project project, String key, String value, boolean shared) {
-        getPreferences(project, shared).put(key, value);
+        Preferences preferences = getPreferences(project, shared);
+        if (value != null) {
+            preferences.put(key, value);
+        } else {
+            preferences.remove(key);
+        }
+        try {
+            preferences.flush();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
     /**
@@ -449,7 +531,8 @@ public class MavenProjectSupport {
     public static String getBrowserID(@NonNull Project project) {
         Parameters.notNull("project", project);
         
-        return getPreferences(project, false).get(MavenJavaEEConstants.SELECTED_BROWSER, null);
+        return getPreferences(project, false).get(MavenJavaEEConstants.SELECTED_BROWSER, 
+                BrowserUISupport.getDefaultBrowserChoice(true).getId());
     }
     
     /**

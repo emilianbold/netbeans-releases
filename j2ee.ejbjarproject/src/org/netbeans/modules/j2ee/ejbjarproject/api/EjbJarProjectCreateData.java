@@ -61,8 +61,6 @@ public final class EjbJarProjectCreateData {
 
     private String librariesDefinition;
 
-    private String serverLibraryName;
-
     private File[] sourceFolders;
 
     private File[] testFolders;
@@ -114,14 +112,6 @@ public final class EjbJarProjectCreateData {
 
     public void setServerInstanceID(String serverInstanceID) {
         this.serverInstanceID = serverInstanceID;
-    }
-
-    public String getServerLibraryName() {
-        return serverLibraryName;
-    }
-
-    public void setServerLibraryName(String serverLibraryName) {
-        this.serverLibraryName = serverLibraryName;
     }
 
     public File getConfigFilesBase() {

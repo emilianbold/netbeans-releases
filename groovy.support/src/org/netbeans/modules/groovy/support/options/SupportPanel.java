@@ -52,9 +52,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.groovy.support.api.GroovySettings;
@@ -63,6 +61,7 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -187,22 +186,21 @@ final class SupportPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
 private void chooseDocButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chooseDocButtonActionPerformed
-        JFileChooser chooser = new JFileChooser(groovyDocTextField.getText());
-        chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        int r = chooser.showDialog(
-            SwingUtilities.getWindowAncestor (this), NbBundle.getMessage(SupportPanel.class, "LBL_Select_Directory"));
-        if (r == JFileChooser.APPROVE_OPTION) {
-            File file = chooser.getSelectedFile ();
-            if (!new File (new File (file, "groovy-jdk"), "index.html").isFile ()) {
-                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
-                    NbBundle.getMessage(SupportPanel.class, "LBL_Not_groovy_doc"),
-                    NotifyDescriptor.Message.WARNING_MESSAGE
-                ));
-                return;
-            }
-            groovyDocTextField.setText(file.getAbsolutePath());
-
+    File file = new FileChooserBuilder(SupportPanel.class)
+            .setDirectoriesOnly(true)
+            .setDefaultWorkingDirectory(null)
+            .setTitle(NbBundle.getMessage(SupportPanel.class, "LBL_Select_Directory"))
+            .setApproveText(NbBundle.getMessage(SupportPanel.class, "LBL_Select_Directory"))
+            .showOpenDialog();
+    if (file != null) {
+        if (!new File(new File(file, "groovy-jdk"), "index.html").isFile()) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                NbBundle.getMessage(SupportPanel.class, "LBL_Not_groovy_doc"),
+                NotifyDescriptor.Message.WARNING_MESSAGE));
+            return;
         }
+        groovyDocTextField.setText(file.getAbsolutePath());
+    }
 }//GEN-LAST:event_chooseDocButtonActionPerformed
 
     private void jLabel2MouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_jLabel2MouseEntered

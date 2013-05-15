@@ -192,7 +192,7 @@ public class IssueAction extends SystemAction {
 
                                 RepositoryImpl repository;
                                 if(repositoryParam == null) {
-                                    repository = BugtrackingOwnerSupport.getInstance().getRepository(file, issueId, true);
+                                    repository = BugtrackingOwnerSupport.getInstance().getRepository(file, true);
                                     if(repository == null) {
                                         // if no repository was known user was supposed to choose or create one
                                         // in scope of the previous getRepository() call. So null shoud stand

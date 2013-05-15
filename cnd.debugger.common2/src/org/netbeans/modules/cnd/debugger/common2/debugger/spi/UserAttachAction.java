@@ -48,5 +48,5 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
  * @author Nikolay Koldunov
  */
 public interface UserAttachAction {
-    void attach(String pid, EngineType type);
+    void attach(String hostInfo, String pid, EngineType type);
 }

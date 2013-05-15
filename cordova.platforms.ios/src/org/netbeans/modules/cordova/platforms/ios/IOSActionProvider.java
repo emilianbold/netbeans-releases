@@ -41,11 +41,9 @@
  */
 package org.netbeans.modules.cordova.platforms.ios;
 
-import java.util.concurrent.atomic.AtomicBoolean;
-import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
-import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -54,8 +52,9 @@ import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 /**
- *
+ * Cordova build action
  * @author Jan Becicka
+ * 
  */
 public class IOSActionProvider implements ActionProvider {
     private final Project p;
@@ -77,38 +76,45 @@ public class IOSActionProvider implements ActionProvider {
     @NbBundle.Messages({
         "ERR_NotMac=iOS Development is available only on Mac OS X",
         "ERR_Title=Error",
-        "LBL_Opening=Opening url"    
+        "LBL_Opening=Opening url",
+        "ERR_NO_PhoneGap=PhoneGap Platform is not configured.\nConfigure? "
     })
     @Override
     public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
         if (!Utilities.isMac()) {
-                NotifyDescriptor not = new NotifyDescriptor(
-                        Bundle.LBL_NoMac(), 
-                        Bundle.ERR_Title(), 
-                        NotifyDescriptor.DEFAULT_OPTION, 
-                        NotifyDescriptor.ERROR_MESSAGE,
-                        null, 
-                        null);
-                DialogDisplayer.getDefault().notify(not);
-                return;
+            NotifyDescriptor not = new NotifyDescriptor(
+                    Bundle.LBL_NoMac(),
+                    Bundle.ERR_Title(),
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.ERROR_MESSAGE,
+                    null,
+                    null);
+            DialogDisplayer.getDefault().notify(not);
+            return;
         }
         final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
         assert build != null;
-        if (COMMAND_BUILD.equals(command)) {
-            build.perform(BuildPerformer.BUILD_IOS, p);
-        } else if (COMMAND_CLEAN.equals(command)) {
-            build.perform(build.CLEAN_IOS, p);
-        } else if (COMMAND_RUN.equals(command) || COMMAND_RUN_SINGLE.equals(command)) {
-            if (build.isPhoneGapBuild(p)) {
-                build.perform(build.RUN_IOS,p);
-            } else {
-                ProgressUtils.runOffEventDispatchThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        IOSDevice.IPHONE.openUrl(build.getUrl(p, context));
-                    }
-                }, Bundle.LBL_Opening(), new AtomicBoolean(), false);
+        try {
+            if (COMMAND_BUILD.equals(command)) {
+                build.perform(BuildPerformer.BUILD_IOS, p);
+            } else if (COMMAND_CLEAN.equals(command)) {
+                build.perform(BuildPerformer.CLEAN_IOS, p);
+            } else if (COMMAND_RUN.equals(command) || COMMAND_RUN_SINGLE.equals(command)) {
+                build.perform(BuildPerformer.RUN_IOS, p);
             }
+        } catch (IllegalStateException ex) {
+            NotifyDescriptor not = new NotifyDescriptor(
+                    Bundle.ERR_NO_PhoneGap(),
+                    Bundle.ERR_Title(),
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.ERROR_MESSAGE,
+                    null,
+                    null);
+            Object value = DialogDisplayer.getDefault().notify(not);
+            if (NotifyDescriptor.CANCEL_OPTION != value) {
+                OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+            }
+            return;
         }
     }
 

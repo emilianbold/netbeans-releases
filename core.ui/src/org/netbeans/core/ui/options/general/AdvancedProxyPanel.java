@@ -263,6 +263,10 @@ public class AdvancedProxyPanel extends javax.swing.JPanel {
         this.dd = dd;
     }
     
+    protected String getNonProxyHosts() {
+        return tfNonProxyHosts.getText();
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is

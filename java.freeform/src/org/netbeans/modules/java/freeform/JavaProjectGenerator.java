@@ -375,14 +375,11 @@ public class JavaProjectGenerator {
      * @return {@link Element} representing JavaCompilationUnit instances or null
      */
     public static Element getJavaCompilationUnits (final AuxiliaryConfiguration aux) {
-        Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
-        if (data == null) {
-            data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+        for (String ns : JavaProjectNature.JAVA_NAMESPACES) {
+            Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, ns, true);
+            if (data != null) return data;
         }
-        if (data == null) {
-            data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
-        }
-        return data;
+        return null;
     }
 
     /**
@@ -436,7 +433,7 @@ public class JavaProjectGenerator {
                     continue;
                 }
                 if ("annotation-processing".equals(el.getLocalName())&&         //NOI18N
-                    JavaProjectNature.NS_JAVA_3.equals(el.getNamespaceURI())) {
+                    JavaProjectNature.namespaceAtLeast(el.getNamespaceURI(), JavaProjectNature.NS_JAVA_3)) {
                     cu.annotationPorocessing = new JavaCompilationUnit.AnnotationProcessing();
                     cu.annotationPorocessing.trigger = EnumSet.<AnnotationProcessingQuery.Trigger>noneOf(AnnotationProcessingQuery.Trigger.class);
                     cu.annotationPorocessing.processors = new ArrayList<String>();
@@ -445,17 +442,17 @@ public class JavaProjectGenerator {
                         final String localName = apEl.getLocalName();
                         if ("scan-trigger".equals(localName)) { //NOI18N
                             cu.annotationPorocessing.trigger.add(AnnotationProcessingQuery.Trigger.ON_SCAN);
-                        } else if ("editor-trigger".equals(localName) && JavaProjectNature.NS_JAVA_3.equals(el.getNamespaceURI())) {   //NOI18N
+                        } else if ("editor-trigger".equals(localName)) {   //NOI18N
                             cu.annotationPorocessing.trigger.add(AnnotationProcessingQuery.Trigger.IN_EDITOR);
-                        } else if ("source-output".equals(localName) && JavaProjectNature.NS_JAVA_3.equals(el.getNamespaceURI())) {
+                        } else if ("source-output".equals(localName)) {
                             cu.annotationPorocessing.sourceOutput = XMLUtil.findText(apEl);
-                        } else if ("processor-path".equals(localName) && JavaProjectNature.NS_JAVA_3.equals(el.getNamespaceURI())) {    //NOI18N
+                        } else if ("processor-path".equals(localName)) {    //NOI18N
                             cu.annotationPorocessing.processorPath = XMLUtil.findText(apEl);
-                        } else if ("processor".equals(localName) && JavaProjectNature.NS_JAVA_3.equals(el.getNamespaceURI())) { //NOI18N
+                        } else if ("processor".equals(localName)) { //NOI18N
                             cu.annotationPorocessing.processors.add(XMLUtil.findText(apEl));
-                        } else if ("processor-option".equals(localName) && JavaProjectNature.NS_JAVA_3.equals(el.getNamespaceURI())) {  //NOI18N
-                            final Element keyEl = XMLUtil.findElement(apEl, "key", JavaProjectNature.NS_JAVA_3);    //NOI18N
-                            final Element valueEl = XMLUtil.findElement(apEl, "value", JavaProjectNature.NS_JAVA_3);     //NOI18N
+                        } else if ("processor-option".equals(localName)) {  //NOI18N
+                            final Element keyEl = XMLUtil.findElement(apEl, "key", el.getNamespaceURI());    //NOI18N
+                            final Element valueEl = XMLUtil.findElement(apEl, "value", el.getNamespaceURI());     //NOI18N
                             if (keyEl != null && valueEl != null) {
                                 final String key = XMLUtil.findText(keyEl);
                                 final String value = XMLUtil.findText(valueEl);
@@ -486,63 +483,30 @@ public class JavaProjectGenerator {
     public static void putJavaCompilationUnits(AntProjectHelper helper, 
             AuxiliaryConfiguration aux, List<JavaCompilationUnit> compUnits) {
         //assert ProjectManager.mutex().isWriteAccess();
-        // First check if we need /3 data.
-        boolean need3 = false;
+        int requiredVersion = 1;
+        
+        // detect minimal required namespace:
         for (JavaCompilationUnit unit : compUnits) {
-            if (needsNS3(unit)) {
-                need3 = true;
-                break;
-            }
+            requiredVersion = Math.max(requiredVersion, minimalNS(unit));
         }
-        // Second check whether we need /2 data.
-        boolean need2 = false;
-        for (JavaCompilationUnit unit : compUnits) {
-            if (unit.isTests || (unit.javadoc != null && !unit.javadoc.isEmpty())) {
-                need2 = true;
-                break;
-            }
-        }
+        
         String namespace;
-        // Look for existing /3 data.
-        Element data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_3, true);
-        if (data != null) {
-            namespace = JavaProjectNature.NS_JAVA_3;
+        
+        switch (requiredVersion) {
+            case 4: namespace = JavaProjectNature.NS_JAVA_4; break;
+            case 3: namespace = JavaProjectNature.NS_JAVA_3; break;
+            case 2: namespace = JavaProjectNature.NS_JAVA_2; break;
+            default: namespace = JavaProjectNature.NS_JAVA_1; break;
         }
-        else {
-            // Look for existing /2 data and possibly update to /3
-            data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
+        
+        Element data = getJavaCompilationUnits(aux);
+        
+        if (data == null || !JavaProjectNature.namespaceAtLeast(data.getNamespaceURI(), namespace)) {
             if (data != null) {
-                namespace = need3 ? JavaProjectNature.NS_JAVA_3 : JavaProjectNature.NS_JAVA_2;
-                if (need3) {
-                    // Have to upgrade to /3
-                    aux.removeConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_2, true);
-                    data = Util.getPrimaryConfigurationData(helper).getOwnerDocument().
-                        createElementNS(JavaProjectNature.NS_JAVA_3, JavaProjectNature.EL_JAVA);
-                }
-            } else {
-                //Look for existing /1 and possibly update to /2 or /3 as needed
-                data = aux.getConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
-                namespace = need3 ? JavaProjectNature.NS_JAVA_3 : need2 ? JavaProjectNature.NS_JAVA_2 : JavaProjectNature.NS_JAVA_1;
-                if (data != null) {
-
-                    if (need3) {
-                        // Have to upgrade to /3
-                        aux.removeConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
-                        data = Util.getPrimaryConfigurationData(helper).getOwnerDocument().
-                            createElementNS(JavaProjectNature.NS_JAVA_3, JavaProjectNature.EL_JAVA);
-                    }
-                    else if (need2) {
-                        // Have to upgrade to /2
-                        aux.removeConfigurationFragment(JavaProjectNature.EL_JAVA, JavaProjectNature.NS_JAVA_1, true);
-                        data = Util.getPrimaryConfigurationData(helper).getOwnerDocument().
-                            createElementNS(JavaProjectNature.NS_JAVA_2, JavaProjectNature.EL_JAVA);
-                    } // else can use it as is
-                } else {
-                    // Create a new /1, /2 or /3 data acc. to need.
-                    data = Util.getPrimaryConfigurationData(helper).getOwnerDocument().
-                        createElementNS(namespace, JavaProjectNature.EL_JAVA);
-                }
+                aux.removeConfigurationFragment(JavaProjectNature.EL_JAVA, data.getNamespaceURI(), true);
             }
+            data = Util.getPrimaryConfigurationData(helper).getOwnerDocument().
+                createElementNS(namespace, JavaProjectNature.EL_JAVA);
         }
         Document doc = data.getOwnerDocument();
         for (Element cuEl : XMLUtil.findSubElements(data)) {
@@ -560,7 +524,7 @@ public class JavaProjectGenerator {
                 }
             }
             if (cu.isTests) {
-                assert namespace.equals(JavaProjectNature.NS_JAVA_2) || namespace.equals(JavaProjectNature.NS_JAVA_3);
+                assert JavaProjectNature.namespaceAtLeast(namespace, JavaProjectNature.NS_JAVA_2);
                 cuEl.appendChild(doc.createElementNS(namespace, "unit-tests")); // NOI18N
             }
             if (cu.classpath != null) {
@@ -584,7 +548,7 @@ public class JavaProjectGenerator {
                 Iterator it3 = cu.javadoc.iterator();
                 while (it3.hasNext()) {
                     String javadoc = (String) it3.next();
-                    assert namespace.equals(JavaProjectNature.NS_JAVA_2) || namespace.equals(JavaProjectNature.NS_JAVA_3);
+                    assert JavaProjectNature.namespaceAtLeast(namespace, JavaProjectNature.NS_JAVA_2);
                     el = doc.createElementNS(namespace, "javadoc-built-to"); // NOI18N
                     el.appendChild(doc.createTextNode(javadoc));
                     cuEl.appendChild(el);
@@ -1099,23 +1063,30 @@ public class JavaProjectGenerator {
         props.setProperty(key, value);
     }
 
-    private static boolean needsNS3(final JavaCompilationUnit unit) {
+    private static int minimalNS(final JavaCompilationUnit unit) {
+        if (unit.isTests || (unit.javadoc != null && !unit.javadoc.isEmpty())) {
+            return 2;
+        }
         if (unit.classpath != null) {
             for (JavaCompilationUnit.CP cp : unit.classpath) {
                 if ("processor".equals(cp.mode)) {  //NOI18N
-                    return true;
+                    return 3;
                 }
             }
         }
         if (unit.sourceLevel != null) {
+            final SpecificationVersion JAVA_8 = new SpecificationVersion("1.8");  //NOI18N
+            final SpecificationVersion current = new SpecificationVersion(unit.sourceLevel);
+            if (JAVA_8.compareTo(current) <= 0) {
+                return 4;
+            }
             final SpecificationVersion JAVA_6 = new SpecificationVersion("1.6");  //NOI18N
             final SpecificationVersion JAvA_7 = new SpecificationVersion("1.7");  //NOI18N
-            final SpecificationVersion current = new SpecificationVersion(unit.sourceLevel);
             if (JAVA_6.equals(current) || JAvA_7.equals(current)) {
-                return true;
+                return 3;
             }
         }
-        return false;
+        return 1;
     }
-
+    
 }

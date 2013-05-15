@@ -340,8 +340,7 @@ class OutWriter extends PrintWriter {
 
     @Override
     public synchronized void println(String s) {
-        doWrite(s, 0, s.length());
-        println();
+        print(s, null, false, null, null, OutputKind.OUT, true);
     }
 
     @Override
@@ -399,11 +398,13 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void write(int c) {
         doWrite(new String(new char[]{(char)c}), 0, 1);
+        lines.checkLimits();
     }
     
     @Override
     public synchronized void write(char data[], int off, int len) {
         doWrite(new CharArrayWrapper(data), off, len);
+        lines.checkLimits();
     }
     
     /** write buffer size in chars */
@@ -414,7 +415,7 @@ class OutWriter extends PrintWriter {
         }
         
         // XXX will not pick up ANSI sequences broken across write blocks, but this is likely rare
-        if (printANSI(s.subSequence(off, off + len), false, false, false)) {
+        if (printANSI(s.subSequence(off, off + len), false, OutputKind.OUT, false)) {
             return;
         }
         /* XXX causes stack overflow
@@ -488,10 +489,16 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void write(char data[]) {
         doWrite(new CharArrayWrapper(data), 0, data.length);
+        lines.checkLimits();
     }
 
     @Override
     public synchronized void println() {
+        printLineEnd();
+        lines.checkLimits();
+    }
+
+    private void printLineEnd() {
         doWrite("\n", 0, 1);
     }
 
@@ -504,11 +511,13 @@ class OutWriter extends PrintWriter {
     @Override
     public synchronized void write(String s, int off, int len) {
         doWrite(s, off, len);
+        lines.checkLimits();
     }
 
     @Override
     public synchronized void write(String s) {
         doWrite(s, 0, s.length());
+        lines.checkLimits();
     }
 
     public synchronized void println(String s, OutputListener l) {
@@ -516,12 +525,12 @@ class OutWriter extends PrintWriter {
     }
 
     public synchronized void println(String s, OutputListener l, boolean important) {
-        print(s, l, important, null, null, false, true);
+        print(s, l, important, null, null, OutputKind.OUT, true);
     }
 
-    synchronized void print(CharSequence s, OutputListener l, boolean important, Color c, Color b, boolean err, boolean addLS) {
+    synchronized void print(CharSequence s, OutputListener l, boolean important, Color c, Color b, OutputKind outKind, boolean addLS) {
         if (c == null) {
-            if (l == null && printANSI(s, important, err, addLS)) {
+            if (l == null && printANSI(s, important, outKind, addLS)) {
                 return;
             }
             c = ansiColor; // carry over from previous line
@@ -530,9 +539,10 @@ class OutWriter extends PrintWriter {
         int lastPos = lines.getCharCount();
         doWrite(s, 0, s.length());
         if (addLS) {
-            println();
+            printLineEnd();
         }
-        lines.updateLinesInfo(s, lastLine, lastPos, l, important, err, c, b);
+        lines.updateLinesInfo(s, lastLine, lastPos, l, important, outKind, c, b);
+        lines.checkLimits();
     }
     private Color ansiColor;
     private Color ansiBackground;
@@ -560,7 +570,7 @@ class OutWriter extends PrintWriter {
         new Color(0, 255, 255),
         new Color(255, 255, 255),
     };
-    private boolean printANSI(CharSequence s, boolean important, boolean err, boolean addLS) { // #192779
+    private boolean printANSI(CharSequence s, boolean important, OutputKind outKind, boolean addLS) { // #192779
         int len = s.length();
         boolean hasEscape = false; // fast initial check
         for (int i = 0; i < len - 1; i++) {
@@ -577,7 +587,7 @@ class OutWriter extends PrintWriter {
         while (m.find()) {
             int esc = m.start();
             if (esc > text) {
-                print(s.subSequence(text, esc), null, important, ansiColor, ansiBackground, err, false);
+                print(s.subSequence(text, esc), null, important, ansiColor, ansiBackground, outKind, false);
             }
             text = m.end();
             if (!"m".equals(m.group(3))) {                              //NOI18N
@@ -638,19 +648,22 @@ class OutWriter extends PrintWriter {
             return false;
         }
         if (text < len) { // final segment
-            print(s.subSequence(text, len), null, important, ansiColor, ansiBackground, err, addLS);
+            print(s.subSequence(text, len), null, important, ansiColor, ansiBackground, outKind, addLS);
         } else if (addLS) { // line ended w/ control seq
-            println();
+            printLineEnd();
         }
         return true;
     }
 
     synchronized void print(CharSequence s, LineInfo info, boolean important) {
-        int line = lines.getLineCount() - 1;
-        doWrite(s, 0, s.length());
         if (info != null) {
+            int line = lines.getLineCount() - 1;
+            doWrite(s, 0, s.length());
             lines.addLineInfo(line, info, important);
+        } else {
+            print(s, null, important, null, null, OutputKind.OUT, false);
         }
+        lines.checkLimits();
     }
 
     /**

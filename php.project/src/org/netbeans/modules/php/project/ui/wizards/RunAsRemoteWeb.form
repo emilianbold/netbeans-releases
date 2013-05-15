@@ -98,7 +98,6 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="uploadFilesHintLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -136,6 +135,9 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="RunAsRemoteWeb.runAsComboBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="urlLabel">
       <Properties>
@@ -192,6 +194,9 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="RunAsRemoteWeb.remoteConnectionComboBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;RemoteConfiguration&gt;"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JButton" name="manageRemoteConnectionButton">
       <Properties>
@@ -279,6 +284,9 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="RunAsRemoteWeb.uploadFilesComboBox.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;UploadFiles&gt;"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="uploadFilesHintLabel">
       <Properties>

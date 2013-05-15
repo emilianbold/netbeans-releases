@@ -58,6 +58,7 @@ public class ClientSideProjectConstants {
     public static final String PROJECT_PROJECT_URL = "external.project.url"; //NOI18N
     public static final String PROJECT_AUTO_REFRESH = "browser.autorefresh"; //NOI18N
     public static final String PROJECT_HIGHLIGHT_SELECTION = "browser.highlightselection"; //NOI18N
+    public static final String PROJECT_SELECTED_BROWSER = "browser"; //NOI18N
 
     // default paths:
     public static final String DEFAULT_SITE_ROOT_FOLDER = "public_html"; //NOI18N

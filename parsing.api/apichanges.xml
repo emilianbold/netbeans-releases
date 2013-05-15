@@ -110,6 +110,53 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="EmbeddingIndexer.refresh">
+          <api name="ParsingAPI"/>
+          <summary>Allow refresh of <code>EmbeddingIndexer</code></summary>
+          <version major="1" minor="67"/>
+          <date day="10" month="5" year="2013"/>
+          <author login="sdedic"/>
+          <compatibility source="compatible" binary="compatible" semantic="compatible" addition="yes"/>
+          <description>
+              <p>
+                  <code>IndexingManager.refreshAllIndices</code> now accepts names of <code>EmbeddingIndexers</code>
+                  so that embeddings can be reindexed.
+              </p>
+          </description>
+          <class package="org.netbeans.modules.parsing.api.indexing" name="IndexingManager"/>
+          <issue number="218534"/>
+      </change>
+  <change id="QuerySupport.Query">
+      <api name="ParsingAPI"/>
+      <summary>Extended the <code>QuerySupport</code> to allow composite queries.</summary>
+      <version major="1" minor="64"/>
+      <date day="2" month="5" year="2013"/>
+      <author login="tzezula"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Extended the <code>QuerySupport</code> to allow composite queries with bool operators.
+          </p>
+      </description>
+      <class package="org.netbeans.modules.parsing.spi.indexing.support" name="QuerySupport"/>
+      <issue number="170915"/>
+  </change>
+  <change id="QuerySupport.findDependentRoots">
+      <api name="ParsingAPI"/>
+      <summary>Added <code>QuerySupport.findDependentRoots</code> to find out source roots depending on given source root.</summary>
+      <version major="1" minor="64"/>
+      <date day="18" month="3" year="2013"/>
+      <author login="tzezula"/>
+      <compatibility source="compatible" binary="compatible" semantic="compatible" deletion="no" addition="yes" modification="no"/>
+      <description>
+          <p>
+              Added a <code>QuerySupport.findDependentRoots</code> method returning the dependent source roots for given source root.
+              It returns all the source roots which have either direct or transitive dependency on the given source root.
+          </p>
+      </description>
+      <class package="org.netbeans.modules.parsing.spi.indexing.support" name="QuerySupport"/>
+      <issue number="227363"/>
+  </change>
   <change id="EmbeddingProvider.Registration">
       <api name="ParsingAPI"/>
       <summary>Added <code>EmbeddingProvider.Registration</code> annotation to register <code>EmbeddingProvider</code>s.</summary>

@@ -100,4 +100,8 @@ class TestDomainController {
             render(view:'create',model:[testDomainInstance:testDomainInstance])
         }
     }
+    
+    public void testMethod() {
+        
+    }
 }

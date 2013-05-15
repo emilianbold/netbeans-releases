@@ -43,14 +43,21 @@
  */
 package org.netbeans.api.java.source;
 
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.ReferenceTree;
 import com.sun.source.tree.*;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.DocSourcePositions;
+import com.sun.source.util.DocTreePath;
+import com.sun.source.util.DocTreePathScanner;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.TreeScanner;
 import com.sun.source.util.Trees;
 import com.sun.tools.javac.api.JavacScope;
+import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.Flags;
 import com.sun.tools.javac.code.Symbol;
 import com.sun.tools.javac.code.Type;
@@ -58,8 +65,8 @@ import com.sun.tools.javac.comp.AttrContext;
 import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Resolve;
+import com.sun.tools.javac.tree.DCTree.DCReference;
 import com.sun.tools.javac.tree.JCTree;
-import com.sun.tools.javac.tree.JCTree.JCClassDecl;
 import com.sun.tools.javac.tree.JCTree.JCMethodDecl;
 import com.sun.tools.javac.util.Context;
 import java.util.*;
@@ -71,17 +78,21 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.UnionType;
+import javax.lang.model.util.ElementFilter;
+import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.builder.CommentSetImpl;
 import org.netbeans.lib.nbjavac.services.NBTreeMaker.IndexedClassDecl;
 import org.netbeans.modules.java.source.pretty.ImportAnalysis2;
+import org.netbeans.modules.java.source.transform.ImmutableDocTreeTranslator;
 import org.netbeans.modules.java.source.transform.ImmutableTreeTranslator;
 
 /**
@@ -360,6 +371,106 @@ public final class TreeUtilities {
                     break;
             }
         }
+        return path;
+    }
+    
+    /**Return the deepest DocTreePath at the given position.
+     * 
+     * @param treepath for which the {@code doc} comment was determined
+     * @param doc the documentation comment inside which the search should be performed
+     * @param pos the position to search for
+     * @return the deepest DocTreePath at the given position
+     * @since 0.124
+     */
+    public DocTreePath pathFor(TreePath treepath, DocCommentTree doc, int pos) {
+        return pathFor(new DocTreePath(treepath, doc), pos);
+    }
+
+    /**Return the deepest DocTreePath at the given position.
+     * 
+     * @param path where the search should start
+     * @param pos the position to search for
+     * @return the deepest DocTreePath at the given position
+     * @since 0.124
+     */
+    public DocTreePath pathFor(DocTreePath path, int pos) {
+        return pathFor(path, pos, info.getDocTrees().getSourcePositions());
+    }
+    
+    /**Return the deepest DocTreePath at the given position.
+     * 
+     * @param path where the search should start
+     * @param pos the position to search for
+     * @param sourcePositions to determine spans of {@link DocTree}s
+     * @return the deepest DocTreePath at the given position
+     * @since 0.124
+     */
+    public DocTreePath pathFor(DocTreePath path, int pos, DocSourcePositions sourcePositions) {
+        if (info == null || path == null || sourcePositions == null)
+            throw new IllegalArgumentException();
+        
+        class Result extends Error {
+            DocTreePath path;
+            Result(DocTreePath path) {
+                this.path = path;
+            }
+        }
+        
+        class PathFinder extends DocTreePathScanner<Void,TreePath> {
+            private int pos;
+            private DocSourcePositions sourcePositions;
+            
+            private PathFinder(int pos, DocSourcePositions sourcePositions) {
+                this.pos = pos;
+                this.sourcePositions = sourcePositions;
+            }
+            
+            public Void scan(DocTree tree, TreePath p) {
+                if (tree != null) {
+                    if (sourcePositions.getStartPosition(p.getCompilationUnit(), getCurrentPath().getDocComment(), tree) < pos && sourcePositions.getEndPosition(p.getCompilationUnit(), getCurrentPath().getDocComment(), tree) >= pos) {
+                        if (tree.getKind() == DocTree.Kind.ERRONEOUS) {
+                            tree.accept(this, p);
+                            throw new Result(getCurrentPath());
+                        }
+                        super.scan(tree, p);
+                        throw new Result(new DocTreePath(getCurrentPath(), tree));
+                    }
+                }
+                return null;
+            }
+
+//            @Override
+//            public Void visitVariable(VariableTree node, Void p) {
+//                int[] span = findNameSpan(node);
+//                
+//                if (span != null && span[0] <= pos && pos < span[1]) {
+//                    throw new Result(getCurrentPath());
+//                }
+//                
+//                return super.visitVariable(node, p);
+//            }
+//
+//            @Override
+//            public Void visitMethod(MethodTree node, Void p) {
+//                int[] span = findNameSpan(node);
+//                
+//                if (span != null && span[0] <= pos && pos < span[1]) {
+//                    throw new Result(getCurrentPath());
+//                }
+//                
+//                return super.visitMethod(node, p);
+//            }
+        }
+        
+        try {
+            new PathFinder(pos, sourcePositions).scan(path, path.getTreePath());
+        } catch (Result result) {
+            path = result.path;
+        }
+        
+        if (path.getLeaf() == path.getDocComment())
+            return path;
+        
         return path;
     }
     
@@ -712,6 +823,69 @@ public final class TreeUtilities {
         return findNameSpan(mst.getIdentifier().toString(), mst, JavaTokenId.DOT, JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT);
     }
     
+    /**Find span of the {@link MemberReferenceTree#getName()} identifier in the source.
+     * Returns starting and ending offset of the name in the source code that was parsed
+     * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source
+     * document if it has been already altered.
+     * 
+     * @param mst member reference for which the identifier should be searched for
+     * @return the span of the name, or null if cannot be found
+     * @since 0.124
+     */
+    public int[] findNameSpan(MemberReferenceTree mst) {
+        return findNameSpan(mst.getName().toString(), mst, JavaTokenId.DOT, JavaTokenId.WHITESPACE, JavaTokenId.BLOCK_COMMENT, JavaTokenId.LINE_COMMENT, JavaTokenId.JAVADOC_COMMENT);
+    }
+    
+    /**Find span of the name in the DocTree's reference tree (see {@link #getReferenceName(com.sun.source.util.DocTreePath)}
+     * identifier in the source. Returns starting and ending offset of the name in
+     * the source code that was parsed (ie. {@link CompilationInfo.getText()}, which
+     * may differ from the positions in the source document if it has been already
+     * altered.
+     * 
+     * @param ref reference for which the identifier should be found
+     * @return the span of the name, or null if cannot be found
+     * @since 0.124
+     */
+    public int[] findNameSpan(DocCommentTree docTree, ReferenceTree ref) {
+        Name name = ((DCReference) ref).memberName;
+        if (name == null || !SourceVersion.isIdentifier(name)) {
+            //names like "<error>", etc.
+            return null;
+        }
+        
+        int pos = (int) info.getDocTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), docTree, ref);
+        
+        if (pos < 0)
+            return null;
+        
+        TokenSequence<JavaTokenId> tokenSequence = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+        
+        tokenSequence.move(pos);
+        
+        if (!tokenSequence.moveNext() || tokenSequence.token().id() != JavaTokenId.JAVADOC_COMMENT) return null;
+        
+        TokenSequence<JavadocTokenId> jdocTS = tokenSequence.embedded(JavadocTokenId.language());
+        
+        jdocTS.move(pos);
+        
+        boolean wasNext;
+        
+        while ((wasNext = jdocTS.moveNext()) && jdocTS.token().id() != JavadocTokenId.HASH)
+            ;
+        
+        if (wasNext && jdocTS.moveNext()) {
+            if (jdocTS.token().id() == JavadocTokenId.IDENT &&
+                name.contentEquals(jdocTS.token().text())) {
+                return new int[] {
+                    jdocTS.offset(),
+                    jdocTS.offset() + jdocTS.token().length()
+                };
+            }
+        }
+        
+        return null;
+    }
+    
     private int[] findNameSpan(String name, Tree t, JavaTokenId... allowedTokens) {
         if (!SourceVersion.isIdentifier(name)) {
             //names like "<error>", etc.
@@ -747,6 +921,15 @@ public final class TreeUtilities {
             }
         }
         
+        tokenSequence.move(pos);
+        
+        if (tokenSequence.moveNext() && tokenSequence.token().id() == JavaTokenId.JAVADOC_COMMENT) {
+            //TODO: this is not precise enough
+            return new int[] {
+                pos + 1,
+                pos + name.length() + 1
+            };
+        }
         return null;
     }
     
@@ -949,13 +1132,64 @@ public final class TreeUtilities {
     public @NonNull Tree translate(final @NonNull Tree original, final @NonNull Map<? extends Tree, ? extends Tree> original2Translated) {
         return translate(original, original2Translated, new NoImports(info), null);
     }
-
+    
     @NonNull Tree translate(final @NonNull Tree original, final @NonNull Map<? extends Tree, ? extends Tree> original2Translated, ImportAnalysis2 ia, Map<Tree, Object> tree2Tag) {
         ImmutableTreeTranslator itt = new ImmutableTreeTranslator(info instanceof WorkingCopy ? (WorkingCopy)info : null) {
             private @NonNull Map<Tree, Tree> map = new HashMap<Tree, Tree>(original2Translated);
             @Override
             public Tree translate(Tree tree) {
                 Tree translated = map.remove(tree);
+
+                if (translated != null) {
+                    return translate(translated);
+                } else {
+                    return super.translate(tree);
+                }
+            }
+        };
+
+        Context c = info.impl.getJavacTask().getContext();
+
+        itt.attach(c, ia, tree2Tag);
+
+        return itt.translate(original);
+    }
+    
+    /**Returns new tree based on {@code original}, such that each visited subtree
+     * that occurs as a key in {@code original2Translated} is replaced by the corresponding
+     * value from {@code original2Translated}. The value is then translated using the same
+     * algorithm. Each key from {@code original2Translated} is used at most once.
+     * Unless the provided {@code original} tree is a key in {@code original2Translated},
+     * the resulting tree has the same type as {@code original}.
+     *
+     * Principally, the method inner workings are:
+     * <pre>
+     * translate(original, original2Translated) {
+     *      if (original2Translated.containsKey(original))
+     *          return translate(original2Translated.remove(original));
+     *      newTree = copyOf(original);
+     *      for (Tree child : allChildrenOf(original)) {
+     *          newTree.replace(child, translate(child, original2Translated));
+     *      }
+     *      return newTree;
+     * }
+     * </pre>
+     * 
+     * @param original the tree that should be translated
+     * @param original2Translated map containing trees that should be translated
+     * @return translated tree.
+     * @since 0.124
+     */
+    public @NonNull DocTree translate(final @NonNull DocTree original, final @NonNull Map<? extends DocTree, ? extends DocTree> original2Translated) {
+        return translate(original, original2Translated, new NoImports(info), null);
+    }
+    
+    @NonNull DocTree translate(final @NonNull DocTree original, final @NonNull Map<? extends DocTree, ? extends DocTree> original2Translated, ImportAnalysis2 ia, Map<Tree, Object> tree2Tag) {
+        ImmutableDocTreeTranslator itt = new ImmutableDocTreeTranslator(info instanceof WorkingCopy ? (WorkingCopy)info : null) {
+            private @NonNull Map<DocTree, DocTree> map = new HashMap<DocTree, DocTree>(original2Translated);
+            @Override
+            public DocTree translate(DocTree tree) {
+                DocTree translated = map.remove(tree);
 
                 if (translated != null) {
                     return translate(translated);
@@ -1091,10 +1325,25 @@ public final class TreeUtilities {
 
         public Void visitTry(TryTree node, Set<TypeMirror> p) {
             Set<TypeMirror> s = new LinkedHashSet<TypeMirror>();
+            Trees trees = info.getTrees();
+            Types types = info.getTypes();
+            Elements elements = info.getElements();
+            for (Tree res : node.getResources()) {
+                TypeMirror resType = trees.getTypeMirror(new TreePath(getCurrentPath(), res));
+                if (resType != null && resType.getKind() == TypeKind.DECLARED) {
+                    for (ExecutableElement method : ElementFilter.methodsIn(elements.getAllMembers((TypeElement)((DeclaredType)resType).asElement()))) {
+                        if ("close".contentEquals(method.getSimpleName()) //NOI18N
+                                && method.getParameters().isEmpty()
+                                && method.getTypeParameters().isEmpty()) {
+                            s.addAll(method.getThrownTypes());
+                        }
+                    }
+                }
+            }
             scan(node.getBlock(), s);
             Set<TypeMirror> c = new LinkedHashSet<TypeMirror>();
             for (CatchTree ct : node.getCatches()) {
-                TypeMirror t = info.getTrees().getTypeMirror(new TreePath(getCurrentPath(), ct.getParameter().getType()));
+                TypeMirror t = trees.getTypeMirror(new TreePath(getCurrentPath(), ct.getParameter().getType()));
                 if (t != null) {
                     if (t.getKind() == TypeKind.UNION) {
                         for (TypeMirror tm : ((UnionType)t).getAlternatives()) {
@@ -1108,10 +1357,10 @@ public final class TreeUtilities {
             }
             for (TypeMirror t : c) {
                 for (Iterator<TypeMirror> it = s.iterator(); it.hasNext();) {
-                    if (info.getTypes().isSubtype(it.next(), t))
+                    if (types.isSubtype(it.next(), t))
                         it.remove();
                 }
-           }
+            }
             p.addAll(s);
             scan(node.getCatches(), p);
             scan(node.getFinallyBlock(), p);
@@ -1138,6 +1387,10 @@ public final class TreeUtilities {
             return null;
         }
 
+        @Override
+        public Void visitLambdaExpression(LambdaExpressionTree node, Set<TypeMirror> p) {
+            return null;
+        }
     }
     
     private static class UnrelatedTypeMirrorSet extends AbstractSet<TypeMirror> {
@@ -1184,5 +1437,45 @@ public final class TreeUtilities {
         Type attributeTreeImpl = (Type) attributeTree;
 
         return attributeTreeImpl != null && attributeTreeImpl.constValue() != null;
+    }
+    
+    /**Find the type (the part before {@code #}) that is being referenced by the given {@link ReferenceTree}.
+     * 
+     * @param path the leaf must be {@link ReferenceTree}
+     * @return the referred type, or {@code null} if none.
+     * @since 0.124
+     */
+    public @CheckForNull ExpressionTree getReferenceClass(@NonNull DocTreePath path) {
+        TreePath tp = path.getTreePath();
+        DCReference ref = (DCReference) path.getLeaf();
+        
+        ((JavacTrees) this.info.getTrees()).ensureDocReferenceAttributed(tp, ref);
+        
+        return (ExpressionTree) ref.qualifierExpression;
+    }
+    
+    /**Find the name (the name after {@code #}) that is being referenced by the given {@link ReferenceTree}.
+     * 
+     * @param path the leaf must be {@link ReferenceTree}
+     * @return the referred member name, or {@code null} if none.
+     * @since 0.124
+     */
+    public @CheckForNull Name getReferenceName(@NonNull DocTreePath path) {
+        return ((DCReference) path.getLeaf()).memberName;
+    }
+    
+    /**Find the parameters that are specified in the given {@link ReferenceTree}.
+     * 
+     * @param path the leaf must be {@link ReferenceTree}
+     * @return the parameters for the referred method, or {@code null} if none.
+     * @since 0.124
+     */
+    public @CheckForNull List<? extends Tree> getReferenceParameters(@NonNull DocTreePath path) {
+        TreePath tp = path.getTreePath();
+        DCReference ref = (DCReference) path.getLeaf();
+        
+        ((JavacTrees) this.info.getTrees()).ensureDocReferenceAttributed(tp, ref);
+        
+        return ref.paramTypes;
     }
 }

@@ -59,7 +59,7 @@ import org.glassfish.tools.ide.admin.*;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.PartialCompletionException;
-import org.netbeans.modules.glassfish.common.Util;
+import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.common.nodes.actions.*;
 import org.netbeans.modules.glassfish.common.ui.BasePanel;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -350,8 +350,8 @@ public class Hk2Cookie {
          * Refresh child nodes.
          */
         @Override
-        public void refresh() {
-            refresh(null, null);
+        public RequestProcessor.Task refresh() {
+            return refresh(null, null);
         }
 
         /**
@@ -361,7 +361,7 @@ public class Hk2Cookie {
          * @param unexpected Unexpected node display name.
          */
         @Override
-        public void refresh(String expected, String unexpected) {
+        public RequestProcessor.Task refresh(String expected, String unexpected) {
             if (children instanceof Refreshable) {
                 ((Refreshable) children).updateKeys();
                 boolean foundExpected = expected == null ? true : false;
@@ -388,6 +388,7 @@ public class Hk2Cookie {
                             + unexpected));
                 }
             }
+            return null;
         }
     }
 

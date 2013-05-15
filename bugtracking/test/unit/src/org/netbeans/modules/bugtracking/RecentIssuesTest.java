@@ -52,11 +52,10 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.List;
 import java.util.logging.Level;
-import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.issuetable.IssueNode;
-import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
+import org.netbeans.modules.bugtracking.team.spi.RecentIssue;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -86,7 +85,7 @@ public class RecentIssuesTest extends NbTestCase {
         if(ri != null) ri.clear();
     }
 
-    public void testGetRecentIssuesEmptyReturn() throws MalformedURLException, CoreException, IOException {
+    public void testGetRecentIssuesEmptyReturn() throws MalformedURLException, IOException {
         Map<String, List<RecentIssue>> ri = BugtrackingManager.getInstance().getAllRecentIssues();
         assertNotNull(ri);
         assertEquals(0, ri.size());
@@ -96,7 +95,7 @@ public class RecentIssuesTest extends NbTestCase {
         assertEquals(0, ri.size());        
     }
 
-    public void testAddRecentIssues() throws MalformedURLException, CoreException, IOException {
+    public void testAddRecentIssues() throws MalformedURLException, IOException {
         final RITestRepository riTestRepo = new RITestRepository("test repo");
         RepositoryImpl repo = getRepository(riTestRepo);
         IssueImpl issue1 = getIssue(repo, new RITestIssue(riTestRepo, "1"));
@@ -142,7 +141,7 @@ public class RecentIssuesTest extends NbTestCase {
         assertRecentIssues(allIssues.get(repo.getId()), new IssueImpl[] {issue2, issue1});
     }
 
-    public void testAddRecentIssuesMoreThan5() throws MalformedURLException, CoreException, IOException {
+    public void testAddRecentIssuesMoreThan5() throws MalformedURLException, IOException {
         RITestRepository riTestRepo1 = new RITestRepository("test repo");
         RepositoryImpl repo1 = getRepository(new RITestRepository("test repo"));
         IssueImpl repo1issue1 = getIssue(repo1, new RITestIssue(riTestRepo1, "r1i1"));

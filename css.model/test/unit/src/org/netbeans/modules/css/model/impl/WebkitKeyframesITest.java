@@ -43,7 +43,6 @@ package org.netbeans.modules.css.model.impl;
 
 import java.util.List;
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.model.api.ModelTestBase;
 import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -91,6 +90,8 @@ public class WebkitKeyframesITest extends ModelTestBase {
         assertEquals(1, ds.getDeclarations().size());
         Declaration d = ds.getDeclarations().get(0);
         assertNotNull(d);
+        PropertyDeclaration pd = d.getPropertyDeclaration();
+        assertNotNull(pd);
         
         block = blocks.get(1);
         assertNotNull(block);

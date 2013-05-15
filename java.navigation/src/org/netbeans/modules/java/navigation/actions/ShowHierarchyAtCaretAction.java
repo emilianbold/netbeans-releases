@@ -64,7 +64,7 @@ id = "org.netbeans.modules.java.navigation.actions.ShowHierarchyAtCaretAction")
     displayName = "#CTL_ShowHierarchyAtCaretAction", lazy=false)
 @ActionReference(path = "Menu/GoTo/Inspect", position = 2100)
 @Messages({
-    "CTL_ShowHierarchyAtCaretAction=Hierarchy",
+    "CTL_ShowHierarchyAtCaretAction=&Hierarchy",
     "CTL_ShowHierarchyAtCaretActionPopUp=Inspect Hierarchy"
 })
 public final class ShowHierarchyAtCaretAction extends BaseAction {

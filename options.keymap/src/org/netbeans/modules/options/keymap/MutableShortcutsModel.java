@@ -118,6 +118,10 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         this.master = master == null ? Lookup.getDefault().lookup(ShortcutsFinder.class) : master;
     }
     
+    String getProfileDisplayName(String id) {
+        String s = model.getProfileName(id);
+        return s != null ? s : id;
+    }
     
     List<String> getProfiles () {
         Set<String> result = new HashSet<String> (model.getProfiles ());

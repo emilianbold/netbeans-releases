@@ -126,10 +126,10 @@ import javax.swing.LayoutStyle;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
-import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.RepositoryUserRenderer;
@@ -167,7 +167,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private boolean skipReload;
     private boolean reloading;
     private Map<NbJiraIssue.IssueField,Object> initialValues = new EnumMap<NbJiraIssue.IssueField,Object>(NbJiraIssue.IssueField.class);
-    private PropertyChangeListener tasklistListener;
     private UndoRedoSupport undoRedoSupport;
 
     public IssuePanel() {
@@ -660,7 +659,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             boolean isKenaiRepository = (issue.getRepository() instanceof KenaiRepository);
             if ((reporterStatusLabel.getIcon() == null) && isKenaiRepository) {
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                JLabel label = KenaiUtil.createUserWidget(issue.getRepository().getUrl(), reporter, host, KenaiUtil.getChatLink(issue.getID()));
+                JLabel label = TeamUtil.createUserWidget(issue.getRepository().getUrl(), reporter, host, TeamUtil.getChatLink(issue.getID()));
                 if (label != null) {
                     label.setText(null);
                     ((GroupLayout)getLayout()).replace(reporterStatusLabel, label);
@@ -689,7 +688,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             String selectedAssignee = (assigneeField.getParent() == null) ? assigneeCombo.getSelectedItem().toString() : assigneeField.getText();
             if (isKenaiRepository && (assignee.trim().length() > 0) && (force || !selectedAssignee.equals(assignee))) {
                 String host = ((KenaiRepository) issue.getRepository()).getHost();
-                JLabel label = KenaiUtil.createUserWidget(issue.getRepository().getUrl(), assignee, host, KenaiUtil.getChatLink(issue.getID()));
+                JLabel label = TeamUtil.createUserWidget(issue.getRepository().getUrl(), assignee, host, TeamUtil.getChatLink(issue.getID()));
                 if (label != null) {
                     label.setText(null);
                     ((GroupLayout)getLayout()).replace(assigneeStatusLabel, label);
@@ -803,7 +802,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 });
             }
         }
-        updateTasklistButton();
         updateFieldStatuses();
         reloading = false;
     }
@@ -1138,58 +1136,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         return allowedStatuses;
     }
 
-    private void updateTasklistButton() {
-        tasklistButton.setEnabled(false);
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                JiraTaskListProvider provider = JiraTaskListProvider.getInstance();
-                if (provider == null || issue.isNew()) { // do not enable button for new issues
-                    return;
-                }
-                final boolean isInTasklist = provider.isAdded(issue);
-                if (isInTasklist) {
-                    attachTasklistListener(provider);
-                }
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        String tasklistMessage = NbBundle.getMessage(IssuePanel.class,
-                                isInTasklist ? "IssuePanel.tasklistButton.remove" : "IssuePanel.tasklistButton.add"); // NOI18N
-                        tasklistButton.setText(tasklistMessage);
-                        tasklistButton.setEnabled(true);
-                    }
-                });
-            }
-        });
-    }
-
-    private void attachTasklistListener (JiraTaskListProvider provider) {
-        if (tasklistListener == null) { // is not attached yet
-            // listens on events comming from the tasklist, like when an issue is removed, etc.
-            // needed to correctly update tasklistButton label and status
-            tasklistListener = new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (JiraTaskListProvider.PROPERTY_ISSUE_REMOVED.equals(evt.getPropertyName()) && issue.equals(evt.getOldValue())) {
-                        Runnable inAWT = new Runnable() {
-                            @Override
-                            public void run() {
-                                updateTasklistButton();
-                            }
-                        };
-                        if (EventQueue.isDispatchThread()) {
-                            inAWT.run();
-                        } else {
-                            EventQueue.invokeLater(inAWT);
-                        }
-                    }
-                }
-            };
-            provider.addPropertyChangeListener(org.openide.util.WeakListeners.propertyChange(tasklistListener, provider));
-        }
-    }
-
     private void submitChange(final Runnable change, String progressMessage)  {
         final ProgressHandle handle = ProgressHandleFactory.createHandle(progressMessage);
         handle.start();
@@ -1314,7 +1260,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         logWorkButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         reopenIssueButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-        tasklistButton = new org.netbeans.modules.bugtracking.util.LinkButton();
+        addToCategoryButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         showInBrowserButton = new org.netbeans.modules.bugtracking.util.LinkButton();
         originalEstimatePanel = new javax.swing.JPanel();
         remainingEstimatePanel = new javax.swing.JPanel();
@@ -1534,11 +1480,10 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         });
 
-        tasklistButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.tasklistButton.add")); // NOI18N
-        tasklistButton.setEnabled(false);
-        tasklistButton.addActionListener(new java.awt.event.ActionListener() {
+        addToCategoryButton.setText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.tasklistButton.add")); // NOI18N
+        addToCategoryButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                tasklistButtonActionPerformed(evt);
+                addToCategoryButtonActionPerformed(evt);
             }
         });
 
@@ -1566,9 +1511,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                     .addComponent(stopProgressButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(closeIssueButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(reopenIssueButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(tasklistButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(addToCategoryButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(showInBrowserButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap())
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         actionPanelLayout.setVerticalGroup(
             actionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1592,7 +1537,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(logWorkButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(tasklistButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(addToCategoryButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(showInBrowserButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -1963,7 +1908,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                IssueCache<NbJiraIssue, TaskData> cache = issue.getRepository().getIssueCache();
+                IssueCache<NbJiraIssue> cache = issue.getRepository().getIssueCache();
                 String parentKey = issue.getParentKey();
                 if ((parentKey != null) && (parentKey.trim().length()>0)) {
                     NbJiraIssue parentIssue = cache.getIssue(parentKey);
@@ -2188,17 +2133,9 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         }
     }//GEN-LAST:event_logWorkButtonActionPerformed
 
-    private void tasklistButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tasklistButtonActionPerformed
-        tasklistButton.setEnabled(false);
-        JiraTaskListProvider provider = JiraTaskListProvider.getInstance();
-        if (provider.isAdded(issue)) {
-            provider.remove(issue);
-        } else {
-            attachTasklistListener(provider);
-            provider.add(issue, true);
-        }
-        updateTasklistButton();
-    }//GEN-LAST:event_tasklistButtonActionPerformed
+    private void addToCategoryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addToCategoryButtonActionPerformed
+        Jira.getInstance().getBugtrackingFactory().addToCategory(JiraUtils.getRepository(issue.getRepository()), issue); 
+    }//GEN-LAST:event_addToCategoryButtonActionPerformed
 
     private void createSubtaskButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createSubtaskButtonActionPerformed
         NbJiraIssue subTask = (NbJiraIssue)issue.getRepository().createIssue();
@@ -2246,6 +2183,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JTextArea addCommentArea;
     private javax.swing.JLabel addCommentLabel;
     private javax.swing.JScrollPane addCommentScrollPane;
+    private org.netbeans.modules.bugtracking.util.LinkButton addToCategoryButton;
     private javax.swing.JLabel affectsVersionLabel;
     private javax.swing.JList affectsVersionList;
     private javax.swing.JScrollPane affectsVersionScrollPane;
@@ -2316,7 +2254,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     private javax.swing.JLabel subtaskLabel;
     private javax.swing.JTextField summaryField;
     private javax.swing.JLabel summaryLabel;
-    private org.netbeans.modules.bugtracking.util.LinkButton tasklistButton;
     private javax.swing.JTextField timeSpentField;
     private javax.swing.JLabel timeSpentLabel;
     private javax.swing.JPanel timeSpentPanel;

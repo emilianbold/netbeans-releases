@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -48,6 +48,7 @@ import java.beans.PropertyEditorManager;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.ProxySelector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -58,6 +59,7 @@ import org.netbeans.core.startup.ManifestSection;
 import org.netbeans.swing.plaf.Startup;
 import org.openide.nodes.NodeOp;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -204,9 +206,11 @@ public final class CoreBridgeImpl extends CoreBridge {
                 NodeOp.registerPropertyEditors();
             }
         });
-        
-        // install java.net.ProxySelector
-        NbProxySelector.register();
+        ProxySelector selector = Lookup.getDefault().lookup(ProxySelector.class);
+        if (selector != null) {
+            // install java.net.ProxySelector
+            ProxySelector.setDefault(selector);
+        }
         
         editorsRegistered = true;
     }

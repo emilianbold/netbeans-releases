@@ -129,7 +129,7 @@ public class ProjectProblemsProviders {
     }
 
 
-
+    @NonNull
     public static ProjectProblemsProvider createReferenceProblemProvider(
             @NonNull final AntProjectHelper projectHelper,
             @NonNull final ReferenceHelper referenceHelper,
@@ -141,6 +141,7 @@ public class ProjectProblemsProviders {
         return pp;
     }
 
+    @NonNull
     public static ProjectProblemsProvider createPlatformVersionProblemProvider(
             @NonNull final AntProjectHelper helper,
             @NonNull final PropertyEvaluator evaluator,
@@ -157,6 +158,21 @@ public class ProjectProblemsProviders {
                 platformVersionProperties);
         pp.attachListeners();
         return pp;
+    }
+
+    @NonNull
+    public static ProjectProblemsProvider createProfileProblemProvider(
+            @NonNull final AntProjectHelper antProjectHelper,
+            @NonNull final ReferenceHelper refHelper,
+            @NonNull final PropertyEvaluator evaluator,
+            @NonNull final String profileProperty,
+            @NonNull final String... classPathProperties) {
+        return new ProfileProblemsProviderImpl(
+                antProjectHelper,
+                refHelper,
+                evaluator,
+                profileProperty,
+                classPathProperties);
     }
 
     //<editor-fold defaultstate="collapsed" desc="Helper Methods & Types">
@@ -955,7 +971,7 @@ public class ProjectProblemsProviders {
 
 
     }
-
+        
     private static final class Done implements Future<ProjectProblemsProvider.Result> {
 
         private final ProjectProblemsProvider.Result result;

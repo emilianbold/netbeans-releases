@@ -154,4 +154,25 @@ final class IntList {
         return result.toString();
     }
     
+    /**
+     * Shift the list (to left). First {@code shift} items will be forgotten.
+     * Each item can be decremented by {@code decrement}.
+     *
+     * @param shift How many items should be removed. Item at index
+     * {@code shift} will be at index 0 after this operation.
+     * @param decrement The value each item should be decremented by.
+     */
+    public synchronized void compact(int shift, int decrement) {
+        if (shift < 0 || shift > used) {
+            throw new IllegalArgumentException();
+        }
+        for (int i = shift; i < used; i++) {
+            array[i - shift] = array[i] - decrement;
+        }
+        Arrays.fill(array, used - shift, used, Integer.MAX_VALUE);
+        if (used > 0) {
+            used -= shift;
+            lastAdded = (used == 0) ? Integer.MIN_VALUE : lastAdded - decrement;
+        }
+    }
 }

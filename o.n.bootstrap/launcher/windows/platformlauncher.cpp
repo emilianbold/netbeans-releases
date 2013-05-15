@@ -65,16 +65,13 @@ General options:\n\
   --trace <path>        path for launcher log (for trouble shooting)\n\
 \n";
 
-const char *PlatformLauncher::REQ_JAVA_VERSION = "1.6";
+const char *PlatformLauncher::REQ_JAVA_VERSION = "1.7";
 
 const char *PlatformLauncher::OPT_JDK_HOME = "-Djdk.home=";
 const char *PlatformLauncher::OPT_NB_PLATFORM_HOME = "-Dnetbeans.home=";
 const char *PlatformLauncher::OPT_NB_CLUSTERS = "-Dnetbeans.dirs=";
 const char *PlatformLauncher::OPT_NB_USERDIR = "-Dnetbeans.user=";
 const char *PlatformLauncher::OPT_DEFAULT_USERDIR_ROOT = "-Dnetbeans.default_userdir_root=";
-const char *PlatformLauncher::OPT_HTTP_PROXY = "-Dnetbeans.system_http_proxy=";
-const char *PlatformLauncher::OPT_HTTP_NONPROXY = "-Dnetbeans.system_http_non_proxy_hosts=";
-const char *PlatformLauncher::OPT_SOCKS_PROXY = "-Dnetbeans.system_socks_proxy=";
 const char *PlatformLauncher::OPT_HEAP_DUMP = "-XX:+HeapDumpOnOutOfMemoryError";
 const char *PlatformLauncher::OPT_HEAP_DUMP_PATH = "-XX:HeapDumpPath=";
 const char *PlatformLauncher::OPT_KEEP_WORKING_SET_ON_MINIMIZE = "-Dsun.awt.keepWorkingSetOnMinimize=true";
@@ -82,12 +79,6 @@ const char *PlatformLauncher::OPT_CLASS_PATH = "-Djava.class.path=";
 const char *PlatformLauncher::OPT_SPLASH = "-splash:";
 const char *PlatformLauncher::OPT_SPLASH_PATH = "\\var\\cache\\splash.png";
 
-const char *PlatformLauncher::REG_PROXY_KEY = "Software\\Microsoft\\Windows\\CurrentVersion\\Internet settings";
-const char *PlatformLauncher::REG_PROXY_ENABLED_NAME = "ProxyEnable";
-const char *PlatformLauncher::REG_PROXY_SERVER_NAME = "ProxyServer";
-const char *PlatformLauncher::REG_PROXY_OVERRIDE_NAME = "ProxyOverride";
-const char *PlatformLauncher::REG_PAC_FILE = "AutoConfigURL";
-const char *PlatformLauncher::PROXY_DIRECT = "DIRECT";
 const char *PlatformLauncher::HEAP_DUMP_PATH =  "\\var\\log\\heapdump.hprof";
 const char *PlatformLauncher::RESTART_FILE_PATH =  "\\var\\restart";
 
@@ -272,17 +263,21 @@ bool PlatformLauncher::parseArgs(int argc, char *argv[]) {
             CHECK_ARG;
             bootclass = argv[++i];
         } else if (strcmp(ARG_NAME_JDKHOME, argv[i]) == 0) {
-            CHECK_ARG;
-            jdkhome = argv[++i];
-            if (!jvmLauncher.initialize(jdkhome.c_str())) {
-                logMsg("Cannot locate java installation in specified jdkhome: %s", jdkhome.c_str());
-                string errMsg = "Cannot locate java installation in specified jdkhome:\n";
-                errMsg += jdkhome;
-                errMsg += "\nDo you want to try to use default version?";
-                jdkhome = "";
-                if (::MessageBox(NULL, errMsg.c_str(), "Invalid jdkhome specified", MB_ICONQUESTION | MB_YESNO) == IDNO) {
-                    return false;
+            CHECK_ARG;            
+            if (jdkhome.empty()) {
+                jdkhome = argv[++i];
+                if (!jvmLauncher.initialize(jdkhome.c_str())) {
+                    logMsg("Cannot locate java installation in specified jdkhome: %s", jdkhome.c_str());
+                    string errMsg = "Cannot locate java installation in specified jdkhome:\n";
+                    errMsg += jdkhome;
+                    errMsg += "\nDo you want to try to use default version?";
+                    jdkhome = "";
+                    if (::MessageBox(NULL, errMsg.c_str(), "Invalid jdkhome specified", MB_ICONQUESTION | MB_YESNO) == IDNO) {
+                        return false;
+                    }
                 }
+            } else {
+                i++;
             }
         } else if (strcmp(ARG_NAME_CP_PREPEND, argv[i]) == 0
                 || strcmp(ARG_NAME_CP_PREPEND + 1, argv[i]) == 0) {
@@ -592,94 +587,9 @@ void PlatformLauncher::prepareOptions() {
             MoveFile (heapdumpfile.c_str(), heapdumpfileold.c_str());
         }
     }
-
-    string proxy, nonProxy, socksProxy;
-    if (!findHttpProxyFromEnv(proxy)) {
-        findProxiesFromRegistry(proxy, nonProxy, socksProxy);
-    }
-    if (!proxy.empty()) {
-        option = OPT_HTTP_PROXY;
-        option += proxy;
-        javaOptions.push_back(option);
-    }
-    if (!nonProxy.empty()) {
-        option = OPT_HTTP_NONPROXY;
-        option += nonProxy;
-        javaOptions.push_back(option);
-    }
-    if (!socksProxy.empty()) {
-        option = OPT_SOCKS_PROXY;
-        option += socksProxy;
-        javaOptions.push_back(option);
-    }
-
+    
     option = OPT_KEEP_WORKING_SET_ON_MINIMIZE;
     javaOptions.push_back(option);
-}
-
-// Reads value of http_proxy environment variable to use it as proxy setting
-bool PlatformLauncher::findHttpProxyFromEnv(string &proxy) {
-    logMsg("findHttpProxyFromEnv()");
-    char *envVar = getenv("http_proxy");
-    if (envVar) {
-        // is it URL?
-        int prefixLen = strlen("http://");
-        if (strncmp(envVar, "http://", prefixLen) == 0 && envVar[strlen(envVar) - 1] == '/'
-                && strlen(envVar) > strlen("http://")) {
-            // trim URL part to keep only 'host[:port]'
-            proxy = envVar + prefixLen;
-            proxy.erase(proxy.size() - 1);
-            logMsg("Found proxy in environment variable: %s", proxy.c_str());
-            return true;
-        }
-    }
-    return false;
-}
-
-bool PlatformLauncher::findProxiesFromRegistry(string &proxy, string &nonProxy, string &socksProxy) {
-    logMsg("findProxiesFromRegistry()");
-    socksProxy = nonProxy = proxy = "";
-    DWORD proxyEnable = 0;
-    if (!getDwordFromRegistry(HKEY_CURRENT_USER, REG_PROXY_KEY, REG_PROXY_ENABLED_NAME, proxyEnable)) {
-        return false;
-    }
-
-    if (!proxyEnable) {
-        logMsg("Manual Proxy disabled");
-        string pacFile;
-        if (getStringFromRegistry(HKEY_CURRENT_USER, REG_PROXY_KEY, REG_PAC_FILE, pacFile)) {
-            logMsg("AutoConfigURL found.");
-            proxy = "PAC " + pacFile;
-        } else {
-            proxy = PROXY_DIRECT;
-        }
-        return true;
-    }
-    
-    string proxyServer;
-    if (!getStringFromRegistry(HKEY_CURRENT_USER, REG_PROXY_KEY, REG_PROXY_SERVER_NAME, proxyServer)) {
-        return false;
-    }
-
-    if (proxyServer.find('=') == string::npos) {
-        proxy = proxyServer;
-    } else {
-        string::size_type pos = proxyServer.find("socks=");
-        if (pos != string::npos) {
-            if (proxyServer.size() > pos + 1 && proxyServer.at(pos) != ';') {
-                string::size_type endPos = proxyServer.find(';', pos);
-                socksProxy = proxyServer.substr(pos, endPos == string::npos ? string::npos : endPos - pos);
-            }
-        }
-        pos = proxyServer.find("http=");
-        if (pos != string::npos) {
-            string::size_type endPos = proxyServer.find(';', pos);
-            proxy = proxyServer.substr(pos, endPos == string::npos ? string::npos : endPos - pos);
-        }
-    }
-    logMsg("Proxy servers:\n\tproxy: %s\n\tsocks proxy: %s\n\tnonProxy: %s", proxy.c_str(), socksProxy.c_str(), nonProxy.c_str());
-    getStringFromRegistry(HKEY_CURRENT_USER, REG_PROXY_KEY, REG_PROXY_OVERRIDE_NAME, nonProxy);
-    return true;
 }
 
 string & PlatformLauncher::constructClassPath(bool runUpdater) {

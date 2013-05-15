@@ -45,6 +45,7 @@ import java.util.EnumSet;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
+import org.netbeans.modules.javascript2.editor.model.JsObject;
 
 /**
  *
@@ -52,8 +53,8 @@ import org.netbeans.modules.javascript2.editor.model.JsElement;
  */
 public class AnonymousObject extends JsObjectImpl {
 
-    public AnonymousObject(JsObjectImpl parent, String name, OffsetRange offsetRange) {
-        super(parent, name, true, offsetRange, EnumSet.of(Modifier.PRIVATE));
+    public AnonymousObject(JsObject parent, String name, OffsetRange offsetRange, String sourceLabel) {
+        super(parent, name, true, offsetRange, EnumSet.of(Modifier.PRIVATE), sourceLabel);
     }
 
     @Override

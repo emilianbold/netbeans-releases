@@ -52,6 +52,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.Device;
+import org.netbeans.modules.cordova.platforms.MobileDebugTransport;
 import org.netbeans.modules.cordova.platforms.MobilePlatform;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
 import org.netbeans.modules.cordova.platforms.ProcessUtils;
@@ -155,7 +156,7 @@ public class AVD implements Device {
             String s = ProcessUtils.callProcess(
                     ((AndroidPlatform) getPlatform()).getAdbCommand(), 
                     false, 
-                    5000, 
+                    AndroidPlatform.DEFAULT_TIMEOUT, 
                     isEmulator()?"-d":"-e", 
                     "wait-for-device", 
                     "shell", "am", "start", "-a", "android.intent.action.VIEW", 
@@ -165,4 +166,9 @@ public class AVD implements Device {
         }
     }
     
+    @Override
+    public MobileDebugTransport getDebugTransport() {
+        return new AndroidDebugTransport();
+    }
+
 }

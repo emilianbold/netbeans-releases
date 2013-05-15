@@ -67,6 +67,8 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import javax.swing.event.ChangeListener;
+import junit.framework.Test;
+import junit.framework.TestSuite;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
@@ -85,6 +87,8 @@ import org.netbeans.junit.MockServices;
 
 
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.masterfs.MasterURLMapper;
 import org.netbeans.modules.project.uiapi.OpenProjectsTrampoline;
 
@@ -139,6 +143,14 @@ public class DefaultClassPathProviderTest extends NbTestCase {
                 JavaPlatformProviderImpl.class,
                 SFBQI.class,
                 OpenProject.class);
+    }
+
+    public static TestSuite suite() {
+        final NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new DefaultClassPathProviderTest("testFindClassPath"));   //NOI18N
+        suite.addTest(new DefaultClassPathProviderTest("testCycle"));           //NOI18N
+        suite.addTest(new DefaultClassPathProviderTest("testEvents"));          //NOI18N
+        return suite;
     }
     
     

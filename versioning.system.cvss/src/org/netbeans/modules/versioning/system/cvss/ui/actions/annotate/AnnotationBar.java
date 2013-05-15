@@ -717,26 +717,40 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
      * @return the preferred width of this component
      */
     private int getBarWidth() {
-        String longestString = "";  // NOI18N
         if (elementAnnotations == null) {
-            longestString = elementAnnotationsSubstitute;
+            char[] data = elementAnnotationsSubstitute.toCharArray();
+            int w = getGraphics().getFontMetrics().charsWidth(data, 0, data.length);
+            return w;
         } else {
             synchronized(elementAnnotations) {
                 Iterator it = elementAnnotations.values().iterator();
+
+                // collect all possible strings
+                Set<String> allUniqueDisplayNames = new HashSet<String>();
                 while (it.hasNext()) {
                     AnnotateLine line = (AnnotateLine) it.next();
                     String displayName = line.getRevision() + " " + line.getAuthor(); // NOI18N
-                    if (displayName.length() > longestString.length()) {
-                        longestString = displayName;
+                    allUniqueDisplayNames.add(displayName);
+                }
+                if (!allUniqueDisplayNames.isEmpty()) {
+                    // calculate the largest width
+
+                    // NOTE: texts with the same number of chars may have different widths in non-monospaced fonts
+                    // for example: 'nr' and 'nm' - so we have to calculate the widest one
+                    FontMetrics fontMetrics = getGraphics().getFontMetrics();
+                    int maxWidth = -1;
+                    for (String displayName : allUniqueDisplayNames) {
+                        char[] data = displayName.toCharArray();
+                        int w = fontMetrics.charsWidth(data, 0, data.length);
+                        maxWidth = Math.max(maxWidth, w);
                     }
+                    return maxWidth;
+                } else {
+                    return 0;
                 }
             }
         }
-        char[] data = longestString.toCharArray();
-        int w = getGraphics().getFontMetrics().charsWidth(data, 0,  data.length);
-        return w;
     }
-    
     /**
      * Pair method to {@link #annotate}. It releases
      * all resources.

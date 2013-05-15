@@ -141,7 +141,7 @@ public class APTHandlersSupportImpl {
     public static Map<CharSequence, APTMacro> extractMacroMap(APTPreprocHandler.State state){
         assert state != null;
         APTBaseMacroMap.StateImpl macro = (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
-        return APTMacroMapSnapshot.addAllMacros(macro.snap, null);
+        return macro.snap.getAll();
     }
 
     public static APTBaseMacroMap.State extractMacroMapState(APTPreprocHandler.State state){
@@ -170,7 +170,7 @@ public class APTHandlersSupportImpl {
     public static int getMacroSize(APTPreprocHandler.State state) {
         assert state != null;
         APTBaseMacroMap.StateImpl macro = (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
-        return APTMacroMapSnapshot.getMacroSize(macro.snap);
+        return macro.snap.getAll().size();
     }
 
     public static int getIncludeStackDepth(APTPreprocHandler.State state) {

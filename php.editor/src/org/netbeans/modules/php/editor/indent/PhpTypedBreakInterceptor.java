@@ -59,6 +59,7 @@ import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.php.editor.lexer.PHPDocCommentTokenId;
+import org.netbeans.modules.php.editor.options.OptionsUtils;
 
 /**
  *
@@ -299,7 +300,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                 return;
             }
         }
-        if (concatPossibleStringToken(ts, offset, tokenOffsetOnCaret)) {
+        if (OptionsUtils.autoStringConcatination() && concatPossibleStringToken(ts, offset, tokenOffsetOnCaret)) {
             char stringDelimiter = extractStringDelimiter(ts);
             String concatString = stringDelimiter + "\n . " + stringDelimiter; //NOI18N
             context.setText(concatString, 1, concatString.length(), 2, concatString.length() - 1);
@@ -471,12 +472,14 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
     private boolean concatPossibleStringToken(TokenSequence<? extends PHPTokenId> ts, int offset, int tokenOffsetOnCaret) {
         assert ts != null;
         boolean concat = false;
-        Token<? extends PHPTokenId> token = ts.token();
-        if (token != null) {
-            concat = concatCurrentStringToken(ts, offset, tokenOffsetOnCaret);
-            PHPTokenId id = token.id();
-            if (!concat && id != PHPTokenId.PHP_SEMICOLON && ts.movePrevious()) {
+        if (!isPartOfHereOrNowDoc(ts)) {
+            Token<? extends PHPTokenId> token = ts.token();
+            if (token != null) {
                 concat = concatCurrentStringToken(ts, offset, tokenOffsetOnCaret);
+                PHPTokenId id = token.id();
+                if (!concat && id != PHPTokenId.PHP_SEMICOLON && ts.movePrevious()) {
+                    concat = concatCurrentStringToken(ts, offset, tokenOffsetOnCaret);
+                }
             }
         }
         return concat;
@@ -508,6 +511,28 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
     private static boolean isMultiline(Token<? extends PHPTokenId> token) {
         assert token != null;
         return token.text().toString().contains("\n"); //NOI18N
+    }
+
+    private static boolean isPartOfHereOrNowDoc(TokenSequence<? extends PHPTokenId> ts) {
+        boolean result = false;
+        int originalOffset = ts.offset();
+        while (ts.movePrevious()) {
+            Token<? extends PHPTokenId> token = ts.token();
+            if (token != null) {
+                if (TypingHooksUtils.isStringToken(token)) {
+                    continue;
+                } else {
+                    PHPTokenId tokenId = token.id();
+                    if (tokenId == PHPTokenId.PHP_HEREDOC_TAG || tokenId == PHPTokenId.PHP_NOWDOC_TAG) {
+                        result = true;
+                    }
+                    break;
+                }
+            }
+        }
+        ts.move(originalOffset);
+        ts.moveNext();
+        return result;
     }
 
     private static char extractStringDelimiter(TokenSequence<? extends PHPTokenId> ts) {

@@ -42,15 +42,9 @@
 package org.netbeans.modules.javascript2.editor;
 
 import java.util.Collections;
-import java.util.List;
-import javax.swing.text.Document;
-import org.junit.*;
 import static org.junit.Assert.*;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.csl.api.*;
-import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.CompletionContextFinder.CompletionContext;
+import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -84,6 +78,26 @@ public class CompletionContextFinderTest extends JsTestBase {
        checkCompletionContext("testfiles/model/simpleObject.js", " ^   },", CompletionContext.GLOBAL);
     }
     
+    public void testGlobal03()  throws Exception {
+       checkCompletionContext("testfiles/completion/issue217100_3.js", "v^", CompletionContext.GLOBAL);
+    }
+    
+    public void testObjectPropertyName01() throws Exception {
+        checkCompletionContext("testfiles/completion/objectPropertyNameContext.js", "autoCr^ea : \"sranda\"", CompletionContext.OBJECT_PROPERTY_NAME);
+    }
+
+    public void testObjectPropertyName02() throws Exception {
+        checkCompletionContext("testfiles/completion/objectPropertyNameContext.js", "   nam^e: 'Panda',", CompletionContext.OBJECT_PROPERTY_NAME);
+    }
+    
+    public void testString01() throws Exception {
+        checkCompletionContext("testfiles/completion/extDefine.js", "    extend: '^',", CompletionContext.STRING);
+    }
+    
+    public void testString02() throws Exception {
+        checkCompletionContext("testfiles/completion/extDefine.js", "    extend2: 'Ext.panel.^',", CompletionContext.STRING);
+    }
+
     private void checkCompletionContext(final String file, final String caretLine, final CompletionContext expected) throws Exception {
         
         Source testSource = getTestSource(getTestFile(file));

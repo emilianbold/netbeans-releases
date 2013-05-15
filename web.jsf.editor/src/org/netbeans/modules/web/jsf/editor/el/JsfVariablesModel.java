@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
@@ -54,6 +55,7 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.modules.web.jsfapi.api.TagFeature;
 import org.netbeans.modules.web.jsfapi.spi.TagFeatureProvider;
 
@@ -111,7 +113,7 @@ public class JsfVariablesModel {
         if(sup == null) {
             return ;
         }
-        Collection<String> faceletsLibsNamespaces = inTest ? null : sup.getLibraries().keySet();
+        Set<String> faceletsLibsNamespaces = NamespaceUtils.getAvailableNss(sup.getLibraries(), sup.isJsf22Plus());
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
 
         for (String namespace : declaredNamespaces) {

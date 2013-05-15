@@ -50,6 +50,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,12 +66,12 @@ import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.netbeans.modules.javafx2.platform.api.JavaFxRuntimeInclusion;
 import org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.WizardType;
 import org.netbeans.modules.javafx2.project.fxml.ConfigureFXMLControllerPanelVisual;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
@@ -392,9 +393,11 @@ public class JFXProjectGenerator {
         Element nameEl = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
         nameEl.appendChild(doc.createTextNode(name));
         data.appendChild(nameEl);
-        final Element explicitPlatformEl = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); //NOI18N
-        explicitPlatformEl.setAttribute("explicit-source-supported", "true");   //NOI18N
-        data.appendChild(explicitPlatformEl);
+        if (!isDefaultPlatform(platformName)) {
+            final Element explicitPlatformEl = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); //NOI18N
+            explicitPlatformEl.setAttribute("explicit-source-supported", "true");   //NOI18N
+            data.appendChild(explicitPlatformEl);
+        }
         
         EditableProperties ep = h.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Element sourceRoots = doc.createElementNS(J2SEProjectType.PROJECT_CONFIGURATION_NAMESPACE, "source-roots");  //NOI18N
@@ -446,10 +449,11 @@ public class JFXProjectGenerator {
         ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, type == WizardType.SWING ? "COMMENT_updatemode_swing" : "COMMENT_updatemode")}, false); // NOI18N
         ep.setProperty(JFXProjectProperties.ALLOW_OFFLINE, "true"); // NOI18N
 
-        ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPathReference(platformName));
-        ep.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePathReference(platformName));
-
-        ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, JavaFXPlatformUtils.getJavaFXClassPath()); // NOI18N
+        Collection<String> extensions = JavaFxRuntimeInclusion.getProjectClassPathExtension(JavaFXPlatformUtils.findJavaPlatform(platformName));
+        if(extensions != null && !extensions.isEmpty()) {
+            ep.setProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION, JFXProjectUtils.getPaths(extensions));
+            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, new String[] {JavaFXPlatformUtils.getClassPathExtensionProperty()}); // NOI18N
+        }
         ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, ""); // NOI18N
 
         ep.setProperty(JFXProjectProperties.RUN_APP_WIDTH, "800"); // NOI18N
@@ -506,7 +510,7 @@ public class JFXProjectGenerator {
                 ep.setProperty(JFXProjectProperties.PERMISSIONS_ELEVATED, "true"); // NOI18N
             }
         }
-
+        ep.setProperty(JFXProjectProperties.IMPLEMENTATION_VERSION, JFXProjectProperties.IMPLEMENTATION_VERSION_DEFAULT);
         // TODO select from UI
         ep.setProperty(JFXProjectProperties.FALLBACK_CLASS, "com.javafx.main.NoJavaFXFallback"); // NOI18N
         //ep.setProperty(JFXProjectProperties.SIGNED_JAR, "${dist.dir}/" + validatePropertyValue(name) + "_signed.jar"); // NOI18N
@@ -576,7 +580,7 @@ public class JFXProjectGenerator {
         ep.setProperty("build.test.results.dir", "${build.dir}/test/results"); // NOI18N
         ep.setProperty("build.classes.excludes", "**/*.java,**/*.form"); // NOI18N
         ep.setProperty("dist.javadoc.dir", "${dist.dir}/javadoc"); // NOI18N
-        ep.setProperty("platform.active", platformName); // NOI18N
+        ep.setProperty(JFXProjectProperties.PLATFORM_ACTIVE, platformName); // NOI18N
 
         ep.setProperty(JFXProjectProperties.JAVADOC_PRIVATE, "false"); // NOI18N
         ep.setProperty(JFXProjectProperties.JAVADOC_NO_TREE, "false"); // NOI18N
@@ -633,6 +637,11 @@ public class JFXProjectGenerator {
         logRecord = new LogRecord(Level.INFO, action.getSpecificLogMessage());
         logRecord.setLoggerName(logger.getName());
         logger.log(logRecord);
+    }
+
+    private static boolean isDefaultPlatform(@NonNull final String platformName) {
+        Parameters.notNull("platformName", platformName);   //NOI18N
+        return platformName.equals(JavaPlatform.getDefault().getProperties().get("platform.ant.name")); //NOI18N
     }
 
     private static void copyRequiredLibraries(AntProjectHelper h, ReferenceHelper rh) throws IOException {

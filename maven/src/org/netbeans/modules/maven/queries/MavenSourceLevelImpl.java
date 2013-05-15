@@ -46,8 +46,15 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URI;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.event.ChangeListener;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
+import org.codehaus.plexus.util.xml.Xpp3Dom;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.Constants;
@@ -58,6 +65,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
 
@@ -68,7 +76,8 @@ import org.openide.util.WeakListeners;
  */
 @ProjectServiceProvider(service=SourceLevelQueryImplementation2.class, projectType="org-netbeans-modules-maven")
 public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
-
+    
+    static final Pattern PROFILE = Pattern.compile("-profile (compact1|compact2|compact3){1}?");
     private final Project project;
 
     public MavenSourceLevelImpl(Project proj) {
@@ -97,7 +106,7 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
         }
         String sourceLevel = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,  //NOI18N
                                                               Constants.PLUGIN_COMPILER,  //NOI18N
-                                                              "source",  //NOI18N
+                                                              Constants.SOURCE_PARAM,  //NOI18N
                                                               goal,
                                                               "maven.compiler.source");
         if (sourceLevel != null) {
@@ -112,12 +121,97 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
             return "1.3";
         }
     }
+    
+    private SourceLevelQuery.Profile getSourceProfile(FileObject javaFile) {
+        File file = FileUtil.toFile(javaFile);
+        if (file == null) {
+            //#128609 something in jar?
+            return null;
+        }
+        URI uri = Utilities.toURI(file);
+        assert "file".equals(uri.getScheme());
+        String goal = "compile"; //NOI18N
+        NbMavenProjectImpl nbprj = project.getLookup().lookup(NbMavenProjectImpl.class);
+        for (URI testuri : nbprj.getSourceRoots(true)) {
+            if (uri.getPath().startsWith(testuri.getPath())) {
+                goal = "testCompile"; //NOI18N
+            }
+        }
+        for (URI testuri : nbprj.getGeneratedSourceRoots(true)) {
+            if (uri.getPath().startsWith(testuri.getPath())) {
+                goal = "testCompile"; //NOI18N
+            }
+        }
+        //compilerArguments vs compilerArgument vs compilerArgs - all of them get eventually merged in compiler mojo..
+        //--> all need to be checked.
+        String args = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,  //NOI18N
+                                                              Constants.PLUGIN_COMPILER,  //NOI18N
+                                                              "compilerArgument",  //NOI18N
+                                                              goal,
+                                                              null);
+        if (args != null) {
+            Matcher match = PROFILE.matcher(args);
+            if (match.find()) {
+                String prof = match.group(1);
+                SourceLevelQuery.Profile toRet = SourceLevelQuery.Profile.forName(prof);
+                return toRet != null ? toRet : SourceLevelQuery.Profile.DEFAULT;
+            }
+        }
+        
+        
+        String compilerArgumentsProfile = PluginPropertyUtils.getPluginPropertyBuildable(project, 
+                Constants.GROUP_APACHE_PLUGINS,
+                Constants.PLUGIN_COMPILER, //NOI18N
+                goal,
+                new ConfigBuilder());
+               
+        if (compilerArgumentsProfile != null) {
+            SourceLevelQuery.Profile toRet = SourceLevelQuery.Profile.forName(compilerArgumentsProfile);
+            return toRet != null ? toRet : SourceLevelQuery.Profile.DEFAULT;
+        }
+        String[] compilerArgs = PluginPropertyUtils.getPluginPropertyList(project, Constants.GROUP_APACHE_PLUGINS,
+                         Constants.PLUGIN_COMPILER, //NOI18N
+                         "compilerArgs", "arg", goal);
+        if (compilerArgs != null) {
+            for (String s : compilerArgs) {
+                Matcher match = PROFILE.matcher(s);
+                if (match.find()) {
+                    String prof = match.group(1);
+                    SourceLevelQuery.Profile toRet = SourceLevelQuery.Profile.forName(prof);
+                    return toRet != null ? toRet : SourceLevelQuery.Profile.DEFAULT;
+                }
+            }
+        }
+        return SourceLevelQuery.Profile.DEFAULT;
+    }
 
     @Override public Result getSourceLevel(final FileObject javaFile) {
         return new ResultImpl(javaFile);
     }
     
-    private class ResultImpl implements SourceLevelQueryImplementation2.Result, PropertyChangeListener {
+    private static class ConfigBuilder implements PluginPropertyUtils.ConfigurationBuilder<String> {
+
+        @Override
+        public String build(Xpp3Dom configRoot, ExpressionEvaluator eval) {
+            if (configRoot != null) {
+                Xpp3Dom args = configRoot.getChild("compilerArguments");
+                if (args != null) {
+                    Xpp3Dom prof = args.getChild("profile");
+                    if (prof != null) {
+                        try {
+                            return (String) eval.evaluate(prof.getValue());
+                        } catch (ExpressionEvaluationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }
+            }
+            return null;
+        }
+        
+    }
+    
+    private class ResultImpl implements SourceLevelQueryImplementation2.Result2, PropertyChangeListener {
         
         private final FileObject javaFile;
         private final ChangeSupport cs = new ChangeSupport(this);
@@ -144,6 +238,11 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
             if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
                 cs.fireChange();
             }
+        }
+
+        @Override
+        public SourceLevelQuery.Profile getProfile() {
+           return getSourceProfile(javaFile);
         }
 
     }

@@ -172,7 +172,7 @@ public class DelegatePanel extends javax.swing.JPanel implements PropertyChangeL
             SwingUtilities.invokeLater(new Runnable() {                 
                 public void run() {
                     ElementHandle<? extends VariableElement> fieldHandle = (ElementHandle<? extends VariableElement>) getDelegateField();
-                    methodSelector.setRootElement(handle == null ? null : DelegateMethodGenerator.getAvailableMethods(component, handle, fieldHandle), false);
+                    methodSelector.setRootElement(handle == null || fieldHandle == null ? null : DelegateMethodGenerator.getAvailableMethods(component, handle, fieldHandle), false);
                     methodSelector.doInitialExpansion(-1);            
                 }
             });

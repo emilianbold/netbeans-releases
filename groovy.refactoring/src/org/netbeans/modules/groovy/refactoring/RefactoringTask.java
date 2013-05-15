@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.groovy.refactoring;
 
+import java.util.Collections;
 import java.util.Set;
 import javax.swing.text.JTextComponent;
 import org.codehaus.groovy.ast.ASTNode;
@@ -55,6 +56,7 @@ import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
@@ -62,7 +64,6 @@ import org.netbeans.modules.groovy.editor.api.AstPath;
 import org.netbeans.modules.groovy.editor.api.ElementUtils;
 import org.netbeans.modules.groovy.editor.api.FindTypeUtils;
 import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
-import org.netbeans.modules.groovy.editor.api.parser.SourceUtils;
 import org.netbeans.modules.groovy.refactoring.findusages.model.ClassRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.MethodRefactoringElement;
 import org.netbeans.modules.groovy.refactoring.findusages.model.RefactoringElement;
@@ -71,7 +72,9 @@ import org.netbeans.modules.groovy.refactoring.utils.FindMethodUtils;
 import org.netbeans.modules.groovy.refactoring.utils.FindPossibleMethods;
 import org.netbeans.modules.groovy.refactoring.utils.GroovyProjectUtil;
 import org.netbeans.modules.groovy.refactoring.utils.TypeResolver;
+import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
@@ -116,7 +119,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         @Override
         public boolean isValid() {
             try {
-                SourceUtils.runUserActionTask(fileObject, this);
+                ParserManager.parse(Collections.singleton(Source.create(fileObject)), this);
                 return true;
             } catch (Exception ex) {
                 return false;
@@ -234,7 +237,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         @Override
         public final void run() {
             try {
-                SourceUtils.runUserActionTask(fileObject, this);
+                ParserManager.parse(Collections.singleton(Source.create(fileObject)), this);
             } catch (Exception ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -258,7 +261,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         @Override
         public boolean isValid() {
             try {
-                SourceUtils.runUserActionTask(fileObject, this);
+                ParserManager.parse(Collections.singleton(Source.create(fileObject)), this);
             } catch (Exception ex) {
                 return false;
             }
@@ -286,7 +289,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         @Override
         public final void run() {
             try {
-                SourceUtils.runUserActionTask(fileObject, this);
+                ParserManager.parse(Collections.singleton(Source.create(fileObject)), this);
             } catch (Exception ex) {
                 return;
             }

@@ -334,10 +334,11 @@ public class TreeModelRoot {
                         if (node != null) {
                             TreeModelNode[] tmNodes = findNode(node);
                             //System.err.println("  nodes = "+Arrays.toString(tmNodes));
+                            int change = tvEvent.getChange();
                             for (TreeModelNode tmNode : tmNodes) {
                                 String column = tvEvent.getColumnID();
                                 if (column != null) {
-                                    tmNode.refreshColumn(column);
+                                    tmNode.refreshColumn(column, change);
                                 } else {
                                     tmNode.refresh(model);
                                 }

@@ -50,21 +50,19 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JDialog;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
-import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.actions.SaveAllAction;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
-import org.netbeans.jemmy.operators.JDialogOperator;
+import org.netbeans.jemmy.Waitable;
+import org.netbeans.jemmy.Waiter;
 import org.netbeans.modules.ws.qaf.WebServicesTestBase;
 import org.netbeans.modules.ws.qaf.utilities.ContentComparator;
 import org.netbeans.modules.ws.qaf.utilities.FilteringLineDiff;
@@ -91,7 +89,6 @@ public abstract class RestTestBase extends WebServicesTestBase {
     private Connection connection;
     private static boolean CREATE_GOLDEN_FILES = Boolean.getBoolean("golden");
     private static final Logger LOGGER = Logger.getLogger(RestTestBase.class.getName());
-    private static List<String> resourceConfDialogClosed = new ArrayList<String>();
 
     /**
      * Enum type to hold supported Mime Types
@@ -203,6 +200,29 @@ public abstract class RestTestBase extends WebServicesTestBase {
             restNode.expand();
         }
         return restNode;
+    }
+    
+    /**
+     * Waits for defined number of children under RESTful Web Services node. It
+     * throws TimeoutExpiredException if timeout passes.
+     */
+    protected void waitRestNodeChildren(final int count) {
+        final Node restNode = getRestNode();
+        try {
+            new Waiter(new Waitable() {
+                @Override
+                public Object actionProduced(Object obj) {
+                    return restNode.getChildren().length == count ? Boolean.TRUE : null;
+                }
+
+                @Override
+                public String getDescription() {
+                    return count + " children under " + restNode.getText(); //NOI18N
+                }
+            }).waitAction(null);
+        } catch (InterruptedException ie) {
+            throw new JemmyException("Interrupted.", ie); //NOI18N
+        }
     }
 
     /**
@@ -343,7 +363,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
 
     @Override
     public File getGoldenFile(String filename) {
-        String fullClassName = this.getClass().getName().replace("Mvn", "").replace("JEE6", "");
+        String fullClassName = this.getClass().getName().replace("Mvn", "").replaceAll("rest.*[6,7]", "rest.");
         String goldenFileName = fullClassName.replace('.', '/') + "/" + filename;
         // golden files are in ${xtest.data}/goldenfiles/${classname}/...
         File goldenFile = new File(getDataDir() + "/goldenfiles/" + goldenFileName);
@@ -403,32 +423,5 @@ public abstract class RestTestBase extends WebServicesTestBase {
         }
         File jar = FileUtil.toFile(targetFolder.getFileObject("derbyclient", "jar")); //NOI18N
         LOGGER.log(Level.INFO, "JDBC Driver was copied to: {0}", jar.getAbsolutePath()); //NOI18N
-    }
-    
-    protected void closeResourcesConfDialog() {
-        if (!resourceConfDialogClosed.contains(getProjectName()) && getJavaEEversion().equals(JavaEEVersion.JAVAEE5)) {
-            new Thread("Close REST Resources Configuration dialog") {
-                private boolean found = false;
-                private static final String dlgLbl = "REST Resources Configuration";
-
-                @Override
-                public void run() {
-                    System.out.println("\n\nTHREAD STARTED\n\n");
-                    while (!found) {
-                        try {
-                            sleep(300);
-                        } catch (InterruptedException ex) {
-                            // ignore
-                        }
-                        JDialog dlg = JDialogOperator.findJDialog(dlgLbl, true, true);
-                        if (null != dlg) {
-                            found = true;
-                            new NbDialogOperator(dlg).ok();
-                            resourceConfDialogClosed.add(getProjectName());
-                        }
-                    }
-                }
-            }.start();
-        }
     }
 }

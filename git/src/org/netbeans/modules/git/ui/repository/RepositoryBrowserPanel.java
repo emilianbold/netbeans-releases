@@ -48,6 +48,8 @@ import java.awt.EventQueue;
 import java.awt.Image;
 import java.awt.KeyboardFocusManager;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.BeanInfo;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -116,7 +118,8 @@ import org.openide.windows.TopComponent;
  *
  * @author ondra
  */
-public class RepositoryBrowserPanel extends JPanel implements Provider, PropertyChangeListener, ListSelectionListener {
+public class RepositoryBrowserPanel extends JPanel implements Provider, PropertyChangeListener, ListSelectionListener,
+        MouseListener {
 
     AbstractNode root;
     private static final RequestProcessor RP = new RequestProcessor("RepositoryPanel", 1); //NOI18N
@@ -126,6 +129,12 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
     private Revision currRevision;
     private File currRepository;
     public static final String PROP_REVISION_CHANGED = "RepositoryBrowserPanel.revision"; //NOI18N
+    /**
+     * Fired when user dbl-clicks or accepts a revision in any other way.
+     * A controller displaying the panel may answer accordingly and close the dialog.
+     * {@link PropertyChangeEvent#getNewValue()} contains the value of the accepted revision.
+     */
+    public static final String PROP_REVISION_ACCEPTED = "RepositoryBrowserPanel.acceptedRevision"; //NOI18N
     private final File[] roots;
     private String branchMergeWith;
 
@@ -183,13 +192,16 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             attachToolbarListeners();
         }
         revisionsPanel1.lstRevisions.addListSelectionListener(this);
+        revisionsPanel1.lstRevisions.addMouseListener(this);
         if (options.contains(Option.DISPLAY_REVISIONS)) {
             KeyboardFocusManager.getCurrentKeyboardFocusManager().addPropertyChangeListener(this);
             revisionsPanel1.updateHistory(currRepository, roots, currRevision);
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    jSplitPane1.setDividerLocation(0.5);
+                    int width = revisionsPanel1.getPreferredSize().width;
+                    int leftPanelWidth = jSplitPane1.getPreferredSize().width - width;
+                    jSplitPane1.setDividerLocation(Math.min(200, leftPanelWidth));
                 }
             });
         }
@@ -206,6 +218,32 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             detachToolbarListeners();
         }
         super.removeNotify();
+    }
+
+    @Override
+    public void mouseClicked (MouseEvent e) {
+        if (e.getSource() == revisionsPanel1.lstRevisions) {
+            if (e.getClickCount() == 2 && currRevision != null) {
+                e.consume();
+                firePropertyChange(PROP_REVISION_ACCEPTED, null, currRevision);
+            }
+        }
+    }
+
+    @Override
+    public void mousePressed (MouseEvent e) {
+    }
+
+    @Override
+    public void mouseReleased (MouseEvent e) {
+    }
+
+    @Override
+    public void mouseEntered (MouseEvent e) {
+    }
+
+    @Override
+    public void mouseExited (MouseEvent e) {
     }
 
     @Override
@@ -287,9 +325,9 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 currRevision = null;
                 firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
             } else if (selectedRevision != null) {
-                currRevision = new Revision(selectedRevision.getRevision(), selectedRevision.getRevision());
-                if (oldRevision == null || !currRevision.getName().equals(oldRevision.getName())
-                        || !currRevision.getRevision().equals(oldRevision.getRevision())) {
+                Revision newRev = new Revision(selectedRevision.getRevision(), selectedRevision.getRevision());
+                if (!newRev.equals(oldRevision)) {
+                    currRevision = newRev;
                     firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
                 }
             }
@@ -987,6 +1025,19 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             return actions.toArray(new Action[actions.size()]);
         }
 
+        @Override
+        public Action getPreferredAction () {
+            if (currRevision != null) {
+                return new AbstractAction() {
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        RepositoryBrowserPanel.this.firePropertyChange(PROP_REVISION_ACCEPTED, null, currRevision);
+                    }
+                };
+            }
+            return null;
+        }
+
         private void refreshTracking (final GitBranch trackedBranch, final File repository) {
             if (trackedBranch != null && repository != null && options.contains(Option.DISPLAY_COMMIT_IDS)
                     && (!branchId.equals(lastTrackingMyId) || !trackedBranch.getId().equals(lastTrackingOtherId))) {
@@ -1307,6 +1358,19 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 });
             }
             return actions.toArray(new Action[actions.size()]);
+        }
+
+        @Override
+        public Action getPreferredAction () {
+            if (currRevision != null) {
+                return new AbstractAction() {
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        RepositoryBrowserPanel.this.firePropertyChange(PROP_REVISION_ACCEPTED, null, currRevision);
+                    }
+                };
+            }
+            return null;
         }
         
     }

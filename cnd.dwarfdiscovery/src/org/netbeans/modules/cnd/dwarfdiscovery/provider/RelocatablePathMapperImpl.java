@@ -47,6 +47,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.Adler32;
@@ -67,6 +69,7 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
     private static final boolean TEST = false;
     private final List<MapperEntry> mapper = new ArrayList<MapperEntry>();
     private final ProjectProxy project;
+    private final Map<String,Boolean> fileCache = new ConcurrentHashMap<String, Boolean>();
     private boolean isAtomatic = true;
     
     /**
@@ -241,6 +244,49 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
         return res;
     }
 
+    private boolean isExists(FS fs, String path) {
+        Boolean res = fileCache.get(path);
+        if (res != null) {
+            return res;
+        }
+        if (!isExistsFolder(fs, path)) {
+            return false;
+        }
+        res = fs.exists(path);
+        fileCache.put(path, res);
+        return res;
+    }
+
+    private boolean isExistsFolder(FS fs, String path) {
+        String dir = CndPathUtilitities.getDirName(path);
+        if (dir != null) {
+            Boolean res = fileCache.get(dir);
+            if (res != null) {
+                return res;
+            }
+            int sep = 0;
+            for(int i = 0; i < dir.length(); i++) {
+                if (dir.charAt(i) == '/' || dir.charAt(i) == '\\') {
+                    sep++;
+                }
+            }
+            if (sep <= 1) {
+                res = fs.exists(dir);
+                fileCache.put(dir, res);
+                return res;
+            } else {
+                if (isExistsFolder(fs, dir)) {
+                    res = fs.exists(dir);
+                    fileCache.put(dir, res);
+                    return res;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean discover(FS fs, String root, String unknown) {
         if (FORBID_AUTO_PATH_MAPPER) {
@@ -261,7 +307,7 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
                 }
             }
         }
-        if (to != null && fs.exists(unknown) && fs.exists(to)) {
+        if (to != null && isExists(fs, unknown) && isExists(fs, to)) {
             // need to check contents
             boolean isEquals = true;
             List<String> list1 = fs.list(unknown);
@@ -332,7 +378,7 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
         }
         for (int k = 1; k < unknownSegments.length; k++) {
             loop:
-            for (int i = rootSegments.length - 1; i >= 1; i--) {
+            for (int i = rootSegments.length - 1; i > 1; i--) {
                 StringBuilder buf = new StringBuilder();
                 for (int j = 0; j < i; j++) {
                     buf.append('/'); //NOI18N
@@ -350,7 +396,7 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
                     System.out.println(path);
                     path = path.substring(0, path.indexOf('|')) + path.substring(path.indexOf('|') + 1); //NOI18N
                 }
-                if (fs.exists(path)) {
+                if (isExists(fs, path)) {
                     if (k == i) {
                         boolean startEquals = true;
                         for (int l = 0; l < k; l++) {

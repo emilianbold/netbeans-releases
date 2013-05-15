@@ -75,15 +75,6 @@ made subject to such option by the copyright holder.
                 <attr name="position" intvalue="1840"/>
             </file>
         </folder>
-
-        <folder name="Window">
-            <folder name="Output">
-                <file name="AnalyzerAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-java-hints-analyzer-ui-AnalyzerAction.instance"/>
-                    <attr name="position" intvalue="2467"/>
-                </file>
-            </folder>
-        </folder>
     </folder>
     <folder name="Windows2">
         <folder name="Components">
@@ -125,22 +116,24 @@ made subject to such option by the copyright holder.
                 </folder>
 
                 <folder name="RefactoringActions">
-                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createVariableGlobal"/>
-                        <attr name="position" intvalue="1400"/>
-                    </file>
-                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createConstantGlobal"/>
-                        <attr name="position" intvalue="1500"/>
-                    </file>
-                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createFieldGlobal"/>
-                        <attr name="position" intvalue="1600"/>
-                    </file>
-                    <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance">
-                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMethodGlobal"/>
-                        <attr name="position" intvalue="1700"/>
-                    </file>
+                    <folder name="Introduce">
+                        <file name="org-netbeans-modules-java-hints-introduce-IntroduceVariableAction.instance">
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createVariableGlobal"/>
+                            <attr name="position" intvalue="1400"/>
+                        </file>
+                        <file name="org-netbeans-modules-java-hints-introduce-IntroduceConstantAction.instance">
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createConstantGlobal"/>
+                            <attr name="position" intvalue="1500"/>
+                        </file>
+                        <file name="org-netbeans-modules-java-hints-introduce-IntroduceFieldAction.instance">
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createFieldGlobal"/>
+                            <attr name="position" intvalue="1600"/>
+                        </file>
+                        <file name="org-netbeans-modules-java-hints-introduce-IntroduceMethodAction.instance">
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.introduce.IntroduceAction.createMethodGlobal"/>
+                            <attr name="position" intvalue="1700"/>
+                        </file>
+                    </folder>
                     <file name="org-netbeans-modules-java-hints-ConvertAnonymousToInnerAction.instance">
                         <attr name="position" intvalue="1050"/>
                     </file>
@@ -178,8 +171,17 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-java-hints-errors-ImplementAllAbstractMethods.instance"/>
                 <file name="org-netbeans-modules-java-hints-errors-UncaughtException.instance"/>
                 <file name="org-netbeans-modules-java-hints-errors-ChangeType.instance"/>
-                <file name="org-netbeans-modules-java-hints-errors-MakeVariableFinal.instance"/>
-                <file name="org-netbeans-modules-java-hints-errors-RemoveUselessCast.instance"/>
+                <file name="org-netbeans-modules-java-hints-errors-AddFinalModifier.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.errors.AddOrRemoveFinalModifier.createAddFinalModifier"/>
+                </file>
+                <file name="org-netbeans-modules-java-hints-errors-RemoveFinalModifierFromParameter.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.errors.AddOrRemoveFinalModifier.createRemoveFinalFromParameter"/>
+                </file>
+                <file name="org-netbeans-modules-java-hints-errors-RemoveFinalModifierFromVariable.instance">
+                        <attr name="instanceCreate" methodvalue="org.netbeans.modules.java.hints.errors.AddOrRemoveFinalModifier.createRemoveFinalFromVariable"/>
+                </file>
+		<file name="org-netbeans-modules-java-hints-errors-RemoveInvalidModifier.instance"/>
+		<file name="org-netbeans-modules-java-hints-errors-RemoveUselessCast.instance"/>
                 <file name="org-netbeans-modules-java-hints-errors-SuppressWarningsFixer.instance"/>
                 <file name="org-netbeans-modules-java-hints-errors-NotInitializedVariable.instance"/>                
                 <file name="org-netbeans-modules-java-hints-errors-VarArgsCast.instance"/>
@@ -191,6 +193,10 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-java-hints-errors-AddConstructor.instance"/>
                 <file name="org-netbeans-modules-java-hints-errors-AccessError.instance"/>
                 <file name="org-netbeans-modules-java-hints-errors-ExtendsImplements.instance"/>
+                <file name="org-netbeans-modules-java-hints-errors-ArrayAccess.instance"/>
+                <file name="org-netbeans-modules-java-hints-errors-ClassNameMismatch.instance"/>
+                <file name="org-netbeans-modules-java-hints-errors-AbstractMethodCannotHaveBody.instance"/>
+                <file name="org-netbeans-modules-java-hints-errors-ExtraCatch.instance"/>
                 <folder name="text">
                     <folder name="x-jsp">
                         <file name="org-netbeans-modules-java-hints-errors-ImportClass.instance"/>
@@ -356,6 +362,10 @@ made subject to such option by the copyright holder.
                 </folder>
                 
                 <folder name="testing">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
+                </folder>
+
+                <folder name="abstraction">
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.hints.resources.Bundle"/>
                 </folder>
             </folder>

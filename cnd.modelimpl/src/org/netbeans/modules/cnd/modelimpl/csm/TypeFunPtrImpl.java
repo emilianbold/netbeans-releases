@@ -69,13 +69,13 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
     private Collection<CsmParameter> functionParameters;
     private short functionPointerDepth;
 
-    TypeFunPtrImpl(CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
+    TypeFunPtrImpl(CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
         super(file, pointerDepth, reference, arrayDepth, _const, startOffset, endOffset);
         functionParameters = null;
     }
-
+    
     // package-local - for facory only
-    TypeFunPtrImpl(TypeFunPtrImpl type, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
+    TypeFunPtrImpl(TypeFunPtrImpl type, int pointerDepth, int reference, int arrayDepth, boolean _const) {
         super(type, pointerDepth, reference, arrayDepth, _const);
         if(type.functionParameters != null) {
             functionParameters = new ArrayList<CsmParameter>(type.functionParameters);
@@ -95,6 +95,12 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
         }
         functionPointerDepth = type.functionPointerDepth;
     }
+    
+    // package-local - for facory only
+    TypeFunPtrImpl(CsmClassifier classifier, CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset, Collection<CsmParameter> parameters) {
+        super(classifier, pointerDepth, reference, arrayDepth, _const, file, startOffset, endOffset);
+        functionParameters = parameters;
+    }    
     
     void init(AST ast, boolean inFunctionParameters, boolean inTypedef) {
         initFunctionPointerParamList(ast, this, inFunctionParameters, inTypedef);

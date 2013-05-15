@@ -48,6 +48,7 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.List;
+import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -145,7 +146,7 @@ public final class SearchPanel extends JPanel {
     }
 
     public String getSelectedItem() {
-        return (String) foundItemsList.getSelectedValue();
+        return foundItemsList.getSelectedValue();
     }
 
     void cancelDetection() {
@@ -185,15 +186,13 @@ public final class SearchPanel extends JPanel {
 
         detectedFilesLabel = new JLabel();
         foundItemsScrollPane = new JScrollPane();
-        foundItemsList = new JList();
+        foundItemsList = new JList<String>();
         messageLabel = new JLabel();
         progressBar = new JProgressBar();
 
-        setFocusTraversalPolicy(null);
-
         detectedFilesLabel.setLabelFor(foundItemsList);
+        Mnemonics.setLocalizedText(detectedFilesLabel, "title"); // NOI18N
 
-        Mnemonics.setLocalizedText(detectedFilesLabel, "title");
         foundItemsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         foundItemsList.setEnabled(false);
         foundItemsScrollPane.setViewportView(foundItemsList);
@@ -206,16 +205,15 @@ public final class SearchPanel extends JPanel {
         progressBar.setString(" "); // NOI18N
         progressBar.setStringPainted(true);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(Alignment.TRAILING)
-                    .addComponent(foundItemsScrollPane, Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
-                    .addComponent(progressBar, Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                    .addComponent(foundItemsScrollPane, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
+                    .addComponent(progressBar, Alignment.LEADING, GroupLayout.DEFAULT_SIZE, 291, Short.MAX_VALUE)
                     .addComponent(detectedFilesLabel, Alignment.LEADING)
                     .addComponent(messageLabel, Alignment.LEADING))
                 .addContainerGap())
@@ -226,11 +224,11 @@ public final class SearchPanel extends JPanel {
                 .addContainerGap()
                 .addComponent(detectedFilesLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(foundItemsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
+                .addComponent(foundItemsScrollPane, GroupLayout.DEFAULT_SIZE, 105, Short.MAX_VALUE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(messageLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(progressBar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(progressBar, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0))
         );
 
@@ -242,6 +240,7 @@ public final class SearchPanel extends JPanel {
         messageLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.messageLabel.AccessibleContext.accessibleDescription")); // NOI18N
         progressBar.getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.progressBar.AccessibleContext.accessibleName")); // NOI18N
         progressBar.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.progressBar.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(SearchPanel.class, "SelectPhpInterpreterPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
@@ -249,7 +248,7 @@ public final class SearchPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JLabel detectedFilesLabel;
-    private JList foundItemsList;
+    private JList<String> foundItemsList;
     private JScrollPane foundItemsScrollPane;
     private JLabel messageLabel;
     private JProgressBar progressBar;

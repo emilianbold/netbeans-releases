@@ -48,7 +48,6 @@ import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -58,6 +57,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -165,19 +165,19 @@ public final class OpenedEditors {
         for(JTextComponent editor : EditorRegistry.componentList()) {
             // skip non-editor components
             if (isHandledEditor(editor)) {
-                FileObject fo = getFileObject(editor);
+                String mimeType = DocumentUtilities.getMimeType(editor);
 
-                if (isSupported(fo)) {
+                if (isSupported(mimeType)) {
                     // FIXUP for #139980 EditorRegistry.componentList() returns editors that are already closed
                     // UPDATE it seems that this bug was fixed and there is no need in additional check now
                     boolean valid = true;// isOpen((JEditorPane) editor, fo);
-                    if (TRACE_FILES) { System.err.printf("\tfile: %s valid: %b\n", fo.toString(), valid); }
+                    if (TRACE_FILES) { System.err.printf("\tfile: %s valid: %b\n", getFileObject(editor).toString(), valid); }
                     if (valid) {
                         visibleEditors.add(editor);
                     }
                 } else {
                     if (SHOW_TIME || TRACE_FILES) {
-                        System.err.println("OpenedEditors.stateChanged() skip FO " + fo);
+                        System.err.println("OpenedEditors.stateChanged() skip FO " + getFileObject(editor));
                     }
                 }
             } else {
@@ -243,16 +243,42 @@ public final class OpenedEditors {
     }
 
     /**
-     * Checks if the given file is supported.
+     * Checks if the given mime type is supported.
      */
-    private static boolean isSupported(FileObject file) throws NullPointerException {
-        if (file == null) {
+    private static boolean isSupported(String fileMimeType) {
+        if (fileMimeType == null) {
+            //unrecognized
             return false;
         }
 
-        return !filterSupportedFiles(Collections.singletonList(file)).isEmpty();
-    }
+        if (mimeTypesList.contains(fileMimeType)) {
+            return true;
+        }
 
+        String shorterMimeType = fileMimeType;
+
+        while (true) {
+            int slash = shorterMimeType.indexOf('/');
+
+            if (slash == (-1)) {
+                break;
+            }
+
+            int plus = shorterMimeType.indexOf('+', slash);
+
+            if (plus == (-1)) {
+                break;
+            }
+
+            shorterMimeType = shorterMimeType.substring(0, slash + 1) + shorterMimeType.substring(plus + 1);
+
+            if (mimeTypesList.contains(shorterMimeType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     /**
      * Filter unsupported files from the <code>files</code> parameter.
      */
@@ -262,39 +288,8 @@ public final class OpenedEditors {
         List<FileObject> result = new LinkedList<FileObject>();
 
         for (FileObject f : files) {
-            String fileMimeType = FileUtil.getMIMEType(f);
-
-            if (fileMimeType == null) {
-                //unrecognized FileObject
-                continue;
-            }
-
-            if (mimeTypesList.contains(fileMimeType)) {
+            if (isSupported(FileUtil.getMIMEType(f))) {
                 result.add(f);
-                continue;
-            }
-
-            String shorterMimeType = fileMimeType;
-
-            while (true) {
-                int slash = shorterMimeType.indexOf('/');
-
-                if (slash == (-1)) {
-                    break;
-                }
-
-                int plus = shorterMimeType.indexOf('+', slash);
-
-                if (plus == (-1)) {
-                    break;
-                }
-
-                shorterMimeType = shorterMimeType.substring(0, slash + 1) + shorterMimeType.substring(plus + 1);
-
-                if (mimeTypesList.contains(shorterMimeType)) {
-                    result.add(f);
-                    break;
-                }
             }
         }
 

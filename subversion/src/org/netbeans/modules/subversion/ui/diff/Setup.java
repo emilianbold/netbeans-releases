@@ -56,6 +56,7 @@ import java.text.MessageFormat;
 import org.netbeans.modules.versioning.diff.AbstractDiffSetup;
 import org.tigris.subversion.svnclientadapter.ISVNStatus;
 import org.tigris.subversion.svnclientadapter.SVNStatusKind;
+import org.tigris.subversion.svnclientadapter.SVNUrl;
 
 /**
  * Represents on DIFF setup.
@@ -120,8 +121,8 @@ public final class Setup extends AbstractDiffSetup {
     private final String    secondRevision;
     private FileInformation info;
 
-    private DiffStreamSource    firstSource;
-    private DiffStreamSource    secondSource;
+    private final StreamSource    firstSource;
+    private final StreamSource    secondSource;
 
     private DiffController      view;
     private DiffNode            node;
@@ -260,6 +261,7 @@ public final class Setup extends AbstractDiffSetup {
         this.propertyName = null;
         this.firstRevision = firstRevision;
         this.secondRevision = secondRevision;
+        title = baseFile.getName();
         firstSource = new DiffStreamSource(baseFile, propertyName, firstRevision, firstRevision);
         // XXX delete when UndoAction works correctly
         secondSource = new DiffStreamSource(baseFile, propertyName, secondRevision, secondRevision) {
@@ -271,6 +273,29 @@ public final class Setup extends AbstractDiffSetup {
     }
 
     /**
+     * Text file setup for arbitrary revisions.
+     * @param firstRevision first revision
+     * @param secondRevision second revision
+     */
+    public Setup (File baseFile, SVNUrl repoUrl, SVNUrl firstFileUrl, String firstRevision, String firstTitle,
+            SVNUrl secondFileUrl, String secondRevision, String secondTitle, FileInformation info) {
+        this.baseFile = baseFile;
+        this.propertyName = null;
+        this.firstRevision = firstRevision;
+        this.secondRevision = secondRevision;
+        this.info = info;
+        title = baseFile.getName();
+        firstSource = new org.netbeans.modules.subversion.ui.history.DiffStreamSource(baseFile, 
+                repoUrl, firstFileUrl, firstRevision, firstTitle);
+        if (Setup.REVISION_CURRENT.equals(secondRevision)) {
+            secondSource = new DiffStreamSource(baseFile, propertyName, secondRevision, secondTitle);
+        } else {
+            secondSource = new org.netbeans.modules.subversion.ui.history.DiffStreamSource(baseFile, 
+                    repoUrl, secondFileUrl, secondRevision, secondTitle);
+        }
+    }
+
+    /**
      * Local file vs HEAD
      * @param baseFile
      * @param status remote status of the file
@@ -279,6 +304,7 @@ public final class Setup extends AbstractDiffSetup {
         this.baseFile = baseFile;
         this.propertyName = null;
         this.secondRevision = null;
+        title = baseFile.getName();
         String headTitle;
         ResourceBundle loc = NbBundle.getBundle(Setup.class);
         if (status.getRepositoryTextStatus().equals(SVNStatusKind.ADDED)) {
@@ -318,10 +344,12 @@ public final class Setup extends AbstractDiffSetup {
         return view;
     }
 
+    @Override
     public StreamSource getFirstSource() {
         return firstSource;
     }
 
+    @Override
     public StreamSource getSecondSource() {
         return secondSource;
     }
@@ -343,8 +371,16 @@ public final class Setup extends AbstractDiffSetup {
      * Loads data over network
      */
     void initSources() throws IOException {
-        if (firstSource != null) firstSource.init();
-        if (secondSource != null) secondSource.init();
+        if (firstSource instanceof DiffStreamSource) {
+            ((DiffStreamSource) firstSource).init();
+        } else if (firstSource instanceof org.netbeans.modules.subversion.ui.history.DiffStreamSource) {
+            ((org.netbeans.modules.subversion.ui.history.DiffStreamSource) firstSource).init();
+        }
+        if (secondSource instanceof DiffStreamSource) {
+            ((DiffStreamSource) secondSource).init();
+        } else if (secondSource instanceof org.netbeans.modules.subversion.ui.history.DiffStreamSource) {
+            ((org.netbeans.modules.subversion.ui.history.DiffStreamSource) secondSource).init();
+        }
     }
 
     private static boolean match(int status, int mask) {

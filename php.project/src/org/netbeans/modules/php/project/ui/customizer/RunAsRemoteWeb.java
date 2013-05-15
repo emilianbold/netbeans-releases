@@ -70,7 +70,6 @@ import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.plaf.UIResource;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
@@ -86,6 +85,7 @@ import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.Uploa
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * @author Tomas Mysik
@@ -217,7 +217,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     }
 
     @Override
-    protected JComboBox getRunAsCombo() {
+    protected JComboBox<String> getRunAsCombo() {
         return runAsComboBox;
     }
 
@@ -284,7 +284,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             // no connections defined
             connections = Arrays.asList(RunConfigRemote.NO_REMOTE_CONFIGURATION);
         }
-        DefaultComboBoxModel model = new DefaultComboBoxModel(new Vector<RemoteConfiguration>(connections));
+        DefaultComboBoxModel<RemoteConfiguration> model = new DefaultComboBoxModel<RemoteConfiguration>(new Vector<RemoteConfiguration>(connections));
         remoteConnectionComboBox.setModel(model);
     }
 
@@ -297,7 +297,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             remoteConnection = getValue(PhpProjectProperties.REMOTE_CONNECTION);
         }
         // #141849 - can be null if one adds remote config for the first time for a project but already has some remote connection
-        DefaultComboBoxModel model = (DefaultComboBoxModel) remoteConnectionComboBox.getModel();
+        DefaultComboBoxModel<RemoteConfiguration> model = (DefaultComboBoxModel<RemoteConfiguration>) remoteConnectionComboBox.getModel();
         if (remoteConnection == null
                 || RunConfigRemote.NO_CONFIG_NAME.equals(remoteConnection)) {
             if (model.getIndexOf(RunConfigRemote.NO_REMOTE_CONFIGURATION) < 0) {
@@ -309,7 +309,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         int size = remoteConnectionComboBox.getModel().getSize();
         for (int i = 0; i < size; ++i) {
-            RemoteConfiguration rc = (RemoteConfiguration) remoteConnectionComboBox.getItemAt(i);
+            RemoteConfiguration rc = remoteConnectionComboBox.getItemAt(i);
             if (remoteConnection.equals(rc.getName())) {
                 remoteConnectionComboBox.setSelectedItem(rc);
                 return;
@@ -338,7 +338,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private void initComponents() {
 
         runAsLabel = new JLabel();
-        runAsComboBox = new JComboBox();
+        runAsComboBox = new JComboBox<String>();
         urlLabel = new JLabel();
         urlTextField = new JTextField();
         indexFileLabel = new JLabel();
@@ -348,13 +348,13 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         argsTextField = new JTextField();
         urlHintLabel = new JTextPane();
         remoteConnectionLabel = new JLabel();
-        remoteConnectionComboBox = new JComboBox();
+        remoteConnectionComboBox = new JComboBox<RemoteConfiguration>();
         manageRemoteConnectionButton = new JButton();
         uploadDirectoryLabel = new JLabel();
         uploadDirectoryTextField = new JTextField();
         remoteConnectionHintLabel = new JLabel();
         uploadFilesLabel = new JLabel();
-        uploadFilesComboBox = new JComboBox();
+        uploadFilesComboBox = new JComboBox<UploadFiles>();
         uploadFilesHintLabel = new JLabel();
         preservePermissionsCheckBox = new JCheckBox();
         preservePermissionsLabel = new JLabel();
@@ -372,6 +372,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         indexFileLabel.setLabelFor(indexFileTextField);
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_IndexFile")); // NOI18N
+
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Browse")); // NOI18N
         indexFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -391,6 +392,7 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
         remoteConnectionLabel.setLabelFor(remoteConnectionComboBox);
         Mnemonics.setLocalizedText(remoteConnectionLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_RemoteConnection")); // NOI18N
+
         Mnemonics.setLocalizedText(manageRemoteConnectionButton, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_Manage")); // NOI18N
         manageRemoteConnectionButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -410,17 +412,18 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         Mnemonics.setLocalizedText(uploadFilesLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_UploadFiles")); // NOI18N
 
         uploadFilesHintLabel.setLabelFor(this);
-
         Mnemonics.setLocalizedText(uploadFilesHintLabel, "dummy"); // NOI18N
+
         Mnemonics.setLocalizedText(preservePermissionsCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsCheckBox.text")); // NOI18N
 
         preservePermissionsLabel.setLabelFor(preservePermissionsCheckBox);
-
         Mnemonics.setLocalizedText(preservePermissionsLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.preservePermissionsLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(uploadDirectlyCheckBox, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyCheckBox.text")); // NOI18N
 
         uploadDirectlyLabel.setLabelFor(uploadDirectlyCheckBox);
         Mnemonics.setLocalizedText(uploadDirectlyLabel, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.uploadDirectlyLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(advancedButton, NbBundle.getMessage(RunAsRemoteWeb.class, "RunAsRemoteWeb.advancedButton.text")); // NOI18N
         advancedButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -617,10 +620,10 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             Pair<String, String> pathMapping = advanced.getPathMapping();
             Pair<String, String> debugProxy = advanced.getDebugProxy();
             RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_URL, advanced.getDebugUrl().name());
-            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, pathMapping.first);
-            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, pathMapping.second);
-            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_HOST, debugProxy.first);
-            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_PORT, debugProxy.second);
+            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, pathMapping.first());
+            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, pathMapping.second());
+            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_HOST, debugProxy.first());
+            RunAsRemoteWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_PORT, debugProxy.second());
         }
     }//GEN-LAST:event_advancedButtonActionPerformed
 
@@ -634,16 +637,16 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private JButton manageRemoteConnectionButton;
     private JCheckBox preservePermissionsCheckBox;
     private JLabel preservePermissionsLabel;
-    private JComboBox remoteConnectionComboBox;
+    private JComboBox<RemoteConfiguration> remoteConnectionComboBox;
     private JLabel remoteConnectionHintLabel;
     private JLabel remoteConnectionLabel;
-    private JComboBox runAsComboBox;
+    private JComboBox<String> runAsComboBox;
     private JLabel runAsLabel;
     private JCheckBox uploadDirectlyCheckBox;
     private JLabel uploadDirectlyLabel;
     private JLabel uploadDirectoryLabel;
     private JTextField uploadDirectoryTextField;
-    private JComboBox uploadFilesComboBox;
+    private JComboBox<UploadFiles> uploadFilesComboBox;
     private JLabel uploadFilesHintLabel;
     private JLabel uploadFilesLabel;
     private JTextPane urlHintLabel;
@@ -722,20 +725,22 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
     }
 
-    public static class RemoteConnectionRenderer extends JLabel implements ListCellRenderer, UIResource {
-        private static final long serialVersionUID = 93621381917558630L;
+    public static class RemoteConnectionRenderer extends JLabel implements ListCellRenderer<RemoteConfiguration>, UIResource {
+
+        private static final long serialVersionUID = 14547687982567897L;
+
 
         public RemoteConnectionRenderer() {
             setOpaque(true);
         }
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<? extends RemoteConfiguration> list, RemoteConfiguration value, int index, boolean isSelected, boolean cellHasFocus) {
             setName("ComboBox.listRenderer"); // NOI18N
             // #171722
             String text = null;
             Color foreground = null;
-            if (value instanceof RemoteConfiguration) {
+            if (value != null) {
                 RemoteConfiguration remoteConfig = (RemoteConfiguration) value;
                 text = remoteConfig.getDisplayName();
                 foreground = getForeground(remoteConfig, list, isSelected);
@@ -768,20 +773,21 @@ public final class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         }
     }
 
-    public static class RemoteUploadRenderer extends JLabel implements ListCellRenderer, UIResource {
-        private static final long serialVersionUID = 86192358777523629L;
+    public static class RemoteUploadRenderer extends JLabel implements ListCellRenderer<UploadFiles>, UIResource {
+
+        private static final long serialVersionUID = 5867432135478679120L;
+
 
         public RemoteUploadRenderer() {
             setOpaque(true);
         }
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<? extends UploadFiles> list, UploadFiles value, int index, boolean isSelected, boolean cellHasFocus) {
             setName("ComboBox.listRenderer"); // NOI18N
             // #175236
             if (value != null) {
-                assert value instanceof UploadFiles;
-                setText(((UploadFiles) value).getLabel());
+                setText(value.getLabel());
             }
             setIcon(null);
             if (isSelected) {

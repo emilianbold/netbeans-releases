@@ -98,8 +98,7 @@ public class EditCSSRulesNodeAction extends NodeAction {
                             
                             org.netbeans.modules.html.editor.lib.api.elements.Node resolved = sourceElementHandle.resolve(result);
                             if(resolved != null) {
-                                HtmlSourceElementHandle handle = new HtmlSourceElementHandle((OpenTag)resolved, result.getSnapshot(), file);
-                                action.setHtmlSourceElementHandle(handle);
+                                action.setHtmlSourceElementHandle((OpenTag)resolved, result.getSnapshot(), file);
 
                                 RequestProcessor.getDefault().post(new Runnable() {
                                     @Override
@@ -126,8 +125,7 @@ public class EditCSSRulesNodeAction extends NodeAction {
         }
         Node node = activatedNodes[0];
         SourceElementHandle sourceElementHandle = node.getLookup().lookup(SourceElementHandle.class);
-        return sourceElementHandle != null;
-
+        return sourceElementHandle != null && sourceElementHandle.getFileObject() != null;
     }
 
     @Override

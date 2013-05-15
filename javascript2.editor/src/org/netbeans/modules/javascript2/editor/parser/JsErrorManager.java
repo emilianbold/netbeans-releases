@@ -52,8 +52,8 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 

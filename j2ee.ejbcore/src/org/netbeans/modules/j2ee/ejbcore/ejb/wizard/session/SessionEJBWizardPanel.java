@@ -61,7 +61,6 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
@@ -72,8 +71,8 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.filesystems.FileObject;
@@ -122,7 +121,7 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
                 nonPersistentTimerCheckBox.setEnabled(false);
             }
         }
-        if (!isRemoteInterfaceSupported(projectCap)) {
+        if (!isRemoteInterfaceSupported()) {
             remoteCheckBox.setVisible(false);
             remoteCheckBox.setEnabled(false);
         }
@@ -513,8 +512,10 @@ public class SessionEJBWizardPanel extends javax.swing.JPanel {
         return projectCap.isEjb31Supported() || projectCap.isEjb32LiteSupported();
     }
 
-    private boolean isRemoteInterfaceSupported(J2eeProjectCapabilities projectCap) {
-        return projectCap.isEjb30Supported();
+    private boolean isRemoteInterfaceSupported() {
+        // for every EJB module - WEB modules cannot be used
+        J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
+        return (provider != null && J2eeModule.Type.EJB.equals(provider.getJ2eeModule().getType()));
     }
 
     private boolean isOnlyNonPersistentTimerSupported(J2eeProjectCapabilities projectCap) {

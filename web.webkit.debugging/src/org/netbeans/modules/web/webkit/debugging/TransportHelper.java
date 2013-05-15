@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.webkit.debugging;
 
 import java.awt.EventQueue;
+import java.io.IOException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -58,6 +59,7 @@ import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.IOProvider;
@@ -76,6 +78,8 @@ public class TransportHelper {
     static final boolean SHOW_WEBKIT_PROTOCOL = Boolean.getBoolean("show.webkit.protocol");
     
     private final RequestProcessor RP = new RequestProcessor();
+    
+    private boolean reset = false;
 
     public TransportHelper(TransportImplementation impl) {
         this.impl = impl;
@@ -99,6 +103,14 @@ public class TransportHelper {
         } catch (TransportStateException tsex) {
             log("transport failed for "+command.toString()); // NOI18N
         }
+    }
+
+    public void reset() {
+        if (SHOW_WEBKIT_PROTOCOL) {
+            getOutputLogger().getOut().close();
+            getOutputLogger().getErr().close();
+        }
+        reset = true;
     }
     
     public boolean isVersionUnknownBeforeRequestChildNodes() {
@@ -207,7 +219,7 @@ public class TransportHelper {
         public boolean waitForResponse() {
             assert semaphore != null;
             try {
-                return semaphore.tryAcquire(5, TimeUnit.SECONDS);
+                return semaphore.tryAcquire(10, TimeUnit.SECONDS);
             } catch (InterruptedException ex) {
                 Logger.getLogger(TransportHelper.class.getName()).log(Level.INFO, null, ex);
                 return false;
@@ -217,7 +229,7 @@ public class TransportHelper {
     }
 
     private InputOutput getOutputLogger() {
-       return IOProvider.getDefault().getIO(Bundle.WebKitDebuggingProtocolPane(), false); 
+       return IOProvider.getDefault().getIO(Bundle.WebKitDebuggingProtocolPane(), false);
     }
     
     public static String getCurrentTime() {
@@ -226,14 +238,30 @@ public class TransportHelper {
     }
     
     private void log(String s) {
+        checkReset();
         if (SHOW_WEBKIT_PROTOCOL) {
             getOutputLogger().getOut().println(getCurrentTime() + " " + s);
         }
     }
     
     private void logError(String s) {
+        checkReset();
         if (SHOW_WEBKIT_PROTOCOL) {
             getOutputLogger().getErr().println(getCurrentTime()+" "+s); 
+        }
+    }
+
+    private void checkReset() {
+        if (reset) {
+            reset = false;
+            if (SHOW_WEBKIT_PROTOCOL) {
+                try {
+                    getOutputLogger().getOut().reset();
+                    getOutputLogger().getErr().reset();
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
         }
     }
     

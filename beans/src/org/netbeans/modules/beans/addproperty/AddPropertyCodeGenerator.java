@@ -49,11 +49,13 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
@@ -68,7 +70,8 @@ import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.GuardedSectionManager;
-import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
@@ -77,8 +80,10 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.GuardedException;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.openide.DialogDescriptor;
@@ -126,44 +131,105 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
 
     public void perform(FileObject file, JTextComponent pane) {
         JButton ok = new JButton(NbBundle.getMessage(AddPropertyCodeGenerator.class, "LBL_ButtonOK"));
-        final AddPropertyPanel addPropertyPanel = new AddPropertyPanel(file, className, existingFields, pcsName, vcsName, ok);
+        CodeStyle cs = CodeStyle.getDefault(pane.getDocument());
+        if(cs == null) {
+            cs = CodeStyle.getDefault(file);
+        }
+        final AddPropertyPanel addPropertyPanel = new AddPropertyPanel(file, className, cs, existingFields, pcsName, vcsName, ok);
         String caption = NbBundle.getMessage(AddPropertyCodeGenerator.class, "CAP_AddProperty");
         String cancel = NbBundle.getMessage(AddPropertyCodeGenerator.class, "LBL_ButtonCancel");
         DialogDescriptor dd = new DialogDescriptor(addPropertyPanel,caption, true, new Object[] {ok,cancel}, ok, DialogDescriptor.DEFAULT_ALIGN, null, null);
         if (DialogDisplayer.getDefault().notify(dd) == ok) {
-            insertCode2(file, pane, addPropertyPanel.getAddPropertyConfig());
+            insertCode2(file, pane, addPropertyPanel.getAddPropertyConfig(), cs);
         }
     }
 
     /**
      * work around for {@link #insertCode}.
-     * @see <a href=http://www.netbeans.org/issues/show_bug.cgi?id=162853>162853</a>
-     * @see <a href=http://www.netbeans.org/issues/show_bug.cgi?id=162630>162630</a>
+     * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=162853">162853</a>
+     * @see <a href="http://www.netbeans.org/issues/show_bug.cgi?id=162630">162630</a>
      */
-    static void insertCode2(final FileObject file, final JTextComponent pane, final AddPropertyConfig config) {
+    static void insertCode2(final FileObject file, final JTextComponent pane, final AddPropertyConfig config, CodeStyle cs) {
             final Document doc = pane.getDocument();
             final Reformat r = Reformat.get(pane.getDocument());
-            final String code = new AddPropertyGenerator().generate(config);
+            final String code = new AddPropertyGenerator().generate(config, cs);
             final Position[] bounds = new Position[2];
             
-            final int offset[] = new int[1];
+            final int offset[] = new int[2];
             
         try {
             JavaSource.forFileObject(file).runUserActionTask(new Task<CompilationController>() {
                 @Override
                 public void run(CompilationController parameter) throws Exception {
                     parameter.toPhase(Phase.PARSED);
+                    Trees trees = parameter.getTrees();
+                    TreeUtilities treeUtils = parameter.getTreeUtilities();
                     offset[0] = pane.getCaretPosition();
+                    offset[1] = -1;
                     TreePath path = parameter.getTreeUtilities().pathFor(offset[0]);
                     
-                    if (path==null || path.getLeaf().getKind() == Tree.Kind.CLASS)
+                    if (path==null || path.getLeaf().getKind() == Tree.Kind.CLASS) {
                         return;
-                    while (path!=null && path.getParentPath()!=null && path.getParentPath().getLeaf().getKind() == Tree.Kind.CLASS) {
-                        path = path.getParentPath();
+                    }
+                    CompilationUnitTree cut = path.getCompilationUnit();
+                    if(path.getLeaf().getKind() != Tree.Kind.ENUM) {
+                        while (path != null && path.getParentPath()!=null &&
+                                (path.getParentPath().getLeaf().getKind() != Tree.Kind.CLASS &&
+                                path.getParentPath().getLeaf().getKind() != Tree.Kind.ENUM)) {
+                            path = path.getParentPath();
+                        }
+                    }
+                    
+                    int enumconstantEnd = -1;
+                    int otherStart = -1;
+                    if(path.getLeaf().getKind() == Tree.Kind.ENUM ||
+                            (path.getParentPath() != null &&
+                            path.getParentPath().getLeaf().getKind() == Tree.Kind.ENUM)) {
+                        TreePath clazzPath = path.getLeaf().getKind() != Tree.Kind.ENUM ? path.getParentPath() : path;
+                        ClassTree clazz = (ClassTree) clazzPath.getLeaf();
+                        for (Tree tree : clazz.getMembers()) {
+                            TreePath treePath = new TreePath(clazzPath, tree);
+                            if(treeUtils.isSynthetic(treePath)) {
+                                continue;
+                            }
+                            Element element;
+                            if(tree.getKind() == Tree.Kind.VARIABLE && (element = trees.getElement(treePath)) != null &&
+                                   element.getKind() == ElementKind.ENUM_CONSTANT) {
+                                int endPosition = (int) trees.getSourcePositions().getEndPosition(cut, tree);
+                                enumconstantEnd = Math.max(enumconstantEnd, endPosition);
+                            } else if(otherStart == -1) {
+                                otherStart = (int) trees.getSourcePositions().getStartPosition(cut, tree);
+                            }
+                        }
+                        
+                        if(enumconstantEnd == -1) {
+                            enumconstantEnd = (int) trees.getSourcePositions().getStartPosition(cut, clazz);
+                        }
+                        
+                        if(otherStart == -1) {
+                            otherStart = (int) trees.getSourcePositions().getEndPosition(cut, clazz);
+                        }
+                        
+                        int semicolon = scanForSemicolon(doc, offset, enumconstantEnd, otherStart);
+
+                        if (semicolon == -1) {
+                            offset[1] = enumconstantEnd;
+                            if (offset[0] <= enumconstantEnd) {
+                                offset[0] = enumconstantEnd + 1;
+                            }
+                        } else {
+                            if (offset[0] <= semicolon) {
+                                offset[0] = semicolon + 1;
+                            } else if(path.getLeaf().getKind() != Tree.Kind.ENUM) {
+                                Tree current = path.getLeaf();
+                                offset[0] = (int) trees.getSourcePositions().getEndPosition(cut, current);
+                            }
+                        }
+                        return;
                     }
                     
                     Tree current = path.getLeaf();
-                    offset[0] = (int) parameter.getTrees().getSourcePositions().getEndPosition(path.getCompilationUnit(), current);
+                    offset[0] = (int) trees.getSourcePositions().getEndPosition(cut, current);
                 }
             }, true);
         } catch (IOException ex) {
@@ -186,6 +252,9 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
                             }
                             
                             doc.insertString(offset[0], code, null);
+                            if(offset[1] != -1) {
+                                doc.insertString(offset[1], ";", null);
+                            }
                             Position start = doc.createPosition(offset[0]);
                             Position end = doc.createPosition(offset[0] + code.length());
 //                            r.reformat(Utilities.getRowStart(pane, start.getOffset()), Utilities.getRowEnd(pane, end.getOffset()));
@@ -227,6 +296,32 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
                     Exceptions.printStackTrace(ex);
                 }
             }
+    }
+    
+    private static int scanForSemicolon(Document doc, int[] offset, int start, int end) throws BadLocationException {
+        TokenHierarchy<Document> th = doc != null ? TokenHierarchy.get(doc) : null;
+        List<TokenSequence<?>> embeddedSequences = th != null ? th.embeddedTokenSequences(offset[0], false) : null;
+        TokenSequence<?> seq = embeddedSequences != null ? embeddedSequences.get(embeddedSequences.size() - 1) : null;
+
+        if (seq == null) {
+            return offset[0];
+        }   
+
+        seq.move(start);
+
+        int semicolon = -1;
+        while(seq.moveNext()) {
+            int tokenOffset = seq.offset();
+            if(tokenOffset > end) {
+                break;
+            }
+            Token<?> t = seq.token();
+            if(t != null && t.id() == JavaTokenId.SEMICOLON ) {
+                semicolon = tokenOffset;
+                break;
+            }
+        }
+        return semicolon;
     }
 
     private static final class ImportFQNsHack extends TreePathScanner<Void, Void> {

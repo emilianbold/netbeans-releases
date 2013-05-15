@@ -249,6 +249,7 @@ public class CachingAndExternalPathsTest extends NbTestCase {
         }
     }
 
+    @RandomlyFails // NB-Core-Build #9918: Unstable, NB-Core-Build #9919 on the same sources passed
     public void testReadAccess() throws Exception {
         LOG.info("Inside testReadAccess");
         ClassLoader l = Lookup.getDefault().lookup(ClassLoader.class);

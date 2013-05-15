@@ -57,7 +57,7 @@ import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.util.LogUtils;
@@ -268,7 +268,7 @@ public class JiraQuery {
         return issues.contains(id);
     }
 
-    public int getIssueStatus(String id) {
+    public IssueCache.Status getIssueStatus(String id) {
         return repository.getIssueCache().getStatus(id);
     }
 
@@ -294,10 +294,10 @@ public class JiraQuery {
     }
 
     public Collection<NbJiraIssue> getIssues() {
-        return getIssues(~0);
+        return getIssues(IssueCache.ISSUE_STATUS_ALL);
     }
     
-    public Collection<NbJiraIssue> getIssues(int includeStatus) {
+    public Collection<NbJiraIssue> getIssues(EnumSet<IssueCache.Status> includeStatus) {
         if (issues == null) {
             return Collections.emptyList();
         }
@@ -306,11 +306,11 @@ public class JiraQuery {
             ids.addAll(issues);
         }
         
-        IssueCache<NbJiraIssue, TaskData> cache = repository.getIssueCache();
+        IssueCache<NbJiraIssue> cache = repository.getIssueCache();
         List<NbJiraIssue> ret = new ArrayList<NbJiraIssue>();
         for (String id : ids) {
-            int status = getIssueStatus(id);
-            if((status & includeStatus) != 0) {
+            IssueCache.Status status = getIssueStatus(id);
+            if(includeStatus.contains(status)) {
                 ret.add(cache.getIssue(id));
             }
         }
@@ -335,13 +335,18 @@ public class JiraQuery {
 
     private class IssuesCollector extends TaskDataCollector {
         public IssuesCollector() {}
+        @Override
         public void accept(TaskData taskData) {
             String id = NbJiraIssue.getID(taskData);
             NbJiraIssue issue;
             try {
                 getController().progress(NbJiraIssue.getDisplayName(taskData));
-                IssueCache<NbJiraIssue, TaskData> cache = repository.getIssueCache();
-                issue = (NbJiraIssue) cache.setIssueData(id, taskData);
+                IssueCache<NbJiraIssue> cache = repository.getIssueCache();
+                issue = cache.getIssue(id);
+                if(issue != null) {
+                    issue.setTaskData(taskData);
+                }
+                issue = (NbJiraIssue) cache.setIssueData(id, issue != null ? issue : new NbJiraIssue(taskData, repository));
                 issues.add(issue.getID());
             } catch (IOException ex) {
                 Jira.LOG.log(Level.SEVERE, null, ex);

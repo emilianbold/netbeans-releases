@@ -47,13 +47,14 @@ import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -61,32 +62,30 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.SwingUtilities;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.commons.net.AuthenticationCredentials;
 import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.internal.bugzilla.core.IBugzillaConstants;
-import org.eclipse.mylyn.internal.tasks.core.RepositoryQuery;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
+import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.TaskRepository;
-import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
-import org.eclipse.mylyn.tasks.core.data.TaskData;
-import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
-import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugtracking.spi.*;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugzilla.commands.BugzillaExecutor;
-import org.netbeans.modules.mylyn.util.GetMultiTaskDataCommand;
-import org.netbeans.modules.mylyn.util.PerformQueryCommand;
-import org.netbeans.modules.bugzilla.issue.BugzillaTaskListProvider;
 import org.netbeans.modules.bugzilla.query.QueryController;
 import org.netbeans.modules.bugzilla.query.QueryParameter;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.mylyn.util.GetRepositoryTasksCommand;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.MylynUtils;
+import org.netbeans.modules.mylyn.util.SimpleQueryCommand;
+import org.netbeans.modules.mylyn.util.SynchronizeTasksCommand;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -107,13 +106,13 @@ public class BugzillaRepository {
     private TaskRepository taskRepository;
     private BugzillaRepositoryController controller;
     private Set<BugzillaQuery> queries = null;
-    private IssueCache<BugzillaIssue, TaskData> cache;
+    private Cache cache;
     private BugzillaExecutor executor;
     private Image icon;
     private BugzillaConfiguration bc;
     private RequestProcessor refreshProcessor;
 
-    private final Set<String> issuesToRefresh = new HashSet<String>(5);
+    private final Set<ITask> issuesToRefresh = new HashSet<ITask>(5);
     private final Set<BugzillaQuery> queriesToRefresh = new HashSet<BugzillaQuery>(3);
     private Task refreshIssuesTask;
     private Task refreshQueryTask;
@@ -121,6 +120,9 @@ public class BugzillaRepository {
     private PropertyChangeSupport support;
     
     private Lookup lookup;
+    
+    private final Object RC_LOCK = new Object();
+    private final Object CACHE_LOCK = new Object();
 
     public BugzillaRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -149,9 +151,7 @@ public class BugzillaRepository {
         }
         String url = info.getUrl();
         boolean shortLoginEnabled = Boolean.parseBoolean(info.getValue(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN));
-        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
-        
-        BugzillaTaskListProvider.getInstance().notifyRepositoryCreated(this);
+        taskRepository = setupTaskRepository(name, null, url, user, password, httpUser, httpPassword, shortLoginEnabled);
     }
 
     public RepositoryInfo getInfo() {
@@ -182,18 +182,28 @@ public class BugzillaRepository {
             // invalid connection data?
             return null;
         }
-        TaskAttributeMapper attributeMapper =
-                Bugzilla.getInstance()
-                    .getRepositoryConnector()
-                    .getTaskDataHandler()
-                    .getAttributeMapper(taskRepository);
-        TaskData data =
-                new TaskData(
-                    attributeMapper,
-                    taskRepository.getConnectorKind(),
-                    taskRepository.getRepositoryUrl(),
-                    ""); // NOI18N
-        return new BugzillaIssue(data, this);
+        
+        String product = null;
+        String component = null;
+        for (String productCandidate : conf.getProducts()) {
+            // iterates because a product without a component throws NPE inside mylyn
+            List<String> components = conf.getComponents(product);
+            if (!components.isEmpty()) {
+                product = productCandidate;
+                component = components.get(0);
+                break;
+            }
+        }
+        
+        ITask task;
+        try {
+            task = MylynSupport.getInstance().getMylynFactory().createTask(taskRepository, new TaskMapping(product, component));
+            task.setAttribute(BugzillaIssue.ATTR_NEW_UNREAD, Boolean.TRUE.toString());
+            return getIssueForTask(task);
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+            return null;
+        }
     }
 
     public void remove() {
@@ -203,7 +213,9 @@ public class BugzillaRepository {
             removeQuery(q);
         }
         resetRepository(true);
-        BugzillaTaskListProvider.getInstance().notifyRepositoryRemoved(this);
+        if (getTaskRepository() != null) {
+            // Maybe it's not needed to remove in mylyn?
+        }
     }
 
     public Lookup getLookup() {
@@ -211,6 +223,35 @@ public class BugzillaRepository {
             lookup = Lookups.fixed(getLookupObjects());
         }
         return lookup;
+    }
+    
+    public BugzillaIssue getIssueForTask (ITask task) {
+        BugzillaIssue issue = null;
+        if (task != null) {
+            synchronized (CACHE_LOCK) {
+                String taskId = BugzillaIssue.getID(task);
+                Cache issueCache = getCache();
+                issue = issueCache.getIssue(taskId);
+                if (issue == null) {
+                    issue = issueCache.setIssueData(taskId, new BugzillaIssue(task, this));
+                }
+            }
+        }
+        return issue;
+    }
+
+    public void deleteTask (ITask task) {
+        assert task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW
+                : "Only new local tasks can be deleted: " + task.getSynchronizationState();
+        if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
+            String id = BugzillaIssue.getID(task);
+            try {
+                MylynSupport.getInstance().deleteTask(task);
+            } catch (CoreException ex) {
+                Bugzilla.LOG.log(Level.INFO, null, ex);
+            }
+            getCache().removeIssue(id);
+        }
     }
 
     protected Object[] getLookupObjects() {
@@ -220,12 +261,6 @@ public class BugzillaRepository {
     synchronized void resetRepository(boolean keepConfiguration) {
         if(!keepConfiguration) {
             bc = null;
-        }
-        if(getTaskRepository() != null) {
-            Bugzilla.getInstance()
-                    .getRepositoryConnector()
-                    .getClientManager()
-                    .repositoryRemoved(getTaskRepository());
         }
     }
 
@@ -263,45 +298,45 @@ public class BugzillaRepository {
 
     public BugzillaIssue[] getIssues(final String... ids) {
         final List<BugzillaIssue> ret = new LinkedList<BugzillaIssue>();
-        TaskDataCollector collector = new TaskDataCollector() {
-            @Override
-            public void accept(TaskData taskData) {
-                String id = BugzillaIssue.getID(taskData);
-                try {
-                    BugzillaIssue issue = (BugzillaIssue) getIssueCache().setIssueData(id, taskData);
-                    if(issue != null) {
-                        ret.add(issue);
-                    }
-                } catch (IOException ex) {
-                    Bugzilla.LOG.log(Level.SEVERE, null, ex);
+        try {
+            MylynSupport supp = MylynSupport.getInstance();
+            Set<String> unknownTasks = new HashSet<String>(ids.length);
+            for (String id : ids) {
+                BugzillaIssue issue = findUnsubmitted(id);
+                if (issue == null) {
+                    issue = getIssueForTask(supp.getTask(getTaskRepository().getUrl(), id));
+                }
+                if (issue == null) {
+                    // must go online
+                    unknownTasks.add(id);
+                } else {
+                    ret.add(issue);
                 }
             }
-        };
-        GetMultiTaskDataCommand dataCmd = 
-                new GetMultiTaskDataCommand(
-                    Bugzilla.getInstance().getRepositoryConnector(), 
-                    getTaskRepository(), 
-                    collector,
-                    new HashSet<String>(Arrays.asList(ids)));
-        getExecutor().execute(dataCmd, true);
+            if (!unknownTasks.isEmpty()) {
+                GetRepositoryTasksCommand cmd = supp.getMylynFactory()
+                        .createGetRepositoryTasksCommand(taskRepository, unknownTasks);
+                getExecutor().execute(cmd, true);
+                for (ITask task : cmd.getTasks()) {
+                    BugzillaIssue issue = getIssueForTask(task);
+                    if (issue != null) {
+                        ret.add(issue);
+                    }
+                }
+            }
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.INFO, null, ex);
+        }
         return ret.toArray(new BugzillaIssue[ret.size()]);
     }
     
     public BugzillaIssue getIssue(final String id) {
         assert !SwingUtilities.isEventDispatchThread() : "Accessing remote host. Do not call in awt"; // NOI18N
-
-        TaskData taskData = BugzillaUtil.getTaskData(BugzillaRepository.this, id);
-        if(taskData == null) {
-            return null;
+        BugzillaIssue issue = findUnsubmitted(id);
+        if (issue == null) {
+            issue = getIssueForTask(BugzillaUtil.getTask(this, id, true));
         }
-        try {
-            BugzillaIssue issue = (BugzillaIssue) getIssueCache().setIssueData(id, taskData);
-            ensureConfigurationUptodate(issue);
-            return issue;
-        } catch (IOException ex) {
-            Bugzilla.LOG.log(Level.SEVERE, null, ex);
-            return null;
-        }
+        return issue;
     }
 
     // XXX create repo wih product if kenai project and use in queries
@@ -312,25 +347,11 @@ public class BugzillaRepository {
         String[] keywords = criteria.split(" ");                                // NOI18N
 
         final List<BugzillaIssue> issues = new ArrayList<BugzillaIssue>();
-        TaskDataCollector collector = new TaskDataCollector() {
-            @Override
-            public void accept(TaskData taskData) {
-                BugzillaIssue issue = new BugzillaIssue(taskData, BugzillaRepository.this);
-                issues.add(issue); // we don't cache this issues
-                                   // - the retured taskdata are partial
-                                   // - and we need an as fast return as possible at this place
-
-            }
-        };
 
         if(keywords.length == 1 && isInteger(keywords[0])) {
-            // only one search criteria -> might be we are looking for the bug with id=keywords[0]
-            TaskData taskData = BugzillaUtil.getTaskData(this, keywords[0], false);
-            if(taskData != null) {
-                BugzillaIssue issue = new BugzillaIssue(taskData, BugzillaRepository.this);
-                issues.add(issue); // we don't cache this issues
-                                   // - the retured taskdata are partial
-                                   // - and we need an as fast return as possible at this place
+            BugzillaIssue issue = getIssueForTask(BugzillaUtil.getTask(this, keywords[0], false));
+            if (issue != null) {
+                issues.add(issue);
             }
         }
 
@@ -361,17 +382,21 @@ public class BugzillaRepository {
             url.append(qp.get(true));
         }
         
-        IRepositoryQuery iquery = new RepositoryQuery(taskRepository.getConnectorKind(), "bugzilla simple search query");            // NOI18N
-        iquery.setUrl(url.toString());
-        PerformQueryCommand queryCmd = 
-            new PerformQueryCommand(
-                Bugzilla.getInstance().getRepositoryConnector(),
-                getTaskRepository(), 
-                collector,
-                iquery);
-        getExecutor().execute(queryCmd);
-        if(queryCmd.hasFailed()) {
-            return Collections.emptyList();
+        try {
+            IRepositoryQuery iquery = MylynSupport.getInstance().getMylynFactory().createNewQuery(taskRepository, "bugzilla simple search query"); //NOI18N
+            iquery.setUrl(url.toString());
+            SimpleQueryCommand cmd = MylynSupport.getInstance().getMylynFactory()
+                    .createSimpleQueryCommand(taskRepository, iquery);
+            getExecutor().execute(cmd, false);
+            for (ITask task : cmd.getTasks()) {
+                BugzillaIssue issue = getIssueForTask(task);
+                if (issue != null) {
+                    issues.add(issue);
+                }
+            }
+        } catch (CoreException ex) {
+            // should not happen
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
         }
         return issues;
     }
@@ -387,11 +412,17 @@ public class BugzillaRepository {
         return getQueriesIntern();
     }
 
-    public IssueCache<BugzillaIssue, TaskData> getIssueCache() {
-        if(cache == null) {
-            cache = new Cache();
+    public IssueCache<BugzillaIssue> getIssueCache() {
+        return getCache();
+    }
+    
+    private Cache getCache () {
+        synchronized (CACHE_LOCK) {
+            if(cache == null) {
+                cache = new Cache();
+            }
+            return cache;
         }
-        return cache;
     }
 
     public void removeQuery(BugzillaQuery query) {        
@@ -411,11 +442,11 @@ public class BugzillaRepository {
         fireQueryListChanged();
     }
 
-    public synchronized void addPropertyChangeListener(PropertyChangeListener listener) {
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
         support.addPropertyChangeListener(listener);
     }
 
-    public synchronized void removePropertyChangeListener(PropertyChangeListener listener) {
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
         support.removePropertyChangeListener(listener);
     }
     
@@ -435,6 +466,11 @@ public class BugzillaRepository {
                 } else {
                     Bugzilla.LOG.log(Level.WARNING, "Couldn''t find query with stored name {0}", queryName); // NOI18N
                 }
+            }
+            if (Boolean.getBoolean("bugzilla.displayUnsubmittedQuery")) {
+                // TODO: should not be a query: this way it's listed in the Team dashboard
+                // either should go to SPI or somewhere in Bugtracking.utils
+                queries.add(new BugzillaQuery.UnsubmittedTasksQuery(this));
             }
         }
         return queries;
@@ -476,22 +512,49 @@ public class BugzillaRepository {
         String oldUrl = taskRepository != null ? taskRepository.getUrl() : "";
         AuthenticationCredentials c = taskRepository != null ? taskRepository.getCredentials(AuthenticationType.REPOSITORY) : null;
         String oldUser = c != null ? c.getUserName() : "";
-        String oldPassword = c != null ? c.getPassword() : "";
 
-        taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword, shortLoginEnabled);
-        resetRepository(oldUrl.equals(url) && oldUser.equals(user) && oldPassword.equals(new String(password))); // XXX reset the configuration only if the host changed
-                                                                                                     //     on psswd and user change reset only taskrepository
+        taskRepository = setupTaskRepository(name, oldUrl.equals(url) ? null : oldUrl,
+                url, user, password, httpUser, httpPassword, shortLoginEnabled);
+        resetRepository(oldUrl.equals(url) && oldUser.equals(user));
     }
 
-    static TaskRepository createTaskRepository(String name, String url, String user, char[] password, String httpUser, char[] httpPassword, boolean shortLoginEnabled) {
-        TaskRepository repository = MylynUtils.createTaskRepository(
-                Bugzilla.getInstance().getRepositoryConnector().getConnectorKind(),
-                name,
-                url,
-                user, password,
-                httpUser, httpPassword);
-        repository.setProperty(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN, shortLoginEnabled ? "true" : "false"); //NOI18N
+    /**
+     * If oldUrl is not null, gets the repository for the oldUrl and rewrites it
+     * to the new url.
+     */
+    private static TaskRepository setupTaskRepository (String name, String oldUrl, String url, String user,
+            char[] password, String httpUser, char[] httpPassword,
+            boolean shortLoginEnabled) {
+        TaskRepository repository;
+        if (oldUrl == null) {
+            repository = MylynSupport.getInstance().getTaskRepository(Bugzilla.getInstance().getRepositoryConnector(), url);
+        } else {
+            repository = MylynSupport.getInstance().getTaskRepository(Bugzilla.getInstance().getRepositoryConnector(), oldUrl);
+            try {
+                MylynSupport.getInstance().setRepositoryUrl(repository, url);
+            } catch (CoreException ex) {
+                Bugzilla.LOG.log(Level.WARNING, null, ex);
+            }
+        }
+        setupProperties(repository, name, user, password, httpUser, httpPassword, shortLoginEnabled); 
         return repository;
+    }
+
+    static TaskRepository createTemporaryTaskRepository (String name, String url, String user,
+            char[] password, String httpUser, char[] httpPassword,
+            boolean localUserEnabled) {
+        TaskRepository taskRepository = new TaskRepository(
+                Bugzilla.getInstance().getRepositoryConnector().getConnectorKind(), url);
+        setupProperties(taskRepository, name, user, password, httpUser, httpPassword, localUserEnabled);
+        return taskRepository;
+    }
+
+    private static void setupProperties (TaskRepository repository, String displayName,
+            String user, char[] password, String httpUser, char[] httpPassword,
+            boolean shortLoginEnabled) {
+        repository.setRepositoryLabel(displayName);
+        MylynUtils.setCredentials(repository, user, password, httpUser, httpPassword);
+        repository.setProperty(IBugzillaConstants.REPOSITORY_SETTING_SHORT_LOGIN, shortLoginEnabled ? "true" : "false"); //NOI18N
     }
 
     public String getUrl() {
@@ -515,7 +578,7 @@ public class BugzillaRepository {
     }
 
     public boolean authenticate(String errroMsg) {
-        return BugtrackingUtil.editRepository(BugzillaUtil.getRepository(this), errroMsg);
+        return Bugzilla.getInstance().getBugtrackingFactory().editRepository(BugzillaUtil.getRepository(this), errroMsg);
     }
 
     /**
@@ -536,7 +599,7 @@ public class BugzillaRepository {
         }
         if(BugzillaUtil.isNbRepository(this)) {
             if(nodes != null && nodes.length > 0) {
-                OwnerInfo ownerInfo = KenaiUtil.getOwnerInfo(nodes[0]);
+                OwnerInfo ownerInfo = TeamUtil.getOwnerInfo(nodes[0]);
                 if(ownerInfo != null /*&& ownerInfo.getOwner().equals(product)*/ ) {
                     return ownerInfo;
                 }
@@ -550,29 +613,33 @@ public class BugzillaRepository {
      * 
      * @return
      */
-    public synchronized BugzillaConfiguration getConfiguration() {
-        if(bc == null) {
-            bc = createConfiguration(false);
-        } else if(!bc.isValid()) {
-            // there was already an attempt to get the configuration
-            // yet it happend to be invalid, so try one more time as it 
-            // might have been just a networking glitch  
-            bc = createConfiguration(false);
+    public BugzillaConfiguration getConfiguration() {
+        synchronized(RC_LOCK) {
+            if(bc == null) {
+                bc = createConfiguration(false);
+            } else if(!bc.isValid()) {
+                // there was already an attempt to get the configuration
+                // yet it happend to be invalid, so try one more time as it 
+                // might have been just a networking glitch  
+                bc = createConfiguration(false);
+            }
+            return bc;
         }
-        return bc;
     }
 
     public synchronized void refreshConfiguration() {
-        BugzillaConfiguration conf = createConfiguration(true);
-        if(conf.isValid()) {
-            bc = conf;
-        } else {
-            // Hard to say at this point why the attempt to refresh the 
-            // configuration failed - could be just a temporary networking issue.
-            // This is called only from ensureConfigurationUptodate(), so even if
-            // the metadata might not be uptodate anymore, they still may be 
-            // sufficient for what the user plans to do. So let's cross the 
-            // fingers and keep bc the way it is.
+        synchronized(RC_LOCK) {
+            BugzillaConfiguration conf = createConfiguration(true);
+            if(conf.isValid()) {
+                bc = conf;
+            } else {
+                // Hard to say at this point why the attempt to refresh the 
+                // configuration failed - could be just a temporary networking issue.
+                // This is called only from ensureConfigurationUptodate(), so even if
+                // the metadata might not be uptodate anymore, they still may be 
+                // sufficient for what the user plans to do. So let's cross the 
+                // fingers and keep bc the way it is.
+            }
         }
     }
 
@@ -587,22 +654,23 @@ public class BugzillaRepository {
             refreshIssuesTask = getRefreshProcessor().create(new Runnable() {
                 @Override
                 public void run() {
-                    Set<String> ids;
+                    Set<ITask> tasks;
                     synchronized(issuesToRefresh) {
-                        ids = new HashSet<String>(issuesToRefresh);
+                        tasks = new HashSet<ITask>(issuesToRefresh);
                     }
-                    if(ids.isEmpty()) {
+                    if(tasks.isEmpty()) {
                         Bugzilla.LOG.log(Level.FINE, "no issues to refresh {0}", new Object[] {getDisplayName()}); // NOI18N
                         return;
                     }
-                    Bugzilla.LOG.log(Level.FINER, "preparing to refresh issue {0} - {1}", new Object[] {getDisplayName(), ids}); // NOI18N
-                    GetMultiTaskDataCommand cmd = 
-                        new GetMultiTaskDataCommand(
-                            Bugzilla.getInstance().getRepositoryConnector(),
-                            getTaskRepository(), 
-                            new IssuesCollector(), 
-                            ids);
-                    getExecutor().execute(cmd, false);
+                    Bugzilla.LOG.log(Level.FINER, "preparing to refresh issue {0} - {1}", new Object[] {getDisplayName(), tasks}); // NOI18N
+                    try {
+                        SynchronizeTasksCommand cmd = MylynSupport.getInstance().getMylynFactory()
+                                .createSynchronizeTasksCommand(taskRepository, tasks);
+                        getExecutor().execute(cmd, false);
+                    } catch (CoreException ex) {
+                        // should not happen
+                        Bugzilla.LOG.log(Level.WARNING, null, ex);
+                    }
                     scheduleIssueRefresh();
                 }
             });
@@ -665,18 +733,18 @@ public class BugzillaRepository {
         refreshQueryTask.schedule(delay * 60 * 1000); // given in minutes
     }
 
-    public void scheduleForRefresh(String id) {
-        Bugzilla.LOG.log(Level.FINE, "scheduling issue {0} for refresh on repository {0}", new Object[] {id, getDisplayName()}); // NOI18N
+    public void scheduleForRefresh (ITask task) {
+        Bugzilla.LOG.log(Level.FINE, "scheduling issue {0} for refresh on repository {0}", new Object[] {task.getTaskId(), getDisplayName()}); // NOI18N
         synchronized(issuesToRefresh) {
-            issuesToRefresh.add(id);
+            issuesToRefresh.add(task);
         }
         setupIssueRefreshTask();
     }
 
-    public void stopRefreshing(String id) {
-        Bugzilla.LOG.log(Level.FINE, "removing issue {0} from refresh on repository {1}", new Object[] {id, getDisplayName()}); // NOI18N
+    public void stopRefreshing (ITask task) {
+        Bugzilla.LOG.log(Level.FINE, "removing issue {0} from refresh on repository {1}", new Object[] {task.getTaskId(), getDisplayName()}); // NOI18N
         synchronized(issuesToRefresh) {
-            issuesToRefresh.remove(id);
+            issuesToRefresh.remove(task);
         }
     }
 
@@ -696,7 +764,7 @@ public class BugzillaRepository {
     }
 
     public void refreshAllQueries() {
-        refreshAllQueries(true);
+        refreshAllQueries(false);
     }
 
     protected void refreshAllQueries(final boolean onlyOpened) {
@@ -705,7 +773,7 @@ public class BugzillaRepository {
             public void run() {
                 Collection<BugzillaQuery> qs = getQueries();
                 for (BugzillaQuery q : qs) {
-                    if(!onlyOpened || !Bugzilla.getInstance().getBugtrackingFactory().isOpen(BugzillaUtil.getRepository(BugzillaRepository.this), q)) {
+                    if(onlyOpened && !Bugzilla.getInstance().getBugtrackingFactory().isOpen(BugzillaUtil.getRepository(BugzillaRepository.this), q)) {
                         continue;
                     }
                     Bugzilla.LOG.log(Level.FINER, "preparing to refresh query {0} - {1}", new Object[] {q.getDisplayName(), getDisplayName()}); // NOI18N
@@ -715,48 +783,6 @@ public class BugzillaRepository {
             }
         });
     }
-
-    public void ensureConfigurationUptodate(BugzillaIssue issue) {
-        BugzillaConfiguration conf = getConfiguration();
-
-        String product = issue.getFieldValue(IssueField.PRODUCT);
-        String resolution = issue.getFieldValue(IssueField.RESOLUTION);
-        String severity = issue.getFieldValue(IssueField.SEVERITY);
-        String milestone = issue.getFieldValue(IssueField.MILESTONE);
-        String version = issue.getFieldValue(IssueField.VERSION);
-        String priority = issue.getFieldValue(IssueField.PRIORITY);
-        String platform = issue.getFieldValue(IssueField.PLATFORM);
-        String status = issue.getFieldValue(IssueField.STATUS);
-        String os = issue.getFieldValue(IssueField.OS);
-        String component = issue.getFieldValue(IssueField.COMPONENT);
-
-        if(!component.isEmpty() && !conf.getComponents(product).contains(component) ||
-           !os.isEmpty() && !conf.getOSs().contains(os) ||
-           !status.isEmpty() && !conf.getStatusValues().contains(status) ||
-           !platform.isEmpty() && !conf.getPlatforms().contains(platform) ||
-           !priority.isEmpty() && !conf.getPriorities().contains(priority) ||
-           !product.isEmpty() && !conf.getProducts().contains(product) ||
-           !resolution.isEmpty() && !conf.getResolutions().contains(resolution) ||
-           !severity.isEmpty() && !conf.getSeverities().contains(severity) ||
-           !milestone.isEmpty() && !conf.getTargetMilestones(product).contains(milestone) ||
-           !version.isEmpty() && !conf.getVersions(product).contains(version))
-        {
-            refreshConfiguration();
-        }
-    }
-
-    private class IssuesCollector extends TaskDataCollector {
-        @Override
-        public void accept(TaskData taskData) {
-            String id = BugzillaIssue.getID(taskData);
-            Bugzilla.LOG.log(Level.FINE, "refreshed issue {0} - {1}", new Object[] {getDisplayName(), id}); // NOI18N
-            try {
-                getIssueCache().setIssueData(id, taskData);
-            } catch (IOException ex) {
-                Bugzilla.LOG.log(Level.SEVERE, null, ex);
-            }
-        }
-    };
 
     private RequestProcessor getRefreshProcessor() {
         if(refreshProcessor == null) {
@@ -774,33 +800,87 @@ public class BugzillaRepository {
         return new QueryParameter[] {};
     }
 
-    private class Cache extends IssueCache<BugzillaIssue, TaskData> {
-        Cache() {
-            super(
-                BugzillaRepository.this.getUrl(), 
-                new IssueAccessorImpl(), 
-                Bugzilla.getInstance().getIssueProvider(), 
-                BugzillaUtil.getRepository(BugzillaRepository.this));
+    private BugzillaIssue findUnsubmitted (String id) {
+        try {
+            for (ITask task : MylynSupport.getInstance().getUnsubmittedTasks(taskRepository)) {
+                if (id.equals("-" + task.getTaskId())) {
+                    return getIssueForTask(task);
+                }
+            }
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.INFO, null, ex);
+        }
+        return null;
+    }
+
+    private static class TaskMapping extends org.eclipse.mylyn.tasks.core.TaskMapping {
+        private final String component;
+        private final String product;
+
+        public TaskMapping (String product, String component) {
+            this.product = product;
+            this.component = component;
+        }
+
+        @Override
+        public String getProduct () {
+            return product;
+        }
+
+        @Override
+        public String getComponent () {
+            return component;
         }
     }
 
-    private class IssueAccessorImpl implements IssueCache.IssueAccessor<BugzillaIssue, TaskData> {
+    private class Cache extends IssueCache<BugzillaIssue> {
+        
+        private final Map<String, Reference<BugzillaIssue>> issues = new HashMap<String, Reference<BugzillaIssue>>();
+        
+        Cache() {
+            super(BugzillaRepository.this.getUrl(), new IssueAccessorImpl());
+        }
+
         @Override
-        public BugzillaIssue createIssue(TaskData taskData) {
-            BugzillaIssue issue = new BugzillaIssue(taskData, BugzillaRepository.this);
-            org.netbeans.modules.bugzilla.issue.BugzillaTaskListProvider.getInstance().notifyIssueCreated(issue);
+        public BugzillaIssue getIssue (String id) {
+            synchronized (CACHE_LOCK) {
+                Reference<BugzillaIssue> issueRef = issues.get(id);
+                return issueRef == null ? null : issueRef.get();
+            }
+        }
+
+        @Override
+        public BugzillaIssue setIssueData (String id, BugzillaIssue issue) {
+            synchronized (CACHE_LOCK) {
+                issues.put(id, new SoftReference<BugzillaIssue>(issue));
+            }
             return issue;
         }
+
         @Override
-        public void setIssueData(BugzillaIssue issue, TaskData taskData) {
-            assert issue != null && taskData != null;
-            ((BugzillaIssue)issue).setTaskData(taskData);
+        public Status getStatus (String id) {
+            BugzillaIssue issue = getIssue(id);
+            if (issue != null) {
+                switch (issue.getStatus()) {
+                    case MODIFIED:
+                        return Status.ISSUE_STATUS_MODIFIED;
+                    case NEW:
+                        return Status.ISSUE_STATUS_NEW;
+                    case SEEN:
+                        return Status.ISSUE_STATUS_SEEN;
+                }
+            }
+            return Status.ISSUE_STATUS_UNKNOWN;
         }
-        @Override
-        public String getRecentChanges(BugzillaIssue issue) {
-            assert issue != null;
-            return ((BugzillaIssue)issue).getRecentChanges();
+
+        private void removeIssue (String id) {
+            synchronized (CACHE_LOCK) {
+                issues.remove(id);
+            }
         }
+    }
+
+    private class IssueAccessorImpl implements IssueCache.IssueAccessor<BugzillaIssue> {
         @Override
         public long getLastModified(BugzillaIssue issue) {
             assert issue != null;
@@ -812,14 +892,8 @@ public class BugzillaRepository {
             return ((BugzillaIssue)issue).getCreated();
         }
         @Override
-        public String getID(TaskData issueData) {
-            assert issueData != null;
-            return BugzillaIssue.getID(issueData);
-        }
-        @Override
         public Map<String, String> getAttributes(BugzillaIssue issue) {
-            assert issue != null;
-            return ((BugzillaIssue)issue).getAttributes();
+            return Collections.<String, String>emptyMap();
         }
     }
 

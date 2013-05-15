@@ -16,6 +16,7 @@ METHOD     charAt(int)                     [PUBLIC]   char
 METHOD     codePointAt(int)                [PUBLIC]   int
 METHOD     codePointBefore(int)            [PUBLIC]   int
 METHOD     codePointCount(int, int)        [PUBLIC]   int
+METHOD     collect()                                  Collection
 METHOD     collect(Closure)                           List
 METHOD     collect(Collection, Closure)               Collection
 METHOD     compareTo(String)               [PUBLIC]   int
@@ -31,8 +32,10 @@ METHOD     copyValueOf(char[], int, int)   [STATIC,   String
 METHOD     count(CharSequence)                        int
 METHOD     count(String)                              int
 METHOD     decodeBase64()                             byte[]
+METHOD     decodeHex()                                byte[]
 METHOD     denormalize()                              String
 METHOD     drop(int)                                  CharSequence
+METHOD     dropWhile(Closure)                         CharSequence
 METHOD     dump()                                     String
 METHOD     each(Closure)                              Object
 METHOD     eachLine(Closure)                          Object
@@ -103,6 +106,7 @@ METHOD     indexOf(String)                 [PUBLIC]   int
 METHOD     indexOf(String, int)            [PUBLIC]   int
 METHOD     indexOf(int)                    [PUBLIC]   int
 METHOD     indexOf(int, int)               [PUBLIC]   int
+METHOD     inject(Closure)                            Object
 METHOD     inject(Object, Closure)                    Object
 METHOD     inspect()                                  String
 METHOD     intern()                        [PUBLIC]   String
@@ -199,6 +203,7 @@ METHOD     subSequence(int, int)           [PUBLIC]   CharSequence
 METHOD     substring(int)                  [PUBLIC]   String
 METHOD     substring(int, int)             [PUBLIC]   String
 METHOD     take(int)                                  CharSequence
+METHOD     takeWhile(Closure)                         CharSequence
 METHOD     toBigDecimal()                             BigDecimal
 METHOD     toBigInteger()                             BigInteger
 METHOD     toBoolean()                                Boolean
@@ -245,6 +250,6 @@ METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
 FIELD      CASE_INSENSITIVE_ORDER          [STATIC,   Comparator<String>
-FIELD      bytes                                      byte[]
-FIELD      class                                      Class
-FIELD      empty                                      boolean
+FIELD      bytes                           [PUBLIC]   byte[]
+FIELD      class                           [PUBLIC]   Class
+FIELD      empty                           [PUBLIC]   boolean

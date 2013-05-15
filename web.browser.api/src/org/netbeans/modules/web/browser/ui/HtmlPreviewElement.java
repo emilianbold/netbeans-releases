@@ -123,7 +123,7 @@ public class HtmlPreviewElement implements MultiViewElement {
 
         WebBrowser web = WebBrowsers.getInstance().getPreferred();
         if( null != web && !web.isEmbedded() ) {
-            for( WebBrowser wb : WebBrowsers.getInstance().getAll(true) ) {
+            for( WebBrowser wb : WebBrowsers.getInstance().getAll(false, false, false) ) {
                 if( wb.isEmbedded() ) {
                     web = wb;
                     break;

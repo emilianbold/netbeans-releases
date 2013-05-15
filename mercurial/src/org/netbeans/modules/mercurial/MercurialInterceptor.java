@@ -64,6 +64,7 @@ import java.util.concurrent.Callable;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import org.netbeans.modules.mercurial.util.HgSearchHistorySupport;
+import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.modules.versioning.util.DelayScanRegistry;
 import org.netbeans.modules.versioning.util.FileUtils;
 import org.netbeans.modules.versioning.util.SearchHistorySupport;
@@ -89,6 +90,7 @@ public class MercurialInterceptor extends VCSInterceptor {
     private final Map<File, Set<File>> lockedRepositories = new HashMap<File, Set<File>>(5);
 
     private final RequestProcessor.Task refreshTask, lockedRepositoryRefreshTask;
+    private final RequestProcessor.Task refreshOwnersTask;
 
     private static final RequestProcessor rp = new RequestProcessor("MercurialRefresh", 1, true);
     private final HgFolderEventsHandler hgFolderEventsHandler;
@@ -103,6 +105,15 @@ public class MercurialInterceptor extends VCSInterceptor {
         lockedRepositoryRefreshTask = rp.create(new LockedRepositoryRefreshTask());
         hgFolderEventsHandler = new HgFolderEventsHandler();
         commandLogger = new CommandUsageLogger();
+        refreshOwnersTask = rp.create(new Runnable() {
+            @Override
+            public void run() {
+                Mercurial hg = Mercurial.getInstance();
+                hg.clearAncestorCaches();
+                hg.versionedFilesChanged();
+                VersioningSupport.versionedRootsChanged();
+            }
+        });
     }
 
     @Override
@@ -144,6 +155,10 @@ public class MercurialInterceptor extends VCSInterceptor {
         if (file == null) return;
         if (HgUtils.isPartOfMercurialMetadata(file) && HgUtils.WLOCK_FILE.equals(file.getName())) {
             commandLogger.unlocked(file);
+        }
+        if (HgUtils.HG_FOLDER_NAME.equals(file.getName())) {
+            // new metadata created, we should refresh owners
+            refreshOwnersTask.schedule(3000);
         }
         // we don't care about ignored files
         // IMPORTANT: false means mind checking the sharability as this might cause deadlock situations
@@ -216,7 +231,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             return;
         }
         // no need to do rename after in a background thread, code requiring the bg thread (see #125673) no more exists
-        OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
+        OutputLogger logger = OutputLogger.getLogger(root);
         try {
             if (root.equals(dstRoot) && !HgUtils.isIgnored(dstFile, false)) {
                 // target does not lie under ignored folder and is in the same repo as src
@@ -244,6 +259,11 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.log(Level.FINE, "afterMove {0}->{1}", new Object[]{from, to});
         if (from == null || to == null || !to.exists()) return;
 
+        if (from.equals(Mercurial.getInstance().getRepositoryRoot(from))
+                || to.equals(Mercurial.getInstance().getRepositoryRoot(to))) {
+            // whole repository was renamed/moved, need to refresh versioning roots
+            refreshOwnersTask.schedule(0);
+        }
         File parent = from.getParentFile();
         // There is no point in refreshing the cache for ignored files.
         if (parent != null && !HgUtils.isIgnored(parent, false)) {
@@ -283,7 +303,7 @@ public class MercurialInterceptor extends VCSInterceptor {
             // target lies under ignored folder, do not add it
             return;
         }
-        OutputLogger logger = OutputLogger.getLogger(root.getAbsolutePath());
+        OutputLogger logger = OutputLogger.getLogger(root);
         try {
             if (root.equals(dstRoot)) {
                 HgCommand.doCopy(root, from, to, true, logger);
@@ -350,6 +370,10 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.log(Level.FINE, "afterCreate {0}", file);
         if (HgUtils.isPartOfMercurialMetadata(file) && HgUtils.WLOCK_FILE.equals(file.getName())) {
             commandLogger.locked(file);
+        }
+        if (HgUtils.isAdministrative(file)) {
+            // new metadata created, we should refresh owners
+            refreshOwnersTask.schedule(0);
         }
         // There is no point in refreshing the cache for ignored files.
         if (!HgUtils.isIgnored(file, false)) {

@@ -62,6 +62,7 @@ public class ASTMethod extends ASTElement implements IMethodElement {
     private MetaMethod method;
     private boolean GDK;
     private String methodSignature;
+    private String returnType;
 
     
     public ASTMethod(GroovyParserResult info, ASTNode node) {
@@ -96,12 +97,15 @@ public class ASTMethod extends ASTElement implements IMethodElement {
         if (parameters == null) {
             parameters = new ArrayList<String>();
             for (Parameter parameter : ((MethodNode) node).getParameters()) {
-                parameters.add(parameter.getName());
+                String parameterName = parameter.getName();
+                String parameterType = parameter.getType().getNameWithoutPackage();
+                
+                parameters.add(parameterType + " " + parameterName);
             }
         }
         return parameters;
     }
-
+    
     @Override
     public String getSignature() {
         if (methodSignature == null) {
@@ -135,6 +139,13 @@ public class ASTMethod extends ASTElement implements IMethodElement {
             }
         }
         return name;
+    }
+    
+    public String getReturnType() {
+        if (returnType == null) {
+            returnType = ((MethodNode) node).getReturnType().getNameWithoutPackage();
+        }
+        return returnType;
     }
 
     public void setModifiers(Set<Modifier> modifiers) {

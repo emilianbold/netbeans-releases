@@ -43,14 +43,28 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collections;
 import java.util.Set;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.classpath.ClassPathProviderImpl;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.ANONYMOUS_OBJECT;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.CONSTRUCTOR;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.FIELD;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.FILE;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.FUNCTION;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.METHOD;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.OBJECT;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.OBJECT_LITERAL;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.PARAMETER;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.PROPERTY;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.PROPERTY_GETTER;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.PROPERTY_SETTER;
+import static org.netbeans.modules.javascript2.editor.model.JsElement.Kind.VARIABLE;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -66,59 +80,29 @@ public abstract class JsElementImpl implements JsElement {
 
     private final Set<Modifier> modifiers;
 
+    private final String sourceLabel;
+
     private FileObject fileObject;
 
     private boolean isDeclared;
-    
-    public JsElementImpl(FileObject fileObject, String name, boolean isDeclared, OffsetRange offsetRange, Set<Modifier> modifiers) {
+
+    public JsElementImpl(FileObject fileObject, String name, boolean isDeclared,
+            OffsetRange offsetRange, Set<Modifier> modifiers, String sourceLabel) {
         this.fileObject = fileObject;
         this.name = name;
         this.offsetRange = offsetRange;
         this.modifiers = modifiers;
         this.isDeclared = isDeclared;
+        this.sourceLabel = sourceLabel;
     }
     
     public JsElementImpl(FileObject fileObject, String name, boolean isDeclared, OffsetRange offsetRange) {
-        this(fileObject, name, isDeclared, offsetRange, Collections.<Modifier>emptySet());
+        this(fileObject, name, isDeclared, offsetRange, Collections.<Modifier>emptySet(), null);
     }
            
     @Override
     public ElementKind getKind() {
-        ElementKind result = ElementKind.OTHER;
-        switch (getJSKind()) {
-            case CONSTRUCTOR: 
-                result = ElementKind.CONSTRUCTOR;
-                break;
-            case METHOD:
-            case FUNCTION:
-            case PROPERTY_GETTER:
-            case PROPERTY_SETTER:
-                result = ElementKind.METHOD;
-                break;
-            case OBJECT:
-            case ANONYMOUS_OBJECT:
-            case OBJECT_LITERAL:
-                result = ElementKind.CLASS;
-                break;
-            case PROPERTY:
-                result = ElementKind.FIELD;
-                break;
-            case FILE:
-                result = ElementKind.FILE;
-                break;
-            case PARAMETER:
-                result = ElementKind.PARAMETER;
-                break;
-            case VARIABLE:
-                result = ElementKind.VARIABLE;
-                break;
-            case FIELD:
-                result = ElementKind.FIELD;
-                break;
-            default:
-                break;
-        }
-        return result;
+        return convertJsKindToElementKind(getJSKind());
     }
     
     @Override
@@ -183,6 +167,12 @@ public abstract class JsElementImpl implements JsElement {
         modifiers.add(modifier);
     }
 
+    @CheckForNull
+    @Override
+    public String getSourceLabel() {
+        return sourceLabel;
+    }
+
     @Override
     public boolean isPlatform() {
         FileObject fo = getFileObject();
@@ -199,5 +189,43 @@ public abstract class JsElementImpl implements JsElement {
             }
         }
         return false;
+    }
+    
+    public static ElementKind convertJsKindToElementKind(Kind jsKind) {
+        ElementKind result = ElementKind.OTHER;
+        switch (jsKind) {
+            case CONSTRUCTOR: 
+                result = ElementKind.CONSTRUCTOR;
+                break;
+            case METHOD:
+            case FUNCTION:
+            case PROPERTY_GETTER:
+            case PROPERTY_SETTER:
+                result = ElementKind.METHOD;
+                break;
+            case OBJECT:
+            case ANONYMOUS_OBJECT:
+            case OBJECT_LITERAL:
+                result = ElementKind.CLASS;
+                break;
+            case PROPERTY:
+                result = ElementKind.FIELD;
+                break;
+            case FILE:
+                result = ElementKind.FILE;
+                break;
+            case PARAMETER:
+                result = ElementKind.PARAMETER;
+                break;
+            case VARIABLE:
+                result = ElementKind.VARIABLE;
+                break;
+            case FIELD:
+                result = ElementKind.FIELD;
+                break;
+            default:
+                break;
+        }
+        return result;
     }
 }

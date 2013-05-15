@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.status;
 
+import org.netbeans.modules.git.GitStatusNode;
 import org.netbeans.modules.versioning.util.status.VCSStatusNode;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import java.awt.Component;
@@ -66,6 +67,7 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
@@ -78,7 +80,8 @@ import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
-import org.netbeans.modules.git.ui.commit.GitFileNode;
+import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
+import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.diff.DiffAction;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -106,7 +109,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
     private final ApplyChangesTask applyChangeTask = new ApplyChangesTask();
     private RequestProcessor.Task changeTask = RP.create(applyChangeTask);
     static final Logger LOG = Logger.getLogger(VersioningPanelController.class.getName());
-    private final VCSStatusTable<GitStatusNode> syncTable;
+    private final VCSStatusTable<GitStatusNodeImpl> syncTable;
     private Mode mode;
     private GitProgressSupport refreshStatusSupport;
     private final ModeKeeper modeKeeper;
@@ -116,7 +119,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
         this.panel = new VersioningPanel();
         modeKeeper = new ModeKeeper();
         initPanelMode();
-        syncTable = new GitStatusTable(new VCSStatusTableModel<GitStatusNode>(new GitStatusNode[0]), modeKeeper);
+        syncTable = new GitStatusTable(new VCSStatusTableModel<GitStatusNodeImpl>(new GitStatusNodeImpl[0]), modeKeeper);
         setVersioningComponent(syncTable.getComponent());
         
         attachListeners();
@@ -353,13 +356,13 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                         LOG.log(Level.WARNING, "Bump... Trying to display a repository root in status table: {0}, {1}, {2}", new Object[] { f, root, displayStatuses });
                         LOG.log(Level.WARNING, "File status in cache: {0}", git.getFileStatusCache().getStatus(f).getStatus());
                     }
-                    nodes.add(new GitStatusNode(new GitFileNode(root, f), mode));
+                    nodes.add(new GitStatusNodeImpl(new GitLocalFileNode(root, f), mode));
                 }
             }
             Mutex.EVENT.readAccess(new Runnable () {
                 @Override
                 public void run() {
-                    syncTable.setNodes(nodes.toArray(new GitStatusNode[nodes.size()]));
+                    syncTable.setNodes(nodes.toArray(new GitStatusNodeImpl[nodes.size()]));
                     if (nodes.isEmpty()) {
                         setVersioningComponent(noContentComponent);
                     } else {
@@ -391,19 +394,19 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                 }
             }
             Git git = Git.getInstance();
-            Map<File, GitStatusNode> nodes = Mutex.EVENT.readAccess(new Mutex.Action<Map<File, GitStatusNode>>() {
+            Map<File, GitStatusNodeImpl> nodes = Mutex.EVENT.readAccess(new Mutex.Action<Map<File, GitStatusNodeImpl>>() {
                 @Override
-                public Map<File, GitStatusNode> run() {
+                public Map<File, GitStatusNodeImpl> run() {
                     return syncTable.getNodes();
                 }
             });
             // sort changes
-            final List<GitStatusNode> toRemove = new LinkedList<GitStatusNode>();
-            final List<GitStatusNode> toRefresh = new LinkedList<GitStatusNode>();
-            final List<GitStatusNode> toAdd = new LinkedList<GitStatusNode>();
+            final List<GitStatusNodeImpl> toRemove = new LinkedList<GitStatusNodeImpl>();
+            final List<GitStatusNodeImpl> toRefresh = new LinkedList<GitStatusNodeImpl>();
+            final List<GitStatusNodeImpl> toAdd = new LinkedList<GitStatusNodeImpl>();
             for (FileStatusCache.ChangedEvent evt : events) {
                 FileInformation newInfo = evt.getNewInfo();
-                GitStatusNode node = nodes.get(evt.getFile());
+                GitStatusNodeImpl node = nodes.get(evt.getFile());
                 if (newInfo.containsStatus(displayStatuses)) {
                     if (node != null) {
                         toRefresh.add(node);
@@ -415,7 +418,7 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
                                 LOG.log(Level.WARNING, "Bump... Trying to display a repository root in status table: {0}, {1}, {2}", new Object[] { evt.getFile(), root, displayStatuses });
                                 LOG.log(Level.WARNING, "File status in cache: {0}", git.getFileStatusCache().getStatus(evt.getFile()).getStatus());
                             }
-                            toAdd.add(new GitStatusNode(new GitFileNode(root, evt.getFile()), mode));
+                            toAdd.add(new GitStatusNodeImpl(new GitLocalFileNode(root, evt.getFile()), mode));
                         }
                     }
                 } else if (node != null) {
@@ -451,5 +454,29 @@ class VersioningPanelController implements ActionListener, PropertyChangeListene
             this.selectedMode = mode;
             storeMode();
         }
+    }
+    
+    static class GitStatusNodeImpl extends GitStatusNode<GitLocalFileNode> {
+        private final Mode mode;
+
+        private GitStatusNodeImpl (GitLocalFileNode gitLocalFileNode, Mode mode) {
+            super(gitLocalFileNode);
+            this.mode = mode;
+        }
+
+        @Override
+        public Action getPreferredAction () {
+            if (node.getInformation().containsStatus(FileInformation.Status.IN_CONFLICT)) {
+                return SystemAction.get(ResolveConflictsAction.class);
+            } else {
+                return SystemAction.get(DiffAction.class);
+            }
+        }
+        
+        @Override
+        public String getStatusText () {
+            return node.getInformation().getStatusText(mode);
+        }
+
     }
 }

@@ -43,10 +43,11 @@
 package org.netbeans.modules.parsing.lucene;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -56,19 +57,21 @@ import org.apache.lucene.document.Document;
 import org.apache.lucene.document.FieldSelector;
 import org.apache.lucene.search.Query;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
-import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.lucene.support.DocumentIndex2;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndexCache;
 import org.netbeans.modules.parsing.lucene.support.Index;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Tomas Zezula
  */
-public class DocumentIndexImpl implements DocumentIndex, Runnable {
+public class DocumentIndexImpl implements DocumentIndex2, Runnable {
                             
     private static final Convertor<IndexDocument,Document> DEFAULT_ADD_CONVERTOR = Convertors.newIndexDocumentToDocumentConvertor();    
     private static final Convertor<Document,IndexDocumentImpl> DEFAULT_QUERY_CONVERTOR = Convertors.newDocumentToIndexDocumentConvertor();
@@ -248,17 +251,11 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
         assert fieldName != null;
         assert value != null;
         assert kind != null;
-        final List<IndexDocument> result = new ArrayList<IndexDocument>();
         final Query query = Queries.createQuery(fieldName, fieldName, value, kind);
-        FieldSelector selector = null;
-        if (fieldsToLoad != null && fieldsToLoad.length > 0) {
-            final String[] fieldsWithSource = new String[fieldsToLoad.length+1];
-            System.arraycopy(fieldsToLoad, 0, fieldsWithSource, 0, fieldsToLoad.length);
-            fieldsWithSource[fieldsToLoad.length] = IndexDocumentImpl.FIELD_PRIMARY_KEY;
-            selector = Queries.createFieldSelector(fieldsWithSource);
-        }        
-        luceneIndex.query(result, queryConvertor, selector, null, query);
-        return result;
+        return query(
+            query,
+            org.netbeans.modules.parsing.lucene.support.Convertors.<IndexDocument>identity(),
+            fieldsToLoad);
     }
     
     @Override
@@ -267,6 +264,30 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
             final Queries.QueryKind kind,
             final String... fieldsToLoad) throws IOException, InterruptedException {
                 return query(IndexDocumentImpl.FIELD_PRIMARY_KEY, primaryKeyValue, kind, fieldsToLoad);
+    }
+
+    @Override
+    @NonNull
+    public <T> Collection<? extends T> query(
+            @NonNull final Query query,
+            @NonNull final Convertor<? super IndexDocument, ? extends T> convertor,
+            @NullAllowed final String... fieldsToLoad) throws IOException, InterruptedException {
+        Parameters.notNull("query", query); //NOI18N
+        Parameters.notNull("convertor", convertor); //NOI18N
+        final Collection<T> result = new ArrayDeque<T>();
+        FieldSelector selector = null;
+        if (fieldsToLoad != null && fieldsToLoad.length > 0) {
+            final String[] fieldsWithSource = Arrays.copyOf(fieldsToLoad, fieldsToLoad.length+1);
+            fieldsWithSource[fieldsToLoad.length] = IndexDocumentImpl.FIELD_PRIMARY_KEY;
+            selector = Queries.createFieldSelector(fieldsWithSource);
+        }
+        luceneIndex.query(
+            result,
+            org.netbeans.modules.parsing.lucene.support.Convertors.compose(queryConvertor, convertor),
+            selector,
+            null,
+            query);
+        return result;
     }
 
     @Override
@@ -302,24 +323,26 @@ public class DocumentIndexImpl implements DocumentIndex, Runnable {
     
     @Override
     public String toString () {
-        return "DocumentIndex["+luceneIndex.toString()+"]";  //NOI18N
+        return String.format(
+            "DocumentIndexImpl[%s]",  //NOI18N
+            luceneIndex.toString());
     }
 
     @NonNull
-    public static DocumentIndex create(
+    public static DocumentIndex2 create(
             @NonNull final Index index,
             @NonNull final DocumentIndexCache cache) {
         return new DocumentIndexImpl(index, cache);
     }
 
     @NonNull
-    public static DocumentIndex.Transactional createTransactional(
+    public static DocumentIndex2.Transactional createTransactional(
             @NonNull final Index.Transactional index,
             @NonNull final DocumentIndexCache cache) {
         return new DocumentIndexImpl.Transactional(index, cache);
     }
 
-    private final static class Transactional extends DocumentIndexImpl implements DocumentIndex.Transactional {
+    private final static class Transactional extends DocumentIndexImpl implements DocumentIndex2.Transactional {
 
         private Transactional(
             @NonNull final Index.Transactional index,

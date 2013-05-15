@@ -82,7 +82,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.1</specification-version>
+                        <specification-version>1.14</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -90,7 +90,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.34</specification-version>
+                        <specification-version>1.49</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -118,6 +118,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.loaders</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.46</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.modules</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -126,11 +134,19 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.openide.nodes</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.34</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.openide.util</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>8.26</specification-version>
+                        <specification-version>8.32</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -139,6 +155,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.16</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.windows</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.61</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -164,7 +188,7 @@
                 <friend>org.netbeans.modules.cordova.platforms</friend>
                 <friend>org.netbeans.modules.cordova.platforms.android</friend>
                 <friend>org.netbeans.modules.cordova.platforms.ios</friend>
-                <friend>org.netbeans.modules.html.navigator</friend>
+                <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <friend>org.netbeans.modules.platforms.android</friend>
                 <friend>org.netbeans.modules.web.client.rest</friend>

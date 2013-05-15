@@ -424,16 +424,16 @@ public final class FoldHierarchy {
             return fold.isEndDamaged();
         }
 
-        public boolean foldIsExpandNecessary(Fold fold) {
-            return fold.isExpandNecessary();
-        }
+//        public boolean foldIsExpandNecessary(Fold fold) {
+//            return fold.isExpandNecessary();
+//        }
 
         public void foldInsertUpdate(Fold fold, DocumentEvent evt) {
-            fold.insertUpdate(evt);
+            
         }
     
         public void foldRemoveUpdate(Fold fold, DocumentEvent evt) {
-            fold.removeUpdate(evt);
+            
         }
 
         public FoldOperationImpl foldGetOperation(Fold fold) {
@@ -477,7 +477,21 @@ public final class FoldHierarchy {
         public FoldHierarchyExecution foldGetExecution(FoldHierarchy h) {
             return h.execution;
         }
+
+        @Override
+        public void foldMarkDamaged(Fold f, int flags) {
+            f.setDamaged((byte)flags);
+        }
+
+        @Override
+        public int foldStartGuardedLength(Fold f) {
+            return f.getStartGuardedLength();
+        }
         
+        @Override
+        public int foldEndGuardedLength(Fold f) {
+            return f.getEndGuardedLength();
+        }
     }
 
 }

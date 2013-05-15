@@ -87,6 +87,7 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.netbeans.modules.javafx2.project.ui.JFXApplicationPanel;
 import org.netbeans.modules.javafx2.project.ui.JFXPackagingPanel;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -116,6 +117,7 @@ public final class JFXProjectProperties {
     public static final String JAVAFX_DISABLE_CONCURRENT_RUNS = "javafx.disable.concurrent.runs"; // NOI18N
     public static final String JAVAFX_ENABLE_CONCURRENT_EXTERNAL_RUNS = "javafx.enable.concurrent.external.runs"; // NOI18N
     public static final String JAVAFX_ENDORSED_ANT_CLASSPATH = "endorsed.javafx.ant.classpath"; // NOI18N
+    public static final String PLATFORM_ACTIVE = "platform.active"; // NOI18N
     
     /** The standard extension for FXML source files. */
     public static final String FXML_EXTENSION = "fxml"; // NOI18N    
@@ -183,6 +185,7 @@ public final class JFXProjectProperties {
     public static final String SPLASH_IMAGE_FILE = "javafx.deploy.splash"; // NOI18N
     public static final String PERMISSIONS_ELEVATED = "javafx.deploy.permissionselevated"; // NOI18N
     public static final String DISABLE_PROXY = "javafx.deploy.disable.proxy"; // NOI18N
+    public static final String REQUEST_RT = "javafx.deploy.request.runtime"; // NOI18N
 
     // Deployment - signing
     public static final String JAVAFX_SIGNING_ENABLED = "javafx.signing.enabled"; //NOI18N
@@ -191,14 +194,17 @@ public final class JFXProjectProperties {
     public static final String JAVAFX_SIGNING_KEYSTORE_PASSWORD = "javafx.signing.keystore.password"; //NOI18N
     public static final String JAVAFX_SIGNING_KEY = "javafx.signing.keyalias"; //NOI18N
     public static final String JAVAFX_SIGNING_KEY_PASSWORD = "javafx.signing.keyalias.password"; //NOI18N
+    public static final String JAVAFX_SIGNING_BLOB = "javafx.signing.blob"; //NOI18N
     
     // Deployment - native packaging
     public static final String JAVAFX_NATIVE_BUNDLING_ENABLED = "javafx.native.bundling.enabled"; //NOI18N
     public static final String JAVAFX_NATIVE_BUNDLING_TYPE = "javafx.native.bundling.type"; //NOI18N
+    public static final String JAVASE_NATIVE_BUNDLING_ENABLED = "native.bundling.enabled"; //NOI18N
 
-    //
+    // Deployment - common and SE specific
     public static final String RUN_CP = "run.classpath";    //NOI18N
     public static final String BUILD_CLASSES = "build.classes.dir"; //NOI18N
+    public static final String JAVASE_KEEP_JFXRT_ON_CLASSPATH = "keep.javafx.runtime.on.classpath"; //NOI18N
     
     // Deployment - libraries download mode
     public static final String DOWNLOAD_MODE_LAZY_JARS = "download.mode.lazy.jars";   //NOI18N
@@ -207,7 +213,11 @@ public final class JFXProjectProperties {
     
     // Deployment - callbacks
     public static final String JAVASCRIPT_CALLBACK_PREFIX = "javafx.jscallback."; // NOI18N
-
+    
+    // Application
+    public static final String IMPLEMENTATION_VERSION = "javafx.application.implementation.version"; // NOI18N
+    public static final String IMPLEMENTATION_VERSION_DEFAULT = "1.0"; // NOI18N
+    
     // folders and files
     public static final String PROJECT_CONFIGS_DIR = JFXProjectConfigurations.PROJECT_CONFIGS_DIR;
     public static final String PROJECT_PRIVATE_CONFIGS_DIR = JFXProjectConfigurations.PROJECT_PRIVATE_CONFIGS_DIR;
@@ -232,6 +242,14 @@ public final class JFXProjectProperties {
             packagingPanel = new JFXPackagingPanel(this);
         }
         return packagingPanel;
+    }
+
+    private JFXApplicationPanel applicationPanel = null;
+    public JFXApplicationPanel getApplicationPanel() {
+        if(applicationPanel == null) {
+            applicationPanel = new JFXApplicationPanel(this);
+        }
+        return applicationPanel;
     }
 
     // CustomizerRun
@@ -355,6 +373,7 @@ public final class JFXProjectProperties {
         }
     }
     boolean signingEnabled;
+    boolean signingBlob;
     SigningType signingType;
     String signingKeyStore;
     String signingKeyAlias;
@@ -367,6 +386,12 @@ public final class JFXProjectProperties {
     }
     public void setSigningEnabled(boolean enabled) {
         this.signingEnabled = enabled;
+    }
+    public boolean getBLOBSigningEnabled() {
+        return signingBlob;
+    }
+    public void setBLOBSigningEnabled(boolean enabled) {
+        this.signingBlob = enabled;
     }
     public boolean getPermissionsElevated() {
         return permissionsElevated;
@@ -407,18 +432,36 @@ public final class JFXProjectProperties {
     
     // Deployment - Native Packaging (JDK 7u6+)
     public enum BundlingType {
-        NONE("None"), // NOI18N
-        ALL("All"), // NOI18N
-        IMAGE("Image"), // NOI18N
-        INSTALLER("Installer"); // NOI18N
+        NONE("none", OS.ALL, "None"), // NOI18N
+        ALL("all", OS.ALL, "All Artifacts"), // NOI18N
+        IMAGE("image", OS.ALL, "Image Only"), // NOI18N
+        INSTALLER("installer", OS.ALL, "All Installers"), // NOI18N
+        DEB("deb", OS.LINUX, "DEB Package"), // NOI18N
+        RPM("rpm", OS.LINUX, "RPM Package"), // NOI18N
+        DMG("dmg", OS.MAC, "DMG Image"), // NOI18N
+        EXE("exe", OS.WIN, "EXE Installer"), // NOI18N
+        MSI("msi", OS.WIN, "MSI Installer"); // NOI18N
         private final String propertyValue;
-        BundlingType(String propertyValue) {
+        private final String description;
+        private final OS extent;
+        public enum OS {ALL, WIN, MAC, LINUX, NONE}
+        BundlingType(String propertyValue, OS os, String desc) {
             this.propertyValue = propertyValue;
+            this.extent = os;
+            this.description = desc;
         }
-        public String getString() {
+        public String getValue() {
             return propertyValue;
         }
+        public OS getExtent() {
+            return extent;
+        }
+        @Override
+        public String toString() {
+            return description;
+        }
     }
+
     boolean nativeBundlingEnabled;
     BundlingType nativeBundlingType;
     public boolean getNativeBundlingEnabled() {
@@ -435,12 +478,21 @@ public final class JFXProjectProperties {
     }
     public boolean setNativeBundlingType(String type) {
         for (BundlingType bundleType : BundlingType.values()) {
-            if(bundleType.getString().equalsIgnoreCase(type)) {
+            if(bundleType.getValue().equalsIgnoreCase(type)) {
                 this.nativeBundlingType = bundleType;
                 return true;
             }
         }
         return false;
+    }
+    
+    // in SE project - keep jfxrt.jar on classpath
+    boolean keepJFXRTonCP;
+    public boolean getKeepJFXRTonCP() {
+        return keepJFXRTonCP;
+    }
+    public void setKeepJFXRTonCP(boolean enabled) {
+        this.keepJFXRTonCP = enabled;
     }
 
     // Deployment - Libraries Download Mode
@@ -477,6 +529,24 @@ public final class JFXProjectProperties {
     }
     public void setJSCallbacksChanged(boolean changed) {
         jsCallbacksChanged = changed;
+    }
+    
+    // Deployment - requested RT
+    String requestedRT;
+    public String getRequestedRT() {
+        return requestedRT;
+    }
+    public void setRequestedRT(String rt) {
+        this.requestedRT = rt;
+    }
+    
+    // Application
+    String implVersion;
+    public String getImplementationVersion() {
+        return implVersion;
+    }
+    public void setImplementationVersion(String implVer) {
+        implVersion = implVer;
     }
         
     // Project related references
@@ -591,7 +661,7 @@ public final class JFXProjectProperties {
     
     public String getFXRunTimePath() {
         assert evaluator != null;
-        String active = evaluator.getProperty("platform.active"); // NOI18N
+        String active = evaluator.getProperty(PLATFORM_ACTIVE);
         String path = JavaFXPlatformUtils.getJavaFXRuntimePath(active);
         return path;
     }
@@ -624,11 +694,13 @@ public final class JFXProjectProperties {
             CONFIGS.setActive(evaluator.getProperty(ProjectProperties.PROP_PROJECT_CONFIGURATION_CONFIG));
             preloaderClassModel = new PreloaderClassComboBoxModel();
 
+            initVersion(evaluator);
             initIcons(evaluator);
             initSigning(evaluator);
             initNativeBundling(evaluator);
             initResources(evaluator, project, CONFIGS);
             initJSCallbacks(evaluator);
+            initRest(evaluator);
         }
     }
     
@@ -1145,8 +1217,11 @@ public final class JFXProjectProperties {
     }
 
     private void storeRest(@NonNull EditableProperties editableProps, @NonNull EditableProperties privProps) {
+        // store implementation version
+        setOrRemove(editableProps, IMPLEMENTATION_VERSION, implVersion);
         // store signing info
         editableProps.setProperty(JAVAFX_SIGNING_ENABLED, signingEnabled ? "true" : "false"); //NOI18N
+        editableProps.setProperty(JAVAFX_SIGNING_BLOB, signingBlob ? "true" : "false"); //NOI18N
         editableProps.setProperty(JAVAFX_SIGNING_TYPE, signingType.getString());
         setOrRemove(editableProps, JAVAFX_SIGNING_KEY, signingKeyAlias);
         setOrRemove(editableProps, JAVAFX_SIGNING_KEYSTORE, signingKeyStore);
@@ -1155,11 +1230,13 @@ public final class JFXProjectProperties {
         setOrRemove(privProps, JAVAFX_SIGNING_KEY_PASSWORD, signingKeyPassword);        
         // store native bundling info
         editableProps.setProperty(JAVAFX_NATIVE_BUNDLING_ENABLED, nativeBundlingEnabled ? "true" : "false"); //NOI18N
-        editableProps.setProperty(JAVAFX_NATIVE_BUNDLING_TYPE, nativeBundlingType.getString().toLowerCase());
+        editableProps.setProperty(JAVAFX_NATIVE_BUNDLING_TYPE, nativeBundlingType.getValue().toLowerCase());
         // store icons
         setOrRemove(editableProps, ICON_FILE, wsIconPath);
         setOrRemove(editableProps, SPLASH_IMAGE_FILE, splashImagePath);
         setOrRemove(editableProps, NATIVE_ICON_FILE, nativeIconPath);
+        // store requested RT
+        setOrRemove(editableProps, REQUEST_RT, requestedRT);
         // store resources
         storeResources(editableProps);
         // store JavaScript callbacks
@@ -1181,6 +1258,15 @@ public final class JFXProjectProperties {
     }
         
     public void store() throws IOException {
+        String fxEnabled = evaluator.getProperty(JFXProjectProperties.JAVAFX_ENABLED);
+        if(isTrue(fxEnabled)) {
+            storeFX();
+        } else {
+            storeSE();
+        }
+    }
+    
+    private void storeFX() throws IOException {
         updatePreloaderDependencies(CONFIGS);
         CONFIGS.storeActive();
         final EditableProperties ep = new EditableProperties(true);
@@ -1217,6 +1303,7 @@ public final class JFXProjectProperties {
         storeRest(ep, pep);
         CONFIGS.store(ep, pep);
         updatePreloaderComment(ep);
+        //JFXProjectUtils.updateClassPathExtensionProperties(ep);
         logProps(ep);
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -1255,6 +1342,56 @@ public final class JFXProjectProperties {
             throw (IOException) mux.getException();
         }
     }
+
+    private void storeSE() throws IOException {
+        final EditableProperties ep = new EditableProperties(true);
+        final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        try {
+            final InputStream is = projPropsFO.getInputStream();
+            ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    try {
+                        ep.load(is);
+                    } finally {
+                        if (is != null) {
+                            is.close();
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (MutexException mux) {
+            throw (IOException) mux.getException();
+        }
+        setOrRemove(ep, JAVASE_NATIVE_BUNDLING_ENABLED, nativeBundlingEnabled ? "true" : null); //NOI18N
+        setOrRemove(ep, JAVASE_KEEP_JFXRT_ON_CLASSPATH, keepJFXRTonCP ? "true" : null); //NOI18N
+        //JFXProjectUtils.updateClassPathExtensionProperties(ep);
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    OutputStream os = null;
+                    FileLock lock = null;
+                    try {
+                        lock = projPropsFO.lock();
+                        os = projPropsFO.getOutputStream(lock);
+                        ep.store(os);
+                    } finally {
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                        if (os != null) {
+                            os.close();
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (MutexException mux) {
+            throw (IOException) mux.getException();
+        }
+    }
     
     private void updatePreloaderComment(EditableProperties ep) {
         if(isTrue(ep.get(JFXProjectProperties.PRELOADER_ENABLED))) {
@@ -1264,6 +1401,13 @@ public final class JFXProjectProperties {
         }
     }
 
+    private void initVersion(PropertyEvaluator eval) {
+        implVersion = eval.getProperty(IMPLEMENTATION_VERSION);
+        if(implVersion == null) {
+            implVersion = IMPLEMENTATION_VERSION_DEFAULT;
+        }
+    }
+    
     private void initIcons(PropertyEvaluator eval) {
         wsIconPath = eval.getProperty(ICON_FILE);
         splashImagePath = eval.getProperty(SPLASH_IMAGE_FILE);
@@ -1272,8 +1416,10 @@ public final class JFXProjectProperties {
     
     private void initSigning(PropertyEvaluator eval) {
         String enabled = eval.getProperty(JAVAFX_SIGNING_ENABLED);
+        String blob = eval.getProperty(JAVAFX_SIGNING_BLOB);
         String signedProp = eval.getProperty(JAVAFX_SIGNING_TYPE);
         signingEnabled = isTrue(enabled);
+        signingBlob = isTrue(blob);
         if(signedProp == null) {
             signingType = SigningType.NOSIGN;
         } else {
@@ -1301,26 +1447,54 @@ public final class JFXProjectProperties {
     }
     
     private void initNativeBundling(PropertyEvaluator eval) {
-        String enabled = eval.getProperty(JAVAFX_NATIVE_BUNDLING_ENABLED);
-        String bundleProp = eval.getProperty(JAVAFX_NATIVE_BUNDLING_TYPE);
-        nativeBundlingEnabled = isTrue(enabled);
-        if(bundleProp == null) {
+        String fxEnabled = evaluator.getProperty(JFXProjectProperties.JAVAFX_ENABLED);
+        if(isTrue(fxEnabled)) {
+            String enabled = eval.getProperty(JAVAFX_NATIVE_BUNDLING_ENABLED);
+            String bundleProp = eval.getProperty(JAVAFX_NATIVE_BUNDLING_TYPE);
+            nativeBundlingEnabled = isTrue(enabled);
             nativeBundlingType = BundlingType.NONE;
-        } else {
-            if(bundleProp.equalsIgnoreCase(BundlingType.ALL.getString())) {
-                nativeBundlingType = BundlingType.ALL;
-            } else {
-                if(bundleProp.equalsIgnoreCase(BundlingType.IMAGE.getString())) {
-                    nativeBundlingType = BundlingType.IMAGE;
+            if(bundleProp != null) {
+                if(bundleProp.equalsIgnoreCase(BundlingType.ALL.getValue())) {
+                    nativeBundlingType = BundlingType.ALL;
                 } else {
-                    if(bundleProp.equalsIgnoreCase(BundlingType.INSTALLER.getString())) {
-                        nativeBundlingType = BundlingType.INSTALLER;
+                    if(bundleProp.equalsIgnoreCase(BundlingType.IMAGE.getValue())) {
+                        nativeBundlingType = BundlingType.IMAGE;
                     } else {
-                        nativeBundlingType = BundlingType.NONE;
+                        if(bundleProp.equalsIgnoreCase(BundlingType.INSTALLER.getValue())) {
+                            nativeBundlingType = BundlingType.INSTALLER;
+                        } else {
+                            if(bundleProp.equalsIgnoreCase(BundlingType.DEB.getValue())) {
+                                nativeBundlingType = BundlingType.DEB;
+                            } else {
+                                if(bundleProp.equalsIgnoreCase(BundlingType.DMG.getValue())) {
+                                    nativeBundlingType = BundlingType.DMG;
+                                } else {
+                                    if(bundleProp.equalsIgnoreCase(BundlingType.EXE.getValue())) {
+                                        nativeBundlingType = BundlingType.EXE;
+                                    } else {
+                                        if(bundleProp.equalsIgnoreCase(BundlingType.MSI.getValue())) {
+                                            nativeBundlingType = BundlingType.MSI;
+                                        } else {
+                                            if(bundleProp.equalsIgnoreCase(BundlingType.RPM.getValue())) {
+                                                nativeBundlingType = BundlingType.RPM;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
+        } else {
+            String enabled = eval.getProperty(JAVASE_NATIVE_BUNDLING_ENABLED);
+            nativeBundlingEnabled = isTrue(enabled);
         }
+    }
+    
+    private void initRest(PropertyEvaluator eval) {
+        requestedRT = eval.getProperty(REQUEST_RT);
+        keepJFXRTonCP = isTrue(eval.getProperty(JAVASE_KEEP_JFXRT_ON_CLASSPATH));
     }
     
     private boolean isParentOf(File parent, File child) {
@@ -1371,6 +1545,9 @@ public final class JFXProjectProperties {
                 continue;
             }
             final File f = PropertyUtils.resolveFile(prjDir, p);
+            if (!f.exists()) {
+                continue;
+            }
             if (f.equals(mainFile)) {
                 continue;
             }
@@ -1414,7 +1591,7 @@ public final class JFXProjectProperties {
     }
 
     private void initJSCallbacks (final PropertyEvaluator eval) {
-        String platformName = eval.getProperty("platform.active");
+        String platformName = eval.getProperty(PLATFORM_ACTIVE);
         Map<String,List<String>/*|null*/> callbacks = JFXProjectUtils.getJSCallbacks(platformName);
         Map<String,String/*|null*/> result = new LinkedHashMap<String,String/*|null*/>();
         for(Map.Entry<String,List<String>/*|null*/> entry : callbacks.entrySet()) {
@@ -1440,7 +1617,7 @@ public final class JFXProjectProperties {
     }
 
     private void storePlatform(EditableProperties editableProps) {
-        String activePlatform = editableProps.getProperty("platform.active"); // NOI18N
+        String activePlatform = editableProps.getProperty(PLATFORM_ACTIVE);
         JavaPlatform[] installedPlatforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
         for (JavaPlatform javaPlatform : installedPlatforms) {
             String platformName = javaPlatform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);

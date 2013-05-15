@@ -36,11 +36,9 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <friend-packages>
-                <friend>org.netbeans.modules.uihandler</friend>
-                <friend>org.netbeans.modules.bugzilla.exceptionreporter</friend>
+            <public-packages>
                 <package>org.netbeans.lib.uihandler</package>
-            </friend-packages>
+            </public-packages>
         </data>
     </configuration>
 </project>

@@ -221,12 +221,15 @@ final class MultiPassCompileWorker extends CompileWorker {
                             public void visitClassDef(JCClassDecl node) {
                                 if (node.sym != null) {
                                     Type st = ts.supertype(node.sym.type);
-                                    if (st.hasTag(TypeTag.CLASS)) {
+                                    boolean envForSuperTypeFound = false;
+                                    while (!envForSuperTypeFound && st != null && st.hasTag(TypeTag.CLASS)) {
                                         ClassSymbol c = st.tsym.outermostClass();
                                         CompileTuple u = jfo2tuples.get(c.sourcefile);
                                         if (u != null && !previous.finishedFiles.contains(u.indexable) && !u.indexable.equals(activeIndexable)) {
                                             dependencies.add(u);
+                                            envForSuperTypeFound = true;
                                         }
+                                        st = ts.supertype(st);
                                     }
                                 }
                                 super.visitClassDef(node);
@@ -447,7 +450,8 @@ final class MultiPassCompileWorker extends CompileWorker {
                     public void visitClassDef(JCClassDecl node) {
                         if (node.sym != null) {
                             Type st = types.supertype(node.sym.type);
-                            if (st.hasTag(TypeTag.CLASS)) {
+                            boolean envForSuperTypeFound = false;
+                            while (!envForSuperTypeFound && st != null && st.hasTag(TypeTag.CLASS)) {
                                 ClassSymbol c = st.tsym.outermostClass();
                                 Env<AttrContext> stEnv = enter.getEnv(c);
                                 if (stEnv != null && env != stEnv) {
@@ -456,7 +460,9 @@ final class MultiPassCompileWorker extends CompileWorker {
                                         if (TreeLoader.pruneTree(stEnv.tree, syms))
                                             dependencies.add(stEnv);
                                     }
+                                    envForSuperTypeFound = true;
                                 }
+                                st = types.supertype(st);
                             }
                         }
                         super.visitClassDef(node);

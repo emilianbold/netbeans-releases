@@ -45,9 +45,6 @@ package org.netbeans.modules.jira.kenai;
 import com.atlassian.connector.eclipse.internal.jira.core.model.JiraFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.Project;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.FilterDefinition;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.util.LogUtils;
-import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.issue.NbJiraIssue.IssueField;
 import org.netbeans.modules.jira.query.JiraQuery;
@@ -84,16 +81,6 @@ public class KenaiQueryController extends QueryController
         super.closed();
         // override
         scheduleForRefresh();
-    }
-
-    @Override
-    protected void logAutoRefreshEvent(boolean autoRefresh) {
-        LogUtils.logAutoRefreshEvent(
-            JiraConnector.getConnectorName(),
-            query.getDisplayName(),
-            true,
-            autoRefresh
-        );
     }
 
     @Override

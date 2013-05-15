@@ -33,8 +33,6 @@ $Id$
     } catch (Exception e) {
         error = e.getMessage();
     }
-
-
 %>
 
 
@@ -53,7 +51,6 @@ $Id$
         <div>
 
             <%
-
                 out.println("The system container is " + serverInfo + "<br />");
                 out.println("<hr />");
 

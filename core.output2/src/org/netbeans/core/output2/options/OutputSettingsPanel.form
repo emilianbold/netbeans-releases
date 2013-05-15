@@ -20,16 +20,11 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="previewPanel" alignment="1" max="32767" attributes="0"/>
-                  <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jPanel2" max="32767" attributes="0"/>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="lblTitle" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="103" max="32767" attributes="0"/>
-                              <Component id="btnRestore" min="-2" max="-2" attributes="0"/>
-                          </Group>
-                      </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                  <Component id="jPanel2" max="32767" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="lblTitle" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="32767" attributes="0"/>
+                      <Component id="btnRestore" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
           </Group>
@@ -46,7 +41,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jPanel2" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="previewPanel" pref="81" max="32767" attributes="0"/>
+              <Component id="previewPanel" pref="51" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
@@ -76,6 +71,7 @@
                       <Component id="lblFontSize" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="jLabel1" alignment="0" min="-2" max="-2" attributes="0"/>
                       <Component id="lblLinkStyle" alignment="0" min="-2" max="-2" attributes="0"/>
+                      <Component id="lblInputColor" alignment="0" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace type="separate" max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="0" attributes="0">
@@ -84,14 +80,34 @@
                           <EmptySpace max="-2" attributes="0"/>
                           <Component id="btnSelectFont" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <Component id="lblUnwrappedOnly" alignment="0" min="-2" max="-2" attributes="0"/>
-                      <Component id="spnFontSize" alignment="0" min="-2" pref="71" max="-2" attributes="0"/>
-                      <Component id="cmbBackgroundColor" alignment="0" max="32767" attributes="0"/>
-                      <Component id="cmbStandardColor" alignment="0" max="32767" attributes="0"/>
-                      <Component id="cmbErrorColor" alignment="0" max="32767" attributes="0"/>
-                      <Component id="cmbLinkColor" alignment="0" max="32767" attributes="0"/>
-                      <Component id="cmbImportantLinkColor" alignment="0" max="32767" attributes="0"/>
-                      <Component id="cmbLinkStyle" alignment="0" max="32767" attributes="0"/>
+                      <Component id="lblUnwrappedOnly" alignment="0" max="32767" attributes="0"/>
+                      <Group type="102" alignment="0" attributes="0">
+                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                              <Component id="cmbLinkStyle" alignment="0" max="32767" attributes="0"/>
+                              <Component id="cmbImportantLinkColor" alignment="0" max="32767" attributes="0"/>
+                              <Component id="cmbLinkColor" alignment="0" max="32767" attributes="0"/>
+                              <Component id="cmbInputColor" alignment="0" max="32767" attributes="0"/>
+                              <Component id="cmbErrorColor" alignment="0" max="32767" attributes="0"/>
+                              <Component id="cmbStandardColor" alignment="0" max="32767" attributes="0"/>
+                              <Component id="spnFontSize" alignment="0" min="-2" pref="71" max="-2" attributes="0"/>
+                              <Component id="cmbBackgroundColor" linkSize="1" alignment="0" max="32767" attributes="0"/>
+                          </Group>
+                          <EmptySpace type="separate" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="0" attributes="0">
+                              <Component id="jLabel2" alignment="0" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel3" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel4" min="-2" max="-2" attributes="0"/>
+                              <Component id="jLabel5" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
+                          <Group type="103" groupAlignment="1" max="-2" attributes="0">
+                              <Component id="cmbFailureColor" alignment="0" max="32767" attributes="0"/>
+                              <Component id="cmbWarningColor" alignment="0" max="32767" attributes="0"/>
+                              <Component id="cmbDebugColor" linkSize="1" alignment="1" pref="238" max="32767" attributes="0"/>
+                              <Component id="cmbSuccessColor" max="32767" attributes="0"/>
+                          </Group>
+                          <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      </Group>
                   </Group>
                   <EmptySpace min="-2" pref="1" max="-2" attributes="0"/>
               </Group>
@@ -117,16 +133,29 @@
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="lblBackgroundColor" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="cmbBackgroundColor" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jLabel2" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="cmbDebugColor" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="cmbStandardColor" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="lblStandardColor" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="cmbWarningColor" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
                       <Component id="cmbErrorColor" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="lblErrorColor" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jLabel4" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="cmbFailureColor" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
+                  <EmptySpace max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="lblInputColor" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="cmbInputColor" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="jLabel5" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="cmbSuccessColor" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace max="-2" attributes="0"/>
                   <Group type="103" groupAlignment="3" attributes="0">
@@ -362,6 +391,106 @@
               <ResourceString bundle="org/netbeans/core/output2/options/Bundle.properties" key="OutputSettingsPanel.lblUnwrappedOnly.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="lblInputColor">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/core/output2/options/Bundle.properties" key="OutputSettingsPanel.lblInputColor.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="cmbInputColor">
+          <Properties>
+            <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/core/output2/options/Bundle.properties" key="OutputSettingsPanel.cmbInputColor.toolTipText" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cmbInputColorActionPerformed"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ColorComboBox()"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JLabel" name="jLabel2">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/core/output2/options/Bundle.properties" key="OutputSettingsPanel.jLabel2.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="jLabel3">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/core/output2/options/Bundle.properties" key="OutputSettingsPanel.jLabel3.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="jLabel4">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/core/output2/options/Bundle.properties" key="OutputSettingsPanel.jLabel4.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="jLabel5">
+          <Properties>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/core/output2/options/Bundle.properties" key="OutputSettingsPanel.jLabel5.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="cmbDebugColor">
+          <Properties>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+              <StringArray count="0"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cmbDebugColorActionPerformed"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ColorComboBox()"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="cmbWarningColor">
+          <Properties>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+              <StringArray count="0"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cmbWarningColorActionPerformed"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ColorComboBox()"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="cmbFailureColor">
+          <Properties>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+              <StringArray count="0"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cmbFailureColorActionPerformed"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ColorComboBox()"/>
+          </AuxValues>
+        </Component>
+        <Component class="javax.swing.JComboBox" name="cmbSuccessColor">
+          <Properties>
+            <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
+              <StringArray count="0"/>
+            </Property>
+          </Properties>
+          <Events>
+            <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cmbSuccessColorActionPerformed"/>
+          </Events>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="new ColorComboBox()"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>

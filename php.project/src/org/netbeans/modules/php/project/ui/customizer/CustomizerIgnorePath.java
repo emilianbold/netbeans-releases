@@ -156,11 +156,9 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
 
         ignorePathLabel = new JLabel();
         ignorePathScrollPane = new JScrollPane();
-        ignorePathList = new JList();
+        ignorePathList = new JList<BasePathSupport.Item>();
         addButton = new JButton();
         removeButton = new JButton();
-
-        setFocusTraversalPolicy(null);
 
         ignorePathLabel.setLabelFor(ignorePathList);
         Mnemonics.setLocalizedText(ignorePathLabel, NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.ignorePathLabel.text")); // NOI18N
@@ -168,8 +166,10 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
         ignorePathScrollPane.setViewportView(ignorePathList);
         ignorePathList.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.ignorePathList.AccessibleContext.accessibleName")); // NOI18N
         ignorePathList.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.ignorePathList.AccessibleContext.accessibleDescription")); // NOI18N
-        Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.addButton.text"));
-        Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.removeButton.text"));
+
+        Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.addButton.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(CustomizerIgnorePath.class, "CustomizerIgnorePath.removeButton.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -182,8 +182,7 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(removeButton)
-                    .addComponent(addButton))
-                .addGap(0, 0, 0))
+                    .addComponent(addButton)))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addButton, removeButton});
@@ -218,7 +217,7 @@ public class CustomizerIgnorePath extends JPanel implements HelpCtx.Provider {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton addButton;
     private JLabel ignorePathLabel;
-    private JList ignorePathList;
+    private JList<BasePathSupport.Item> ignorePathList;
     private JScrollPane ignorePathScrollPane;
     private JButton removeButton;
     // End of variables declaration//GEN-END:variables

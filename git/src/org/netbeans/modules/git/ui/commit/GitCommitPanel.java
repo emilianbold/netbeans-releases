@@ -75,6 +75,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
 import org.netbeans.modules.git.ui.diff.MultiDiffPanelController;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -99,7 +100,7 @@ import org.openide.util.RequestProcessor.Task;
  *
  * @author Tomas Stupka
  */
-public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
+public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
 
     static final GitCommitFilter FILTER_HEAD_VS_WORKING = new GitCommitFilter(
                 "HEAD_VS_WORKING", 
@@ -273,7 +274,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    getCommitTable().setNodes(new GitFileNode[0]);
+                    getCommitTable().setNodes(new GitLocalFileNode[0]);
                 }
             });
             // Ensure that cache is uptodate
@@ -311,16 +312,16 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
             if (fileList.isEmpty()) {
                 return true;
             }
-            List<GitFileNode> nodesList = new ArrayList<GitFileNode>(fileList.size());
+            List<GitLocalFileNode> nodesList = new ArrayList<GitLocalFileNode>(fileList.size());
             Git git = Git.getInstance();
             for (Iterator<File> it = fileList.iterator(); it.hasNext();) {
                 File file = it.next();
                 if (repository.equals(git.getRepositoryRoot(file))) {
-                    GitFileNode node = new GitFileNode(repository, file);
+                    GitLocalFileNode node = new GitLocalFileNode(repository, file);
                     nodesList.add(node);
                 }
             }
-            final GitFileNode[] nodes = nodesList.toArray(new GitFileNode[nodesList.size()]);
+            final GitLocalFileNode[] nodes = nodesList.toArray(new GitLocalFileNode[nodesList.size()]);
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -480,7 +481,7 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            getCommitTable().setNodes(new GitFileNode[0]);
+                            getCommitTable().setNodes(new GitLocalFileNode[0]);
                         }
                     });
                     // get list of modifications
@@ -509,13 +510,13 @@ public class GitCommitPanel extends VCSCommitPanel<GitFileNode> {
                         return;
                     }
 
-                    ArrayList<GitFileNode> nodesList = new ArrayList<GitFileNode>(files.length);
+                    ArrayList<GitLocalFileNode> nodesList = new ArrayList<GitLocalFileNode>(files.length);
 
                     for (File file : files) {
-                        GitFileNode node = new GitFileNode(repository, file);
+                        GitLocalFileNode node = new GitLocalFileNode(repository, file);
                         nodesList.add(node);
                     }
-                    final GitFileNode[] nodes = nodesList.toArray(new GitFileNode[files.length]);
+                    final GitLocalFileNode[] nodes = nodesList.toArray(new GitLocalFileNode[files.length]);
                     EventQueue.invokeLater(new Runnable() {
 
                         @Override

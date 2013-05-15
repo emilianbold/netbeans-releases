@@ -72,6 +72,10 @@ public class IOSSDK implements SDK {
         String line = null;
         do {
             line = r.readLine();
+            if (line==null) {
+                //no ios sdks
+                return result;
+            }
         } while (!line.startsWith("iOS Simulator SDKs")); //NOI18N
         
         line = r.readLine();

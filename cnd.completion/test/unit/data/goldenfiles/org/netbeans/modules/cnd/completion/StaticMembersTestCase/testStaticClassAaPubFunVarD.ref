@@ -1,8 +1,8 @@
-bPub int
-bPubSt int
-dPub int
-dPubSt int
-bPubFun() void
-bPubFunSt() void
-dPubFun() void
-dPubFunSt() void
+bPub int	$	    d.bPub
+bPubSt int	$	    d.bPubSt
+dPub int	$	    d.dPub
+dPubSt int	$	    d.dPubSt
+bPubFun() void	$	    d.bPubFun()
+bPubFunSt() void	$	    d.bPubFunSt()
+dPubFun() void	$	    d.dPubFun()
+dPubFunSt() void	$	    d.dPubFunSt()

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -63,12 +63,12 @@ public final class Main extends Object {
         // NbBundle or any other library compiled against java6 only
         // also prevent usage of java6 methods and classes
         try {
-            Class.forName("java.util.ServiceLoader"); // NOI18N
+            Class.forName("java.lang.ReflectiveOperationException"); // NOI18N
         } catch (ClassNotFoundException ex) {
             JOptionPane.showMessageDialog(
                 null,
-                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_InstallJava6"),
-                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_NeedsJava6"),
+                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_InstallJava7"),
+                ResourceBundle.getBundle("org.netbeans.Bundle").getString("MSG_NeedsJava7"),
                 JOptionPane.WARNING_MESSAGE
             );
             System.exit(10);

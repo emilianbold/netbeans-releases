@@ -83,7 +83,6 @@ import org.netbeans.modules.project.ui.ProjectTab;
 import org.netbeans.modules.project.ui.ProjectUtilities;
 import static org.netbeans.modules.project.ui.groups.Bundle.*;
 import org.openide.cookies.CloseCookie;
-import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
@@ -96,6 +95,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+import org.openide.windows.WindowSystemEvent;
+import org.openide.windows.WindowSystemListener;
 
 /**
  * Represents a project group.
@@ -196,7 +197,65 @@ public abstract class Group {
             OpenProjectListSettings settings = OpenProjectListSettings.getInstance();
             settings.setOpenProjectsURLsAsStrings(nue != null ? nue.projectPaths() : Collections.<String>emptyList());
             settings.setMainProjectURL(nue != null ? nue.prefs().get(KEY_MAIN, null) : null);
-            // XXX with #168578 could adjust open files too
+            
+            WindowManager.getDefault().addWindowSystemListener(new WindowSystemListener() {
+
+                @Override
+                public void beforeLoad(WindowSystemEvent event) {
+                }
+
+                @Override
+                public void afterLoad(WindowSystemEvent event) {
+                    WindowManager wm = WindowManager.getDefault();
+                    for (Mode mode : wm.getModes()) {
+                        //#84546 - this condituon should allow us to close just editor related TCs that are in any imaginable mode.
+                        if (!wm.isEditorMode(mode)) {
+                            continue;
+                        }
+                        for (TopComponent tc : wm.getOpenedTopComponents(mode)) {
+                            DataObject dobj = tc.getLookup().lookup(DataObject.class);
+
+                            if (dobj != null) {
+                                tc.close();
+                            }
+                        }
+                    }
+                    //see GroupOptionProcessor
+                    String val = System.getProperty("group.supresses.lazy.loading");
+                    if (val != null) {
+                        System.setProperty("nb.core.windows.no.lazy.loading", val);
+                    }
+                    WindowManager.getDefault().removeWindowSystemListener(this);
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            OpenProjects.getDefault().getOpenProjects();
+                            WindowManager.getDefault().invokeWhenUIReady(new Runnable() {
+                                @Override
+                                public void run() {
+                                    RequestProcessor.getDefault().post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            OpenProjectList.waitProjectsFullyOpen();
+                                            for (Project p : OpenProjects.getDefault().getOpenProjects()) {
+                                                ProjectUtilities.openProjectFiles(p, getActiveGroup());
+                                            }
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+
+                @Override
+                public void beforeSave(WindowSystemEvent event) {
+                }
+
+                @Override
+                public void afterSave(WindowSystemEvent event) {
+                }
+            });
         }
         if (UILOG.isLoggable(Level.FINER)) {
             LogRecord rec = new LogRecord(Level.FINER, "Group.UI.setActiveGroup");
@@ -267,6 +326,19 @@ public abstract class Group {
             return sanitizedId;
         }
     }
+    
+    //called when IDE is shutting down, at that point we need to save the current group's
+    // opened files. If IDE reopens with --open-group switch, the current group's list would be lost.
+    public static void onShutdown(Set<Project> prjs) {
+        Group active = getActiveGroup();
+        String oldGroupName = active != null ? active.getName() : null;
+        Set<Project> stayOpened = new HashSet<Project>(prjs);
+        Map<Project, Set<DataObject>> documents = getOpenedDocuments(stayOpened, true);
+        for (Project p : stayOpened) {
+            Set<DataObject> oldDocuments = documents.get(p);
+            persistDocumentsInGroup(p, oldDocuments, oldGroupName);
+        }
+    }
 
     private static void persistDocumentsInGroup(Project p, Set<DataObject> get, String oldGroupName) {
         Set<String> urls = new HashSet<String>();
@@ -279,11 +351,9 @@ public abstract class Group {
         ProjectUtilities.storeProjectOpenFiles(p, urls, oldGroupName);
     }
 
-    private static Map<Project, Set<DataObject>> getOpenedDocuments(final Set<Project> listOfProjects) {
+    private static Map<Project, Set<DataObject>> getOpenedDocuments(final Set<Project> listOfProjects, boolean shutdown) {
         final Map<Project, Set<DataObject>> toRet = new HashMap<Project, Set<DataObject>>();
-        assert !SwingUtilities.isEventDispatchThread();
-        try {
-            SwingUtilities.invokeAndWait(new Runnable() {
+        Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
                     WindowManager wm = WindowManager.getDefault();
@@ -310,11 +380,19 @@ public abstract class Group {
                         }
                     }
                 }
-            });
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (InvocationTargetException ex) {
-            Exceptions.printStackTrace(ex);
+            };
+        if (!shutdown) {
+            assert !SwingUtilities.isEventDispatchThread();
+            try {
+                SwingUtilities.invokeAndWait(runnable);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        } else {
+            //when call from shutdown we are on AWT but don't have time to play threading games anymore 
+            runnable.run();
         }
         return toRet;
     }
@@ -516,7 +594,7 @@ public abstract class Group {
                 
                 //for old and new group project intersection, save the old files list,
                 // compare to the new one and only close the files missing in the new one and open files missing in old one..
-                Map<Project, Set<DataObject>> documents = getOpenedDocuments(stayOpened);
+                Map<Project, Set<DataObject>> documents = getOpenedDocuments(stayOpened, false);
                 for (Project p : stayOpened) {
                     Set<DataObject> oldDocuments = documents.get(p);
                     persistDocumentsInGroup(p, oldDocuments, oldGroupName);

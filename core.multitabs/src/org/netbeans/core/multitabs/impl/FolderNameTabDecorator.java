@@ -77,7 +77,7 @@ public class FolderNameTabDecorator extends TabDecorator {
                 if( fo.isData() ) {
                     FileObject folder = fo.getParent();
                     if( null != folder ) {
-                        String folderName = folder.getName() + pathSeparator;
+                        String folderName = folder.getNameExt() + pathSeparator;
                         String defaultText = tab.getText();
 
                         return merge( folderName, defaultText );

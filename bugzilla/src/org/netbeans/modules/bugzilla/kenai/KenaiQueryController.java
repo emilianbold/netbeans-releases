@@ -43,7 +43,7 @@
 package org.netbeans.modules.bugzilla.kenai;
 
 import java.util.List;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.util.LogUtils;
 import org.netbeans.modules.bugzilla.BugzillaConnector;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
@@ -146,7 +146,7 @@ public class KenaiQueryController extends QueryController {
     }
 
     private boolean checkIssueProduct(BugzillaIssue issue) {
-        String issueProduct = issue.getFieldValue(IssueField.PRODUCT);
+        String issueProduct = issue.getRepositoryFieldValue(IssueField.PRODUCT);
         if(!issueProduct.equals(product)) {
             Confirmation dd = new DialogDescriptor.Confirmation(
                                 NbBundle.getMessage(
@@ -157,15 +157,6 @@ public class KenaiQueryController extends QueryController {
             return DialogDisplayer.getDefault().notify(dd) ==  Confirmation.YES_OPTION;
         }
         return true;
-    }
-
-    protected void logAutoRefreshEvent(boolean autoRefresh) {
-        LogUtils.logAutoRefreshEvent(
-            BugzillaConnector.getConnectorName(),
-            query.getDisplayName(),
-            true,
-            autoRefresh
-        );
     }
 
 }

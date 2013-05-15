@@ -451,6 +451,7 @@ private void serverListBoxValueChanged(javax.swing.event.ListSelectionEvent evt)
         PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*v3.*")); // NOI18N
         PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*v3")); // NOI18N
         PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*Server\\s*3.*")); // NOI18N
+        PRIORITY_LIST.add(Pattern.compile(".*GlassFish\\s*Server.*")); // NOI18N
         CLOUD_PRIORITY_LIST.add(Pattern.compile(".*Oracle\\sCloud.*")); // NOI18N
     }
     

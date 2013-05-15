@@ -65,7 +65,6 @@ import org.openide.awt.ActionRegistration;
 @ActionID(id = "org.netbeans.modules.mercurial.ui.status.OpenVersioningAction", category = "Mercurial")
 @ActionRegistration(displayName = "#CTL_MenuItem_OpenVersioning", iconBase=OpenVersioningAction.ICON_BASE)
 @ActionReferences({
-   @ActionReference(path="Menu/Window/Versioning", position=400),
    @ActionReference(path="OptionsDialog/Actions/Mercurial")
 })
 public class OpenVersioningAction extends ShowAllChangesAction {

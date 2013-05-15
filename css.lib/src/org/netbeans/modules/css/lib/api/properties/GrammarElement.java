@@ -165,7 +165,7 @@ public abstract class GrammarElement {
     }
 
     public List<GrammarElement> elementsPath() {
-        List<GrammarElement> elementsPath = new LinkedList<GrammarElement>();
+        List<GrammarElement> elementsPath = new LinkedList<>();
 
         GrammarElement element = this;
         do {

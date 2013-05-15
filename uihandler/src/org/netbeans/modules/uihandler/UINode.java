@@ -184,12 +184,12 @@ final class UINode extends AbstractNode implements VisualData, Decorable {
                 if (full == null) {
                     return null;
                 }
-                if (full.startsWith("org.netbeans.ui")) {
-                    if (full.equals("org.netbeans.ui")) {
+                if (full.startsWith(Installer.UI_LOGGER_NAME)) {
+                    if (full.equals(Installer.UI_LOGGER_NAME)) {
                         return "UI General";
                     }
                     
-                    return full.substring("org.netbeans.ui.".length());
+                    return full.substring(Installer.UI_LOGGER_NAME.length());
                 }
                 return full;
             }

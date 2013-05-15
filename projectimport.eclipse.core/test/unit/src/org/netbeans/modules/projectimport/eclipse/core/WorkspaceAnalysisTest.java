@@ -65,7 +65,7 @@ public class WorkspaceAnalysisTest extends ProjectImporterTestCase {
         File workspaceDir = extractToWorkDir("workspace-test-3.1M6.zip");
         Workspace workspace = WorkspaceFactory.getInstance().load(workspaceDir);
         assertNotNull("Unable to load workspace", workspace);
-        assertFalse("Workspace shouldn't be emtpy", workspace.getProjects().isEmpty());
+        assertFalse("Workspace shouldn't be empty", workspace.getProjects().isEmpty());
         
         // Below information are just known. Get familiar with tested zips
         // (which could be created by the helper script createWorkspace.sh)

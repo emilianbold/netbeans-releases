@@ -44,6 +44,8 @@
 
 package org.netbeans.core.output2;
 
+import java.util.Arrays;
+
 /**
  * A collections-like lineStartList of primitive integers.
  */
@@ -75,6 +77,22 @@ final class IntListSimple {
         return used;
     }
     
+    public void set(int index, int value) {
+        if (index >= used) {
+            throw new IndexOutOfBoundsException();
+        } else {
+            array[index] = value;
+        }
+    }
+
+    public void shorten(int newSize) {
+        if (newSize > used) {
+            throw new IllegalArgumentException();
+        } else {
+            used = newSize;
+        }
+    }
+
     private void growArray() {
         int[] old = array;
         array = new int[Math.round(array.length * 1.5f)];
@@ -96,4 +114,22 @@ final class IntListSimple {
         return result.toString();
     }
     
+    /**
+     * Shift the list (to left). First {@code shift} items will be forgotten.
+     * Each item can be decremented by {@code decrement}.
+     *
+     * @param shift How many items should be removed. Item at index
+     * {@code shift} will be at index 0 after this operation.
+     * @param increment The value each item should be decremented by.
+     */
+    public synchronized void compact(int shift, int decrement) {
+        if (shift < 0 || shift > used) {
+            throw new IllegalArgumentException();
+        }
+        for (int i = shift; i < used; i++) {
+            array[i - shift] = array[i] - decrement;
+        }
+        Arrays.fill(array, used - shift, used, Integer.MAX_VALUE);
+        used -= shift;
+    }
 }

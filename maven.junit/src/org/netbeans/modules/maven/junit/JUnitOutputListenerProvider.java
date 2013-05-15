@@ -66,6 +66,8 @@ import org.jdom.Document;
 import org.jdom.Element;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
@@ -318,20 +320,28 @@ public class JUnitOutputListenerProvider implements OutputProcessor {
         session = null;
     }
 
-    private static Pattern COMPARISON_PATTERN = Pattern.compile(".*expected:<(.*)> but was:<(.*)>$"); //NOI18N
+    private static final Pattern COMPARISON_PATTERN = Pattern.compile(".*expected:<(.*)> but was:<(.*)>$"); //NOI18N
+    private static final Pattern COMPARISON_PATTERN_AFTER_65 = Pattern.compile(".*expected \\[(.*)\\] but found \\[(.*)\\]$"); //NOI18N
 
-    static Trouble constructTrouble(String type, String message, String text, boolean error) {
+    static Trouble constructTrouble(@NonNull String type, @NullAllowed String message, @NullAllowed String text, boolean error) {
         Trouble t = new Trouble(error);
         if (message != null) {
             Matcher match = COMPARISON_PATTERN.matcher(message);
             if (match.matches()) {
                 t.setComparisonFailure(new Trouble.ComparisonFailure(match.group(1), match.group(2)));
-            }
+            } else {
+		match = COMPARISON_PATTERN_AFTER_65.matcher(message);
+		if (match.matches()) {
+		    t.setComparisonFailure(new Trouble.ComparisonFailure(match.group(1), match.group(2)));
+		}
+	    }
         }
         if (text != null) {
             String[] strs = StringUtils.split(text, "\n");
             List<String> lines = new ArrayList<String>();
-            lines.add(message);
+            if (message != null) {
+                lines.add(message);
+            }
             lines.add(type);
             for (int i = 1; i < strs.length; i++) {
                 lines.add(strs[i]);

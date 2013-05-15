@@ -603,6 +603,11 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
         protected DataObject getDataObject() {
             return item.getDataObject();
         }
+
+        @Override
+        public String getFileDisplayPath() {
+            return item.getNormalizedPath();
+        }
     }
 
     private static final class OtherFD extends FDImpl {
@@ -641,6 +646,11 @@ public class MakeProjectFileProviderFactory implements FileProviderFactory {
                 return fileObject;
             }
             return null;
+        }
+        
+        @Override
+        public String getFileDisplayPath() {
+            return folder.getRootPath()+"/"+name; //NOI18N
         }
     }
 }

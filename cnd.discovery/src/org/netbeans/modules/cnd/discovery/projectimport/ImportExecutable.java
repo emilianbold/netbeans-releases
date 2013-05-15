@@ -58,7 +58,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
-import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
@@ -66,6 +65,8 @@ import org.netbeans.modules.cnd.api.model.CsmOffsetableDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmProgressAdapter;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.services.CsmFunctionDefinitionResolver;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
@@ -90,9 +91,6 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -609,12 +607,22 @@ public class ImportExecutable implements PropertyChangeListener {
                     if (id != null && id.equals(np)) {
                         CsmListeners.getDefault().removeProgressListener(this);
                         listeners.remove(this);
-                        if (project instanceof ProjectBase && functionName != null) {
-                            String from = Utils.getCsmDeclarationKindkey(CsmDeclaration.Kind.FUNCTION_DEFINITION) + ':' + functionName + '('; // NOI18N
-                            Collection<CsmOffsetableDeclaration> decls = ((ProjectBase)project).findDeclarationsByPrefix(from);
+                        if (functionName != null) {
+                            Collection<CsmOffsetableDeclaration> decls = CsmFunctionDefinitionResolver.getDefault().findDeclarationByName(project, functionName);
+                            CsmOffsetableDeclaration best = null;
                             for(CsmOffsetableDeclaration decl : decls){
-                                CsmUtilities.openSource(decl);
-                                break;
+                                if (functionName.contentEquals(decl.getName())) {
+                                    if (CsmKindUtilities.isFunctionDefinition(decl)) {
+                                        best = decl;
+                                        break;
+                                    }
+                                    if (best == null) {
+                                        best = decl;
+                                    }
+                                }
+                            }
+                            if (best != null) {
+                                CsmUtilities.openSource(best);
                             }
                         }
                         DiscoveryProjectGenerator.fixExcludedHeaderFiles(makeProject, ImportProject.logger);
@@ -630,12 +638,12 @@ public class ImportExecutable implements PropertyChangeListener {
     }
 
     static void switchModel(CsmModel model, boolean state, Project makeProject) {
-        if (model instanceof ModelImpl && makeProject != null) {
+        if (model != null && makeProject != null) {
             NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             if (state) {
-                ((ModelImpl) model).enableProject(np);
+                model.enableProject(np);
             } else {
-                ((ModelImpl) model).disableProject(np);
+                model.disableProject(np);
             }
         }
     }

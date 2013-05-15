@@ -60,13 +60,13 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties.RunAsType;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.runconfigs.RunConfigLocal;
 import org.netbeans.modules.php.project.runconfigs.validation.RunConfigLocalValidator;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * @author  Radek Matous, Tomas Mysik
@@ -133,7 +133,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     }
 
     @Override
-    public JComboBox getRunAsCombo() {
+    public JComboBox<String> getRunAsCombo() {
         return runAsCombo;
     }
 
@@ -191,7 +191,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     private void initComponents() {
 
         runAsLabel = new JLabel();
-        runAsCombo = new JComboBox();
+        runAsCombo = new JComboBox<String>();
         urlLabel = new JLabel();
         urlTextField = new JTextField();
         indexFileLabel = new JLabel();
@@ -212,6 +212,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
 
         indexFileLabel.setLabelFor(indexFileTextField);
         Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_IndexFile")); // NOI18N
+
         Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsLocalWeb.class, "LBL_Browse")); // NOI18N
         indexFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -228,6 +229,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         hintLabel.setBackground(UIManager.getDefaults().getColor("Label.background"));
         hintLabel.setBorder(null);
         hintLabel.setFocusable(false);
+
         Mnemonics.setLocalizedText(advancedButton, NbBundle.getMessage(RunAsLocalWeb.class, "RunAsLocalWeb.advancedButton.text")); // NOI18N
         advancedButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -334,10 +336,10 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
             Pair<String, String> pathMapping = advanced.getPathMapping();
             Pair<String, String> debugProxy = advanced.getDebugProxy();
             RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_URL, advanced.getDebugUrl().name());
-            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, pathMapping.first);
-            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, pathMapping.second);
-            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_HOST, debugProxy.first);
-            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_PORT, debugProxy.second);
+            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_REMOTE, pathMapping.first());
+            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, pathMapping.second());
+            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_HOST, debugProxy.first());
+            RunAsLocalWeb.this.putValue(PhpProjectProperties.DEBUG_PROXY_PORT, debugProxy.second());
         }
     }//GEN-LAST:event_advancedButtonActionPerformed
 
@@ -349,7 +351,7 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
     private JButton indexFileBrowseButton;
     private JLabel indexFileLabel;
     private JTextField indexFileTextField;
-    private JComboBox runAsCombo;
+    private JComboBox<String> runAsCombo;
     private JLabel runAsLabel;
     private JLabel urlLabel;
     private JTextField urlTextField;

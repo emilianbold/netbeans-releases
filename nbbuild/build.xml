@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -62,17 +62,17 @@ made subject to such option by the copyright holder.
 
   <target name="bootstrap" description="Bootstrap NetBeans-specific Ant extensions."
           depends="-jdk-init,-load-build-properties">
-    <fail message="You need JDK 6+ to build NetBeans; nbjdk.home=${nbjdk.home} java.home=${java.home}">
+    <fail message="You need JDK 7+ to build NetBeans; nbjdk.home=${nbjdk.home} java.home=${java.home}">
         <condition>
             <not>
-                <isset property="have-jdk-1.6"/>
+                <isset property="have-jdk-1.7"/>
             </not>
         </condition>
     </fail>
 
     <property name="build.ant.classes.dir" location="${nb.build.dir}/antclasses"/>
     <mkdir dir="${build.ant.classes.dir}"/>
-    <javac srcdir="antsrc" destdir="${build.ant.classes.dir}" deprecation="true" debug="${build.compiler.debug}" source="1.6" target="1.6">
+    <javac srcdir="antsrc" destdir="${build.ant.classes.dir}" deprecation="true" debug="${build.compiler.debug}" source="1.7" target="1.7">
         <classpath>
             <pathelement location="${ant.core.lib}"/>
         </classpath>
@@ -103,7 +103,7 @@ made subject to such option by the copyright holder.
         <include name="javahelp/external/jhall*.jar"/>
       </fileset>
     </path>
-    <javac srcdir="antsrc" destdir="${build.ant.classes.dir}" deprecation="true" debug="${build.compiler.debug}" source="1.6" target="1.6">
+    <javac srcdir="antsrc" destdir="${build.ant.classes.dir}" deprecation="true" debug="${build.compiler.debug}" source="1.7" target="1.7">
       <classpath refid="bootstrap-cp"/>
       <compilerarg line="-Xlint -Xlint:-serial"/>
     </javac>
@@ -228,6 +228,13 @@ made subject to such option by the copyright holder.
   </target>
 
   <target name="build-jnlp" depends="init,jnlp-generate-keystore" description="Create a JNLP distribution.">
+      <fail message="Please build using Ant 1.8.4 or higher.">
+        <condition>
+          <not>
+            <antversion atleast="1.8.4"/>
+          </not>
+        </condition>
+      </fail>
       <property name="jnlp.dest.dir" location="${nb.build.dir}/jnlp" />
       <mkdir dir="${jnlp.dest.dir}" />
       <makeurl property="jnlp.codebase" file="${jnlp.dest.dir}"/> <!-- fallback value unless otherwise configured -->
@@ -1189,7 +1196,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             <element name="test" implicit="true"/>
             <sequential>
                 <mkdir dir="${nb.build.dir}/test/unit/classes"/>
-                <javac srcdir="test/unit/src" destdir="${nb.build.dir}/test/unit/classes" debug="true" source="1.6">
+                <javac srcdir="test/unit/src" destdir="${nb.build.dir}/test/unit/classes" debug="true" source="1.7">
                     <classpath path="${test.unit.cp}"/>
                     <compilerarg line="-Xlint -Xlint:-serial"/>
                 </javac>
@@ -1435,7 +1442,12 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </echo>
   </target>
 
-    <target name="verify-libs-and-licenses" depends="bootstrap,download-all-extbins" description="Verify the contents of third-party libraries and licenses.">
+    <target name="verify-all-libs-and-licenses" depends="bootstrap,download-all-extbins" description="Verify the contents of third-party libraries and licenses.">
+        <taskdef name="verifylibsandlicenses" classname="org.netbeans.nbbuild.extlibs.VerifyLibsAndLicenses" classpath="${nbantext.jar}"/>
+        <verifylibsandlicenses report="${nb.build.dir}/verifylibsandlicenses.xml" nball=".."/>
+    </target>
+
+    <target name="verify-libs-and-licenses" depends="bootstrap,download-selected-extbins" description="Verify the contents of third-party libraries and licenses in the selected configuration.">
         <taskdef name="verifylibsandlicenses" classname="org.netbeans.nbbuild.extlibs.VerifyLibsAndLicenses" classpath="${nbantext.jar}"/>
         <verifylibsandlicenses report="${nb.build.dir}/verifylibsandlicenses.xml" nball=".."/>
     </target>

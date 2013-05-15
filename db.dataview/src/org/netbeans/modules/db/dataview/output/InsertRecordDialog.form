@@ -9,12 +9,6 @@
     <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
       <Color blue="ff" green="ff" id="white" palette="1" red="ff" type="palette"/>
     </Property>
-    <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
-      <Font name="Dialog" size="12" style="0"/>
-    </Property>
-    <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-      <Color blue="0" green="0" id="black" palette="1" red="0" type="palette"/>
-    </Property>
     <Property name="locationByPlatform" type="boolean" value="true"/>
     <Property name="modal" type="boolean" value="true"/>
   </Properties>
@@ -25,7 +19,7 @@
     <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
       <ResourceString bundle="org/netbeans/modules/db/dataview/output/Bundle.properties" key="InsertRecordDialog.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
     </Property>
-    <Property name="AccessibleContext.accessibleParent" type="javax.accessibility.Accessible" editor="org.netbeans.modules.form.RADVisualComponent$AccessibleParentEditor">
+    <Property name="AccessibleContext.accessibleParent" type="javax.accessibility.Accessible" editor="org.netbeans.modules.form.ComponentChooserEditor">
       <ComponentRef name="null"/>
     </Property>
   </AccessibilityProperties>
@@ -49,11 +43,11 @@
   <SubComponents>
     <Component class="javax.swing.JTextArea" name="jTextArea1">
       <Properties>
+        <Property name="editable" type="boolean" value="false"/>
         <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
           <Color blue="f4" green="f4" id="Label.background" palette="3" red="f4" type="palette"/>
         </Property>
         <Property name="columns" type="int" value="20"/>
-        <Property name="editable" type="boolean" value="false"/>
         <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
           <FontInfo relative="true">
             <Font component="jTextArea1" property="font" relativeSize="true" size="0"/>

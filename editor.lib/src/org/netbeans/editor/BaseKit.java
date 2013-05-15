@@ -109,6 +109,7 @@ import org.netbeans.modules.editor.lib2.actions.KeyBindingsUpdater;
 import org.netbeans.modules.editor.lib2.typinghooks.DeletedTextInterceptorsManager;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedBreakInterceptorsManager;
 import org.netbeans.modules.editor.lib2.typinghooks.TypedTextInterceptorsManager;
+import org.netbeans.spi.editor.typinghooks.CamelCaseInterceptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -172,9 +173,6 @@ public class BaseKit extends DefaultEditorKit {
 
     /** Reset the abbreviation accounting string */
     public static final String abbrevResetAction = "abbrev-reset"; // NOI18N
-
-    /** Remove the word */ 
-    //public static final String removeWordAction = "remove-word"; #47709
 
     /** Remove characters to the begining of the word or 
      *  the previous word if caret is not directly at word */
@@ -266,6 +264,9 @@ public class BaseKit extends DefaultEditorKit {
 
     /** Format part of the document text using Indent */
     public static final String formatAction = "format"; // NOI18N
+
+    /** Indent part of the document text using Indent */
+    public static final String indentAction = "indent"; // NOI18N
 
     /** First non-white character on the line */
     public static final String firstNonWhiteAction = "first-non-white"; // NOI18N
@@ -873,12 +874,6 @@ public class BaseKit extends DefaultEditorKit {
                    undoActionDef,
                    redoActionDef,
                    //new ActionFactory.ToggleLineNumbersAction(),
-                   new NextWordAction(nextWordAction),
-                   new NextWordAction(selectionNextWordAction),
-                   new PreviousWordAction(previousWordAction),
-                   new PreviousWordAction(selectionPreviousWordAction),
-                   new ActionFactory.RemoveWordNextAction(),
-                   new ActionFactory.RemoveWordPreviousAction(),
                    new ActionFactory.ToggleRectangularSelectionAction(),
 
                    // Self test actions
@@ -1539,13 +1534,18 @@ public class BaseKit extends DefaultEditorKit {
                             try {
                                 if (Utilities.isSelectionShowing(caret)) { // block selected
                                     try {
-                                        boolean selectionAtLineStart = Utilities.getRowStart(doc, target.getSelectionStart()) == target.getSelectionStart();
-                                        changeBlockIndent(doc, target.getSelectionStart(), target.getSelectionEnd(), +1);
-                                        if (selectionAtLineStart) {
-                                            int newSelectionStartOffset = target.getSelectionStart();
-                                            int lineStartOffset = Utilities.getRowStart(doc, newSelectionStartOffset);
-                                            if (lineStartOffset != newSelectionStartOffset)
-                                            target.select(lineStartOffset, target.getSelectionEnd());
+                                        if (target.getSelectedText().trim().isEmpty()) {
+                                            doc.remove(target.getSelectionStart(), target.getSelectionEnd() - target.getSelectionStart());
+                                            insertTabString(doc, target.getSelectionStart());
+                                        } else {
+                                            boolean selectionAtLineStart = Utilities.getRowStart(doc, target.getSelectionStart()) == target.getSelectionStart();
+                                            changeBlockIndent(doc, target.getSelectionStart(), target.getSelectionEnd(), +1);
+                                            if (selectionAtLineStart) {
+                                                int newSelectionStartOffset = target.getSelectionStart();
+                                                int lineStartOffset = Utilities.getRowStart(doc, newSelectionStartOffset);
+                                                if (lineStartOffset != newSelectionStartOffset)
+                                                target.select(lineStartOffset, target.getSelectionEnd());
+                                            }
                                         }
                                     } catch (GuardedException ge) {
                                         LOG.log(Level.FINE, null, ge);
@@ -2761,11 +2761,9 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
-    // Disabled annotations due to overriding by camel-case actions in GSF (no concrete mimetype)
-//    @EditorActionRegistrations({
-//        @EditorActionRegistration(name = nextWordAction),
-//        @EditorActionRegistration(name = selectionNextWordAction)
-//    })
+    /**
+     * @deprecated use {@link CamelCaseInterceptor} instead
+     */
     public static class NextWordAction extends LocalBaseAction {
 
         static final long serialVersionUID =-5909906947175434032L;
@@ -2809,11 +2807,9 @@ public class BaseKit extends DefaultEditorKit {
         }
     }
 
-    // Disabled annotations due to overriding by camel-case actions in GSF (no concrete mimetype)
-//    @EditorActionRegistrations({
-//        @EditorActionRegistration(name = previousWordAction),
-//        @EditorActionRegistration(name = selectionPreviousWordAction)
-//    })
+    /**
+     * @deprecated use {@link CamelCaseInterceptor} instead
+     */
     public static class PreviousWordAction extends LocalBaseAction {
 
         static final long serialVersionUID =-5465143382669785799L;

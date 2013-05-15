@@ -65,6 +65,7 @@ import java.util.StringTokenizer;
 import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -106,7 +107,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
+import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -189,6 +190,8 @@ public class ImportRemoteProject implements PropertyChangeListener {
     private static final String CND_BUILD_LOG = "__CND_BUILD_LOG__"; //NOI18N
     private boolean useBuildTrace = true;
     private final CountDownLatch waitSources = new CountDownLatch(1);
+    private final AtomicInteger openState = new AtomicInteger(0);
+    private Interrupter interrupter;
 
 
     public ImportRemoteProject(WizardDescriptor wizard) {
@@ -376,45 +379,52 @@ public class ImportRemoteProject implements PropertyChangeListener {
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
-            if (evt.getNewValue() instanceof Project[]) {
-                Project[] projects = (Project[])evt.getNewValue();
-                if (projects.length == 0) {
-                    return;
-                }
-                OpenProjects.getDefault().removePropertyChangeListener(this);
-                //if (setAsMain) {
-                //    OpenProjects.getDefault().setMainProject(makeProject);
-                //}
-                RP.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        doWork();
+        if (openState.get() == 0) {
+            if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
+                if (evt.getNewValue() instanceof Project[]) {
+                    Project[] projects = (Project[])evt.getNewValue();
+                    if (projects.length == 0) {
+                        return;
                     }
-                });
+                    interrupter = new Interrupter() {
+
+                        @Override
+                        public boolean cancelled() {
+                            return !isProjectOpened();
+                        }
+                    };
+                    openState.incrementAndGet();
+                    RP.post(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            doWork();
+                        }
+                    });
+                }
+            }
+        } else if (openState.get() == 1) {
+            if (evt.getPropertyName().equals(OpenProjects.PROPERTY_OPEN_PROJECTS)) {
+                if (evt.getNewValue() instanceof Project[]) {
+                    Project[] projects = (Project[])evt.getNewValue();
+                    for(Project p : projects) {
+                        if (p == makeProject) {
+                            return;
+                        }
+                    }
+                    openState.incrementAndGet();
+                    OpenProjects.getDefault().removePropertyChangeListener(this);
+                }
             }
         }
     }
 
     boolean isProjectOpened() {
-        for (Project p : OpenProjects.getDefault().getOpenProjects()) {
-            if (p == makeProject) {
-                return true;
-            }
-        }
-        return false;
+        return openState.get() == 1;
     }
 
     private void doWork() {
         try {
-            //OpenProjects.getDefault().open(new Project[]{makeProject}, false);
-            //if (setAsMain) {
-            //    OpenProjects.getDefault().setMainProject(makeProject);
-            //}
-            if (makeProject instanceof Runnable) {
-                ((Runnable)makeProject).run();
-            }
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.getConfigurationDescriptor();
             if (pdp.gotDescriptor()) {
@@ -427,7 +437,7 @@ public class ImportRemoteProject implements PropertyChangeListener {
                             handle.start();
                             while(sources.hasNext()) {
                                 SourceFolderInfo next = sources.next();
-                                configurationDescriptor.addFilesFromRoot(configurationDescriptor.getLogicalFolders(), next.getFileObject(), handle, null, false, Folder.Kind.SOURCE_DISK_FOLDER, null);
+                                configurationDescriptor.addFilesFromRoot(configurationDescriptor.getLogicalFolders(), next.getFileObject(), handle, interrupter, true, Folder.Kind.SOURCE_DISK_FOLDER, null);
                             }
                             handle.finish();
                             waitSources.countDown();
@@ -922,14 +932,14 @@ public class ImportRemoteProject implements PropertyChangeListener {
                             map.put(ROOT_FOLDER, nativeProjectPath);
                             map.put(EXEC_LOG_FILE, execLog.getAbsolutePath());
                             map.put(CONSOLIDATION_STRATEGY, ConsolidationStrategy.FILE_LEVEL);
-                            if (extension.canApply(map, makeProject, null)) {
+                            if (extension.canApply(map, makeProject, interrupter)) {
                                 if (TRACE) {
                                     logger.log(Level.INFO, "#start discovery by exec log file {0}", execLog.getAbsolutePath()); // NOI18N
                                 }
                                 try {
                                     done = true;
                                     exeLogDone = true;
-                                    extension.apply(map, makeProject, null);
+                                    extension.apply(map, makeProject, interrupter);
                                     importResult.put(Step.DiscoveryLog, State.Successful);
                                 } catch (IOException ex) {
                                     ex.printStackTrace(System.err);
@@ -1021,6 +1031,7 @@ public class ImportRemoteProject implements PropertyChangeListener {
                 Exceptions.printStackTrace(ex);
             }
             makeProject.getProjectDirectory().refresh(true);
+            conf1.getParent().refresh(true);
             Type genericSuperclass = conf1.getClass().getGenericSuperclass();
             if (genericSuperclass instanceof Class) {
                 Type genericSuperclass1 = ((Class)genericSuperclass).getGenericSuperclass();
@@ -1078,7 +1089,7 @@ public class ImportRemoteProject implements PropertyChangeListener {
             return;
         }
         CsmModel model = CsmModelAccessor.getModel();
-        if (model instanceof ModelImpl && makeProject != null) {
+        if (model != null && makeProject != null) {
             final NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             final CsmProject p = model.getProject(np);
             if (p == null) {
@@ -1155,18 +1166,18 @@ public class ImportRemoteProject implements PropertyChangeListener {
 
     private void switchModel(boolean state) {
         CsmModel model = CsmModelAccessor.getModel();
-        if (model instanceof ModelImpl && makeProject != null) {
+        if (model != null && makeProject != null) {
             NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
             if (state) {
                 if (TRACE) {
                     logger.log(Level.INFO, "#enable model for {0}", np.getProjectDisplayName()); // NOI18N
                 }
-                ((ModelImpl) model).enableProject(np);
+                model.enableProject(np);
             } else {
                 if (TRACE) {
                     logger.log(Level.INFO, "#disable model for {0}", np.getProjectDisplayName()); // NOI18N
                 }
-                ((ModelImpl) model).disableProject(np);
+                model.disableProject(np);
             }
         }
     }

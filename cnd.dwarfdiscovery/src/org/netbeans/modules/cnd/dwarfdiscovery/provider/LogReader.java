@@ -551,7 +551,7 @@ public class LogReader {
             if (DwarfSource.LOG.isLoggable(Level.FINE)) {
                 message = "**>> by [just path string] "; //NOI18N
             }
-        } else if (line.indexOf("make") >= 0) { //NOI18N
+        } else if (line.indexOf("make") >= 0 && line.length() < 2000) { //NOI18N
             Matcher m = MAKE_DIRECTORY.matcher(line);
             boolean found = m.find();
             if (found && m.start() == 0) {

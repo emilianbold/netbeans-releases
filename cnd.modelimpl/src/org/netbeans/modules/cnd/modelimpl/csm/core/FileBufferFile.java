@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
 import org.openide.filesystems.FileObject;
 
@@ -128,7 +129,7 @@ public class FileBufferFile extends AbstractFileBuffer {
                 return new char[0];
             }
             length++;
-            PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(FileImpl.READ_FILE_PERFORMANCE_EVENT, fo);
+            PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(CndFileUtils.READ_FILE_PERFORMANCE_EVENT, fo);
             char[] readChars = new char[(int)length];
             InputStream is = getInputStream();
             BufferedReader reader = new BufferedReader(new InputStreamReader(is, getEncoding()));

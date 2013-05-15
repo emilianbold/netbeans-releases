@@ -329,7 +329,7 @@ class TagManager implements ListSelectionListener, DocumentListener, ActionListe
 
         private void refreshRevisions (HgProgressSupport supp) {
             bGettingRevisions = true;
-            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+            OutputLogger logger = Mercurial.getInstance().getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
             HgTag[] fetchedTags;
             try {
                 fetchedTags = HgCommand.getTags(repository, logger);

@@ -59,8 +59,8 @@ import javax.swing.JPanel;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
 import org.netbeans.modules.team.ui.spi.JobHandle;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.treelist.LeafNode;
-import org.netbeans.modules.team.ui.treelist.TreeListNode;
+import org.netbeans.modules.team.ui.util.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 
 /**
@@ -120,7 +120,7 @@ public class BuildListNode extends SectionNode {
         }
 
         @Override
-        protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus) {
+        protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
             if( null == panel ) {
                 panel = new JPanel(new GridBagLayout());
                 panel.setOpaque(false);

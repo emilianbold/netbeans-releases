@@ -87,6 +87,12 @@ public final class OptionsUtils {
                         CodeCompletionPanel.PHP_AUTO_COMPLETION_SMART_QUOTES_DEFAULT);
             }
 
+            if (settingName == null || CodeCompletionPanel.PHP_AUTO_STRING_CONCATINATION.equals(settingName)) {
+                autoStringConcatination = preferences.getBoolean(
+                        CodeCompletionPanel.PHP_AUTO_STRING_CONCATINATION,
+                        CodeCompletionPanel.PHP_AUTO_STRING_CONCATINATION_DEFAULT);
+            }
+
             if (settingName == null || CodeCompletionPanel.PHP_CODE_COMPLETION_STATIC_METHODS.equals(settingName)) {
                 codeCompletionStaticMethods = preferences.getBoolean(
                         CodeCompletionPanel.PHP_CODE_COMPLETION_STATIC_METHODS,
@@ -120,6 +126,7 @@ public final class OptionsUtils {
     private static Boolean autoCompletionTypes = null;
     private static Boolean autoCompletionNamespaces = null;
     private static Boolean autoCompletionSmartQuotes = null;
+    private static Boolean autoStringConcatination = null;
 
     private static Boolean codeCompletionStaticMethods = null;
     private static Boolean codeCompletionNonStaticMethods = null;
@@ -211,6 +218,12 @@ public final class OptionsUtils {
         lazyInit();
         assert autoCompletionSmartQuotes != null;
         return autoCompletionSmartQuotes;
+    }
+
+    public static boolean autoStringConcatination() {
+        lazyInit();
+        assert autoStringConcatination != null;
+        return autoStringConcatination;
     }
 
     /**

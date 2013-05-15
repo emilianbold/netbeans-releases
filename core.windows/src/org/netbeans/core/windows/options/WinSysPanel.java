@@ -631,7 +631,7 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 LifecycleManager.getDefault().markForRestart();
                 LifecycleManager.getDefault().exit();
             }
-        });
+        }, NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.WARNING);
     }
 
     void selectDarkLookAndFeel() {

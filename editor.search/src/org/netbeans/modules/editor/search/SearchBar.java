@@ -97,12 +97,12 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     private static final int SEARCH_DELAY_TIME_SHORT = 20; // >= 3 chars
     private static final Color DEFAULT_FG_COLOR = UIManager.getColor("textText"); //NOI18N
     private WeakReference<JTextComponent> actualTextComponent;
-    private final List<PropertyChangeListener> actualComponentListeners = new LinkedList<PropertyChangeListener>();
+    private final List<PropertyChangeListener> actualComponentListeners = new LinkedList<>();
     private FocusAdapter focusAdapterForComponent;
     private KeyListener keyListenerForComponent;
     private PropertyChangeListener propertyChangeListenerForComponent;
     private final JLabel findLabel;
-    private final JComboBox incSearchComboBox;
+    private final JComboBox<String> incSearchComboBox;
     private final JTextComponent incSearchTextField;
     private final DocumentListener incSearchTextFieldListener;
     private boolean hadFocusOnIncSearchTextField = false;
@@ -151,7 +151,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
 
         add(Box.createHorizontalStrut(8)); //spacer in the beginnning of the toolbar
 
-        SearchComboBox scb = new SearchComboBox();
+        SearchComboBox<String> scb = new SearchComboBox<>();
         incSearchComboBox = scb;
         incSearchComboBox.setFocusable(false);
         incSearchComboBox.addPopupMenuListener(new SearchPopupMenuListener());
@@ -304,7 +304,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
     private static class SearchHistoryUtility {
 
         public static List<EditorFindSupport.SPW> convertFromSearchHistoryToEditorFindSupport(List<SearchPattern> searchPatterns) {
-            List<EditorFindSupport.SPW> history = new ArrayList<EditorFindSupport.SPW>();
+            List<EditorFindSupport.SPW> history = new ArrayList<>();
             for (int i = 0; i < searchPatterns.size(); i++) {
                 SearchPattern sptr = searchPatterns.get(i);
                 EditorFindSupport.SPW spwrap = new EditorFindSupport.SPW(sptr.getSearchExpression(),
@@ -315,7 +315,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         }
         
         public static List<EditorFindSupport.RP> convertFromReplaceHistoryToEditorFindSupport(List<ReplacePattern> replacePatterns) {
-            List<EditorFindSupport.RP> history = new ArrayList<EditorFindSupport.RP>();
+            List<EditorFindSupport.RP> history = new ArrayList<>();
             for (int i = 0; i < replacePatterns.size(); i++) {
                 ReplacePattern rp = replacePatterns.get(i);
                 EditorFindSupport.RP spwrap = new EditorFindSupport.RP(rp.getReplaceExpression(), rp.isPreserveCase());
@@ -331,17 +331,19 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         searchSelectedPatternListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt == null) {
+                if (evt == null || evt.getPropertyName() == null) {
                     return;
                 }
-                if (SearchHistory.ADD_TO_HISTORY.equals(evt.getPropertyName())) {
-                    EditorFindSupport.getInstance().setHistory(
+                switch(evt.getPropertyName()) {
+                    case SearchHistory.ADD_TO_HISTORY:
+                        EditorFindSupport.getInstance().setHistory(
                             SearchHistoryUtility.convertFromSearchHistoryToEditorFindSupport(SearchHistory.getDefault().getSearchPatterns()));
-                }
-                
-                if (SearchHistory.ADD_TO_REPLACE.equals(evt.getPropertyName())) {
-                    EditorFindSupport.getInstance().setReplaceHistory(
+                        break;
+                    case SearchHistory.ADD_TO_REPLACE:
+                        EditorFindSupport.getInstance().setReplaceHistory(
                             SearchHistoryUtility.convertFromReplaceHistoryToEditorFindSupport(SearchHistory.getDefault().getReplacePatterns()));
+                        break;
+                        
                 }
             }
         };
@@ -349,30 +351,35 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         editorHistoryChangeListener = new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt == null) {
+                if (evt == null || evt.getPropertyName() == null) {
                     return;
                 }
-                if (EditorFindSupport.FIND_HISTORY_PROP.equals(evt.getPropertyName())) {
-                    EditorFindSupport.SPW spw = (EditorFindSupport.SPW) evt.getNewValue();
-                    if (spw == null || spw.getSearchExpression() == null || "".equals(spw.getSearchExpression())) { //NOI18N
-                        return;
-                    }
-                    SearchPattern sp = SearchPattern.create(spw.getSearchExpression(),
-                            spw.isWholeWords(), spw.isMatchCase(), spw.isRegExp());
-                    SearchHistory.getDefault().add(sp);
-                } else if (EditorFindSupport.FIND_HISTORY_CHANGED_PROP.equals(evt.getPropertyName())) {
-                    EditorFindSupport.getInstance().setHistory(
-                            SearchHistoryUtility.convertFromSearchHistoryToEditorFindSupport(SearchHistory.getDefault().getSearchPatterns()));
-                } else if (EditorFindSupport.REPLACE_HISTORY_PROP.equals(evt.getPropertyName())) {
-                    EditorFindSupport.RP rp = (EditorFindSupport.RP) evt.getNewValue();
-                    if (rp == null || rp.getReplaceExpression() == null || "".equals(rp.getReplaceExpression())) { //NOI18N
-                        return;
-                    }
-                    ReplacePattern replacePattern = ReplacePattern.create(rp.getReplaceExpression(), rp.isPreserveCase());
-                    SearchHistory.getDefault().addReplace(replacePattern);
-                } else if (EditorFindSupport.REPLACE_HISTORY_CHANGED_PROP.equals(evt.getPropertyName())) {
-                    EditorFindSupport.getInstance().setReplaceHistory(
-                            SearchHistoryUtility.convertFromReplaceHistoryToEditorFindSupport(SearchHistory.getDefault().getReplacePatterns()));
+                switch (evt.getPropertyName()) {
+                    case EditorFindSupport.FIND_HISTORY_PROP:
+                        EditorFindSupport.SPW spw = (EditorFindSupport.SPW) evt.getNewValue();
+                        if (spw == null || spw.getSearchExpression() == null || "".equals(spw.getSearchExpression())) { //NOI18N
+                            return;
+                        }
+                        SearchPattern sp = SearchPattern.create(spw.getSearchExpression(),
+                                spw.isWholeWords(), spw.isMatchCase(), spw.isRegExp());
+                        SearchHistory.getDefault().add(sp);
+                        break;
+                    case EditorFindSupport.FIND_HISTORY_CHANGED_PROP:
+                        EditorFindSupport.getInstance().setHistory(
+                                SearchHistoryUtility.convertFromSearchHistoryToEditorFindSupport(SearchHistory.getDefault().getSearchPatterns()));
+                        break;
+                    case EditorFindSupport.REPLACE_HISTORY_PROP:
+                        EditorFindSupport.RP rp = (EditorFindSupport.RP) evt.getNewValue();
+                        if (rp == null || rp.getReplaceExpression() == null || "".equals(rp.getReplaceExpression())) { //NOI18N
+                            return;
+                        }
+                        ReplacePattern replacePattern = ReplacePattern.create(rp.getReplaceExpression(), rp.isPreserveCase());
+                        SearchHistory.getDefault().addReplace(replacePattern);
+                        break;
+                    case EditorFindSupport.REPLACE_HISTORY_CHANGED_PROP:
+                        EditorFindSupport.getInstance().setReplaceHistory(
+                                SearchHistoryUtility.convertFromReplaceHistoryToEditorFindSupport(SearchHistory.getDefault().getReplacePatterns()));
+                        break;
                 }
             }
         };
@@ -403,12 +410,12 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         incSearchTextField.getDocument().removeDocumentListener(incSearchTextFieldListener);
         // Add the text to the top of the list
         for (int i = incSearchComboBox.getItemCount() - 1; i >= 0; i--) {
-            String item = (String) incSearchComboBox.getItemAt(i);
+            String item = incSearchComboBox.getItemAt(i);
             if (item.equals(incrementalSearchText)) {
                 incSearchComboBox.removeItemAt(i);
             }
         }
-        ((MutableComboBoxModel) incSearchComboBox.getModel()).insertElementAt(incrementalSearchText, 0);
+        ((MutableComboBoxModel<String>) incSearchComboBox.getModel()).insertElementAt(incrementalSearchText, 0);
         incSearchComboBox.setSelectedIndex(0);
         incSearchTextField.getDocument().addDocumentListener(incSearchTextFieldListener);
     }
@@ -741,7 +748,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         SearchComboBoxEditor.changeToOneLineEditorPane((JEditorPane) incSearchTextField);
         addEnterKeystrokeFindNextTo(incSearchTextField);
 
-        MutableComboBoxModel comboBoxModelIncSearch = ((MutableComboBoxModel) incSearchComboBox.getModel());
+        MutableComboBoxModel<String> comboBoxModelIncSearch = ((MutableComboBoxModel<String>) incSearchComboBox.getModel());
         for (int i = comboBoxModelIncSearch.getSize() - 1; i >= 0; i--) {
             comboBoxModelIncSearch.removeElementAt(i);
         }
@@ -1037,7 +1044,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         for (PropertyChangeListener pcl : actualComponentListeners) {
             pcl.propertyChange(new PropertyChangeEvent(this, "actualTextComponent", getActualTextComponent(), component)); //NOI18N
         }
-        actualTextComponent = new WeakReference<JTextComponent>(component);
+        actualTextComponent = new WeakReference<>(component);
         EditorFindSupport.getInstance().setFocusedTextComponent(getActualTextComponent());
         //This is for component without highlighting
         if (Boolean.TRUE.equals(component.getClientProperty("searchbar.hideHighlightIcon"))) { //NOI18N
@@ -1100,7 +1107,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
         this.popupMenuWasCanceled = popupMenuWasCanceled;
     }
 
-    public JComboBox getIncSearchComboBox() {
+    public JComboBox<String> getIncSearchComboBox() {
         return incSearchComboBox;
     }
 

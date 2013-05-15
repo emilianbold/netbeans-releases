@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.output;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.NbMavenProjectImpl;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.output.OutputProcessor;
@@ -64,13 +65,13 @@ public class DependencyAnalyzeOutputProcessor implements OutputProcessor {
     private static final String[] DEPGOALS = new String[] {
         "mojo-execute#dependency:analyze" //NOI18N
     };
-    private Pattern start;
+    private final Pattern start;
     private boolean started;
-    private Pattern dependency;
-    private NbMavenProjectImpl project;
+    private final Pattern dependency;
+    private final Project project;
     
     /** Creates a new instance of JavadocOutputProcessor */
-    DependencyAnalyzeOutputProcessor(NbMavenProjectImpl project) {
+    DependencyAnalyzeOutputProcessor(Project project) {
         started = false;
         start = Pattern.compile(".*Used undeclared dependencies.*", Pattern.DOTALL); //NOI18N
         dependency = Pattern.compile("\\s*(?:\\[WARNING\\])?\\s*(.*):(.*):(.*):(.*):(.*)", Pattern.DOTALL); //NOI18N
@@ -93,7 +94,12 @@ public class DependencyAnalyzeOutputProcessor implements OutputProcessor {
                 String ver = match.group(4);
                 String sc = match.group(5);
                 visitor.setLine(line + " (Click to add to pom.xml)"); //NOI18N - part of maven output
-                visitor.setOutputListener(new Listener(project, gr, ar, type, ver, sc), false);
+                OutputVisitor.Context context = visitor.getContext();
+                Project prj = project;
+                if (context != null && context.getCurrentProject() != null) {
+                    prj = context.getCurrentProject();
+                }
+                visitor.setOutputListener(new Listener(prj, gr, ar, type, ver, sc), false);
             } else {
                 started = false;
             }
@@ -120,14 +126,14 @@ public class DependencyAnalyzeOutputProcessor implements OutputProcessor {
     }
     
     private static class Listener implements OutputListener {
-        private String group;
-        private String scope;
-        private String version;
-        private String type;
-        private String artifact;
-        private NbMavenProjectImpl project;
+        private final String group;
+        private final String scope;
+        private final String version;
+        private final String type;
+        private final String artifact;
+        private final Project project;
         
-        private Listener(NbMavenProjectImpl prj, String gr, String ar, String type, String ver, String sc) {
+        private Listener(Project prj, String gr, String ar, String type, String ver, String sc) {
             group = gr;
             artifact = ar;
             this.type = type;

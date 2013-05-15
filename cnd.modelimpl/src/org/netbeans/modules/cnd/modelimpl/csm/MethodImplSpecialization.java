@@ -53,8 +53,8 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.Utils;
-import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -140,7 +140,7 @@ public class MethodImplSpecialization<T> extends MethodImpl<T> {
     public static class MethodSpecializationBuilder extends MethodBuilder {
     
         @Override
-        public MethodImplSpecialization create() {
+        public MethodImplSpecialization create(CsmParserProvider.ParserErrorDelegate delegate) {
             MethodImplSpecialization fun = new MethodImplSpecialization(getName(), getRawName(), (CsmClass)getScope(), getVisibility(), isVirtual(), isExplicit(),  isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), isGlobal());
             init(fun);
             return fun;

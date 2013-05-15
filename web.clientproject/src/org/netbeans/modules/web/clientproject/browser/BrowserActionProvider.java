@@ -65,11 +65,11 @@ public class BrowserActionProvider implements ActionProvider {
 
     final private ClientSideProject project;
     private final BrowserSupport support;
-    private ClientProjectConfigurationImpl cfg;
+    private ClientProjectEnhancedBrowserImpl cfg;
     private RequestProcessor RP = new RequestProcessor("js unit testing"); //NOI18N
     private static final Logger LOGGER = Logger.getLogger(BrowserActionProvider.class.getName());
 
-    public BrowserActionProvider(ClientSideProject project, BrowserSupport support, ClientProjectConfigurationImpl cfg) {
+    public BrowserActionProvider(ClientSideProject project, BrowserSupport support, ClientProjectEnhancedBrowserImpl cfg) {
         this.project = project;
         this.support = support;
         this.cfg = cfg;

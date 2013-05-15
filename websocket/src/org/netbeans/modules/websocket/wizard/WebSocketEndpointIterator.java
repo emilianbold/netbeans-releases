@@ -252,7 +252,7 @@ public class WebSocketEndpointIterator
                 
                 GenerationUtils genUtils = GenerationUtils.newInstance(copy);
                 AnnotationTree annotation = genUtils.createAnnotation(
-                        "javax.websocket.WebSocketEndpoint",            // NOI18N
+                        "javax.websocket.server.ServerEndpoint",            // NOI18N
                             Collections.singletonList( treeMaker.Literal(uri))); 
                 
                 newTree = genUtils.addAnnotation(newTree, annotation);
@@ -265,7 +265,7 @@ public class WebSocketEndpointIterator
                 MethodTree method = treeMaker.Method(
                         treeMaker.addModifiersAnnotation(modifiers,
                                 genUtils.createAnnotation(
-                                "javax.websocket.WebSocketMessage")),   // NOI18N
+                                "javax.websocket.OnMessage")),   // NOI18N
                         "onMessage",                    // NOI18N                           
                         returnTree,
                         Collections.<TypeParameterTree>emptyList(),

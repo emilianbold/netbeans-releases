@@ -80,6 +80,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.JPDAStepImpl;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InvalidRequestStateExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.LocatableWrapper;
@@ -120,7 +121,7 @@ implements Executor {
     private StepRequest             stepRequest;
     private ContextProvider         lookupProvider;
     private MethodExitBreakpointListener lastMethodExitBreakpointListener;
-    private boolean                 isSyntheticLocation;
+    private int                     syntheticStep;
     //private SingleThreadedStepWatch stepWatch;
     private boolean smartSteppingStepOut;
     private Properties p;
@@ -392,10 +393,10 @@ implements Executor {
             int suspendPolicy = getDebuggerImpl().getSuspend();
             
             // Synthetic method?
-            if (isSyntheticLocation) {
+            if (syntheticStep != 0) {
                 //S ystem.out.println("In synthetic method -> STEP OVER/OUT again");
 
-                int step = StepRequestWrapper.depth(sr);
+                int step = (syntheticStep > 0) ? syntheticStep : StepRequestWrapper.depth(sr);
                 VirtualMachine vm = getDebuggerImpl ().getVirtualMachine ();
                 if (vm == null) {
                     removeBPListener();
@@ -498,14 +499,14 @@ implements Executor {
             stepWatch.done();
             stepWatch = null;
         }*/
-        if (!isSyntheticLocation && lastMethodExitBreakpointListener != null) {
+        if (syntheticStep == 0 && lastMethodExitBreakpointListener != null) {
             lastMethodExitBreakpointListener.destroy();
             lastMethodExitBreakpointListener = null;
         }
     }
 
     private void removeBPListener() {
-        isSyntheticLocation = false;
+        syntheticStep = 0;
         if (lastMethodExitBreakpointListener != null) {
             lastMethodExitBreakpointListener.destroy();
             lastMethodExitBreakpointListener = null;
@@ -517,14 +518,14 @@ implements Executor {
         if (lastMethodExitBreakpointListener != null) {
             returnValue = lastMethodExitBreakpointListener.getReturnValue();
         }
-        isSyntheticLocation = !setLastOperation(tr, getDebuggerImpl(), returnValue);
-        if (!isSyntheticLocation && lastMethodExitBreakpointListener != null) {
+        syntheticStep = setLastOperation(tr, getDebuggerImpl(), returnValue);
+        if (syntheticStep == 0 && lastMethodExitBreakpointListener != null) {
             lastMethodExitBreakpointListener.destroy();
             lastMethodExitBreakpointListener = null;
         }
     }
 
-    public static boolean setLastOperation(ThreadReference tr, JPDADebuggerImpl debugger, Variable returnValue) throws VMDisconnectedExceptionWrapper {
+    public static int setLastOperation(ThreadReference tr, JPDADebuggerImpl debugger, Variable returnValue) throws VMDisconnectedExceptionWrapper {
         Location loc;
         try {
             loc = StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0));
@@ -541,20 +542,21 @@ implements Executor {
                 // A bad state - ignore
             }
             logger.fine("Incompatible Thread State: "+itsex.getLocalizedMessage());
-            return true;
+            return 0;
         } catch (IllegalThreadStateExceptionWrapper itsex) {
-            return true;
+            return 0;
         } catch (InternalExceptionWrapper iex) {
-            return true;
+            return 0;
         } catch (InvalidStackFrameExceptionWrapper iex) {
-            return true;
+            return 0;
         } catch (ObjectCollectedExceptionWrapper iex) {
-            return true;
+            return 0;
         }
         try {
-            if (TypeComponentWrapper.isSynthetic0(LocationWrapper.method(loc))) {
+            int syntheticStep = JPDAStepImpl.isSyntheticMethod(LocationWrapper.method(loc), loc);
+            if (syntheticStep != 0) {
                 // Ignore synthetic methods
-                return false;
+                return syntheticStep;
             }
         } catch (InternalExceptionWrapper ex) {
         }
@@ -565,12 +567,12 @@ implements Executor {
         try {
             url = sourcePath.getURL(loc, language);
         } catch (InternalExceptionWrapper iex) {
-            return true;
+            return 0;
         } catch (ObjectCollectedExceptionWrapper iex) {
-            return true;
+            return 0;
         }
         setOperationsLazily(debugger.getThread(tr), returnValue, debugger, loc, url);
-        return true;
+        return 0;
     }
     
     private static final long OPERATION_TIMEOUT = 200;

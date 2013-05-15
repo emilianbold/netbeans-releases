@@ -53,6 +53,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapper.ResolvedPath;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapperImpl.MapperEntry;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
+import org.netbeans.modules.cnd.utils.CndPathUtilitities;
 
 /**
  *
@@ -334,6 +335,7 @@ public class PathMapperTest extends NbTestCase {
     private static final class FS implements RelocatablePathMapperImpl.FS {
         Set<String> set = new HashSet<String>();
         private FS(String prefix) {
+            set.add(prefix);
             set.add(prefix+"/rdbms");
             set.add(prefix+"/rdbms/src");
             set.add(prefix+"/rdbms/src/server");
@@ -352,6 +354,9 @@ public class PathMapperTest extends NbTestCase {
             set.add(prefix+"/oracore");
             set.add(prefix+"/oracore/port");
             set.add(prefix+"/oracore/public");
+            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+                set.add(prefix);
+            }
         }
         
         @Override
@@ -368,8 +373,12 @@ public class PathMapperTest extends NbTestCase {
     private static final class FS2 implements RelocatablePathMapperImpl.FS {
         Set<String> set = new HashSet<String>();
         private FS2(String prefix) {
+            set.add(prefix);
             set.add(prefix+"/glib-1.2.10");
             set.add(prefix+"/glib-1.2.10/gcache.c");
+            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+                set.add(prefix);
+            }
         }
         
         @Override
@@ -386,8 +395,17 @@ public class PathMapperTest extends NbTestCase {
     private static final class FS3 implements RelocatablePathMapperImpl.FS {
         Set<String> set = new HashSet<String>();
         private FS3(String prefix) {
+            set.add(prefix);
+            set.add(prefix+"/ctx_src_4");
             set.add(prefix+"/ctx_src_4/src");
             set.add(prefix+"/oracle/ctx/src/gx/include");
+            set.add(prefix+"/oracle/ctx/src/gx");
+            set.add(prefix+"/oracle/ctx/src");
+            set.add(prefix+"/oracle/ctx");
+            set.add(prefix+"/oracle");
+            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+                set.add(prefix);
+            }
         }
         
         @Override
@@ -404,8 +422,12 @@ public class PathMapperTest extends NbTestCase {
     private static final class FS4 implements RelocatablePathMapperImpl.FS {
         Set<String> set = new HashSet<String>();
         private FS4(String prefix) {
+            set.add(prefix);
             set.add(prefix+"/rdbms");
             set.add(prefix+"/odbc");
+            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+                set.add(prefix);
+            }
         }
         
         @Override
@@ -422,6 +444,7 @@ public class PathMapperTest extends NbTestCase {
     private static final class FS5 implements RelocatablePathMapperImpl.FS {
         Set<String> set = new HashSet<String>();
         private FS5(String prefix) {
+            set.add(prefix);
             set.add(prefix+"/ctx");
             set.add(prefix+"/ctx/src");
             set.add(prefix+"/ctx/src/dr");
@@ -436,6 +459,9 @@ public class PathMapperTest extends NbTestCase {
             set.add(prefix+"/ctx_src_4/src/ext");
             set.add(prefix+"/ctx_src_4/src/ext/zfm");
             set.add(prefix+"/ctx_src_4/src/ext/zfm/zfma.c");
+            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+                set.add(prefix);
+            }
         }
         
         @Override
@@ -475,6 +501,7 @@ public class PathMapperTest extends NbTestCase {
         Set<String> set = new HashSet<String>();
         private final String prefix;
         private FS6(String prefix) {
+            set.add(prefix);
             set.add(prefix+"/my_project");
             set.add(prefix+"/my_project/src");
             set.add(prefix+"/my_project/include");
@@ -482,6 +509,17 @@ public class PathMapperTest extends NbTestCase {
             set.add("/soft/1.1/ssl/include");
             set.add("/soft/1.2/ssl/include");
             this.prefix = prefix;
+            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+                set.add(prefix);
+            }
+            prefix = "/soft/1.1/ssl/include";
+            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+                set.add(prefix);
+            }
+            prefix = "/soft/1.2/ssl/include";
+            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+                set.add(prefix);
+            }
         }
         
         @Override

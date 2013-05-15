@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="c.tasktop.c2c.server.wiki.api" default="netbeans" basedir=".">
+    <import file="../nbbuild/templates/projectized.xml"/>
+    <target name="jar">
+        <jar jarfile="${cluster}/${module.jar}">
+            <zipfileset src="external/com.tasktop.c2c.server.wiki.api_1.1.0.20130502-000314.jar" includes="com/tasktop/c2c/server/wiki/domain/*"/>
+            <manifest>
+                <attribute name="Manifest-Version" value="1.0"/>
+                <attribute name="Export-Package" value="com.tasktop.c2c.server.wiki.domain"/>
+                <attribute name="Bundle-Name" value="Wiki API"/>
+                <attribute name="Bundle-RequiredExecutionEnvironment" value="J2SE-1.5"/>
+                <attribute name="Require-Bundle" value="com.tasktop.c2c.server.common.api;bundle-version=&quot;0.1.0&quot;"/>
+                <attribute name="Bundle-Version" value="1.1.0.20130502-000314"/>
+                <attribute name="Bundle-ManifestVersion" value="2"/>
+                <attribute name="Bundle-SymbolicName" value="com.tasktop.c2c.server.wiki.api"/>
+            </manifest>
+        </jar>
+    </target>          
+</project>

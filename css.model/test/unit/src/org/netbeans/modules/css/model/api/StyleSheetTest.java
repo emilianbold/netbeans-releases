@@ -64,7 +64,7 @@ public class StyleSheetTest extends ModelTestBase {
         Property p = factory.createProperty("border-color");
         Expression e = factory.createExpression("green");
         PropertyValue pv = factory.createPropertyValue(e);
-        Declaration d = factory.createDeclaration(p, pv, false);
+        PropertyDeclaration d = factory.createPropertyDeclaration(p, pv, false);
 
         Declarations ds = factory.createDeclarations(d);
 

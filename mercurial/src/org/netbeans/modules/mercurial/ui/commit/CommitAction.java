@@ -66,6 +66,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
@@ -81,13 +82,18 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.mercurial.WorkingCopyInfo;
+import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.versioning.hooks.HgHookContext;
 import org.netbeans.modules.versioning.hooks.HgHook;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.versioning.diff.SaveBeforeClosingDiffConfirmation;
 import org.netbeans.modules.versioning.diff.SaveBeforeCommitConfirmation;
@@ -142,7 +148,7 @@ public class CommitAction extends ContextAction {
         VCSContext context = HgUtils.getCurrentContext(nodes);
         final File root = HgUtils.getRootFile(context);
         if (root == null) {
-            OutputLogger logger = OutputLogger.getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
+            OutputLogger logger = Mercurial.getInstance().getLogger(Mercurial.MERCURIAL_OUTPUT_TAB_TITLE);
             logger.outputInRed( NbBundle.getMessage(CommitAction.class,"MSG_COMMIT_TITLE")); // NOI18N
             logger.outputInRed( NbBundle.getMessage(CommitAction.class,"MSG_COMMIT_TITLE_SEP")); // NOI18N
             logger.outputInRed(
@@ -169,6 +175,10 @@ public class CommitAction extends ContextAction {
             @Override
             public void run () {
                 File root = HgUtils.getRootFile(ctx);
+                if (root == null) {
+                    Mercurial.LOG.log(Level.FINE, "CommitAction.commit: null owner for {0}", ctx.getRootFiles()); //NOI18N
+                    return;
+                }
                 if (HgUtils.isRebasing(root)) {
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                             Bundle.MSG_CommitAction_interruptedRebase_error(root.getName()),
@@ -260,6 +270,7 @@ public class CommitAction extends ContextAction {
             }
         });
         computeNodes(data, panel, ctx, repository, cancelButton, afterMerge);
+        HgProgressSupport incomingChanges = checkForIncomingChanges(repository, panel, afterMerge);
         commitButton.setEnabled(false);
         panel.addVersioningListener(new VersioningListener() {
             @Override
@@ -282,6 +293,10 @@ public class CommitAction extends ContextAction {
         dialog.addWindowListener(new DialogBoundsPreserver(HgModuleConfig.getDefault().getPreferences(), "hg.commit.dialog")); // NOI18N
         dialog.pack();
         dialog.setVisible(true);
+        
+        if (incomingChanges != null) {
+            incomingChanges.cancel();
+        }
 
         final String message = panel.getCommitMessage().trim();
         if (dd.getValue() != commitButton && !message.isEmpty()) {
@@ -289,7 +304,9 @@ public class CommitAction extends ContextAction {
         }
         if (dd.getValue() == DialogDescriptor.CLOSED_OPTION) {
             al.actionPerformed(new ActionEvent(cancelButton, ActionEvent.ACTION_PERFORMED, null));
+            panel.closed();
         } else if (dd.getValue() == commitButton) {
+            panel.closed();
             final Map<HgFileNode, CommitOptions> commitFiles = data.getCommitFiles();
             final Map<File, Set<File>> rootFiles = HgUtils.sortUnderRepository(ctx, true);
             final boolean commitAllFiles = panel.cbAllFiles.isSelected() || afterMerge.get();
@@ -585,6 +602,65 @@ public class CommitAction extends ContextAction {
             return res == NotifyDescriptor.YES_OPTION;
         }
         return true;
+    }
+    
+    @NbBundle.Messages({
+        "MSG_CommitAction.warning.incomingChanges=There are incoming changes. You should pull from the remote repository first."
+    })
+    private static HgProgressSupport checkForIncomingChanges (final File repository, final CommitPanel panel,
+            final AtomicBoolean afterMerge) {
+        HgProgressSupport supp = new HgProgressSupport() {
+            @Override
+            protected void perform () {
+                if (afterMerge.get()) {
+                    return;
+                }
+                try {
+                    String defaultPush = new HgConfigFiles(repository).getDefaultPush(false);
+                    if (!HgUtils.isNullOrEmpty(defaultPush)) {
+                        try {
+                            HgURL pushUrl = new HgURL(defaultPush);
+                            if (pushUrl.getScheme().toString().contains("ssh")) {
+                                Mercurial.LOG.log(Level.FINE, "Commit: Cannot handle ssh authentication silently: {0}", pushUrl.toHgCommandStringWithNoPassword());
+                                return;
+                            }
+                        } catch (URISyntaxException ex) {
+                            Mercurial.LOG.log(Level.INFO, "Commit: Invalid push url: {0}, falling back to command without target", defaultPush);
+                        }
+                    }
+                    final String branch = HgCommand.getBranch(repository);
+                    HgCommand.runWithoutUI(new Callable<Void>() {
+                        @Override
+                        public Void call () throws HgException {
+                            if (HgCommand.getOutMessages(repository, null, branch, true, false, 1,
+                                    OutputLogger.getLogger(null)).length == 0) {
+                                if (!isCanceled() && HgCommand.getIncomingMessages(repository, null, branch, true, false, false, 1,
+                                        OutputLogger.getLogger(null)).length > 0) {
+                                    panel.setWarningMessage(Bundle.MSG_CommitAction_warning_incomingChanges());
+                                }
+                            }
+                            return null;
+                        }
+                    });
+                } catch (HgException.HgCommandCanceledException ex) {
+                } catch (HgException ex) {
+                    Logger.getLogger(CommitAction.class.getName()).log(Level.FINE, null, ex);
+                }
+            }
+
+            @Override
+            protected ProgressHandle getProgressHandle () {
+                return null;
+            }
+
+            @Override
+            protected void startProgress () { }
+
+            @Override
+            protected void finnishProgress () { }
+        };
+        supp.start(Mercurial.getInstance().getRequestProcessor(repository));
+        return supp;
     }
 
     private static abstract class Cmd {

@@ -340,11 +340,11 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
                     set2.put(new IntNodeProp(getStandardsEvolution(), getMaster() != null ? false : true, "StandardsEvolution", getString("StandardsEvolutionTxt"), getString("StandardsEvolutionHint"))); // NOI18N
                     set2.put(new IntNodeProp(getLanguageExt(), getMaster() != null ? false : true, "LanguageExtensions", getString("LanguageExtensionsTxt"), getString("LanguageExtensionsHint"))); // NOI18N
                     sheet.put(set2);
-                } else {
+                } //else {
                     if (STANDARDS_SUPPORT) {
                         bset.put(standardProp);
                     }
-                }
+                //}
                 if (getMaster() != null) {
                     sheet.put(getInputSet());
                 }
@@ -384,20 +384,20 @@ public class CCCompilerConfiguration extends CCCCompilerConfiguration implements
             }
         }  
         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_MAKEFILE) {
-            if (compilerSet == null || !compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
+            //if (compilerSet == null || !compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
                 if (STANDARDS_SUPPORT) {
                     set0.put(standardProp);
                 }
-            }
+            //}
         }
         if (conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_APPLICATION || 
             conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_DYNAMIC_LIB || 
            conf.getConfigurationType().getValue() == MakeConfiguration.TYPE_QT_STATIC_LIB) {
-            if (compilerSet == null || !compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
+            //if (compilerSet == null || !compilerSet.getCompilerFlavor().isSunStudioCompiler()) {
                 if (STANDARDS_SUPPORT) {
                     set0.put(standardProp);
                 }
-            }
+            //}
         }
         
         return sheet;

@@ -67,7 +67,7 @@ import org.openide.windows.TopComponent;
 */
 @org.openide.util.lookup.ServiceProvider(service=org.openide.util.ContextGlobalProvider.class)
 public final class GlobalActionContextImpl extends Object
-implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeListener {
+implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeListener, Runnable {
     /** registry to work with */
     private TopComponent.Registry registry;
     
@@ -77,7 +77,17 @@ implements ContextGlobalProvider, Lookup.Provider, java.beans.PropertyChangeList
     
     public GlobalActionContextImpl (TopComponent.Registry r) {
         this.registry = r;
+        if (EventQueue.isDispatchThread()) {
+            run();
+        } else {
+            EventQueue.invokeLater(this);
+        }
+    }
+    
+    @Override
+    public void run() {
         KeyboardFocusManager m = KeyboardFocusManager.getCurrentKeyboardFocusManager();
+        m.removePropertyChangeListener("permanentFocusOwner", this); // NOI18N
         m.addPropertyChangeListener("permanentFocusOwner", this); // NOI18N
         setFocusOwner(m.getPermanentFocusOwner());
     }

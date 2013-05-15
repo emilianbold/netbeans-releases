@@ -250,7 +250,7 @@ abstract class TabLayoutManager {
 
                 ProjectProxy p = projectSupport.getProjectForTab( td );
                 int index = projects.indexOf( p );
-                if( index < 0 || index > rowCount-1 )
+                if( index < 0 || index >= rowIndexes.length )
                     index = 0;
                 else
                     index++;

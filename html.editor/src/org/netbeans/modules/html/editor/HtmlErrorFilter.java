@@ -59,6 +59,7 @@ import org.netbeans.modules.csl.spi.ErrorFilter;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.api.gsf.ErrorBadgingRule;
+import org.netbeans.modules.html.editor.api.gsf.HtmlErrorFilterContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.hints.HtmlHintsProvider;
 import org.netbeans.modules.web.common.api.WebPageMetadata;
@@ -75,9 +76,16 @@ public class HtmlErrorFilter implements ErrorFilter {
 
     public static final String DISABLE_ERROR_CHECKS_KEY = "disable_error_checking"; //NOI18N
     
-    private static final ErrorFilter INSTANCE = new HtmlErrorFilter();
+    private static final ErrorFilter INSTANCE = new HtmlErrorFilter(false);
+    private static final ErrorFilter INSTANCE_BADGING = new HtmlErrorFilter(true);
     private HintsProvider htmlHintsProvider;
     private HintsManager htmlHintsManager;
+    private boolean onlyBadges;
+    
+    private HtmlErrorFilter(boolean badging) {
+        this();
+        this.onlyBadges = badging;
+    }
 
     public HtmlErrorFilter() {
         htmlHintsProvider = new HtmlHintsProvider();
@@ -91,7 +99,8 @@ public class HtmlErrorFilter implements ErrorFilter {
         }
         
         //use hints setting to filter out the errors and set their severity 
-        RuleContext context = htmlHintsProvider.createRuleContext();
+        HtmlErrorFilterContext context = new HtmlErrorFilterContext();
+        context.setOnlyBadging(onlyBadges);
         context.parserResult = parserResult;
         context.manager = htmlHintsManager;
         context.doc = (BaseDocument)parserResult.getSnapshot().getSource().getDocument(false); //should not load the document if not loaded already
@@ -193,7 +202,14 @@ public class HtmlErrorFilter implements ErrorFilter {
 
         @Override
         public ErrorFilter createErrorFilter(String featureName) {
-            return ErrorFilter.FEATURE_TASKLIST.equals(featureName) ? INSTANCE : null;
+            switch (featureName) {
+                case ErrorFilter.FEATURE_TASKLIST:
+                    return INSTANCE;
+                case "errorBadges": // NOI18N
+                    return INSTANCE_BADGING;
+                default:
+                    return null;
+            }
         }
         
     }

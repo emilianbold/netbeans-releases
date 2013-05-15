@@ -45,6 +45,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Set;
 import java.util.logging.Level;
@@ -64,10 +65,10 @@ import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.openide.util.Exceptions;
 
 public class SearchComboBoxEditor implements ComboBoxEditor {
-    private JScrollPane scrollPane;
-    private JEditorPane editorPane;
+    private final JScrollPane scrollPane;
+    private final JEditorPane editorPane;
     private Object oldValue;
-    private static JTextField referenceTextField = (JTextField) new JComboBox().getEditor().getEditorComponent();
+    private static final JTextField referenceTextField = (JTextField) new JComboBox<String>().getEditor().getEditorComponent();
     private static final Logger LOG = Logger.getLogger(SearchComboBoxEditor.class.getName());
 
     public SearchComboBoxEditor() {
@@ -203,7 +204,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
     private static void adjustScrollPaneSize(JScrollPane sp, JEditorPane editorPane) {
         int height;
         Dimension prefSize = sp.getPreferredSize();
-        Insets borderInsets = sp.getBorder().getBorderInsets(sp); //sp.getInsets();
+        Insets borderInsets = sp.getBorder() != null ? sp.getBorder().getBorderInsets(sp) : sp.getInsets();
         int vBorder = borderInsets.bottom + borderInsets.top;
         EditorUI eui = org.netbeans.editor.Utilities.getEditorUI(editorPane);
         if (eui != null) {
@@ -257,8 +258,8 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
 
     private static final class ManageViewPositionListener implements DocumentListener {
 
-        private JEditorPane editorPane;
-        private JScrollPane sp;
+        private final JEditorPane editorPane;
+        private final JScrollPane sp;
 
         public ManageViewPositionListener(JEditorPane editorPane, JScrollPane sp) {
             this.editorPane = editorPane;
@@ -323,6 +324,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
         }
     }
 
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Override
     public Object getItem() {
         Object newValue = editorPane.getText();
@@ -338,7 +340,7 @@ public class SearchComboBoxEditor implements ComboBoxEditor {
                 try {
                     Method method = cls.getMethod("valueOf", new Class[]{String.class}); //NOI18N
                     newValue = method.invoke(oldValue, new Object[]{editorPane.getText()});
-                } catch (Exception ex) {
+                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                     // Fail silently and return the newValue (a String object)
                 }
             }

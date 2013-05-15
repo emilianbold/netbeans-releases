@@ -4,6 +4,7 @@ MyObj.create().|getInfo().big();
 ------------------------------------
 CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     create(): MyObj                 [PUBLIC]   methodChainSimple.js
+METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
 METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
 METHOD     defineProperty(O: Object, P: S  [PUBLIC,   JS Platform
 METHOD     factory(): MyObj                [PUBLIC]   methodChainSimple.js

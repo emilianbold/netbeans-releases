@@ -57,13 +57,6 @@ public class ServicesTest extends CndBaseTestSuite {
 
     public ServicesTest() {
         super("Model UI Services Impl");
-
-        addTestSuite(MacroExpansionExpandTestCase.class);
-        addTestSuite(MacroExpansionNextPrevMacroTestCase.class);
-        addTestSuite(MacroExpansionOffsetsTestCase.class);
-        addTestSuite(MacroExpansionSpanTestCase.class);
-        addTestSuite(MacroExpansionTablesTestCase.class);
-        addTestSuite(MacroExpansionUsagesTestCase.class);
     }
 
     public static Test suite() {

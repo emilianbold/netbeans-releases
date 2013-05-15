@@ -45,18 +45,23 @@ import java.awt.EventQueue;
 import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JMenuItem;
 import org.netbeans.modules.html.editor.lib.api.HtmlParsingResult;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.actions.Resource;
+import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.NodeAction;
 
 /**
@@ -65,6 +70,8 @@ import org.openide.util.actions.NodeAction;
  * @author Jan Stola
  */
 public class GoToNodeSourceAction extends NodeAction  {
+    /** {@code RequestProcessor} for this class. */
+    private static final RequestProcessor RP = new RequestProcessor(GoToNodeSourceAction.class);
 
     @Override
     protected void performAction(org.openide.nodes.Node[] activatedNodes) {
@@ -73,6 +80,9 @@ public class GoToNodeSourceAction extends NodeAction  {
                 .getLookup().lookup(org.netbeans.modules.web.webkit.debugging.api.dom.Node.class);
         Resource resource = getNodeOrigin(selection);
         FileObject fob = resource.toFileObject();
+        if (fob == null) {
+            return;
+        }
         try {
             Source source = Source.create(fob);
             ParserManager.parse(Collections.singleton(source), new GoToNodeTask(node, fob));
@@ -90,12 +100,33 @@ public class GoToNodeSourceAction extends NodeAction  {
             if (node == null) {
                 return false;
             }
-            Resource resource = getNodeOrigin(selection);
-            if (resource.toFileObject() == null) {
-                return false;
-            }
+            final Resource resource = getNodeOrigin(selection);
+            // Avoid invocation of Resource.toFileObject() under Children.MUTEX
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (resource.toFileObject() == null) {
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                setEnabled(false);
+                            }
+                        });
+                    }
+                }
+            });
+            return true;
         }
-        return true;
+        return false;
+    }
+
+    @Override
+    public JMenuItem getPopupPresenter() {
+        // The default popup presenter does not observe property changes.
+        // We need a presenter that observes the changes because of our
+        // lazy disabling of the action. The default menu presenter observes
+        // the changes.
+        return super.getMenuPresenter();
     }
 
     /**
@@ -153,20 +184,23 @@ public class GoToNodeSourceAction extends NodeAction  {
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            HtmlParsingResult result = (HtmlParsingResult)resultIterator.getParserResult();
-            final Node nodeToShow = findNode(result, node);
+            ResultIterator htmlResultIterator = WebUtils.getResultIterator(resultIterator, "text/html"); // NOI18N
+            final int offsetToShow;
+            if (htmlResultIterator == null) {
+                offsetToShow = 0;
+            } else {
+                HtmlParsingResult result = (HtmlParsingResult)htmlResultIterator.getParserResult();
+                Node nodeToShow = Utilities.findNode(result, node);
+                Snapshot snapshot = htmlResultIterator.getSnapshot();
+                int snapshotOffset = nodeToShow.from();
+                offsetToShow = snapshot.getOriginalOffset(snapshotOffset);
+            }
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    CSSUtils.openAtOffset(fob, nodeToShow.from());
+                    CSSUtils.openAtOffset(fob, offsetToShow);
                 }
             });
-        }
-
-        private Node findNode(HtmlParsingResult result,
-                org.netbeans.modules.web.webkit.debugging.api.dom.Node node) {
-            // PENDING
-            return result.root();
         }
         
     }

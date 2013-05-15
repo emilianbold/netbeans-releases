@@ -246,7 +246,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             projectInfo = ProjectUtils.getInformation(project);
             // ui
             setIconBaseWithExtension(PhpProject.PROJECT_ICON);
-            setName(ProjectUtils.getInformation(project).getDisplayName());
+            setName(projectInfo.getDisplayName());
         }
 
         public static PhpLogicalViewRootNode createForProject(PhpProject project) {

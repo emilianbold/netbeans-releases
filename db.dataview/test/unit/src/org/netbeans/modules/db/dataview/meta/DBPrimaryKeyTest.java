@@ -142,7 +142,7 @@ public class DBPrimaryKeyTest extends NbTestCase {
         DBPrimaryKey expPK = getDBPrimaryKey();
         expPK.setDisplayName("P_Key");
         instanceTable.setPrimaryKey(expPK);
-        int expResult = 1;
+        int expResult = 2;
         int result = expPK.getColumnCount();
         assertEquals(expResult, result);
     }
@@ -154,6 +154,7 @@ public class DBPrimaryKeyTest extends NbTestCase {
         DBPrimaryKey instance = getDBPrimaryKey();
         List<String> result = instance.getColumnNames();
         assertEquals("TINYINTC", result.get(0));
+        assertEquals("SMALLINTC", result.get(1));
     }
     
     /**
@@ -161,7 +162,7 @@ public class DBPrimaryKeyTest extends NbTestCase {
      */
     public void testToString() {
         DBPrimaryKey instance = getDBPrimaryKey();
-        String expResult = "TINYINTC";
+        String expResult = "TINYINTC,SMALLINTC";
         String result = instance.toString();
         assertEquals(expResult, result);
     }

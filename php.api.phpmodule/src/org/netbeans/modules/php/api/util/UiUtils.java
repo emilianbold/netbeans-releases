@@ -48,6 +48,7 @@ import java.util.concurrent.ExecutionException;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.api.ui.SearchPanel;
 import org.openide.DialogDisplayer;
@@ -194,6 +195,7 @@ public final class UiUtils {
          * @param support {@link SearchWindowSupport search window support}
          * @return selected item (can be <code>null</code>) if user clicks OK button, <code>null</code> otherwise
          */
+        @CheckForNull
         public static String search(SearchWindowSupport support) {
             Parameters.notNull("support", support);
 

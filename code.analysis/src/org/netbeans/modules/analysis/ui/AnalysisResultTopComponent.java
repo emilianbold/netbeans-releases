@@ -58,6 +58,7 @@ import javax.swing.event.HyperlinkEvent.EventType;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.settings.ConvertAsProperties;
 import org.netbeans.modules.analysis.AnalysisResult;
 import org.netbeans.modules.analysis.DescriptionReader;
@@ -67,7 +68,6 @@ import org.netbeans.modules.analysis.RunAnalysisPanel.FutureWarnings;
 import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -89,7 +89,6 @@ autostore = false)
 persistenceType = TopComponent.PERSISTENCE_ALWAYS)
 @TopComponent.Registration(mode = "output", openAtStartup = false, position=12000)
 @ActionID(category = "Window", id = "org.netbeans.modules.analysis.ui.AnalysisResultTopComponent")
-@ActionReference(path = "Menu/Window/Output", position = 330)
 @TopComponent.OpenActionRegistration(displayName = "#CTL_AnalysisResultAction",
 preferredID = "AnalysisResultTopComponent")
 @Messages({
@@ -126,7 +125,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         prevAction.addPropertyChangeListener(l);
         nextAction.addPropertyChangeListener(l);
 
-        setData(Lookup.EMPTY, null, new AnalysisResult(Collections.<AnalyzerFactory, List<ErrorDescription>>emptyMap(), new FutureWarnings(), Collections.<Node>emptyList()));
+        setData(Lookup.EMPTY, null, new AnalysisResult(Collections.<AnalyzerFactory, List<ErrorDescription>>emptyMap(), Collections.<ErrorDescription, Project>emptyMap(), new FutureWarnings(), Collections.<Node>emptyList()));
 
         getActionMap().put("jumpNext", nextAction);
         getActionMap().put("jumpPrev", prevAction);

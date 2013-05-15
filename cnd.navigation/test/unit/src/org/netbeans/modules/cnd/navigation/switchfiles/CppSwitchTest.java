@@ -69,7 +69,7 @@ public class CppSwitchTest extends TraceModelTestBase {
     
     public void testTwoNamesakes() throws Exception {
         String source = "welcome.cc"; // NOI18N
-        performTest("", source + ".dat", source + ".err"); // NOI18N
+        performTest("", source + ".dat", null/*source + ".err"*/); // NOI18N
     }
 
     protected @Override void postTest(String[] args, Object... params) {

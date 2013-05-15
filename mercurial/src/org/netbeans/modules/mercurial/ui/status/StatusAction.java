@@ -48,14 +48,12 @@ import java.util.Calendar;
 import java.util.logging.Level;
 import org.netbeans.modules.mercurial.FileStatusCache;
 import org.netbeans.modules.mercurial.Mercurial;
-import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
 import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.openide.nodes.Node;
-import org.openide.windows.TopComponent;
 
 /**
  * Status action for mercurial: 
@@ -64,6 +62,12 @@ import org.openide.windows.TopComponent;
  * @author John Rice
  */
 public class StatusAction extends ContextAction {
+    
+    private static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/show_changes.png"; //NOI18N
+
+    public StatusAction () {
+        super(ICON_RESOURCE);
+    }
     
     @Override
     public boolean enable (Node[] nodes) {

@@ -99,9 +99,12 @@ public class HelpSetRegistrationProcessorTest extends NbTestCase {
 
             tempFile = File.createTempFile("tempFile", ".tmp");
 
-            // New file was created in the problematic directory.
-            assertEquals(tempRoot.getAbsolutePath(),
-                    tempFile.getParentFile().getAbsolutePath());
+            if (!tempRoot.getAbsolutePath().equals(
+                    tempFile.getParentFile().getAbsolutePath())) {
+                // Default temp directory location hasn't been affected by
+                // changing system property java.io.tmpdir, skipping the test.
+                return;
+            }
 
             // File created in custom method should be created in 
             // a non-problematic directory.

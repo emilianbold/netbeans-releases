@@ -58,10 +58,10 @@ import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringTokenizer;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractAction;
@@ -74,14 +74,16 @@ import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.text.CloneableEditorSupport;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
+import org.netbeans.modules.db.dataview.meta.DBTable;
+import org.netbeans.modules.db.dataview.table.ResultSetTableModel;
 import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 import org.openide.DialogDisplayer;
@@ -98,19 +100,30 @@ import org.openide.windows.WindowManager;
  *
  */
 class InsertRecordDialog extends javax.swing.JDialog {
+    private static final Logger LOG = Logger.getLogger(InsertRecordDialog.class.getName());
 
+    private final ResultSetTableModel insertDataModel;
+    private final DBTable insertTable;
     private final DataView dataView;
+    private final DataViewPageContext pageContext;
     InsertRecordTableUI insertRecordTableUI;
     private JXTableRowHeader rowHeader;
 
-    public InsertRecordDialog(DataView dataView) {
+    public InsertRecordDialog(DataView dataView, DataViewPageContext pageContext, DBTable insertTable) {
         super(WindowManager.getDefault().getMainWindow(), true);
+        this.pageContext = pageContext;
         this.dataView = dataView;
-        insertRecordTableUI = new InsertRecordTableUI(dataView) {
+        this.insertTable = insertTable;
+
+        insertDataModel = new ResultSetTableModel(
+                insertTable.getColumnList().toArray(new DBColumn[0]));
+        insertDataModel.setEditable(true);
+
+        insertRecordTableUI = new InsertRecordTableUI() {
 
             @Override
             public void changeSelection(int rowIndex, int columnIndex, boolean toggle, boolean extend) {
-                if (rowIndex != -1 && columnIndex != -1 && ((DefaultTableModel) insertRecordTableUI.getModel()).getRowCount() > 1) {
+                if (rowIndex != -1 && columnIndex != -1 && getModel().getRowCount() > 1) {
                     removeBtn.setEnabled(true);
                 }
                 AWTEvent awtEvent = EventQueue.getCurrentEvent();
@@ -120,8 +133,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
                         return;
                     }
                     if (rowIndex == 0 && columnIndex == 0 && KeyStroke.getKeyStrokeForEvent(keyEvt).equals(KeyStroke.getKeyStroke(KeyEvent.VK_TAB, 0))) {
-                        DefaultTableModel model = (DefaultTableModel) getModel();
-                        model.addRow(createNewRow());
+                        appendEmptyRow();
                         rowIndex = getRowCount() - 1; //Otherwise the selection switches to the first row
                         editCellAt(rowIndex, 0);
                     } else if (KeyStroke.getKeyStrokeForEvent(keyEvt).equals(KeyStroke.getKeyStroke(KeyEvent.VK_SHIFT + KeyEvent.VK_TAB, 0))) {
@@ -133,6 +145,8 @@ class InsertRecordDialog extends javax.swing.JDialog {
                 super.changeSelection(rowIndex, columnIndex, toggle, extend);
             }
         };
+        insertRecordTableUI.setModel(insertDataModel);
+
         initComponents();
         addInputFields();
         insertRecordTableUI.addKeyListener(new TableKeyListener());
@@ -331,8 +345,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
 private void addBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addBtnActionPerformed
-    DefaultTableModel model = (DefaultTableModel) insertRecordTableUI.getModel();
-    model.addRow(insertRecordTableUI.createNewRow());
+    insertRecordTableUI.appendEmptyRow();
 }//GEN-LAST:event_addBtnActionPerformed
 
 private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeBtnActionPerformed
@@ -365,41 +378,70 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         if (insertRecordTableUI.isEditing()) {
             insertRecordTableUI.getCellEditor().stopCellEditing();
         }
+
+        final int rows = insertRecordTableUI.getRowCount();
+        final Object[][] insertedRows = new Object[rows][insertTable.getColumnList().size()];
+
+        try {
+            for (int i = 0; i < rows; i++) {
+                insertedRows[i] = getInsertValues(i);
+            }
+        } catch (DBException ex) {
+            LOG.log(Level.INFO, ex.getLocalizedMessage(), ex);
+            DialogDisplayer.getDefault().notifyLater(
+                    new NotifyDescriptor.Message(ex.getLocalizedMessage()));
+            return;
+        }
+
         // Get out of AWT thread because SQLExecutionHelper does calls to AWT
         // and we need to wait here to show possible exceptions.
-        new Thread("Inserting values") {  //NOI18N
+        new SwingWorker<Integer, Void>() {
 
             @Override
-            public void run() {
-                String insertSQL = null;
+            protected Integer doInBackground() throws Exception {
                 SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
                 SQLExecutionHelper execHelper = dataView.getSQLExecutionHelper();
-                for (int i = 0; i < insertRecordTableUI.getRowCount(); i++) {
-                    boolean wasException = false;
+                for (int i = 0; i < rows; i++) {
+                    boolean wasException;
                     try {
-                        Object[] insertedRow = getInsertValues(i);
-                        insertSQL = stmtBldr.generateInsertStatement(insertedRow);
-                        RequestProcessor.Task task = execHelper.executeInsertRow(insertSQL, insertedRow);
+                        Object[] insertedRow = insertedRows[i];
+                        String insertSQL = stmtBldr.generateInsertStatement(insertTable, insertedRow);
+                        RequestProcessor.Task task = execHelper.executeInsertRow(pageContext, insertTable, insertSQL, insertedRow);
                         task.waitFinished();
                         wasException = dataView.hasExceptions();
                     } catch (DBException ex) {
-                        Logger.getLogger(InsertRecordDialog.class.getName()).log(Level.INFO, ex.getLocalizedMessage(), ex);
+                        LOG.log(Level.INFO, ex.getLocalizedMessage(), ex);
                         DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(ex.getLocalizedMessage()));
                         wasException = true;
                     }
                     if (wasException) {
-                        // remove i already inserted
-                        for (int j = 0; j < i; j++) {
-                            ((DefaultTableModel) insertRecordTableUI.getModel()).removeRow(0);
-                        }
-                        // return without closing
-                        return;
+                        return i;
                     }
                 }
-                // close dialog
-                dispose();
+                return null;
             }
-        }.start();
+
+            @Override
+            protected void done() {
+                Integer brokeOn;
+                try {
+                    brokeOn = get();
+
+                    if (brokeOn == null) {
+                        dispose();
+                    } else {
+                        // remove i already inserted
+                        for (int j = 0; j < brokeOn; j++) {
+                            insertRecordTableUI.getModel().removeRow(0);
+                        }
+                    }
+                } catch (InterruptedException ex) {
+                    throw new RuntimeException(ex);
+                } catch (ExecutionException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        }.execute();
     }
 
     private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
@@ -420,7 +462,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
             if (jSplitPane1.getBottomComponent() != null) {
                 SQLStatementGenerator stmtBldr = dataView.getSQLStatementGenerator();
                 for (int i = 0; i < insertRecordTableUI.getRowCount(); i++) {
-                    String sql = stmtBldr.generateRawInsertStatement(getInsertValues(i));
+                    String sql = stmtBldr.generateRawInsertStatement(insertTable, getInsertValues(i));
                     sqlText = sqlText + sql + "\n";
                 }
                 jEditorPane1.setEditorKit(CloneableEditorSupport.getEditorKit("text/x-sql")); // NOI18N
@@ -441,8 +483,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     }
 
     private void addInputFields() {
-        List<Object[]> rows = new ArrayList<Object[]>();
-        rows.add(insertRecordTableUI.createNewRow());
+        insertRecordTableUI.appendEmptyRow();
         jScrollPane1.setViewportView(insertRecordTableUI);
         rowHeader = new JXTableRowHeader(insertRecordTableUI);
         final Component order[] = new Component[]{rowHeader, insertRecordTableUI};
@@ -484,19 +525,16 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         setFocusTraversalPolicy(policy);
         jScrollPane1.setRowHeaderView(rowHeader);
         jScrollPane1.setCorner(JScrollPane.UPPER_LEFT_CORNER, rowHeader.getTableHeader());
-        insertRecordTableUI.createTableModel(rows, rowHeader);
     }
 
     private Object[] getInsertValues(int row) throws DBException {
-        DefaultTableModel model = (DefaultTableModel) insertRecordTableUI.getModel();
-        int rsColumnCount = insertRecordTableUI.getRSColumnCount();
-        Object[] insertData = new Object[rsColumnCount];
+        Object[] insertData = new Object[insertDataModel.getColumnCount()];
         if (insertRecordTableUI.getRowCount() <= 0) {
             return insertData;
         }
-        for (int i = 0; i < rsColumnCount; i++) {
-            DBColumn col = insertRecordTableUI.getDBColumn(i);
-            Object val = model.getValueAt(row, i);
+        for (int i = 0; i < insertDataModel.getColumnCount(); i++) {
+            DBColumn col = insertDataModel.getColumn(i);
+            Object val = insertDataModel.getValueAt(row, i);
 
             // Check for Constant e.g <NULL>, <DEFAULT>, <CURRENT_TIMESTAMP> etc
             if (DataViewUtils.isSQLConstantString(val, col)) {
@@ -602,7 +640,7 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
                 }
             }
         } catch (Exception ex) {
-            java.util.logging.Logger.getLogger(InsertRecordDialog.class.getName()).info("Failed to paste the contents " + ex);
+            LOG.log(Level.INFO, "Failed to paste the contents ", ex);
         }
     }
 
@@ -614,8 +652,9 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         }
         insertRecordTableUI.editCellAt(row, col);
         TableCellEditor editor = insertRecordTableUI.getCellEditor();
+        List<DBColumn> columns = insertTable.getColumnList();
         if (editor != null) {
-            DBColumn dbcol = dataView.getDataViewDBTable().getColumn(col);
+            DBColumn dbcol = columns.get(col);
             if (dbcol.isGenerated() || !dbcol.isNullable()) {
                 Toolkit.getDefaultToolkit().beep();
                 editor.stopCellEditing();
@@ -637,7 +676,8 @@ private void removeBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         insertRecordTableUI.editCellAt(row, col);
         TableCellEditor editor = insertRecordTableUI.getCellEditor();
         if (editor != null) {
-            DBColumn dbcol = dataView.getDataViewDBTable().getColumn(col);
+            List<DBColumn> columns = insertTable.getColumnList();
+            DBColumn dbcol = columns.get(col);
             Object val = insertRecordTableUI.getValueAt(row, col);
             if (dbcol.isGenerated() || !dbcol.hasDefault()) {
                 Toolkit.getDefaultToolkit().beep();

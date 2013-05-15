@@ -44,16 +44,21 @@
 
 package org.netbeans.modules.web.project.ui.customizer;
 
+import java.io.File;
 import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.project.ProjectWebModule;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.webservices.WebServicesSupport;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -82,10 +87,11 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
         this.name = name;
     }
 
+    @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
         ResourceBundle bundle = NbBundle.getBundle( CustomizerProviderImpl.class );
         ProjectCustomizer.Category toReturn = null;
-        
+
         if (SOURCES.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     SOURCES,
@@ -140,7 +146,7 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
 
     public JComponent createComponent(ProjectCustomizer.Category category, Lookup context) {
         String nm = category.getName();
-        WebProjectProperties uiProps = context.lookup(WebProjectProperties.class);
+        final WebProjectProperties uiProps = context.lookup(WebProjectProperties.class);
         if (SOURCES.equals(nm)) {
             return new CustomizerSources(uiProps);
         } else if (FRAMEWORKS.equals(nm)) {
@@ -232,6 +238,36 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
         return new WebCompositePanelProvider(WEBSERVICESCATEGORY);
     }
     
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-web-project", position=350)
+    public static ProjectCustomizer.CompositeCategoryProvider createJavaScriptLibraries() {
+        return JavaScriptLibraries.createCustomizer(new JavaScriptLibraries.CustomizerSupport() {
+            @Override
+            public File getWebRoot(Lookup context) {
+                WebProjectProperties projectProperties = context.lookup(WebProjectProperties.class);
+                assert projectProperties != null;
+                FileObject fo = projectProperties.getProject().getAPIWebModule().getDocumentBase();
+                if (fo != null) {
+                    return FileUtil.toFile(fo);
+                }
+                return null;
+            }
+            @Override
+            public void setLibrariesFolder(Lookup context, String librariesFolder) {
+                // noop
+            }
+            @Override
+            public void setSelectedLibraries(Lookup context, List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries) {
+                // noop
+            }
+        });
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+            projectType = "org-netbeans-modules-web-project", position = 375)
+    public static ProjectCustomizer.CompositeCategoryProvider createCssPreprocessors() {
+        return CssPreprocessors.getDefault().createCustomizer();
+    }
+
     private static boolean showWebServicesCategory(WebProjectProperties uiProperties) {
         WebProject project = uiProperties.getProject();
         if(!project.isJavaEE5(project)) {

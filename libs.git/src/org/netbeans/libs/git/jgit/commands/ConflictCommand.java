@@ -49,6 +49,7 @@ import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.dircache.DirCacheIterator;
 import org.eclipse.jgit.errors.CorruptObjectException;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
@@ -72,7 +73,7 @@ public class ConflictCommand extends StatusCommand {
     private final File[] roots;
 
     public ConflictCommand (Repository repository, GitClassFactory gitFactory, File[] roots, ProgressMonitor monitor, StatusListener listener) {
-        super(repository, gitFactory, roots, monitor, listener);
+        super(repository, Constants.HEAD, roots, gitFactory, monitor, listener);
         this.monitor = monitor;
         this.listener = listener;
         this.roots = roots;

@@ -91,15 +91,17 @@ public class DocumentViewPanelProvider implements CssStylesPanelProvider {
 
     @Override
     public void activated() {
+        panel.activated();
     }
 
     @Override
     public void deactivated() {
+        panel.deactivated();
     }
 
     @Override
     public boolean providesContentFor(FileObject file) {
-        return MIME_TYPES.contains(file.getMIMEType());
+        return (file != null) && MIME_TYPES.contains(file.getMIMEType());
     }
     
 }

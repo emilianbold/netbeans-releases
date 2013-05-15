@@ -50,6 +50,8 @@ import java.net.MalformedURLException;
 import java.awt.*;
 import javax.swing.*;
 import java.util.Vector;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import javax.xml.transform.*;
 
@@ -355,10 +357,18 @@ public final class TransformPanel extends javax.swing.JPanel {
         outputComboBox.setModel(new DefaultComboBoxModel(new Object[] { defaultOutput, JUST_PREVIEW }));
     }
     
+    private boolean valid;
+    
+    private ChangeListener changeL;
+    
+    public boolean isValid() {
+        return valid;
+    }
     
     private void updateComponents() {
         setInitialized(false);
         
+        boolean willValid = true;
         // XML Input
         boolean notXML = ( xmlDataObject == null );
         if ( data.xml != null ) {
@@ -384,6 +394,8 @@ public final class TransformPanel extends javax.swing.JPanel {
             if ( data.xsl != null ) {
                 transformComboBox.setSelectedItem(data.xsl);
                 transformComboBox.setEditable(data.xsl instanceof String);
+            } else {
+                willValid = false;
             }
         }
         
@@ -394,6 +406,7 @@ public final class TransformPanel extends javax.swing.JPanel {
         ( data.xml.length() == 0 ) ||
         ( data.xsl.length() == 0 ) ) {
             canOutput = false;
+            willValid = false;
         }
         
         // Output
@@ -424,8 +437,17 @@ public final class TransformPanel extends javax.swing.JPanel {
             }
         }
         showComboBox.setEnabled(canOutput && data.output != null);
-        
         setInitialized(true);
+        if (this.valid != willValid) {
+            this.valid = willValid;
+            if (changeL != null) {
+                changeL.stateChanged(new ChangeEvent(this));
+            }
+        }
+    }
+    
+    public void setChangeListener(ChangeListener l) {
+        this.changeL = l;
     }
     
     

@@ -74,15 +74,16 @@ public class SetModifiedTest extends NbTestCase {
         assertNull("Should not have SaveCookie.", dob.getLookup().lookup(SaveCookie.class));
     }
 
-    public void testModifySave() throws IOException, BadLocationException {
-        FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "test.jsp");
+    public void testModifySave() throws Exception {
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject fo = fs.getRoot().createData("test.jsp");
         assertNotNull(fo);
         DataObject obj = DataObject.find(fo);
 
         assertNotNull(obj);
         assertFalse(obj.isModified());
         assertNull(obj.getCookie(SaveCookie.class));
-
+        
         obj.getCookie(EditorCookie.class).openDocument().insertString(0, "hello", null);
         assertTrue(obj.isModified());
         assertNotNull(obj.getCookie(SaveCookie.class));
@@ -94,7 +95,8 @@ public class SetModifiedTest extends NbTestCase {
     }
 
     public void testUnmodifyViaSetModified() throws IOException, BadLocationException {
-        FileObject fo = FileUtil.createData(FileUtil.getConfigRoot(), "test.jsp");
+        FileSystem fs = FileUtil.createMemoryFileSystem();
+        FileObject fo = fs.getRoot().createData("test.jsp");
         assertNotNull(fo);
         DataObject obj = DataObject.find(fo);
 

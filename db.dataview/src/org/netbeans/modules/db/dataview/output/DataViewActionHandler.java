@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
@@ -60,11 +61,11 @@ class DataViewActionHandler {
     private final DataViewUI dataViewUI;
     private final DataView dataView;
 
-    DataViewActionHandler(DataViewUI dataViewUI, DataView dataView) {
+    DataViewActionHandler(DataViewUI dataViewUI, DataView dataView, DataViewPageContext pageContext) {
         this.dataView = dataView;
         this.dataViewUI = dataViewUI;
 
-        this.dataPage = dataView.getDataViewPageContext();
+        this.dataPage = pageContext;
         this.execHelper = dataView.getSQLExecutionHelper();
     }
 
@@ -84,14 +85,11 @@ class DataViewActionHandler {
         synchronized (dataView) {
             if (selectedOnly) {
                 DataViewTableUI rsTable = dataViewUI.getDataViewTableUI();
-                UpdatedRowContext updatedRowCtx = dataView.getUpdatedRowContext();
+                DataViewTableUIModel updatedRowCtx = dataPage.getModel();
                 int[] rows = rsTable.getSelectedRows();
                 for (int i = 0; i < rows.length; i++) {
-                    int row = rows[i];
-                    for (int col = 0, CNT = rsTable.getColumnCount(); col < CNT; col++) {
-                        dataViewUI.resetValueAt(row, col);
-                    }
-                    updatedRowCtx.removeUpdateForSelectedRow(row);
+                    int row = rsTable.convertRowIndexToModel(rows[i]);
+                    updatedRowCtx.removeUpdateForSelectedRow(row, true);
                 }
 
                 if (updatedRowCtx.getUpdateKeys().isEmpty()) {
@@ -99,15 +97,14 @@ class DataViewActionHandler {
                     dataViewUI.setCommitEnabled(false);
                 }
             } else {
-                dataView.getUpdatedRowContext().removeAllUpdates();
-                dataView.setRowsInTableModel();
+                dataPage.getModel().removeAllUpdates(true);
                 dataViewUI.setCancelEnabled(false);
                 dataViewUI.setCommitEnabled(false);
             }
         }
     }
 
-    void setMaxActionPerformed() {
+    void updateActionPerformed() {
         if (rejectModifications()) {
             int pageSize = dataViewUI.getPageSize();
             dataPage.setPageSize(pageSize);
@@ -115,58 +112,68 @@ class DataViewActionHandler {
                     .setStoredPageSize(pageSize);
             dataPage.first();
             dataPage.setTotalRows(-1); // force total row refresh
-            execHelper.executeQuery();
+            execHelper.executeQueryOffEDT();
         }
     }
 
     void firstActionPerformed() {
         if (rejectModifications()) {
             dataPage.first();
-            execHelper.executeQuery();
+            execHelper.executeQueryOffEDT();
         }
     }
 
     void previousActionPerformed() {
         if (rejectModifications()) {
             dataPage.previous();
-            execHelper.executeQuery();
+            execHelper.executeQueryOffEDT();
         }
     }
 
     void nextActionPerformed() {
         if (rejectModifications()) {
             dataPage.next();
-            execHelper.executeQuery();
+            execHelper.executeQueryOffEDT();
         }
     }
 
     void lastActionPerformed() {
         if (rejectModifications()) {
             dataPage.last();
-            execHelper.executeQuery();
+            execHelper.executeQueryOffEDT();
         }
     }
 
     void commitActionPerformed(boolean selectedOnly) {
+        assert dataPage.getTableMetaData().getTableCount() == 1 : "Only one table allowed in resultset if update is invoked";
+
         if (dataViewUI.isDirty()) {
-            execHelper.executeUpdateRow(dataViewUI.getDataViewTableUI(), selectedOnly);
+            execHelper.executeUpdateRow(
+                    dataPage.getTableMetaData().getTable(0),
+                    dataViewUI.getDataViewTableUI(),
+                    selectedOnly);
         }
     }
 
     void insertActionPerformed() {
-        InsertRecordDialog dialog = new InsertRecordDialog(dataView);
+        DBTable table = dataPage.getTableMetaData().getTable(0);
+        InsertRecordDialog dialog = new InsertRecordDialog(dataView, dataPage, table);
         dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());
         dialog.setVisible(true);
     }
 
     void truncateActionPerformed() {
-        String confirmMsg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_truncate_table") + dataView.getDataViewDBTable().geTable(0).getDisplayName();
+        assert dataPage.getTableMetaData().getTableCount() == 1 : "Only one table allowed in resultset if delete is invoked";
+
+        String confirmMsg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_truncate_table") + dataPage.getTableMetaData().getTable(0).getDisplayName();
         if ((showYesAllDialog(confirmMsg, confirmMsg)).equals(NotifyDescriptor.YES_OPTION)) {
-            execHelper.executeTruncate();
+            execHelper.executeTruncate(dataPage, dataPage.getTableMetaData().getTable(0));
         }
     }
 
     void deleteRecordActionPerformed() {
+        assert dataPage.getTableMetaData().getTableCount() == 1 : "Only one table allowed in resultset if delete is invoked";
+
         DataViewTableUI rsTable = dataViewUI.getDataViewTableUI();
         if (rsTable.getSelectedRowCount() == 0) {
             String msg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_select_delete_rows");
@@ -174,14 +181,15 @@ class DataViewActionHandler {
         } else {
             String msg = NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_permanent_delete");
             if ((showYesAllDialog(msg, NbBundle.getMessage(DataViewActionHandler.class, "MSG_confirm_delete"))).equals(NotifyDescriptor.YES_OPTION)) {
-                execHelper.executeDeleteRow(rsTable);
+                DBTable table = dataPage.getTableMetaData().getTable(0);
+                execHelper.executeDeleteRow(dataPage, table, rsTable);
             }
         }
     }
 
     void refreshActionPerformed() {
         dataPage.setTotalRows(-1); // force total row refresh
-        execHelper.executeQuery();
+        execHelper.executeQueryOffEDT();
     }
 
     private static Object showYesAllDialog(Object msg, String title) {

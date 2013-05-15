@@ -138,10 +138,10 @@ if [ -z "$ANT_OPTS" ] ; then
     ANT_OPTS="-Xmx768m"
 fi
 
-java6output=`"$JAVA_HOME/bin/java" -version 2>&1 | grep 1.6.0`
+java7output=`"$JAVA_HOME/bin/java" -version 2>&1 | grep 1.7.0`
 
-if [ -n "$java6output" ] ; then
-    ANT_OPTS="$ANT_OPTS -Djavac.target=1.6 -Djavac.source=1.6"
+if [ -n "$java7output" ] ; then
+    ANT_OPTS="$ANT_OPTS -Djavac.target=1.7 -Djavac.source=1.7"
 fi
 
 export ANT_OPTS

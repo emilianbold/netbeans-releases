@@ -78,6 +78,8 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
     public static final String JAVA_COMPLETION_BLACKLIST_DEFAULT = ""; //NOI18N
     public static final String JAVA_COMPLETION_EXCLUDER_METHODS = "javaCompletionExcluderMethods"; //NOI18N
     public static final boolean JAVA_COMPLETION_EXCLUDER_METHODS_DEFAULT = false;
+    public static final String JAVA_AUTO_COMPLETION_SUBWORDS = "javaCompletionSubwords"; //NOI18N
+    public static final boolean JAVA_AUTO_COMPLETION_SUBWORDS_DEFAULT = false;
 
     private static final String JAVA_FQN_REGEX = "[$\\p{L}\\p{Digit}._]*"; //NOI18N
 
@@ -94,6 +96,7 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
         javaAutoPopupOnIdentifierPart.setSelected(preferences.getBoolean(JAVA_AUTO_POPUP_ON_IDENTIFIER_PART, JAVA_AUTO_POPUP_ON_IDENTIFIER_PART_DEFAULT));
         javaAutoCompletionTriggersField.setText(preferences.get(JAVA_AUTO_COMPLETION_TRIGGERS, JAVA_AUTO_COMPLETION_TRIGGERS_DEFAULT));
         javaCompletionSelectorsField.setText(preferences.get(JAVA_COMPLETION_SELECTORS, JAVA_COMPLETION_SELECTORS_DEFAULT));
+        javaAutoCompletionSubwords.setSelected(preferences.getBoolean(JAVA_AUTO_COMPLETION_SUBWORDS, JAVA_AUTO_COMPLETION_SUBWORDS_DEFAULT));        
         javadocAutoCompletionTriggersField.setText(preferences.get(JAVADOC_AUTO_COMPLETION_TRIGGERS, JAVADOC_AUTO_COMPLETION_TRIGGERS_DEFAULT));        
         String blacklist = preferences.get(JAVA_COMPLETION_BLACKLIST, JAVA_COMPLETION_BLACKLIST_DEFAULT);
         initExcluderList(javaCompletionExcludeJlist, blacklist);
@@ -161,27 +164,27 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
         javaCompletionExcluderDialogOkButton = new javax.swing.JButton();
         javaCompletionExcluderDialogLabel = new javax.swing.JLabel();
         javaCompletionExcluderDialogCancelButton = new javax.swing.JButton();
-        javaCompletionPane = new javax.swing.JPanel();
-        guessMethodArguments = new javax.swing.JCheckBox();
-        javaAutoPopupOnIdentifierPart = new javax.swing.JCheckBox();
-        javaAutoCompletionTriggersLabel = new javax.swing.JLabel();
-        javaAutoCompletionTriggersField = new javax.swing.JTextField();
-        javaCompletionSelectorsLabel = new javax.swing.JLabel();
-        javaCompletionSelectorsField = new javax.swing.JTextField();
-        javadocAutoCompletionTriggersLabel = new javax.swing.JLabel();
-        javadocAutoCompletionTriggersField = new javax.swing.JTextField();
+        javaCompletionExcluderEditButton = new javax.swing.JButton();
+        jSeparator2 = new javax.swing.JSeparator();
+        javaCompletionExcluderAddButton = new javax.swing.JButton();
+        javaCompletionExcluderRemoveButton = new javax.swing.JButton();
+        javaAutoCompletionSubwords = new javax.swing.JCheckBox();
+        javaCompletionExcluderMethodsCheckBox = new javax.swing.JCheckBox();
         javaCompletionExcluderTab = new javax.swing.JTabbedPane();
         javaCompletionExcludeScrollPane = new javax.swing.JScrollPane();
         javaCompletionExcludeJlist = new javax.swing.JList();
         javaCompletionIncludeScrollPane = new javax.swing.JScrollPane();
         javaCompletionIncludeJlist = new javax.swing.JList();
-        javaCompletionExcluderMethodsCheckBox = new javax.swing.JCheckBox();
-        javaCompletionExcluderAddButton = new javax.swing.JButton();
-        javaCompletionExcluderRemoveButton = new javax.swing.JButton();
-        javaCompletionExcluderEditButton = new javax.swing.JButton();
-        jSeparator1 = new javax.swing.JSeparator();
         javaCompletionExcluderLabel = new javax.swing.JLabel();
-        jSeparator2 = new javax.swing.JSeparator();
+        guessMethodArguments = new javax.swing.JCheckBox();
+        jSeparator1 = new javax.swing.JSeparator();
+        javadocAutoCompletionTriggersField = new javax.swing.JTextField();
+        javaCompletionSelectorsLabel = new javax.swing.JLabel();
+        javaAutoCompletionTriggersField = new javax.swing.JTextField();
+        javaAutoCompletionTriggersLabel = new javax.swing.JLabel();
+        javaAutoPopupOnIdentifierPart = new javax.swing.JCheckBox();
+        javadocAutoCompletionTriggersLabel = new javax.swing.JLabel();
+        javaCompletionSelectorsField = new javax.swing.JTextField();
 
         javaCompletionExcluderDialog2.setTitle(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ExcluderDialogTitle")); // NOI18N
         javaCompletionExcluderDialog2.setModal(true);
@@ -216,8 +219,8 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
             .addGroup(javaCompletionExcluderDialog2Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(javaCompletionExcluderDialog2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent( javaCompletionExcluderDialogLabel, javax.swing.GroupLayout.Alignment.LEADING, 0, 0, Short.MAX_VALUE)
-                    .addComponent( javaCompletionExcluderDialogTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE))
+                    .addComponent(javaCompletionExcluderDialogLabel, javax.swing.GroupLayout.Alignment.LEADING, 0, 0, Short.MAX_VALUE)
+                    .addComponent(javaCompletionExcluderDialogTextField, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 307, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(javaCompletionExcluderDialog2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(javaCompletionExcluderDialogOkButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -230,7 +233,7 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
                 .addGroup(javaCompletionExcluderDialog2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(javaCompletionExcluderDialog2Layout.createSequentialGroup()
                         .addContainerGap()
-                        .addComponent(javaCompletionExcluderDialogLabel)
+                        .addComponent(javaCompletionExcluderDialogLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(javaCompletionExcluderDialog2Layout.createSequentialGroup()
                         .addContainerGap()
@@ -253,51 +256,11 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
 
-        org.openide.awt.Mnemonics.setLocalizedText(guessMethodArguments, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "LBL_GuessMethodArgs")); // NOI18N
-        guessMethodArguments.addActionListener(new java.awt.event.ActionListener() {
+        javaCompletionExcluderEditButton.setMnemonic('E');
+        org.openide.awt.Mnemonics.setLocalizedText(javaCompletionExcluderEditButton, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionExcluderEditButton.text")); // NOI18N
+        javaCompletionExcluderEditButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                guessMethodArgumentsActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(javaAutoPopupOnIdentifierPart, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "LBL_AutoPopupOnIdentifierPartBox")); // NOI18N
-        javaAutoPopupOnIdentifierPart.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                javaAutoPopupOnIdentifierPartActionPerformed(evt);
-            }
-        });
-
-        javaAutoCompletionTriggersLabel.setLabelFor(javaAutoCompletionTriggersField);
-        org.openide.awt.Mnemonics.setLocalizedText(javaAutoCompletionTriggersLabel, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "LBL_JavaAutoCompletionTriggers")); // NOI18N
-
-        javaAutoCompletionTriggersField.setAlignmentX(1.0F);
-
-        javaCompletionSelectorsLabel.setLabelFor(javaCompletionSelectorsField);
-        org.openide.awt.Mnemonics.setLocalizedText(javaCompletionSelectorsLabel, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "LBL_JavaCompletionSelectors")); // NOI18N
-
-        javadocAutoCompletionTriggersLabel.setLabelFor(javadocAutoCompletionTriggersField);
-        org.openide.awt.Mnemonics.setLocalizedText(javadocAutoCompletionTriggersLabel, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "LBL_JavadocAutoCompletionTriggers")); // NOI18N
-
-        javadocAutoCompletionTriggersField.setText(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javadocAutoCompletionTriggersField.text")); // NOI18N
-
-        javaCompletionExcludeScrollPane.setViewportView(javaCompletionExcludeJlist);
-        javaCompletionExcludeJlist.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionExcludeJlist.AccessibleContext.accessibleName")); // NOI18N
-        javaCompletionExcludeJlist.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_ExcludeList")); // NOI18N
-
-        javaCompletionExcluderTab.addTab(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionExcludeScrollPane.TabConstraints.tabTitle"), javaCompletionExcludeScrollPane); // NOI18N
-        javaCompletionExcludeScrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionExcludeScrollPane.AccessibleContext.accessibleName")); // NOI18N
-
-        javaCompletionIncludeScrollPane.setViewportView(javaCompletionIncludeJlist);
-        javaCompletionIncludeJlist.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionIncludeJlist.AccessibleContext.accessibleName")); // NOI18N
-        javaCompletionIncludeJlist.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_LT_Include")); // NOI18N
-
-        javaCompletionExcluderTab.addTab(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionIncludeScrollPane.TabConstraints.tabTitle"), javaCompletionIncludeScrollPane); // NOI18N
-        javaCompletionIncludeScrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionIncludeScrollPane.AccessibleContext.accessibleName")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(javaCompletionExcluderMethodsCheckBox, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionExcluderMethodsCheckBox.text")); // NOI18N
-        javaCompletionExcluderMethodsCheckBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                javaCompletionExcluderMethodsCheckBoxActionPerformed(evt);
+                javaCompletionExcluderEditButtonActionPerformed(evt);
             }
         });
 
@@ -317,179 +280,168 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
             }
         });
 
-        javaCompletionExcluderEditButton.setMnemonic('E');
-        org.openide.awt.Mnemonics.setLocalizedText(javaCompletionExcluderEditButton, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionExcluderEditButton.text")); // NOI18N
-        javaCompletionExcluderEditButton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(javaAutoCompletionSubwords, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaAutoCompletionSubwords.text")); // NOI18N
+        javaAutoCompletionSubwords.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                javaCompletionExcluderEditButtonActionPerformed(evt);
+                javaAutoCompletionSubwordsActionPerformed(evt);
             }
         });
+
+        org.openide.awt.Mnemonics.setLocalizedText(javaCompletionExcluderMethodsCheckBox, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionExcluderMethodsCheckBox.text")); // NOI18N
+        javaCompletionExcluderMethodsCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                javaCompletionExcluderMethodsCheckBoxActionPerformed(evt);
+            }
+        });
+
+        javaCompletionExcludeScrollPane.setViewportView(javaCompletionExcludeJlist);
+        javaCompletionExcludeJlist.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionExcludeJlist.AccessibleContext.accessibleName")); // NOI18N
+        javaCompletionExcludeJlist.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_ExcludeList")); // NOI18N
+
+        javaCompletionExcluderTab.addTab(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionExcludeScrollPane.TabConstraints.tabTitle"), javaCompletionExcludeScrollPane); // NOI18N
+        javaCompletionExcludeScrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionExcludeScrollPane.AccessibleContext.accessibleName")); // NOI18N
+
+        javaCompletionIncludeScrollPane.setViewportView(javaCompletionIncludeJlist);
+        javaCompletionIncludeJlist.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionIncludeJlist.AccessibleContext.accessibleName")); // NOI18N
+        javaCompletionIncludeJlist.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_LT_Include")); // NOI18N
+
+        javaCompletionExcluderTab.addTab(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionIncludeScrollPane.TabConstraints.tabTitle"), javaCompletionIncludeScrollPane); // NOI18N
+        javaCompletionIncludeScrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionIncludeScrollPane.AccessibleContext.accessibleName")); // NOI18N
 
         javaCompletionExcluderLabel.setLabelFor(javaCompletionExcluderTab);
         org.openide.awt.Mnemonics.setLocalizedText(javaCompletionExcluderLabel, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionExcluderLabel.text")); // NOI18N
 
-        javax.swing.GroupLayout javaCompletionPaneLayout = new javax.swing.GroupLayout(javaCompletionPane);
-        javaCompletionPane.setLayout(javaCompletionPaneLayout);
-        javaCompletionPaneLayout.setHorizontalGroup(
-            javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javaCompletionPaneLayout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                        .addComponent( javaCompletionExcluderLabel, javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent( jSeparator2, javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(javax.swing.GroupLayout.Alignment.LEADING, javaCompletionPaneLayout.createSequentialGroup()
-                            .addGap(6, 6, 6)
-                            .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                .addComponent(javaCompletionExcluderMethodsCheckBox)
-                                .addGroup(javaCompletionPaneLayout.createSequentialGroup()
-                                    .addComponent(javaCompletionExcluderTab, javax.swing.GroupLayout.PREFERRED_SIZE, 298, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGap(10, 10, 10)
-                                    .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(javaCompletionExcluderAddButton)
-                                        .addComponent(javaCompletionExcluderRemoveButton)
-                                        .addComponent(javaCompletionExcluderEditButton))))))
-                    .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 427, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(javaCompletionPaneLayout.createSequentialGroup()
-                        .addComponent(javadocAutoCompletionTriggersLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(javadocAutoCompletionTriggersField, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javaCompletionPaneLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(guessMethodArguments)
-                        .addGroup(javaCompletionPaneLayout.createSequentialGroup()
-                            .addComponent(javaAutoCompletionTriggersLabel)
-                            .addGap(34, 34, 34)
-                            .addComponent(javaAutoCompletionTriggersField, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(javaAutoPopupOnIdentifierPart)
-                        .addGroup(javaCompletionPaneLayout.createSequentialGroup()
-                            .addComponent(javaCompletionSelectorsLabel)
-                            .addGap(30, 30, 30)
-                            .addComponent(javaCompletionSelectorsField, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGap(213, 213, 213)))
-        );
+        org.openide.awt.Mnemonics.setLocalizedText(guessMethodArguments, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "LBL_GuessMethodArgs")); // NOI18N
+        guessMethodArguments.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                guessMethodArgumentsActionPerformed(evt);
+            }
+        });
 
-        javaCompletionPaneLayout.linkSize( javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[]{javaCompletionExcluderAddButton, javaCompletionExcluderEditButton, javaCompletionExcluderRemoveButton});
+        javadocAutoCompletionTriggersField.setText(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javadocAutoCompletionTriggersField.text")); // NOI18N
 
-        javaCompletionPaneLayout.setVerticalGroup(
-            javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javaCompletionPaneLayout.createSequentialGroup()
-                .addGap(132, 132, 132)
-                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javaCompletionPaneLayout.createSequentialGroup()
-                        .addComponent(javaCompletionExcluderLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(javaCompletionExcluderTab, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(javaCompletionExcluderMethodsCheckBox))
-                    .addGroup(javaCompletionPaneLayout.createSequentialGroup()
-                        .addGap(35, 35, 35)
-                        .addComponent(javaCompletionExcluderAddButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(javaCompletionExcluderRemoveButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(javaCompletionExcluderEditButton)))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(javadocAutoCompletionTriggersLabel)
-                    .addComponent(javadocAutoCompletionTriggersField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(javaCompletionPaneLayout.createSequentialGroup()
-                    .addContainerGap()
-                    .addComponent(guessMethodArguments, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(javaAutoCompletionTriggersLabel)
-                        .addComponent(javaAutoCompletionTriggersField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addComponent(javaAutoPopupOnIdentifierPart)
-                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                    .addGroup(javaCompletionPaneLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(javaCompletionSelectorsLabel)
-                        .addComponent(javaCompletionSelectorsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addContainerGap(268, Short.MAX_VALUE)))
-        );
+        javaCompletionSelectorsLabel.setLabelFor(javaCompletionSelectorsField);
+        org.openide.awt.Mnemonics.setLocalizedText(javaCompletionSelectorsLabel, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "LBL_JavaCompletionSelectors")); // NOI18N
 
-        guessMethodArguments.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_CB_GuessMethodArgs")); // NOI18N
-        guessMethodArguments.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_CB_GuessMethodArgs")); // NOI18N
-        javaAutoPopupOnIdentifierPart.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_CB_AutoPopupOnIdentifierPartBox")); // NOI18N
-        javaAutoPopupOnIdentifierPart.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_CB_AutoPopupOnIdentifierPartBox")); // NOI18N
-        javaAutoCompletionTriggersLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_JavaTriggers")); // NOI18N
-        javaAutoCompletionTriggersLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_JavaTrigger")); // NOI18N
-        javaCompletionSelectorsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_JavaCompletionSelectors")); // NOI18N
-        javaCompletionSelectorsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_JavaCompletionSelectors")); // NOI18N
-        javaCompletionSelectorsField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_JavaCompletionSelectors")); // NOI18N
-        javaCompletionSelectorsField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_JavaCompletionSelectors")); // NOI18N
-        javadocAutoCompletionTriggersLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_JavadocTriggers")); // NOI18N
-        javadocAutoCompletionTriggersLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_JavadocTrigger")); // NOI18N
-        javadocAutoCompletionTriggersField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_JavadocTriggers")); // NOI18N
-        javadocAutoCompletionTriggersField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_JavadocTrigger")); // NOI18N
-        javaCompletionExcluderTab.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionExcluderTab.AccessibleContext.accessibleName")); // NOI18N
-        javaCompletionExcluderTab.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_Table")); // NOI18N
-        javaCompletionExcluderMethodsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_CB_ApplyRulesToMethods")); // NOI18N
-        javaCompletionExcluderMethodsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_MethodsCB")); // NOI18N
-        javaCompletionExcluderAddButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_Add")); // NOI18N
-        javaCompletionExcluderRemoveButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_Remove")); // NOI18N
-        javaCompletionExcluderEditButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_Edit")); // NOI18N
+        javaAutoCompletionTriggersField.setAlignmentX(1.0F);
+
+        javaAutoCompletionTriggersLabel.setLabelFor(javaAutoCompletionTriggersField);
+        org.openide.awt.Mnemonics.setLocalizedText(javaAutoCompletionTriggersLabel, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "LBL_JavaAutoCompletionTriggers")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(javaAutoPopupOnIdentifierPart, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "LBL_AutoPopupOnIdentifierPartBox")); // NOI18N
+        javaAutoPopupOnIdentifierPart.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                javaAutoPopupOnIdentifierPartActionPerformed(evt);
+            }
+        });
+
+        javadocAutoCompletionTriggersLabel.setLabelFor(javadocAutoCompletionTriggersField);
+        org.openide.awt.Mnemonics.setLocalizedText(javadocAutoCompletionTriggersLabel, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "LBL_JavadocAutoCompletionTriggers")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(javaCompletionPane, javax.swing.GroupLayout.DEFAULT_SIZE, 439, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jSeparator1)
+                    .addComponent(jSeparator2)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(guessMethodArguments)
+                            .addComponent(javaAutoPopupOnIdentifierPart)
+                            .addComponent(javaCompletionExcluderMethodsCheckBox)
+                            .addComponent(javaCompletionExcluderLabel)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(javadocAutoCompletionTriggersLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(javadocAutoCompletionTriggersField, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(javaCompletionSelectorsLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(javaCompletionSelectorsField, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(javaAutoCompletionTriggersLabel)
+                                .addGap(46, 46, 46)
+                                .addComponent(javaAutoCompletionTriggersField, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(javaAutoCompletionSubwords)
+                            .addComponent(javaCompletionExcluderTab))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(javaCompletionExcluderRemoveButton)
+                            .addComponent(javaCompletionExcluderEditButton)
+                            .addComponent(javaCompletionExcluderAddButton))))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {javaCompletionExcluderAddButton, javaCompletionExcluderEditButton, javaCompletionExcluderRemoveButton});
+
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(javaCompletionPane, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap()
+                .addComponent(guessMethodArguments, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(javaAutoCompletionTriggersLabel)
+                    .addComponent(javaAutoCompletionTriggersField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(javaAutoPopupOnIdentifierPart)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(javaCompletionSelectorsLabel)
+                    .addComponent(javaCompletionSelectorsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(javaAutoCompletionSubwords)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(javaCompletionExcluderLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(javaCompletionExcluderTab, javax.swing.GroupLayout.PREFERRED_SIZE, 124, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(javaCompletionExcluderAddButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(javaCompletionExcluderRemoveButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(javaCompletionExcluderEditButton)
+                        .addGap(19, 19, 19)))
+                .addComponent(javaCompletionExcluderMethodsCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 4, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(javadocAutoCompletionTriggersLabel)
+                    .addComponent(javadocAutoCompletionTriggersField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        javaCompletionExcluderEditButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_Edit")); // NOI18N
+        javaCompletionExcluderAddButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_Add")); // NOI18N
+        javaCompletionExcluderRemoveButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_Remove")); // NOI18N
+        javaCompletionExcluderMethodsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_CB_ApplyRulesToMethods")); // NOI18N
+        javaCompletionExcluderMethodsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_MethodsCB")); // NOI18N
+        javaCompletionExcluderTab.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.javaCompletionExcluderTab.AccessibleContext.accessibleName")); // NOI18N
+        javaCompletionExcluderTab.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_Table")); // NOI18N
+        guessMethodArguments.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_CB_GuessMethodArgs")); // NOI18N
+        guessMethodArguments.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_CB_GuessMethodArgs")); // NOI18N
+        javadocAutoCompletionTriggersField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_JavadocTriggers")); // NOI18N
+        javadocAutoCompletionTriggersField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_JavadocTrigger")); // NOI18N
+        javaCompletionSelectorsLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_JavaCompletionSelectors")); // NOI18N
+        javaCompletionSelectorsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_JavaCompletionSelectors")); // NOI18N
+        javaAutoCompletionTriggersLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_JavaTriggers")); // NOI18N
+        javaAutoCompletionTriggersLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_JavaTrigger")); // NOI18N
+        javaAutoPopupOnIdentifierPart.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_CB_AutoPopupOnIdentifierPartBox")); // NOI18N
+        javaAutoPopupOnIdentifierPart.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_CB_AutoPopupOnIdentifierPartBox")); // NOI18N
+        javadocAutoCompletionTriggersLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_JavadocTriggers")); // NOI18N
+        javadocAutoCompletionTriggersLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_JavadocTrigger")); // NOI18N
+        javaCompletionSelectorsField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSN_JavaCompletionSelectors")); // NOI18N
+        javaCompletionSelectorsField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ACSD_JavaCompletionSelectors")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
-
-    private void javaAutoPopupOnIdentifierPartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaAutoPopupOnIdentifierPartActionPerformed
-        preferences.putBoolean(JAVA_AUTO_POPUP_ON_IDENTIFIER_PART, javaAutoPopupOnIdentifierPart.isSelected());
-    }//GEN-LAST:event_javaAutoPopupOnIdentifierPartActionPerformed
-
-    private void guessMethodArgumentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guessMethodArgumentsActionPerformed
-        preferences.putBoolean(GUESS_METHOD_ARGUMENTS, guessMethodArguments.isSelected());
-}//GEN-LAST:event_guessMethodArgumentsActionPerformed
-
-	private void javaCompletionExcluderAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaCompletionExcluderAddButtonActionPerformed
-        openExcluderEditor();
-}//GEN-LAST:event_javaCompletionExcluderAddButtonActionPerformed
-
-    private void javaCompletionExcluderRemoveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaCompletionExcluderRemoveButtonActionPerformed
-        JList list = getSelectedExcluderList();
-        int[] rows = list.getSelectedIndices();
-        DefaultListModel model = (DefaultListModel) list.getModel();
-        // remove rows in descending order: row numbers change when a row is removed
-        for (int row = rows.length - 1; row >= 0; row--) {
-            model.remove(rows[row]);
-        }
-        updateExcluder(list);
-}//GEN-LAST:event_javaCompletionExcluderRemoveButtonActionPerformed
-
-    private void javaCompletionExcluderEditButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaCompletionExcluderEditButtonActionPerformed
-        JList list = getSelectedExcluderList();
-        int index = list.getSelectedIndex();
-        if (index == -1)
-            return;
-        DefaultListModel model = (DefaultListModel) list.getModel();
-        javaExcluderEditing = (String) model.getElementAt(index);
-        openExcluderEditor();
-}//GEN-LAST:event_javaCompletionExcluderEditButtonActionPerformed
-
-    private void javaCompletionExcluderMethodsCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaCompletionExcluderMethodsCheckBoxActionPerformed
-        preferences.putBoolean(JAVA_COMPLETION_EXCLUDER_METHODS, javaCompletionExcluderMethodsCheckBox.isSelected());
-}//GEN-LAST:event_javaCompletionExcluderMethodsCheckBoxActionPerformed
 
     private void javaCompletionExcluderDialogOkButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaCompletionExcluderDialogOkButtonActionPerformed
         JList list = getSelectedExcluderList();
@@ -504,6 +456,8 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
         }
         String[] entries = text.split(","); // NOI18N
         for (String entry : entries) {
+            // strip zero width spaces
+            entry = entry.replaceAll("\u200B", "");  // NOI18N
             // strip wildcards
             if (entry.contains("*"))  { // NOI18N
                 entry = entry.replaceAll("\\*", "");  // NOI18N
@@ -533,6 +487,47 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
             evt.consume();
         }
     }//GEN-LAST:event_javaCompletionExcluderDialogTextFieldKeyTyped
+
+    private void javaAutoCompletionSubwordsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaAutoCompletionSubwordsActionPerformed
+        preferences.putBoolean(JAVA_AUTO_COMPLETION_SUBWORDS, javaAutoCompletionSubwords.isSelected());
+    }//GEN-LAST:event_javaAutoCompletionSubwordsActionPerformed
+
+    private void javaCompletionExcluderEditButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaCompletionExcluderEditButtonActionPerformed
+        JList list = getSelectedExcluderList();
+        int index = list.getSelectedIndex();
+        if (index == -1)
+        return;
+        DefaultListModel model = (DefaultListModel) list.getModel();
+        javaExcluderEditing = (String) model.getElementAt(index);
+        openExcluderEditor();
+    }//GEN-LAST:event_javaCompletionExcluderEditButtonActionPerformed
+
+    private void javaCompletionExcluderRemoveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaCompletionExcluderRemoveButtonActionPerformed
+        JList list = getSelectedExcluderList();
+        int[] rows = list.getSelectedIndices();
+        DefaultListModel model = (DefaultListModel) list.getModel();
+        // remove rows in descending order: row numbers change when a row is removed
+        for (int row = rows.length - 1; row >= 0; row--) {
+            model.remove(rows[row]);
+        }
+        updateExcluder(list);
+    }//GEN-LAST:event_javaCompletionExcluderRemoveButtonActionPerformed
+
+    private void javaCompletionExcluderAddButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaCompletionExcluderAddButtonActionPerformed
+        openExcluderEditor();
+    }//GEN-LAST:event_javaCompletionExcluderAddButtonActionPerformed
+
+    private void javaCompletionExcluderMethodsCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaCompletionExcluderMethodsCheckBoxActionPerformed
+        preferences.putBoolean(JAVA_COMPLETION_EXCLUDER_METHODS, javaCompletionExcluderMethodsCheckBox.isSelected());
+    }//GEN-LAST:event_javaCompletionExcluderMethodsCheckBoxActionPerformed
+
+    private void javaAutoPopupOnIdentifierPartActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_javaAutoPopupOnIdentifierPartActionPerformed
+        preferences.putBoolean(JAVA_AUTO_POPUP_ON_IDENTIFIER_PART, javaAutoPopupOnIdentifierPart.isSelected());
+    }//GEN-LAST:event_javaAutoPopupOnIdentifierPartActionPerformed
+
+    private void guessMethodArgumentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guessMethodArgumentsActionPerformed
+        preferences.putBoolean(GUESS_METHOD_ARGUMENTS, guessMethodArguments.isSelected());
+    }//GEN-LAST:event_guessMethodArgumentsActionPerformed
 
     private void update(DocumentEvent e) {
         if (e.getDocument() == javaAutoCompletionTriggersField.getDocument())
@@ -580,6 +575,7 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
     private javax.swing.JCheckBox guessMethodArguments;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
+    private javax.swing.JCheckBox javaAutoCompletionSubwords;
     private javax.swing.JTextField javaAutoCompletionTriggersField;
     private javax.swing.JLabel javaAutoCompletionTriggersLabel;
     private javax.swing.JCheckBox javaAutoPopupOnIdentifierPart;
@@ -598,7 +594,6 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
     private javax.swing.JTabbedPane javaCompletionExcluderTab;
     private javax.swing.JList javaCompletionIncludeJlist;
     private javax.swing.JScrollPane javaCompletionIncludeScrollPane;
-    private javax.swing.JPanel javaCompletionPane;
     private javax.swing.JTextField javaCompletionSelectorsField;
     private javax.swing.JLabel javaCompletionSelectorsLabel;
     private javax.swing.JTextField javadocAutoCompletionTriggersField;

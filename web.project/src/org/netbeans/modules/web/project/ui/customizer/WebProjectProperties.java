@@ -103,7 +103,7 @@ import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListC
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
 import org.netbeans.modules.web.api.webmodule.WebModule;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.project.UpdateProjectImpl;
 import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -287,7 +287,7 @@ final public class WebProjectProperties {
     ButtonModel DISPLAY_BROWSER_MODEL;
     JToggleButton.ToggleButtonModel DEPLOY_ON_SAVE_MODEL; 
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL; 
-    WebBrowserSupport.BrowserComboBoxModel BROWSERS_MODEL;
+    BrowserUISupport.BrowserComboBoxModel BROWSERS_MODEL;
     Document RUNMAIN_JVM_MODEL;
     
     // for ui logging added frameworks
@@ -491,10 +491,7 @@ final public class WebProjectProperties {
             //ignore
         }
         String selectedBrowser = projectProperties.get(SELECTED_BROWSER);
-        if (selectedBrowser == null) {
-            selectedBrowser = WebBrowserSupport.getDefaultBrowserId();
-        }
-        BROWSERS_MODEL = WebBrowserSupport.createBrowserModel(selectedBrowser);
+        BROWSERS_MODEL = BrowserUISupport.createBrowserModel(selectedBrowser, true);
         loadingFrameworksTask = RP.post(new Runnable() {
                 public void run() {
                     loadCurrentFrameworks();
@@ -705,15 +702,6 @@ final public class WebProjectProperties {
         
         // Encode all paths (this may change the project properties)
         List<ClassPathSupport.Item> javaClasspathList = ClassPathUiSupport.getList(JAVAC_CLASSPATH_MODEL.getDefaultListModel());
-        if (J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null) {
-            final String instanceId = J2eePlatformUiSupport.getServerInstanceID(
-                    J2EE_SERVER_INSTANCE_MODEL.getSelectedItem());
-            final String oldServInstID = project.getAntProjectHelper().getProperties(
-                    AntProjectHelper.PRIVATE_PROPERTIES_PATH).getProperty(J2EE_SERVER_INSTANCE);
-
-            SharabilityUtility.switchServerLibrary(instanceId, oldServInstID, javaClasspathList, updateHelper);
-        }
-        
         String[] javac_cp = cs.encodeToStrings(javaClasspathList, ClassPathSupportCallbackImpl.TAG_WEB_MODULE_LIBRARIES  );        
         String[] javac_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( JAVAC_TEST_CLASSPATH_MODEL ), null );
         String[] run_test_cp = cs.encodeToStrings( ClassPathUiSupport.getList( RUN_TEST_CLASSPATH_MODEL ), null );

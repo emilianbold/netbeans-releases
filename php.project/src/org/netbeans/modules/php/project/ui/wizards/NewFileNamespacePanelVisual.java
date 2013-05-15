@@ -150,7 +150,7 @@ public class NewFileNamespacePanelVisual extends JPanel {
     private void initComponents() {
 
         namespaceLabel = new JLabel();
-        namespaceComboBox = new JComboBox();
+        namespaceComboBox = new JComboBox<String>();
 
         Mnemonics.setLocalizedText(namespaceLabel, NbBundle.getMessage(NewFileNamespacePanelVisual.class, "NewFileNamespacePanelVisual.namespaceLabel.text")); // NOI18N
 
@@ -174,15 +174,15 @@ public class NewFileNamespacePanelVisual extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JComboBox namespaceComboBox;
+    private JComboBox<String> namespaceComboBox;
     private JLabel namespaceLabel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
 
-    private static final class NamespaceComboBoxModel extends AbstractListModel implements ComboBoxModel {
+    private static final class NamespaceComboBoxModel extends AbstractListModel<String> implements ComboBoxModel<String> {
 
-        private static final long serialVersionUID = -4589735354657L;
+        private static final long serialVersionUID = -5783235465654654L;
 
         private final List<String> namespaces = new CopyOnWriteArrayList<String>();
 
@@ -195,7 +195,7 @@ public class NewFileNamespacePanelVisual extends JPanel {
         }
 
         @Override
-        public Object getElementAt(int index) {
+        public String getElementAt(int index) {
             return namespaces.get(index);
         }
 

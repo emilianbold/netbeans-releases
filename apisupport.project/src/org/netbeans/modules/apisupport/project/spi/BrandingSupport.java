@@ -50,12 +50,14 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.ref.SoftReference;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -90,12 +92,19 @@ public abstract class BrandingSupport {
     private final Project project;
     private Set<BrandableModule> brandedModules;
     private Set<BundleKey> brandedBundleKeys;
+    private Set<BundleKey> localizedBrandedBundleKeys;
     private Set<BrandedFile> brandedFiles;
 
     private final String brandingPath;
     private final File brandingDir;
     
-    private static final String BUNDLE_NAME = "Bundle.properties"; //NOI18N
+    private static final String BUNDLE_NAME_PREFIX = "Bundle"; //NOI18N
+    private static final String BUNDLE_NAME_SUFFIX = ".properties"; //NOI18N
+
+    protected Locale locale;
+    private final Object LOCK = new Object();
+    private SoftReference<Set<BrandableModule>> cacheLoaded;
+    private boolean isCached;
 
     /**
      * @param p Project to be branded.
@@ -155,6 +164,12 @@ public abstract class BrandingSupport {
         
     }
     
+    boolean isLocalizedBranded(final BundleKey key) {
+        boolean retval = getLocalizedBrandedBundleKeys().contains(key);
+        return retval;
+        
+    }
+    
     boolean isBranded(final BrandedFile bFile) {
         return getBrandedFiles().contains(bFile);
     }
@@ -176,6 +191,10 @@ public abstract class BrandingSupport {
         return brandedBundleKeys;
     }
     
+    Set<BundleKey> getLocalizedBrandedBundleKeys() {
+        return localizedBrandedBundleKeys;
+    }
+    
     Set<BrandedFile> getBrandedFiles() {
         return brandedFiles;
     }
@@ -185,9 +204,14 @@ public abstract class BrandingSupport {
         return (foundEntry != null) ? getLocalizingBundleKeys(foundEntry, keys) : null;
     }
     
+    Set<BundleKey> getLocalizedLocalizingBundleKeys(final String moduleCodeNameBase, final Set<String> keys) {
+        BrandableModule foundEntry = findBrandableModule(moduleCodeNameBase);
+        return (foundEntry != null) ? getLocalizingBundleKeys(foundEntry, keys) : null;
+    }
+    
     private Set<BundleKey> getLocalizingBundleKeys(final BrandableModule moduleEntry, final Set<String> keys) {
         Set<BundleKey> retval = new HashSet<BundleKey>();
-        for (Iterator<BundleKey> it = getBrandedBundleKeys().iterator();
+        for (Iterator<BundleKey> it = getLocalizedBrandedBundleKeys().iterator();
         it.hasNext() && retval.size() != keys.size();) {
             BundleKey bKey = it.next();
             if (keys.contains(bKey.getKey())) {
@@ -226,18 +250,24 @@ public abstract class BrandingSupport {
     
     BundleKey getBundleKey(final String moduleCodeNameBase,
             final String bundleEntry,final String key) {
-        Set<BundleKey> keys = getBundleKeys(moduleCodeNameBase, bundleEntry, Collections.singleton(key));
+        Set<BundleKey> keys = getBundleKeys(moduleCodeNameBase, bundleEntry, Collections.singleton(key), getBrandedBundleKeys());
         return (keys == null) ? null : (BrandingSupport.BundleKey) keys.toArray()[0];
     }
     
-    Set<BundleKey> getBundleKeys(final String moduleCodeNameBase, final String bundleEntry, final Set<String> keys) {
-        BrandableModule foundEntry = findBrandableModule(moduleCodeNameBase);
-        return (foundEntry != null) ? getBundleKeys(foundEntry, bundleEntry, keys) : null;
+    BundleKey getLocalizedBundleKey(final String moduleCodeNameBase,
+            final String bundleEntry,final String key) {
+        Set<BundleKey> keys = getBundleKeys(moduleCodeNameBase, bundleEntry, Collections.singleton(key), getLocalizedBrandedBundleKeys());
+        return (keys == null) ? null : (BrandingSupport.BundleKey) keys.toArray()[0];
     }
     
-    private Set<BundleKey> getBundleKeys(final BrandableModule moduleEntry, final String bundleEntry, final Set<String> keys) {
+    Set<BundleKey> getBundleKeys(final String moduleCodeNameBase, final String bundleEntry, final Set<String> keys, Set<BundleKey> bundleKeys) {
+        BrandableModule foundEntry = findBrandableModule(moduleCodeNameBase);
+        return (foundEntry != null) ? getBundleKeys(foundEntry, bundleEntry, keys, bundleKeys) : null;
+    }
+    
+    private Set<BundleKey> getBundleKeys(final BrandableModule moduleEntry, final String bundleEntry, final Set<String> keys, Set<BundleKey> bundleKeys) {
         Set<BundleKey> retval = new HashSet<BundleKey>();
-        for (Iterator<BundleKey> it = getBrandedBundleKeys().iterator();
+        for (Iterator<BundleKey> it = bundleKeys.iterator();
         it.hasNext() && retval.size() != keys.size();) {
             BundleKey bKey = it.next();
             if (keys.contains(bKey.getKey())) {
@@ -345,10 +375,36 @@ public abstract class BrandingSupport {
     protected abstract @CheckForNull Set<BrandableModule> loadModules() throws IOException;
     
     void init() throws IOException {
-        Set<BrandableModule> loaded = loadModules();
+        Set<BrandableModule> loaded = null;
+        synchronized(LOCK) {
+            isCached = false;
+            loaded = cacheOrLoadModules();
+        }
         if (brandedModules == null || loaded != null) {
             brandedModules = new HashSet<BrandableModule>();
             brandedBundleKeys = new HashSet<BundleKey>();
+            localizedBrandedBundleKeys = new HashSet<BundleKey>();
+            brandedFiles = new HashSet<BrandedFile>();
+            
+            if (brandingDir.exists()) {
+                if(this.locale == null)
+                    this.locale = Locale.getDefault();
+                assert brandingDir.isDirectory();
+                scanModulesInBrandingDir(brandingDir, loaded);
+            }
+        }
+    }
+    
+    void refreshLocalizedBundles(Locale locale) throws IOException {
+        this.locale = locale;
+        Set<BrandableModule> loaded = null;
+        synchronized(LOCK) {
+            loaded = cacheOrLoadModules();
+        }
+        if (brandedModules == null || loaded != null) {
+            brandedModules = new HashSet<BrandableModule>();
+            brandedBundleKeys = new HashSet<BundleKey>();
+            localizedBrandedBundleKeys = new HashSet<BundleKey>();
             brandedFiles = new HashSet<BrandedFile>();
             
             if (brandingDir.exists()) {
@@ -356,6 +412,19 @@ public abstract class BrandingSupport {
                 scanModulesInBrandingDir(brandingDir, loaded);
             }
         }
+        
+    }
+    
+    private Set<BrandableModule> cacheOrLoadModules() throws IOException {
+        Set<BrandableModule> loaded = null;
+        if(isCached) {
+           loaded = cacheLoaded != null? cacheLoaded.get():null;
+        }
+        if(loaded == null) {
+            cacheLoaded = new SoftReference<Set<BrandableModule>>(loaded = loadModules());
+            isCached = true;
+        }
+        return loaded;
     }
     
     private  void scanModulesInBrandingDir(final File srcDir, final Set<BrandableModule> platformModules) throws IOException  {
@@ -389,19 +458,28 @@ public abstract class BrandingSupport {
     private void scanBrandedFiles(final File srcDir, final BrandableModule mEntry) throws IOException {
         String[] kids = srcDir.list();
         assert (kids != null);
-        
+        boolean foundLocale = false;
+        File kid = null;
         for (String kidName : kids) {
-            File kid = new File(srcDir, kidName);
+            kid = new File(srcDir, kidName);
             if (!kid.isDirectory()) {
-                if (kid.getName().endsWith(BUNDLE_NAME)) {
+                if (kid.getName().endsWith(BUNDLE_NAME_PREFIX + BUNDLE_NAME_SUFFIX)) {
                     loadBundleKeys(mEntry, kid);
+                } else if (kid.getName().endsWith(BUNDLE_NAME_PREFIX + "_" + this.locale.toString().toLowerCase() + BUNDLE_NAME_SUFFIX)) {
+                    loadLocalizedBundleKeys(mEntry, kid);
+                    foundLocale = true;
                 } else {
                     loadBrandedFiles(mEntry, kid);
                 }
-                
-                continue;
+            } else {
+                scanBrandedFiles(kid, mEntry);
             }
-            scanBrandedFiles(kid, mEntry);
+        }
+        if(!foundLocale) {
+            File defaultBundle = new File(srcDir, BUNDLE_NAME_PREFIX + BUNDLE_NAME_SUFFIX);
+            if(defaultBundle.exists()) {
+                loadLocalizedBundleKeys(mEntry, defaultBundle);
+            }
         }
     }
     
@@ -413,13 +491,20 @@ public abstract class BrandingSupport {
         }
     }
     
+    private void loadLocalizedBundleKeys(final BrandableModule mEntry,
+            final File bundle) throws IOException {
+        EditableProperties p = getEditableProperties(bundle);
+        for (Map.Entry<String,String> entry : p.entrySet()) {
+            localizedBrandedBundleKeys.add(new BundleKey(mEntry, bundle, entry.getKey(), entry.getValue()));
+        }
+    }
+    
     private void loadBrandedFiles(final BrandableModule mEntry,
             final File file) throws IOException {
         String entryPath = PropertyUtils.relativizeFile(getModuleEntryDirectory(mEntry),file);
         BrandedFile bf = new BrandedFile(mEntry, Utilities.toURI(file).toURL(), entryPath);
         brandedFiles.add(bf);
     }
-    
     
     private static EditableProperties getEditableProperties(final File bundle) throws IOException {
         EditableProperties p = new EditableProperties(true);
@@ -475,6 +560,11 @@ public abstract class BrandingSupport {
         }
     }
     
+    BundleKey createModifiedBundleKey(final BrandableModule moduleEntry, final File brandingBundle, final String key, final String value) {
+        BundleKey bundleKey = new BundleKey(moduleEntry, brandingBundle, key, "");
+        bundleKey.setValue(value);
+        return bundleKey;
+    }
     
     private boolean isBrandingForModuleEntry(final File srcDir, final BrandableModule mEntry) {
         return mEntry.getRelativePath().equals(PropertyUtils.relativizeFile(brandingDir, srcDir));

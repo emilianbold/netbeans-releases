@@ -58,7 +58,7 @@ import org.openide.windows.IOContainer;
 @ActionRegistration(displayName = "#IOWindow", iconBase="org/netbeans/core/io/ui/output.png")
 @ActionReferences({
     @ActionReference(name = "D-4", path = "Shortcuts"),
-    @ActionReference(position = 100, path = "Menu/Window/Output")
+    @ActionReference(position = 800, path = "Menu/Window")
 })
 public final class IOWindowAction implements ActionListener {
 

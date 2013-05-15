@@ -51,7 +51,6 @@ import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
 import org.netbeans.modules.web.common.api.LexerUtils;
-import org.openide.filesystems.FileObject;
 
 /**
  * Parser of the semi-grammar expressions taken from the w3c.org css specifications.

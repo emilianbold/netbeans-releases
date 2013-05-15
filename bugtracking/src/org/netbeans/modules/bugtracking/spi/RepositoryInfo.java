@@ -46,6 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 
 /**
  *
@@ -133,7 +134,7 @@ public final class RepositoryInfo {
 
     public char[] getPassword() {
         if(isNbRepository(map)) {
-            char[] password = BugtrackingUtil.getNBPassword();
+            char[] password = NBBugzillaUtils.getNBPassword();
             LOG.log(Level.FINER, "read netbeans password={0}", BugtrackingUtil.getPasswordLog(password));
             return password;
         } else {
@@ -170,7 +171,7 @@ public final class RepositoryInfo {
         }
         Map<String, String> m = fromString(str);
         if(isNbRepository(m)) {
-            m.put(PROPERTY_USERNAME, BugtrackingUtil.getNBUsername());
+            m.put(PROPERTY_USERNAME, NBBugzillaUtils.getNBUsername());
         }
         return new RepositoryInfo(m);
     }
@@ -179,7 +180,7 @@ public final class RepositoryInfo {
         boolean isNetbeans = isNbRepository(map);
         preferences.put(key, getStringValue(isNetbeans));
         if(isNetbeans) {
-            BugtrackingUtil.saveNBUsername(getUsername());
+            NBBugzillaUtils.saveNBUsername(getUsername());
         }
     }
     
@@ -220,7 +221,7 @@ public final class RepositoryInfo {
     private void storePasswords(char[] password, char[] httpPassword) throws MissingResourceException {
         if(isNbRepository(map)) {
             LOG.log(Level.FINER, "storing netbeans password={0}", BugtrackingUtil.getPasswordLog(password));
-            BugtrackingUtil.saveNBPassword(password);
+            NBBugzillaUtils.saveNBPassword(password);
         } else {
             LOG.log(Level.FINER, "storing password={0}, httpPassword={1}", new Object[] {BugtrackingUtil.getPasswordLog(password), BugtrackingUtil.getPasswordLog(httpPassword)});
             BugtrackingUtil.savePassword(password, null, getUsername(), getUrl());
@@ -230,7 +231,7 @@ public final class RepositoryInfo {
 
     private static boolean isNbRepository(Map<String, String> map) {
         String url = map.get(PROPERTY_URL);
-        return url != null ? BugtrackingUtil.isNbRepository(url) : false;
+        return url != null ? NBBugzillaUtils.isNbRepository(url) : false;
     }
 
     private void logMap(String prefix, Map<String, String> properties) {

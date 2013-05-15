@@ -63,7 +63,7 @@ import org.openide.text.NbDocument;
 
 public class SearchCompletionItem implements CompletionItem {
 
-    private String word;
+    private final String word;
 
     /** Creates a new instance of WordCompletionItem */
     public SearchCompletionItem(String word) {
@@ -173,9 +173,6 @@ public class SearchCompletionItem implements CompletionItem {
             return false;
         }
         final SearchCompletionItem other = (SearchCompletionItem) obj;
-        if ((this.word == null) ? (other.word != null) : !this.word.equals(other.word)) {
-            return false;
-        }
-        return true;
+        return !((this.word == null) ? (other.word != null) : !this.word.equals(other.word));
     }
 }

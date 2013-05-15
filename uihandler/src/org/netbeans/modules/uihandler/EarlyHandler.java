@@ -67,7 +67,7 @@ public final class EarlyHandler extends Handler {
 
     @Override
     public void publish(LogRecord record) {
-        if (record.getLoggerName() != null && record.getLoggerName().startsWith("org.netbeans.ui")) { // NOI18N
+        if (record.getLoggerName() != null && record.getLoggerName().startsWith(Installer.UI_LOGGER_NAME)) {
             disable();
             Installer.findObject(Installer.class, true).restored();
             // one again for the Installer's logs

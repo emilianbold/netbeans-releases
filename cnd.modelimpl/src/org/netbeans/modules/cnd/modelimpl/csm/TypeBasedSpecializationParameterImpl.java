@@ -135,6 +135,11 @@ public final class TypeBasedSpecializationParameterImpl extends OffsetableBase i
     }
 
     @Override
+    public boolean isRValueReference() {
+        return type.isRValueReference();
+    }
+    
+    @Override
     public boolean isConst() {
         return type.isConst();
     }

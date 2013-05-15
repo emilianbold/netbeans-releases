@@ -372,7 +372,7 @@ public class Reindenter implements IndentTask {
                                     }
                                     break;
                                 case COMMA:
-                                    currentIndent = getMultilineIndent(((ClassTree)last).getImplementsClause(), path, token.offset(), lastLineStartOffset, currentIndent, cs.alignMultilineImplements(), true);
+                                    currentIndent = getMultilineIndent(((ClassTree)last).getImplementsClause(), path, token.offset(), currentIndent, cs.alignMultilineImplements(), true);
                                     break;
                                 case IDENTIFIER:
                                 case GT:
@@ -404,9 +404,9 @@ public class Reindenter implements IndentTask {
                         case COMMA:
                             List<? extends ExpressionTree> thrws = ((MethodTree)last).getThrows();
                             if (!thrws.isEmpty() && sp.getStartPosition(cut, thrws.get(0)) < token.offset()) {
-                                currentIndent = getMultilineIndent(thrws, path, token.offset(), lastLineStartOffset, currentIndent, cs.alignMultilineThrows(), true);
+                                currentIndent = getMultilineIndent(thrws, path, token.offset(), currentIndent, cs.alignMultilineThrows(), true);
                             } else {
-                                currentIndent = getMultilineIndent(((MethodTree)last).getParameters(), path, token.offset(), lastLineStartOffset, currentIndent, cs.alignMultilineMethodParams(), true);
+                                currentIndent = getMultilineIndent(((MethodTree)last).getParameters(), path, token.offset(), currentIndent, cs.alignMultilineMethodParams(), true);
                             }
                             break;
                         case RPAREN:
@@ -505,7 +505,7 @@ public class Reindenter implements IndentTask {
                 }
                 token = findFirstNonWhitespaceToken(startOffset, lastPos);
                 if (token != null && token.token().id() == JavaTokenId.SEMICOLON) {
-                    currentIndent = getMultilineIndent(forTrees, path, token.offset(), lastLineStartOffset, currentIndent, cs.alignMultilineFor(), true);
+                    currentIndent = getMultilineIndent(forTrees, path, token.offset(), currentIndent, cs.alignMultilineFor(), true);
                 } else {
                     currentIndent = getStmtIndent(startOffset, endOffset, EnumSet.of(JavaTokenId.RPAREN), forTrees.isEmpty() ? lastPos : (int)sp.getEndPosition(cut, forTrees.getLast()), currentIndent);
                 }
@@ -686,7 +686,7 @@ public class Reindenter implements IndentTask {
                                 currentIndent += cs.getIndentSize();
                                 break;
                             case COMMA:
-                                currentIndent = getMultilineIndent(((NewArrayTree)last).getInitializers(), path, token.offset(), lastLineStartOffset, currentIndent, cs.alignMultilineArrayInit(), false);
+                                currentIndent = getMultilineIndent(((NewArrayTree)last).getInitializers(), path, token.offset(), currentIndent, cs.alignMultilineArrayInit(), false);
                                 break;
                             case RBRACKET:
                                 if (nextTokenId == JavaTokenId.LBRACE) {
@@ -745,7 +745,7 @@ public class Reindenter implements IndentTask {
             case METHOD_INVOCATION:
                 token = findFirstNonWhitespaceToken(startOffset, lastPos);
                 if (token != null && token.token().id() == JavaTokenId.COMMA) {
-                    currentIndent = getMultilineIndent(((MethodInvocationTree)last).getArguments(), path, token.offset(), lastLineStartOffset, currentIndent, cs.alignMultilineCallArgs(), true);
+                    currentIndent = getMultilineIndent(((MethodInvocationTree)last).getArguments(), path, token.offset(), currentIndent, cs.alignMultilineCallArgs(), true);
                 } else {
                     currentIndent = getContinuationIndent(path, currentIndent);
                 }
@@ -753,7 +753,7 @@ public class Reindenter implements IndentTask {
             case ANNOTATION:
                 token = findFirstNonWhitespaceToken(startOffset, lastPos);
                 if (token != null && token.token().id() == JavaTokenId.COMMA) {
-                    currentIndent = getMultilineIndent(((AnnotationTree)last).getArguments(), path, token.offset(), lastLineStartOffset, currentIndent, cs.alignMultilineAnnotationArgs(), true);
+                    currentIndent = getMultilineIndent(((AnnotationTree)last).getArguments(), path, token.offset(), currentIndent, cs.alignMultilineAnnotationArgs(), true);
                 } else {
                     currentIndent = getContinuationIndent(path, currentIndent);
                 }
@@ -1032,12 +1032,12 @@ public class Reindenter implements IndentTask {
         return currentIndent;
     }
 
-    private int getMultilineIndent(List<? extends Tree> trees, LinkedList<? extends Tree> path, int commaOffset, int lastLineStartOffset, int currentIndent, boolean align, boolean addContinuationIndent) throws BadLocationException {
+    private int getMultilineIndent(List<? extends Tree> trees, LinkedList<? extends Tree> path, int commaOffset, int currentIndent, boolean align, boolean addContinuationIndent) throws BadLocationException {
         Tree tree = null;
         Tree first = null;
         for (Tree t : trees) {
             if (first == null) {
-                first = tree;
+                first = t;
             }
             if (sp.getEndPosition(cut, t) > commaOffset) {
                 break;
@@ -1045,12 +1045,14 @@ public class Reindenter implements IndentTask {
             tree = t;
         }
         if (tree != null && findFirstNonWhitespaceToken(commaOffset, (int)(sp.getEndPosition(cut, tree))) == null) {
-            int startOffset = getOriginalOffset((int)sp.getStartPosition(cut, align ? first : tree));
-            if (startOffset < 0) {
+            int firstStartOffset = getOriginalOffset((int)sp.getStartPosition(cut, first));
+            int startOffset = first == tree ? firstStartOffset : getOriginalOffset((int)sp.getStartPosition(cut, tree));
+            if (firstStartOffset < 0 || startOffset < 0) {
                 currentIndent = addContinuationIndent ? getContinuationIndent(path, currentIndent) : currentIndent + cs.getIndentSize();
             } else {
-                int lineStartOffset = context.lineStartOffset(startOffset);
-                if (lastLineStartOffset != lineStartOffset) {
+                int firstLineStartOffset = context.lineStartOffset(firstStartOffset);
+                int lineStartOffset = firstStartOffset == startOffset ? firstLineStartOffset : context.lineStartOffset(startOffset);
+                if (firstLineStartOffset != lineStartOffset) {
                     Integer newIndent = newIndents.get(lineStartOffset);
                     currentIndent = newIndent != null ? newIndent : context.lineIndent(lineStartOffset);
                 } else if (align) {

@@ -158,22 +158,12 @@ if [ -z "$jdkhome" ] ; then
         # read Java Preferences
         if [ -x "/usr/libexec/java_home" ]; then
             jdkhome=`/usr/libexec/java_home --version 1.7.0_10+ --failfast`
-            if [ -z $jdkhome ]; then 
-                jdkhome=`/usr/libexec/java_home --version 1.6 --failfast`
-            fi
 
         # JDK1.7 Update 10 as a fallback
         elif [ -f "/Library/Java/JavaVirtualMachines/jdk1.7.0_10.jdk/Contents/Home/bin/java" ] ; then
             jdkhome="/Library/Java/JavaVirtualMachines/jdk1.7.0_10.jdk/Contents/Home"
-
-        # JDK1.6
-        elif [ -f "/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home/bin/java" ] ; then
-            jdkhome="/System/Library/Java/JavaVirtualMachines/1.6.0.jdk/Contents/Home"
-        elif [ -f "/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home/bin/java" ] ; then
-            jdkhome="/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home"
-        elif [ -f "/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home/bin/java" ] ; then
-            jdkhome="/System/Library/Frameworks/JavaVM.framework/Versions/1.6.0/Home"
         fi
+
         echo Found jdkhome=$jdkhome
         ;;
         *) javac=`which javac`
@@ -203,7 +193,7 @@ export LD_LIBRARY_PATH
 # if the Java option for heap dump on OOME is supported enable it
 if "${jdkhome}/bin/java" -XX:+HeapDumpOnOutOfMemoryError -cp "${progdir}/boot.jar" org.netbeans.NbExecJavaStartTry > /dev/null 2>&1 ; then
    jargs="$jargs -XX:+HeapDumpOnOutOfMemoryError"
-   if echo $jargs | grep -v -- "-XX:HeapDumpPath=" > /dev/null ; then
+   if ! echo $jargs | grep -s -- "-XX:HeapDumpPath=" ; then
       jargs="$jargs -XX:HeapDumpPath=\"${userdir}/var/log/heapdump.hprof\""
    fi
    # rename old heap dump to .old
@@ -228,7 +218,7 @@ append_jars_to_cp() {
         if [ "`echo "${dir}"/*.$ex`" != "${dir}/*.$ex" ] ; then
             for x in "${dir}"/*.$ex ; do
                 subx=`basename "$x"`
-                if echo "$paths" | fgrep -v "$subpath$subx" > /dev/null ; then
+                if ! echo "$paths" | egrep -s "$subpath$subx" ; then
                     if [ ! -z "$cp" ] ; then cp="$cp:" ; fi
                     cp="$cp$x"
                     if [ ! -z "$paths" ] ; then paths="$paths:" ; fi
@@ -362,185 +352,12 @@ install_new_updater() {
     fi
 }
 
-# detect system http proxy setting
-
-detect_system_proxy () {
-    if [ ! -z "$http_proxy" ]; then
-        http_proxy_tmp=$http_proxy
-    fi
-    return 0
-}
-
-detect_gnome_proxy () {
-    gsettings=/usr/bin/gsettings   
-    if [ -x $gsettings ] ; then 
-        translate=/usr/bin/tr
-               
-        proxy_mode=`$gsettings get org.gnome.system.proxy mode 2>/dev/null`
-        if [ "$proxy_mode" = "'manual'" ] ; then
-            http_proxy_host=`$gsettings get org.gnome.system.proxy.http host 2>/dev/null | $translate -d "'"`
-            http_proxy_port=`$gsettings get org.gnome.system.proxy.http port 2>/dev/null`
-            http_proxy_tmp=$http_proxy_host:$http_proxy_port
-            http_non_proxy_hosts=`$gsettings get org.gnome.system.proxy ignore-hosts 2>/dev/null`
-            if [ $? ] ; then
-                http_non_proxy_hosts=`echo $http_non_proxy_hosts | $translate -d "[]' "`
-            fi
-            socks_proxy_host=`$gsettings get org.gnome.system.proxy.socks host 2>/dev/null | $translate -d "'"`
-            socks_proxy_port=`$gsettings get org.gnome.system.proxy.socks port 2>/dev/null`
-            socks_proxy_tmp=$socks_proxy_host:$socks_proxy_port
-
-            return 0
-        else
-            if [ "$proxy_mode" = "'none'" ] ; then
-                detect_system_proxy
-                if [ -z "$http_proxy_tmp" ]; then
-                    http_proxy_tmp="DIRECT"
-                fi
-                return 0
-            else
-                if [ "$proxy_mode" = "'auto'" ] ; then
-                    detect_system_proxy
-                    pac_file=`$gsettings get org.gnome.system.proxy autoconfig-url 2>/dev/null | $translate -d "'"`
-                    if [ ! -z "$pac_file" ]; then
-                        http_proxy_tmp="PAC "$pac_file
-                    fi
-                    return 0
-                fi
-            fi
-        fi
-    fi
-
-    gconftool=/usr/bin/gconftool-2
-    if [ -x  $gconftool ] ; then
-        proxy_mode=`$gconftool --get /system/proxy/mode 2>/dev/null`
-        if [ "$proxy_mode" = "manual" ] ; then
-            http_proxy_host=`$gconftool --get /system/http_proxy/host 2>/dev/null`
-            http_proxy_port=`$gconftool --get /system/http_proxy/port 2>/dev/null`
-            http_proxy_tmp=$http_proxy_host:$http_proxy_port
-            http_non_proxy_hosts=`$gconftool --get /system/http_proxy/ignore_hosts 2>/dev/null`
-            if [ $? ] ; then
-                http_non_proxy_hosts=`echo $http_non_proxy_hosts | /bin/sed 's/\]//'`
-            fi
-            socks_proxy_host=`$gconftool --get /system/proxy/socks_host 2>/dev/null`
-            socks_proxy_port=`$gconftool --get /system/proxy/socks_port 2>/dev/null`
-            socks_proxy_tmp=$socks_proxy_host:$socks_proxy_port
-
-            return 0
-        else
-            if [ "$proxy_mode" = "none" ] ; then
-                detect_system_proxy
-                if [ -z "$http_proxy_tmp" ]; then
-                    http_proxy_tmp="DIRECT"
-                fi
-                return 0
-            else
-                if [ "$proxy_mode" = "auto" ] ; then
-                    detect_system_proxy
-                    pac_file=`$gconftool --get /system/proxy/autoconfig_url 2>/dev/null`
-                    if [ ! -z "$pac_file" ]; then
-                        http_proxy_tmp="PAC "$pac_file
-                    fi
-                    return 0
-                fi
-            fi
-        fi
-    fi
-    return 1
-}
-
-detect_kde_proxy () {
-    kioslaverc="${HOME}/.kde/share/config/kioslaverc"
-    if [ -f $kioslaverc ] ; then
-        if /bin/grep 'ProxyType=1' "$kioslaverc" >/dev/null 2>&1; then
-            http_proxy_tmp=`/bin/grep 'httpProxy=http://' "$kioslaverc"`
-            if [ $? ] ; then
-                http_proxy_tmp=`echo $http_proxy_tmp | /bin/sed 's/httpProxy=http:\/\///'`
-                return 0
-            fi
-            http_non_proxy_hosts=`/bin/grep 'NoProxyFor=' "$kioslaverc"`
-            if [ $? ] ; then
-                http_non_proxy_hosts=`echo $http_non_proxy_hosts | /bin/sed 's/NoProxyFor=//'`
-            fi
-        else
-            if /bin/grep 'ProxyType=0' "$kioslaverc" >/dev/null 2>&1; then
-                detect_system_proxy
-                if [ -z "$http_proxy_tmp" ]; then
-                    http_proxy_tmp="DIRECT"
-                fi
-                return 0
-            else
-                if /bin/grep 'ProxyType=2' "$kioslaverc" >/dev/null 2>&1; then
-                    pac_file=`grep "Proxy Config Script=" $kioslaverc  | cut -f 2 -d =`
-                    http_proxy_tmp="PAC "$pac_file
-                    return 0
-                fi
-            fi
-        fi
-    fi
-    return 1
-}
-
-detect_macosx_proxy () {
-    if [ ! -x /usr/sbin/scutil ] ; then
-	return 1
-    fi
-
-    scutil_out=/tmp/nb-proxy-detection.$$
-    cat <<EOF | /usr/sbin/scutil > ${scutil_out}
-open
-show State:/Network/Global/Proxies
-close
-EOF
-
-    if /usr/bin/grep "ProxyAuto.*: *1" ${scutil_out} >/dev/null 2>&1; then
-        if  /usr/bin/grep "ProxyAutoConfigEnable.*: *1" ${scutil_out} >/dev/null 2>&1; then
-            http_proxy_tmp="PAC `/usr/bin/grep ProxyAutoConfigURLString ${scutil_out} | /usr/bin/awk 'END{print $3}'`"
-            rm ${scutil_out}
-            return 0
-        fi
-
-        rm ${scutil_out}
-        return 1
-    fi
-
-    if /usr/bin/grep "HTTPEnable *: *1" ${scutil_out} >/dev/null 2>&1; then
-	http_proxy_host=`/usr/bin/grep HTTPProxy ${scutil_out} | /usr/bin/awk 'END{print $3}'`
-	http_proxy_port=`/usr/bin/grep HTTPPort ${scutil_out} | /usr/bin/awk 'END{print $3} '`
-        http_proxy_tmp=$http_proxy_host:$http_proxy_port
-        rm ${scutil_out}
-        return 0
-    fi
-    
-    http_proxy_tmp="DIRECT"
-    rm ${scutil_out}
-    return 0
-}
-
-unset http_proxy_tmp
-
-if [ `uname` = Darwin ] ; then
-    detect_macosx_proxy
+if [ "$KDE_FULL_SESSION" = "true" ] ; then
+    jargs="-Dnetbeans.running.environment=kde $jargs"        
 else
-    if [ "$KDE_FULL_SESSION" = "true" ] ; then
-        detect_kde_proxy
-    else
-        if [ ! -z "$GNOME_DESKTOP_SESSION_ID" ] ; then
-            detect_gnome_proxy
-        fi
+    if [ ! -z "$GNOME_DESKTOP_SESSION_ID" ] ; then
+        jargs="-Dnetbeans.running.environment=gnome $jargs" 
     fi
-fi
-
-# fall back to the environment-defined http_proxy if nothing found so far
-if [ -z "$http_proxy_tmp" ]; then
-    http_proxy_tmp=$http_proxy
-fi
-
-if [ ! -z "$http_proxy_tmp" ] ; then
-	jargs="-Dnetbeans.system_http_proxy=\"$http_proxy_tmp\" -Dnetbeans.system_http_non_proxy_hosts=\"$http_non_proxy_hosts\" $jargs"
-fi
-
-if [ ! -z "$socks_proxy_tmp" ] ; then
-	jargs="-Dnetbeans.system_socks_proxy=\"$socks_proxy_tmp\" $jargs"
 fi
 
 if [ ! -z "${DEFAULT_USERDIR_ROOT}" ] ; then

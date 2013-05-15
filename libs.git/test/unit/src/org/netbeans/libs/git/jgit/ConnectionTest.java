@@ -319,8 +319,17 @@ public class ConnectionTest extends AbstractGitTestCase {
                 }
             });
             client.listRemoteBranches("ssh://gittester@bugtracking-test.cz.oracle.com/srv/git/repo/", NULL_PROGRESS_MONITOR);
+            // The minority of users really wanting to use external SSH still have the chance by using a commandline switch.
+            // see issue #227161
+            System.setProperty("versioning.git.library.useSystemSSHClient", "true");
+            try {
+                client.listRemoteBranches("ssh://gittester@bugtracking-test.cz.oracle.com/srv/git/repo/", NULL_PROGRESS_MONITOR);
+            } catch (GitException ex) {
+                assertTrue(ex.getMessage().contains("Cannot run program \"/usr/bin/externalsshtool\""));
+            }
         } finally {
             SystemReader.setInstance(sr);
+            System.setProperty("versioning.git.library.useSystemSSHClient", "false");
         }
     }
     
@@ -375,7 +384,7 @@ public class ConnectionTest extends AbstractGitTestCase {
 
         @Override
         public char[] getPassword (String uri, String prompt) {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return null;
         }
 
         @Override

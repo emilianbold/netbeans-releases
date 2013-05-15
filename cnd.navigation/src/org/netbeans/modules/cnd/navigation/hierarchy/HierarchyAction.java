@@ -60,7 +60,6 @@ import org.openide.util.actions.CallableSystemAction;
  */
 @ActionID(id = "org.netbeans.modules.cnd.navigation.hierarchy.HierarchyAction", category = "Window")
 @ActionRegistration(lazy = true, displayName = "#CTL_HierarchyAction", iconBase=HierarchyTopComponent.ICON_PATH)
-@ActionReference(path = "Menu/Window/Navigator", name = "HierarchyAction", position = 1100)
 public class HierarchyAction extends CallableSystemAction {
 
     public HierarchyAction() {

@@ -57,6 +57,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
 
 /**
  * Find the project which owns a file.
@@ -80,7 +81,7 @@ public class FileOwnerQuery {
     private static Lookup.Result<FileOwnerQueryImplementation> implementations;
 
     /** Cache of all available FileOwnerQueryImplementation instances. */
-    private static List<FileOwnerQueryImplementation> cache;
+    private static volatile List<FileOwnerQueryImplementation> cache;
     
     private FileOwnerQuery() {}
 
@@ -258,20 +259,31 @@ public class FileOwnerQuery {
     public static FileObject getMarkedExternalOwner(FileObject root) {}
      */
 
-    private static synchronized List<FileOwnerQueryImplementation> getInstances() {
-        if (implementations == null) {
-            implementations = Lookup.getDefault().lookupResult(FileOwnerQueryImplementation.class);
-            implementations.addLookupListener(new LookupListener() {
-                public void resultChanged (LookupEvent ev) {
-                    synchronized (FileOwnerQuery.class) {
-                        cache = null;
+    private static List<FileOwnerQueryImplementation> getInstances() {
+        final List<FileOwnerQueryImplementation> fpRes = cache;
+        if (fpRes != null) {
+            return fpRes;
+        }
+        return ProjectManager.mutex().readAccess(new Mutex.Action<List<FileOwnerQueryImplementation>>() {
+            @Override
+            public List<FileOwnerQueryImplementation> run() {
+                synchronized (FileOwnerQuery.class) {
+                    if (implementations == null) {
+                        implementations = Lookup.getDefault().lookupResult(FileOwnerQueryImplementation.class);
+                        implementations.addLookupListener(new LookupListener() {
+                            public void resultChanged (LookupEvent ev) {
+                                cache = null;
+                            }});
                     }
-                }});
-        }
-        if (cache == null) {
-            cache = new ArrayList<FileOwnerQueryImplementation>(implementations.allInstances());
-        }
-        return cache;
+                    List<FileOwnerQueryImplementation> res = cache;
+                    if (res == null) {
+                        cache = res = new ArrayList<FileOwnerQueryImplementation>(implementations.allInstances());
+                    }
+                    return res;
+                }
+            }
+        });
+        
     }
     
 }

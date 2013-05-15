@@ -259,6 +259,11 @@ public class SiteTemplateWizard extends JPanel {
         archiveTemplateRadioButton.setEnabled(enable);
         onlineTemplateRadioButton.setEnabled(enable);
     }
+    
+    void preSelectSiteTemplate(SiteTemplateImplementation impl) {
+        onlineTemplateRadioButton.setSelected(true);
+        this.onlineTemplateList.setSelectedValue(impl, true);
+    }
 
     @NbBundle.Messages({
         "# {0} - template name",

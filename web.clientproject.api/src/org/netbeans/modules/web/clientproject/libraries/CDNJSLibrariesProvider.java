@@ -66,6 +66,8 @@ import java.util.zip.ZipInputStream;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
+import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.api.network.NetworkSupport;
@@ -76,6 +78,7 @@ import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.netbeans.spi.project.libraries.support.LibrariesSupport;
 import org.openide.modules.Places;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Returns libraries from http://cdnjs.com based on the snapshot of their sources.
@@ -157,10 +160,14 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
         return libs.toArray(new LibraryImplementation[libs.size()]);
     }
 
-    public void updateLibraries() throws NetworkException, IOException {
+    public void updateLibraries(@NullAllowed ProgressHandle progressHandle) throws NetworkException, IOException, InterruptedException {
         File tmpZip = getCachedZip(true);
         // download to tmp
-        NetworkSupport.download(CDNJS_ZIP_URL, tmpZip);
+        if (progressHandle != null) {
+            NetworkSupport.downloadWithProgress(CDNJS_ZIP_URL, tmpZip, progressHandle);
+        } else {
+            NetworkSupport.download(CDNJS_ZIP_URL, tmpZip);
+        }
         assert tmpZip.isFile();
         // rename
         File cachedZip = getCachedZip(false);

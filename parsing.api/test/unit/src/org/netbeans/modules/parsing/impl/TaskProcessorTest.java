@@ -75,6 +75,7 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.editor.plain.PlainKit;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -86,7 +87,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.event.EventSupport;
-import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdaterTestSupport;
 import org.netbeans.modules.parsing.impl.indexing.Util;
@@ -106,6 +106,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  *
@@ -115,6 +116,20 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
     
     public TaskProcessorTest(String testName) {
         super(testName);
+    }
+
+    public static NbTestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        suite.addTest(new TaskProcessorTest("testWarningWhenRunUserTaskCalledFromAWT"));        //NOI18N
+        suite.addTest(new TaskProcessorTest("testDeadlock"));                                   //NOI18N
+        suite.addTest(new TaskProcessorTest("testCancelCall"));                                 //NOI18N
+        suite.addTest(new TaskProcessorTest("testTaskCall"));                                   //NOI18N
+        suite.addTest(new TaskProcessorTest("testParserCall"));                                 //NOI18N
+        suite.addTest(new TaskProcessorTest("testRunWhenScanFinishGetCalledUnderCCLock"));      //NOI18N
+        suite.addTest(new TaskProcessorTest("testRunLoopSuspend"));                             //NOI18N
+        suite.addTest(new TaskProcessorTest("testRunLoopSuspend2"));                            //NOI18N
+        suite.addTest(new TaskProcessorTest("testSlowCancelSampler"));                          //NOI18N
+        return suite;
     }
 
     @Override
@@ -229,7 +244,7 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
             start_b.countDown();
             start_a.await();
             SourceAccessor.getINSTANCE().getCache(src).invalidate();
-            TaskProcessor.removePhaseCompletionTasks(Collections.<SchedulerTask>singleton(tasks.iterator().next().first), src);
+            TaskProcessor.removePhaseCompletionTasks(Collections.<SchedulerTask>singleton(tasks.iterator().next().first()), src);
         }
         end.countDown();
     }

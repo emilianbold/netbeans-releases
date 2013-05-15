@@ -43,25 +43,21 @@ package org.netbeans.modules.cordova.platforms.android;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.JOptionPane;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.Device;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
-import org.netbeans.modules.cordova.platforms.PropertyProvider;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.windows.WindowManager;
 
 /**
  *
@@ -70,8 +66,13 @@ import org.openide.windows.WindowManager;
 @NbBundle.Messages({
     "ERR_Title=Error",
     "LBL_CheckingDevice=Checking android device...",
-    "ERR_WebDebug=Cannot connect to Chrome.\nPlease check if USB Web Debugging is enabled in Chrome on your mobile device."    
+    "ERR_WebDebug=Cannot connect to Chrome.\nPlease check if USB Web Debugging is enabled in Chrome on your mobile device.",    
+    "ERR_NO_PhoneGap=PhoneGap Platform is not configured.\nConfigure? "
 })
+/**
+ * Cordova Action Provider. Invokes cordova build.
+ * @author Jan Becicka
+ */
 public class AndroidActionProvider implements ActionProvider {
 
     private final Project p;
@@ -95,25 +96,55 @@ public class AndroidActionProvider implements ActionProvider {
     public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
         final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
         String checkAndroid = checkAndroid();
-        if (checkAndroid!=null) {
+        if (checkAndroid != null) {
+            NotifyDescriptor not = new NotifyDescriptor(
+                    checkAndroid,
+                    Bundle.ERR_Title(),
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.ERROR_MESSAGE,
+                    null,
+                    null);
+            Object value = DialogDisplayer.getDefault().notify(not);
+            if (NotifyDescriptor.CANCEL_OPTION != value) {
+                OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+            }
+            return;
+        }
+
+        if (COMMAND_BUILD.equals(command)) {
+            try {
+                build.perform(build.BUILD_ANDROID, p);
+            } catch (IllegalStateException ex) {
                 NotifyDescriptor not = new NotifyDescriptor(
-                        checkAndroid, 
-                        Bundle.ERR_Title(), 
-                        NotifyDescriptor.OK_CANCEL_OPTION, 
+                        Bundle.ERR_NO_PhoneGap(),
+                        Bundle.ERR_Title(),
+                        NotifyDescriptor.OK_CANCEL_OPTION,
                         NotifyDescriptor.ERROR_MESSAGE,
-                        null, 
+                        null,
                         null);
                 Object value = DialogDisplayer.getDefault().notify(not);
                 if (NotifyDescriptor.CANCEL_OPTION != value) {
                     OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
                 }
                 return;
-            } 
-
-            if (COMMAND_BUILD.equals(command)) {
-            build.perform(build.BUILD_ANDROID,p);
+            }
         } else if (COMMAND_CLEAN.equals(command)) {
-            build.perform(build.CLEAN_ANDROID, p);
+            try {
+                build.perform(build.CLEAN_ANDROID, p);
+            } catch (IllegalStateException ex) {
+                NotifyDescriptor not = new NotifyDescriptor(
+                        Bundle.ERR_NO_PhoneGap(),
+                        Bundle.ERR_Title(),
+                        NotifyDescriptor.OK_CANCEL_OPTION,
+                        NotifyDescriptor.ERROR_MESSAGE,
+                        null,
+                        null);
+                Object value = DialogDisplayer.getDefault().notify(not);
+                if (NotifyDescriptor.CANCEL_OPTION != value) {
+                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+                }
+                return;
+            }
         } else if (COMMAND_RUN.equals(command) || COMMAND_RUN_SINGLE.equals(command)) {
             ProgressUtils.runOffEventDispatchThread(new Runnable() {
                 @Override
@@ -134,33 +165,22 @@ public class AndroidActionProvider implements ActionProvider {
                             checkDevices = checkDevices(p);
                         }
                     }
-                    if (build.isPhoneGapBuild(p)) {
+                    try {
                         build.perform(BuildPerformer.RUN_ANDROID, p);
-                    } else {
-                        PropertyProvider config = (PropertyProvider) p.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
-                        final Device device = config.getDevice();
-                        device.openUrl(build.getUrl(p, context));
-                        if (Browser.CHROME.getName().equals(config.getProperty(Device.BROWSER_PROP))) {
-                            try {
-                                Thread.sleep(5000);
-                            } catch (InterruptedException ex) {
-                                Exceptions.printStackTrace(ex);
-                            }
-                            try {
-                                build.startDebugging(device, p);
-                            } catch (IllegalStateException ex) {
-                                LOGGER.log(Level.INFO, ex.getMessage(), ex);
-                                SwingUtilities.invokeLater(new Runnable() {
-
-                                    @Override
-                                    public void run() {
-                                        JOptionPane.showMessageDialog(WindowManager.getDefault().getMainWindow(), Bundle.ERR_WebDebug());
-                                    }
-                                });
-                            }
-                        }
-                    }
-
+            } catch (IllegalStateException ex) {
+                NotifyDescriptor not = new NotifyDescriptor(
+                        Bundle.ERR_NO_PhoneGap(),
+                        Bundle.ERR_Title(),
+                        NotifyDescriptor.OK_CANCEL_OPTION,
+                        NotifyDescriptor.ERROR_MESSAGE,
+                        null,
+                        null);
+                Object value = DialogDisplayer.getDefault().notify(not);
+                if (NotifyDescriptor.CANCEL_OPTION != value) {
+                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");
+                }
+                return;
+            }
                 }
             }, Bundle.LBL_CheckingDevice(), new AtomicBoolean(), false);
         }
@@ -175,10 +195,11 @@ public class AndroidActionProvider implements ActionProvider {
             "ERR_ConnectAndroidDevice=Please connect Android device and enable USB debugging.",
             "ERR_RunAndroidEmulator=Please run Android Emulator.",
             "ERR_Unknown=Unknown Error."})
-    private String checkDevices(Project p) {
-        PropertyProvider config = (PropertyProvider) p.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
+    static String checkDevices(Project p) {
+        ProjectBrowserProvider provider = p.getLookup().lookup(ProjectBrowserProvider.class);
+        WebBrowser activeConfiguration = provider.getActiveBrowser();
         try {
-            if (Device.DEVICE.equals(config.getProperty(Device.DEVICE_PROP))) { //NOI18N
+            if (activeConfiguration.getId().endsWith("_1")) { //NOI18N
                 for (Device dev : PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getConnectedDevices()) {
                     if (!dev.isEmulator()) {
                         return null;
@@ -200,7 +221,7 @@ public class AndroidActionProvider implements ActionProvider {
     }
     
     @NbBundle.Messages("ERR_AndroidNotConfigured=Android Platform is not configured.\nConfigure?")
-    private String checkAndroid() {
+    static String checkAndroid() {
         if (!PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).isReady()) {
             return Bundle.ERR_AndroidNotConfigured();
         }

@@ -92,6 +92,7 @@ public class HgModuleConfig {
     private static final String CONFIRM_BEFORE_COMMIT_AFTER_MERGE = "confirmBeforeCommitAfterMerge"; //NOI18N
     private static final String KEY_INTERNAL_MERGE_TOOL_ENABLED = "hgmerge.internalTool.enabled"; //NOI18N
     private static final String PROP_EXCLUDE_NEW_FILES = "excludeNewFiles"; //NOI18N
+    private static final String PROP_DIFF_VIEW_MODE = "diffViewMode"; //NOI18N
     private static final String KEY_QPATCH_MESSAGE = "qpatch.message."; //NOI18N
 
     private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
@@ -414,6 +415,14 @@ public class HgModuleConfig {
 
     public void setExcludeNewFiles (boolean excludeNewFiles) {
         getPreferences().putBoolean(PROP_EXCLUDE_NEW_FILES, excludeNewFiles);
+    }
+
+    public int getDiffViewMode (int def) {
+        return getPreferences().getInt(PROP_DIFF_VIEW_MODE, def);
+    }
+
+    public void setDiffViewMode (int value) {
+        getPreferences().putInt(PROP_DIFF_VIEW_MODE, value);
     }
 
     private HgConfigFiles getHgConfigFiles(File file) {

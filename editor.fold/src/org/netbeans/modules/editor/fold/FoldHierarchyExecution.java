@@ -50,6 +50,10 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -59,6 +63,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
@@ -189,6 +194,8 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     private volatile boolean active;
     private volatile Preferences foldPreferences;
     
+    private DocumentListener updateListener = new DL();
+    
     public static synchronized FoldHierarchy getOrCreateFoldHierarchy(JTextComponent component) {
         return getOrCreateFoldExecution(component).getHierarchy();
     }
@@ -273,6 +280,9 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
                 return;
             }
         }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Updating root fold. lastDocument = {0}, newDocument = {1}", new Object[] { lastRootDocument, doc });
+        }
         try {
             rootFold = ApiPackageAccessor.get().createFold(
                 new FoldOperationImpl(this, null, Integer.MAX_VALUE),
@@ -348,6 +358,9 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
      * </font>
      */
     public final void lock() {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Locked FoldHierarchy for " + System.identityHashCode(getComponent())); // NOI18N
+        }
         mutex.lock();
     }
     
@@ -362,6 +375,9 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
     public void unlock() {
         if (activeTransaction != null) {
             activeTransaction.cancelled();
+        }
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Unlocked FoldHierarchy for " + System.identityHashCode(getComponent())); // NOI18N
         }
         mutex.unlock();
     }
@@ -690,6 +706,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         // Stop listening on the original document
         if (lastDocument != null) {
             // Remove document listener with specific priority
+            invokeUpdateListener(doc, updateListener, false);
             DocumentUtilities.removeDocumentListener(lastDocument, this, DocumentListenerPriority.FOLD_UPDATE);
             lastDocument = null;
         }
@@ -720,6 +737,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
                 lastDocument = adoc;
                 // Add document listener with specific priority
                 DocumentUtilities.addDocumentListener(lastDocument, this, DocumentListenerPriority.FOLD_UPDATE);
+                invokeUpdateListener(doc, updateListener, true);
                 suspended = false;
             }
         }
@@ -756,6 +774,11 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
      *  but make the new root folds array empty.
      */
     private void rebuildManagers(boolean releaseOnly) {
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.log(Level.FINER, "rebuilding fold managers, release = {0}, document = {1}, component = {2}", new Object[] {
+               releaseOnly, this.lastDocument, Integer.toHexString(System.identityHashCode(this.component))
+            });
+        }
         for (int i = 0; i < operations.length; i++) {
             operations[i].release();
         }
@@ -819,6 +842,11 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             if (!ok) {
                 // TODO - remove folds under root fold
                 operations = EMPTY_FOLD_OPERTAION_IMPL_ARRAY;
+            }
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.log(Level.FINER, "Fold managers initialized. New managers = {0}, status = {1}", new Object[] {
+                    Arrays.asList(operations), ok
+                });
             }
             transaction.commit();
         }
@@ -901,7 +929,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
             unlock();
         }
     }
-
+    
     public void removeUpdate(DocumentEvent evt) {
         lock();
         try {
@@ -1127,7 +1155,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
                 weakPrefL = WeakListeners.create(PreferenceChangeListener.class, new PreferenceChangeListener() {
                     @Override
                     public void preferenceChange(PreferenceChangeEvent evt) {
-                        if (evt.getKey().startsWith(FoldUtilitiesImpl.PREF_COLLAPSE_PREFIX)) {
+                        if (evt.getKey() == null || evt.getKey().startsWith(FoldUtilitiesImpl.PREF_COLLAPSE_PREFIX)) {
                             if (!initialFoldState.isEmpty()) {
                                 initialFoldState = new HashMap<FoldType, Boolean>();
                             }
@@ -1139,5 +1167,210 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         }
         return foldPreferences;
     }
+    
+    /**
+     * Save structure of post process operations.
+     * In addition to the collection for post-processing, DocumentEvent that provoked the operation
+     * is saved.
+     */
+    private static class Save {
+        private DocumentEvent evt;
+        private Collection postProcess;
 
+        public Save(DocumentEvent evt, Collection postProcess) {
+            this.evt = evt;
+            this.postProcess = postProcess;
+        }
+    }
+    
+    /**
+     * Keeps saved fold states/operations to be processed after remove
+     */
+    private ThreadLocal<Save>   removePostProcess = new ThreadLocal<Save>();
+
+    /**
+     * The listener saves position information for folds, which will be affected by remove operation.
+     * Folds, which are fully contained within the removed block are not saved, they will be ultimately damaged. 
+     */
+    private class DL implements DocumentListener {
+        @Override
+        public void insertUpdate(DocumentEvent e) {}
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {}
+        
+        @Override
+        public void removeUpdate(DocumentEvent evt) {
+            Collection pp = new ArrayList(16);
+            preRemoveCheckDamaged(rootFold, evt, pp);
+            removePostProcess.set(new Save(evt, pp));
+        }
+    }
+    
+    /**
+     * Fold should be declared as empty
+     */
+    static final int OPERATION_EMPTY = 0;
+    
+    /**
+     * The fold should be marked as damaged. Bits at {@link FoldUtilitiesImpl#FLAGS_DAMAGED} specifies the damage done.
+     */
+    static final int OPERATION_DAMAGE = 8; 
+    
+    /**
+     * The fold should collapse - the start or end of an unguarded fold has been touched
+     */
+    static final int OPERATION_COLLAPSE = 16;
+    
+    /**
+     * The fold should be only updated.
+     */
+    static final int OPERATION_UPDATE = 24;
+    
+    /**
+     * Mask for the operation code.
+     */
+    static final int OPERATION_MASK = 3 << 3;
+    
+    
+    /**
+     * Returns the post-processing operations after remove.
+     * If the saved operations do not match the document event, empty collection is returned - this is for cleanup
+     * after failed operations. Each call will clear out the thread-local where the post-process is collected,
+     * so call only ONCE !
+     * <p/>
+     * The returned collection contains pairs of Objects: Integer, which is a bitfield composed from two pieces of
+     * information: The OPERATION_ code and the {@link FoldUtilitiesImpl} FLAG_ constants that specify the damage
+     * done to the fold by the remove operation.
+     * <p/>
+     * 
+     * @param evt the event that provoked the mutation. Used as an identity key of post process operations.
+     * @return Collection of post-process operations.
+     */
+    public Collection getRemovePostProcess(DocumentEvent evt) {
+        Save p = removePostProcess.get();
+        removePostProcess.remove();
+        if (p == null || p.evt != evt) {
+            return Collections.EMPTY_LIST;
+        }
+        return p.postProcess;
+    }
+    
+    void preRemoveCheckDamaged(Fold fold, DocumentEvent evt, Collection damaged) {
+        int removeOffset = evt.getOffset();
+        int endRemove = removeOffset + evt.getLength();
+        
+        int childIndex = FoldUtilitiesImpl.findFoldStartIndex(fold, removeOffset, true);
+        if (childIndex == -1) {
+            if (fold.getFoldCount() == 0) {
+                return;
+            }
+            Fold first = fold.getFold(0);
+            if (first.getStartOffset() <= endRemove) {
+                childIndex = 0;
+            } else {
+                return;
+            }
+        }
+        // Check if previous fold was affected too
+        if (childIndex >= 1) {
+            Fold prevChildFold = fold.getFold(childIndex - 1);
+            if (prevChildFold.getEndOffset() == removeOffset) {
+                preRemoveCheckDamaged(prevChildFold, evt, damaged);
+            }
+        }
+        boolean removed;
+        boolean startsWithin = false;
+        do {
+            int flag;
+            
+            Fold childFold = fold.getFold(childIndex);
+            startsWithin = childFold.getStartOffset() < removeOffset && 
+                           childFold.getEndOffset() <= endRemove;
+            removed = false;
+            if (FoldUtilitiesImpl.becomesEmptyAfterRemove(childFold, evt)) {
+                damaged.add(OPERATION_EMPTY | FoldUtilitiesImpl.FLAG_START_DAMAGED | FoldUtilitiesImpl.FLAG_END_DAMAGED);
+                damaged.add(childFold);
+                preRemoveCheckDamaged(childFold, evt, damaged); // nest prior removing
+                removed = true;
+
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.finer("preRemoveCheck: removed empty " // NOI18N
+                    + childFold + '\n');
+                }
+
+            } else if ((flag = FoldUtilitiesImpl.becomesDamagedByRemove(childFold, evt, false)) != 0) {
+                damaged.add(OPERATION_DAMAGE | flag);
+                damaged.add(childFold);
+                preRemoveCheckDamaged(childFold, evt, damaged); // nest prior removing
+                removed = true;
+
+                if (LOG.isLoggable(Level.FINE)) {
+                    LOG.finer("preRemoveCheck: removed damaged " // NOI18N
+                    + childFold + '\n');
+                }
+
+            } else if (childFold.getFoldCount() > 0) { // check children
+                // Some children could be damaged even if this one was not
+                preRemoveCheckDamaged(childFold, evt, damaged);
+            }
+
+            // Check whether the expand is necessary
+            if (!removed) { // only if not removed yet
+                if (childFold.isCollapsed() && ((flag = FoldUtilitiesImpl.becomesDamagedByRemove(childFold, evt, true)) > 0)) {
+                    damaged.add(OPERATION_COLLAPSE | flag);
+                    damaged.add(childFold);
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.finer("preRemoveCheck: expansion needed " // NOI18N
+                        + childFold + '\n');
+                    }
+                } else {
+                    damaged.add(OPERATION_UPDATE);
+                    damaged.add(childFold);
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.finer("preRemoveCheck: removeUpdate call " // NOI18N
+                        + childFold + '\n');
+                    }
+                }
+            }
+
+            childIndex++;
+        } while ((startsWithin || removed) && childIndex < fold.getFoldCount());
+    }
+    
+    private static volatile Method addUpdateListener;
+    private static volatile Method removeUpdateListener;
+    
+    private static void invokeUpdateListener(Document doc, DocumentListener l, boolean add) {
+        Method m = add ? addUpdateListener : removeUpdateListener;
+        if (m == null) {
+            try {
+                m = doc.getClass().getMethod(add ?
+                        "addUpdateDocumentListener" : "removeUpdateDocumentListener", // NOI18N
+                        DocumentListener.class);
+                if (!"org.netbeans.editor.BaseDocument".equals(m.getDeclaringClass().getName())) { // NOI18N
+                    return;
+                }
+                if (add) {
+                    addUpdateListener = m;
+                } else {
+                    removeUpdateListener = m;
+                }
+            } catch (NoSuchMethodException ex) {
+                return;
+            } catch (SecurityException ex) {
+                Exceptions.printStackTrace(ex);
+                return;
+            }
+        }
+        Class clazz = m.getDeclaringClass();
+        if (!clazz.isInstance(doc)) {
+            return;
+        }
+        try {
+            m.invoke(doc, l);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
 }

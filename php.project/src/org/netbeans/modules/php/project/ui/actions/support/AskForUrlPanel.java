@@ -130,7 +130,7 @@ public class AskForUrlPanel extends JPanel {
             Set<String> urls = new LinkedHashSet<String>();
             urls.add((String) urlComboBox.getSelectedItem());
             for (int i = 0; i < urlComboBox.getItemCount(); ++i) {
-                urls.add((String) urlComboBox.getItemAt(i));
+                urls.add(urlComboBox.getItemAt(i));
             }
             ProjectSettings.setDebugUrls(project, new ArrayList<String>(urls));
         }
@@ -170,29 +170,7 @@ public class AskForUrlPanel extends JPanel {
     private void initComponents() {
 
         urlLabel = new JLabel();
-        urlComboBox = new JComboBox();
-
-        setFocusTraversalPolicy(new FocusTraversalPolicy() {
-
-
-
-            public Component getDefaultComponent(Container focusCycleRoot){
-                return urlComboBox;
-            }//end getDefaultComponent
-            public Component getFirstComponent(Container focusCycleRoot){
-                return urlComboBox;
-            }//end getFirstComponent
-            public Component getLastComponent(Container focusCycleRoot){
-                return urlComboBox;
-            }//end getLastComponent
-            public Component getComponentAfter(Container focusCycleRoot, Component aComponent){
-                return urlComboBox;//end getComponentAfter
-            }
-            public Component getComponentBefore(Container focusCycleRoot, Component aComponent){
-                return urlComboBox;//end getComponentBefore
-
-            }}
-        );
+        urlComboBox = new JComboBox<String>();
 
         urlLabel.setLabelFor(urlComboBox);
         Mnemonics.setLocalizedText(urlLabel, NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlLabel.text")); // NOI18N
@@ -201,7 +179,6 @@ public class AskForUrlPanel extends JPanel {
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
-
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -225,13 +202,14 @@ public class AskForUrlPanel extends JPanel {
         urlLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlLabel.AccessibleContext.accessibleDescription")); // NOI18N
         urlComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlComboBox.AccessibleContext.accessibleName")); // NOI18N
         urlComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.urlComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AskForUrlPanel.class, "AskForUrlPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JComboBox urlComboBox;
+    private JComboBox<String> urlComboBox;
     private JLabel urlLabel;
     // End of variables declaration//GEN-END:variables
 

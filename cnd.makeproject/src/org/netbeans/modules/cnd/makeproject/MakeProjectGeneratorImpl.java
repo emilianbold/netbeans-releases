@@ -236,26 +236,16 @@ public class MakeProjectGeneratorImpl {
         if (sourceFoldersFilter != null && !MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN.equals(sourceFoldersFilter)) {
             projectDescriptor.setFolderVisibilityQuery(sourceFoldersFilter);
         }
-        Runnable task = new Runnable() {
 
-            @Override
-            public void run() {
-                projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders,
-                        logicalFolders, logicalFolderItems, importantItems, mainFileParams.mainFilePath, mainFileParams.templateDO, false); // FIXUP: need a better check whether logical folder should be ccreated or not.
-                
-                projectDescriptor.save();
-                // finish postponed activity when project metadata is ready
-                mainFileParams.doPostProjectCreationWork();
-                projectDescriptor.closed();
-                projectDescriptor.clean();
-            }
-        };
-        //if (project instanceof MakeProject && !saveNow) { // How can it not be an instance of MakeProject???
-        //    MakeProject makeProject = (MakeProject) project;
-        //    makeProject.addOpenedTask(task);
-        //} else {
-            task.run();
-        //}
+        projectDescriptor.initLogicalFolders(sourceFolders, sourceFolders == null, testFolders,
+                logicalFolders, logicalFolderItems, importantItems, mainFileParams.mainFilePath, mainFileParams.templateDO, false); // FIXUP: need a better check whether logical folder should be ccreated or not.
+
+        projectDescriptor.save();
+        // finish postponed activity when project metadata is ready
+        mainFileParams.doPostProjectCreationWork();
+        projectDescriptor.closed();
+        projectDescriptor.clean();
+        
         if (!prjParams.isMakefileProject()) {
             FileObject baseDirFileObject = projectDescriptor.getBaseDirFileObject();
             FileObject createData = baseDirFileObject.createData(projectDescriptor.getProjectMakefileName());

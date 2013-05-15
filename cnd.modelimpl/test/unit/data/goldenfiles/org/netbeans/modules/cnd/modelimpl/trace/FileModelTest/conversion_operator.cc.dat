@@ -38,7 +38,7 @@ CLASS C (C ) [5:1/44-22:2/412] lcurly=52 SCOPE: $Global$
             UNIQUE NAME f:C::operator  ns::string()
             DECLARATION: operator  ns::string  [13:5/184-15:6/239]
             PARAMETERS:
-            RETURNS const ns::string TEXT=const ns::string  [13:14/193-13:24/203]
+            RETURNS ns::string TEXT=ns::string  [13:14/193-13:24/203]
             STATEMENT COMPOUND  [13:33/212-15:6/239] SCOPE: operator  ns::string 
                 STATEMENT RETURN  [14:9/222-14:20/233] SCOPE: Stmt  [13:33/212-15:6/239] text: 'return msg;'
         FUNCTION DEFINITION toString  [16:5/244-18:6/323] MethodDDImpl SCOPE: C 
@@ -84,7 +84,7 @@ CLASS C (C ) [5:1/44-22:2/412] lcurly=52 SCOPE: $Global$
             UNIQUE NAME f:C::operator  ns::string()
             DECLARATION: operator  ns::string  [13:5/184-15:6/239]
             PARAMETERS:
-            RETURNS const ns::string TEXT=const ns::string  [13:14/193-13:24/203]
+            RETURNS ns::string TEXT=ns::string  [13:14/193-13:24/203]
             STATEMENT COMPOUND  [13:33/212-15:6/239] SCOPE: operator  ns::string 
                 STATEMENT RETURN  [14:9/222-14:20/233] SCOPE: Stmt  [13:33/212-15:6/239] text: 'return msg;'
         FUNCTION DEFINITION toString  [16:5/244-18:6/323] MethodDDImpl SCOPE: C 

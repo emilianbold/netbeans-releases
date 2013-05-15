@@ -45,27 +45,14 @@ package org.netbeans.core.multitabs.prefs;
 
 import org.netbeans.core.windows.options.WinSysOptionsPanelController;
 import org.netbeans.core.windows.options.WinSysPanel;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
 
 /**
  * 
  * @author S. Aubrecht
  */
-@OptionsPanelController.SubRegistration(
-location = "Advanced",
-displayName = "#AdvancedOption_DisplayName_MultiTabs",
-keywords = "#AdvancedOption_Keywords_MultiTabs",
-keywordsCategory = "Advanced/MultiTabs" )
-@org.openide.util.NbBundle.Messages( { "AdvancedOption_DisplayName_MultiTabs=Windows", "AdvancedOption_Keywords_MultiTabs=Multitabs, Editor, TabControl" } )
 public final class MultiTabsOptionsPanelController extends WinSysOptionsPanelController {
 
     private MultiTabsPanel panel;
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return new HelpCtx( MultiTabsOptionsPanelController.class );
-    }
 
     @Override
     protected void changed() {

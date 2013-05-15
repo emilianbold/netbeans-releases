@@ -507,6 +507,12 @@ public final class ColorModel {
         private String hackMimeType(String mimeType) {
             return testProfileName + "_" + mimeType; //NOI18N
         }
+
+        @Override
+        public void removeNotify() {
+            super.removeNotify();
+            editorPane = null;
+        }
     }
     
     

@@ -56,7 +56,7 @@ public class QuoteTestCase extends BaseTestCase {
 
     public void testQuote() throws Exception {
         String source = "quote.cc"; // NOI18N
-        performTest(source, source+".dat", source+".err"); // NOI18N
+        performTest(source, source+".dat", null/*source+".err"*/); // NOI18N
     }
     
 }

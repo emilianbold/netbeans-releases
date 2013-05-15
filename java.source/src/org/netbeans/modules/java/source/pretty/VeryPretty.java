@@ -57,17 +57,54 @@ import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreeScanner;
 
+import com.sun.source.doctree.AttributeTree;
+import com.sun.source.doctree.AttributeTree.ValueKind;
+import com.sun.source.doctree.AuthorTree;
+import com.sun.source.doctree.CommentTree;
+import com.sun.source.doctree.DeprecatedTree;
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocRootTree;
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.DocTreeVisitor;
+import com.sun.source.doctree.EndElementTree;
+import com.sun.source.doctree.EntityTree;
+import com.sun.source.doctree.ErroneousTree;
+import com.sun.source.doctree.IdentifierTree;
+import com.sun.source.doctree.InheritDocTree;
+import com.sun.source.doctree.LinkTree;
+import com.sun.source.doctree.LiteralTree;
+import com.sun.source.doctree.ParamTree;
+import com.sun.source.doctree.ReferenceTree;
+import com.sun.source.doctree.ReturnTree;
+import com.sun.source.doctree.SeeTree;
+import com.sun.source.doctree.SerialDataTree;
+import com.sun.source.doctree.SerialFieldTree;
+import com.sun.source.doctree.SerialTree;
+import com.sun.source.doctree.SinceTree;
+import com.sun.source.doctree.StartElementTree;
+import com.sun.source.doctree.TextTree;
+import com.sun.source.doctree.ThrowsTree;
+import com.sun.source.doctree.UnknownBlockTagTree;
+import com.sun.source.doctree.UnknownInlineTagTree;
+import com.sun.source.doctree.ValueTree;
+import com.sun.source.doctree.VersionTree;
+
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
 import com.sun.tools.javac.code.*;
 import static com.sun.tools.javac.code.Flags.*;
 import com.sun.tools.javac.code.Symbol.*;
 import com.sun.tools.javac.main.JavaCompiler;
+import com.sun.tools.javac.tree.DCTree;
+import com.sun.tools.javac.tree.DCTree.DCReference;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.*;
 import com.sun.tools.javac.tree.TreeInfo;
-import com.sun.tools.javac.util.*;
+import com.sun.tools.javac.util.Context;
+import com.sun.tools.javac.util.Convert;
 import com.sun.tools.javac.util.List;
+import com.sun.tools.javac.util.Name;
+import com.sun.tools.javac.util.Names;
 
 import java.io.IOException;
 import java.net.URL;
@@ -96,10 +133,11 @@ import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /** Prints out a tree as an indented Java source program.
  */
-public final class VeryPretty extends JCTree.Visitor {
+public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<Void, Void> {
 
     private static final char[] hex = "0123456789ABCDEF".toCharArray();
     private static final String REPLACEMENT = "%[a-z]*%";
@@ -129,29 +167,30 @@ public final class VeryPretty extends JCTree.Visitor {
     private boolean insideAnnotation = false;
 
     private final Map<Tree, ?> tree2Tag;
+    private final Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc;
     private final Map<Object, int[]> tag2Span;
     private final String origText;
     private int initialOffset = 0;
 
     public VeryPretty(DiffContext diffContext) {
-        this(diffContext, diffContext.style, null, null, null);
+        this(diffContext, diffContext.style, null, null, null, null);
     }
 
     public VeryPretty(DiffContext diffContext, CodeStyle cs) {
-        this(diffContext, cs, null, null, null);
+        this(diffContext, cs, null, null, null, null);
     }
 
-    public VeryPretty(DiffContext diffContext, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, String origText) {
-        this(diffContext.context, cs, tree2Tag, tag2Span, origText);
+    public VeryPretty(DiffContext diffContext, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc, Map<?, int[]> tag2Span, String origText) {
+        this(diffContext.context, cs, tree2Tag, tree2Doc, tag2Span, origText);
         this.diffContext = diffContext;
     }
 
-    public VeryPretty(DiffContext diffContext, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, String origText, int initialOffset) {
-        this(diffContext, cs, tree2Tag, tag2Span, origText);
+    public VeryPretty(DiffContext diffContext, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc, Map<?, int[]> tag2Span, String origText, int initialOffset) {
+        this(diffContext, cs, tree2Tag, tree2Doc, tag2Span, origText);
         this.initialOffset = initialOffset; //provide intial offset of this priter
     }
 
-    private VeryPretty(Context context, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span, String origText) {
+    private VeryPretty(Context context, CodeStyle cs, Map<Tree, ?> tree2Tag, Map<Tree, Pair<DocCommentTree, DocCommentTree>> tree2Doc, Map<?, int[]> tag2Span, String origText) {
 	names = Names.instance(context);
 	enclClassName = names.empty;
         commentHandler = CommentHandlerService.instance(context);
@@ -165,6 +204,7 @@ public final class VeryPretty extends JCTree.Visitor {
         out = new CharBuffer(cs.getRightMargin(), cs.getTabSize(), cs.expandTabToSpaces());
         this.indentSize = cs.getIndentSize();
         this.tree2Tag = tree2Tag;
+        this.tree2Doc = tree2Doc == null ? Collections.EMPTY_MAP : tree2Doc;
         this.tag2Span = (Map<Object, int[]>) tag2Span;//XXX
         this.origText = origText;
         this.comments = CommentHandlerService.instance(context);
@@ -237,6 +277,12 @@ public final class VeryPretty extends JCTree.Visitor {
             return;
 	out.appendUtf8(n.getByteArray(), n.getByteOffset(), n.getByteLength());
     }
+    
+    private void print(javax.lang.model.element.Name n) {
+        if (n == null)
+            return;
+        print(n.toString());
+    }
 
     public void print(JCTree t) {
         if (t == null) return;
@@ -247,6 +293,14 @@ public final class VeryPretty extends JCTree.Visitor {
         printTrailingComments(t, true);
         blankLines(t, false);
     }
+    
+    public void print(DCTree t) {
+        if (t == null) return;
+        blankLines(t, true);
+        toLeftMargin();
+        doAccept(t);
+        blankLines(t, false);
+    }
 
     private static int getOldPos(JCTree oldT) {
         return TreeInfo.getStartPos(oldT);
@@ -255,6 +309,7 @@ public final class VeryPretty extends JCTree.Visitor {
         return TreeInfo.getEndPos(t, diffContext.origUnit.endPositions);
     }
     public Set<Tree> oldTrees = Collections.emptySet();
+    private final Set<Tree> trailingCommentsHandled = Collections.newSetFromMap(new IdentityHashMap<Tree, Boolean>());
     private void doAccept(JCTree t) {
         int start = toString().length();
 
@@ -292,6 +347,24 @@ public final class VeryPretty extends JCTree.Visitor {
         if (tag != null) {
             tag2Span.put(tag, new int[]{start + initialOffset, end + initialOffset});
         }
+    }
+    
+    private void doAccept(DCTree t) {
+//        int start = toString().length();
+
+//        if (!handlePossibleOldTrees(Collections.singletonList(t), false)) {
+            t.accept(this, null);
+//        }
+
+//        int end = toString().length();
+
+//        System.err.println("t: " + t);
+//        System.err.println("thr=" + System.identityHashCode(t));
+//        Object tag = tree2Tag != null ? tree2Tag.get(t) : null;
+//
+//        if (tag != null) {
+//            tag2Span.put(tag, new int[]{start + initialOffset, end + initialOffset});
+//        }
     }
 
     public boolean handlePossibleOldTrees(java.util.List<? extends JCTree> toPrint, boolean includeStartingComments) {
@@ -342,8 +415,7 @@ public final class VeryPretty extends JCTree.Visitor {
                 if (node != null) {
                     CommentSetImpl old = comments.getComments(node);
                     realEnd[0] = Math.max(realEnd[0], Math.max(CasualDiff.commentEnd(old, CommentSet.RelativePosition.INLINE), CasualDiff.commentEnd(old, CommentSet.RelativePosition.TRAILING)));
-                    old.clearComments(CommentSet.RelativePosition.INLINE);
-                    old.clearComments(CommentSet.RelativePosition.TRAILING);
+                    trailingCommentsHandled.add(node);
                 }
                 return super.scan(node, p);
             }
@@ -864,10 +936,7 @@ public final class VeryPretty extends JCTree.Visitor {
         int col = out.col;
         if (!ERROR.contentEquals(tree.name))
             col -= tree.name.getByteLength();
-        if (cs.spaceAroundAssignOps())
-            print(' ');
-        print('=');
-        wrapTree(cs.wrapAssignOps(), cs.spaceAroundAssignOps(), cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize(), new Runnable() {
+        wrapAssignOpTree("=", col, new Runnable() {
             @Override public void run() {
                 printNoParenExpr(tree.init);
             }
@@ -1414,12 +1483,7 @@ public final class VeryPretty extends JCTree.Visitor {
     public void visitAssign(final JCAssign tree) {
         int col = out.col;
 	printExpr(tree.lhs, TreeInfo.assignPrec + 1);
-        boolean spaceAroundAssignOps = cs.spaceAroundAssignOps();
-	if (spaceAroundAssignOps)
-            print(' ');
-	print('=');
-	int rm = cs.getRightMargin();
-        wrapTree(cs.wrapAssignOps(), spaceAroundAssignOps, cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize(), new Runnable() {
+        wrapAssignOpTree("=", col, new Runnable() {
             @Override public void run() {
                 printExpr(tree.rhs, TreeInfo.assignPrec);
             }
@@ -1797,6 +1861,58 @@ public final class VeryPretty extends JCTree.Visitor {
                 return;
         }
     }
+    
+    /**
+     * The following tags are block-tags
+     * <ul>
+     * <li>@author (classes and interfaces only, required)</li>
+     * <li>@version (classes and interfaces only, required. See footnote 1)</li>
+     * <li>@param (methods and constructors only)</li>
+     * <li>@return (methods only)</li>
+     * <li>@exception (</li>
+     * <li>@throws is a synonym added in Javadoc 1.2)</li>
+     * <li>@see</li>
+     * <li>@since</li>
+     * <li>@serial (or @serialField or @serialData)</li>
+     * <li>@deprecated (see How and When To Deprecate APIs)</li>
+     * </ul>
+     */
+    private void blankLines(DCTree tree, boolean before) {
+        if (tree == null) {
+            return;
+        }
+        switch (tree.getKind()) {
+            case AUTHOR:
+            case DEPRECATED:
+            case EXCEPTION:
+            case PARAM:
+            case RETURN:
+            case SEE:
+            case SERIAL:
+            case SERIAL_DATA:
+            case SERIAL_FIELD:
+            case SINCE:
+            case THROWS:
+            case UNKNOWN_BLOCK_TAG:
+            case VERSION:
+                if(before) {
+                    newline();
+                    toLeftMargin();
+                    print(" * ");
+                }
+                break;
+            case DOC_COMMENT:
+                if(before) {
+                    blankline();
+                } else {
+                    newline();
+                }
+                toLeftMargin();
+                break;
+            default:
+                break;
+        }
+    }
 
     private void toColExactly(int n) {
 	if (n < out.col) newline();
@@ -1822,6 +1938,373 @@ public final class VeryPretty extends JCTree.Visitor {
 	    print('.');
 	}
 	print(t.name);
+    }
+    
+    protected void printTagName(DocTree node) {
+        out.append("@");
+        out.append(node.getKind().tagName);
+    }
+
+    @Override
+    public Void visitAttribute(AttributeTree node, Void p) {
+        print(node.getName());
+        String quote;
+        switch (node.getValueKind()) {
+            case EMPTY:
+                return null;
+            case UNQUOTED:
+                quote = "";
+                break;
+            case SINGLE:
+                quote = "'";
+                break;
+            case DOUBLE:
+                quote = "\"";
+                break;
+            default:
+                throw new AssertionError();
+        }
+        print("=");
+        print(quote);
+        for (DocTree docTree : node.getValue()) {
+            doAccept((DCTree)docTree);
+        }
+        print(quote);
+        return null;
+    }
+
+    @Override
+    public Void visitAuthor(AuthorTree node, Void p) {
+        printTagName(node);
+        print(" ");
+        for (DocTree docTree : node.getName()) {
+            doAccept((DCTree)docTree);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitComment(CommentTree node, Void p) {
+        print(node.getBody());
+        return null;
+    }
+
+    @Override
+    public Void visitDeprecated(DeprecatedTree node, Void p) {
+        printTagName(node);
+        if (!node.getBody().isEmpty()) {
+            needSpace();
+            for (DocTree docTree : node.getBody()) {
+                doAccept((DCTree)docTree);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitDocComment(DocCommentTree node, Void p) {
+        print("/**");
+        newline();
+        toLeftMargin();
+        print(" * ");
+        for (DocTree docTree : node.getFirstSentence()) {
+            doAccept((DCTree)docTree);
+        }
+        for (DocTree docTree : node.getBody()) {
+            doAccept((DCTree)docTree);
+        }
+        for (DocTree docTree : node.getBlockTags()) {
+            newline();
+            toLeftMargin();
+            print(" * ");
+            doAccept((DCTree)docTree);
+        }
+        newline();
+        toLeftMargin();
+        print(" */");
+        return null;
+    }
+
+    @Override
+    public Void visitDocRoot(DocRootTree node, Void p) {
+        print("{");
+        printTagName(node);
+        print("}");
+        return null;
+    }
+
+    @Override
+    public Void visitStartElement(StartElementTree node, Void p) {
+        print("<");
+        print(node.getName());
+        java.util.List<? extends DocTree> attrs = node.getAttributes();
+        if (!attrs.isEmpty()) {
+            print(" ");
+            for (DocTree docTree : attrs) {
+                doAccept((DCTree)docTree);
+            }
+            DocTree last = attrs.get(attrs.size() - 1);
+            if (node.isSelfClosing() && last instanceof AttributeTree
+                    && ((AttributeTree) last).getValueKind() == ValueKind.UNQUOTED)
+                print(" ");
+        }
+        if (node.isSelfClosing())
+            print("/");
+        print(">");
+        return null;
+    }
+
+    @Override
+    public Void visitEndElement(EndElementTree node, Void p) {
+        print("</");
+        print(node.getName());
+        print(">");
+        return null;
+    }
+
+    @Override
+    public Void visitEntity(EntityTree node, Void p) {
+        print("&");
+        print(node.getName());
+        print(";");
+        return null;
+    }
+
+    @Override
+    public Void visitErroneous(ErroneousTree node, Void p) {
+        print(node.getBody());
+        return null;
+    }
+
+    @Override
+    public Void visitIdentifier(IdentifierTree node, Void p) {
+        print(node.getName());
+        return null;
+    }
+
+    @Override
+    public Void visitInheritDoc(InheritDocTree node, Void p) {
+        print("{");
+        printTagName(node);
+        print("}");
+        return null;
+    }
+
+    @Override
+    public Void visitLink(LinkTree node, Void p) {
+        print("{");
+        printTagName(node);
+        print(" ");
+        doAccept((DCTree)node.getReference());
+        if (!node.getLabel().isEmpty()) {
+            print(" ");
+            for (DocTree docTree : node.getLabel()) {
+                doAccept((DCTree)docTree);
+            }
+        }
+        print("}");
+        return null;
+    }
+
+    @Override
+    public Void visitLiteral(LiteralTree node, Void p) {
+        print("{");
+        printTagName(node);
+        print(" ");
+        doAccept((DCTree)node.getBody());
+        print("}");
+        return null;
+    }
+
+    @Override
+    public Void visitParam(ParamTree node, Void p) {
+        printTagName(node);
+        needSpace();
+        if(node.isTypeParameter()) {
+           print('<');
+        }
+        doAccept((DCTree)node.getName());
+        if(node.isTypeParameter()) {
+           print('>');
+        }
+        if(!node.getDescription().isEmpty()) {
+            needSpace();
+        }
+        for (DocTree docTree : node.getDescription()) {
+            doAccept((DCTree)docTree);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitReference(ReferenceTree node, Void p) {
+        //TODO: should use formatting settings:
+        DCReference refNode = (DCReference) node;
+        if (refNode.qualifierExpression != null) {
+            print(refNode.qualifierExpression);
+        }
+        if (refNode.memberName != null) {
+            print("#");
+            print(refNode.memberName);
+        }
+        if (refNode.paramTypes != null) {
+            print("(");
+            boolean first = true;
+            for (Tree param : refNode.paramTypes) {
+                if (!first) print(", ");
+                print(param.toString());
+                first = false;
+            }
+            print(")");
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitReturn(ReturnTree node, Void p) {
+        printTagName(node);
+        print(" ");
+        for (DocTree docTree : node.getDescription()) {
+            doAccept((DCTree)docTree);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitSee(SeeTree node, Void p) {
+        printTagName(node);
+        boolean first = true;
+        boolean needSep = true;
+        for (DocTree t: node.getReference()) {
+            if (needSep) print(" ");
+            needSep = (first && (t instanceof ReferenceTree));
+            first = false;
+            print((DCTree)t);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitSerial(SerialTree node, Void p) {
+        printTagName(node);
+        if (!node.getDescription().isEmpty()) {
+            print(" ");
+            for (DocTree docTree : node.getDescription()) {
+                doAccept((DCTree)docTree);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitSerialData(SerialDataTree node, Void p) {
+        printTagName(node);
+        if (!node.getDescription().isEmpty()) {
+            print(" ");
+            for (DocTree docTree : node.getDescription()) {
+                doAccept((DCTree)docTree);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitSerialField(SerialFieldTree node, Void p) {
+        printTagName(node);
+        print(" ");
+        print((DCTree)node.getName());
+        print(" ");
+        print((DCTree)node.getType());
+        if (!node.getDescription().isEmpty()) {
+            print(" ");
+            for (DocTree docTree : node.getDescription()) {
+                doAccept((DCTree)docTree);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitSince(SinceTree node, Void p) {
+        printTagName(node);
+        print(" ");
+        for (DocTree docTree : node.getBody()) {
+            doAccept((DCTree)docTree);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitText(TextTree node, Void p) {
+        print(node.getBody());
+        return null;
+    }
+
+    @Override
+    public Void visitThrows(ThrowsTree node, Void p) {
+        printTagName(node);
+        needSpace();
+        doAccept((DCTree)node.getExceptionName());
+        if(!node.getDescription().isEmpty()) {
+            needSpace();
+            for (DocTree docTree : node.getDescription()) {
+                doAccept((DCTree)docTree);
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitUnknownBlockTag(UnknownBlockTagTree node, Void p) {
+        print("@");
+        print(node.getTagName());
+        print(" ");
+        for (DocTree docTree : node.getContent()) {
+            doAccept((DCTree)docTree);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitUnknownInlineTag(UnknownInlineTagTree node, Void p) {
+        print("{");
+        print("@");
+        print(node.getTagName());
+        print(" ");
+        for (DocTree docTree : node.getContent()) {
+            doAccept((DCTree)docTree);
+        }
+        print("}");
+        return null;
+    }
+
+    @Override
+    public Void visitValue(ValueTree node, Void p) {
+        print("{");
+        printTagName(node);
+        if (node.getReference() != null) {
+            print(" ");
+            print((DCTree)node.getReference());
+        }
+        print("}");
+        return null;
+    }
+
+    @Override
+    public Void visitVersion(VersionTree node, Void p) {
+        printTagName(node);
+        print(" ");
+        for (DocTree docTree : node.getBody()) {
+            doAccept((DCTree)docTree);
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitOther(DocTree node, Void p) {
+        print("(UNKNOWN: " + node + ")");
+        newline();
+        return null;
     }
 
     private final class Linearize extends TreeScanner<Boolean, java.util.List<Tree>> {
@@ -1898,7 +2381,7 @@ public final class VeryPretty extends JCTree.Visitor {
     private boolean printAnnotationsFormatted(List<JCAnnotation> annotations) {
         if (reallyPrintAnnotations) return false;
         
-        VeryPretty del = new VeryPretty(diffContext, cs, new HashMap<Tree, Object>(), new HashMap<Object, int[]>(), origText, 0);
+        VeryPretty del = new VeryPretty(diffContext, cs, new HashMap<Tree, Object>(), tree2Doc, new HashMap<Object, int[]>(), origText, 0);
         del.reallyPrintAnnotations = true;
         del.printingMethodParams = printingMethodParams;
 
@@ -2225,13 +2708,29 @@ public final class VeryPretty extends JCTree.Visitor {
     private void printPrecedingComments(JCTree tree, boolean printWhitespace) {
         CommentSet commentSet = commentHandler.getComments(tree);
         java.util.List<Comment> pc = commentSet.getComments(CommentSet.RelativePosition.PRECEDING);
+        Pair<DocCommentTree, DocCommentTree> doc = tree2Doc.get(tree);
         if (!pc.isEmpty()) {
-            for (Comment c : pc)
-                printComment(c, true, printWhitespace);
+            Comment javadoc = null;
+            for (Comment comment : pc) {
+                if(comment.style() == Style.JAVADOC) {
+                    javadoc = comment;
+                }
+            }
+            for (Comment c : pc) {
+                if(doc != null && doc.first() != null && c == javadoc) {
+                    print((DCTree)doc.second());
+                } else {
+                    printComment(c, true, printWhitespace);
+                }
+            }
+        }
+        if(doc!=null && doc.first() == null) {
+            print((DCTree)doc.second());
         }
     }
 
     private void printTrailingComments(JCTree tree, boolean printWhitespace) {
+        if (trailingCommentsHandled.contains(tree)) return ;
         CommentSet commentSet = commentHandler.getComments(tree);
         java.util.List<Comment> cl = commentSet.getComments(CommentSet.RelativePosition.INLINE);
         for (Comment comment : cl) {
@@ -2453,6 +2952,25 @@ public final class VeryPretty extends JCTree.Visitor {
             printNoParenExpr(l.head);
             first = false;
         }
+    }
+    
+    private void wrapAssignOpTree(final String operator, int col, final Runnable print) {
+        final boolean spaceAroundAssignOps = cs.spaceAroundAssignOps();
+        if (cs.wrapAfterAssignOps()) {
+            if (spaceAroundAssignOps)
+                print(' ');
+            print(operator);
+        }
+        wrapTree(cs.wrapAssignOps(), spaceAroundAssignOps, cs.alignMultilineAssignment() ? col : out.leftMargin + cs.getContinuationIndentSize(), new Runnable() {
+            @Override public void run() {
+                if (!cs.wrapAfterAssignOps()) {
+                    print(operator);
+                    if (spaceAroundAssignOps)
+                        print(' ');
+                }
+                print.run();
+            }
+        });
     }
     
     private void wrapTree(WrapStyle wrapStyle, boolean needsSpaceBefore, int colAfterWrap, Runnable print) {

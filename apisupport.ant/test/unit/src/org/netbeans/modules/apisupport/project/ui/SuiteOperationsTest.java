@@ -47,6 +47,7 @@ package org.netbeans.modules.apisupport.project.ui;
 import java.util.Arrays;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.apisupport.project.InstalledFileLocatorImpl;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.NbModuleType;
@@ -82,6 +83,7 @@ public class SuiteOperationsTest extends TestBase {
         InstalledFileLocatorImpl.registerDestDir(destDirF);
     }
     
+    @RandomlyFails // NB-Core-Build #9919: Unstable, NB-Core-Build #9918 on the same sources passed
     public void testDeleteOfEmptySuite() throws Exception {
         SuiteProject suite = generateSuite("suite");
         suite.open();

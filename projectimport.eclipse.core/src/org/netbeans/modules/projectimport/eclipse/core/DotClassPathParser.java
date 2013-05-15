@@ -67,7 +67,7 @@ import org.xml.sax.SAXException;
  */
 final class DotClassPathParser {
     
-    private DotClassPathParser() {/* emtpy constructor */}
+    private DotClassPathParser() {/* empty constructor */}
 
     public static DotClassPath parse(File dotClasspath, List<Link> links) throws IOException {
         Document dotClasspathXml;

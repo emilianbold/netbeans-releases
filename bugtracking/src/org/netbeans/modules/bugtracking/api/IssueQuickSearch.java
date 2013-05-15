@@ -52,31 +52,68 @@ import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
 public final class IssueQuickSearch {
     private final QuickSearchComboBar bar;
     
+    /**
+     * Constructor
+     * @param caller 
+     */
     public IssueQuickSearch(JComponent caller) {
         bar = new QuickSearchComboBar(caller);
     }
     
+    /**
+     * Sets the repository for which issues should be made available in 
+     * the issue combo bar
+     * @param repository 
+     */
     public void setRepository(Repository repository) {
         bar.setRepository(repository);
     }
     
+    /**
+     * Returns the quick search component
+     * @return 
+     */
     public JComponent getComponent() {
         return bar;
     }
     
+    /**
+     * Returns the issue selected in the issue combo bar or null if none selected
+     * @return 
+     */
     public Issue getIssue() {
         return bar.getIssue();
     }
 
+    /**
+     * Register for notifications about changes in the issue combo bar
+     * @param listener 
+     */
     public void addChangeListener(ChangeListener listener) {
         bar.addChangeListener(listener);
     }
 
+    /**
+     * Unregister from notifications about changes in the issue combo bar
+     * @param listener 
+     */
     public void removeChangeListener(ChangeListener listener) {
         bar.removeChangeListener(listener);
     }
 
+    /**
+     * Enable or disable all fields in the quick search component
+     * @param b 
+     */
     public void enableFields(boolean b) {
         bar.enableFields(b);
+    }
+    
+    /** 
+     * Select the given issue in the combo bar
+     * @param issue 
+     */
+    public void setIssue(Issue issue) {
+        bar.setIssue(issue.getImpl());
     }
 }

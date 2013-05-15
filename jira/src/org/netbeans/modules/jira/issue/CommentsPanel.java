@@ -75,8 +75,8 @@ import javax.swing.plaf.basic.BasicTextPaneUI;
 import javax.swing.plaf.basic.BasicTreeUI;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultCaret;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugtracking.util.UIUtils;
@@ -233,7 +233,7 @@ public class CommentsPanel extends JPanel {
         JLabel stateLabel = null;
         if (issue.getRepository() instanceof KenaiRepository) {
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            stateLabel = KenaiUtil.createUserWidget(issue.getRepository().getUrl(), author, host, KenaiUtil.getChatLink(issue.getID()));
+            stateLabel = TeamUtil.createUserWidget(issue.getRepository().getUrl(), author, host, TeamUtil.getChatLink(issue.getID()));
             if (stateLabel != null) {
                 stateLabel.setText(null);
             }

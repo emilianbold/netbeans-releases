@@ -53,6 +53,8 @@ import java.util.prefs.Preferences;
 
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JEditorPane;
 import javax.swing.JList;
@@ -106,16 +108,6 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
     public FmtCodeGeneration() {
         initComponents();
         
-        preferLongerNamesCheckBox.putClientProperty(OPTION_ID, preferLongerNames);
-        isForBooleanGettersCheckBox.putClientProperty(OPTION_ID, useIsForBooleanGetters);
-        fieldPrefixField.putClientProperty(OPTION_ID, fieldNamePrefix);
-        fieldSuffixField.putClientProperty(OPTION_ID, fieldNameSuffix);
-        staticFieldPrefixField.putClientProperty(OPTION_ID, staticFieldNamePrefix);
-        staticFieldSuffixField.putClientProperty(OPTION_ID, staticFieldNameSuffix);
-        parameterPrefixField.putClientProperty(OPTION_ID, parameterNamePrefix);
-        parameterSuffixField.putClientProperty(OPTION_ID, parameterNameSuffix);
-        localVarPrefixField.putClientProperty(OPTION_ID, localVarNamePrefix);
-        localVarSuffixField.putClientProperty(OPTION_ID, localVarNameSuffix);
         qualifyFieldAccessCheckBox.putClientProperty(OPTION_ID, qualifyFieldAccess);
         addOverrideAnnortationCheckBox.putClientProperty(OPTION_ID, addOverrideAnnotation);
         parametersFinalCheckBox.putClientProperty(OPTION_ID, makeParametersFinal);
@@ -123,6 +115,8 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
         membersOrderList.putClientProperty(OPTION_ID, classMembersOrder);
         sortByVisibilityCheckBox.putClientProperty(OPTION_ID, sortMembersByVisibility);
         visibilityOrderList.putClientProperty(OPTION_ID, visibilityOrder);
+        keepGASTogetherCheckBox.putClientProperty(OPTION_ID, keepGettersAndSettersTogether);
+        sortMembersAlphaCheckBox.putClientProperty(OPTION_ID, sortMembersInGroups);
         insertionPointComboBox.putClientProperty(OPTION_ID, classMemberInsertionPoint);
     }
     
@@ -144,24 +138,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
         visibilityOrderList.setSelectedIndex(0);
         visibilityOrderList.addListSelectionListener(this);
         enableVisibilityOrder();
-        namingConventionsLabel.setVisible(false);
-        preferLongerNamesCheckBox.setVisible(false);
-        isForBooleanGettersCheckBox.setVisible(false);
-        prefixLabel.setVisible(false);
-        suffixLabel.setVisible(false);
-        fieldLabel.setVisible(false);
-        fieldPrefixField.setVisible(false);
-        fieldSuffixField.setVisible(false);
-        staticFieldLabel.setVisible(false);
-        staticFieldPrefixField.setVisible(false);
-        staticFieldSuffixField.setVisible(false);
-        parameterLabel.setVisible(false);
-        parameterPrefixField.setVisible(false);
-        parameterSuffixField.setVisible(false);
-        localVarLabel.setVisible(false);
-        localVarPrefixField.setVisible(false);
-        localVarSuffixField.setVisible(false);
-        jSeparator1.setVisible(false);
+        enableInsertionPoint();
         otherLabel.setVisible(false);
         qualifyFieldAccessCheckBox.setVisible(false);
         addOverrideAnnortationCheckBox.setVisible(false);
@@ -185,27 +162,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
      */
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
-        namingConventionsLabel = new javax.swing.JLabel();
-        preferLongerNamesCheckBox = new javax.swing.JCheckBox();
-        isForBooleanGettersCheckBox = new javax.swing.JCheckBox();
-        jPanel1 = new javax.swing.JPanel();
-        prefixLabel = new javax.swing.JLabel();
-        suffixLabel = new javax.swing.JLabel();
-        fieldLabel = new javax.swing.JLabel();
-        fieldPrefixField = new javax.swing.JTextField();
-        fieldSuffixField = new javax.swing.JTextField();
-        staticFieldLabel = new javax.swing.JLabel();
-        staticFieldPrefixField = new javax.swing.JTextField();
-        staticFieldSuffixField = new javax.swing.JTextField();
-        parameterLabel = new javax.swing.JLabel();
-        parameterPrefixField = new javax.swing.JTextField();
-        parameterSuffixField = new javax.swing.JTextField();
-        localVarLabel = new javax.swing.JLabel();
-        localVarSuffixField = new javax.swing.JTextField();
-        localVarPrefixField = new javax.swing.JTextField();
-        jSeparator1 = new javax.swing.JSeparator();
         otherLabel = new javax.swing.JLabel();
         qualifyFieldAccessCheckBox = new javax.swing.JCheckBox();
         addOverrideAnnortationCheckBox = new javax.swing.JCheckBox();
@@ -222,147 +179,14 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
         visibilityOrderList = new javax.swing.JList();
         visUpButton = new javax.swing.JButton();
         visDownButton = new javax.swing.JButton();
-        jSeparator2 = new javax.swing.JSeparator();
         insertionPointLabel = new javax.swing.JLabel();
+        keepGASTogetherCheckBox = new javax.swing.JCheckBox();
+        sortMembersAlphaCheckBox = new javax.swing.JCheckBox();
+        jSeparator1 = new javax.swing.JSeparator();
         insertionPointComboBox = new javax.swing.JComboBox();
 
         setName(org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_CodeGeneration")); // NOI18N
         setOpaque(false);
-
-        org.openide.awt.Mnemonics.setLocalizedText(namingConventionsLabel, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_gen_Naming")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(preferLongerNamesCheckBox, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_gen_PreferLongerNames")); // NOI18N
-        preferLongerNamesCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        preferLongerNamesCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        preferLongerNamesCheckBox.setOpaque(false);
-
-        org.openide.awt.Mnemonics.setLocalizedText(isForBooleanGettersCheckBox, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_gen_UseIsForBooleanGetters")); // NOI18N
-        isForBooleanGettersCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        isForBooleanGettersCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        isForBooleanGettersCheckBox.setOpaque(false);
-
-        jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        org.openide.awt.Mnemonics.setLocalizedText(prefixLabel, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_gen_Prefix")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
-        jPanel1.add(prefixLabel, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(suffixLabel, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_gen_Suffix")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 4, 0);
-        jPanel1.add(suffixLabel, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(fieldLabel, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_gen_Field")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(fieldLabel, gridBagConstraints);
-
-        fieldPrefixField.setColumns(5);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 0);
-        jPanel1.add(fieldPrefixField, gridBagConstraints);
-
-        fieldSuffixField.setColumns(5);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 0);
-        jPanel1.add(fieldSuffixField, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(staticFieldLabel, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_gen_StaticField")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(staticFieldLabel, gridBagConstraints);
-
-        staticFieldPrefixField.setColumns(5);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 0);
-        jPanel1.add(staticFieldPrefixField, gridBagConstraints);
-
-        staticFieldSuffixField.setColumns(5);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 0);
-        jPanel1.add(staticFieldSuffixField, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(parameterLabel, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_gen_Parameter")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(parameterLabel, gridBagConstraints);
-
-        parameterPrefixField.setColumns(5);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 0);
-        jPanel1.add(parameterPrefixField, gridBagConstraints);
-
-        parameterSuffixField.setColumns(5);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(4, 8, 4, 0);
-        jPanel1.add(parameterSuffixField, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(localVarLabel, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_gen_LocalVariable")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        jPanel1.add(localVarLabel, gridBagConstraints);
-
-        localVarSuffixField.setColumns(5);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(4, 8, 0, 0);
-        jPanel1.add(localVarSuffixField, gridBagConstraints);
-
-        localVarPrefixField.setColumns(5);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 0.5;
-        gridBagConstraints.insets = new java.awt.Insets(4, 8, 0, 0);
-        jPanel1.add(localVarPrefixField, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(otherLabel, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_gen_Other")); // NOI18N
 
@@ -442,13 +266,21 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
         insertionPointLabel.setLabelFor(insertionPointComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(insertionPointLabel, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_gen_InsertionPoint")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(keepGASTogetherCheckBox, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_gen_KeepGASTogether")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(sortMembersAlphaCheckBox, org.openide.util.NbBundle.getMessage(FmtCodeGeneration.class, "LBL_gen_SortMembersAlpha")); // NOI18N
+        sortMembersAlphaCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sortMembersAlphaCheckBoxActionPerformed(evt);
+            }
+        });
+
         insertionPointComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jSeparator1)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(otherLabel)
@@ -463,48 +295,32 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
             .addComponent(jSeparator3)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(namingConventionsLabel)
                     .addComponent(memberOrderLabel)
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(isForBooleanGettersCheckBox)
-                            .addComponent(preferLongerNamesCheckBox)
-                            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jScrollPane1)
-                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(downButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(upButton, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                        .addComponent(visDownButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                        .addComponent(visUpButton, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE))))))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(downButton, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(upButton, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(visDownButton, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(visUpButton, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)))
                     .addComponent(sortByVisibilityCheckBox)
+                    .addComponent(keepGASTogetherCheckBox)
+                    .addComponent(sortMembersAlphaCheckBox)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(5, 5, 5)
                         .addComponent(insertionPointLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(insertionPointComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addContainerGap())
-            .addComponent(jSeparator2, javax.swing.GroupLayout.Alignment.TRAILING)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(jSeparator1)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(namingConventionsLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(preferLongerNamesCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(isForBooleanGettersCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addContainerGap()
                 .addComponent(otherLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(qualifyFieldAccessCheckBox)
@@ -535,8 +351,12 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(visDownButton)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(10, 10, 10)
+                .addComponent(keepGASTogetherCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(sortMembersAlphaCheckBox)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 7, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(3, 3, 3)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(insertionPointLabel)
                     .addComponent(insertionPointComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -587,6 +407,10 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
     private void sortByVisibilityCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortByVisibilityCheckBoxActionPerformed
         enableVisibilityOrder();
     }//GEN-LAST:event_sortByVisibilityCheckBoxActionPerformed
+
+    private void sortMembersAlphaCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortMembersAlphaCheckBoxActionPerformed
+        enableInsertionPoint();
+    }//GEN-LAST:event_sortMembersAlphaCheckBoxActionPerformed
     
     private void enableMembersOrderButtons() {
         int idx = membersOrderList.getSelectedIndex();                
@@ -602,41 +426,47 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
         visDownButton.setEnabled(b && idx >= 0 && idx < visibilityOrderList.getModel().getSize() - 1);
     }
     
+    private void enableInsertionPoint() {
+        if (ipModel == null) {
+            ipModel = insertionPointComboBox.getModel();
+        }
+        Object[] values;
+        Object toSelect = insertionPointComboBox.getSelectedItem();
+        if (sortMembersAlphaCheckBox.isSelected()) {
+            if (toSelect != ipModel.getElementAt(3)) {
+                toSelect = ipModel.getElementAt(2);
+            }
+            values = new Object[] {ipModel.getElementAt(2), ipModel.getElementAt(3)};
+        } else {
+            if (toSelect != ipModel.getElementAt(3)) {
+                toSelect = ipModel.getElementAt(0);
+            }
+            values = new Object[] {ipModel.getElementAt(0), ipModel.getElementAt(1), ipModel.getElementAt(3)};
+        }
+        insertionPointComboBox.setModel(new DefaultComboBoxModel(values));
+        insertionPointComboBox.setSelectedItem(toSelect);
+    }
+    
+    private ComboBoxModel ipModel;
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox addOverrideAnnortationCheckBox;
     private javax.swing.JButton downButton;
-    private javax.swing.JLabel fieldLabel;
-    private javax.swing.JTextField fieldPrefixField;
-    private javax.swing.JTextField fieldSuffixField;
     private javax.swing.JComboBox insertionPointComboBox;
     private javax.swing.JLabel insertionPointLabel;
-    private javax.swing.JCheckBox isForBooleanGettersCheckBox;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
-    private javax.swing.JLabel localVarLabel;
-    private javax.swing.JTextField localVarPrefixField;
-    private javax.swing.JTextField localVarSuffixField;
+    private javax.swing.JCheckBox keepGASTogetherCheckBox;
     private javax.swing.JCheckBox localVarsFinalCheckBox;
     private javax.swing.JLabel memberOrderLabel;
     private javax.swing.JList membersOrderList;
-    private javax.swing.JLabel namingConventionsLabel;
     private javax.swing.JLabel otherLabel;
-    private javax.swing.JLabel parameterLabel;
-    private javax.swing.JTextField parameterPrefixField;
-    private javax.swing.JTextField parameterSuffixField;
     private javax.swing.JCheckBox parametersFinalCheckBox;
-    private javax.swing.JCheckBox preferLongerNamesCheckBox;
-    private javax.swing.JLabel prefixLabel;
     private javax.swing.JCheckBox qualifyFieldAccessCheckBox;
     private javax.swing.JCheckBox sortByVisibilityCheckBox;
-    private javax.swing.JLabel staticFieldLabel;
-    private javax.swing.JTextField staticFieldPrefixField;
-    private javax.swing.JTextField staticFieldSuffixField;
-    private javax.swing.JLabel suffixLabel;
+    private javax.swing.JCheckBox sortMembersAlphaCheckBox;
     private javax.swing.JButton upButton;
     private javax.swing.JButton visDownButton;
     private javax.swing.JButton visUpButton;

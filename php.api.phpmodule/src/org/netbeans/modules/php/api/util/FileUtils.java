@@ -59,6 +59,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParserFactory;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -121,6 +122,7 @@ public final class FileUtils {
      * @see #findFileOnUsersPath(String[])
      */
     public static List<String> findFileOnUsersPath(String filename) {
+        Parameters.notNull("filename", filename); // NOI18N
         return findFileOnUsersPath(new String[]{filename});
     }
 
@@ -128,12 +130,12 @@ public final class FileUtils {
      * Find all the files (absolute path) with the given "filename" on user's PATH.
      * <p>
      * This method is suitable for *nix as well as windows.
-     * @param filename the name of a file to find, more names can be provided.
+     * @param filenames the name of a file to find, more names can be provided.
      * @return list of absolute paths of found files (order preserved according to input names).
      * @see #findFileOnUsersPath(String)
      */
-    public static List<String> findFileOnUsersPath(String... filename) {
-        Parameters.notNull("filename", filename); // NOI18N
+    public static List<String> findFileOnUsersPath(String... filenames) {
+        Parameters.notNull("filenames", filenames); // NOI18N
 
         String path = System.getenv("PATH"); // NOI18N
         LOGGER.log(Level.FINE, "PATH: [{0}]", path);
@@ -143,10 +145,11 @@ public final class FileUtils {
         // on linux there are usually duplicities in PATH
         Set<String> dirs = new LinkedHashSet<String>(Arrays.asList(path.split(File.pathSeparator)));
         LOGGER.log(Level.FINE, "PATH dirs: {0}", dirs);
-        List<String> found = new ArrayList<String>(dirs.size() * filename.length);
-        for (String f : filename) {
-            for (String d : dirs) {
-                File file = new File(d, f);
+        List<String> found = new ArrayList<String>(dirs.size() * filenames.length);
+        for (String filename : filenames) {
+            Parameters.notNull("filename", filename); // NOI18N
+            for (String dir : dirs) {
+                File file = new File(dir, filename);
                 if (file.isFile()) {
                     String absolutePath = FileUtil.normalizeFile(file).getAbsolutePath();
                     LOGGER.log(Level.FINE, "File ''{0}'' found", absolutePath);
@@ -189,6 +192,7 @@ public final class FileUtils {
      * @param context {@link Lookup context} where the {@link FileObject} is searched for
      * @return {@link FileObject} for the given {@link Lookup context} or <code>null</code> if not found
      */
+    @CheckForNull
     public static FileObject getFileObject(Lookup context) {
         FileObject fo = context.lookup(FileObject.class);
         if (fo != null) {
@@ -228,6 +232,7 @@ public final class FileUtils {
      * @see #validateFile(String, String, boolean)
      */
     @NbBundle.Messages("FileUtils.validateFile.file=File")
+    @CheckForNull
     public static String validateFile(String filePath, boolean writable) {
         return validateFile(Bundle.FileUtils_validateFile_file(), filePath, writable);
     }
@@ -255,6 +260,7 @@ public final class FileUtils {
         "# {0} - source",
         "FileUtils.validateFile.notWritable={0} is not writable."
     })
+    @CheckForNull
     public static String validateFile(String source, String filePath, boolean writable) {
         if (!StringUtils.hasText(filePath)) {
             return Bundle.FileUtils_validateFile_missing(source);
@@ -285,6 +291,7 @@ public final class FileUtils {
      * @see #isDirectoryWritable(File)
      */
     @NbBundle.Messages("FileUtils.validateDirectory.directory=Directory")
+    @CheckForNull
     public static String validateDirectory(String dirPath, boolean writable) {
         return validateDirectory(Bundle.FileUtils_validateDirectory_directory(), dirPath, writable);
     }
@@ -312,6 +319,7 @@ public final class FileUtils {
         "# {0} - source",
         "FileUtils.validateDirectory.notWritable={0} is not writable."
     })
+    @CheckForNull
     public static String validateDirectory(String source, String dirPath, boolean writable) {
         if (!StringUtils.hasText(dirPath)) {
             return Bundle.FileUtils_validateDirectory_missing(source);

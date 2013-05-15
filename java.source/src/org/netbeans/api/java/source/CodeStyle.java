@@ -265,6 +265,20 @@ public final class CodeStyle {
     }
     
     /**
+     * @since 0.125 
+     */
+    public boolean keepGettersAndSettersTogether() {
+        return preferences.getBoolean(keepGettersAndSettersTogether, getDefaultAsBoolean(keepGettersAndSettersTogether));
+    }
+
+    /**
+     * @since 0.125 
+     */
+    public boolean sortMembersInGroupsAlphabetically() {
+        return preferences.getBoolean(sortMembersInGroups, getDefaultAsBoolean(sortMembersInGroups));
+    }
+
+    /**
      * Returns an information about the desired insertion point of a new class member.
      * @since 0.96
      */
@@ -272,7 +286,7 @@ public final class CodeStyle {
         String point = preferences.get(classMemberInsertionPoint, getDefaultAsString(classMemberInsertionPoint));
         return InsertionPoint.valueOf(point);
     }
-
+    
     // Alignment and braces ----------------------------------------------------
     
     public BracePlacement getClassDeclBracePlacement() {
@@ -508,6 +522,14 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    /**
+     * @since 0.120
+     */
+    public WrapStyle wrapCaseStatements() {
+        String wrap = preferences.get(wrapCaseStatements, getDefaultAsString(wrapCaseStatements));
+        return WrapStyle.valueOf(wrap);
+    }
+
     public WrapStyle wrapAssert() {
         String wrap = preferences.get(wrapAssert, getDefaultAsString(wrapAssert));
         return WrapStyle.valueOf(wrap);
@@ -546,8 +568,29 @@ public final class CodeStyle {
         return WrapStyle.valueOf(wrap);
     }
 
+    /**
+     * @since 0.119
+     */    
+    public boolean wrapAfterAssignOps() {
+        return preferences.getBoolean(wrapAfterAssignOps, getDefaultAsBoolean(wrapAfterAssignOps));
+    }
+
     // Blank lines -------------------------------------------------------------
     
+    /**
+     * @since 0.118
+     */
+    public int getMaximumBlankLinesInDeclarations() {
+        return preferences.getInt(blankLinesInDeclarations, getDefaultAsInt(blankLinesInDeclarations));
+    }
+
+    /**
+     * @since 0.118
+     */
+    public int getMaximumBlankLinesInCode() {
+        return preferences.getInt(blankLinesInCode, getDefaultAsInt(blankLinesInCode));
+    }
+
     public int getBlankLinesBeforePackage() {
         return preferences.getInt(blankLinesBeforePackage, getDefaultAsInt(blankLinesBeforePackage));
     }
@@ -885,6 +928,14 @@ public final class CodeStyle {
     }
 
     /**
+     * Returns whether to create static imports for the static class members.
+     * @since 0.121
+     */
+    public boolean preferStaticImports() {
+        return preferences.getBoolean(preferStaticImports, getDefaultAsBoolean(preferStaticImports));
+    }
+
+    /**
      * Returns the number of classes that have to be imported from a package
      * to convert the single class imports to a 'star' import of the entire package.
      */
@@ -1007,6 +1058,7 @@ public final class CodeStyle {
     public enum InsertionPoint {
         LAST_IN_CATEGORY,
         FIRST_IN_CATEGORY,
+        ORDERED_IN_CATEGORY,
         CARET_LOCATION
     }
     

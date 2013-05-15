@@ -68,8 +68,8 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.modules.java.source.classpath.AptCacheForSourceQuery;
 import org.netbeans.modules.java.source.indexing.JavaIndex;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -107,7 +107,7 @@ public final class ProcessorGenerated extends TransactionContext.Service {
     public Set<javax.tools.FileObject> getGeneratedSources(final URL forSource) {
         Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>> res = 
             generated.get(forSource);
-        return res == null ? null : res.first;
+        return res == null ? null : res.first();
     }
     
     public boolean canWrite() {
@@ -173,10 +173,10 @@ public final class ProcessorGenerated extends TransactionContext.Service {
         }
         switch (type) {
             case SOURCE:
-                insertInto.first.add(file);
+                insertInto.first().add(file);
                 break;
             case RESOURCE:
-                insertInto.second.add(file);
+                insertInto.second().add(file);
                 break;
             default:
                 throw new IllegalArgumentException();
@@ -196,8 +196,8 @@ public final class ProcessorGenerated extends TransactionContext.Service {
                 for (Map.Entry<URL,Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>>> entry : generated.entrySet()) {
                     final URL source = entry.getKey();
                     final Pair<Set<javax.tools.FileObject>,Set<javax.tools.FileObject>> gen = entry.getValue();
-                    final Set<javax.tools.FileObject> genSources = gen.first;
-                    final Set<javax.tools.FileObject> genResources =  gen.second;
+                    final Set<javax.tools.FileObject> genSources = gen.first();
+                    final Set<javax.tools.FileObject> genResources =  gen.second();
                     commitSource(source, genSources, genResources);
                 }
                 writeResources();

@@ -98,7 +98,7 @@ public class FsSkewNotifier {
                 JComponent baloonComponent = createDetails(details);
                 JComponent popupComponent = createDetails(details);
                 Notification n = NotificationDisplayer.getDefault().notify(
-                        title, icon, baloonComponent,  popupComponent, NotificationDisplayer.Priority.HIGH);
+                        title, icon, baloonComponent,  popupComponent, NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.WARNING);
             }
         };
         SwingUtilities.invokeLater(edtRunner);        

@@ -56,7 +56,19 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
     </folder>
-    
+
+    <folder name="Actions">
+        <folder name="J2EE">
+            <file name="org-netbeans-modules-j2ee-deployment-impl-bridge-ErgonomicsAction.instance">
+                <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
+                <attr name="delegate" newvalue="org.netbeans.modules.j2ee.deployment.impl.bridge.ErgonomicsAction"/>
+                <attr name="displayName" bundlevalue="org.netbeans.modules.j2ee.deployment.impl.bridge.Bundle#LBL_ErgonomicsAction"/>
+                <attr name="serverNodeHidden" boolvalue="true"/>
+                <attr name="position" intvalue="1000"/>
+            </file>
+        </folder>
+    </folder>
+
     <folder name="Servers">
         <folder name="J2EEWrapper">
             <file name="ServerInstanceProviderLookup.instance">
@@ -68,6 +80,17 @@ made subject to such option by the copyright holder.
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.deployment.impl.bridge.ServerWizardProviderLookup.getInstance"/>
                 <attr name="instanceClass" stringvalue="org.netbeans.modules.j2ee.deployment.impl.bridge.ServerWizardProviderLookup"/>
                 <attr name="instanceOf" stringvalue="org.openide.util.Lookup"/>
+            </file>
+        </folder>
+        <!-- This enables the J2EE if there are registered servers-->
+        <folder name="Actions">
+            <file name="org-netbeans-modules-j2ee-deployment-impl-bridge-ErgonomicsAction.shadow">
+                <attr name="originalFile" stringvalue="Actions/J2EE/org-netbeans-modules-j2ee-deployment-impl-bridge-ErgonomicsAction.instance"/>
+                <attr name="position" intvalue="1000"/>
+                <attr name="config-J2EE/InstalledServers/" boolvalue="true"/>
+                <!-- More appropriate place would be GF module, but that would need another action-->
+                <attr name="config-GlassFishEE6/Instances/" boolvalue="true"/>
+                <attr name="config-GlassFishEE6WC/Instances/" boolvalue="true"/>
             </file>
         </folder>
     </folder>

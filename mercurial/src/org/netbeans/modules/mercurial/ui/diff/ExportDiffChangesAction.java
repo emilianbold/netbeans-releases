@@ -66,6 +66,7 @@ import java.util.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.mercurial.FileStatus;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.versioning.util.ExportDiffSupport;
@@ -292,16 +293,6 @@ public class ExportDiffChangesAction extends ContextAction {
         }
     }
 
-    private static File getCommonParent(File [] files) {
-        File root = files[0];
-        if (root.isFile()) root = root.getParentFile();
-        for (int i = 1; i < files.length; i++) {
-            root = Utils.getCommonParent(root, files[i]);
-            if (root == null) return null;
-        }
-        return root;
-    }
-
     /** Writes contextual diff into given stream.*/
     private void exportDiff(Setup setup, String relativePath, OutputStream out) throws IOException {
         setup.initSources();
@@ -310,9 +301,12 @@ public class ExportDiffChangesAction extends ContextAction {
         Reader r1 = null;
         Reader r2 = null;
         Difference[] differences;
+        FileStatus fileStatus = setup.getInfo().getStatus(null);
 
         try {
-            r1 = setup.getFirstSource().createReader();
+            if (fileStatus == null || !fileStatus.isCopied()) {
+                r1 = setup.getFirstSource().createReader();
+            }
             if (r1 == null) r1 = new StringReader("");  // NOI18N
             r2 = setup.getSecondSource().createReader();
             if (r2 == null) r2 = new StringReader("");  // NOI18N
@@ -324,23 +318,25 @@ public class ExportDiffChangesAction extends ContextAction {
 
         try {
             InputStream is;
+            r1 = null;
+            if (fileStatus == null || !fileStatus.isCopied()) {
                 r1 = setup.getFirstSource().createReader();
-                if (r1 == null) r1 = new StringReader(""); // NOI18N
-                r2 = setup.getSecondSource().createReader();
-                if (r2 == null) r2 = new StringReader(""); // NOI18N
-                TextDiffVisualizer.TextDiffInfo info = new TextDiffVisualizer.TextDiffInfo(
-                    relativePath + " " + setup.getFirstSource().getTitle(), // NOI18N
-                    relativePath + " " + setup.getSecondSource().getTitle(),  // NOI18N
-                    null,
-                    null,
-                    r1,
-                    r2,
-                    differences
-                );
-                info.setContextMode(true, 3);
-                String diffText = TextDiffVisualizer.differenceToUnifiedDiffText(info);
-                is = new ByteArrayInputStream(diffText.getBytes("utf8"));  // NOI18N
-            //}
+            }
+            if (r1 == null) r1 = new StringReader(""); // NOI18N
+            r2 = setup.getSecondSource().createReader();
+            if (r2 == null) r2 = new StringReader(""); // NOI18N
+            TextDiffVisualizer.TextDiffInfo info = new TextDiffVisualizer.TextDiffInfo(
+                relativePath, // NOI18N
+                relativePath,  // NOI18N
+                null,
+                null,
+                r1,
+                r2,
+                differences
+            );
+            info.setContextMode(true, 3);
+            String diffText = TextDiffVisualizer.differenceToUnifiedDiffText(info);
+            is = new ByteArrayInputStream(diffText.getBytes("utf8"));  // NOI18N
             while(true) {
                 int i = is.read();
                 if (i == -1) break;

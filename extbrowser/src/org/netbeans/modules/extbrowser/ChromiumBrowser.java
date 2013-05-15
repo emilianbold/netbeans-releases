@@ -51,6 +51,7 @@ import org.openide.util.Utilities;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.openide.util.lookup.ServiceProvider;
 
 
 public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeListener {
@@ -133,4 +134,43 @@ public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeList
         return BrowserFamilyId.CHROMIUM;
     }
 
+    @Override
+    public boolean canCreateHtmlBrowserImpl() {
+        return !isHidden();
+    }
+
+    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
+    public static class ChromiumWithNetBeansIntegrationBrowserFactory extends ChromiumBrowser {
+
+        public ChromiumWithNetBeansIntegrationBrowserFactory() {
+            super();
+        }
+
+        @NbBundle.Messages({
+            "ChromiumBrowser.name=Chromium with NetBeans Integration"
+        })
+        @Override
+        public String getDisplayName() {
+            return Bundle.ChromiumBrowser_name();
+        }
+
+        @Override
+        public String getId() {
+            return "Chromium.INTEGRATED"; // NOI18N
+        }
+
+        @Override
+        public boolean hasNetBeansIntegration() {
+            return true;
+        }
+
+        @Override
+        public HtmlBrowser.Impl createHtmlBrowserImpl() {
+            HtmlBrowser.Impl res = super.createHtmlBrowserImpl();
+            assert res instanceof ExtBrowserImpl;
+            ((ExtBrowserImpl)res).setEnhancedMode(true);
+            return res;
+        }
+
+    }
 }

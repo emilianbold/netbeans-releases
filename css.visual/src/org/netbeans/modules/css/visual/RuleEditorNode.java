@@ -80,7 +80,6 @@ import org.netbeans.modules.css.lib.api.properties.Token;
 import org.netbeans.modules.css.lib.api.properties.UnitGrammarElement;
 import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.css.visual.api.DeclarationInfo;
-import org.netbeans.modules.css.visual.editors.PropertyValuesEditor;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -116,7 +115,7 @@ public class RuleEditorNode extends AbstractNode {
     private String filterText;
     private PropertySetsInfo propertySetsInfo;
     private RuleEditorPanel panel;
-    private Map<PropertyDefinition, Declaration> addedDeclarations = new HashMap<PropertyDefinition, Declaration>();
+    private Map<PropertyDefinition, PropertyDeclaration> addedDeclarations = new HashMap<>();
     private Rule lastRule;
 
     public RuleEditorNode(RuleEditorPanel panel) {
@@ -188,8 +187,8 @@ public class RuleEditorNode extends AbstractNode {
                             PropertyCategoryPropertySet o = oldSets[i];
                             PropertyCategoryPropertySet n = newSets[i];
 
-                            Map<Declaration, DeclarationProperty> om = o.declaration2PropertyMap;
-                            Map<Declaration, DeclarationProperty> nm = n.declaration2PropertyMap;
+                            Map<PropertyDeclaration, DeclarationProperty> om = o.declaration2PropertyMap;
+                            Map<PropertyDeclaration, DeclarationProperty> nm = n.declaration2PropertyMap;
 
                             if (om.size() != nm.size()) {
                                 break update;
@@ -202,12 +201,12 @@ public class RuleEditorNode extends AbstractNode {
 
                             //create declaration name -> declaration maps se we may compare 
                             //(as the css source model elements do not comparable by equals/hashcode)
-                            Map<String, Declaration> oName2DeclarationMap = new HashMap<String, Declaration>();
-                            for (Declaration d : om.keySet()) {
+                            Map<String, PropertyDeclaration> oName2DeclarationMap = new HashMap<>();
+                            for (PropertyDeclaration d : om.keySet()) {
                                 oName2DeclarationMap.put(PropertyUtils.getDeclarationId(lastRule, d), d);
                             }
-                            Map<String, Declaration> nName2DeclarationMap = new HashMap<String, Declaration>();
-                            for (Declaration d : nm.keySet()) {
+                            Map<String, PropertyDeclaration> nName2DeclarationMap = new HashMap<>();
+                            for (PropertyDeclaration d : nm.keySet()) {
                                 nName2DeclarationMap.put(PropertyUtils.getDeclarationId(getRule(), d), d);
                             }
 
@@ -216,14 +215,14 @@ public class RuleEditorNode extends AbstractNode {
                             //the whole property sets
                             Collection<String> oldNames = oName2DeclarationMap.keySet();
                             Collection<String> newNames = nName2DeclarationMap.keySet();
-                            Collection<String> comp = new HashSet<String>(oldNames);
+                            Collection<String> comp = new HashSet<>(oldNames);
                             if (comp.retainAll(newNames)) { //assumption: the collections size are the same
                                 break update; //canot merge - the collections differ
                             }
 
                             for (String declarationName : oName2DeclarationMap.keySet()) {
-                                Declaration oldD = oName2DeclarationMap.get(declarationName);
-                                Declaration newD = nName2DeclarationMap.get(declarationName);
+                                PropertyDeclaration oldD = oName2DeclarationMap.get(declarationName);
+                                PropertyDeclaration newD = nName2DeclarationMap.get(declarationName);
 
                                 //update the existing DeclarationProperty with the fresh
                                 //Declaration object from the new model instance
@@ -251,14 +250,14 @@ public class RuleEditorNode extends AbstractNode {
         }
     }
 
-    void fireDeclarationInfoChanged(Declaration declaration, DeclarationInfo declarationInfo) {
+    void fireDeclarationInfoChanged(PropertyDeclaration declaration, DeclarationInfo declarationInfo) {
         DeclarationProperty dp = getDeclarationProperty(declaration);
         if (dp != null) {
             dp.setDeclarationInfo(declarationInfo);
         }
     }
 
-    DeclarationProperty getDeclarationProperty(Declaration declaration) {
+    DeclarationProperty getDeclarationProperty(PropertyDeclaration declaration) {
         for (PropertyCategoryPropertySet set : getCachedPropertySetsInfo().getSets()) {
             DeclarationProperty declarationProperty = set.getDeclarationProperty(declaration);
             if (declarationProperty != null) {
@@ -290,7 +289,7 @@ public class RuleEditorNode extends AbstractNode {
     }
 
     private Collection<PropertyDefinition> filterByPrefix(Collection<PropertyDefinition> defs) {
-        Collection<PropertyDefinition> filtered = new ArrayList<PropertyDefinition>();
+        Collection<PropertyDefinition> filtered = new ArrayList<>();
         for (PropertyDefinition pd : defs) {
             if (matchesFilterText(pd.getName())) {
                 filtered.add(pd);
@@ -308,19 +307,17 @@ public class RuleEditorNode extends AbstractNode {
         if (getModel() == null || getRule() == null) {
             return new PropertySetsInfo(new PropertyCategoryPropertySet[0], panel.getCreatedDeclaration() != null);
         }
-        Collection<PropertyCategoryPropertySet> sets = new ArrayList<PropertyCategoryPropertySet>();
-        List<Declaration> declarations = getRule().getDeclarations() == null
-                ? Collections.<Declaration>emptyList()
-                : getRule().getDeclarations().getDeclarations();
+        Collection<PropertyCategoryPropertySet> sets = new ArrayList<>();
+        List<PropertyDeclaration> declarations = PropertyUtils.getPropertyDeclarations(getRule());
 
         FileObject file = getFileObject();
 
         if (isShowCategories()) {
             //create property sets for property categories
 
-            Map<PropertyDefinition, Declaration> created = new HashMap<PropertyDefinition, Declaration>();
-            Map<PropertyCategory, List<Declaration>> categoryToDeclarationsMap = new EnumMap<PropertyCategory, List<Declaration>>(PropertyCategory.class);
-            for (Declaration d : declarations) {
+            Map<PropertyDefinition, PropertyDeclaration> created = new HashMap<>();
+            Map<PropertyCategory, List<PropertyDeclaration>> categoryToDeclarationsMap = new EnumMap<>(PropertyCategory.class);
+            for (PropertyDeclaration d : declarations) {
                 if (addedDeclarations.containsValue(d)) {
                     continue; //skip those added declarations
                 }
@@ -343,9 +340,9 @@ public class RuleEditorNode extends AbstractNode {
                             category = PropertyCategory.UNKNOWN;
                         }
 
-                        List<Declaration> values = categoryToDeclarationsMap.get(category);
+                        List<PropertyDeclaration> values = categoryToDeclarationsMap.get(category);
                         if (values == null) {
-                            values = new LinkedList<Declaration>();
+                            values = new LinkedList<>();
                             categoryToDeclarationsMap.put(category, values);
                         }
                         values.add(d);
@@ -353,10 +350,10 @@ public class RuleEditorNode extends AbstractNode {
                 }
             }
 
-            Map<PropertyCategory, PropertyCategoryPropertySet> propertySetsMap = new EnumMap<PropertyCategory, PropertyCategoryPropertySet>(PropertyCategory.class);
-            for (Entry<PropertyCategory, List<Declaration>> entry : categoryToDeclarationsMap.entrySet()) {
+            Map<PropertyCategory, PropertyCategoryPropertySet> propertySetsMap = new EnumMap<>(PropertyCategory.class);
+            for (Entry<PropertyCategory, List<PropertyDeclaration>> entry : categoryToDeclarationsMap.entrySet()) {
 
-                List<Declaration> categoryDeclarations = entry.getValue();
+                List<PropertyDeclaration> categoryDeclarations = entry.getValue();
                 
                 if(isShowAllProperties()) {
                     //remove the "just created"
@@ -377,7 +374,7 @@ public class RuleEditorNode extends AbstractNode {
                 //Show all properties
                 for (PropertyCategory cat : PropertyCategory.values()) {
                     //now add all the remaining properties
-                    List<PropertyDefinition> allInCat = new LinkedList<PropertyDefinition>(filterByPrefix(getCategoryProperties(cat)));
+                    List<PropertyDefinition> allInCat = new LinkedList<>(filterByPrefix(getCategoryProperties(cat)));
                     if (allInCat.isEmpty()) {
                         continue; //skip empty categories (when filtering)
                     }
@@ -390,14 +387,14 @@ public class RuleEditorNode extends AbstractNode {
                     }
 
                     //remove already used
-                    for (Declaration d : propertySet.getDeclarations()) {
+                    for (PropertyDeclaration d : propertySet.getDeclarations()) {
                         PropertyDefinition def = Properties.getPropertyDefinition(d.getProperty().getContent().toString());
                         allInCat.remove(def);
                     }
 
                     //add the rest of unused properties to the property set
                     for (PropertyDefinition pd : allInCat) {
-                        Declaration alreadyAdded = addedDeclarations.get(pd);
+                        PropertyDeclaration alreadyAdded = addedDeclarations.get(pd);
                         if(alreadyAdded == null) {
                             alreadyAdded = created.get(pd);
                         }
@@ -419,8 +416,8 @@ public class RuleEditorNode extends AbstractNode {
 
             if(!isShowAllProperties()) {
                 //set properties only view
-                List<Declaration> filtered = new ArrayList<Declaration>();
-                for (Declaration d : declarations) {
+                List<PropertyDeclaration> filtered = new ArrayList<>();
+                for (PropertyDeclaration d : declarations) {
                     if (addedDeclarations.containsValue(d)) {
                         continue; //skip those added declarations
                     }
@@ -440,7 +437,7 @@ public class RuleEditorNode extends AbstractNode {
                     }
                 }
                 //sort aplha
-                Comparator<Declaration> comparator = PropertyUtils.createDeclarationsComparator(getRule(), panel.getCreatedDeclarationsIdsList());
+                Comparator<PropertyDeclaration> comparator = PropertyUtils.createDeclarationsComparator(getRule(), panel.getCreatedDeclarationsIdsList());
                 Collections.sort(filtered, comparator);
                 set.addAll(filtered);
                 
@@ -452,9 +449,9 @@ public class RuleEditorNode extends AbstractNode {
                 }
             } else {
                 //all properties view
-                List<Declaration> filteredExisting = new ArrayList<Declaration>();
-                Map<PropertyDefinition, Declaration> filteredCreated = new HashMap<PropertyDefinition, Declaration>();
-                for (Declaration d : declarations) {
+                List<PropertyDeclaration> filteredExisting = new ArrayList<>();
+                Map<PropertyDefinition, PropertyDeclaration> filteredCreated = new HashMap<>();
+                for (PropertyDeclaration d : declarations) {
                     if (addedDeclarations.containsValue(d)) {
                         continue; //skip those added declarations
                     }
@@ -476,11 +473,11 @@ public class RuleEditorNode extends AbstractNode {
                 
                 set.addAll(filteredExisting);
                 
-                List<PropertyDefinition> all = new ArrayList<PropertyDefinition>(filterByPrefix(Properties.getPropertyDefinitions(file, true)));
+                List<PropertyDefinition> all = new ArrayList<>(filterByPrefix(Properties.getPropertyDefinitions(file, true)));
                 Collections.sort(all, PropertyUtils.getPropertyDefinitionsComparator());
 
                 //remove already used
-                for (Declaration d : set.getDeclarations()) {
+                for (PropertyDeclaration d : set.getDeclarations()) {
                     PropertyDefinition def = Properties.getPropertyDefinition(d.getProperty().getContent().toString());
                     all.remove(def);
                 }
@@ -488,7 +485,7 @@ public class RuleEditorNode extends AbstractNode {
                 //add the rest of unused properties to the property set
                 for (PropertyDefinition pd : all) {
                     //boz<i' gula's<:
-                    Declaration alreadyAdded = addedDeclarations.get(pd); //added in "ADD PROPERTY MODE"
+                    PropertyDeclaration alreadyAdded = addedDeclarations.get(pd); //added in "ADD PROPERTY MODE"
                     if(alreadyAdded == null) {
                         alreadyAdded = filteredCreated.get(pd); //added in normal mode
                     }
@@ -518,7 +515,7 @@ public class RuleEditorNode extends AbstractNode {
      */
     public List<PropertyDefinition> getCategoryProperties(PropertyCategory cat) {
         Collection<PropertyDefinition> defs = Properties.getPropertyDefinitions(getModel().getLookup().lookup(FileObject.class), true);
-        List<PropertyDefinition> defsInCat = new ArrayList<PropertyDefinition>();
+        List<PropertyDefinition> defsInCat = new ArrayList<>();
         for (PropertyDefinition d : defs) {
             if (d.getPropertyCategory() == cat) {
                 defsInCat.add(d);
@@ -527,7 +524,7 @@ public class RuleEditorNode extends AbstractNode {
         return defsInCat;
     }
 
-    private String getPropertyDisplayName(Declaration declaration) {
+    private String getPropertyDisplayName(PropertyDeclaration declaration) {
         return declaration.getProperty().getContent().toString();
     }
 
@@ -538,9 +535,7 @@ public class RuleEditorNode extends AbstractNode {
             public void run(StyleSheet styleSheet) {
                 try {
                     model.applyChanges();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                } catch (BadLocationException ex) {
+                } catch (IOException | BadLocationException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
@@ -549,8 +544,8 @@ public class RuleEditorNode extends AbstractNode {
 
     class PropertyCategoryPropertySet extends PropertySet {
 
-        private List<Property> properties = new ArrayList<Property>();
-        private Map<Declaration, DeclarationProperty> declaration2PropertyMap = new HashMap<Declaration, DeclarationProperty>();
+        private List<Property> properties = new ArrayList<>();
+        private Map<PropertyDeclaration, DeclarationProperty> declaration2PropertyMap = new HashMap<>();
 
         public PropertyCategoryPropertySet(PropertyCategory propertyCategory) {
             super(propertyCategory.name(), //NOI18N
@@ -562,23 +557,23 @@ public class RuleEditorNode extends AbstractNode {
             properties.add(create_Add_Property_Feature_Descriptor());
         }
 
-        public void add(Declaration declaration, boolean markAsModified) {
+        public void add(PropertyDeclaration declaration, boolean markAsModified) {
             DeclarationProperty property = createDeclarationProperty(declaration, markAsModified);
             declaration2PropertyMap.put(declaration, property);
             properties.add(property);
         }
 
-        public void addAll(Collection<Declaration> declarations) {
-            for (Declaration d : declarations) {
+        public void addAll(Collection<PropertyDeclaration> declarations) {
+            for (PropertyDeclaration d : declarations) {
                 add(d, false);
             }
         }
 
-        public Collection<Declaration> getDeclarations() {
+        public Collection<PropertyDeclaration> getDeclarations() {
             return declaration2PropertyMap.keySet();
         }
 
-        public DeclarationProperty getDeclarationProperty(Declaration declaration) {
+        public DeclarationProperty getDeclarationProperty(PropertyDeclaration declaration) {
             return declaration2PropertyMap.get(declaration);
         }
 
@@ -598,8 +593,8 @@ public class RuleEditorNode extends AbstractNode {
     }
 
     private PropertyValuesEditor createPropertyValueEditor(FileObject context, PropertyDefinition pmodel, boolean addNoneProperty) {
-        final Collection<UnitGrammarElement> unitElements = new ArrayList<UnitGrammarElement>();
-        final Collection<FixedTextGrammarElement> fixedElements = new ArrayList<FixedTextGrammarElement>();
+        final Collection<UnitGrammarElement> unitElements = new ArrayList<>();
+        final Collection<FixedTextGrammarElement> fixedElements = new ArrayList<>();
 
         if (pmodel != null) {
             GroupGrammarElement rootElement = pmodel.getGrammarElement(context);
@@ -674,17 +669,18 @@ public class RuleEditorNode extends AbstractNode {
             org.netbeans.modules.css.model.api.Property property = factory.createProperty(def.getName());
             Expression expr = factory.createExpression(convertToString(val));
             PropertyValue value = factory.createPropertyValue(expr);
-            Declaration newDeclaration = factory.createDeclaration(property, value, false);
-
+            PropertyDeclaration newPropertyDeclaration = factory.createPropertyDeclaration(property, value, false);
+            Declaration newDeclaration = factory.createDeclaration();
+            newDeclaration.setPropertyDeclaration(newPropertyDeclaration);
             declarations.addDeclaration(newDeclaration);
 
             //save the model to the source
             if (!isAddPropertyMode()) {
-                panel.setCreatedDeclaration(rule, newDeclaration);
+                panel.setCreatedDeclaration(rule, newPropertyDeclaration);
                 applyModelChanges();
             } else {
                 //add property mode - just refresh the content
-                addedDeclarations.put(def, newDeclaration); //remember what we've added during this dialog cycle
+                addedDeclarations.put(def, newPropertyDeclaration); //remember what we've added during this dialog cycle
                 fireContextChanged(true);
             }
         }
@@ -721,7 +717,7 @@ public class RuleEditorNode extends AbstractNode {
         }
     }
 
-    private DeclarationProperty createDeclarationProperty(Declaration declaration, boolean markAsModified) {
+    private DeclarationProperty createDeclarationProperty(PropertyDeclaration declaration, boolean markAsModified) {
         ResolvedProperty resolvedProperty = declaration.getResolvedProperty();
         PropertyDefinition propertyDefinition = resolvedProperty != null ? resolvedProperty.getPropertyDefinition() : null;
         return new DeclarationProperty(declaration,
@@ -747,19 +743,19 @@ public class RuleEditorNode extends AbstractNode {
         private final String propertyName;
         private final PropertyEditor editor;
         private final boolean markAsModified;
-        private Declaration declaration;
+        private PropertyDeclaration propertyDeclaration;
         private DeclarationInfo info;
         private String shortDescription;
         private String valueSet;
         private String locationPrefix;
 
-        public DeclarationProperty(Declaration declaration, String propertyName, String propertyDisplayName, boolean markAsModified, PropertyEditor editor) {
+        public DeclarationProperty(PropertyDeclaration declaration, String propertyName, String propertyDisplayName, boolean markAsModified, PropertyEditor editor) {
             super(propertyName,
                     String.class,
                     propertyDisplayName,
                     null, true, getRule().isValid());
             this.propertyName = propertyName;
-            this.declaration = declaration;
+            this.propertyDeclaration = declaration;
             this.markAsModified = markAsModified;
             this.editor = editor;
 
@@ -770,8 +766,8 @@ public class RuleEditorNode extends AbstractNode {
 
         }
 
-        public Declaration getDeclaration() {
-            return declaration;
+        public PropertyDeclaration getDeclaration() {
+            return propertyDeclaration;
         }
 
         /**
@@ -786,7 +782,7 @@ public class RuleEditorNode extends AbstractNode {
                 return; 
             }
 
-            String property = declaration.getProperty().getContent().toString().trim();
+            String property = propertyDeclaration.getProperty().getContent().toString().trim();
             PropertyDefinition model = Properties.getPropertyDefinition(property);
             if (model == null) {
                 //flag as unknown
@@ -806,7 +802,7 @@ public class RuleEditorNode extends AbstractNode {
                 return ;
             }
 
-            PropertyValue value = declaration.getPropertyValue();
+            PropertyValue value = propertyDeclaration.getPropertyValue();
             if (value != null) {
                 Expression expression = value.getExpression();
                 CharSequence content = expression != null ? expression.getContent() : "";
@@ -855,7 +851,7 @@ public class RuleEditorNode extends AbstractNode {
                 Snapshot snap = lookup.lookup(Snapshot.class);
                 final Document doc = lookup.lookup(Document.class);
                 if (snap != null && doc != null) {
-                    Declaration decl = getDeclaration();
+                    PropertyDeclaration decl = getDeclaration();
                     int ast_from = decl.getStartOffset();
                     if (ast_from != -1) {
                         //source element, not virtual which is not persisted yet
@@ -882,12 +878,12 @@ public class RuleEditorNode extends AbstractNode {
             return locationPrefix;
         }
 
-        private void updateDeclaration(Declaration declaration) {
+        private void updateDeclaration(PropertyDeclaration declaration) {
             assert PropertyUtils.getDeclarationId(getRule(), declaration).equals(propertyName);
 
             //update the declaration
             String oldValue = getValue();
-            this.declaration = declaration;
+            this.propertyDeclaration = declaration;
             String newValue = getValue();
 
             locationPrefix = null; //reset the prefix as it was computed for the original declaration
@@ -1015,7 +1011,7 @@ public class RuleEditorNode extends AbstractNode {
                 b.append(">"); //NOI18N
             }
 
-            b.append(getPropertyDisplayName(declaration));
+            b.append(getPropertyDisplayName(propertyDeclaration));
 
             if (color != null) {
                 b.append("</font>"); //NOI18N
@@ -1035,7 +1031,7 @@ public class RuleEditorNode extends AbstractNode {
             if (valueSet != null) {
                 return valueSet;
             }
-            PropertyValue val = declaration.getPropertyValue();
+            PropertyValue val = propertyDeclaration.getPropertyValue();
             return val == null ? null : val.getExpression().getContent().toString().trim();
         }
 
@@ -1082,12 +1078,14 @@ public class RuleEditorNode extends AbstractNode {
                             public void run(StyleSheet styleSheet) {
                                 if (NONE_PROPERTY_NAME.equals(valueSet)) {
                                     //remove the whole declaration
-                                    Declarations declarations = (Declarations) declaration.getParent();
+                                    Declaration declaration = (Declaration) propertyDeclaration.getParent();
+                                    Declarations declarations = (Declarations)declaration.getParent();
+                                    declaration.removeElement(propertyDeclaration);
                                     declarations.removeDeclaration(declaration);
                                 } else {
                                     //update the value
                                     RuleEditorPanel.LOG.log(Level.FINE, "updating property to {0}", valueSet);
-                                    declaration.getPropertyValue().getExpression().setContent(valueSet);
+                                    propertyDeclaration.getPropertyValue().getExpression().setContent(valueSet);
                                 }
                             }
                         });
@@ -1193,8 +1191,10 @@ public class RuleEditorNode extends AbstractNode {
                         rule.setDeclarations(decls);
                     }
 
-                    Declaration declaration = utils.createDeclaration(propertyName + ":");
-                    decls.addDeclaration(declaration);
+                    PropertyDeclaration pdeclarationElement = utils.createPropertyDeclaration(propertyName + ":");
+                    Declaration declarationElement = model.getElementFactory().createDeclaration();
+                    declarationElement.setPropertyDeclaration(pdeclarationElement);
+                    decls.addDeclaration(declarationElement);
 
                     //do not save the model (apply changes) - once the write task finishes
                     //the embedded property sheet will be refreshed from the modified model.
@@ -1202,7 +1202,7 @@ public class RuleEditorNode extends AbstractNode {
                     //remember the created declaration so once the model change is fired
                     //and the property sheet is refreshed, we can find and select the corresponding
                     //FeatureDescriptor
-                    panel.setCreatedDeclaration(rule, declaration);
+                    panel.setCreatedDeclaration(rule, pdeclarationElement);
                 }
             });
         }

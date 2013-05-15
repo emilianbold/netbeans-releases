@@ -95,7 +95,7 @@ public abstract class CopyDialog {
     private static final String MORE_BRANCHES = NbBundle.getMessage(CopyDialog.class, "LBL_CopyDialog.moreBranchesAndTags"); //NOI18N
     private Set<JComboBox> urlComboBoxes;
     
-    CopyDialog(JPanel panel, String title, String okLabel) {                
+    protected CopyDialog(JPanel panel, String title, String okLabel) {                
         this.panel = panel;
         
         okButton = new JButton(okLabel);
@@ -132,7 +132,7 @@ public abstract class CopyDialog {
         return panel;
     }       
     
-    boolean showDialog() {                        
+    public final boolean showDialog() {                        
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);        
         dialog.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CopyDialog.class, "CTL_Title"));                     // NOI18N        
         

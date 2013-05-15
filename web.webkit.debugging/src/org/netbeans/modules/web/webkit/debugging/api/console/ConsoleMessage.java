@@ -43,14 +43,15 @@
 package org.netbeans.modules.web.webkit.debugging.api.console;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 /**
- *
+ * Representation of console message.
  */
-public final class ConsoleMessage {
+public class ConsoleMessage {
 
     private final JSONObject msg;
     private List<StackFrame> stackTrace;
@@ -61,34 +62,59 @@ public final class ConsoleMessage {
     }
 
     public String getSource() {
-        return (String)msg.get("source");
+        if (msg != null) {
+            return (String)msg.get("source");
+        } else {
+            return "";
+        }
     }
     
     public String getLevel() {
-        return (String)msg.get("level");
+        if (msg != null) {
+            return (String)msg.get("level");
+        } else {
+            return "";
+        }
     }
     
     public String getType() {
-        return (String)msg.get("type");
+        if (msg != null) {
+            return (String)msg.get("type");
+        } else {
+            return "";
+        }
     }
     
     public String getText() {
-        return (String)msg.get("text");
+        if (msg != null) {
+            return (String)msg.get("text");
+        } else {
+            return "";
+        }
     }
     
     public String getURLString() {
-        return (String)msg.get("url");
+        if (msg != null) {
+            return (String)msg.get("url");
+        } else {
+            return "";
+        }
     }
     
     public int getLine() {
-        Number n = (Number)msg.get("line");
-        if (n != null) {
-            return n.intValue();
+        if (msg != null) {
+            Number n = (Number)msg.get("line");
+            if (n != null) {
+                return n.intValue();
+            }
         }
         return -1;
     }
 
     public List<StackFrame> getStackTrace() {
+        if (msg == null) {
+            return Collections.EMPTY_LIST;
+        }
         if (!stackTraceLoaded) {
             JSONArray stack = (JSONArray)msg.get("stackTrace");
             if (stack != null && stack.size() > 0) {
@@ -103,17 +129,29 @@ public final class ConsoleMessage {
         return stackTrace;
     }
     
+    /**
+     * @since 1.19
+     * @return A list of sub-messages.
+     */
+    public List<ConsoleMessage> getSubMessages() {
+        return Collections.EMPTY_LIST;
+    }
+    
     
     public static final class StackFrame {
 
         private JSONObject stack;
 
-        StackFrame(JSONObject stack) {
+        public StackFrame(JSONObject stack) {
             this.stack = stack;
         }
         
         public String getFunctionName() {
-            return (String)stack.get("functionName");
+            String s = (String)stack.get("functionName");
+            if (s == null || s.isEmpty()) {
+                s = "(anonymous function)";
+            }
+            return s;
         }
         
         public String getURLString() {

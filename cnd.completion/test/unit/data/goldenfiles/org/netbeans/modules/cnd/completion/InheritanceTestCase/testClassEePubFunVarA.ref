@@ -1,2 +1,2 @@
-aPub int
-aPubFun() void
+aPub int	$	    a.aPub
+aPubFun() void	$	    a.aPubFun()

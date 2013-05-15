@@ -355,7 +355,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     @Override
     public void remove(File[] files, boolean force) throws SVNClientException {
-        RemoveCommand cmd = new RemoveCommand(files, user, force);
+        RemoveCommand cmd = new RemoveCommand(files, force);
         exec(cmd);
     }
 
@@ -1416,7 +1416,7 @@ public class CommandlineClient extends AbstractClientAdapter implements ISVNClie
 
     @Override
     public SVNDiffSummary[] diffSummarize(SVNUrl arg0, SVNRevision arg1, SVNUrl arg2, SVNRevision arg3, int arg4, boolean arg5) throws SVNClientException {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new SVNClientException("Diffing between revision trees is not supported by the commandline client.\nPlease switch to SVNKit or JavaHL.");
     }
 
     @Override

@@ -495,10 +495,11 @@ public final class Queries {
         
         private static void attach (final BooleanQuery query, final TermCollector collector) {
             for (BooleanClause clause : query.getClauses()) {
-                if (!(clause instanceof TermCollector.TermCollecting)) {
+                final Query q = clause.getQuery();
+                if (!(q instanceof TermCollector.TermCollecting)) {
                     throw new IllegalArgumentException();
                 }
-                ((TermCollector.TermCollecting)clause.getQuery()).attach(collector);
+                ((TermCollector.TermCollecting)q).attach(collector);
             }
         }                
     }

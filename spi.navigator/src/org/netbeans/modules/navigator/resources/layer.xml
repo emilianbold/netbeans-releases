@@ -52,15 +52,11 @@ made subject to such option by the copyright holder.
     </folder>
     <folder name="Menu">
         <folder name="Window">
-            <folder name="Navigator">
-            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.navigator.Bundle"/>
-                <attr name="position" intvalue="1300"/>
-                <file name="org-netbeans-modules-navigator-ShowNavigatorAction.shadow">
-                  <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-navigator-ShowNavigatorAction.instance"/>
-                    <attr name="position" intvalue="100"/>
-                </file>
-                </folder>
-            </folder>
+            <file name="org-netbeans-modules-navigator-ShowNavigatorAction.shadow">
+              <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-navigator-ShowNavigatorAction.instance"/>
+                <attr name="position" intvalue="600"/>
+            </file>
+        </folder>
     </folder>
 
     <folder name="Navigator">

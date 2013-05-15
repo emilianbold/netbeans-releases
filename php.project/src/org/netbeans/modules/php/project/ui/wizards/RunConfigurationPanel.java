@@ -245,7 +245,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 assert false : "Unknown wizard type: " + wizardType;
         }
 
-        MutableComboBoxModel localServerModel = getLocalServerModel();
+        MutableComboBoxModel<LocalServer> localServerModel = getLocalServerModel();
         if (localServerModel != null) {
             runAsLocalWeb.setLocalServerModel(localServerModel);
         } else {
@@ -306,8 +306,9 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         }
     }
 
-    private MutableComboBoxModel getLocalServerModel() {
-        return (MutableComboBoxModel) descriptor.getProperty(COPY_SRC_TARGETS);
+    @SuppressWarnings("unchecked")
+    private MutableComboBoxModel<LocalServer> getLocalServerModel() {
+        return (MutableComboBoxModel<LocalServer>) descriptor.getProperty(COPY_SRC_TARGETS);
     }
 
     void initLocalServerModel(List<DocumentRoot> documentRoots) {

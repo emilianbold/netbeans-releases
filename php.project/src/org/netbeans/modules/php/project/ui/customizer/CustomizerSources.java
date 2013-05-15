@@ -115,6 +115,7 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
 
         copyFilesVisual = new CopyFilesVisual(this, LocalServer.PENDING_LOCAL_SERVER);
         copyFilesVisual.setCopyFiles(originalCopySrcFiles);
+        copyFilesVisual.setCopyOnOpen(properties.getCopySrcOnOpen());
         copyFilesVisual.setState(false);
         copyFilesPanel.add(BorderLayout.CENTER, copyFilesVisual);
 
@@ -173,6 +174,8 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         super.removeNotify();
     }
 
+    // XXX remove
+    @SuppressWarnings("unchecked")
     private void initEncoding() {
         originalEncoding = ProjectPropertiesSupport.getEncoding(properties.getProject());
         if (originalEncoding == null) {
@@ -350,6 +353,7 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         // everything ok
         properties.setCopySrcFiles(String.valueOf(isCopyFiles));
         properties.setCopySrcTarget(copyTargetDir == null ? "" : copyTargetDir.getAbsolutePath()); // NOI18N
+        properties.setCopySrcOnOpen(copyFilesVisual.isCopyOnOpen());
         // tests - relativize path
         File projectDirectory = FileUtil.toFile(properties.getProject().getProjectDirectory());
 
@@ -439,9 +443,9 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
         webRootButton = new javax.swing.JButton();
         copyFilesPanel = new javax.swing.JPanel();
         encodingLabel = new javax.swing.JLabel();
-        encodingComboBox = new javax.swing.JComboBox();
+        encodingComboBox = new javax.swing.JComboBox<Charset>();
         phpVersionLabel = new javax.swing.JLabel();
-        phpVersionComboBox = new javax.swing.JComboBox();
+        phpVersionComboBox = new javax.swing.JComboBox<PhpVersion>();
         phpVersionInfoLabel = new javax.swing.JLabel();
         shortTagsCheckBox = new javax.swing.JCheckBox();
         aspTagsCheckBox = new javax.swing.JCheckBox();
@@ -626,9 +630,9 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox aspTagsCheckBox;
     private javax.swing.JPanel copyFilesPanel;
-    private javax.swing.JComboBox encodingComboBox;
+    private javax.swing.JComboBox<Charset> encodingComboBox;
     private javax.swing.JLabel encodingLabel;
-    private javax.swing.JComboBox phpVersionComboBox;
+    private javax.swing.JComboBox<PhpVersion> phpVersionComboBox;
     private javax.swing.JLabel phpVersionInfoLabel;
     private javax.swing.JLabel phpVersionLabel;
     private javax.swing.JLabel projectFolderLabel;

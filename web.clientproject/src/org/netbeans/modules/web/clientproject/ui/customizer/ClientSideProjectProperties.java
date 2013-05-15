@@ -51,12 +51,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.web.clientproject.ClientSideConfigurationProvider;
+import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.ClientSideProjectConstants;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel.SelectedLibrary;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -82,10 +82,11 @@ public final class ClientSideProjectProperties {
     private volatile String jsLibFolder = null;
     private volatile String encoding = null;
     private volatile String startFile = null;
+    private volatile String selectedBrowser = null;
     private volatile String webRoot = null;
     private volatile String projectUrl = null;
     private volatile ProjectServer projectServer = null;
-    private volatile ClientProjectConfigurationImplementation activeConfiguration = null;
+    private volatile ClientProjectEnhancedBrowserImplementation enhancedBrowserSettings = null;
 
 
     public ClientSideProjectProperties(ClientSideProject project) {
@@ -140,8 +141,7 @@ public final class ClientSideProjectProperties {
                 @Override
                 public Void run() throws IOException {
                     saveProperties();
-                    saveConfigs();
-                    setActiveConfig();
+                    saveEnhancedBrowserConfiguration();
                     ProjectManager.getDefault().saveProject(project);
                     return null;
                 }
@@ -163,6 +163,7 @@ public final class ClientSideProjectProperties {
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, configFolderReference);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_ENCODING, encoding);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_START_FILE, startFile);
+        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SELECTED_BROWSER, selectedBrowser);
         if (projectServer != null) {
             putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SERVER, projectServer.name());
         }
@@ -171,21 +172,17 @@ public final class ClientSideProjectProperties {
         project.getProjectHelper().putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
     }
 
-    void saveConfigs() {
+    void saveEnhancedBrowserConfiguration() {
         assert ProjectManager.mutex().isWriteAccess() : "Write mutex required"; //NOI18N
-        for (ClientProjectConfigurationImplementation config : project.getLookup().lookup(ClientSideConfigurationProvider.class).getConfigurations()) {
-            config.save();
+        if (enhancedBrowserSettings != null) {
+            enhancedBrowserSettings.save();
         }
     }
 
-    void setActiveConfig() throws IOException {
-        if (activeConfiguration != null) {
-            try {
-                project.getProjectConfigurations().setActiveConfiguration(activeConfiguration);
-            } catch (IllegalArgumentException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
-            }
-        }
+    ClientProjectEnhancedBrowserImplementation createEnhancedBrowserSettings(WebBrowser wb) {
+        enhancedBrowserSettings =
+                ClientSideProject.createEnhancedBrowserImpl(project, wb);
+        return enhancedBrowserSettings;
     }
 
     public ClientSideProject getProject() {
@@ -255,6 +252,17 @@ public final class ClientSideProjectProperties {
         this.startFile = startFile;
     }
 
+    public String getSelectedBrowser() {
+        if (selectedBrowser == null) {
+            selectedBrowser = project.getSelectedBrowser();
+        }
+        return selectedBrowser;
+    }
+
+    public void setSelectedBrowser(String selectedBrowser) {
+        this.selectedBrowser = selectedBrowser;
+    }
+
     public String getWebRoot() {
         if (webRoot == null) {
             webRoot = project.getWebContextRoot();
@@ -294,17 +302,6 @@ public final class ClientSideProjectProperties {
 
     public void setProjectServer(ProjectServer projectServer) {
         this.projectServer = projectServer;
-    }
-
-    public ClientProjectConfigurationImplementation getActiveConfiguration() {
-        if (activeConfiguration == null) {
-            activeConfiguration = project.getProjectConfigurations().getActiveConfiguration();
-        }
-        return activeConfiguration;
-    }
-
-    public void setActiveConfiguration(ClientProjectConfigurationImplementation activeConfiguration) {
-        this.activeConfiguration = activeConfiguration;
     }
 
     public void setNewJsLibraries(List<SelectedLibrary> newJsLibraries) {

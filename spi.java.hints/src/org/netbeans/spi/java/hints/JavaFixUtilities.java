@@ -56,6 +56,7 @@ import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -439,6 +440,11 @@ public class JavaFixUtilities {
             assert scope != null;
 
             Tree parsed = Utilities.parseAndAttribute(wc, to, scope);
+            
+            if (parsed.getKind() == Kind.EXPRESSION_STATEMENT && ExpressionTree.class.isAssignableFrom(tp.getLeaf().getKind().asInterface())) {
+                parsed = ((ExpressionStatementTree) parsed).getExpression();
+            }
+            
             Map<Tree, Tree> rewriteFromTo = new IdentityHashMap<Tree, Tree>();
             Tree original;
 
@@ -1127,6 +1133,16 @@ public class JavaFixUtilities {
 
             rewrite(node, nue);
             return super.visitNewArray(node, p);
+        }
+
+        @Override
+        public Number visitLambdaExpression(LambdaExpressionTree node, Void p) {
+            List<? extends VariableTree> args = resolveMultiParameters(node.getParameters());
+            LambdaExpressionTree nue = make.LambdaExpression(args, node.getBody());
+
+            rewrite(node, nue);
+
+            return super.visitLambdaExpression(node, p);
         }
 
         private <T extends Tree> List<T> resolveMultiParameters(List<T> list) {

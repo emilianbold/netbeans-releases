@@ -62,6 +62,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -119,9 +120,11 @@ public class JavaElementFoldManager extends JavaFoldManager {
     }
     
     public void insertUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
+        invalidate();
     }
 
     public void removeUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
+        invalidate();
     }
 
     public void changedUpdate(DocumentEvent evt, FoldHierarchyTransaction transaction) {
@@ -145,22 +148,31 @@ public class JavaElementFoldManager extends JavaFoldManager {
         file         = null;
     }
     
+    private synchronized void invalidate() {
+        if (task != null) {
+            task.invalidate();
+        }
+    }
+    
     static final class JavaElementFoldTask extends ScanningCancellableTask<CompilationInfo> {
         
         //XXX: this will hold JavaElementFoldTask as long as the FileObject exists:
-        private static Map<DataObject, JavaElementFoldTask> file2Task = new WeakHashMap<DataObject, JavaElementFoldTask>();
+        private final static Map<DataObject, JavaElementFoldTask> file2Task = new WeakHashMap<DataObject, JavaElementFoldTask>();
+        
+        private AtomicLong version = new AtomicLong(0);
         
         static JavaElementFoldTask getTask(FileObject file) {
             try {
                 DataObject od = DataObject.find(file);
-                JavaElementFoldTask task = file2Task.get(od);
+                synchronized (file2Task) {
+                    JavaElementFoldTask task = file2Task.get(od);
 
-                if (task == null) {
-                    file2Task.put(od,
-                            task = new JavaElementFoldTask());
+                    if (task == null) {
+                        file2Task.put(od,
+                                task = new JavaElementFoldTask());
+                    }
+                    return task;
                 }
-
-                return task;
             } catch (DataObjectNotFoundException ex) {
                 Logger.getLogger(JavaElementFoldManager.class.getName()).log(Level.FINE, null, ex);
                 return new JavaElementFoldTask();
@@ -172,6 +184,10 @@ public class JavaElementFoldManager extends JavaFoldManager {
          */
         private Collection<Reference<JavaElementFoldManager>> managers = 
                 new ArrayList<Reference<JavaElementFoldManager>>(2);
+        
+        void invalidate() {
+            version.incrementAndGet();
+        }
 
         synchronized void setJavaElementFoldManager(JavaElementFoldManager manager, FileObject file) {
             if (file == null) {
@@ -221,7 +237,6 @@ public class JavaElementFoldManager extends JavaFoldManager {
             if (mgrs == null) {
                 return ;
             }
-            
             long startTime = System.currentTimeMillis();
 
             final CompilationUnitTree cu = info.getCompilationUnit();
@@ -235,6 +250,8 @@ public class JavaElementFoldManager extends JavaFoldManager {
             
             scan(v, cu, null);
             
+            final long stamp = version.get();
+            
             if (v.stopped || isCancelled())
                 return ;
             
@@ -243,15 +260,17 @@ public class JavaElementFoldManager extends JavaFoldManager {
             
             if (v.stopped || isCancelled())
                 return ;
-
+            
             if (mgrs instanceof JavaElementFoldManager) {
-                SwingUtilities.invokeLater(((JavaElementFoldManager)mgrs).createCommit(doc, v));
+                SwingUtilities.invokeLater(
+                        ((JavaElementFoldManager)mgrs).new CommitFolds(doc, v.folds, version, stamp)
+                );
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
                     Collection<JavaElementFoldManager> jefms = (Collection<JavaElementFoldManager>)mgrs;
                     public void run() {
                         for (JavaElementFoldManager jefm : jefms) {
-                            jefm.createCommit(doc, v).run();
+                            jefm.new CommitFolds(doc, v.folds, version, stamp).run();
                         }
                 }});
             }
@@ -264,20 +283,20 @@ public class JavaElementFoldManager extends JavaFoldManager {
         
     }
     
-    private CommitFolds createCommit(Document doc, JavaElementFoldVisitor v) {
-        return new CommitFolds(doc, v.folds);
-    }
-    
     private class CommitFolds implements Runnable {
         
         private boolean insideRender;
         private Document doc;
         private List<FoldInfo> infos;
         private long startTime;
+        private AtomicLong version;
+        private long stamp;
         
-        public CommitFolds(Document doc, List<FoldInfo> infos) {
+        public CommitFolds(Document doc, List<FoldInfo> infos, AtomicLong version, long stamp) {
             this.doc = doc;
             this.infos = infos;
+            this.version = version;
+            this.stamp = stamp;
         }
         
         public void run() {
@@ -294,7 +313,9 @@ public class JavaElementFoldManager extends JavaFoldManager {
                 
                 return;
             }
-            
+            if (version.get() != stamp) {
+                return;
+            }
             operation.getHierarchy().lock();
             try {
                 Map<FoldInfo, Fold> folds = operation.update(infos, null, null);

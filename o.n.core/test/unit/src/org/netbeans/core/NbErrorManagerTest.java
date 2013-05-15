@@ -62,7 +62,6 @@ import junit.framework.TestSuite;
 import org.netbeans.core.startup.TopLogging;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.RandomlyFails;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
@@ -99,6 +98,11 @@ public final class NbErrorManagerTest extends NbTestCase {
 
         err = ErrorManager.getDefault();
         assertNotNull("One Error manager found", err);
+    }
+
+    @Override
+    protected int timeOut() {
+        return 10000;
     }
     
     public void testIsLoggable() {
@@ -235,7 +239,8 @@ public final class NbErrorManagerTest extends NbTestCase {
         SAXParseException saxpe = new SAXParseException("msg2", "pub-id", "sys-id", 313, 424);
         err.notify(ErrorManager.INFORMATIONAL, saxpe);
         s = readLog();
-        assertTrue(s.indexOf("org.xml.sax.SAXParseException: msg2") != -1);
+        assertTrue(s.indexOf("org.xml.sax.SAXParseException") != -1);
+        assertTrue(s.indexOf("msg2") != -1);
         assertTrue(s.indexOf("pub-id") != -1);
         assertTrue(s.indexOf("sys-id") != -1);
         assertTrue(s.indexOf("313") != -1);
@@ -324,7 +329,6 @@ public final class NbErrorManagerTest extends NbTestCase {
         
     }
 
-    @RandomlyFails // NB-Core-Build #1895
     public void testPerPetrKuzelsRequestInIssue62836() throws Exception {
         class My extends Exception {
             public My() {
@@ -405,7 +409,6 @@ public final class NbErrorManagerTest extends NbTestCase {
     }
     
     // Noticed as part of analysis of #59807 stack trace: Throwable.initCause tricky!
-    @RandomlyFails // had empty log in NB-Core-Build #3621
     public void testCatchMarker() throws Exception {
         try {
             m1();

@@ -175,8 +175,11 @@ public final class RootNode extends AbstractNode {
                         final String config = "config-"; // NOI18N
                         if (attr.startsWith(config)) {
                             attr = attr.substring(config.length());
-                            if (FileUtil.getConfigFile(attr) != null) {
-                                enable = true;
+                            FileObject configFile = FileUtil.getConfigFile(attr);
+                            if (configFile != null) {
+                                if (!configFile.isFolder() || configFile.getChildren().length > 0) {
+                                    enable = true;
+                                }
                             }
                         }
                     }

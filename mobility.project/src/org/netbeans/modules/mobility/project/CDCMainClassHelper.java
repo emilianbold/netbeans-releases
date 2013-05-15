@@ -51,8 +51,14 @@
 
 package org.netbeans.modules.mobility.project;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.Collection;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.mobility.project.queries.CompiledSourceForBinaryQuery;
@@ -66,26 +72,31 @@ import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author Lukas Waldmann
  */
-public class CDCMainClassHelper implements AntProjectListener, FileChangeListener 
-{    
+public class CDCMainClassHelper implements AntProjectListener, FileChangeListener
+{
     final private AntProjectHelper helper;
     private String mainClass;
     private FileObject lastMain=null;
-    
+    private DataObject currentDo;
+    private L listener = new L();
+
     /** Creates a new instance of CDCMainClassHelper */
     public CDCMainClassHelper(AntProjectHelper helper)
     {
         this.helper = helper;
-        EditableProperties ep=helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);        
+        EditableProperties ep=helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         mainClass=ep.getProperty("main.class");
         if (mainClass != null)
             setUp(mainClass);
-        helper.addAntProjectListener(this);        
+        helper.addAntProjectListener(this);
     }
 
     public void configurationXmlChanged(AntProjectEvent ev)
@@ -97,11 +108,11 @@ public class CDCMainClassHelper implements AntProjectListener, FileChangeListene
        String newMC=helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty("main.class");
        if (newMC!=null && !newMC.equals(mainClass))
        {
-           setUp(newMC);
+            setUp(newMC);
            mainClass=newMC;
-       }
+        }
     }
-    
+
     public void fileFolderCreated(FileEvent fe)
     {
     }
@@ -118,33 +129,61 @@ public class CDCMainClassHelper implements AntProjectListener, FileChangeListene
     {
     }
 
-    public void fileRenamed(FileRenameEvent fe)
-    {
-        
-        FileObject o=(FileObject)fe.getSource();
-        mainClass=mainClass.substring(0,mainClass.lastIndexOf('.')+1)+o.getName();
-        EditableProperties ep=helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        ep.setProperty("main.class",mainClass);
-        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH,ep);
+    @Override
+    public void fileRenamed(FileRenameEvent fe) {
+        final FileObject newFile = (FileObject) fe.getSource();
+        handleMainClassMoved(newFile, false);
+    }
+
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+    }
+
+    private class L implements PropertyChangeListener {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if ((lastMain != null && currentDo != null) && (!lastMain.isValid() || !currentDo.isValid())) {
+                String newMC = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty("main.class");
+                if (newMC != null) {
+                    setUp(newMC);
+                } else if (currentDo != null) {
+                    currentDo.removePropertyChangeListener(this);
+                }
+            }
+            if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
+                // Main class was moved or package was renamed
+                final FileObject newFile = (FileObject) evt.getNewValue();
+                handleMainClassMoved(newFile, true);
+            }
+        }
+    }
+
+    private void handleMainClassMoved(final FileObject newFile, final boolean setupMainClass) {
+        Collection<ElementHandle<TypeElement>> main = SourceUtils.getMainClasses(newFile);
+        if (!main.isEmpty()) {
+            ElementHandle<TypeElement> mainHandle = main.iterator().next();
+            mainClass = mainHandle.getQualifiedName();
+        }
+        EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        ep.setProperty("main.class", mainClass);
+        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         // And save the project
         try {
-            Project project=ProjectManager.getDefault().findProject(helper.getProjectDirectory());
+            Project project = ProjectManager.getDefault().findProject(helper.getProjectDirectory());
             ProjectManager.getDefault().saveProject(project);
+        } catch (IOException ex) {
+            ErrorManager.getDefault().notify(ex);
         }
-        catch ( IOException ex ) {
-            ErrorManager.getDefault().notify( ex );
+        if (setupMainClass) {
+            // Update change listeners after main class was moved
+            String newMC = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH).getProperty("main.class");
+            setUp(newMC);
         }
     }
 
-    public void fileAttributeChanged(FileAttributeEvent fe)
-    {
-    }
-
-    
     synchronized private void setUp(final String str)
     {
-        
-        ProjectManager.mutex().postWriteRequest(new Runnable() 
+
+        ProjectManager.mutex().postWriteRequest(new Runnable()
         {
             public void run()
             {
@@ -155,11 +194,21 @@ public class CDCMainClassHelper implements AntProjectListener, FileChangeListene
                     final ClassPath path2 = ClassPath.getClassPath (root, ClassPath.COMPILE);
                     final ClassPath path  = org.netbeans.spi.java.classpath.support.ClassPathSupport.createProxyClassPath(new ClassPath[] { path1, path2 } );
                     FileObject o=path.findResource(str.replace('.','/')+".java");
-                    if (lastMain != null)
+                    if (lastMain != null) {
                         lastMain.removeFileChangeListener(CDCMainClassHelper.this);
+                    }
+                    if (currentDo != null) {
+                        currentDo.removePropertyChangeListener(CDCMainClassHelper.this.listener);
+                    }
                     if (o!=null)
                     {
-                        o.addFileChangeListener(CDCMainClassHelper.this);                    
+                        o.addFileChangeListener(CDCMainClassHelper.this);
+                        try {
+                            currentDo = DataObject.find(o);
+                            currentDo.addPropertyChangeListener(CDCMainClassHelper.this.listener);
+                        } catch (DataObjectNotFoundException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }                    
                     }
                     lastMain=o;
                 }

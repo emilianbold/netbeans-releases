@@ -47,7 +47,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.css.visual.RuleEditorPanel;
@@ -90,7 +90,7 @@ public class GoToSourceAction extends AbstractAction {
                 Snapshot snap = lookup.lookup(Snapshot.class);
                 final Document doc = lookup.lookup(Document.class);
                 if (snap != null && doc != null && file != null) {
-                    Declaration decl = propertyDescriptor.getDeclaration();
+                    PropertyDeclaration decl = propertyDescriptor.getDeclaration();
                     int ast_from = decl.getStartOffset();
                     if (ast_from != -1) {
                         //source element, not virtual which is not persisted yet

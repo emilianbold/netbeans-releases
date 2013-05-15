@@ -53,6 +53,7 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import static junit.framework.Assert.assertTrue;
 import org.netbeans.junit.MockServices;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.client.GitClient;
@@ -252,6 +253,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         assertTrue(getCache().getStatus(modifiedFile).containsStatus(Status.UPTODATE));
     }
     
+    @RandomlyFails
     public void testLogExtCmd () throws Exception {
         waitForInitialScan();
         FileChangeAdapter fca = new FileChangeAdapter();
@@ -281,6 +283,7 @@ public class ExternalChangesTest extends AbstractGitTestCase {
         workdirFO.removeRecursiveListener(fca);
     }
     
+    @RandomlyFails
     public void testLogExtCmdChanges () throws Exception {
         waitForInitialScan();
         FileChangeAdapter fca = new FileChangeAdapter();

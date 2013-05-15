@@ -45,16 +45,14 @@
 
 package org.netbeans.core.windows;
 
-import java.lang.ref.Reference;
-import java.util.Iterator;
 import java.util.Set;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -64,106 +62,64 @@ import java.util.List;
  */
 final class RecentViewList implements PropertyChangeListener {
 
-    private static RecentViewList instance;
-    
-    /** List of TopComponents (weak references are used). First is most recently
+    /** List of TopComponent IDs. First is most recently
      * activated. */
-    private List<Reference<TopComponent>> tcWeakList = new ArrayList<Reference<TopComponent>>(20);
-    
+    private List<String> tcIdList = new ArrayList(20);
+
     public RecentViewList (WindowManager wm) {
         // Starts listening on Registry to be notified about activated TopComponent.
         wm.getRegistry().addPropertyChangeListener(this);
     }
 
-    
+
     /** Used to get array for view and for persistence */
     public TopComponent [] getTopComponents() {
-        List<TopComponent> tcList = new ArrayList<TopComponent>(tcWeakList.size());
-        clean();
-        for (int i = 0; i < tcWeakList.size(); i++) {
-            Reference<TopComponent> w = tcWeakList.get(i);
-            TopComponent tc = w.get();
+        List<TopComponent> tcList = new ArrayList<TopComponent>(tcIdList.size());
+        WindowManager wm = WindowManager.getDefault();
+        for (int i = 0; i < tcIdList.size(); i++) {
+            TopComponent tc = wm.findTopComponent( tcIdList.get( i ) );
             if ((tc != null) && tc.isOpened()) {
                 tcList.add(tc);
             }
         }
         return tcList.toArray(new TopComponent[tcList.size()]);
     }
-    
+
     /** Used to set initial values from persistence */
-    public void setTopComponents(TopComponent [] tcs) {
-        tcWeakList.clear();
-        for (int i = 0; i < tcs.length; i++) {
-            Reference<TopComponent> wr = new WeakReference<TopComponent>(tcs[i]);
-            tcWeakList.add(wr);
-        }
+    public void setTopComponents(String[] tcIDs) {
+        tcIdList.clear();
+        tcIdList.addAll( Arrays.asList( tcIDs ) );
     }
-    
+
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (TopComponent.Registry.PROP_ACTIVATED.equals(evt.getPropertyName())) {
             TopComponent tc = (TopComponent) evt.getNewValue();
             if (tc != null) {
+                String tcId = WindowManager.getDefault().findTopComponentID( tc );
                 //Update list
-                clean();
-                Reference<TopComponent> w = find(tc);
-                if (w != null) {
-                    //Rearrange, put to first place
-                    tcWeakList.remove(w);
-                    tcWeakList.add(0,w);
-                } else {
-                    Reference<TopComponent> wr = new WeakReference<TopComponent>(tc);
-                    tcWeakList.add(0,wr);
-                }
+                tcIdList.remove( tcId );
+                tcIdList.add( 0, tcId );
                 // #69486: ensure all components are listed
                 fillList(TopComponent.getRegistry().getOpened());
             }
         }
     }
-    
-    /** Clean gc'ed TopComponents from list */
-    private void clean () {
-        int i = 0;
-        while (i < tcWeakList.size()) {
-            WeakReference w = (WeakReference) tcWeakList.get(i);
-            TopComponent tc = (TopComponent) w.get();
-            //TopComponent was gc'ed
-            if (tc == null) {
-                tcWeakList.remove(w);
-            } else {
-                i++;
-            }
-        }
-    }
-    
-    /** Returns weak reference to given TopComponent if present.
-     * Otherwise returns null. */
-    private Reference<TopComponent> find (TopComponent tc) {
-        for (int i = 0; i < tcWeakList.size(); i++) {
-            Reference<TopComponent> w = tcWeakList.get(i);
-            TopComponent c = w.get();
-            if (tc == c) {
-                return w;
-            }
-        }
-        return null;
-    }
 
     /** Fills list of weak references with TCs that are in given
      * input list but are not yet contained in list of weak references.
-     */ 
+     */
     private void fillList(Set<TopComponent> openedTCs) {
-        Reference<TopComponent> wr;
+        WindowManager wm = WindowManager.getDefault();
         for (TopComponent curTC: openedTCs) {
-            if (find(curTC) == null) {
-                if (tcWeakList.size() > 1) {
-                    wr = new WeakReference<TopComponent>(curTC);
-                    tcWeakList.add(1,wr);
-                } else {
-                    wr = new WeakReference<TopComponent>(curTC);
-                    tcWeakList.add(wr);
-                }
+            String id = wm.findTopComponentID( curTC );
+            if( !tcIdList.contains( id ) ) {
+                if( tcIdList.size() > 1 )
+                    tcIdList.add( 1, id );
+                else
+                    tcIdList.add( id );
             }
         }
     }
-    
+
 }

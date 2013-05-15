@@ -517,7 +517,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         }
     }
     
-    public final void onClose() {
+    final void onClose() {
         synchronized (this) {
             // detach but leave object reference for further possible reopen
             detachFrom(lastDataObject);

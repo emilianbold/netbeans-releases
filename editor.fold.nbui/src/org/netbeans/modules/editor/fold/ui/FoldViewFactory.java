@@ -89,6 +89,9 @@ public final class FoldViewFactory extends EditorViewFactory implements FoldHier
     private static final Logger LOG = Logger.getLogger(FoldViewFactory.class.getName());
 
     public static void register() {
+        if (LOG.isLoggable(Level.FINE)) {
+            LOG.log(Level.FINE, "Fold view factory registered");
+        }
         EditorViewFactory.registerFactory(new FoldFactory());
     }
 

@@ -1294,8 +1294,8 @@ public class TraceModel extends TraceModelBase {
         frame.setVisible(true);
     }
 
-    public static void getFileErrors(FileImpl file, ErrorListener errorListener) {
-        CsmCorePackageAccessor.get().testFileImplErrors(file, errorListener);
+    public static void getFileErrors(CsmFile file, ErrorListener errorListener) {
+        CsmCorePackageAccessor.get().testFileImplErrors((FileImpl)file, errorListener);
     }
     
 //    private boolean isDummyUnresolved(CsmDeclaration decl) {

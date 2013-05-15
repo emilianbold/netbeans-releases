@@ -328,6 +328,15 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-cnd-makeproject-ui-actions-TestAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport.testAction"/>            
             </file>                           
+            <file name="org-netbeans-modules-cnd-makeproject-launchers-actions-RunAsAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.launchers.actions.LauncherAction.runAsAction"/>            
+            </file>
+            <file name="org-netbeans-modules-cnd-makeproject-launchers-actions-DebugAsAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.launchers.actions.LauncherAction.debugAsAction"/>            
+            </file>
+            <file name="org-netbeans-modules-cnd-makeproject-launchers-actions-StepIntoAction.instance">
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.launchers.actions.LauncherAction.stepIntoAction"/>            
+            </file>
         </folder>
         <folder name="Tools">
             <file name="org-netbeans-modules-cnd-makeproject-actions-TestSubmenuAction.instance">
@@ -807,14 +816,26 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunProject.instance"/>
                     <attr name="position" intvalue="1300"/>
                 </file>                
+                <file name="org-netbeans-modules-cnd-makeproject-launchers-actions-RunAsAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-launchers-actions-RunAsAction.instance"/>
+                    <attr name="position" intvalue="1350"/>                                        
+                </file>
                 <file name="org-netbeans-modules-cnd-makeproject-ui-actions-DebugAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-DebugAction.instance"/>
                     <attr name="position" intvalue="1400"/>
                 </file>                                                                        
+                <file name="org-netbeans-modules-cnd-makeproject-launchers-actions-DebugAsAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-launchers-actions-DebugAsAction.instance"/>
+                    <attr name="position" intvalue="1450"/>                                        
+                </file>
                 <file name="org-netbeans-modules-cnd-makeproject-ui-actions-StepIntoAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-StepIntoAction.instance"/>
                     <attr name="position" intvalue="1500"/>
                 </file>                                                                        
+                <file name="org-netbeans-modules-cnd-makeproject-launchers-actions-StepIntoAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-launchers-actions-StepIntoAction.instance"/>
+                    <attr name="position" intvalue="1550"/>                                        
+                </file>
                 <file name="org-netbeans-modules-cnd-makeproject-ui-actions-TestAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-TestAction.instance"/>
                     <attr name="position" intvalue="1600"/>

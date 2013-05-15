@@ -46,7 +46,6 @@ import com.sun.source.util.TreePath;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -94,7 +93,10 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.ModificationResult.Difference;
 import org.netbeans.api.java.source.Task;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
@@ -103,19 +105,32 @@ import org.netbeans.modules.java.hints.providers.code.CodeHintProviderImpl;
 import org.netbeans.modules.java.hints.providers.code.FSWrapper;
 import org.netbeans.modules.java.hints.providers.code.FSWrapper.ClassWrapper;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
+import org.netbeans.modules.java.hints.providers.spi.HintDescription.Worker;
+import org.netbeans.modules.java.hints.providers.spi.HintDescriptionFactory;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
+import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
+import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl;
+import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl.Accessor;
 import org.netbeans.modules.java.hints.spiimpl.MessageImpl;
 import org.netbeans.modules.java.hints.spiimpl.SyntheticFix;
+import org.netbeans.modules.java.hints.spiimpl.batch.BatchUtilities;
 import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
 import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.java.hints.test.Utilities.TestLookup;
+import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.MimeTypes;
+import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.netbeans.spi.java.hints.Hint.Kind;
+import org.netbeans.spi.java.hints.HintContext;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.LifecycleManager;
@@ -176,6 +191,7 @@ public class HintTest {
     private final FileObject buildRoot;
     private final FileObject cache;
     private final Preferences testPreferences;
+    private final HintsSettings hintSettings;
     private final List<FileObject> checkCompilable = new ArrayList<FileObject>();
     private String sourceLevel = "1.5";
     private Character caretMarker;
@@ -229,44 +245,23 @@ public class HintTest {
 
         TreeLoader.DISABLE_CONFINEMENT_TEST = true;
         testPreferences = new TempPreferences();
-        HintsSettings.setPreferencesOverride(new Map<String, Preferences>() {
-            @Override public int size() {
-                throw new UnsupportedOperationException("Not supported yet.");
+        hintSettings = new HintsSettings() {
+            @Override public boolean isEnabled(HintMetadata hint) {
+                return true;
             }
-            @Override public boolean isEmpty() {
-                throw new UnsupportedOperationException("Not supported yet.");
+            @Override public void setEnabled(HintMetadata hint, boolean value) {
+                throw new UnsupportedOperationException("Not supported.");
             }
-            @Override public boolean containsKey(Object key) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            @Override public boolean containsValue(Object value) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            @Override public Preferences get(Object key) {
+            @Override public Preferences getHintPreferences(HintMetadata hint) {
                 return testPreferences;
             }
-            @Override public Preferences put(String key, Preferences value) {
-                throw new UnsupportedOperationException("Not supported yet.");
+            @Override public Severity getSeverity(HintMetadata hint) {
+                return hint.severity;
             }
-            @Override public Preferences remove(Object key) {
-                throw new UnsupportedOperationException("Not supported yet.");
+            @Override public void setSeverity(HintMetadata hint, Severity severity) {
+                throw new UnsupportedOperationException("Not supported.");
             }
-            @Override public void putAll(Map<? extends String, ? extends Preferences> m) {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            @Override public void clear() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            @Override public Set<String> keySet() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            @Override public Collection<Preferences> values() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-            @Override public Set<Entry<String, Preferences>> entrySet() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-        });
+        };
 
         workDir = getWorkDir();
         deleteSubFiles(workDir);
@@ -351,7 +346,7 @@ public class HintTest {
     public HintTest input(String fileName, String code) throws Exception {
         return input(fileName, code, true);
     }
-
+    
     /**Create a test file. Any number of files can be created for one test, but the hint
      * will be run only on the first one.
      *
@@ -441,13 +436,27 @@ public class HintTest {
         this.testPreferences.putBoolean(preferencesKey, value);
         return this;
     }
-
+    
     /**Runs the given hint(s) on the first file written by a {@code input} method.
      *
      * @param hint all hints in this class will be run on the file
      * @return a wrapper over the hint output that allows verifying results of the hint
      */
     public HintOutput run(Class<?> hint) throws Exception {
+        return run(hint, null);
+    }
+
+    /**Runs the given hint(s) on the first file written by a {@code input} method.
+     * Runs only hints with the specified {@code hintCode}. Null hintCode includes
+     * all hints from the class
+     *
+     * @param hint all hints in this class will be run on the file
+     * @param hintCode if not {@code null}, only hints with the same id will be run
+     * @return a wrapper over the hint output that allows verifying results of the hint
+     */
+    public HintOutput run(Class<?> hint, String hintCode) throws Exception {
+        IndexingManager.getDefault().refreshIndexAndWait(sourceRoot.toURL(), null);
+        
         for (FileObject file : checkCompilable) {
             ensureCompilable(file);
         }
@@ -468,9 +477,39 @@ public class HintTest {
         }
 
         List<HintDescription> total = new LinkedList<HintDescription>();
+        final Set<ErrorDescription> requiresJavaFix = Collections.newSetFromMap(new IdentityHashMap<ErrorDescription, Boolean>());
 
-        for (Collection<? extends HintDescription> l : hints.values()) {
-            total.addAll(l);
+        for (final Entry<HintMetadata, Collection<HintDescription>> e : hints.entrySet()) {
+            if (null != hintCode && !e.getKey().id.equals(hintCode)) {
+                continue;
+            }
+            if (   e.getKey().options.contains(Options.NO_BATCH)
+                || e.getKey().options.contains(Options.QUERY)
+                || e.getKey().kind == Kind.ACTION) {
+                total.addAll(e.getValue());
+                continue;
+            }
+            for (final HintDescription hd : e.getValue()) {
+                total.add(HintDescriptionFactory.create()
+                                               .setTrigger(hd.getTrigger())
+                                               .setMetadata(e.getKey())
+                                               .setAdditionalConstraints(hd.getAdditionalConstraints())
+                                               .addOptions(hd.getOptions().toArray(new Options[0]))
+                                               .setWorker(new Worker() {
+                                                    @Override public Collection<? extends ErrorDescription> createErrors(HintContext ctx) {
+                                                        Collection<? extends ErrorDescription> errors = hd.getWorker().createErrors(ctx);
+ 
+                                                        if (errors != null) {
+                                                            for (ErrorDescription ed : errors) {
+                                                                requiresJavaFix.add(ed);
+                                                            }
+                                                        }
+                                                        
+                                                        return errors;
+                                                     }
+                                                })
+                                              .produce());
+            }
         }
         
         CompilationInfo info = parse(testFile);
@@ -509,7 +548,7 @@ public class HintTest {
         NbTestCase.assertGC("noone holds javac", cut);
         DEBUGGING_HELPER.remove(result);
         
-        return new HintOutput(result);
+        return new HintOutput(result, requiresJavaFix);
     }
     
     //must keep the error descriptions (and their Fixes through them) in a field
@@ -539,7 +578,7 @@ public class HintTest {
     }
 
     private Map<HintDescription, List<ErrorDescription>> computeErrors(CompilationInfo info, Iterable<? extends HintDescription> hints, AtomicBoolean cancel) {
-        return new HintsInvoker(info, caret, cancel).computeHints(info, new TreePath(info.getCompilationUnit()), hints, new LinkedList<MessageImpl>());
+        return new HintsInvoker(hintSettings, caret, cancel).computeHints(info, new TreePath(info.getCompilationUnit()), hints, new LinkedList<MessageImpl>());
     }
 
     FileObject getSourceRoot() {
@@ -741,9 +780,11 @@ public class HintTest {
     public final class HintOutput {
         
         private final List<ErrorDescription> errors;
+        private final Set<ErrorDescription> requiresJavaFix;
 
-        private HintOutput(List<ErrorDescription> errors) {
+        private HintOutput(List<ErrorDescription> errors, Set<ErrorDescription> requiresJavaFix) {
             this.errors = errors;
+            this.requiresJavaFix = requiresJavaFix;
 
         }
 
@@ -809,7 +850,7 @@ public class HintTest {
 
             return this;
         }
-
+        
         /**Find a specific warning.
          *
          * @param warning the warning to find - must be equivalent to {@code toString()}
@@ -829,7 +870,7 @@ public class HintTest {
 
             assertNotNull("Warning: \"" + warning + "\" not found. All ErrorDescriptions: " + errors.toString(), toFix);
 
-            return new HintWarning(toFix);
+            return new HintWarning(toFix, requiresJavaFix.contains(toFix));
         }
     }
 
@@ -837,8 +878,10 @@ public class HintTest {
      */
     public final class HintWarning {
         private final ErrorDescription warning;
-        HintWarning(ErrorDescription warning) {
+        private final boolean requiresJavaFix;
+        HintWarning(ErrorDescription warning, boolean requiresJavaFix) {
             this.warning = warning;
+            this.requiresJavaFix = requiresJavaFix;
         }
         /**Applies the only fix of the current warning. Fails if the given warning
          * does not have exactly one fix.
@@ -860,13 +903,7 @@ public class HintTest {
 
             assertEquals(1, fixes.size());
 
-            Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
-            preferences.putBoolean("importInnerClasses", true);
-            try {
-                fixes.get(0).implement();
-            } finally {
-                preferences.remove("importInnerClasses");
-            }
+            doApplyFix(fixes.get(0));
 
             if (saveAll)
                 LifecycleManager.getDefault().saveAll();
@@ -899,10 +936,58 @@ public class HintTest {
 
             assertNotNull("Cannot find fix to invoke: " + fixNames.toString(), toApply);
 
-            toApply.implement();
+            doApplyFix(toApply);
+            
             LifecycleManager.getDefault().saveAll();
 
             return new AppliedFix();
+        }
+        private void doApplyFix(Fix f) throws Exception {
+            Preferences preferences = MimeLookup.getLookup(JavaTokenId.language().mimeType()).lookup(Preferences.class);
+            preferences.putBoolean("importInnerClasses", true);
+            try {
+                if (requiresJavaFix) {
+                    assertTrue("The fix must be a JavaFix", f instanceof JavaFixImpl);
+                    
+                    ModificationResult result1 = runJavaFix(((JavaFixImpl) f).jf);
+                    ModificationResult result2 = runJavaFix(((JavaFixImpl) f).jf);
+                    
+                    //ensure the results are the same:
+                    assertEquals("The fix must be repeatable", result1.getModifiedFileObjects(), result2.getModifiedFileObjects());
+                    
+                    for (FileObject file : result1.getModifiedFileObjects()) {
+                        assertEquals("The fix must be repeatable", result1.getResultingSource(file), result2.getResultingSource(file));
+                    }
+                    
+                    result1.commit();
+                } else {
+                    f.implement();
+                }
+            } finally {
+                preferences.remove("importInnerClasses");
+            }
+        }
+        private ModificationResult runJavaFix(final JavaFix jf) throws IOException {
+            FileObject file = Accessor.INSTANCE.getFile(jf);
+            JavaSource js = JavaSource.forFileObject(file);
+            final Map<FileObject, List<Difference>> changes = new HashMap<FileObject, List<Difference>>();
+
+            ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
+                public void run(WorkingCopy wc) throws Exception {
+                    if (wc.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
+                        return;
+                    }
+
+                    Map<FileObject, byte[]> resourceContentChanges = new HashMap<FileObject, byte[]>();
+                    Accessor.INSTANCE.process(jf, wc, true, resourceContentChanges, /*Ignored for now:*/new ArrayList<RefactoringElementImplementation>());
+                    BatchUtilities.addResourceContentChanges(resourceContentChanges, changes);
+                    
+                }
+            });
+            
+            changes.putAll(JavaSourceAccessor.getINSTANCE().getDiffsFromModificationResult(mr));
+            
+            return JavaSourceAccessor.getINSTANCE().createModificationResult(changes, Collections.<Object, int[]>emptyMap());
         }
         /**Verifies that the current warning provides the given fixes.
          *
@@ -979,7 +1064,7 @@ public class HintTest {
         public AppliedFix assertOutput(String fileName, String code) throws Exception {
             FileObject toCheck = sourceRoot.getFileObject(fileName);
 
-            assertNotNull(toCheck);
+            assertNotNull("Required file: " + fileName + " not found", toCheck);
 
             DataObject toCheckDO = DataObject.find(toCheck);
             EditorCookie ec = toCheckDO.getLookup().lookup(EditorCookie.class);

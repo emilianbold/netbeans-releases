@@ -29,11 +29,11 @@ rtl
 --%>
 
 <!-- completion for HTML entities -->
-<%--CC
+|%--CC
 &|
 &quot;
 &quot;
---%>
+--%|
 
 <!-- completion + indentation for HTML end tags -->
 <%--CC

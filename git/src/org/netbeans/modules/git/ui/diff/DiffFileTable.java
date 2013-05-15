@@ -45,45 +45,28 @@
 package org.netbeans.modules.git.ui.diff;
 
 import java.awt.Component;
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import javax.swing.AbstractAction;
 import javax.swing.JComponent;
-import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableCellRenderer;
-import org.netbeans.libs.git.GitClient.DiffMode;
-import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.GitModuleConfig;
-import org.netbeans.modules.git.ui.actions.AddAction;
-import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
-import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
-import org.netbeans.modules.git.ui.commit.CommitAction;
-import org.netbeans.modules.git.ui.commit.ExcludeFromCommitAction;
-import org.netbeans.modules.git.ui.commit.IncludeInCommitAction;
-import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
-import org.netbeans.modules.git.ui.status.GitStatusNode;
+import org.netbeans.modules.git.GitStatusNode.GitStatusProperty;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.versioning.util.status.VCSStatusTable;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
-import org.netbeans.modules.versioning.util.OpenInEditorAction;
-import org.netbeans.modules.versioning.util.SystemActionBridge;
-import org.openide.awt.Mnemonics;
+import org.netbeans.modules.versioning.util.status.VCSStatusNode.NameProperty;
+import org.netbeans.modules.versioning.util.status.VCSStatusNode.PathProperty;
 import org.openide.cookies.EditorCookie;
 import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport.ReadOnly;
-import org.openide.util.Lookup;
 import org.openide.util.Mutex;
-import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
-import org.openide.util.actions.SystemAction;
-import org.openide.util.lookup.Lookups;
 
 /**
  * Controls the {@link #getComponent() tsble} that displays nodes
@@ -104,76 +87,26 @@ class DiffFileTable extends VCSStatusTable<DiffNode> {
     private Map<File, EditorCookie> editorCookies;
     
     private PropertyChangeListener changeListener;
-    private DiffMode diffMode;
+    private final MultiDiffPanelController controller;
     
-    public DiffFileTable (VCSStatusTableModel<DiffNode> model) {
+    public DiffFileTable (VCSStatusTableModel<DiffNode> model, MultiDiffPanelController controller) {
         super(model);
+        this.controller = controller;
         setDefaultRenderer(new DiffTableCellRenderer());
     }
 
     @Override
     protected void setModelProperties () {
         Node.Property [] properties = new Node.Property[3];
-        properties[0] = new ColumnDescriptor<String>(DiffNode.NameProperty.NAME, String.class, DiffNode.NameProperty.DISPLAY_NAME, DiffNode.NameProperty.DESCRIPTION);
-        properties[1] = new ColumnDescriptor<String>(DiffNode.GitStatusProperty.NAME, String.class, DiffNode.GitStatusProperty.DISPLAY_NAME, DiffNode.GitStatusProperty.DESCRIPTION);
-        properties[2] = new ColumnDescriptor<String>(DiffNode.PathProperty.NAME, String.class, DiffNode.PathProperty.DISPLAY_NAME, DiffNode.PathProperty.DESCRIPTION);
+        properties[0] = new ColumnDescriptor<String>(NameProperty.NAME, String.class, NameProperty.DISPLAY_NAME, NameProperty.DESCRIPTION);
+        properties[1] = new ColumnDescriptor<String>(GitStatusProperty.NAME, String.class, GitStatusProperty.DISPLAY_NAME, GitStatusProperty.DESCRIPTION);
+        properties[2] = new ColumnDescriptor<String>(PathProperty.NAME, String.class, PathProperty.DISPLAY_NAME, PathProperty.DESCRIPTION);
         tableModel.setProperties(properties);
     }
 
     @Override
     protected JPopupMenu getPopup () {
-        JPopupMenu menu = new JPopupMenu();
-        JMenuItem item;
-        item = menu.add(new OpenInEditorAction(getSelectedFiles()));
-        Mnemonics.setLocalizedText(item, item.getText());
-        menu.addSeparator();
-        final GitStatusNode[] selectedNodes = getSelectedNodes();
-        boolean displayAdd = false;
-        for (GitStatusNode node : selectedNodes) {
-            // is there any change between index and WT?
-            if (node.getFileNode().getInformation().containsStatus(EnumSet.of(Status.NEW_INDEX_WORKING_TREE,
-                    Status.IN_CONFLICT,
-                    Status.MODIFIED_INDEX_WORKING_TREE))) {
-                displayAdd = true;
-            }
-        }
-        Lookup lkp = Lookups.fixed((Object[]) selectedNodes);
-        if (displayAdd) {
-            item = menu.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp)); //NOI18N
-            Mnemonics.setLocalizedText(item, item.getText());
-        }
-        item = menu.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"), lkp)); //NOI18N
-        Mnemonics.setLocalizedText(item, item.getText());
-        SystemActionBridge efca = SystemActionBridge.createAction(SystemAction.get(ExcludeFromCommitAction.class), NbBundle.getMessage(ExcludeFromCommitAction.class, "LBL_ExcludeFromCommitAction_PopupName"), lkp);
-        SystemActionBridge iica = SystemActionBridge.createAction(SystemAction.get(IncludeInCommitAction.class), NbBundle.getMessage(IncludeInCommitAction.class, "LBL_IncludeInCommitAction_PopupName"), lkp);
-        if (efca.isEnabled() || iica.isEnabled()) {
-            if (efca.isEnabled()) {
-                item = menu.add(efca);
-                Mnemonics.setLocalizedText(item, item.getText());
-            } else if (iica.isEnabled()) {
-                item = menu.add(iica);
-                Mnemonics.setLocalizedText(item, item.getText());
-            }
-        }
-        item = menu.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_RevertChangesAction_PopupName"), lkp)); //NOI18N
-        Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(new AbstractAction(NbBundle.getMessage(ExportUncommittedChangesAction.class, "LBL_ExportUncommittedChangesAction_PopupName")) { //NOI18N
-            @Override
-            public void actionPerformed (ActionEvent e) {
-                SystemAction.get(ExportUncommittedChangesAction.class).exportDiff(selectedNodes, diffMode);
-            }
-        });
-        Mnemonics.setLocalizedText(item, item.getText());
-        item = menu.add(SystemActionBridge.createAction(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"), lkp)); //NOI18N
-        Mnemonics.setLocalizedText(item, item.getText());
-
-        ResolveConflictsAction a = SystemAction.get(ResolveConflictsAction.class);
-        if (a.isEnabled()) {
-            menu.addSeparator();
-            item = menu.add(SystemActionBridge.createAction(a, NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"), lkp)); //NOI18N);
-            Mnemonics.setLocalizedText(item, item.getText());
-        }
-        return menu;
+        return controller.getPopupFor(getSelectedNodes(), getSelectedFiles());
     }
 
     @Override
@@ -232,10 +165,6 @@ class DiffFileTable extends VCSStatusTable<DiffNode> {
 
     protected JTable getDiffTable () {
         return super.getTable();
-    }
-
-    void setSelectedMode (DiffMode diffMode) {
-        this.diffMode = diffMode;
     }
 
     private static class ColumnDescriptor<T> extends ReadOnly<T> {

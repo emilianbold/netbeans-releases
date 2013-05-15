@@ -108,6 +108,24 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="ContextBasedFactory">
+             <api name="codetemplates"/>
+             <summary>Added <code>CodeTemplateFilter.ContextBasedFactory</code>.</summary>
+             <version major="1" minor="34"/>
+             <date day="3" month="5" year="2013"/>
+             <author login="dbalek"/>
+             <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+             <description>
+                 Added interface <code>CodeTemplateFilter.ContextBasedFactory</code>
+                 with the <code>getSupportedContexts()</code> method as an extension
+                 to the exisitng <code>CodeTemplateFilter.Factory</code>
+                 that allows for specifying all the possible context values
+                 valid for the given language (supported by the particular
+                 CodeTemplateFilters that the factory creates).
+             </description>
+             <class package="org.netbeans.lib.editor.codetemplates.spi" name="CodeTemplateFilter"/>
+             <issue number="160771"/>
+        </change>
 
         <change>
             <api name="codetemplates"/>

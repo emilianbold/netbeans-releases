@@ -51,6 +51,25 @@ made subject to such option by the copyright holder.
 </apidefs>
 <changes>
 
+    <change id="ExtendedAsynchronousValidatingPanel">
+        <api name="dialogs"/>
+        <summary>Added <code>ExtendedAsynchronousValidatingPanel</code></summary>
+        <version major="7" minor="31"/>
+        <date day="10" month="4" year="2013"/>
+        <author login="saubrecht"/>
+        <compatibility addition="yes"/>
+        <description>
+            <p>
+                Added a new wizard panel type which introduces <code>finishValidation()</code>
+                method. It is complementary to <code>prepareValidation()</code>
+                method in <code>AsynchronousValidatingPanel</code> and should be
+                used to unlock user interface when the validation is finished.
+            </p>
+        </description>
+        <class package="org.openide" name="WizardDescriptor"/>
+        <issue number="228411"/>
+    </change>
+
     <change id="BackgroundInstantiatingIterator">
         <api name="dialogs"/>
         <summary>Added <code>BackgroundInstantiatingIterator</code></summary>

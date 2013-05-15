@@ -72,4 +72,6 @@ public interface Device {
 
     void openUrl(String url);
     
+    public MobileDebugTransport getDebugTransport();
+    
 }

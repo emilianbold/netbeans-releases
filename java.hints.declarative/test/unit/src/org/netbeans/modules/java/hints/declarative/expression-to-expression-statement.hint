@@ -1,0 +1,4 @@
+$1.equals($2) :: $1 instanceof java.lang.Integer && $2 instanceof java.lang.Integer
+=>
+$2.equals($1);
+;;

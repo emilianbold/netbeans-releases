@@ -263,8 +263,8 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
         
         private CsmFile file;
         private FileContent fileContent;
-        private int startOffset;
-        private int endOffset;
+        private int startOffset = -1;
+        private int endOffset = -1;
 
         public OffsetableBuilder() {
         }
@@ -303,6 +303,11 @@ public abstract class OffsetableBase implements CsmOffsetable, Disposable, CsmVa
 
         public int getEndOffset() {
             return endOffset;
+        }
+        
+        @Override
+        public String toString() {
+            return "[" + getStartOffset() + ":" + getEndOffset() + "]"; // NOI18N
         }
     }    
 }

@@ -108,8 +108,10 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         configDel.setEnabled(!config.isDefault());
     }
 
-    private class ConfigComboBoxModel extends DefaultComboBoxModel {
-        private static final long serialVersionUID = -2086330612256611127L;
+    private class ConfigComboBoxModel extends DefaultComboBoxModel<String> {
+
+        private static final long serialVersionUID = -65849874546546871L;
+
 
         public ConfigComboBoxModel() {
             Set<String> alphaConfigs = new TreeSet<String>(getComparator());
@@ -133,19 +135,21 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         }
     }
 
-    private final class ConfigListCellRenderer extends JLabel implements ListCellRenderer, UIResource {
-        private static final long serialVersionUID = 21963218553211553L;
+    private final class ConfigListCellRenderer extends JLabel implements ListCellRenderer<String>, UIResource {
+
+        private static final long serialVersionUID = 165786424165431675L;
+
 
         public ConfigListCellRenderer() {
             setOpaque(true);
         }
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<? extends String> list, String value, int index, boolean isSelected, boolean cellHasFocus) {
             // #93658: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N
 
-            String config = (String) value;
+            String config = value;
             //String label = (config != null) ? configurationFor(config).getDisplayName() : null;
             String label = configurationFor(config).getDisplayName();
             setText(label);
@@ -179,16 +183,14 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     private void initComponents() {
 
         configLabel = new JLabel();
-        configCombo = new JComboBox();
+        configCombo = new JComboBox<String>();
         configNew = new JButton();
         configDel = new JButton();
         separator = new JSeparator();
         runPanel = new RunAsPanel(insidePanels);
 
-        setFocusTraversalPolicy(null);
-
         configLabel.setLabelFor(configCombo);
-        Mnemonics.setLocalizedText(configLabel, NbBundle.getMessage(CustomizerRun.class, "LBL_Configuration"));
+        Mnemonics.setLocalizedText(configLabel, NbBundle.getMessage(CustomizerRun.class, "LBL_Configuration")); // NOI18N
 
         configCombo.setRenderer(new ConfigListCellRenderer());
         configCombo.addActionListener(new ActionListener() {
@@ -196,13 +198,15 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 configComboActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(configNew, NbBundle.getMessage(CustomizerRun.class, "LBL_New"));
+
+        Mnemonics.setLocalizedText(configNew, NbBundle.getMessage(CustomizerRun.class, "LBL_New")); // NOI18N
         configNew.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 configNewActionPerformed(evt);
             }
         });
-        Mnemonics.setLocalizedText(configDel, NbBundle.getMessage(CustomizerRun.class, "LBL_Delete"));
+
+        Mnemonics.setLocalizedText(configDel, NbBundle.getMessage(CustomizerRun.class, "LBL_Delete")); // NOI18N
         configDel.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 configDelActionPerformed(evt);
@@ -220,7 +224,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
             .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(configLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(configCombo, 0, 0, Short.MAX_VALUE)
+                .addComponent(configCombo, 0, 1, Short.MAX_VALUE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(configNew)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -301,7 +305,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }//GEN-LAST:event_configDelActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JComboBox configCombo;
+    private JComboBox<String> configCombo;
     private JButton configDel;
     private JLabel configLabel;
     private JButton configNew;

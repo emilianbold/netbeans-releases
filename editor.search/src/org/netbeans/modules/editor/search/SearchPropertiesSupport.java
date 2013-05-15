@@ -61,7 +61,7 @@ public final class SearchPropertiesSupport {
     private SearchPropertiesSupport() {
     }
 
-    private static SearchPropertiesSupport getInstance() {
+    private synchronized static SearchPropertiesSupport getInstance() {
         if (instance == null) {
             instance = new SearchPropertiesSupport();
         }
@@ -72,14 +72,14 @@ public final class SearchPropertiesSupport {
         return prefs;
     }
 
-    public static SearchProperties getSearchProperties() {
+    public synchronized static SearchProperties getSearchProperties() {
         if (searchProps == null) {
             searchProps = createDefaultSearchProperties();
         }
         return searchProps;
     }
 
-    public static SearchProperties getReplaceProperties() {
+    public synchronized static SearchProperties getReplaceProperties() {
         if (replaceProps == null) {
             replaceProps = createDefaultReplaceProperties();
         }
@@ -104,8 +104,8 @@ public final class SearchPropertiesSupport {
     }
 
     public static final class SearchProperties {
-        private Map<String, Object> props;
-        private String id;
+        private final Map<String, Object> props;
+        private final String id;
         private SearchProperties(Map<String, Object> props, String identification) {
             this.props = props;
             this.id = identification;

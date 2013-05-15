@@ -47,6 +47,8 @@ package org.openide.filesystems;
 import java.util.Collection;
 import java.util.Date;
 import java.util.EventObject;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /** Event for listening on filesystem changes.
 * <P>
@@ -58,6 +60,8 @@ import java.util.EventObject;
 public class FileEvent extends EventObject {
     /** generated Serialized Version UID */
     private static final long serialVersionUID = 1028087432345400108L;
+    
+    private static final Logger LOG = Logger.getLogger(FileEvent.class.getName());
 
     /** Original file object where the action took place. */
     private FileObject file;
@@ -138,7 +142,7 @@ public class FileEvent extends EventObject {
         this.file = file;
         this.time = time <= 0L ? System.currentTimeMillis() : time;
         this.expected = expected;
-        this.time = time;
+        LOG.log(Level.FINEST, "FileEvent({0}, {1}, {2}, {3})", new Object[]{src, file, expected, this.time});
         MIMESupport.freeCaches();
         FileUtil.freeCaches();
     }

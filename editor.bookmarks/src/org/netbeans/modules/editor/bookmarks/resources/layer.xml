@@ -98,10 +98,10 @@ made subject to such option by the copyright holder.
             </file>
         </folder>
         <folder name="Window">
-            <folder name="Navigator">
+            <folder name="Tools">
                 <file name="org-netbeans-modules-editor-bookmarks-ui-BookmarksViewOpenAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Edit/org-netbeans-modules-editor-bookmarks-ui-BookmarksViewOpenAction.instance"/>
-                    <attr name="position" intvalue="500"/>
+                    <attr name="position" intvalue="300"/>
                 </file>
             </folder>
         </folder>

@@ -55,6 +55,8 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.eclipse.jgit.diff.DiffEntry;
+import org.eclipse.jgit.diff.RenameDetector;
 import org.eclipse.jgit.errors.AmbiguousObjectException;
 import org.eclipse.jgit.errors.IncorrectObjectTypeException;
 import org.eclipse.jgit.errors.MissingObjectException;
@@ -79,6 +81,8 @@ import org.eclipse.jgit.treewalk.filter.TreeFilter;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
+import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitRevisionInfo.GitFileInfo;
 
 /**
  *
@@ -117,6 +121,56 @@ public final class Utils {
             return NotTreeFilter.create(exactPathFilters.size() == 1 ? exactPathFilters.get(0) : OrTreeFilter.create(exactPathFilters));
         }
         return filter;
+    }
+
+    public static List<GitFileInfo> getDiffEntries (Repository repository, TreeWalk walk, GitClassFactory fac) throws IOException {
+        List<GitFileInfo> result = new ArrayList<GitFileInfo>();
+        List<DiffEntry> entries = DiffEntry.scan(walk);
+        RenameDetector rd = new RenameDetector(repository);
+        rd.addAll(entries);
+        entries = rd.compute();
+        for (DiffEntry e : entries) {
+            GitRevisionInfo.GitFileInfo.Status status;
+            File oldFile = null;
+            String oldPath = null;
+            String path = e.getOldPath();
+            if (path == null) {
+                path = e.getNewPath();
+            }
+            switch (e.getChangeType()) {
+                case ADD:
+                    status = GitRevisionInfo.GitFileInfo.Status.ADDED;
+                    path = e.getNewPath();
+                    break;
+                case COPY:
+                    status = GitRevisionInfo.GitFileInfo.Status.COPIED;
+                    oldFile = new File(repository.getWorkTree(), e.getOldPath());
+                    oldPath = e.getOldPath();
+                    path = e.getNewPath();
+                    break;
+                case DELETE:
+                    status = GitRevisionInfo.GitFileInfo.Status.REMOVED;
+                    path = e.getOldPath();
+                    break;
+                case MODIFY:
+                    status = GitRevisionInfo.GitFileInfo.Status.MODIFIED;
+                    path = e.getOldPath();
+                    break;
+                case RENAME:
+                    status = GitRevisionInfo.GitFileInfo.Status.RENAMED;
+                    oldFile = new File(repository.getWorkTree(), e.getOldPath());
+                    oldPath = e.getOldPath();
+                    path = e.getNewPath();
+                    break;
+                default:
+                    status = GitRevisionInfo.GitFileInfo.Status.UNKNOWN;
+            }
+            if (status == GitRevisionInfo.GitFileInfo.Status.RENAMED) {
+                result.add(fac.createFileInfo(new File(repository.getWorkTree(), e.getOldPath()), e.getOldPath(), GitRevisionInfo.GitFileInfo.Status.REMOVED, null, null));
+            }
+            result.add(fac.createFileInfo(new File(repository.getWorkTree(), path), path, status, oldFile, oldPath));
+        }
+        return result;
     }
 
     private static Collection<PathFilter> getPathFilters (Collection<String> relativePaths) {
@@ -289,8 +343,10 @@ public final class Utils {
                 String name = refName.substring(prefix.length());
                 ObjectId id = ref.getLeaf().getObjectId();
                 if (id == null) {
-                    Logger.getLogger(Utils.class.getName()).log(Level.WARNING, "Null object id for ref: {0}, {1}:{2}, {3}", //NOI18N
+                    // can happen, e.g. when the repository has no HEAD yet
+                    Logger.getLogger(Utils.class.getName()).log(Level.INFO, "Null object id for ref: {0}, {1}:{2}, {3}", //NOI18N
                             new Object[] { ref.toString(), ref.getName(), ref.getObjectId(), ref.getLeaf() } );
+                    continue;
                 }
                 branches.put(
                     name, 

@@ -79,13 +79,15 @@ final public class PersistenceHandler implements PersistenceObserver {
     private final Map<String, TopComponentGroupImpl> name2group = new WeakHashMap<String, TopComponentGroupImpl>(10);
 
     private static PersistenceHandler defaultInstance;
-    
+
     private boolean loaded = false;
 
     /** Debugging flag. */
     private static final boolean DEBUG = Debug.isLoggable(PersistenceHandler.class);
-    
-    
+
+    private final LazyLoader lazyLoader = new LazyLoader();
+
+
     /** Creates a new instance of PersistenceHanlder */
     private PersistenceHandler() {
     }
@@ -98,31 +100,31 @@ final public class PersistenceHandler implements PersistenceObserver {
         name2group.clear();
         TopComponentTracker.getDefault().clear();
     }
-    
+
     public static synchronized PersistenceHandler getDefault() {
         if(defaultInstance == null) {
             defaultInstance = new PersistenceHandler();
         }
-        
+
         return defaultInstance;
     }
-    
+
     // XXX helper method
     public static boolean isTopComponentPersistentWhenClosed(TopComponent tc) {
         return PersistenceManager.isTopComponentPersistentWhenClosed(tc);
     }
-    
+
     boolean isLoaded() {
         return loaded;
     }
-    
+
     public void load() {
         if(DEBUG) {
             debugLog("## PersistenceHandler.load"); // NOI18N
         }
-        
+
         TopComponentTracker.getDefault().load();
-        
+
         WindowManagerConfig wmc = null;
         try {
             wmc = PersistenceManager.getDefault().loadWindowSystem();
@@ -146,55 +148,43 @@ final public class PersistenceHandler implements PersistenceObserver {
                 wmc = ConfigFactory.createDefaultConfig();
             }
         }
-        
+
         ToolbarPool.getDefault().setPreferredIconSize(wmc.preferredToolbarIconSize);
-        
+
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         if (wmc.tcIdViewList.length > 0) {
-            List<TopComponent> tcList = new ArrayList<TopComponent>(wmc.tcIdViewList.length);
-            for (int i = 0; i < wmc.tcIdViewList.length; i++) {
-                TopComponent tc = getTopComponentForID(wmc.tcIdViewList[i],true);
-                if (tc != null) {
-                    tcList.add(tc);
-                }
-            }
-            TopComponent [] tcs = tcList.toArray(new TopComponent[tcList.size()]);
-            wm.setRecentViewList(tcs);
+            wm.setRecentViewList(wmc.tcIdViewList);
         } else {
             //No recent view list is saved, fill it by opened TopComponents
-            List<TopComponent> tcList = new ArrayList<TopComponent>();
+            List<String> idList = new ArrayList();
             for (int i = 0; i < wmc.modes.length; i++) {
                 ModeConfig mc = wmc.modes[i];
                 for (int j = 0; j < mc.tcRefConfigs.length; j++) {
                     //Only opened
                     if (mc.tcRefConfigs[j].opened) {
-                        TopComponent tc = getTopComponentForID(mc.tcRefConfigs[j].tc_id,true);
-                        if (tc != null) {
-                            tcList.add(tc);
-                        }
+                        idList.add(mc.tcRefConfigs[j].tc_id);
                     }
                 }
             }
-            TopComponent [] tcs = tcList.toArray(new TopComponent[tcList.size()]);
-            wm.setRecentViewList(tcs);
+            wm.setRecentViewList(idList.toArray( new String[idList.size()]));
         }
-        
+
         wm.setEditorAreaConstraints(wmc.editorAreaConstraints);
         wm.setEditorAreaState(wmc.editorAreaState);
 
         ModeImpl activeMode    = null;
         ModeImpl editorMaximizedMode = null;
         ModeImpl viewMaximizedMode = null;
-        
+
         // First create empty modes.
         Map<ModeImpl, ModeConfig> mode2config = new HashMap<ModeImpl, ModeConfig>();
-        
+
         for (int i = 0; i < wmc.modes.length; i++) {
             ModeConfig mc = (ModeConfig) wmc.modes[i];
             ModeImpl mode = getModeFromConfig(mc);
-            
+
             mode2config.put(mode, mc);
-            
+
             if(mc.name.equals(wmc.activeModeName)) {
                 activeMode = mode;
             }
@@ -204,7 +194,7 @@ final public class PersistenceHandler implements PersistenceObserver {
                 viewMaximizedMode = mode;
             }
         }
-        
+
         TopComponentTracker tcTracker = TopComponentTracker.getDefault();
         TopComponent activeTopComponentOverride = null;
         // Then fill them with TopComponents.
@@ -213,7 +203,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             ModeConfig mc = (ModeConfig)mode2config.get(mode);
             initModeFromConfig(mode, mc, false);
             initPreviousModes(mode, mc, mode2config);
-            
+
             // Set selected TopComponent.
             if(mc.selectedTopComponentID != null) {
                 mode.setUnloadedSelectedTopComponent(mc.selectedTopComponentID);
@@ -233,7 +223,7 @@ final public class PersistenceHandler implements PersistenceObserver {
                 }
             }
         }
-        
+
         //Initialize top component groups
         for (int i = 0; i < wmc.groups.length; i++) {
             GroupConfig groupCfg = wmc.groups[i];
@@ -248,8 +238,8 @@ final public class PersistenceHandler implements PersistenceObserver {
                 WindowManagerImpl.getInstance().specialPersistenceCompShow(active);
             }
         }
-        // active mode can be null, Active mode info is stored in winsys config (system layer) and modes in 
-        // project layer, that can cause out of synch state when switching projects... 
+        // active mode can be null, Active mode info is stored in winsys config (system layer) and modes in
+        // project layer, that can cause out of synch state when switching projects...
         // setting null is however considered a valid state.
         wm.setActiveMode(activeMode);
         wm.setEditorMaximizedMode(editorMaximizedMode);
@@ -306,18 +296,18 @@ final public class PersistenceHandler implements PersistenceObserver {
         wm.setToolbarConfigName(wmc.toolbarConfiguration);
         if( null != activeTopComponentOverride )
             activeTopComponentOverride.requestActive();
-        
+
         loaded = true;
     }
-    
-    
+
+
     /** Implements <code>WindowSystem</code> interface method. */
     public synchronized void save() {
         if(DEBUG) {
             debugLog("## PersistenceHandler.save"); // NOI18N
         }
         TopComponentTracker.getDefault().save();
-        
+
         ToolbarPool.getDefault().waitFinished();
         WindowManagerConfig wmc = getConfig();
         PersistenceManager.getDefault().saveWindowSystem(wmc);
@@ -334,13 +324,13 @@ final public class PersistenceHandler implements PersistenceObserver {
         }
         return mode;
     }
-    
+
     private ModeImpl createModeFromConfig(ModeConfig mc) {
         if(DEBUG) {
             debugLog(""); // NOI18N
             debugLog("Creating mode name=\"" + mc.name + "\""); // NOI18N
         }
-        
+
         ModeImpl mode;
         if (mc.kind == Constants.MODE_KIND_SLIDING) {
             mode = WindowManagerImpl.getInstance().createSlidingMode(
@@ -357,10 +347,10 @@ final public class PersistenceHandler implements PersistenceObserver {
                 mode.addOtherName( s );
             }
         }
-        
+
         return mode;
     }
-    
+
     /**
      * find the the previous mode for tc if exists and set it in the model..
      */
@@ -377,7 +367,7 @@ final public class PersistenceHandler implements PersistenceObserver {
                 while (it.hasNext()) {
                     ModeImpl md = (ModeImpl)it.next();
 
-                    if (tcRefConfig.previousMode.equals(md.getName()) 
+                    if (tcRefConfig.previousMode.equals(md.getName())
                             || md.getOtherNames().contains( tcRefConfig.previousMode ) ) {
                         previous = md;
                         break;
@@ -389,7 +379,7 @@ final public class PersistenceHandler implements PersistenceObserver {
                     Logger.getLogger(PersistenceHandler.class.getName()).log(Level.INFO, null,
                                       new java.lang.NullPointerException("Cannot find previous mode named \'" +
                                                                          tcRefConfig.previousMode +
-                                                                         "\'")); 
+                                                                         "\'"));
 
                 }
             }
@@ -429,7 +419,7 @@ final public class PersistenceHandler implements PersistenceObserver {
                                                                  "\'"));
         }
     }
-    
+
     private ModeImpl initModeFromConfig(ModeImpl mode, ModeConfig mc, boolean initPrevModes) {
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         if( null != mc.otherNames ) {
@@ -446,10 +436,7 @@ final public class PersistenceHandler implements PersistenceObserver {
 
             // PENDING
             if (tcRefConfig.opened) {
-                TopComponent tc = getTopComponentForID(tcRefConfig.tc_id,true);
-                if(tc != null) {
-                    mode.addOpenedTopComponent(tc);
-                }
+                lazyLoader.lazyLoad(mode, mc.selectedTopComponentID, tcRefConfig, j );
             } else {
                 mode.addUnloadedTopComponent(tcRefConfig.tc_id);
             }
@@ -464,7 +451,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         // PENDING Refine the unneded computing.
         Rectangle absBounds = mc.bounds == null ? new Rectangle() : mc.bounds;
         Rectangle relBounds = mc.relativeBounds == null ? new Rectangle() : mc.relativeBounds;
-        Rectangle bounds = computeBounds(false, false, 
+        Rectangle bounds = computeBounds(false, false,
             absBounds.x,
             absBounds.y,
             absBounds.width,
@@ -476,34 +463,34 @@ final public class PersistenceHandler implements PersistenceObserver {
         mode.setBounds(bounds);
         mode.setFrameState(mc.frameState);
         mode.setMinimized( mc.minimized );
-        
+
         return mode;
     }
-    
+
     TopComponent getTopComponentForID(String tc_id, boolean deserialize) {
         if(tc_id == null || "".equals(tc_id)) {
             return null;
         }
-        
+
 //        long start = System.currentTimeMillis();
         TopComponent tc = PersistenceManager.getDefault().getTopComponentForID(tc_id, deserialize);
 //        if(DEBUG) {
 //            debugLog("***Getting TopComponent for ID=" + tc_id + " in " + (System.currentTimeMillis() - start) + " ms"); // NOI18N
 //        }
-        
+
         return tc;
     }
-    
+
     private TopComponentGroupImpl createTopComponentGroupFromConfig(GroupConfig groupCfg) {
         if(DEBUG) {
             debugLog(""); // NOI18N
             debugLog("Creating group name=\"" + groupCfg.name + "\" \t[opened=" + groupCfg.opened + "]"); // NOI18N
         }
-        
+
         TopComponentGroupImpl tcGroup = new TopComponentGroupImpl(groupCfg.name, groupCfg.opened);
 
         name2group.put(groupCfg.name, tcGroup);
-        
+
         for (int j = 0; j < groupCfg.tcGroupConfigs.length; j++) {
             TCGroupConfig tcGroupCfg = groupCfg.tcGroupConfigs[j];
             if(DEBUG) {
@@ -526,21 +513,21 @@ final public class PersistenceHandler implements PersistenceObserver {
                 tcGroup.addGroupUnloadedOpenedTopComponent(tcGroupCfg.tc_id);
             }
         }
-        
+
         WindowManagerImpl.getInstance().addTopComponentGroup(tcGroup);
 
         return tcGroup;
     }
 
 
-    
+
     private WindowManagerConfig getConfig() {
         WindowManagerConfig wmc = new WindowManagerConfig();
 
         wmc.preferredToolbarIconSize = ToolbarPool.getDefault().getPreferredIconSize();
-        
+
         WindowManagerImpl wmi = WindowManagerImpl.getInstance();
-        
+
         Rectangle joinedBounds = wmi.getMainWindowBoundsJoined();
         if(DEBUG) {
             debugLog("joinedBouds=" + joinedBounds); // NOI18N
@@ -557,7 +544,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         wmc.ySeparated      = separatedBounds.y;
         wmc.widthSeparated  = separatedBounds.width;
         wmc.heightSeparated = separatedBounds.height;
-        
+
         if( Utilities.isMac() ) {
             //125881 - mac doesn't fire events when maximized window is resized by user
             wmc.mainWindowFrameStateJoined = wmi.getMainWindow().getExtendedState();
@@ -598,7 +585,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             debugLog("editorAreaFrameState=" + wmc.editorAreaFrameState); // NOI18N
         }
         wmc.screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-        
+
         ModeImpl mo = wmi.getActiveMode();
         if(DEBUG) {
             debugLog("active mode=" + mo); // NOI18N
@@ -606,7 +593,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         if (mo != null) {
             wmc.activeModeName = mo.getName();
         }
-        
+
         mo = wmi.getEditorMaximizedMode();
         if(DEBUG) {
             debugLog("editor maximized mode=" + mo); // NOI18N
@@ -614,7 +601,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         if (mo != null) {
             wmc.editorMaximizedModeName = mo.getName();
         }
-        
+
         mo = wmi.getViewMaximizedMode();
         if(DEBUG) {
             debugLog("view maximized mode=" + mo); // NOI18N
@@ -622,12 +609,12 @@ final public class PersistenceHandler implements PersistenceObserver {
         if (mo != null) {
             wmc.viewMaximizedModeName = mo.getName();
         }
-        
+
         wmc.toolbarConfiguration = wmi.getToolbarConfigName();
         if(DEBUG) {
             debugLog("toolbarConfiguration=" + wmc.toolbarConfiguration); // NOI18N
         }
-        
+
         // Modes.
         Set<? extends Mode> modeSet = wmi.getModes();
         List<ModeConfig> modeConfigs = new ArrayList<ModeConfig>(modeSet.size());
@@ -641,7 +628,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             modeConfigs.add(mc);
         }
         wmc.modes = modeConfigs.toArray(new ModeConfig[0]);
-        
+
         // TopComponent groups.
         Set<TopComponentGroupImpl> tcGroups = wmi.getTopComponentGroups();
         List<GroupConfig> groupConfigs = new ArrayList<GroupConfig>(tcGroups.size());
@@ -662,7 +649,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             }
         }
         wmc.tcIdViewList = tcIdList.toArray(new String [tcIdList.size()]);
-        
+
         return wmc;
     }
 
@@ -679,12 +666,12 @@ final public class PersistenceHandler implements PersistenceObserver {
         if(DEBUG) {
             debugLog("mode state=" + modeCfg.state); // NOI18N
         }
-        
+
         modeCfg.kind = mode.getKind();
         if(DEBUG) {
             debugLog("mode kind=" + modeCfg.kind); // NOI18N
         }
-        if (wm instanceof WindowManagerImpl) { 
+        if (wm instanceof WindowManagerImpl) {
             modeCfg.side = wm.getCentral().getModeSide(mode);
             if( null != modeCfg.side ) {
                 modeCfg.slideInSizes = wm.getCentral().getSlideInSizes( modeCfg.side );
@@ -693,7 +680,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         if(DEBUG) {
             debugLog("mode side=" + modeCfg.side); // NOI18N
         }
-        
+
         modeCfg.constraints = mode.getConstraints();
         if(DEBUG) {
             debugLog("mode constraints=" + Arrays.toString(modeCfg.constraints)); // NOI18N
@@ -727,7 +714,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             }
 
         }
-        
+
         TopComponent selectedTC = mode.getSelectedTopComponent();
         if(selectedTC != null) {
             if (pm.isTopComponentPersistent(selectedTC)) {
@@ -742,7 +729,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         if(DEBUG) {
             debugLog("mode permanent=" + modeCfg.permanent); // NOI18N
         }
-        
+
         String prevSelectedTCID = mode.getPreviousSelectedTopComponentID();
         if(prevSelectedTCID != null) {
             if(DEBUG) {
@@ -750,11 +737,11 @@ final public class PersistenceHandler implements PersistenceObserver {
             }
             modeCfg.previousSelectedTopComponentID = prevSelectedTCID;
         }
-        
+
         modeCfg.minimized = mode.isMinimized();
-        
+
         modeCfg.otherNames = mode.getOtherNames();
-        
+
         // TopComponents:
         List<TCRefConfig> tcRefCfgList = new ArrayList<TCRefConfig>();
         List<String> openedTcIDs = mode.getOpenedTopComponentsIDs();
@@ -773,7 +760,7 @@ final public class PersistenceHandler implements PersistenceObserver {
                     continue;
                 }
             }
-            
+
             // #45981: save previous mode even for closed tcs
             String modeName = null;
             int prevIndex = -1;
@@ -782,7 +769,7 @@ final public class PersistenceHandler implements PersistenceObserver {
                 modeName = prev.getName();
                 prevIndex = wm.getPreviousIndexForTopComponent(tcID, mode);
             }
-            
+
             if(DEBUG) {
                 debugLog("tc ID=" + tcID + " opened=" + opened); // NOI18N
             }
@@ -796,11 +783,11 @@ final public class PersistenceHandler implements PersistenceObserver {
             tcRefCfg.slidedInMaximized = wm.isTopComponentMaximizedWhenSlidedIn( tcID );
             tcRefCfgList.add(tcRefCfg);
         }
-        
+
         modeCfg.tcRefConfigs = tcRefCfgList.toArray(new TCRefConfig[tcRefCfgList.size()]);
         return modeCfg;
     }
-    
+
     private GroupConfig getConfigFromGroup(TopComponentGroupImpl tcGroup) {
         GroupConfig groupCfg = new GroupConfig();
         groupCfg.name = tcGroup.getName();
@@ -812,11 +799,11 @@ final public class PersistenceHandler implements PersistenceObserver {
         Set<String> openSet = tcGroup.getOpeningSetIDs();
         Set<String> closeSet = tcGroup.getClosingSetIDs();
         Set<String> wasOpenedSet = tcGroup.getGroupOpenedTopComponentsIDs();
-        
+
         Map<String, TCGroupConfig> tcGroupCfgMap = new HashMap<String, TCGroupConfig>();
-        
+
         for (String tcID: tcGroup.getTopComponentsIDs()) {
-            
+
             TCGroupConfig tcGroupCfg;
             if (tcGroupCfgMap.containsKey(tcID)) {
                 tcGroupCfg = tcGroupCfgMap.get(tcID);
@@ -838,12 +825,12 @@ final public class PersistenceHandler implements PersistenceObserver {
                     + ", wasOpened=" + tcGroupCfg.wasOpened); // NOI18N
             }
         }
-        
+
         groupCfg.tcGroupConfigs = tcGroupCfgMap.values().toArray(new TCGroupConfig[0]);
         return groupCfg;
     }
-    
-    
+
+
     /** Handles adding mode to model.
      * @param modeConfig configuration data of added mode
      */
@@ -855,7 +842,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         ModeImpl mode = getModeFromConfig(modeConfig);
         initModeFromConfig(mode, modeConfig, true);
     }
-    
+
     /** Handles removing mode from model.
      * @param modeName unique name of removed mode
      */
@@ -874,8 +861,8 @@ final public class PersistenceHandler implements PersistenceObserver {
                                                                  " was not created")); // NOI18N
         }
     }
-    
-    /** Handles adding tcRef to model. 
+
+    /** Handles adding tcRef to model.
      * @param modeName unique name of parent mode.
      * @param tcRefConfig configuration data of added tcRef
      * @param tcRefNames array of tcIds to pass ordering of new tcRef,
@@ -904,7 +891,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         if (mode != null) {
             initPreviousMode(mode, tcRefConfig);
         }
-        
+
         TopComponent tc = getTopComponentForID(tcRefConfig.tc_id,true);
         if (tc != null) {
             if (mode != null) {
@@ -916,8 +903,8 @@ final public class PersistenceHandler implements PersistenceObserver {
             }
         }
     }
-    
-    /** Handles removing tcRef from model. 
+
+    /** Handles removing tcRef from model.
      * @param tc_id unique id of removed tcRef
      */
     @Override
@@ -925,7 +912,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         if(DEBUG) {
             debugLog("WMI.topComponentRefConfigRemoved tcRef:" + tc_id); // NOI18N
         }
-        
+
         WindowManagerImpl wm = WindowManagerImpl.getInstance();
         ModeImpl mode = wm.findModeForOpenedID(tc_id);
         if(mode != null) {
@@ -940,7 +927,7 @@ final public class PersistenceHandler implements PersistenceObserver {
             }
         }
     }
-    
+
     /** Handles adding group to model.
      * @param groupConfig configuration data of added group
      */
@@ -951,7 +938,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         }
         createTopComponentGroupFromConfig(groupConfig);
     }
-    
+
     /** Handles removing group from model.
      * @param groupName unique name of removed group
      */
@@ -966,11 +953,11 @@ final public class PersistenceHandler implements PersistenceObserver {
         } else {
             Logger.getLogger(PersistenceHandler.class.getName()).log(Level.WARNING, null,
                               new java.lang.NullPointerException("Null group for name=" +
-                                                                 groupName)); 
+                                                                 groupName));
         }
     }
-    
-    /** Handles adding tcGroup to model. 
+
+    /** Handles adding tcGroup to model.
      * @param groupName unique name of parent group
      * @param tcGroupConfig configuration data of added tcGroup
      */
@@ -979,21 +966,21 @@ final public class PersistenceHandler implements PersistenceObserver {
         if(DEBUG) {
             debugLog("WMI.topComponentGroupConfigAdded group:" + groupName + " tcGroup:" + tcGroupConfig.tc_id); // NOI18N
         }
-        
+
         TopComponentGroupImpl group = (TopComponentGroupImpl)name2group.get(groupName);
         if(group != null) {
             group.addUnloadedTopComponent(tcGroupConfig.tc_id);
             if(tcGroupConfig.open) {
                 group.addUnloadedOpeningTopComponent(tcGroupConfig.tc_id);
-            } 
+            }
 
             if(tcGroupConfig.close) {
                 group.addUnloadedClosingTopComponent(tcGroupConfig.tc_id);
             }
         }
     }
-    
-    /** Handles removing tcGroup from model. 
+
+    /** Handles removing tcGroup from model.
      * @param groupName unique name of parent group
      * @param tc_id unique id of removed tcGroup
      */
@@ -1002,13 +989,13 @@ final public class PersistenceHandler implements PersistenceObserver {
         if(DEBUG) {
             debugLog("WMI.topComponentGroupConfigRemoved group:" + groupName + " tcGroup:" + tc_id); // NOI18N
         }
-        
+
         TopComponentGroupImpl group = (TopComponentGroupImpl)name2group.get(groupName);
         if(group != null) {
             group.removeUnloadedTopComponent(tc_id);
         }
     }
-    
+
     /** Dump window manager configuration data to standard output. */
     private static String dumpConfig (WindowManagerConfig wmc) {
         StringBuffer buffer = new StringBuffer();
@@ -1026,7 +1013,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         buffer.append("\n--   centeredVertically: " + wmc.centeredVerticallyJoined);
         buffer.append("\n--    maximizeIfWidthBelowJoined: " + wmc.maximizeIfWidthBelowJoined);
         buffer.append("\n--   maximizeIfHeightBelowJoined: " + wmc.maximizeIfHeightBelowJoined);
-        
+
         buffer.append("\n-- SEPARATED --");
         buffer.append("\n-- x: " + wmc.xSeparated);
         buffer.append("\n-- y: " + wmc.ySeparated);
@@ -1038,7 +1025,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         buffer.append("\n-- relativeHeight: " + wmc.relativeHeightSeparated);
         buffer.append("\n-- centeredHorizontally: " + wmc.centeredHorizontallySeparated);
         buffer.append("\n--   centeredVertically: " + wmc.centeredVerticallySeparated);
-        
+
         buffer.append("\n-- editorAreaState: " + wmc.editorAreaState);
         if(wmc.editorAreaConstraints != null) {
             for (int i = 0; i < wmc.editorAreaConstraints.length; i++) {
@@ -1047,7 +1034,7 @@ final public class PersistenceHandler implements PersistenceObserver {
         }
         buffer.append("\n--         editorAreaBounds: " + wmc.editorAreaBounds);
         buffer.append("\n-- editorAreaRelativeBounds: " + wmc.editorAreaRelativeBounds);
-        
+
         buffer.append("\n--     screenSize: " + wmc.screenSize);
         buffer.append("\n--    activeModeName: " + wmc.activeModeName);
         buffer.append("\n-- editorMaximizedModeName: " + wmc.editorMaximizedModeName);
@@ -1103,34 +1090,34 @@ final public class PersistenceHandler implements PersistenceObserver {
                 }
             }
         }
-        
+
         return buffer.toString();
     }
 
     private static void debugLog(String message) {
         Debug.log(PersistenceHandler.class, message);
     }
-    
+
     /**
      * @return False if the given point is not inside any screen device that are currently available.
      */
     private static boolean isOutOfScreen( int x, int y ) {
         GraphicsEnvironment ge = GraphicsEnvironment.getLocalGraphicsEnvironment();
         GraphicsDevice[] gs = ge.getScreenDevices();
-        for( int j=0; j<gs.length; j++ ) { 
+        for( int j=0; j<gs.length; j++ ) {
             GraphicsDevice gd = gs[j];
             if( gd.getType() != GraphicsDevice.TYPE_RASTER_SCREEN )
                 continue;
             Rectangle bounds = gd.getDefaultConfiguration().getBounds();
             if( bounds.contains( x, y ) )
                 return false;
-        } 
+        }
         return true;
     }
-   
+
     private static Rectangle computeBounds(boolean centeredHorizontaly, boolean centeredVerticaly,
     int x, int y, int width, int height, float relativeX, float relativeY, float relativeWidth, float relativeHeight) {
-        Rectangle bounds; 
+        Rectangle bounds;
         if(width > 0 && height > 0) {
             // From absoute values.
             bounds = new Rectangle(x, y, width, height);
@@ -1166,8 +1153,12 @@ final public class PersistenceHandler implements PersistenceObserver {
                 bounds.y = centered.y;
             }
         }
-        
+
         return bounds;
     }
-    
+
+    void finishLazyLoading() {
+        lazyLoader.loadAllNow();
+    }
+
 }

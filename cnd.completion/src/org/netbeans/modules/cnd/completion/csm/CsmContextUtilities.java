@@ -671,7 +671,22 @@ public class CsmContextUtilities {
         return fi != null;
     }     
     
+    public static boolean isInSimpleType(CsmContext context, int offset) {
+        CsmType type = extractLastType(context, offset);
+        // in instantianiton and decltype everything is possible
+        return (type != null) && 
+                !type.isInstantiation() && 
+                !type.getText().toString().startsWith("decltype") && // NOI18N
+                CsmOffsetUtilities.isInObject(type, offset);
+    }
+    
     public static boolean isInType(CsmContext context, int offset) {
+        CsmType type = extractLastType(context, offset);
+        return (type != null) && CsmOffsetUtilities.isInObject(type, offset);
+    }
+    
+    
+    private static CsmType extractLastType(CsmContext context, int offset) {
         CsmObject last = context.getLastObject();
         CsmType type = null;
         if (CsmKindUtilities.isTypedef(last)) {
@@ -679,10 +694,7 @@ public class CsmContextUtilities {
         } else if (CsmKindUtilities.isType(last)) {
             type = (CsmType) last;
         }
-        // in instantianiton and decltype everything is possible
-        return (type != null) && 
-                !type.isInstantiation() && 
-                !type.getText().toString().startsWith("decltype") && // NOI18N
-                CsmOffsetUtilities.isInObject(type, offset);
+        return type;
     }
+    
 }

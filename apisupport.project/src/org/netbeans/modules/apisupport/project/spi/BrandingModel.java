@@ -141,7 +141,12 @@ public abstract class BrandingModel {
     /**all BundleKeys the user may have modified through Resource Bundle editor panel */
     private final Set<BrandingSupport.BundleKey> generalResourceBundleKeys = new HashSet<BrandingSupport.BundleKey>();
     
+    /**Internationalized BundleKeys the user may have modified through Internationalized Resource Bundle editor panel */
+    private final Set<BrandingSupport.BundleKey> internationalizedResourceBundleKeys = new HashSet<BrandingSupport.BundleKey>();
+    
     private final ChangeSupport changeSupport = new ChangeSupport(this);
+    
+    protected Locale locale;
     
     protected BrandingModel() {}
     
@@ -235,7 +240,7 @@ public abstract class BrandingModel {
                 default:
                     throw new IllegalArgumentException("Invalid icon size: " + size);
             }
-            if (icon != null) {
+            if (icon != null && url != null) {
                 icon.setBrandingSource(url);
             }
         }
@@ -287,6 +292,8 @@ public abstract class BrandingModel {
 
             getBranding().brandBundleKeys(generalResourceBundleKeys);
 
+            getBranding().brandBundleKeys(internationalizedResourceBundleKeys);
+
             FileObject root = FileUtil.toFileObject(getBranding().getBrandingRoot());
             if( null != root ) {
                 root.refresh();
@@ -325,6 +332,17 @@ public abstract class BrandingModel {
                 }
             }
         };
+    }
+    
+    public void refreshLocalizedBundles(Locale locale) {
+        this.locale = locale;
+        try {
+            branding.refreshLocalizedBundles(locale);
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+         
+        
     }
     
     private BrandingSupport getBranding() {
@@ -662,6 +680,8 @@ public abstract class BrandingModel {
         winsysKeys.remove(null);
 
         generalResourceBundleKeys.clear();
+        
+        internationalizedResourceBundleKeys.clear();
 }
 
     private String backslashesToSlashes (String text) {
@@ -678,8 +698,37 @@ public abstract class BrandingModel {
         return null;
     }
 
+    private BrandingSupport.BundleKey findInModifiedInternationalizedBundleKeys (String codenamebase, String bundlepath, String key) {
+        for (BundleKey bundleKey : internationalizedResourceBundleKeys) {
+            String localizedBundlepath = bundlepath;
+            if(!localizedBundlepath.endsWith("_" + this.locale.toString().toLowerCase() + ".properties"))
+                localizedBundlepath = bundlepath.replaceAll(".properties", "_" + this.locale.toString().toLowerCase() + ".properties");
+            if (key.equals(bundleKey.getKey()) &&
+                backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(localizedBundlepath) &&
+                codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
+                return bundleKey;
+        }
+        return null;
+    }
+
     public final void addModifiedGeneralBundleKey (BrandingSupport.BundleKey key) {
         generalResourceBundleKeys.add (key);
+    }
+
+    public final void addModifiedInternationalizedBundleKey (BrandingSupport.BundleKey key) {
+        Set<BrandingSupport.BundleKey> brandedBundleKeys = branding.getBrandedBundleKeys();
+        String localizedBundlepath = key.getBundleFilePath();
+        if(!localizedBundlepath.endsWith("_" + this.locale.toString().toLowerCase() + ".properties"))
+                localizedBundlepath = localizedBundlepath.replaceAll(".properties", "_" + this.locale.toString().toLowerCase() + ".properties");
+        File bundleFile = new File(localizedBundlepath);
+        if(!bundleFile.exists()) {
+            for(BrandingSupport.BundleKey keyIter:brandedBundleKeys) {
+                if(keyIter.getBundleFilePath().equals(key.getBundleFilePath()) && !key.getKey().equals(keyIter.getKey())) {
+                    internationalizedResourceBundleKeys.add(branding.createModifiedBundleKey(keyIter.getModuleEntry(), bundleFile, keyIter.getKey(), keyIter.getValue()));
+                }
+            }
+        }
+        internationalizedResourceBundleKeys.add (branding.createModifiedBundleKey(key.getModuleEntry(), bundleFile, key.getKey(), key.getValue()));
     }
 
     public final BrandingSupport.BundleKey getGeneralBundleKeyForModification(String codenamebase, String bundlepath, String key) {
@@ -693,14 +742,21 @@ public abstract class BrandingModel {
                 : getBranding().getBundleKey(codenamebase, bundlepath, key).getValue();
     }
 
+    public final BrandingSupport.BundleKey getGeneralLocalizedBundleKeyForModification(String codenamebase, String bundlepath, String key) {
+        BrandingSupport.BundleKey bKey = findInModifiedInternationalizedBundleKeys(codenamebase, bundlepath, key);
+        return null != bKey ? bKey : getBranding().getLocalizedBundleKey(codenamebase, bundlepath, key);
+    }
+
+    public final String getLocalizedKeyValue(String bundlepath, String codenamebase, String key) {
+        BrandingSupport.BundleKey bKey = findInModifiedInternationalizedBundleKeys(codenamebase, bundlepath, key);
+        return null != bKey ? bKey.getValue()
+                : getBranding().getLocalizedBundleKey(codenamebase, bundlepath, key).getValue();
+    }
+
     public final boolean isKeyBranded(String bundlepath, String codenamebase, String key) {
         // in modified keys?
-        for (BundleKey bundleKey : generalResourceBundleKeys) {
-            if (key.equals(bundleKey.getKey()) &&
-                backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(bundlepath) &&
-                codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
-                return true;
-        }
+        if(inModifiedKeys(bundlepath, codenamebase, key))
+            return true;
         // in branded but not modified keys?
         Set<BundleKey> bundleKeys = getBranding().getBrandedBundleKeys();
         for (BundleKey bundleKey : bundleKeys) {
@@ -711,18 +767,104 @@ public abstract class BrandingModel {
         }
         return false;
     }
+    
+    public final boolean isKeyLocallyBranded(String bundlepath, String codenamebase, String key) {
+        // in modified keys?
+        if(inModifiedLocalizedKeys(bundlepath, codenamebase, key))
+            return true;
+        // in branded but not modified keys?
+        Set<BundleKey> bundleKeys = getBranding().getLocalizedBrandedBundleKeys();
+        for (BundleKey bundleKey : bundleKeys) {
+            String bundleFilePath = bundleKey.getBundleFilePath();
+            String localizedBundlepath = bundlepath;
+            if(bundleFilePath.endsWith("_" + this.locale.toString().toLowerCase() + ".properties"))
+                localizedBundlepath = bundlepath.replaceAll(".properties", "_" + this.locale.toString().toLowerCase() + ".properties");
+            if (key.equals(bundleKey.getKey()) &&
+                backslashesToSlashes(bundleFilePath).endsWith(localizedBundlepath) &&
+                codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
+                return true;
+        }
+        return false;
+    }
+    
+    private boolean inModifiedKeys(String bundlepath, String codenamebase, String key)
+    {
+        // in modified keys?
+        for (BundleKey bundleKey : generalResourceBundleKeys) {
+            if (key.equals(bundleKey.getKey()) &&
+                backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(bundlepath) &&
+                codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
+                return true;
+        }
+        return false;
+    }
+
+    private boolean inModifiedLocalizedKeys(String bundlepath, String codenamebase, String key)
+    {
+        // in modified keys?
+        for (BundleKey bundleKey : internationalizedResourceBundleKeys) {
+            String localizedBundlepath = bundlepath;
+            if(!localizedBundlepath.endsWith("_" + this.locale.toString().toLowerCase() + ".properties"))
+                localizedBundlepath = bundlepath.replaceAll(".properties", "_" + this.locale.toString().toLowerCase() + ".properties");
+            if (key.equals(bundleKey.getKey()) &&
+                backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(localizedBundlepath) &&
+                codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
+                return true;
+        }
+        return false;
+    }
 
     public final boolean isBundleBranded(String bundlepath, String codenamebase) {
+        // in modified keys?
+        if(inModifiedKeysBundle(bundlepath, codenamebase))
+            return true;
+        // in branded but not modified keys?
+        Set<BundleKey> bundleKeys = getBranding().getBrandedBundleKeys();
+        for (BundleKey bundleKey : bundleKeys) {
+            if (backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(bundlepath) &&
+                codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
+                return true;
+        }
+        return false;
+    }
+    
+    public final boolean isBundleLocallyBranded(String bundlepath, String codenamebase) {
+        // in modified keys?
+        if(inModifiedLocalizedKeysBundle(bundlepath, codenamebase))
+            return true;
+        // in branded but not modified keys?
+        Set<BundleKey> bundleKeys = getBranding().getLocalizedBrandedBundleKeys();
+        for (BundleKey bundleKey : bundleKeys) {
+            String bundleFilePath = bundleKey.getBundleFilePath();
+            String localizedBundlepath = bundlepath;
+            if(bundleFilePath.endsWith("_" + this.locale.toString().toLowerCase() + ".properties"))
+                localizedBundlepath = bundlepath.replaceAll(".properties", "_" + this.locale.toString().toLowerCase() + ".properties");
+            if (backslashesToSlashes(bundleFilePath).endsWith(localizedBundlepath) &&
+                codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
+                return true;
+        }
+        return false;
+    }
+    
+    private boolean inModifiedKeysBundle(String bundlepath, String codenamebase)
+    {
         // in modified keys?
         for (BundleKey bundleKey : generalResourceBundleKeys) {
             if (backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(bundlepath) &&
                 codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
                 return true;
         }
-        // in branded but not modified keys?
-        Set<BundleKey> bundleKeys = getBranding().getBrandedBundleKeys();
-        for (BundleKey bundleKey : bundleKeys) {
-            if (backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(bundlepath) &&
+        return false;
+    }
+
+    private boolean inModifiedLocalizedKeysBundle(String bundlepath, String codenamebase)
+    {
+        // in modified keys?
+        for (BundleKey bundleKey : internationalizedResourceBundleKeys) {
+            String localizedBundlepath = bundlepath;
+            if(!localizedBundlepath.endsWith("_" + this.locale.toString().toLowerCase() + ".properties"))
+                localizedBundlepath = bundlepath.replaceAll(".properties", "_" + this.locale.toString().toLowerCase() + ".properties");
+            if (backslashesToSlashes(bundleKey.getBundleFilePath()).endsWith(localizedBundlepath) &&
                 codenamebase.equals(bundleKey.getModuleEntry().getCodeNameBase()))
                 return true;
         }
@@ -843,4 +985,8 @@ public abstract class BrandingModel {
 
     public void reloadProperties() {}
 
+    public Locale getLocale() {
+        return locale;
+    }
+    
 }

@@ -57,6 +57,7 @@ import org.netbeans.editor.*;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -66,6 +67,7 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 import org.openide.filesystems.FileLock;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.RequestProcessor;
 
 /**
  * <FONT COLOR="#CC3333" FACE="Courier New, Monospaced" SIZE="+1">
@@ -125,32 +127,38 @@ public class CompletionTestPerformer {
     
     private static final long OPENING_TIMEOUT = 60 * 1000;
     private static final long SLEEP_TIME = 1000;
+    private static final RequestProcessor RP = new RequestProcessor("CompletionTestPerformer", 1);
     
-    private final CsmCompletionQuery.QueryScope queryScope;
+    private final CompletionResolver.QueryScope queryScope;
     /**
      * Creates new CompletionTestPerformer
      */
     public CompletionTestPerformer() {
-        this(CsmCompletionQuery.QueryScope.GLOBAL_QUERY);
+        this(CompletionResolver.QueryScope.GLOBAL_QUERY);
     }
     
-    public CompletionTestPerformer(CsmCompletionQuery.QueryScope queryScope) {
+    public CompletionTestPerformer(CompletionResolver.QueryScope queryScope) {
         this.queryScope = queryScope;
     }
     
     protected CompletionItem[] completionQuery(
             PrintWriter  log,
-            JEditorPane  editor,
-            BaseDocument doc,
-            int caretOffset,
-            boolean unsorted,
-            boolean tooltip) {
-        doc = doc == null ? Utilities.getDocument(editor) : doc;
+            final JEditorPane  editor,
+            final BaseDocument aDoc,
+            final int caretOffset,
+            final boolean unsorted,
+            final boolean tooltip) throws InterruptedException {
+        final BaseDocument doc = aDoc == null ? Utilities.getDocument(editor) : aDoc;
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
         assert csmFile != null : "Must be csmFile for document " + doc;        
-        CsmCompletionQuery query = CsmCompletionProvider.getCompletionQuery(csmFile, this.queryScope, null);
-        AtomicReference<CsmCompletionQuery.CsmCompletionResult> res = new AtomicReference<CsmCompletionQuery.CsmCompletionResult>();;
-        res.set(query.query(editor, doc, caretOffset, tooltip, !unsorted, true, tooltip));
+        final CsmCompletionQuery query = CsmCompletionProvider.getCompletionQuery(csmFile, this.queryScope, null);
+        final AtomicReference<CsmCompletionQuery.CsmCompletionResult> res = new AtomicReference<CsmCompletionQuery.CsmCompletionResult>();
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                res.set(query.query(editor, doc, caretOffset, tooltip, !unsorted, true, tooltip));
+            }
+        }).waitFinished(OPENING_TIMEOUT);
         
         CompletionItem[] array =  res.get() == null ? new CompletionItem[0] : res.get().getItems().toArray(new CompletionItem[res.get().getItems().size()]);
         assert array != null;
@@ -166,14 +174,14 @@ public class CompletionTestPerformer {
      * editor code completion threading model. Revise if this changes
      * in future.
      */
-    private CompletionItem[] testPerform(PrintWriter log,
+    private CompletionTestResultItem[] testPerform(PrintWriter log,
             JEditorPane editor,
             BaseDocument doc,
             boolean unsorted,
             final String textToInsert, int offsetAfterInsertion, 
             int lineIndex,
             int colIndex,
-            boolean tooltip) throws BadLocationException, IOException {
+            boolean tooltip) throws BadLocationException, IOException, InterruptedException {
         if (!SwingUtilities.isEventDispatchThread()) {
             throw new IllegalStateException("The testPerform method may be called only inside AWT event dispatch thread.");
         }
@@ -208,18 +216,37 @@ public class CompletionTestPerformer {
             editor.grabFocus();
             editor.getCaret().setDot(offset);
         }        
-        return completionQuery(log, editor, doc, offset, unsorted, tooltip);
+        
+        CompletionItem items[] = completionQuery(log, editor, doc, offset, unsorted, tooltip);
+        
+        CompletionTestResultItem results[] = new CompletionTestResultItem[items.length];
+        
+        int lineBeginningOffset = CndCoreTestUtils.getDocumentOffset(doc, lineIndex, 1);        
+        JEditorPane textComponent = new JEditorPane();
+        textComponent.setDocument(new BaseDocument(false, "text/plain"));
+        
+        for (int i = 0; i < items.length; i++) {
+            textComponent.setText(doc.getText(0, doc.getLength()));
+            
+            items[i].defaultAction(textComponent);
+
+            int lineEndingOffset = Utilities.getRowEnd((BaseDocument) textComponent.getDocument(), offset);
+            
+            results[i] = new CompletionTestResultItem(items[i], textComponent.getText(lineBeginningOffset, lineEndingOffset - lineBeginningOffset));            
+        }
+        
+        return results;
     }
     
-    public CompletionItem[] test(final PrintWriter log,
+    public CompletionTestResultItem[] test(final PrintWriter log,
             final String textToInsert, final int offsetAfterInsertion, final boolean unsorted,
             final File testSourceFile, final int line, final int col, final boolean tooltip) throws Exception {
         try {
-            final CompletionItem[][] array = new CompletionItem[][] {null};
+            final CompletionTestResultItem[][] array = new CompletionTestResultItem[][] {null};
             log.println("Completion test start.");
             log.flush();
             
-            FileObject testFileObject = getTestFile(testSourceFile, log);
+            final FileObject testFileObject = getTestFile(testSourceFile, log);
             final DataObject testFile = DataObject.find(testFileObject);
             if (testFile == null) {
                 throw new DataObjectNotFoundException(testFileObject);
@@ -264,7 +291,7 @@ public class CompletionTestPerformer {
                 log.flush();
             }
             //((CloseCookie) testFile.getCookie(CloseCookie.class)).close();
-            return array[0] == null ? new CompletionItem[0] : array[0];
+            return array[0] == null ? new CompletionTestResultItem[0] : array[0];
         } catch (Exception e) {
             e.printStackTrace(log);
             throw e;
@@ -312,5 +339,5 @@ public class CompletionTestPerformer {
         prj.waitParse();
         assert csmFile.isParsed() : " file must be parsed: " + csmFile;
         assert prj.isStable(null) : " full project must be parsed" + prj;
-    }
+    }   
 }

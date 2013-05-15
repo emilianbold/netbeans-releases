@@ -278,6 +278,25 @@ made subject to such option by the copyright holder.
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.PersistenceClientIterator"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/jsp16.gif"/>
             </file>
+            <file name="ResourceLibraryContract">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.web.jsf.wizards.Bundle#Templates/JSF/ResourceLibraryContract"/>
+                <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/java/resources/class.gif"/>
+                <attr name="position" intvalue="380"/>
+                <attr name="templateCategory" stringvalue="jsf-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/ResourceLibraryContract.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.ResourceLibraryIterator"/>
+            </file>
+            <file name="FacesComponent.java" url="templates/facesComponent.template">
+                <attr name="displayName" bundlevalue="org.netbeans.modules.web.jsf.wizards.Bundle#Templates/JSF/FacesComponent"/>
+                <attr name="position" intvalue="420"/>
+                <attr name="templateCategory" stringvalue="jsf-types"/>
+                <attr name="template" boolvalue="true"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/jsf/resources/FacesComponent.html"/>
+                <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.jsf.wizards.FacesComponentIterator"/>
+                <attr name="iconBase" stringvalue="org/netbeans/modules/web/jsf/resources/jsp16.gif"/>
+            </file>
         </folder>
         <folder name="Persistence">
             <file name="JsfFromDB" url="templates/dummy.template">

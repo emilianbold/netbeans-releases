@@ -44,6 +44,7 @@ package org.netbeans.modules.bugtracking.vcs;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.Map;
 import javax.swing.JPanel;
 import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
@@ -108,6 +109,11 @@ public class GitHookImpl extends GitHook {
     @Override
     public String getDisplayName() {
         return name;
+    }
+    
+    @Override
+    public void afterCommitReplace (GitHookContext originalContext, GitHookContext newContext, Map<String, String> mapping) {
+        delegate.afterChangesetReplace(newContext.getFiles(), mapping, "GIT");
     }
 
 }

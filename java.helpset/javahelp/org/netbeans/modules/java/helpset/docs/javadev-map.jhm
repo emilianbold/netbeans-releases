@@ -523,8 +523,12 @@
 <mapID target="debug.add.watch" url="debug/CSH/watch_window.html" />
 <mapID target="NetbeansDebuggerJPDAPopOldFrame" url="debug/CSH/old_stack_call.html"/>
 
-<!--evaluate code window-->	
+<!--evaluate code window, separate ids for javascript and java-->	
 <mapID target="EvaluateCode" url="debug/CSH/evaluate_expression.html"/>
+<mapID target="text.java-x" url="debug/CSH/evaluate_expression.html"/>
+
+<!--analyze stack window-->	
+<mapID target="org.netbeans.modules.java.stackanalyzer.AnalyzeStackTopComponent" url="debug/CSH/analyze_stack_window.html"/>
 
 <!--debug actions - usually associated with menu items-->	
 <mapID target="NetbeansDebuggerFixAction" url="debug/debug_fix.html"/>

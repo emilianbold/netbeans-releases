@@ -53,5 +53,10 @@ import java.util.logging.Logger;
  * @author Jaroslav Tulach
  */
 public interface Activated {
+    
+    /**
+     * Called when the UI logger is activated.
+     * @param uiLogger the activated UI logger
+     */
     public void activated(Logger uiLogger);
 }

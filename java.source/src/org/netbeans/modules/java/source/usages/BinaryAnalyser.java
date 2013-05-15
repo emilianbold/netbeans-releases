@@ -114,6 +114,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 
@@ -330,9 +331,9 @@ public class BinaryAnalyser {
             final PrintWriter out = new PrintWriter(new OutputStreamWriter(new FileOutputStream(file),"UTF-8"));   //NOI18N
             try {
                 for (Pair<ElementHandle<TypeElement>,Long> pair : state) {
-                    StringBuilder sb = new StringBuilder(pair.first.getBinaryName());
+                    StringBuilder sb = new StringBuilder(pair.first().getBinaryName());
                     sb.append('='); //NOI18N
-                    sb.append(pair.second.longValue());
+                    sb.append(pair.second().longValue());
                     out.println(sb.toString());
                 }
             } finally {
@@ -375,11 +376,11 @@ public class BinaryAnalyser {
         if (timeStamps == null) {
             f.delete();
         } else {
-            timeStamps.first.keySet().removeAll(timeStamps.second);
+            timeStamps.first().keySet().removeAll(timeStamps.second());
             final BufferedWriter out = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(f), "UTF-8")); //NOI18N
             try {
                 // write data
-                for(LongHashMap.Entry<String> entry : timeStamps.first.entrySet()) {
+                for(LongHashMap.Entry<String> entry : timeStamps.first().entrySet()) {
                     out.write(entry.getKey());
                     out.write('='); //NOI18N
                     out.write(Long.toString(entry.getValue()));
@@ -394,13 +395,13 @@ public class BinaryAnalyser {
     }
 
     private boolean timeStampsEmpty() {
-        return timeStamps == null || timeStamps.second.isEmpty();
+        return timeStamps == null || timeStamps.second().isEmpty();
     }
 
     private boolean isUpToDate(final String resourceName, final long timeStamp) throws IOException {
         final Pair<LongHashMap<String>,Set<String>> ts = getTimeStamps();
-        long oldTime = ts.first.put(resourceName,timeStamp);
-        ts.second.remove(resourceName);
+        long oldTime = ts.first().put(resourceName,timeStamp);
+        ts.second().remove(resourceName);
         return oldTime == timeStamp;
     }
 
@@ -424,33 +425,33 @@ public class BinaryAnalyser {
             if (newE == null) {
                 newE = newIt.next();
             }
-            int ni = oldE.first.getBinaryName().compareTo(newE.first.getBinaryName());
+            int ni = oldE.first().getBinaryName().compareTo(newE.first().getBinaryName());
             if (ni == 0) {
-                if (oldE.second.longValue() == 0 || oldE.second.longValue() != newE.second.longValue()) {
-                    changed.add(oldE.first);
+                if (oldE.second().longValue() == 0 || oldE.second().longValue() != newE.second().longValue()) {
+                    changed.add(oldE.first());
                 }
                 oldE = newE = null;
             }
             else if (ni < 0) {
-                removed.add(oldE.first);
+                removed.add(oldE.first());
                 oldE = null;
             }
             else if (ni > 0) {
-                added.add(newE.first);
+                added.add(newE.first());
                 newE = null;
             }
         }
         if (oldE != null) {
-            removed.add(oldE.first);
+            removed.add(oldE.first());
         }
         while (oldIt.hasNext()) {
-            removed.add(oldIt.next().first);
+            removed.add(oldIt.next().first());
         }
         if (newE != null) {
-            added.add(newE.first);
+            added.add(newE.first());
         }
         while (newIt.hasNext()) {
-            added.add(newIt.next().first);
+            added.add(newIt.next().first());
         }
         return new Changes(true, added, removed, changed, preBuildArgs);
     }
@@ -859,7 +860,7 @@ public class BinaryAnalyser {
                 public int compare(
                         final Pair<ElementHandle<TypeElement>,Long> o1,
                         final Pair<ElementHandle<TypeElement>,Long> o2) {
-                    return o1.first.getBinaryName().compareTo(o2.first.getBinaryName());
+                    return o1.first().getBinaryName().compareTo(o2.first().getBinaryName());
                 }
             };
 
@@ -1077,7 +1078,7 @@ public class BinaryAnalyser {
                     return false;
                 }
             }
-            for (String deleted : getTimeStamps().second) {
+            for (String deleted : getTimeStamps().second()) {
                 delete(deleted);
                 markChanged();
             }
@@ -1137,7 +1138,7 @@ public class BinaryAnalyser {
         DeletedRootProcessor(@NonNull final Context ctx) throws IOException {
             super(ctx);
             final Pair<LongHashMap<String>, Set<String>> ts = getTimeStamps();
-            if (!ts.first.isEmpty()) {
+            if (!ts.first().isEmpty()) {
                 markChanged();
             }
         }

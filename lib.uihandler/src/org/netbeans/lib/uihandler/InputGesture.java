@@ -46,7 +46,7 @@ public enum InputGesture {
     
     /** Finds the right InputGesture for given LogRecord.
      * @param rec the record
-     * @return the gesture that initated the record or null if unknown
+     * @return the gesture that initiated the record or <code>null</code> if unknown
      */
     public static InputGesture valueOf(LogRecord rec) {
         if ("UI_ACTION_BUTTON_PRESS".equals(rec.getMessage())) {

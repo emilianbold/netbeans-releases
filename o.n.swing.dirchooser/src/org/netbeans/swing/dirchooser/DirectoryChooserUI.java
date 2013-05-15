@@ -1206,10 +1206,7 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
     }
     
     private void markStartTime () {
-        if (fileChooser.getClientProperty(DelegatingChooserUI.START_TIME) == null) {
-            fileChooser.putClientProperty(DelegatingChooserUI.START_TIME,
-                    Long.valueOf(System.currentTimeMillis()));
-        }
+        fileChooser.putClientProperty(DelegatingChooserUI.START_TIME, Long.valueOf(System.currentTimeMillis()));
     }
 
     private void checkUpdate() {

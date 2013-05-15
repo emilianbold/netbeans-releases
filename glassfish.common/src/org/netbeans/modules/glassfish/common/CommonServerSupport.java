@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.glassfish.common;
 
+import org.netbeans.modules.glassfish.common.utils.Util;
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -50,8 +51,7 @@ import java.net.Socket;
 import java.net.URL;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -59,6 +59,9 @@ import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.GlassFishIdeException;
 import org.glassfish.tools.ide.admin.*;
 import org.glassfish.tools.ide.utils.Utils;
+import org.glassfish.tools.ide.admin.TaskEvent;
+import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.modules.glassfish.spi.*;
@@ -111,6 +114,7 @@ public class CommonServerSupport
                     : NbBundle.getMessage(CommonServerSupport.class, resName,
                     args[0], args[1]);
         }
+
         /**
          * Callback to notify about GlassFish __locations command execution
          * state change.
@@ -240,7 +244,7 @@ public class CommonServerSupport
     // prevent j2eeserver from stopping an authenticated domain that
     // the IDE did not start.
     private boolean stopDisabled = false;
-    
+
     private Process localStartProcess;
 
     ////////////////////////////////////////////////////////////////////////////
@@ -267,10 +271,10 @@ public class CommonServerSupport
 
     private FileObject getInstanceFileObject() {
         FileObject dir = FileUtil.getConfigFile(
-                instance.getInstanceProvider().getInstancesDirName());
+                instance.getInstanceProvider().getInstancesDirFirstName());
         if(dir != null) {
             String instanceFN = instance
-                    .getProperty(GlassfishInstanceProvider.INSTANCE_FO_ATTR);
+                    .getProperty(GlassfishInstance.INSTANCE_FO_ATTR);
             if(instanceFN != null) {
                 return dir.getFileObject(instanceFN);
             }
@@ -409,7 +413,6 @@ public class CommonServerSupport
         VMIntrospector vmi = Lookups.forPath(Util.GF_LOOKUP_PATH).lookup(VMIntrospector.class);
         FutureTask<TaskState> task = new FutureTask<TaskState>(
                 new StartTask(this, getRecognizers(), vmi,
-                (FileObject) null,
                 (String[]) (endState == ServerState.STOPPED_JVM_PROFILER
                 ? new String[]{""} : null),
                 startServerListener, stateListener));
@@ -602,7 +605,7 @@ public class CommonServerSupport
         return ServerAdmin.<ResultString>exec(instance, new CommandRedeploy(
                 name, Util.computeTarget(instance.getProperties()),
                 contextRoot, properties, libraries,
-                url != null && url.contains("ee6wc")), null);
+                url != null && url.contains("ee6wc")), null, stateListener);
     }
 
     @Override
@@ -629,26 +632,6 @@ public class CommonServerSupport
                 name,  Util.computeTarget(instance.getProperties())), null,
                 new TaskStateListener[] {stateListener});
     }
-
-//    @Override
-//    public Future<TaskState> execute(ServerCommand command) {
-//        CommandRunner mgr = new CommandRunner(
-//                GlassFishStatus.isReady(instance, false),
-//                getCommandFactory(), instance);
-//        return mgr.execute(command);
-//    }
-//
-//    private Future<TaskState> execute(boolean irr, ServerCommand command) {
-//        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
-//                instance);
-//        return mgr.execute(command);
-//    }
-//    private Future<TaskState> execute(boolean irr, ServerCommand command,
-//            TaskStateListener... osl) {
-//        CommandRunner mgr = new CommandRunner(irr, getCommandFactory(),
-//                instance, osl);
-//        return mgr.execute(command);
-//    }
 
     @Override
     public AppDesc [] getModuleList(String container) {
@@ -683,7 +666,10 @@ public class CommonServerSupport
     @Override
     public ServerState getServerState() {
         if (serverState == ServerState.UNKNOWN) {
-            refresh();
+            RequestProcessor.Task task = refresh();
+            if (task != null) {
+                task.waitFinished();
+            }
         }
         return serverState;
     }
@@ -810,28 +796,24 @@ public class CommonServerSupport
     private final AtomicBoolean refreshRunning = new AtomicBoolean(false);
 
     @Override
-    public final void refresh() {
-        refresh(null,null);
+    public final RequestProcessor.Task refresh() {
+        return refresh(null,null);
     }
 
     @Override
-    public void refresh(String expected, String unexpected) {
+    public RequestProcessor.Task refresh(String expected, String unexpected) {
         // !PW FIXME we can do better here, but for now, make sure we only change
         // server state from stopped or running states -- leave stopping or starting
         // states alone.
         if(refreshRunning.compareAndSet(false, true)) {
-            RP.post(new Runnable() {
+            return RP.post(new Runnable() {
                 @Override
                 public void run() {
                     try {
                         // Can block for up to a few seconds...
                         boolean isRunning = GlassFishStatus.isReady(
                                 instance, false, GlassFishStatus.Mode.REFRESH);
-                        if (isRunning && !Util.isDefaultOrServerTarget(
-                                instance.getProperties())) {
-                            isRunning = pingHttp(1);
-                        }
-                        ServerState currentState = getServerState();
+                        ServerState currentState = serverState;
 
                         if ((currentState == ServerState.STOPPED || currentState == ServerState.UNKNOWN) && isRunning) {
                             setServerState(ServerState.RUNNING);
@@ -848,6 +830,8 @@ public class CommonServerSupport
                     }
                 }
             });
+        } else {
+            return null;
         }
     }
 
@@ -1099,6 +1083,7 @@ public class CommonServerSupport
         } catch (GlassFishIdeException gfie) {
             LOGGER.log(Level.INFO, "Could not get server value from target.", gfie);
         }
+
         return retVal;
     }
 
@@ -1148,39 +1133,4 @@ public class CommonServerSupport
         return LOCALHOST.equals(retVal) ? nameOfLocalhost : retVal; // NOI18N
     }
 
-    @SuppressWarnings("SleepWhileInLoop")
-    private boolean pingHttp(int maxTries) {
-        boolean retVal = false;
-        URL url = null;
-        int tries = 0;
-        while (false == retVal && tries < maxTries) {
-            tries++;
-            HttpURLConnection httpConn = null;
-            try {
-                url = new URL("http://" + getInstanceProperties().get(GlassfishModule.HTTPHOST_ATTR)
-                        + ":" + getInstanceProperties().get(GlassfishModule.HTTPPORT_ATTR) + "/"); // NOI18N
-                httpConn = (HttpURLConnection) url.openConnection();
-                retVal = httpConn.getResponseCode() > 0;
-            } catch (java.net.MalformedURLException mue) {
-                LOGGER.log(Level.INFO, null, mue);
-            } catch (java.net.ConnectException ce) {
-                // we expect this...
-                LOGGER.log(Level.FINE,
-                        url != null ? url.toString() : "null", ce);
-            } catch (java.io.IOException ioe) {
-                LOGGER.log(Level.INFO,
-                        url != null ? url.toString() : "null", ioe);
-            } finally {
-                if (null != httpConn) {
-                    httpConn.disconnect();
-                }
-            }
-            try {
-                if (tries < maxTries) Thread.sleep(300);
-            } catch (InterruptedException ex) {
-            }
-        }
-        LOGGER.log(Level.FINE, "pingHttp returns {0}", retVal); // NOI18N
-        return retVal;
-    }
 }

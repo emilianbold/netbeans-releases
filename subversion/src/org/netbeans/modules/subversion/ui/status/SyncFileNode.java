@@ -296,18 +296,19 @@ public class SyncFileNode extends AbstractNode {
     private static final String [] zeros = new String [] { "", "00", "0", "" }; // NOI18N
     
     private class StatusProperty extends SyncFileProperty {
+        private final FileInformation finfo;
         
         public StatusProperty() {
             super(COLUMN_NAME_STATUS, NbBundle.getMessage(SyncFileNode.class, "BK2007"), NbBundle.getMessage(SyncFileNode.class, "BK2008")); // NOI18N
+            finfo = node.getInformation();
+            finfo.getEntry(node.getFile());  // XXX not interested in return value, side effect loads ISVNStatus structure
             String shortPath = "path";//SvnUtils.getRelativePath(node.getFile()); // NOI18N
-            String sortable = Integer.toString(SvnUtils.getComparableStatus(node.getInformation().getStatus()));
+            String sortable = Integer.toString(SvnUtils.getComparableStatus(finfo.getStatus()));
             setValue("sortkey", zeros[sortable.length()] + sortable + "\t" + shortPath + "\t" + SyncFileNode.this.getName()); // NOI18N
         }
 
         @Override
         public String getValue() throws IllegalAccessException, InvocationTargetException {
-            FileInformation finfo =  node.getInformation();
-            finfo.getEntry(node.getFile());  // XXX not interested in return value, side effect loads ISVNStatus structure
             int mask = panel.getDisplayStatuses();
             return finfo.getStatusText(mask);
         }

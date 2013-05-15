@@ -58,6 +58,8 @@ public class PersistenceCfgProperties {
 
     // String[] for selecting one of the values
     private final static String[] TRUE_FALSE = new String[]{"true", "false"}; // NOI18N
+    private final static String[] SCHEMA_GEN_OPTIONS = new String[]{"none", "create", "drop-and-create", "drop"};
+    private final static String[] SCHEMA_GEN_SOURCE_TYPES = new String[]{"metadata", "script", "metadata-then-script", "script-then-metadata"};
     //eclipselink
     private final static String[] EL_CACHE_TYPES = new String[]{"Full", "Weak", "Soft", "SoftWeak", "HardWeak", "NONE"};//NOI18N
     private final static String[] EL_FLUSH_CLEAR_CACHE = new String[]{"Drop", "DropInvalidate", "Merge"};//NOI18N
@@ -82,6 +84,18 @@ public class PersistenceCfgProperties {
         possiblePropertyValues.get(null).put(PersistenceUnitProperties.VALIDATION_GROUP_PRE_PERSIST, null);
         possiblePropertyValues.get(null).put(PersistenceUnitProperties.VALIDATION_GROUP_PRE_UPDATE, null);
         possiblePropertyValues.get(null).put(PersistenceUnitProperties.VALIDATION_GROUP_PRE_REMOVE, null);
+//in current realization jdbc properties are derived from provider properties, commented
+//        possiblePropertyValues.get(null).put(PersistenceUnitProperties.JDBC_DRIVER, null);
+//        possiblePropertyValues.get(null).put(PersistenceUnitProperties.JDBC_URL, null);
+//        possiblePropertyValues.get(null).put(PersistenceUnitProperties.JDBC_USER, null);
+//        possiblePropertyValues.get(null).put(PersistenceUnitProperties.JDBC_PASSWORD, null);
+        //2.1 but in the same area as 2.0 for now
+        possiblePropertyValues.get(null).put(PersistenceUnitProperties.SCHEMA_GENERATION_DATABASE_ACTION, SCHEMA_GEN_OPTIONS);
+        possiblePropertyValues.get(null).put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_ACTION, SCHEMA_GEN_OPTIONS);
+        possiblePropertyValues.get(null).put(PersistenceUnitProperties.SCHEMA_GENERATION_CREATE_SOURCE, SCHEMA_GEN_SOURCE_TYPES);
+        possiblePropertyValues.get(null).put(PersistenceUnitProperties.SCHEMA_GENERATION_DROP_SOURCE, SCHEMA_GEN_SOURCE_TYPES);
+        possiblePropertyValues.get(null).put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_CREATE_TARGET, null);
+        possiblePropertyValues.get(null).put(PersistenceUnitProperties.SCHEMA_GENERATION_SCRIPTS_DROP_TARGET, null);
         //eclipselink 2.0
         possiblePropertyValues.put(ProviderUtil.ECLIPSELINK_PROVIDER2_0, new HashMap<String, String[]>());
         possiblePropertyValues.get(ProviderUtil.ECLIPSELINK_PROVIDER2_0).put(PersistenceUnitProperties.TEMPORAL_MUTABLE, TRUE_FALSE);
@@ -225,7 +239,7 @@ public class PersistenceCfgProperties {
     public static List<String> getKeys(Provider provider){
         //TODO: cache lists?
         ArrayList<String> ret = new ArrayList<String>();
-        String ver = ProviderUtil.getVersion(provider);
+        String ver = provider == null ? null : ProviderUtil.getVersion(provider);
         if(provider == null || (ver!=null && !Persistence.VERSION_1_0.equals(ver))) {
             ret.addAll(possiblePropertyValues.get(null).keySet());
         }

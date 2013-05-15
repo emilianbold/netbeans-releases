@@ -591,19 +591,21 @@ public final class ProjectWebModule extends J2eeModuleProvider
         return J2eeModule.Type.WAR;
     }
 
+    @Override
     public String getModuleVersion () {
         // return a version based on the Java EE version
         Profile platformVersion = getJ2eeProfile();
-        if (Profile.JAVA_EE_6_FULL.equals(platformVersion) || Profile.JAVA_EE_6_WEB.equals(platformVersion) ||
-                Profile.JAVA_EE_7_FULL.equals(platformVersion) || Profile.JAVA_EE_7_WEB.equals(platformVersion)) {
+        if (Profile.JAVA_EE_7_FULL.equals(platformVersion) || Profile.JAVA_EE_7_WEB.equals(platformVersion)) {
+            return WebApp.VERSION_3_1;
+        } else if (Profile.JAVA_EE_6_FULL.equals(platformVersion) || Profile.JAVA_EE_6_WEB.equals(platformVersion)) {
             return WebApp.VERSION_3_0;
         } else if (Profile.JAVA_EE_5.equals(platformVersion)) {
             return WebApp.VERSION_2_5;
         } else if (Profile.J2EE_14.equals(platformVersion)) {
             return WebApp.VERSION_2_4;
         } else {
-            // return 3.0 as default value
-            return WebApp.VERSION_3_0;
+            // return 3.1 as default value
+            return WebApp.VERSION_3_1;
         }
     }
     

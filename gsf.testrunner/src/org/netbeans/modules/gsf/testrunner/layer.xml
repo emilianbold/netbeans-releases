@@ -15,10 +15,10 @@
     </folder>
     <folder name="Menu">
         <folder name="Window">
-            <folder name="Output">
+            <folder name="Tools">
                 <file name="GsfTestRunnerResultWindowOpenAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-gsf-testrunner-api-ResultWindowOpenAction.instance"/>
-                    <attr name="position" intvalue="440"/>
+                    <attr name="position" intvalue="250"/>
                 </file>
             </folder>
         </folder> <!-- Window -->

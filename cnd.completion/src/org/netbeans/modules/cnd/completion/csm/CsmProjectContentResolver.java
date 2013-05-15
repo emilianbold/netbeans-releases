@@ -816,13 +816,13 @@ public final class CsmProjectContentResolver {
 //        }
 //        return res;
 //    }
-    public List<CsmVariable> getNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
-        return getNamespaceVariables(ns, strPrefix, match, isSortNeeded(), searchNested);
+    public List<CsmVariable> getNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match, boolean searchNestedUnnamedNamespaces) {
+        return getNamespaceVariables(ns, strPrefix, match, isSortNeeded(), searchNestedUnnamedNamespaces);
     }
 
     @SuppressWarnings("unchecked")
-    private List<CsmVariable> getNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNested) {
-        List res = getNamespaceMembers(ns, CsmDeclaration.Kind.VARIABLE, strPrefix, match, searchNested, false);
+    private List<CsmVariable> getNamespaceVariables(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNestedUnnamedNamespaces) {
+        List res = getNamespaceMembers(ns, CsmDeclaration.Kind.VARIABLE, strPrefix, match, searchNestedUnnamedNamespaces, false);
         Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
         filterDeclarations(used.iterator(), res, new CsmDeclaration.Kind[]{CsmDeclaration.Kind.VARIABLE}, strPrefix, match, false);
         res = filterVariables(res);
@@ -850,12 +850,12 @@ public final class CsmProjectContentResolver {
         return out;
     }
 
-    public List<CsmFunction> getNamespaceFunctions(CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
-        return getNamespaceFunctions(ns, strPrefix, match, isSortNeeded(), searchNested);
+    public List<CsmFunction> getNamespaceFunctions(CsmNamespace ns, String strPrefix, boolean match, boolean searchNestedUnnamedNamespaces) {
+        return getNamespaceFunctions(ns, strPrefix, match, isSortNeeded(), searchNestedUnnamedNamespaces);
     }
 
     @SuppressWarnings("unchecked")
-    private List<CsmFunction> getNamespaceFunctions(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNested) {
+    private List<CsmFunction> getNamespaceFunctions(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNestedUnnamedNamespaces) {
         CsmDeclaration.Kind memberKinds[] = {
             CsmDeclaration.Kind.FUNCTION,
             CsmDeclaration.Kind.FUNCTION_DEFINITION,
@@ -863,7 +863,7 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.FUNCTION_FRIEND,
             CsmDeclaration.Kind.FUNCTION_FRIEND_DEFINITION
         };
-        List res = getNamespaceMembers(ns, memberKinds, strPrefix, match, searchNested, false);
+        List res = getNamespaceMembers(ns, memberKinds, strPrefix, match, searchNestedUnnamedNamespaces, false);
         Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
         filterDeclarations(used.iterator(), res, memberKinds, strPrefix, match, false);
         res = filterFunctionDefinitions(res);
@@ -873,13 +873,13 @@ public final class CsmProjectContentResolver {
         return res;
     }
 
-    public List<CsmNamespaceAlias> getNamespaceAliases(CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
-        return getNamespaceAliases(ns, strPrefix, match, isSortNeeded(), searchNested);
+    public List<CsmNamespaceAlias> getNamespaceAliases(CsmNamespace ns, String strPrefix, boolean match, boolean searchNestedUnnamedNamespaces) {
+        return getNamespaceAliases(ns, strPrefix, match, isSortNeeded(), searchNestedUnnamedNamespaces);
     }
 
     @SuppressWarnings("unchecked")
-    private List<CsmNamespaceAlias> getNamespaceAliases(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNested) {
-        List res = getNamespaceMembers(ns, CsmDeclaration.Kind.NAMESPACE_ALIAS, strPrefix, match, searchNested, false);
+    private List<CsmNamespaceAlias> getNamespaceAliases(CsmNamespace ns, String strPrefix, boolean match, boolean sort, boolean searchNestedUnnamedNamespaces) {
+        List res = getNamespaceMembers(ns, CsmDeclaration.Kind.NAMESPACE_ALIAS, strPrefix, match, searchNestedUnnamedNamespaces, false);
         Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
         filterDeclarations(used.iterator(), res, new CsmDeclaration.Kind[]{CsmDeclaration.Kind.NAMESPACE_ALIAS}, strPrefix, match, false);
         if (sort && res != null) {
@@ -928,7 +928,7 @@ public final class CsmProjectContentResolver {
     }
 
     @SuppressWarnings("unchecked")
-    public List<CsmClassifier> getNamespaceClassesEnums(CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
+    public List<CsmClassifier> getNamespaceClassesEnums(CsmNamespace ns, String strPrefix, boolean match, boolean searchNestedUnnamedNamespaces) {
         CsmDeclaration.Kind classKinds[] = {
             CsmDeclaration.Kind.CLASS,
             CsmDeclaration.Kind.STRUCT,
@@ -936,7 +936,7 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.ENUM,
             CsmDeclaration.Kind.TYPEDEF
         };
-        List res = getNamespaceMembers(ns, classKinds, strPrefix, match, searchNested, false);
+        List res = getNamespaceMembers(ns, classKinds, strPrefix, match, searchNestedUnnamedNamespaces, false);
         Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
         filterDeclarations(used.iterator(), res, classKinds, strPrefix, match, false);
         if (isSortNeeded() && res != null) {
@@ -946,7 +946,7 @@ public final class CsmProjectContentResolver {
     }
 
     @SuppressWarnings("unchecked")
-    public List<CsmEnumerator> getNamespaceEnumerators(CsmNamespace ns, String strPrefix, boolean match, boolean searchNested) {
+    public List<CsmEnumerator> getNamespaceEnumerators(CsmNamespace ns, String strPrefix, boolean match, boolean searchNestedUnnamedNamespaces) {
         // get all enums and check theirs enumerators
         // also get all typedefs and check whether they define
         // unnamed enum
@@ -955,7 +955,7 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
             CsmDeclaration.Kind.TYPEDEF
         };
-        List enumsAndTypedefs = getNamespaceMembers(ns, classKinds, "", false, searchNested, true);
+        List enumsAndTypedefs = getNamespaceMembers(ns, classKinds, "", false, searchNestedUnnamedNamespaces, true);
         Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
         CsmDeclaration.Kind classAndEnumeratorKinds[] = {
             CsmDeclaration.Kind.ENUM,
@@ -1327,16 +1327,16 @@ public final class CsmProjectContentResolver {
         return res;
     }
 
-    private List/*<CsmDeclaration>*/ getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kind, String strPrefix, boolean match, boolean searchNested, boolean returnUnnamedMembers) {
-        return getNamespaceMembers(ns, new CsmDeclaration.Kind[]{kind}, strPrefix, match, searchNested, returnUnnamedMembers);
+    private List/*<CsmDeclaration>*/ getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kind, String strPrefix, boolean match, boolean searchNestedUnnamedNamespaces, boolean returnUnnamedMembers) {
+        return getNamespaceMembers(ns, new CsmDeclaration.Kind[]{kind}, strPrefix, match, searchNestedUnnamedNamespaces, returnUnnamedMembers);
     }
 
-    private List<CsmDeclaration> getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match, boolean searchNested, boolean returnUnnamedMembers) {
-        List<CsmDeclaration> res = getNamespaceMembers(ns, kinds, strPrefix, match, new HashSet<CsmNamespace>(), searchNested, returnUnnamedMembers);
+    private List<CsmDeclaration> getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match, boolean searchNestedUnnamedNamespaces, boolean returnUnnamedMembers) {
+        List<CsmDeclaration> res = getNamespaceMembers(ns, kinds, strPrefix, match, new HashSet<CsmNamespace>(), searchNestedUnnamedNamespaces, returnUnnamedMembers);
         return res;
     }
 
-    private List<CsmDeclaration> getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match, Set<CsmNamespace> handledNS, boolean searchNested, boolean returnUnnamedMembers) {
+    private List<CsmDeclaration> getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match, Set<CsmNamespace> handledNS, boolean searchNestedUnnamedNamespaces, boolean returnUnnamedMembers) {
         if (handledNS.contains(ns)) {
             return Collections.<CsmDeclaration>emptyList();
         }
@@ -1357,9 +1357,12 @@ public final class CsmProjectContentResolver {
             }
         }
         // handle all nested namespaces
-        if (searchNested) {
+        if (searchNestedUnnamedNamespaces) {
             for (it = ns.getNestedNamespaces().iterator(); it.hasNext();) {
                 CsmNamespace nestedNs = (CsmNamespace) it.next();
+                
+                // we need nested namespaces only if they do not modify qualified path (they names are empty)
+                if (nestedNs.getName().length() == 0) {
                 // TODO: consider when we add nested namespaces
 //            if (nestedNs.getName().length() != 0) {
 //                if (need namespaces &&
@@ -1367,7 +1370,8 @@ public final class CsmProjectContentResolver {
 //                    res.add(nestedNs);
 //                }
 //            }
-                res.addAll(getNamespaceMembers(nestedNs, kinds, strPrefix, match, handledNS, true, returnUnnamedMembers));
+                    res.addAll(getNamespaceMembers(nestedNs, kinds, strPrefix, match, handledNS, true, returnUnnamedMembers));
+                }
             }
         }
         // handle all parent namespaces

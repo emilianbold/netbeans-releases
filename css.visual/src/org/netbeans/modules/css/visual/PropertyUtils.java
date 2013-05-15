@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.visual;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,6 +49,7 @@ import java.util.List;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.web.common.api.LexerUtils;
@@ -58,7 +60,7 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  */
 public class PropertyUtils {
 
-    private static final Comparator<Declaration> DECLARATIONS_COMPARATOR = new DeclarationsComparator();
+    private static final Comparator<PropertyDeclaration> DECLARATIONS_COMPARATOR = new DeclarationsComparator();
     
     private static final Comparator<PropertyDefinition> PROPERTY_DEFINITIONS_COMPARATOR = new Comparator<PropertyDefinition>() {
         @Override
@@ -80,6 +82,21 @@ public class PropertyUtils {
         }
     };
     
+    public static List<PropertyDeclaration> getPropertyDeclarations(Rule rule) {
+        List<PropertyDeclaration> pds = new ArrayList<>();
+        Declarations declarations = rule.getDeclarations();
+        if(declarations == null) {
+            return Collections.emptyList();
+        }
+        for(Declaration d : declarations.getDeclarations()) {
+            PropertyDeclaration propertyDeclaration = d.getPropertyDeclaration();
+            if(propertyDeclaration != null) {
+                pds.add(propertyDeclaration);
+            }
+        }
+        return pds;
+    }
+    
     /**
      * Returns an unique id of the property within current rule.
      *
@@ -97,16 +114,15 @@ public class PropertyUtils {
      *
      * @param property
      */
-    public static String getDeclarationId(Rule rule, Declaration declaration) {
+    public static String getDeclarationId(Rule rule, PropertyDeclaration declaration) {
         assert rule.getModel() == declaration.getModel();
 
         CharSequence searched = declaration.getProperty().getContent();
-        Declarations ds = rule.getDeclarations();
-        Collection<Declaration> declarations = ds != null ? ds.getDeclarations() : Collections.<Declaration>emptyList();
+        Collection<PropertyDeclaration> declarations = getPropertyDeclarations(rule);
 
         int identityIndex = -1;
         int index = -1;
-        for (Declaration d : declarations) {
+        for (PropertyDeclaration d : declarations) {
             index++;
             CharSequence propName = d.getProperty().getContent();
             if (LexerUtils.equals(searched, propName, false, false)) {
@@ -132,7 +148,7 @@ public class PropertyUtils {
         return PROPERTY_DEFINITIONS_COMPARATOR;
     }
     
-    static Comparator<Declaration> getDeclarationsComparator() {
+    static Comparator<PropertyDeclaration> getDeclarationsComparator() {
         return DECLARATIONS_COMPARATOR;
     }
     
@@ -141,7 +157,7 @@ public class PropertyUtils {
      * at the end of the list keeping their natural order.
      * 
      */
-    static Comparator<Declaration> createDeclarationsComparator(Rule rule, List<String> extraDeclarationsIds) {
+    static Comparator<PropertyDeclaration> createDeclarationsComparator(Rule rule, List<String> extraDeclarationsIds) {
         return new ExtDeclarationsComparator(rule, extraDeclarationsIds);
     }
     
@@ -156,7 +172,7 @@ public class PropertyUtils {
         }
 
         @Override
-        public int compare(Declaration d1, Declaration d2) {
+        public int compare(PropertyDeclaration d1, PropertyDeclaration d2) {
             String d1Id = PropertyUtils.getDeclarationId(rule, d1);
             String d2Id = PropertyUtils.getDeclarationId(rule, d2);
             
@@ -182,10 +198,10 @@ public class PropertyUtils {
         
     }
 
-    private static class DeclarationsComparator implements Comparator<Declaration> {
+    private static class DeclarationsComparator implements Comparator<PropertyDeclaration> {
         
         @Override
-        public int compare(Declaration d1, Declaration d2) {
+        public int compare(PropertyDeclaration d1, PropertyDeclaration d2) {
             String d1Name = d1.getProperty().getContent().toString();
             String d2Name = d2.getProperty().getContent().toString();
 

@@ -39,24 +39,19 @@ package org.netbeans.modules.bugzilla;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiIssueProvider;
-import org.netbeans.modules.bugtracking.kenai.spi.OwnerInfo;
+import org.netbeans.modules.bugtracking.team.spi.TeamIssueProvider;
+import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.IssueField;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author Tomas Stupka
  */
-public class BugzillaIssueProvider extends KenaiIssueProvider<BugzillaIssue> {
+public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
     private IssueStatusProvider<BugzillaIssue> statusProvider;
 
     @Override
@@ -76,7 +71,7 @@ public class BugzillaIssueProvider extends KenaiIssueProvider<BugzillaIssue> {
 
     @Override
     public String[] getSubtasks(BugzillaIssue data) {
-        List<String> l = data.getFieldValues(IssueField.BLOCKS);
+        List<String> l = data.getRepositoryFieldValues(IssueField.BLOCKS);
         return l.toArray(new String[l.size()]);
     }
 

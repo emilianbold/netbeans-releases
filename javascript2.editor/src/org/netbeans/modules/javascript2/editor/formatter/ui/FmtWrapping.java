@@ -50,7 +50,7 @@ import java.awt.event.FocusListener;
 import java.io.IOException;
 import static org.netbeans.modules.javascript2.editor.formatter.FmtOptions.*;
 import static org.netbeans.modules.javascript2.editor.formatter.FmtOptions.CategorySupport.OPTION_ID;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 
 

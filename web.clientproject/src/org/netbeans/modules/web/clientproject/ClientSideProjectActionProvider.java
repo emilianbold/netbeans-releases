@@ -42,7 +42,7 @@
 package org.netbeans.modules.web.clientproject;
 
 import org.netbeans.api.project.ui.ProjectProblems;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.DialogDisplayer;
@@ -79,7 +79,7 @@ public class ClientSideProjectActionProvider implements ActionProvider {
     }
 
     private ActionProvider getActionProvider() {
-        ClientProjectConfigurationImplementation cfg = project.getProjectConfigurations().getActiveConfiguration();
+        ClientProjectEnhancedBrowserImplementation cfg = project.getEnhancedBrowserImpl();
         if (cfg != null) {
             return cfg.getActionProvider();
         } else {

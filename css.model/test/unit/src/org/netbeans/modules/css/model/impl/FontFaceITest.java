@@ -43,7 +43,6 @@ package org.netbeans.modules.css.model.impl;
 
 import java.util.List;
 import javax.swing.text.BadLocationException;
-import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.model.api.ModelTestBase;
 import org.netbeans.modules.css.model.api.*;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -110,7 +109,7 @@ public class FontFaceITest extends ModelTestBase {
         assertEquals("", model.getModelSource().toString());
 
         ElementFactory ef = model.getElementFactory();
-        Declaration declaration = ef.createDeclaration(
+        PropertyDeclaration declaration = ef.createPropertyDeclaration(
                 ef.createProperty("src"),
                 ef.createPropertyValue(ef.createExpression("url(http://example.com/fonts/Gentium.ttf)")),
                 false);

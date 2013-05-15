@@ -90,6 +90,7 @@ import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.visual.RemoteServices.ServiceType;
 import org.netbeans.modules.debugger.jpda.visual.actions.ComponentBreakpointActionProvider;
+import org.netbeans.modules.debugger.jpda.visual.actions.CreateFixedWatchAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToAddIntoHierarchyAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToFieldDeclarationAction;
 import org.netbeans.modules.debugger.jpda.visual.actions.GoToSourceAction;
@@ -99,6 +100,7 @@ import org.netbeans.modules.debugger.jpda.visual.breakpoints.ComponentBreakpoint
 import org.netbeans.modules.debugger.jpda.visual.models.ComponentBreakpointsActionsProvider;
 import org.netbeans.modules.debugger.jpda.visual.spi.ComponentInfo;
 import org.netbeans.modules.debugger.jpda.visual.spi.RemoteScreenshot;
+import org.openide.actions.PropertiesAction;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -772,11 +774,14 @@ public class RemoteAWTScreenshot {
             }
             actions.add(null);
             actions.add(ShowListenersAction.get(ShowListenersAction.class));
+            actions.add(CreateFixedWatchAction.get(CreateFixedWatchAction.class));
             actions.add(null);
             actions.add(ToggleComponentBreakpointAction.get(ToggleComponentBreakpointAction.class));
             if (b != null) {
                 actions.add(CBP_CUSTOMIZE_ACTION);
             }
+            actions.add(null);
+            actions.add(PropertiesAction.get(PropertiesAction.class));
             return actions.toArray(new Action[] {});
         }
 

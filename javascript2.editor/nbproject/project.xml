@@ -137,7 +137,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>2.1</specification-version>
+                        <specification-version>2.19</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -155,7 +155,7 @@
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.22</specification-version>
+                        <specification-version>1.26</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -365,7 +365,17 @@
                     </test-dependency>
                 </test-type>
             </test-dependencies>
-            <public-packages/>
+            <friend-packages>
+                <friend>org.netbeans.modules.html.angular</friend>
+                <friend>org.netbeans.modules.javascript2.extjs</friend>
+                <friend>org.netbeans.modules.javascript2.jquery</friend>
+                <friend>org.netbeans.modules.javascript2.knockout</friend>
+                <package>org.netbeans.modules.javascript2.editor.api.lexer</package>
+                <package>org.netbeans.modules.javascript2.editor.index</package>
+                <package>org.netbeans.modules.javascript2.editor.model</package>
+                <package>org.netbeans.modules.javascript2.editor.spi</package>
+                <package>org.netbeans.modules.javascript2.editor.spi.model</package>
+            </friend-packages>
         </data>
         <spellchecker-wordlist xmlns="http://www.netbeans.org/ns/spellchecker-wordlist/1">
             <word>netbeans</word>

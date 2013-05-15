@@ -123,7 +123,7 @@ public class InstallerReadPageTest extends NbTestCase {
 
     @RandomlyFails // NB-Core-Build #7964
     public void testSendLogWithException() throws Exception {
-        Logger uiLogger = Logger.getLogger("org.netbeans.ui");
+        Logger uiLogger = Logger.getLogger(Installer.UI_LOGGER_NAME);
         LogRecord log1 = new LogRecord(Level.SEVERE, "TESTING MESSAGE");
         LogRecord log2 = new LogRecord(Level.SEVERE, "TESTING MESSAGE");
         LogRecord log3 = new LogRecord(Level.SEVERE, "NO EXCEPTION LOG");

@@ -57,10 +57,10 @@ public class TwigTopLexer implements Lexer<TwigTopTokenId> {
     protected final LexerInput input;
     static String OPEN_BLOCK = "{%"; //NOI18N
     static String OPEN_VAR = "{{"; //NOI18N
-    static String OPEN_COMMENT = "{#"; //NOI18N
+    public static final String OPEN_COMMENT = "{#"; //NOI18N
     static String CLOSE_BLOCK = "%}"; //NOI18N
     static String CLOSE_VAR = "}}"; //NOI18N
-    static String CLOSE_COMMENT = "#}"; //NOI18N
+    public static final String CLOSE_COMMENT = "#}"; //NOI18N
     static Pattern START_RAW = Pattern.compile("^\\{%[\\s]raw"); //NOI18N
     static Pattern END_RAW = Pattern.compile("\\{%[\\s]*endraw[\\s]*%\\}$"); //NOI18N
 

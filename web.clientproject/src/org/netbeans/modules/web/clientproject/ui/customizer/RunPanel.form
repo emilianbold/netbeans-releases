@@ -32,7 +32,7 @@
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="jBrowseButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="jConfigurationComboBox" alignment="0" max="32767" attributes="0"/>
+                  <Component id="jBrowserComboBox" alignment="0" max="32767" attributes="0"/>
                   <Component id="jServerComboBox" alignment="0" max="32767" attributes="0"/>
                   <Component id="jProjectURLTextField" alignment="0" max="32767" attributes="0"/>
                   <Component id="jWebRootTextField" max="32767" attributes="0"/>
@@ -47,7 +47,7 @@
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="jLabel3" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="jConfigurationComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="jBrowserComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="jConfigurationPlaceholder" min="-2" max="-2" attributes="0"/>
@@ -149,10 +149,13 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="javax.swing.JComboBox" name="jConfigurationComboBox">
+    <Component class="javax.swing.JComboBox" name="jBrowserComboBox">
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jConfigurationComboBoxActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jBrowserComboBoxActionPerformed"/>
       </Events>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createBrowserComboBox()"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JLabel" name="jProjectURLLabel">
       <Properties>

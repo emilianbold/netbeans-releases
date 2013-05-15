@@ -51,6 +51,7 @@ import javax.swing.JButton;
 import org.netbeans.modules.subversion.RepositoryFile;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.ui.browser.RepositoryPaths;
+import org.netbeans.modules.subversion.ui.search.SvnSearch;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -70,6 +71,7 @@ public class UpdateTo implements PropertyChangeListener {
     /** Creates a new instance of UpdateTo */
     public UpdateTo(RepositoryFile repositoryFile, boolean localChanges) {
         revisionPath = new RepositoryPaths(repositoryFile, null, null, getPanel().revisionTextField, getPanel().revisionSearchButton);
+        revisionPath.setupBehavior(null, 0, null, SvnSearch.SEARCH_HELP_ID_UPDATE);
         revisionPath.addPropertyChangeListener(this);
         getPanel().warningLabel.setVisible(localChanges);
         okButton = new JButton(org.openide.util.NbBundle.getMessage(UpdateTo.class, "CTL_UpdateToForm_Action_Update")); // NOI18N

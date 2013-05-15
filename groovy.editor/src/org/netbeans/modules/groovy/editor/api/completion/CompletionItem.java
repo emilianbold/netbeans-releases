@@ -64,7 +64,7 @@ import org.netbeans.modules.groovy.editor.api.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.api.elements.GroovyElement;
 import org.netbeans.modules.groovy.editor.api.elements.KeywordElement;
 import org.netbeans.modules.groovy.editor.java.Utilities;
-import org.netbeans.modules.groovy.editor.api.GroovyUtils;
+import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.groovy.support.api.GroovySources;
 import org.openide.util.ImageUtilities;
 
@@ -147,64 +147,55 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         return hash;
     }
 
-    public static CompletionItem forJavaMethod(String className, String simpleName, String parameterString,
+    public static CompletionItem forJavaMethod(String className, String simpleName, List<String> parameters,
             TypeMirror returnType, Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset,
             boolean emphasise, boolean nameOnly) {
-        return new JavaMethodItem(className, simpleName, parameterString, returnType, modifiers, anchorOffset, emphasise, nameOnly);
+        return new JavaMethodItem(className, simpleName, parameters, returnType, modifiers, anchorOffset, emphasise, nameOnly);
     }
 
-    public static CompletionItem forJavaMethod(String className, String simpleName, String parameterString,
+    public static CompletionItem forJavaMethod(String className, String simpleName, List<String> parameters,
             String returnType, Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset,
             boolean emphasise, boolean nameOnly) {
-        return new JavaMethodItem(className, simpleName, parameterString, returnType, modifiers, anchorOffset, emphasise, nameOnly);
+        return new JavaMethodItem(className, simpleName, parameters, returnType, modifiers, anchorOffset, emphasise, nameOnly);
     }
 
-    public static CompletionItem forDynamicMethod(int anchorOffset, String name, String[] parameters, String returnType, boolean nameOnly, boolean prefix) {
-        return new DynamicMethodItem(anchorOffset, name, parameters, returnType, nameOnly, prefix);
+    public static CompletionItem forDynamicMethod(int anchorOffset, String name, String[] parameters, String returnType, boolean prefix) {
+        return new DynamicMethodItem(anchorOffset, name, parameters, returnType, prefix);
     }
 
     public static CompletionItem forDynamicField(int anchorOffset, String name, String type) {
         return new DynamicFieldItem(anchorOffset, name, type);
     }
 
-//    public static CompletionItem forMetaMethod(Class clz, MetaMethod method, int anchorOffset, boolean isGDK) {
-//        return new MetaMethodItem(clz, method, anchorOffset, isGDK);
-//    }
-
     private static class JavaMethodItem extends CompletionItem {
 
         private final String className;
-
         private final String simpleName;
-
-        private final String parameterString;
-
+        private final List<String> parameters;
         private final String returnType;
-
         private final Set<javax.lang.model.element.Modifier> modifiers;
-
         private final boolean emphasise;
-
         private final boolean nameOnly;
 
-        public JavaMethodItem(String className, String simpleName, String parameterString, TypeMirror returnType,
+        
+        public JavaMethodItem(String className, String simpleName, List<String> parameters, TypeMirror returnType,
                 Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset, boolean emphasise, boolean nameOnly) {
-            this(className, simpleName, parameterString,
+            this(className, simpleName, parameters,
                     Utilities.getTypeName(returnType, false).toString(), modifiers, anchorOffset, emphasise, nameOnly);
         }
 
-        public JavaMethodItem(String className, String simpleName, String parameterString, String returnType,
+        public JavaMethodItem(String className, String simpleName, List<String> parameters, String returnType,
                 Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset, boolean emphasise, boolean nameOnly) {
             super(null, anchorOffset);
             this.className = className;
             this.simpleName = simpleName;
-            this.parameterString = parameterString;
+            this.parameters = parameters;
             this.returnType = GroovyUtils.stripPackage(returnType);
             this.modifiers = modifiers;
             this.emphasise = emphasise;
             this.nameOnly = nameOnly;
         }
-
+        
         @Override
         public String getName() {
             return simpleName + "()";
@@ -220,16 +211,26 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             if (emphasise) {
                 formatter.emphasis(true);
             }
-            formatter.appendText(simpleName + "(" + parameterString + ")");
+            formatter.appendText(simpleName + "(" + getParameters() + ")");
             if (emphasise) {
                 formatter.emphasis(false);
             }
             return formatter.getText();
         }
+        
+        private String getParameters() {
+            StringBuilder sb = new StringBuilder();
+            for (String string : parameters) {
+                if (sb.length() > 0) {
+                    sb.append(", ");
+                }
+                sb.append(GroovyUtils.stripPackage(string));
+            }
+            return sb.toString();
+        }
 
         @Override
         public String getRhsHtml(HtmlFormatter formatter) {
-            // FIXME
             String retType = "";
             if (returnType != null) {
                 retType = returnType;
@@ -243,8 +244,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public ImageIcon getIcon() {
-            return (ImageIcon) ElementIcons.getElementIcon(
-                    javax.lang.model.element.ElementKind.METHOD, modifiers);
+            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.METHOD, modifiers);
         }
 
         @Override
@@ -254,8 +254,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public ElementHandle getElement() {
-            return ElementHandleSupport.createHandle(className, simpleName, ElementKind.METHOD,
-                    Utilities.modelModifiersToGsf(modifiers));
+            return ElementHandleSupport.createHandle(className, simpleName, ElementKind.METHOD, getModifiers());
         }
 
         @Override
@@ -271,8 +270,8 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
     public static class DynamicFieldItem extends CompletionItem {
 
         private final String name;
-
         private final String type;
+        
 
         public DynamicFieldItem(int anchorOffset, String name, String type) {
             super(null, anchorOffset);
@@ -318,30 +317,23 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public ElementHandle getElement() {
-            return ElementHandleSupport.createHandle(null, name, ElementKind.FIELD,
-                    Collections.singleton(Modifier.PROTECTED));
+            return ElementHandleSupport.createHandle(null, name, ElementKind.FIELD, getModifiers());
         }
     }
 
     private static class DynamicMethodItem extends CompletionItem {
 
         private final String name;
-
         private final String[] parameters;
-
         private final String returnType;
-
-        private final boolean nameOnly;
-
         private final boolean prefix;
+        
 
-        public DynamicMethodItem(int anchorOffset, String name, String[] parameters, String returnType,
-                boolean nameOnly, boolean prefix) {
+        public DynamicMethodItem(int anchorOffset, String name, String[] parameters, String returnType, boolean prefix) {
             super(null, anchorOffset);
             this.name = name;
             this.parameters = parameters;
             this.returnType = returnType;
-            this.nameOnly = nameOnly;
             this.prefix = prefix;
         }
 
@@ -354,7 +346,6 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         public String getSortText() {
             return (name + (prefix ? 1 : 0)) + parameters.length;
         }
-
 
         @Override
         public ElementKind getKind() {
@@ -419,16 +410,12 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public ElementHandle getElement() {
-            return ElementHandleSupport.createHandle(null, name, ElementKind.METHOD,
-                    Collections.singleton(Modifier.PROTECTED));
+            return ElementHandleSupport.createHandle(null, name, ElementKind.METHOD, getModifiers());
         }
 
         @Override
         public String getCustomInsertTemplate() {
-            if (nameOnly) {
-                return name;
-            }
-            return super.getCustomInsertTemplate();
+            return name;
         }
 
     }
@@ -436,12 +423,10 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
     public static class MetaMethodItem extends CompletionItem {
 
         private final MetaMethod method;
-
         private final boolean isGDK;
-
         private final ASTMethod methodElement;
-
         private final boolean nameOnly;
+        
 
         public MetaMethodItem(Class clz, MetaMethod method, int anchorOffset, boolean isGDK, boolean nameOnly) {
             super(null, anchorOffset);
@@ -627,9 +612,9 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
     public static class PackageItem extends CompletionItem {
 
         private final String keyword;
-
         private final ParserResult info;
 
+        
         public PackageItem(String keyword, int anchorOffset, ParserResult info) {
             super(null, anchorOffset);
             this.keyword = keyword;
@@ -644,11 +629,6 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         @Override
         public ElementKind getKind() {
             return ElementKind.PACKAGE;
-        }
-
-        @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return null;
         }
 
         @Override
@@ -670,15 +650,21 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
     public static class TypeItem extends CompletionItem {
 
+        private final String fqn;
         private final String name;
         private final javax.lang.model.element.ElementKind ek;
 
-        public TypeItem(String name, int anchorOffset, javax.lang.model.element.ElementKind ek) {
+        public TypeItem(String fqn, String name, int anchorOffset, javax.lang.model.element.ElementKind ek) {
             super(null, anchorOffset);
+            this.fqn = fqn;
             this.name = name;
             this.ek = ek;
         }
 
+        public String getFqn() {
+            return fqn;
+        }
+        
         @Override
         public String getName() {
             return name;
@@ -687,11 +673,6 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         @Override
         public ElementKind getKind() {
             return ElementKind.CLASS;
-        }
-
-        @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return null;
         }
 
         @Override
@@ -755,7 +736,6 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public ImageIcon getIcon() {
-
             if (newConstructorIcon == null) {
                 newConstructorIcon = ImageUtilities.loadImageIcon(NEW_CSTR, false);
             }
@@ -780,8 +760,6 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             return true;
         }
 
-        // See IDE help-topic: "Creating and Customizing Ruby Code Templates" or
-        // RubyCodeCompleter.MethodItem.getCustomInsertTemplate() for syntax.
         @Override
         public String getCustomInsertTemplate() {
 
@@ -873,15 +851,12 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
     public static class JavaFieldItem extends CompletionItem {
 
         private final String className;
-
         private final String name;
-
         private final TypeMirror type;
-
         private final Set<javax.lang.model.element.Modifier> modifiers;
-
         private final boolean emphasise;
 
+        
         public JavaFieldItem(String className, String name, TypeMirror type,
                 Set<javax.lang.model.element.Modifier> modifiers, int anchorOffset, boolean emphasise) {
             super(null, anchorOffset);
@@ -927,22 +902,18 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public ElementHandle getElement() {
-            // For completion documentation
-            return ElementHandleSupport.createHandle(className, name, ElementKind.FIELD,
-                    Utilities.modelModifiersToGsf(modifiers));
+            return ElementHandleSupport.createHandle(className, name, ElementKind.FIELD, getModifiers());
         }
     }
 
     public static class FieldItem extends CompletionItem {
 
-        private final String name;
-
-        private final ParserResult info;
-
         private final String typeName;
-
+        private final String name;
+        private final ParserResult info;
         private final int modifiers;
 
+        
         public FieldItem(String name, int modifiers, int anchorOffset, ParserResult info, String typeName) {
             super(null, anchorOffset);
             this.name = name;
@@ -975,13 +946,12 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
         @Override
         public Set<Modifier> getModifiers() {
-            return Collections.emptySet();
+            return Utilities.modelModifiersToGsf(Utilities.reflectionModifiersToModel(modifiers));
         }
 
         @Override
         public ElementHandle getElement() {
-            // For completion documentation
-            return ElementHandleSupport.createHandle(info, new KeywordElement(name));
+            return ElementHandleSupport.createHandle(typeName, name, ElementKind.FIELD, getModifiers());
         }
     }
 
@@ -1019,11 +989,6 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         public Set<Modifier> getModifiers() {
             return Collections.emptySet();
         }
-
-        @Override
-        public ElementHandle getElement() {
-            return null;
-        }
     }
 
     public static class NewVarItem extends CompletionItem {
@@ -1046,11 +1011,6 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         }
 
         @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return null;
-        }
-
-        @Override
         public ImageIcon getIcon() {
             return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.LOCAL_VARIABLE, null);
         }
@@ -1058,11 +1018,6 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         @Override
         public Set<Modifier> getModifiers() {
             return Collections.emptySet();
-        }
-
-        @Override
-        public ElementHandle getElement() {
-            return null;
         }
     }
 
@@ -1086,11 +1041,6 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         }
 
         @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return null;
-        }
-
-        @Override
         public ImageIcon getIcon() {
             return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.FIELD, null);
         }
@@ -1099,21 +1049,14 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         public Set<Modifier> getModifiers() {
             return Collections.emptySet();
         }
-
-        @Override
-        public ElementHandle getElement() {
-            return null;
-        }
     }
 
-    // This is from JavaCompletionItem
     public static class ParameterDescriptor {
 
         private final String fullTypeName;
-
         private final String typeName;
-
         private final String name;
+        
 
         public ParameterDescriptor(String fullTypeName, String typeName, String name) {
             this.fullTypeName = fullTypeName;

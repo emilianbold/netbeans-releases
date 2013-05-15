@@ -52,7 +52,7 @@ import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.*;
-import org.netbeans.modules.web.el.operators.OperatorDefinitions;
+import org.netbeans.modules.web.el.completion.ELStreamCompletionItem;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -138,8 +138,8 @@ public final class Identifiers extends ELRule {
             return true;
         }
 
-        // EL3.0 operators
-        if (!node.getImage().isEmpty() && OperatorDefinitions.OPERATORS.contains(node.getImage())) {
+        // EL3.0 stream method
+        if (node.getImage() != null && ELStreamCompletionItem.STREAM_METHOD.equals(node.getImage())) {
             if (parent == null) {
                 return false;
             } else {

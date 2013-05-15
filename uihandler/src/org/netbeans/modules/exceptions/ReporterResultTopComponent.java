@@ -58,7 +58,7 @@ import javax.swing.event.HyperlinkListener;
 import javax.swing.text.AttributeSet;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.html.HTML;
-import org.netbeans.lib.uihandler.NBBugzillaAccessor;
+import org.netbeans.lib.uihandler.BugTrackingAccessor;
 import org.netbeans.modules.uihandler.Installer;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.ImageUtilities;
@@ -374,7 +374,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         if (!HyperlinkEvent.EventType.ACTIVATED.equals(e.getEventType())) {
             return;
         }
-        NBBugzillaAccessor accessor = Lookup.getDefault().lookup(NBBugzillaAccessor.class);
+        BugTrackingAccessor accessor = Lookup.getDefault().lookup(BugTrackingAccessor.class);
         if (accessor != null){
             AttributeSet ats = e.getSourceElement().getAttributes();
             Object attribute = ats.getAttribute(HTML.getTag("a"));

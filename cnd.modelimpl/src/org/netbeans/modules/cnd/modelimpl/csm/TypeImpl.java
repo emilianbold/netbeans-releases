@@ -105,10 +105,15 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     private static final byte FLAGS_REFERENCE = 1 << 1;
     private static final byte FLAGS_CONST = 1 << 2;
     private static final byte FLAGS_TYPE_WITH_CLASSIFIER = 1 << 3;
-    protected static final int LAST_USED_FLAG_INDEX = 4;
+    private static final byte FLAGS_RVALREFERENCE = 1 << 4;
+    protected static final int LAST_USED_FLAG_INDEX = 5;
     private static final CharSequence NON_INITIALIZED_CLASSIFIER_TEXT = CharSequences.empty();
-
+    
     private final byte pointerDepth;
+    
+    // bit mask of pointerDepth pointers for const qualifiers (supports only pointers with less than 32 depth)
+    private final int constQualifiers; 
+    
     private final byte arrayDepth;
     private byte flags;
     private CharSequence classifierText;
@@ -122,13 +127,18 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     private CsmUID<CsmClassifier> classifierUID;
 
     // package-local - for facory only
-    TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, AST ast, CsmFile file, int startOffset, int endOffset) {
+    TypeImpl(CsmClassifier classifier, int pointerDepth, int reference, int arrayDepth, AST ast, CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         this.initClassifier(classifier);
         this.pointerDepth = (byte) pointerDepth;
-        setFlags(FLAGS_REFERENCE, reference);
+        // nothing, & or && as reference specifier
+        // too slow my typing is too slow
+        assert reference >= 0 && reference <=2 : "unexpected " + reference;
+        setFlags(FLAGS_REFERENCE, reference > 0);
+        setFlags(FLAGS_RVALREFERENCE, reference == 2);
         this.arrayDepth = (byte) arrayDepth;
         boolean _const = isTypeDefAST(ast) ? initIsConst(ast.getFirstChild()) : initIsConst(ast);
+        this.constQualifiers = isTypeDefAST(ast) ? initConstQualifiers(ast.getFirstChild()) : initConstQualifiers(ast);
         setFlags(FLAGS_CONST, _const);
         if (classifier == null) {
             CndUtils.assertTrueInConsole(false, "why null classifier?");
@@ -151,35 +161,55 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     }
     
     // package-local - for facory only
-    TypeImpl(CsmClassifier classifier, int pointerDepth, boolean reference, int arrayDepth, boolean _const, CsmFile file, int startOffset, int endOffset) {
+    TypeImpl(CsmClassifier classifier, int pointerDepth, int reference, int arrayDepth, boolean _const, CsmFile file, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         this.initClassifier(classifier);
         this.pointerDepth = (byte) pointerDepth;
-        setFlags(FLAGS_REFERENCE, reference);
+        this.constQualifiers = _const ? 1 : 0;
+        // nothing, & or && as reference specifier
+        // too slow my typing is too slow
+        assert reference >= 0 && reference <= 2 : "unexpected " + reference;
+        setFlags(FLAGS_REFERENCE, reference > 0);
+        setFlags(FLAGS_RVALREFERENCE, reference == 2);
         this.arrayDepth = (byte) arrayDepth;
         setFlags(FLAGS_CONST, _const);
         setFlags(FLAGS_TYPE_WITH_CLASSIFIER, true);
         this.classifierText = classifier.getName();
         trimInstantiationParams();
-    }    
-
+    }  
+    
     // package-local - for facory only
-    TypeImpl(CsmFile file, int pointerDepth, boolean reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
+    TypeImpl(CsmFile file, int pointerDepth, int reference, int arrayDepth, boolean _const, int startOffset, int endOffset) {
+        this(file, pointerDepth, reference, arrayDepth, _const ? 1 : 0, startOffset, endOffset);
+    }    
+    
+    // package-local - for facory only
+    TypeImpl(CsmFile file, int pointerDepth, int reference, int arrayDepth, int _constQualifiers, int startOffset, int endOffset) {
         super(file, startOffset, endOffset);
         this.classifierText = NON_INITIALIZED_CLASSIFIER_TEXT;
         this.pointerDepth = (byte) pointerDepth;
-        setFlags(FLAGS_REFERENCE, reference);
+        this.constQualifiers = _constQualifiers;
+        // nothing, & or && as reference specifier
+        // too slow my typing is too slow
+        assert reference >= 0 && reference <= 2 : "unexpected " + reference;
+        setFlags(FLAGS_REFERENCE, reference > 0);
+        setFlags(FLAGS_RVALREFERENCE, reference == 2);
         this.arrayDepth = (byte) arrayDepth;
-        setFlags(FLAGS_CONST, _const);
+        setFlags(FLAGS_CONST, ((_constQualifiers & 1) != 0)); // this is mistake (first const qualifier is the deepest one)
         trimInstantiationParams();
-    }
+    }       
 
     // package-local - for factory only
-    TypeImpl(TypeImpl type, int pointerDepth, boolean reference, int arrayDepth, boolean _const) {
+    TypeImpl(TypeImpl type, int pointerDepth, int reference, int arrayDepth, boolean _const) {
         super(type.getContainingFile(), type.getStartOffset(), type.getEndOffset());
 
         this.pointerDepth = (byte) pointerDepth;
-        setFlags(FLAGS_REFERENCE, reference);
+        this.constQualifiers = _const ? 1 : 0;
+        // nothing, & or && as reference specifier
+        // too slow my typing is too slow
+        assert reference >= 0 && reference <= 2 : "unexpected " + reference;
+        setFlags(FLAGS_REFERENCE, reference > 0);
+        setFlags(FLAGS_RVALREFERENCE, reference == 2);
         this.arrayDepth = (byte) arrayDepth;
         setFlags(FLAGS_CONST, _const);
         setFlags(FLAGS_TYPE_OF_TYPEDEF, type.isTypeOfTypedef());
@@ -222,6 +252,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         super(type.getContainingFile(), type.getStartOffset(), type.getEndOffset());
 
         this.pointerDepth = (byte) type.getPointerDepth();
+        this.constQualifiers = type.constQualifiers;
         setFlags(FLAGS_REFERENCE, type.isReference());
         this.arrayDepth = (byte) type.getArrayDepth();
         setFlags(FLAGS_CONST, type.isConst());
@@ -241,6 +272,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         super(type.getContainingFile(), type.getStartOffset(), type.getEndOffset());
 
         this.pointerDepth = (byte) type.getPointerDepth();
+        this.constQualifiers = type.isConst() ? 1 : 0;
         setFlags(FLAGS_REFERENCE, type.isReference());
         this.arrayDepth = (byte) type.getArrayDepth();
         setFlags(FLAGS_CONST, type.isConst());
@@ -260,8 +292,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
      /*TypeImpl(AST ast, CsmFile file, int pointerDepth, boolean reference, int arrayDepth) {
         this(null, pointerDepth, reference, arrayDepth, ast, file, null);
      }*/
-
+    
     public static int getEndOffset(AST node) {
+        return getEndOffset(node, false);
+    }
+
+    public static int getEndOffset(AST node, boolean greedy) {
         AST ast = node;
         if( ast == null ) {
             return 0;
@@ -269,18 +305,18 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         if (isTypeDefAST(ast)) {
             return OffsetableBase.getEndOffset(ast);
         }
-        ast = getLastNode(ast);
+        ast = getLastNode(ast, greedy);
         if( ast instanceof CsmAST ) {
             return ((CsmAST) ast).getEndOffset();
         }
         return OffsetableBase.getEndOffset(node);
     }
 
-    private static AST getLastNode(AST first) {
+    private static AST getLastNode(AST first, boolean greedy) {
         AST last = first;
-        if(last != null) {
+        if(last != null) {            
             for( AST token = last.getNextSibling(); token != null; token = token.getNextSibling() ) {
-                switch( token.getType() ) {
+                switch( token.getType() ) {                    
                     case CPPTokenTypes.CSM_VARIABLE_DECLARATION:
                     case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
                     case CPPTokenTypes.CSM_QUALIFIED_ID:
@@ -289,6 +325,9 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                     default:
                         last = token;
                 }
+            }
+            if (greedy) {
+                return AstUtil.getLastChildRecursively(last);
             }
         }
         return null;
@@ -299,6 +338,11 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         return hasFlags(FLAGS_REFERENCE);
     }
 
+    @Override
+    public boolean isRValueReference() {
+        return hasFlags(FLAGS_RVALREFERENCE);
+    }
+    
     @Override
     public boolean isPointer() {
         return pointerDepth > 0;
@@ -388,10 +432,87 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         }
         return false;
     }
+    
+    public static int initConstQualifiers(AST node) {
+        int result = 0;
+        
+        if (node != null) {
+            
+            int constQualifierPosition = 1;
+            
+            for (AST token = node; token != null; token = token.getNextSibling()) {
+                int tokenType = token.getType();                
+               
+                if (AstRenderer.isConstQualifier(tokenType)) {
+                    result |= constQualifierPosition;
+                } else if (tokenType == CPPTokenTypes.CSM_PTR_OPERATOR) {                    
+                    ASTPointerOperatorQualifiersCollector visitor = new ASTPointerOperatorQualifiersCollector(result, constQualifierPosition);
+                    
+                    visitPointerOperator(visitor, token);
+                    
+                    result = visitor.getConstQualifiers();                  
+                    
+                    constQualifierPosition = visitor.getQualifierPosition();                    
+                } else if (tokenType == CPPTokenTypes.CSM_VARIABLE_DECLARATION ||
+                           tokenType == CPPTokenTypes.CSM_ARRAY_DECLARATION ||
+                           tokenType == CPPTokenTypes.CSM_QUALIFIED_ID) {
+                    return result;
+                } else if (tokenType == CPPTokenTypes.LPAREN) {
+                    // if two tokens in a row are LPAREN and RPAREN, it is probably cast operator: type ()
+                    if (checkTokensRow(token.getNextSibling(), CPPTokenTypes.RPAREN)) {
+                        return result;
+                    }
+                }
+            }
+        }
+        
+        return result;        
+    }
+    
+    /**
+     * Visits tokens inside pointer operators
+     * 
+     * @param visitor
+     * @param ptrOperator
+     * @return true if visiting was finished successfully, false otherwise
+     */
+    public static boolean visitPointerOperator(ASTTokenVisitor visitor, AST ptrOperator) {
+        if (ptrOperator != null && ptrOperator.getType() == CPPTokenTypes.CSM_PTR_OPERATOR) {
+            for (AST insideToken = ptrOperator.getFirstChild(); insideToken != null; insideToken = insideToken.getNextSibling()) {
+                if (insideToken.getType() != CPPTokenTypes.CSM_PTR_OPERATOR) {
+                    if (!visitor.visit(insideToken)) {
+                        return false;
+                    }                        
+                } else {
+                    if (!visitPointerOperator(visitor, insideToken)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    
+    private static boolean checkTokensRow(AST token, int ... expectedTokens) {
+        for (int expected : expectedTokens) {
+            if (token == null) {
+                return false;
+            }
+            if (token.getType() != expected) {
+                return false;
+            }
+            token = token.getNextSibling();
+        }        
+        return true;
+    }
 
     @Override
     public boolean isConst() {
-        return hasFlags(FLAGS_CONST);
+        return isConst(0);
+    }
+    
+    public boolean isConst(int pointerDepth) {
+        return (constQualifiers & (1 << pointerDepth)) != 0;
     }
 
     @Override
@@ -457,10 +578,15 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                 sb.append("const "); // NOI18N
             }
             sb.append(classifierText);
-            for( int i = 0; i < decorator.getPointerDepth(); i++ ) {
+            for( int i = 1; i <= decorator.getPointerDepth(); i++ ) {
                 sb.append('*');
+                if (isConst(i)) {
+                    sb.append(" const"); // NOI18N
+                }
             }
-            if( decorator.isReference() ) {
+            if (decorator.isRValueReference()) {
+                sb.append("&&"); // NOI18N
+            } else if( decorator.isReference() ) {
                 sb.append('&');
             }
             if(canonical) {
@@ -766,7 +892,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                             if (namePart.getType() == CPPTokenTypes.CSM_TYPE_BUILTIN
                                     || namePart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND
                                     || namePart.getType() == CPPTokenTypes.LITERAL_struct) {
-                                CsmType type = AstRenderer.renderType(namePart, getContainingFile(), true);
+                                CsmType type = AstRenderer.renderType(namePart, getContainingFile(), true, null, false); // last two params just dummy ones
                                 addInstantiationParam(new TypeBasedSpecializationParameterImpl(type));
                             }
                             if (namePart.getType() == CPPTokenTypes.CSM_EXPRESSION) {
@@ -877,6 +1003,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     public void write(RepositoryDataOutput output) throws IOException {
         super.write(output);
         output.writeByte(pointerDepth);
+        output.writeInt(constQualifiers);
         output.writeByte(arrayDepth);
         output.writeByte(flags);
         assert this.classifierText != null;
@@ -922,6 +1049,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
     public TypeImpl(RepositoryDataInput input) throws IOException {
         super(input);
         this.pointerDepth = input.readByte();
+        this.constQualifiers = input.readInt();
         this.arrayDepth= input.readByte();
         this.flags = input.readByte();
         this.classifierText = PersistentUtils.readUTF(input, NameCache.getManager());
@@ -1038,4 +1166,51 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
             return type.classifierText+"["+type.getStartOffset()+","+type.getEndOffset()+"]"; //NOI18N
         }
     }
+    
+    
+    private static class ASTPointerOperatorQualifiersCollector implements ASTTokenVisitor {
+        
+        private int constQualifiers;
+        
+        private int qualifierPosition;
+        
+        
+        public ASTPointerOperatorQualifiersCollector(int constQualifiers, int qualifierPosition) {
+            this.constQualifiers = constQualifiers;
+            this.qualifierPosition = qualifierPosition;
+        }        
+
+        @Override
+        public boolean visit(AST token) {
+            int insideTokenType = token.getType();
+
+            if (insideTokenType == CPPTokenTypes.STAR) {
+                qualifierPosition <<= 1;
+            } else if (AstRenderer.isConstQualifier(insideTokenType)) {
+                constQualifiers |= qualifierPosition;
+            }
+            
+            return true;
+        }
+        
+        public int getQualifierPosition() {
+            return qualifierPosition;
+        }
+        
+        public int getConstQualifiers() {
+            return constQualifiers;
+        }                                              
+    }
+    
+
+    public static interface ASTTokenVisitor {
+        
+        /**
+         * @param token 
+         * @return true to continue visiting, false to abort
+         */
+        boolean visit(AST token);
+        
+    }
+    
 }

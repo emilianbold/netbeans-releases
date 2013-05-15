@@ -136,7 +136,7 @@ public class RevertCommitAction extends SingleRepositoryAction {
         private final String revision;
         
         public RevertResultProcessor (GitClient client, File repository, String revision, OutputLogger logger, ProgressMonitor pm) {
-            super(client, repository, revision, logger, pm);
+            super(client, repository, revision, pm);
             this.revision = revision;
             this.logger = logger;
         }

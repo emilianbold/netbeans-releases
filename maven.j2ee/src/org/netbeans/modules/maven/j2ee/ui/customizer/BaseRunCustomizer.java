@@ -89,13 +89,16 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
         if (ExecutionChecker.DEV_NULL.equals(selectedServer.getServerInstanceID())) {
             MavenProjectSupport.setServerID(project, null);
             MavenProjectSupport.setServerInstanceID(project, null);
+        } else {
+            MavenProjectSupport.setServerID(project, selectedServer.getServerID());
+            MavenProjectSupport.setServerInstanceID(project, selectedServer.getServerInstanceID());
         }
 
         MavenProjectSupport.changeServer(project, false);
     }
 
     protected void initDeployOnSave(final JCheckBox dosCheckBox, final JLabel dosDescription) {
-        DeployOnSaveCheckBoxUpdater.create(handle, dosCheckBox);
+        DeployOnSaveCheckBoxUpdater.create(project, dosCheckBox);
         addAncestorListener(new AncestorListener() {
 
             @Override
@@ -114,11 +117,11 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
     }
 
     protected void initServerModel(JComboBox serverCBox, JLabel serverLabel, J2eeModule.Type projectType) {
-        ServerComboBoxUpdater.create(handle, serverCBox, serverLabel, projectType);
+        ServerComboBoxUpdater.create(project, serverCBox, serverLabel, projectType);
     }
 
-    protected void initVersionModel(JComboBox javaeeVersionCBox, JLabel javaeeVersionLabel) {
-        JavaEEVersionComboBoxUpdater.create(handle, javaeeVersionCBox, javaeeVersionLabel);
+    protected void initVersionModel(JComboBox javaeeVersionCBox, JLabel javaeeVersionLabel, J2eeModule.Type projectType) {
+        JavaEEVersionComboBoxUpdater.create(project, javaeeVersionCBox, javaeeVersionLabel, projectType);
     }
 
     @Messages({

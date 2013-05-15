@@ -295,37 +295,37 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
     }
 
     public void testBLFunction01() throws Exception {
-        HashMap<String, Object> options = new HashMap<String, Object>();
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Function01.php", options);
     }
 
     public void testBLFunction02() throws Exception {
-        HashMap<String, Object> options = new HashMap<String, Object>();
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Function02.php", options);
     }
 
     public void testBLFunction04() throws Exception {
-        HashMap<String, Object> options = new HashMap<String, Object>();
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Function04.php", options);
     }
 
     public void testBLNamespace01() throws Exception {
-        HashMap<String, Object> options = new HashMap<String, Object>();
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Namespace01.php", options);
     }
 
     public void testBLNamespace02() throws Exception {
-        HashMap<String, Object> options = new HashMap<String, Object>();
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Namespace02.php", options);
     }
 
     public void testBLNamespace03() throws Exception {
-        HashMap<String, Object> options = new HashMap<String, Object>();
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Namespace03.php", options);
     }
@@ -745,7 +745,7 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
     }
 
     public void testBLSimpleUse01() throws Exception {
-        HashMap<String, Object> options = new HashMap<String, Object>();
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         options.put(FmtOptions.INITIAL_INDENT, 0);
         reformatFileContents("testfiles/formatting/blankLines/Use01.php", options);
     }

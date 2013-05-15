@@ -45,7 +45,7 @@ import java.beans.PropertyChangeListener;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
-import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.visual.RuleEditorPanel;
@@ -201,13 +201,27 @@ public final class RuleEditorController {
      * @param declarationInfo  An instance of {@link DeclarationInfo}. May be null 
      * to clear the Declaration-DeclarationInfo association.
      */
-    public void setDeclarationInfo(final Declaration declaration, final DeclarationInfo declarationInfo) {
+    public void setDeclarationInfo(final PropertyDeclaration declaration, final DeclarationInfo declarationInfo) {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
                 peer.setDeclarationInfo(declaration, declarationInfo);
             }
         });
+    }
+
+    /**
+     * Sets a message that should be displayed in the editor.
+     * 
+     * @param message message to display.
+     */
+    public void setMessage(final String message) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                peer.setMessage(message);
+            }
+        });        
     }
     
     /**

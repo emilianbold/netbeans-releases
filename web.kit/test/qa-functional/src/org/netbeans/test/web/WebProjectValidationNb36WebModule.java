@@ -72,6 +72,11 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
         return createAllModulesServerSuite(Server.GLASSFISH, WebProjectValidationNb36WebModule.class, TESTS);
     }
 
+    @Override
+    protected String getEEVersion() {
+        return J2EE_4;
+    }
+
     /** Test creation of web application.
      * - open New Project wizard from main menu (File|New Project)
      * - select Java Web|Web Application with Existing Sources

@@ -120,7 +120,7 @@ public class ApisupportHyperlinkProvider implements HyperlinkProviderExt {
         
         Token<JavaTokenId> t = ts.token();
         FileObject fo = getFileObject(doc);
-        String name = t.toString();
+        String name = t.text().toString();
         if (name.startsWith("\"")) {
             name = name.substring(1);
         }

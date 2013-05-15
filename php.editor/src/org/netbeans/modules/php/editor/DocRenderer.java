@@ -44,7 +44,6 @@ package org.netbeans.modules.php.editor;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -334,6 +333,10 @@ class DocRenderer {
                     PHPDocTypeTag typeTag = (PHPDocTypeTag) tag;
                     String type = composeType(typeTag.getTypes());
                     others.append(processPhpDoc(String.format("<tr><th align=\"left\">Type:</th><td>%s</td></tr>", type))); //NOI18N
+                } else if (kind.equals(PHPDocTag.Type.DEPRECATED)) {
+                    String oline = String.format("<tr><th align=\"left\">%s</th><td>%s</td></tr>%n", //NOI18N
+                            processPhpDoc(tag.getKind().getName()), processPhpDoc(tag.getDocumentation()));
+                    others.append(oline);
                 } else if (kind instanceof LinkParsedLine) {
                     String line = String.format("<a href=\"%s\">%s</a><br>%n", kind.getDescription(), kind.getDescription()); //NOI18N
                     links.append(line);

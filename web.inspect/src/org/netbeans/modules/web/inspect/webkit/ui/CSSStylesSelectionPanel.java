@@ -68,9 +68,11 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -100,10 +102,10 @@ import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.lib.api.CssColor;
-import org.netbeans.modules.css.visual.api.EditCSSRulesAction;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.modules.web.inspect.actions.Resource;
+import org.netbeans.modules.web.inspect.ui.DomTC;
 import org.netbeans.modules.web.inspect.webkit.Utilities;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
@@ -130,6 +132,8 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 import org.w3c.dom.Document;
 
 /**
@@ -159,6 +163,8 @@ public class CSSStylesSelectionPanel extends JPanel {
     private ListView rulePane;
     /** Explorer manager for Style Cascade. */
     private ExplorerManager rulePaneManager;
+    /** Edit CSS Rules action used in rule pane. */
+    private EditCSSRulesAction editCSSRulesAction;
     /** Panel for messages. */
     private JPanel messagePanel;
     /** Label for messages. */
@@ -170,7 +176,9 @@ public class CSSStylesSelectionPanel extends JPanel {
     /** Header of Property Summary section. */
     private JLabel propertySummaryLabel;
     /** Component showing the style information for the current selection. */
-    private JComponent selectionView;
+    private final JComponent selectionView;
+    /** Mapping of {@code Resource} to the corresponding {@code FileObject}. */
+    private final Map<Resource,FileObject> resourceCache = new WeakHashMap<Resource, FileObject>();
 
     /**
      * Creates a new {@code CSSStylesSelectionPanel}.
@@ -347,7 +355,7 @@ public class CSSStylesSelectionPanel extends JPanel {
     private JPanel initRulePane() {
         rulePane = new ListView() {
             {
-                final StylesRenderer renderer = new StylesRenderer();
+                final StylesRenderer renderer = new StylesRenderer(resourceCache);
                 list.setCellRenderer(renderer);
                 MouseAdapter adapter = new MouseAdapter() {
                     @Override
@@ -424,9 +432,10 @@ public class CSSStylesSelectionPanel extends JPanel {
         //add toolbar
         CustomToolbar toolbar = new CustomToolbar();
         final JToggleButton createRuleToggleButton = new JToggleButton();
-        createRuleToggleButton.setAction(EditCSSRulesAction.getDefault());
+        editCSSRulesAction = new EditCSSRulesAction();
+        createRuleToggleButton.setAction(editCSSRulesAction);
         org.openide.awt.Mnemonics.setLocalizedText(createRuleToggleButton, null);
-        createRuleToggleButton.setToolTipText(EditCSSRulesAction.getDefault().getToolTip()); // NOI18N
+        createRuleToggleButton.setToolTipText((String)editCSSRulesAction.getValue(Action.NAME));
         createRuleToggleButton.setFocusable(false);
         createRuleToggleButton.addActionListener(new java.awt.event.ActionListener() {
             @Override
@@ -578,7 +587,7 @@ public class CSSStylesSelectionPanel extends JPanel {
      * @param keepSelection if {@code true} then an attempt to keep the current
      * selection is made, otherwise the selection is cleared.
      */
-    void updateContentImpl(final WebKitPageModel pageModel, final boolean keepSelection) {
+    void updateContentImpl(final WebKitPageModel pageModel, final boolean keepSelection) {        
         if (!EventQueue.isDispatchThread()) {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -591,6 +600,7 @@ public class CSSStylesSelectionPanel extends JPanel {
         inspectedNode = null;
         if (pageModel == null) {
             setDummyRoots();
+            editCSSRulesAction.setActiveNode(null);
         } else {
             List<Node> selection = pageModel.getSelectedNodes();
             int selectionSize = 0;
@@ -609,7 +619,12 @@ public class CSSStylesSelectionPanel extends JPanel {
                 setDummyRoots();
                 String key;
                 if (containsUnkownNode) {
-                    key = "CSSStylesSelectionPanel.unknownElementSelected"; // NOI18N
+                    TopComponent tc = WindowManager.getDefault().findTopComponent(DomTC.ID);
+                    if (tc.isOpened()) {
+                        key = "CSSStylesSelectionPanel.selectInDOMTree"; // NOI18N
+                    } else {
+                        key = "CSSStylesSelectionPanel.unknownElementSelected"; // NOI18N
+                    }
                 } else {
                     key = "CSSStylesSelectionPanel.noElementSelected"; // NOI18N
                 }
@@ -640,6 +655,7 @@ public class CSSStylesSelectionPanel extends JPanel {
                     showLabel("CSSStylesSelectionPanel.noElementSelected"); // NOI18N
                 }
             }
+            editCSSRulesAction.setActiveNode((selectionSize == 1) ? knownNode : null);
         }
         revalidate();
         repaint();
@@ -676,13 +692,14 @@ public class CSSStylesSelectionPanel extends JPanel {
             final Node[] selectedProperties = propertyPaneManager.getSelectedNodes();
             Project project = pageModel.getProject();
             final Node rulePaneRoot = new MatchedRulesNode(project, selectedNode, matchedStyles);
-            rulePaneManager.setRootContext(rulePaneRoot);
             final Node propertyPaneRoot = new MatchedPropertiesNode(project, matchedStyles, propertyInfos);
-            propertyPaneManager.setRootContext(propertyPaneRoot);
-            if (keepSelection) {
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
+            updateResourceCache(rulePaneRoot);
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    rulePaneManager.setRootContext(rulePaneRoot);
+                    propertyPaneManager.setRootContext(propertyPaneRoot);
+                    if (keepSelection) {
                         if (selectedProperties.length > 0) {
                             Node selectedProperty = selectedProperties[0];
                             Property property = selectedProperty.getLookup().lookup(Property.class);
@@ -718,15 +735,26 @@ public class CSSStylesSelectionPanel extends JPanel {
                             // specific rule
                             preselectRule();
                         }
-                    }
-                });
-            } else {
-                EventQueue.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
+                    } else {
                         preselectRule();
                     }
-                });
+                }
+            });
+        }
+    }
+
+    /**
+     * Updates the {@code resourceCache} map for the children of the given node.
+     * 
+     * @param parent parent of the nodes for which the {@code resourceCache}
+     * should be updated.
+     */
+    void updateResourceCache(Node parent) {
+        Children children = parent.getChildren();
+        for (Node node : children.getNodes(true)) {
+            Resource ruleOrigin = node.getLookup().lookup(Resource.class);
+            if (ruleOrigin != null) {
+                resourceCache.put(ruleOrigin, ruleOrigin.toFileObject());
             }
         }
     }
@@ -998,11 +1026,17 @@ public class CSSStylesSelectionPanel extends JPanel {
         private final JPanel ruleLocationPanel = new JPanel();
         /** HTML renderer used to obtain background color. */
         private final ListCellRenderer htmlRenderer = HtmlRenderer.createRenderer();
+        /** Mapping of {@code Resource} to the corresponding {@code FileObject}. */
+        private final Map<Resource,FileObject> resourceCache;
 
         /**
          * Creates a new {@code StylesRenderer}.
+         * 
+         * @param resourceCache mapping of {@code Resource} to the corresponding
+         * {@code FileObject}.
          */
-        StylesRenderer() {
+        StylesRenderer(Map<Resource,FileObject> resourceCache) {
+            this.resourceCache = resourceCache;
             ruleLocationPanel.setOpaque(false);
             ruleLocationPanel.setLayout(new BorderLayout());
             ruleLocationPanel.add(ruleLocationLabel, BorderLayout.LINE_START);
@@ -1071,14 +1105,13 @@ public class CSSStylesSelectionPanel extends JPanel {
                 RuleInfo ruleInfo = node.getLookup().lookup(RuleInfo.class);
                 if (ruleInfo != null && ruleInfo.getMetaSourceFile() != null && ruleInfo.getMetaSourceLine() != -1) {
                     ruleLocation = ruleInfo.getMetaSourceFile();
-                    int slashIndex = ruleLocation.lastIndexOf('/');
+                    int slashIndex = Math.max(ruleLocation.lastIndexOf('/'), ruleLocation.lastIndexOf('\\'));
                     ruleLocation = ruleLocation.substring(slashIndex+1);
-                    ruleLocation = ruleLocation.replaceAll("\\\\", ""); // NOI18N
                     ruleLocation += ":" + ruleInfo.getMetaSourceLine(); // NOI18N
                 } else {
                     Resource ruleOrigin = node.getLookup().lookup(Resource.class);
                     if (ruleOrigin != null) {
-                        FileObject fob = ruleOrigin.toFileObject();
+                        FileObject fob = resourceCache.get(ruleOrigin);
                         if (fob == null) {
                             ruleLocation = rule.getSourceURL();
                         } else {
@@ -1103,7 +1136,14 @@ public class CSSStylesSelectionPanel extends JPanel {
                 }
                 mediaLabel.setText(mediaQuery);
                 mediaLabel.setVisible(mediaQuery != null);
-                Color fg = isSelected ? foreground : UIManager.getColor("Label.disabledForeground"); // NOI18N
+                Color fg;
+                if (isSelected) {
+                    fg = foreground;
+                } else if (UIManager.getLookAndFeel().getID().equals("GTK")) { // NOI18N
+                    fg = UIManager.getColor("Label.foreground"); // NOI18N
+                } else {
+                    fg = UIManager.getColor("Label.disabledForeground"); // NOI18N
+                }
                 ruleLocationLabel.setForeground(fg);
                 mediaLabel.setForeground(fg);
                 mediaLabel.setEnabled(isSelected);

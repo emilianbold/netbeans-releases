@@ -55,7 +55,7 @@ import org.openide.awt.ActionRegistration;
  */
 @ActionID(id = "ShowTerminalTCAction", category = "Window")
 @ActionRegistration(iconInMenu = true, displayName = "#CTL_ShowTerminalAction", iconBase = "org/netbeans/modules/dlight/terminal/action/local_term.png")
-@ActionReference(path = "Menu/Window/Output", name = "org-netbeans-modules-dlight-terminal-action-ShowTerminal", position = 2600)
+@ActionReference(path = "Menu/Window/Tools", name = "org-netbeans-modules-dlight-terminal-action-ShowTerminal", position = 900)
 public class ShowTerminalAction implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {

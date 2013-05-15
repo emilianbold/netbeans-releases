@@ -54,6 +54,7 @@ import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
+import org.netbeans.spi.editor.bracesmatching.BraceContext;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;
@@ -306,7 +307,7 @@ public final class MasterMatcher {
         }
     }
     
-    private void fireMatchesHighlighted(int[] origin, int[] matches) {
+    private void fireMatchesHighlighted(int[] origin, int[] matches, BracesMatcher.ContextLocator locator) {
         MatchListener[] ll;
         synchronized (LOCK) {
             if (matchListeners.isEmpty()) {
@@ -314,7 +315,7 @@ public final class MasterMatcher {
             }
             ll = (MatchListener[]) matchListeners.toArray(new MatchListener[matchListeners.size()]);
         }
-        MatchEvent evt = new MatchEvent(component, this);
+        MatchEvent evt = new MatchEvent(component, locator, this);
         evt.setHighlights(origin, matches);
         for (int i = 0; i < ll.length; i++) {
             MatchListener matchListener = ll[i];
@@ -330,7 +331,7 @@ public final class MasterMatcher {
             }
             ll = (MatchListener[]) matchListeners.toArray(new MatchListener[matchListeners.size()]);
         }
-        MatchEvent evt = new MatchEvent(component, this);
+        MatchEvent evt = new MatchEvent(component, null, this);
         for (int i = 0; i < ll.length; i++) {
             MatchListener matchListener = ll[i];
             matchListener.matchCleared(evt);
@@ -494,19 +495,21 @@ public final class MasterMatcher {
         return factories;
     }
     
-    private void scheduleMatchHighlighted(Result r, int[] origin, int[] matches) {
-        PR.post(new Firer(r, origin, matches), 200);
+    private void scheduleMatchHighlighted(Result r, int[] origin, int[] matches, BracesMatcher.ContextLocator locator) {
+        PR.post(new Firer(r, origin, matches, locator), 200);
     }
     
     private final class Firer implements Runnable {
         private Result myResult;
         private int[] origin;
         private int[] matches;
+        private BracesMatcher.ContextLocator locator;
 
-        public Firer(Result myResult, int[] origin, int[] matches) {
+        public Firer(Result myResult, int[] origin, int[] matches, BracesMatcher.ContextLocator locator) {
             this.myResult = myResult;
             this.origin = origin;
             this.matches = matches;
+            this.locator = locator;
         }
         
         
@@ -516,7 +519,7 @@ public final class MasterMatcher {
                 return;
             }
             
-            fireMatchesHighlighted(origin, matches);
+            fireMatchesHighlighted(origin, matches, locator);
         }
     }
     
@@ -646,7 +649,7 @@ public final class MasterMatcher {
             
             int [] origin = null;
             int [] matches = null;
-            
+            BracesMatcher.ContextLocator locator = null;
             try {
                 // Find the original area
                 BracesMatcher [] matcher = new BracesMatcher[1];
@@ -668,6 +671,11 @@ public final class MasterMatcher {
                 if (origin != null && !canceled) {
                     // Find matching areas
                     matches = matcher[0].findMatches();
+                    if (matches != null && matches.length > 0) {
+                        if (matcher[0] instanceof BracesMatcher.ContextLocator) {
+                            locator = ((BracesMatcher.ContextLocator)matcher[0]);
+                        }
+                    }
                 }
             } catch (ThreadDeath td) {
                 throw td;
@@ -699,6 +707,8 @@ public final class MasterMatcher {
 
             final int [] _origin = origin;
             final int [] _matches = matches;
+            final BracesMatcher.ContextLocator _locator = locator;
+            
             document.render(new Runnable() {
                 public void run() {
                     try {
@@ -719,7 +729,7 @@ public final class MasterMatcher {
                                 showSearchParameters((OffsetsBag) job[0]);
                             }
                         }
-                        scheduleMatchHighlighted(Result.this, _origin, _matches);
+                        scheduleMatchHighlighted(Result.this, _origin, _matches, _locator);
 
                         for(Object [] job : navigationJobs) {
                             navigateAreas(_origin, _matches, caretOffset, caretBias, (Caret) job[0], (Boolean) job[1]);

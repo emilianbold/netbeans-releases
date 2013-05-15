@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.web.clientproject.util;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
@@ -52,6 +53,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import javax.swing.UIManager;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -67,6 +69,7 @@ import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectPro
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ProjectGenerator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -246,6 +249,29 @@ public final class ClientSideProjectUtilities {
             logRecord.setParameters(params);
         }
         USG_LOGGER.log(logRecord);
+    }
+
+    public static boolean isBroken(ClientSideProject project) {
+        return !project.getLookup().lookup(ProjectProblemsProvider.class).getProblems().isEmpty();
+    }
+
+    @NonNull
+    public static Color getErrorForeground() {
+        Color result = UIManager.getDefaults().getColor("nb.errorForeground");  // NOI18N
+        if (result == null) {
+            result = Color.RED;
+        }
+        return getSafeColor(result.getRed(), result.getGreen(), result.getBlue());
+    }
+
+    public static Color getSafeColor(int red, int green, int blue) {
+        red = Math.max(red, 0);
+        red = Math.min(red, 255);
+        green = Math.max(green, 0);
+        green = Math.min(green, 255);
+        blue = Math.max(blue, 0);
+        blue = Math.min(blue, 255);
+        return new Color(red, green, blue);
     }
 
 }

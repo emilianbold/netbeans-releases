@@ -58,6 +58,7 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.APTTokenTypes;
 import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
+import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.accessors.CsmCorePackageAccessor;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.ClassImpl;
@@ -448,7 +449,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                         parser.compound_statement(false);
                         break;                        
                     case FUNCTION_DEFINITION_AFTER_DECLARATOR:
-                        parser.function_definition_after_declarator(true, true);
+                        parser.function_definition_after_declarator(false, true, true);
                         break;                        
                 }
             } catch (Throwable ex) {
@@ -500,7 +501,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             org.antlr.runtime.CharStream s = null;
 
             public Antlr2ToAntlr3TokenAdapter(org.netbeans.modules.cnd.antlr.Token antlr2Token) {
-                this.t = antlr2Token;
+                this.t = (antlr2Token.getType() == APTTokenTypes.EOF) ? APTUtils.EOF_TOKEN2 : antlr2Token;
             }
 
             @Override
@@ -515,7 +516,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
 
             @Override
             public int getType() {
-                return t.getType() == APTTokenTypes.EOF ? CXXParserEx.EOF : t.getType();
+                return t.getType();
             }
 
             @Override
@@ -688,6 +689,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
             public PPTokensBasedTokenStream(org.netbeans.modules.cnd.antlr.TokenBuffer tb, CXXParserActionEx cppCallback) {
                 super(tb);
                 this.cppCallback = cppCallback;
+                this.lastConsumed = new Antlr2ToAntlr3TokenAdapter(APTUtils.EOF_TOKEN);
             }
             
             private static final boolean TRACE = false;

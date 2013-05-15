@@ -61,6 +61,7 @@ class MultiDiffPanel extends javax.swing.JPanel {
             jPanel1.setBackground(UIManager.getColor("NbExplorerView.background")); // NOI18N
             jPanel3.setBackground(UIManager.getColor("NbExplorerView.background")); // NOI18N
             jPanel4.setBackground(UIManager.getColor("NbExplorerView.background")); // NOI18N
+            treeSelectionPanel.setBackground(UIManager.getColor("NbExplorerView.background")); //NOI18N
         } 
     }
 
@@ -76,8 +77,8 @@ class MultiDiffPanel extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
-
-        splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
 
         controlToolbar.setFloatable(false);
         controlToolbar.setRollover(true);
@@ -111,7 +112,7 @@ class MultiDiffPanel extends javax.swing.JPanel {
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 30, Short.MAX_VALUE)
+            .addGap(0, 28, Short.MAX_VALUE)
         );
 
         controlToolbar.add(jPanel1);
@@ -140,7 +141,7 @@ class MultiDiffPanel extends javax.swing.JPanel {
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 30, Short.MAX_VALUE)
+            .addGap(0, 28, Short.MAX_VALUE)
         );
 
         controlToolbar.add(jPanel4);
@@ -168,23 +169,54 @@ class MultiDiffPanel extends javax.swing.JPanel {
         btnCommit.setPreferredSize(new java.awt.Dimension(22, 25));
         controlToolbar.add(btnCommit);
 
+        jLabel1.setLabelFor(cmbDiffTreeFirst);
+        jLabel1.setText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.jLabel1.text")); // NOI18N
+
+        jLabel2.setLabelFor(cmbDiffTreeSecond);
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(MultiDiffPanel.class, "MultiDiffPanel.jLabel2.text")); // NOI18N
+
+        javax.swing.GroupLayout treeSelectionPanelLayout = new javax.swing.GroupLayout(treeSelectionPanel);
+        treeSelectionPanel.setLayout(treeSelectionPanelLayout);
+        treeSelectionPanelLayout.setHorizontalGroup(
+            treeSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(treeSelectionPanelLayout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cmbDiffTreeFirst, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jLabel2)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(cmbDiffTreeSecond, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        treeSelectionPanelLayout.setVerticalGroup(
+            treeSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(treeSelectionPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addComponent(jLabel1)
+                .addComponent(cmbDiffTreeFirst, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(jLabel2)
+                .addComponent(cmbDiffTreeSecond, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+        );
+
+        splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addComponent(controlToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, 716, Short.MAX_VALUE))
+            .addComponent(controlToolbar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(treeSelectionPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(31, 31, 31)
-                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 333, Short.MAX_VALUE))
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addComponent(controlToolbar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addContainerGap(330, Short.MAX_VALUE)))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addComponent(controlToolbar, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(treeSelectionPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(splitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -193,7 +225,11 @@ class MultiDiffPanel extends javax.swing.JPanel {
     private javax.swing.ButtonGroup btnModeGroup;
     final javax.swing.JButton btnRefresh = new javax.swing.JButton();
     final javax.swing.JButton btnRevert = new javax.swing.JButton();
+    final javax.swing.JComboBox cmbDiffTreeFirst = new javax.swing.JComboBox();
+    final javax.swing.JComboBox cmbDiffTreeSecond = new javax.swing.JComboBox();
     final javax.swing.JToolBar controlToolbar = new javax.swing.JToolBar();
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
@@ -203,5 +239,6 @@ class MultiDiffPanel extends javax.swing.JPanel {
     final javax.swing.JToggleButton tgbHeadVsIndex = new javax.swing.JToggleButton();
     final javax.swing.JToggleButton tgbHeadVsWorking = new javax.swing.JToggleButton();
     final javax.swing.JToggleButton tgbIndexVsWorking = new javax.swing.JToggleButton();
+    final javax.swing.JPanel treeSelectionPanel = new javax.swing.JPanel();
     // End of variables declaration//GEN-END:variables
 }

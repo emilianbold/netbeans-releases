@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -59,6 +60,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.libraries.CDNJSLibrariesProvider;
@@ -69,7 +72,8 @@ import org.netbeans.spi.project.libraries.LibraryProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.WeakListeners;
+import org.openide.util.Cancellable;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -171,15 +175,10 @@ public final class WebClientLibraryManager {
 
     /**
      * Adds property change listener.
-     * <p>
-     * <b>All listeners are held as {@link org.openide.util.WeakListeners#propertyChange(PropertyChangeListener, Object) weak listeners}.</b>
      * @param listener listener to be added, can be {@code null}
      */
     public void addPropertyChangeListener(@NullAllowed PropertyChangeListener listener) {
-        if (listener == null) {
-            return;
-        }
-        propertyChangeSupport.addPropertyChangeListener(WeakListeners.propertyChange(listener, propertyChangeSupport));
+        propertyChangeSupport.addPropertyChangeListener(listener);
     }
 
     /**
@@ -216,15 +215,50 @@ public final class WebClientLibraryManager {
     /**
      * Update web client libraries.
      * <p>
-     * This method must be called only in a background thread.
+     * This method must be called only in a background thread. To cancel the update, interrupt the current thread.
      * @throws NetworkException if any network error occurs
      * @throws IOException if any error occurs
+     * @throws InterruptedException if the update is cancelled
+     * @since 1.25
      */
-    public void updateLibraries() throws NetworkException, IOException {
+    public void updateLibraries() throws NetworkException, IOException, InterruptedException {
+        updateLibraries(false);
+    }
+
+    /**
+     * Update web client libraries with possibly showing its progress.
+     * <p>
+     * This method must be called only in a background thread. To cancel the update, interrupt the current thread.
+     * @param showProgress whether to show progress or not
+     * @throws NetworkException if any network error occurs
+     * @throws IOException if any error occurs
+     * @throws InterruptedException if the update is cancelled
+     * @since 1.25
+     */
+    @NbBundle.Messages("WebClientLibraryManager.progress.update=Updating JavaScript libraries...")
+    public void updateLibraries(boolean showProgress) throws NetworkException, IOException, InterruptedException {
         if (EventQueue.isDispatchThread()) {
             throw new IllegalStateException("Cannot run in UI thread");
         }
-        CDNJSLibrariesProvider.getDefault().updateLibraries();
+        ProgressHandle progressHandle = null;
+        if (showProgress) {
+            final Thread downloadThread = Thread.currentThread();
+            progressHandle = ProgressHandleFactory.createHandle(Bundle.WebClientLibraryManager_progress_update(), new Cancellable() {
+                @Override
+                public boolean cancel() {
+                    downloadThread.interrupt();
+                    return true;
+                }
+            });
+            progressHandle.start();
+        }
+        try {
+            CDNJSLibrariesProvider.getDefault().updateLibraries(progressHandle);
+        } finally {
+            if (progressHandle != null) {
+                progressHandle.finish();
+            }
+        }
     }
 
     private void addLibraries(List<Library> libs, LibraryProvider<LibraryImplementation> provider) {
@@ -378,6 +412,10 @@ public final class WebClientLibraryManager {
                     result.add(fileObject);
                 }
             }
+            // possible cleanup
+            if (libRoot.getChildren().length == 0) {
+                libRoot.delete();
+            }
         }
         if (missingFiles) {
             throw new MissingLibResourceException(result);
@@ -388,10 +426,13 @@ public final class WebClientLibraryManager {
     private static FileObject copySingleFile(URL url, String name, FileObject
             libRoot) throws IOException
     {
-        FileObject fo = libRoot.createData(name);
         InputStream is;
         try {
-            is = url.openStream();
+            int timeout = 15000; // default timeout
+            URLConnection connection = url.openConnection();
+            connection.setConnectTimeout(timeout);
+            connection.setReadTimeout(timeout);
+            is = connection.getInputStream();
         }
         catch (FileNotFoundException ex) {
             LOGGER.log(Level.INFO, "could not open stream for " + url, ex); // NOI18N
@@ -401,6 +442,7 @@ public final class WebClientLibraryManager {
             LOGGER.log(Level.INFO, "could not open stream for " + url, ex); // NOI18N
             return null;
         }
+        FileObject fo = libRoot.createData(name);
         OutputStream os = null;
         try {
             os = fo.getOutputStream();

@@ -69,7 +69,6 @@ import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
@@ -194,7 +193,13 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                     URL url = new URL(clientUrl);
                     URLDisplayerImplementation urlDisplayer = project.getLookup().lookup(URLDisplayerImplementation.class);
                     if (urlDisplayer != null) {
-                        urlDisplayer.showURL(url, url, fo);
+                        URL appRoot = url;
+                        if (clientUrlPart != null && clientUrlPart.length() > 0) {
+                            if (clientUrl.endsWith(clientUrlPart)) {
+                                appRoot = new URL(clientUrl.substring(0, clientUrl.length() - clientUrlPart.length()));
+                            }
+                        }
+                        urlDisplayer.showURL(appRoot, url, fo);
                     } else {
                         HtmlBrowser.URLDisplayer.getDefault().showURL(url);
                     }
@@ -224,7 +229,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
             Logger.getLogger(ExecutionChecker.class.getName()).log(Level.FINE, "Exception occured wile deploying to Application Server.", ex); //NOI18N
         }
     }
-
+    
     public static boolean showServerSelectionDialog(Project project, J2eeModuleProvider provider, RunConfig config) {
         if (ExecutionChecker.DEV_NULL.equals(provider.getServerInstanceID())) {
             boolean isDefaultGoal = config == null ? true : neitherJettyNorCargo(config.getGoals()); //TODO how to figure if really default or overridden by user?
@@ -349,8 +354,8 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     }
 
     private static void persistServer(Project project, final String iID, final String sID, final Project targetPrj) {
-        project.getLookup().lookup(AuxiliaryProperties.class).put(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, iID, false);
-        MavenProjectSupport.storeSettingsToPom(targetPrj, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, sID);
+        MavenProjectSupport.setServerInstanceID(project, iID);
+        MavenProjectSupport.setServerID(project, sID);
 
         // We want to initiate context path to default value if there isn't related deployment descriptor yet
         MavenProjectSupport.changeServer(project, true);

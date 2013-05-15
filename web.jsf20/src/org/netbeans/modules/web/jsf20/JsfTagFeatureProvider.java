@@ -89,9 +89,10 @@ public class JsfTagFeatureProvider implements TagFeatureProvider {
 
     private IterableTag resolveIterableTag(Library library, Tag tag) {
         for (IterableTag iterableTag : IterableTag.values()) {
-            if (library.getNamespace() != null
+            if ((library.getNamespace() != null
                     && iterableTag.getNamespace() != null
-                    && library.getNamespace().equalsIgnoreCase(iterableTag.getNamespace())) {
+                    && library.getNamespace().equalsIgnoreCase(iterableTag.getNamespace()))
+                || (library.getLegacyNamespace() != null && library.getLegacyNamespace().equalsIgnoreCase(iterableTag.getNamespace()))) {
                 return iterableTag;
             }
         }

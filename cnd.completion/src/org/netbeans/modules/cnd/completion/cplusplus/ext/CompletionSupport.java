@@ -134,7 +134,7 @@ public final class CompletionSupport implements DocumentListener {
         return isIncludeCompletionEnabled(doc, offset) || isPreprocessorDirectiveCompletionEnabled(doc, offset);
     }
 
-    public static boolean isPreprocessorDirectiveCompletionEnabled(Document doc, int offset) {
+    private static boolean isPreprocessorDirectiveCompletionEnabledImpl(Document doc, int offset) {
         TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
         if (ts == null) {
             return false;
@@ -152,6 +152,18 @@ public final class CompletionSupport implements DocumentListener {
             return embedded.offset() + embedded.token().length() >= offset;
         }
         return false;
+    }
+        
+    public static boolean isPreprocessorDirectiveCompletionEnabled(final Document doc, final int offset) {
+        final AtomicBoolean out = new AtomicBoolean(false);
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                out.set(isPreprocessorDirectiveCompletionEnabledImpl(doc, offset));
+            }            
+        });
+        return out.get();
     }
 
     public static boolean isIncludeCompletionEnabled(final Document doc, final int offset) {
@@ -475,6 +487,12 @@ public final class CompletionSupport implements DocumentListener {
             if(id instanceof CppTokenId) {
                 // completion is disabled in some tokens
                 switch ((CppTokenId)id) {
+                    case RPAREN:
+                        if (queryType > 0) {
+                            return false;
+                        }
+                        break;                    
+                    
                     case LINE_COMMENT:
                     case DOXYGEN_LINE_COMMENT:
                     case CHAR_LITERAL:
@@ -484,6 +502,7 @@ public final class CompletionSupport implements DocumentListener {
                     case PREPROCESSOR_SYS_INCLUDE:
                     case PREPROCESSOR_DEFINED:
                         return false;
+                        
                     case BLOCK_COMMENT:
                     case DOXYGEN_COMMENT:
                         // ok after end of token
@@ -592,7 +611,7 @@ public final class CompletionSupport implements DocumentListener {
                         typeName = typeName.substring(0, indexOfRBracket);
                         CsmClassifier cls = getClassFromName(getFinder(), typeName, true);
                         if (cls != null) {
-                            CsmType type = CsmCompletion.getType(cls, 0, false, 0, false);
+                            CsmType type = CsmCompletion.createType(cls, 0, 0, 0, false);
                             return type;
                         }
                     }
@@ -602,7 +621,7 @@ public final class CompletionSupport implements DocumentListener {
                 if (type.getArrayDepth() > 0) {
                     CsmClassifier cls = type.getClassifier();
                     if (cls != null) {
-                        type = CsmCompletion.getType(cls, 0, false, 0, false);
+                        type = CsmCompletion.createType(cls, 0, 0, 0, false);
                     }
                 }
                 return type;
@@ -619,7 +638,7 @@ public final class CompletionSupport implements DocumentListener {
                     String typeName = e.replaceAll("((\\W|\n)*)return((\\W|\n|&)*)\\((.*)\\)((\\W|\n)*)\\{((.|\n)*)\\}((.|\n)*)", "$5"); // NOI18N
                     CsmClassifier cls = getClassFromName(getFinder(), typeName, true);
                     if (cls != null) {
-                        CsmType type = CsmCompletion.getType(cls, 0, false, 0, false);
+                        CsmType type = CsmCompletion.createType(cls, 0, 0, 0, false);
                         return type;
                     }
                 } catch (BadLocationException ex) {
@@ -632,7 +651,7 @@ public final class CompletionSupport implements DocumentListener {
                     String typeName = e.replaceAll("((.|\n)*)=((\\W|\n|&)*)\\((.*)\\)((\\W|\n)*)\\{((.|\n)*)\\}((.|\n)*)", "$5"); // NOI18N
                     CsmClassifier cls = getClassFromName(getFinder(), typeName, true);
                     if (cls != null) {
-                        CsmType type = CsmCompletion.getType(cls, 0, false, 0, false);
+                        CsmType type = CsmCompletion.createType(cls, 0, 0, 0, false);
                         return type;
                     }
                 } catch (BadLocationException ex) {

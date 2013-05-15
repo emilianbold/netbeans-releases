@@ -59,8 +59,10 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 import org.netbeans.modules.parsing.spi.SchedulerTask;
 import org.netbeans.modules.parsing.spi.ParserResultTask;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 
 /**
@@ -70,7 +72,6 @@ import org.netbeans.modules.web.jsfapi.api.Tag;
 public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
 
     private static final String CSS_CLASS_MAP_PROPERTY_KEY = "cssClassTagAttrMap"; //semi api - defined in HtmlLexer
-    private static final String HTML_FACELETS_LIB_NS = "http://java.sun.com/jsf/html"; //NOI18N
     private static final String STYLE_CLASS_ATTR_NAME = "styleClass"; //NOI18N
 
     public static class Factory extends TaskFactory {
@@ -135,14 +136,14 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
         //probably create some metadata also for third party libraries
 
         //check if the default html library is defined
-        String prefix = result.getNamespaces().get(HTML_FACELETS_LIB_NS);
+        String prefix = NamespaceUtils.getForNs(result.getNamespaces(), DefaultLibraryInfo.HTML.getNamespace());
         if (prefix != null) {
             //html lib declared, lets build a map of tags containing attributes whose values are
             //supposed to represent a css class. The map is then put into the document's
             //input attributes and then html lexer takes this information into account
             //when lexing the html code
             Map<String, Collection<String>> cssClassTagAttrMap = new HashMap<String, Collection<String>>();
-            Library lib = sup.getLibrary(HTML_FACELETS_LIB_NS);
+            Library lib = sup.getLibrary(DefaultLibraryInfo.HTML.getNamespace());
             if (lib != null) {
                 Collection<? extends LibraryComponent> components = lib.getComponents();
                 for (LibraryComponent comp : components) {

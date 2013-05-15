@@ -66,6 +66,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
+import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.Icon;
@@ -87,8 +88,8 @@ import javax.swing.text.DefaultCaret;
 import javax.swing.text.Element;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueSettingsStorage;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
+import org.netbeans.modules.bugtracking.cache.IssueSettingsStorage;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport;
 import org.netbeans.modules.bugtracking.util.HyperlinkSupport.Link;
 import org.netbeans.modules.bugtracking.util.LinkButton;
@@ -169,8 +170,10 @@ public class CommentsPanel extends JPanel {
         DateFormat format = DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.SHORT);
         String creationTxt = issue.getFieldValue(IssueField.CREATION);
         try {
-            Date creation = dateTimeFormat.parse(creationTxt);
-            creationTxt = format.format(creation);
+            if (!creationTxt.isEmpty()) {
+                Date creation = dateTimeFormat.parse(creationTxt);
+                creationTxt = format.format(creation);
+            }
         } catch (ParseException pex) {
             Bugzilla.LOG.log(Level.INFO, null, pex);
         }
@@ -257,7 +260,7 @@ public class CommentsPanel extends JPanel {
             int index = author.indexOf('@'); // NOI18N
             String userName = (index == -1) ? author : author.substring(0,index);
             String host = ((KenaiRepository) issue.getRepository()).getHost();
-            stateLabel = KenaiUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, KenaiUtil.getChatLink(issue.getID()));
+            stateLabel = TeamUtil.createUserWidget(issue.getRepository().getUrl(), userName, host, TeamUtil.getChatLink(issue.getID()));
             if (stateLabel != null) {
                 stateLabel.setText(null);
             }
@@ -459,10 +462,13 @@ public class CommentsPanel extends JPanel {
                 if (l != null && l instanceof AttachmentLink) {
                     BugzillaIssue.Attachment attachment = ((AttachmentLink) l).attachment;
                     if (attachment != null) {
-                        add(new JMenuItem(attachment.new DefaultAttachmentAction()));
-                        add(new JMenuItem(attachment.new SaveAttachmentAction()));
-                        if ("1".equals(attachment.getIsPatch())) { // NOI18N
-                            add(attachment.new ApplyPatchAction());
+                        add(new JMenuItem(attachment.getOpenAction()));
+                        add(new JMenuItem(attachment.getSaveAction()));
+                        if (attachment.isPatch()) { 
+                            Action a = attachment.getApplyPatchAction();
+                            if(a != null) {
+                                add(attachment.getApplyPatchAction());
+                            }
                         }
                         super.setVisible(true);
                     }

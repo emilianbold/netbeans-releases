@@ -63,7 +63,6 @@ import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.groovy.editor.api.GroovyIndexer;
-import org.netbeans.modules.groovy.editor.api.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.StructureAnalyzer;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionHandler;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;

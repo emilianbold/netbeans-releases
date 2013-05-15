@@ -1,7 +1,7 @@
 ComponentOperator.WaitComponentTimeout=30000
 ComponentOperator.WaitComponentEnabledTimeout=10000
 ComponentOperator.WaitFocusTimeout=1000
-ComponentOperator.WaitStateTimeout=10000
+ComponentOperator.WaitStateTimeout=30000
 DialogWaiter.WaitDialogTimeout=30000
 EventDispatcher.WaitComponentUnderMouseTimeout=10000
 FrameWaiter.WaitFrameTimeout=30000
@@ -19,7 +19,7 @@ JTextComponentOperator.ChangeCaretPositionTimeout=10000
 JTextComponentOperator.TypeTextTimeout=10000
 JTreeOperator.WaitNodeExpandedTimeout=10000
 JTreeOperator.WaitNodeCollapsedTimeout=10000
-JTreeOperator.WaitNextNodeTimeout=10000
+JTreeOperator.WaitNextNodeTimeout=30000
 JTreeOperator.WaitNodeVisibleTimeout=30000
 JTreeOperator.WaitEditingTimeout=3000
 ScrollbarOperator.WholeScrollTimeout=30000

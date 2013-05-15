@@ -52,18 +52,17 @@ import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.EditorExtender;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
-import org.netbeans.modules.javascript2.editor.jquery.JQueryDeclarationFinder;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.OccurrencesSupport;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
-import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -80,12 +79,13 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
         JsParserResult jsResult = (JsParserResult)info;
         Model model = jsResult.getModel();
+        int offset = info.getSnapshot().getEmbeddedOffset(caretOffset);
         OccurrencesSupport os = model.getOccurrencesSupport();
-        Occurrence occurrence = os.getOccurrence(caretOffset);
+        Occurrence occurrence = os.getOccurrence(offset);
         if (occurrence != null) {
             JsObject object = occurrence.getDeclarations().iterator().next();
             JsObject parent = object.getParent();
-            Collection<? extends TypeUsage> assignments = (parent == null) ? null : parent.getAssignmentForOffset(caretOffset);
+            Collection<? extends TypeUsage> assignments = (parent == null) ? null : parent.getAssignmentForOffset(offset);
             if (assignments != null && assignments.isEmpty()) {
                 assignments = parent.getAssignments();
             }
@@ -93,15 +93,23 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             JsIndex jsIndex = JsIndex.get(snapshot.getSource().getFileObject());
             List<IndexResult> indexResults = new ArrayList<IndexResult>();
             if (assignments == null || assignments.isEmpty()) {
+                FileObject fo = object.getFileObject();
                 if (object.isDeclared()) {
-                    FileObject fo = object.getFileObject();
+                    
                     if (fo != null) {
-                        return new DeclarationLocation(fo, object.getDeclarationName().getOffsetRange().getStart());
+                        if (fo.equals(snapshot.getSource().getFileObject())) {
+                            int docOffset = LexUtilities.getLexerOffset(jsResult, object.getDeclarationName().getOffsetRange().getStart());
+                            if (docOffset > -1) {
+                                return new DeclarationLocation(fo, docOffset);
+                            }
+                        } else {
+                            // TODO we need to solve to translating model offsets to the doc offset for other files?
+                            return new DeclarationLocation(fo, object.getDeclarationName().getOffsetRange().getStart());
+                        }
+                        
                     }
                 } else {
-                    Collection<? extends IndexResult> items = jsIndex.query(
-                            JsIndex.FIELD_FQ_NAME, ModelUtils.createFQN(object), QuerySupport.Kind.EXACT,
-                            JsIndex.TERMS_BASIC_INFO);
+                    Collection<? extends IndexResult> items = JsIndex.get(fo).findFQN(object.getFullyQualifiedName());
                     indexResults.addAll(items);
                     DeclarationLocation location = processIndexResult(indexResults);
                     if (location != null) {
@@ -111,17 +119,13 @@ public class DeclarationFinderImpl implements DeclarationFinder {
             } else {  
                 TokenSequence ts = LexUtilities.getJsTokenSequence(snapshot, caretOffset);
                 if (ts != null) {
-                    ts.move(snapshot.getEmbeddedOffset(caretOffset));
+                    ts.move(offset);
                     if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
                         String propertyName = ts.token().text().toString();
                         for (Type type : assignments) {
-                            Collection<? extends IndexResult> items = jsIndex.query(
-                                    JsIndex.FIELD_FQ_NAME, type.getType() + "." + propertyName, QuerySupport.Kind.EXACT,  //NOI18N
-                                    JsIndex.TERMS_BASIC_INFO);
+                            Collection<? extends IndexResult> items = jsIndex.findFQN(type.getType() + "." + propertyName); // NOI18N
                             if(items.isEmpty()) {
-                                items = jsIndex.query(
-                                    JsIndex.FIELD_FQ_NAME, type.getType() + ".prototype." + propertyName, QuerySupport.Kind.EXACT,  //NOI18N
-                                    JsIndex.TERMS_BASIC_INFO);
+                                items = jsIndex.findFQN( type.getType() + ".prototype." + propertyName); // NOI18N
                             }
                             indexResults.addAll(items);
                         }
@@ -133,8 +137,13 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 }
             }
         }
-        JQueryDeclarationFinder jQueryFinder = new JQueryDeclarationFinder();
-        return jQueryFinder.findDeclaration(info, caretOffset);
+        for (DeclarationFinder finder : EditorExtender.getDefault().getDeclarationFinders()) {
+            DeclarationLocation loc = finder.findDeclaration(info, caretOffset);
+            if (loc != null && loc != DeclarationLocation.NONE) {
+                return loc;
+            }
+        }
+        return DeclarationLocation.NONE;
     }
 
     private DeclarationLocation processIndexResult(List<IndexResult> indexResults) {
@@ -164,10 +173,13 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                 return new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
             }
         }
-        
-        JQueryDeclarationFinder jQueryFinder = new JQueryDeclarationFinder();
-        result =  jQueryFinder.getReferenceSpan(doc, caretOffset);
-        return result;
+        for (DeclarationFinder finder : EditorExtender.getDefault().getDeclarationFinders()) {
+            result = finder.getReferenceSpan(doc, caretOffset);
+            if (result != null && result != OffsetRange.NONE) {
+                return result;
+            }
+        }
+        return OffsetRange.NONE;
     }
 
     // Note: this class has a natural ordering that is inconsistent with equals.

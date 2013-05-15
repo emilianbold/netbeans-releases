@@ -110,7 +110,7 @@ implements Lookup.Provider, Serializable {
     }
     
     public void testToolbarIsControlledByEditorSettings() throws Exception {
-        doToolbarCheck(1);
+        doToolbarCheck(2);
         
     }
     public void testToolbarIsControlledByEditorSettingsWhenNonEditorSelected() throws Exception {
@@ -126,13 +126,13 @@ implements Lookup.Provider, Serializable {
         
         MultiViewHandler handle = MultiViews.findMultiViewHandler(tc);
         final MultiViewPerspective[] perspectives = handle.getPerspectives();
-        assertEquals("Two perspectives", 2, perspectives.length);
-        handle.requestVisible(perspectives[1]);
+        assertEquals("Four perspectives", 4, perspectives.length);
+        handle.requestVisible(perspectives[2]);
         
         assertEquals("two toolbars exist", 2, MVE.allToolbars.size());
         
         for (int i = 0; i < 2; i++) {
-            handle.requestVisible(perspectives[i]);
+            handle.requestVisible(perspectives[i == 0 ? i : i + 1]);
             assertVisible("Toolbar is showing(" + i +")", MVE.allToolbars.get(i));
         }
         
@@ -144,7 +144,7 @@ implements Lookup.Provider, Serializable {
         waiter.waitThree();
         
         for (int i = 0; i < 2; i++) {
-            handle.requestVisible(perspectives[i]);
+            handle.requestVisible(perspectives[i == 0 ? i : i + 1]);
             assertFalse("No Toolbar is showing anymore", MVE.allToolbars.get(i).isShowing());
         }
     }

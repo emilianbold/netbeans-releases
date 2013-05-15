@@ -52,7 +52,7 @@ import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryHandl
 import org.netbeans.modules.bugtracking.kenai.FakeJiraSupport.FakeJiraQueryResultHandle;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -77,7 +77,7 @@ public class QueryAccessorImpl extends QueryAccessor<KenaiProject> {
     
     @Override
     public QueryHandle getAllIssuesQuery(ProjectHandle<KenaiProject> projectHandle) {
-        Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
+        Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(projectHandle.getTeamProject()));
         if(repo == null) {
             FakeJiraSupport jira = FakeJiraSupport.get(projectHandle);
             if (jira != null) {
@@ -87,13 +87,13 @@ public class QueryAccessorImpl extends QueryAccessor<KenaiProject> {
             return null;
         }
 
-        if(!KenaiUtil.isKenai(repo)) {
+        if(!TeamUtil.isFromTeamServer(repo)) {
             return null;
         }
 
         KenaiHandler handler = Support.getInstance().getKenaiHandler(projectHandle, this);
         handler.registerRepository(repo, projectHandle);
-        Query allIssuesQuery = KenaiUtil.getAllIssuesQuery(repo);
+        Query allIssuesQuery = TeamUtil.getAllIssuesQuery(repo);
         if(allIssuesQuery == null) {
             return null;
         }
@@ -106,7 +106,7 @@ public class QueryAccessorImpl extends QueryAccessor<KenaiProject> {
 
     @Override
     public List<QueryHandle> getQueries(ProjectHandle<KenaiProject> projectHandle) {
-        Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
+        Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(projectHandle.getTeamProject()));
         if(repo == null) {
             return getQueriesForNoRepo(projectHandle);
         }
@@ -137,7 +137,7 @@ public class QueryAccessorImpl extends QueryAccessor<KenaiProject> {
 
     @Override
     public Action getFindIssueAction(ProjectHandle<KenaiProject> projectHandle) {
-        final Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
+        final Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(projectHandle.getTeamProject()));
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
             FakeJiraSupport jira = FakeJiraSupport.get(projectHandle);
@@ -151,7 +151,7 @@ public class QueryAccessorImpl extends QueryAccessor<KenaiProject> {
 
     @Override
     public Action getCreateIssueAction(ProjectHandle<KenaiProject> projectHandle) {
-        final Repository repo = KenaiUtil.getRepository(KenaiProjectImpl.getInstance(projectHandle.getTeamProject()));
+        final Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(projectHandle.getTeamProject()));
         if(repo == null) {
             // XXX dummy jira impl to open the jira page in a browser
             FakeJiraSupport jira = FakeJiraSupport.get(projectHandle);

@@ -105,6 +105,9 @@
               <ResourceString bundle="org/netbeans/modules/php/project/connections/ui/Bundle.properties" key="RemoteConnectionsPanel.configList.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;ConfigManager.Configuration&gt;"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>

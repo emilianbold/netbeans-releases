@@ -107,6 +107,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        
+        <change id="brace.context">
+            <summary>Semantic context can be provided for a brace</summary>
+            <version major="1" minor="30"/>
+            <date day="6" month="5" year="2013"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes" binary="compatible" source="compatible" semantic="compatible"/>
+            <description>
+                The brace tooltip may need to display additional text, if for example if-condition spans multiple lines,
+                or for an else-branch, where the important information (if-condition text) is located elsewhere. BraceMatcher
+                can implement the optional mixin BraceMatcher.ContextLocator and provide boundaries for this additional text.
+            </description>
+            <class package="org.netbeans.spi.editor.bracesmatching" name="BracesMatcher"/>
+            <class package="org.netbeans.spi.editor.bracesmatching" name="BraceContext"/>
+            <issue number="217730"/>
+        </change>
 
         <change id="document.locking.changed">
             <summary>Document locking changed</summary>

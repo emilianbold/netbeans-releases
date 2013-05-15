@@ -172,18 +172,6 @@ public class ELSanitizerTest {
     }
 
     @Test
-    public void testSanitizeJavaStaticCompletion() {
-        String sanitized = ELSanitizer.sanitize("#{T(j}");
-        assertEquals("#{T(j)}", sanitized);
-
-        sanitized = ELSanitizer.sanitize("#{T(java.}");
-        assertEquals("#{T(java.x)}", sanitized);
-
-        sanitized = ELSanitizer.sanitize("#{T(java.)}");
-        assertEquals("#{T(java.x)}", sanitized);
-    }
-
-    @Test
     public void testFindLastNonWhiteSpace() {
         assertEquals(2, ELSanitizer.findLastNonWhiteSpace("foo "));
         assertEquals(2, ELSanitizer.findLastNonWhiteSpace("foo     "));

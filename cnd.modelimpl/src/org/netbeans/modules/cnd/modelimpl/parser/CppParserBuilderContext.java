@@ -118,5 +118,19 @@ public class CppParserBuilderContext {
         }
         return null;
     }
-    
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        StringBuilder prefix = new StringBuilder();
+        for (int i = builders.size()-1; i >= 0; i--) {
+            CsmObjectBuilder bldr = builders.get(i);
+            sb.append("\n"); //NOI18N
+            sb.append(prefix);
+            sb.append("->"); //NOI18N
+            sb.append(bldr);
+            prefix.append("  "); //NOI18N
+        }
+        return sb.toString();
+    }
 }

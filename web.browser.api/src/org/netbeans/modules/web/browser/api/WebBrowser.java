@@ -41,7 +41,17 @@
  */
 package org.netbeans.modules.web.browser.api;
 
+import java.awt.Image;
+import java.net.URL;
+import java.util.Map;
+import java.util.WeakHashMap;
+import javax.swing.ImageIcon;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileObject;
+import org.openide.util.ImageUtilities;
 
 /**
  * Single browser registered in the IDE.
@@ -62,6 +72,10 @@ public final class WebBrowser {
         return factoryDesc.getId();
     }
 
+    public boolean hasNetBeansIntegration() {
+        return factoryDesc.hasNetBeansIntegration();
+    }
+
     /**
      * Name eg. FireFox, WebView, ...
      *
@@ -69,6 +83,21 @@ public final class WebBrowser {
      */
     public String getName() {
         return factoryDesc.getName();
+    }
+
+    public Image getIconImage() {
+        Image im = factoryDesc.getIconImage();
+        if (im == null) {
+            ImageIcon icon = ImageUtilities.loadImageIcon( getIconFile(getBrowserFamily()), true );
+            im = ImageUtilities.icon2Image( icon );
+        }
+        if (hasNetBeansIntegration() && factoryDesc.getBrowserFamily() != BrowserFamilyId.JAVAFX_WEBVIEW) {
+            im = ImageUtilities.mergeImages(
+                im,
+                ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/nb-badge.png"),
+            12, 12);
+        }
+        return im;
     }
     
     public BrowserFamilyId getBrowserFamily() {
@@ -80,6 +109,53 @@ public final class WebBrowser {
      */
     public boolean isEmbedded() {
         return getBrowserFamily() == BrowserFamilyId.JAVAFX_WEBVIEW;
+    }
+
+    private static Map<Project, BrowserURLMapperImplementation.BrowserURLMapper> browserMappings =
+            new WeakHashMap<>();
+
+    /**
+     * Let browser implementation convert given URL into a browser specific URL
+     * before opening it in browser. For example Android device Chrome browser
+     * converts localhost URL into IP address so that Android device can access
+     * the locahost.
+     * @return converted or original URL
+     */
+    public URL toBrowserURL(Project p, FileObject projectFile, URL serverURL) {
+        BrowserURLMapperImplementation impl = factoryDesc.getBrowserURLMapper();
+        if (impl != null) {
+            BrowserURLMapperImplementation.BrowserURLMapper m = impl.toBrowser(p, projectFile, serverURL);
+            if (m != null) {
+                browserMappings.put(p, m);
+                String url = WebUtils.urlToString(serverURL);
+                if (url.startsWith(m.getServerURLRoot())) {
+                    url = m.getBrowserURLRoot() + url.substring(m.getServerURLRoot().length());
+                    return WebUtils.stringToUrl(url);
+                }
+            } else {
+                browserMappings.remove(p);
+            }
+        }
+        return serverURL;
+    }
+
+    /**
+     * Let browser implementation convert given browser URL into an URL which
+     * can be translated back to project's source file. This is counter part for
+     * {@link #toBrowserURL} method which translates browser specific URL back
+     * to a URL which can be translated into project's source file.
+     * @return converted or original URL
+     */
+    public URL fromBrowserURL(Project p, URL serverURL) {
+        BrowserURLMapperImplementation.BrowserURLMapper m = browserMappings.get(p);
+        if (m != null) {
+            String url = WebUtils.urlToString(serverURL);
+            if (url.startsWith(m.getBrowserURLRoot())) {
+                url = m.getServerURLRoot()+ url.substring(m.getBrowserURLRoot().length());
+            }
+            return WebUtils.stringToUrl(url);
+        }
+        return serverURL;
     }
 
     /**
@@ -94,7 +170,7 @@ public final class WebBrowser {
      * URLs in the single tab.
      */
     public WebBrowserPane createNewBrowserPane() {
-        return createNewBrowserPane(true, false);
+        return createNewBrowserPane(true);
     }
     
     /**
@@ -106,9 +182,8 @@ public final class WebBrowser {
      * in case when HTML file editor has multiview and one of its tabs is "Preview"
      * showing rendered view of the HTML document.
      */
-    public WebBrowserPane createNewBrowserPane(boolean wrapEmbeddedBrowserInTopComponent,
-            boolean disableNetBeansIntegration) {
-        return new WebBrowserPane( factoryDesc, wrapEmbeddedBrowserInTopComponent, disableNetBeansIntegration);
+    public WebBrowserPane createNewBrowserPane(boolean wrapEmbeddedBrowserInTopComponent) {
+        return new WebBrowserPane(factoryDesc, wrapEmbeddedBrowserInTopComponent);
     }
 
     /**
@@ -117,5 +192,28 @@ public final class WebBrowser {
      */
     public HtmlBrowser.Factory getHtmlBrowserFactory() {
         return factoryDesc.getFactory();
+    }
+
+    WebBrowserFactoryDescriptor getFactoryDesc() {
+        return factoryDesc;
+    }
+
+    private static String getIconFile(BrowserFamilyId browserFamily) {
+        switch (browserFamily) {
+            case CHROME:
+                return "org/netbeans/modules/web/browser/ui/resources/browser-chrome.png";
+            case FIREFOX:
+                return "org/netbeans/modules/web/browser/ui/resources/browser-firefox.png";
+            case CHROMIUM:
+                return "org/netbeans/modules/web/browser/ui/resources/browser-chromium.png";
+            case IE:
+                return "org/netbeans/modules/web/browser/ui/resources/browser-ie.png";
+            case SAFARI:
+                return "org/netbeans/modules/web/browser/ui/resources/browser-safari.png";
+            default:
+                return "org/netbeans/modules/web/browser/ui/resources/browser-generic.png";
+        }
+            
+       
     }
 }

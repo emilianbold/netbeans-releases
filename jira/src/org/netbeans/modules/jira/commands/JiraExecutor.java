@@ -188,8 +188,7 @@ public class JiraExecutor {
 
     private void checkAutoupdate() {
         try {
-            JiraAutoupdate jau = new JiraAutoupdate();
-            jau.checkAndNotify(repository);
+            JiraAutoupdate.getInstance().checkAndNotify(repository);
         } catch(Throwable t) {
             Jira.LOG.log(Level.SEVERE, "Exception in JIRA autoupdate check.", t);
         }
@@ -364,7 +363,7 @@ public class JiraExecutor {
             }
             @Override
             protected boolean handle() {
-                boolean ret = BugtrackingUtil.editRepository(JiraUtils.getRepository(executor.repository), errroMsg);
+                boolean ret = Jira.getInstance().getBugtrackingFactory().editRepository(JiraUtils.getRepository(executor.repository), errroMsg);
                 if(!ret) {
                     JiraUtils.notifyErrorMessage(NbBundle.getMessage(JiraExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
                 }

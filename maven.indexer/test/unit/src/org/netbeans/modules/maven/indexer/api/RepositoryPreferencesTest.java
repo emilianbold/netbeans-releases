@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.maven.indexer.api;
 
+import static junit.framework.Assert.assertEquals;
 import org.apache.maven.settings.Mirror;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.NbTestSuite;
@@ -79,6 +80,15 @@ public class RepositoryPreferencesTest extends NbTestCase {
         rp.removeTransientRepositories(3);
         assertEquals("[local, central]", rp.getRepositoryInfos().toString());
     }
+    
+public void testNonHttpRepositoryInfos() throws Exception { //#227322
+        RepositoryPreferences rp = RepositoryPreferences.getInstance();
+        assertEquals("[local, central]", rp.getRepositoryInfos().toString());
+        rp.addTransientRepository(1, "foo", "Foo", "scp://192.168.1.1/mkleint", RepositoryInfo.MirrorStrategy.NONE);
+        assertEquals("[local, central]", rp.getRepositoryInfos().toString());
+        rp.addTransientRepository(2, "bar", "bar", "ftp://192.168.1.1/mkleint", RepositoryInfo.MirrorStrategy.NONE);
+        assertEquals("[local, central]", rp.getRepositoryInfos().toString());
+    }    
     
     /** created in attempt of reproducing issue http://netbeans.org/bugzilla/show_bug.cgi?id=214980
      */

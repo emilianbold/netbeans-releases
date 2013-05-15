@@ -54,8 +54,6 @@ import org.netbeans.modules.git.ui.actions.MultipleRepositoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
@@ -107,7 +105,7 @@ public class PushToUpstreamAction extends MultipleRepositoryAction {
                 List<String> fetchSpecs = cfg.getFetchRefSpecs();
                 String remoteBranchName = guessRemoteBranchName(fetchSpecs, trackedBranch.getName(), cfg.getRemoteName());
                 if (remoteBranchName == null) {
-                    notifyError(errorLabel, MSG_Err_unknownRemoteBranchName(trackedBranch.getName()));
+                    GitUtils.notifyError(errorLabel, MSG_Err_unknownRemoteBranchName(trackedBranch.getName()));
                 }
                 pushMappings.add(new PushMapping.PushBranchMapping(remoteBranchName, trackedBranch.getId(), activeBranch, false, false));
                 Utils.logVCSExternalRepository("GIT", uri); //NOI18N
@@ -134,12 +132,12 @@ public class PushToUpstreamAction extends MultipleRepositoryAction {
     protected GitBranch getTrackedBranch (GitBranch activeBranch, String errorLabel) {
         GitBranch trackedBranch = activeBranch.getTrackedBranch();
         if (trackedBranch == null) {
-            notifyError(errorLabel,
+            GitUtils.notifyError(errorLabel,
                     MSG_Err_noTrackedBranch(activeBranch.getName())); //NOI18N
             return null;
         }
         if (!trackedBranch.isRemote()) {
-            notifyError(errorLabel, MSG_Err_trackedBranchLocal(trackedBranch.getName())); //NOI18N
+            GitUtils.notifyError(errorLabel, MSG_Err_trackedBranchLocal(trackedBranch.getName())); //NOI18N
             return null;
         }
         return trackedBranch;
@@ -153,29 +151,18 @@ public class PushToUpstreamAction extends MultipleRepositoryAction {
         String remoteName = parseRemote(trackedBranch.getName());
         GitRemoteConfig cfg = remoteName == null ? null : remotes.get(remoteName);
         if (cfg == null) {
-            notifyError(errorLabel, MSG_Err_noRemote(trackedBranch.getName()));
+            GitUtils.notifyError(errorLabel, MSG_Err_noRemote(trackedBranch.getName()));
             return null;
         }
         if (cfg.getPushUris().isEmpty() && cfg.getUris().isEmpty()) {
-            notifyError(errorLabel, MSG_Err_noUri(cfg.getRemoteName()));
+            GitUtils.notifyError(errorLabel, MSG_Err_noUri(cfg.getRemoteName()));
             return null;
         }
         if (cfg.getFetchRefSpecs().isEmpty()) {
-            notifyError(errorLabel, MSG_Err_noSpecs(cfg.getRemoteName()));
+            GitUtils.notifyError(errorLabel, MSG_Err_noSpecs(cfg.getRemoteName()));
             return null;
         }
         return cfg;
-    }
-
-    private static void notifyError (String errorLabel, String errorMessage) {
-        NotifyDescriptor nd = new NotifyDescriptor(
-            errorMessage,
-            errorLabel,
-            NotifyDescriptor.DEFAULT_OPTION,
-            NotifyDescriptor.ERROR_MESSAGE,
-            new Object[]{NotifyDescriptor.OK_OPTION},
-            NotifyDescriptor.OK_OPTION);
-        DialogDisplayer.getDefault().notify(nd);
     }
 
     private static String guessRemoteBranchName (List<String> fetchSpecs, String branchName, String remoteName) {

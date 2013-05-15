@@ -113,6 +113,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
     private JCheckBox runGCCheckbox;
     private JCheckBox threadsMonitoringCheckbox;
     private JCheckBox threadsSamplingCheckbox;
+    private JCheckBox lockContentionMonitoringCheckbox;
     private JLabel defineDepthLabel;
     private JLabel recordStackTracesLabel;
 
@@ -219,6 +220,14 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
     public boolean getThreadsSampling() {
         return threadsSamplingCheckbox.isSelected();
     }
+    
+    public void setLockContentionMonitoring(boolean enabled) {
+        lockContentionMonitoringCheckbox.setSelected(enabled);
+    }
+
+    public boolean getLockContentionMonitoring() {
+        return lockContentionMonitoringCheckbox.isSelected();
+    }
 
     public void disableAll() {
         recordStackTracesLabel.setEnabled(false);
@@ -231,6 +240,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         threadsSettingsPanel.setEnabled(false);
         threadsMonitoringCheckbox.setEnabled(false);
         threadsSamplingCheckbox.setEnabled(false);
+        lockContentionMonitoringCheckbox.setEnabled(false);
         
         trackEveryLabel1.setEnabled(false);
         trackEveryLabel2.setEnabled(false);
@@ -248,6 +258,7 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         threadsSettingsPanel.setEnabled(true);
         threadsMonitoringCheckbox.setEnabled(true);
         threadsSamplingCheckbox.setEnabled(true);
+        lockContentionMonitoringCheckbox.setEnabled(true);
         
         trackEveryLabel1.setEnabled(true);
         trackEveryLabel2.setEnabled(true);
@@ -528,8 +539,24 @@ public class MemorySettingsAdvancedPanel extends DefaultSettingsPanel implements
         constraints.gridwidth = GridBagConstraints.REMAINDER;
         constraints.fill = GridBagConstraints.NONE;
         constraints.anchor = GridBagConstraints.WEST;
-        constraints.insets = new Insets(0, 7, 3, 0);
+        constraints.insets = new Insets(0, 7, 1, 0);
         threadsSettingsPanel.add(threadsSamplingCheckbox, constraints);
+        
+        // lockContentionMonitoringCheckbox
+        lockContentionMonitoringCheckbox = new JCheckBox();
+        org.openide.awt.Mnemonics.setLocalizedText(lockContentionMonitoringCheckbox, Bundle.CPUSettingsAdvancedPanel_EnableLockContentionCheckboxText());
+        lockContentionMonitoringCheckbox.setToolTipText(Bundle.StpLockContentionTooltip());
+        lockContentionMonitoringCheckbox.addActionListener(getSettingsChangeListener());
+        lockContentionMonitoringCheckbox.setOpaque(false);
+        constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 2;
+        constraints.weightx = 1;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = new Insets(0, 7, 3, 0);
+        threadsSettingsPanel.add(lockContentionMonitoringCheckbox, constraints);
 
         // fillerPanel
         constraints = new GridBagConstraints();

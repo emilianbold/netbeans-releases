@@ -133,6 +133,9 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/wizards/Bundle.properties" key="RunAsScript.runAsCombo.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_TypeParameters" type="java.lang.String" value="&lt;String&gt;"/>
+      </AuxValues>
     </Component>
     <Component class="javax.swing.JButton" name="configureButton">
       <Properties>

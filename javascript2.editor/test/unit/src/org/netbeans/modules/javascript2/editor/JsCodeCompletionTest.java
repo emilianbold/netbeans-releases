@@ -63,26 +63,6 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
         checkPrefix("testfiles/completion/cc-prefix3.js");
     }
 
-    public void testProperty01() throws Exception {
-        checkCompletion("testfiles/model/jQueryFragment01.js", "^jQuery.event.customEvent.test();", false);
-    }
-
-    public void testProperty02() throws Exception {
-        checkCompletion("testfiles/model/jQueryFragment01.js", "jQuery.^event.customEvent.test();", false);
-    }
-
-    public void testProperty03() throws Exception {
-        checkCompletion("testfiles/model/jQueryFragment01.js", "jQuery.event.^customEvent.test();", false);
-    }
-
-    public void testProperty04() throws Exception {
-        checkCompletion("testfiles/model/jQueryFragment01.js", "jQuery.event.customEvent.^test();", false);
-    }
-    
-    public void testProperty05() throws Exception {
-        checkCompletion("testfiles/model/jQueryFragment01.js", "jQuery.ajaxStart().add^Class();", false);
-    }
-
     public void testTypeInferenceNew01() throws Exception {
         checkCompletion("testfiles/completion/typeInferenceNew.js", "^formatter.println(\"Car:\");", false);
     }
@@ -163,17 +143,9 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     public void testResolvingThis01() throws Exception {
         checkCompletion("testfiles/completion/resolvingThis.js", "me.^fnc1();", false);
     }
-    
-    public void testIssue217123() throws Exception {
-        checkCompletion("testfiles/completion/issue217123.html", "$(\"#text\").ani^", false);
-    }
 
     public void testIssue218631() throws Exception {
         checkCompletion("testfiles/completion/issue218631.html", "this.name = p^", false);
-    }
-
-    public void testIssue217450() throws Exception {
-        checkCompletion("testfiles/completion/issue217450.js", "$(\"#text\").^", false);
     }
 
     public void testIssue221022() throws Exception {
@@ -194,5 +166,9 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     
     public void testIssue226532() throws Exception {
         checkCompletion("testfiles/completion/issue226532.js", "that.^ppp();", false);
+    }
+    
+    public void testIssue228564() throws Exception {
+        checkCompletion("testfiles/completion/issue228564.js", "y(\"d\").^", false);
     }
 }

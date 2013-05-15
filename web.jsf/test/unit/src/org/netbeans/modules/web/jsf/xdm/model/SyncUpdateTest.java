@@ -44,6 +44,7 @@ package org.netbeans.modules.web.jsf.xdm.model;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.List;
@@ -51,17 +52,19 @@ import java.util.List;
 import javax.swing.text.Document;
 
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModelFactory;
 import org.netbeans.modules.web.jsf.api.facesmodel.LocaleConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationCase;
 import org.netbeans.modules.web.jsf.api.facesmodel.NavigationRule;
 import org.netbeans.modules.xml.xam.ComponentEvent;
 import org.netbeans.modules.xml.xam.ComponentListener;
-import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.w3c.dom.NodeList;
+import org.openide.util.Utilities;
 
 public class SyncUpdateTest extends NbTestCase {
     
@@ -70,6 +73,7 @@ public class SyncUpdateTest extends NbTestCase {
     }
     
     protected void setUp() throws Exception {
+        clearWorkDir();
     }
     
     protected void tearDown() throws Exception {
@@ -79,15 +83,13 @@ public class SyncUpdateTest extends NbTestCase {
     Hashtable <String, PropertyChangeEvent> events = new Hashtable<String, PropertyChangeEvent>();
     
     public void testSyncRuleElement() throws Exception {
-        
-        JSFConfigModel model = Util.loadRegistryModel("faces-config-03.xml");
-        
+        File originalFC = Utilities.toFile(Util.getResourceURI("faces-config-03.xml"));
+        FileObject fc = FileUtil.copyFile(FileUtil.toFileObject(originalFC), FileUtil.toFileObject(getWorkDir()), "faces-config-03.xml");
+        ModelSource ms = TestCatalogModel.getDefault().getModelSource(fc.toURI());
+        JSFConfigModel model = JSFConfigModelFactory.getInstance().getModel(ms);
         NavigationRule rule = model.getRootComponent().getNavigationRules().get(0);
-        
         assertEquals("afaa", rule.getFromViewId());
-        
         Util.setDocumentContentTo(model, "faces-config-04.xml");
-        
         assertEquals("newafaa", rule.getFromViewId());
     }
     

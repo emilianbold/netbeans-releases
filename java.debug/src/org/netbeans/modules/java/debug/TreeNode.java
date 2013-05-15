@@ -909,7 +909,7 @@ public class TreeNode extends AbstractNode implements OffsetProvider {
             DocCommentTree docCommentTree = ((DocTrees) info.getTrees()).getDocCommentTree(getCurrentPath());
             
             if (docCommentTree != null) {
-                below.add(new DocTreeNode(info, getCurrentPath(), docCommentTree));
+                below.add(new DocTreeNode(info, getCurrentPath(), docCommentTree, docCommentTree));
             } else {
                 below.add(new NotFoundJavadocNode("<javadoc-not-found>"));
             }

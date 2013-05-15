@@ -1,15 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
 <filesystem>
-    <folder name="Menu">
-        <folder name="Window">
-            <folder name="Output">
-                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.core.io.ui.Bundle"/>
-                <attr name="position" intvalue="1200"/>
-            </folder>
-        </folder>
-    </folder>
-
     <folder name="Windows2">
         <folder name="Modes">
             <file name="output.wsmode" url="resources/output.wsmode"/>

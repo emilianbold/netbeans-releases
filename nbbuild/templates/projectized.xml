@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
 
 Oracle and Java are registered trademarks of Oracle and/or its affiliates.
 Other names may be trademarks of their respective owners.
@@ -90,15 +90,15 @@ made subject to such option by the copyright holder.
         <setproxy proxyhost="${proxy.host}" proxyport="${proxy.port}"/>
     </target>
 
-    <target name="jdk-6-check" depends="-jdk-init" if="have-jdk-1.7" unless="permit.jdk7.builds">
+    <target name="jdk-7-check" depends="-jdk-init" if="have-jdk-1.8" unless="permit.jdk8.builds">
         <property name="user.build.properties" location="${nb_all}/nbbuild/user.build.properties"/>
         <property name=".nbbuild.properties" location="${user.home}/.nbbuild.properties"/>
-        <fail>You are attempting to build NetBeans using JDK 7 (or higher).
-This is forbidden as it may lead to accidental usage of JDK 7+ APIs.
-Either run Ant with JDK 6, or set nbjdk.home=&lt;JDK 6 home&gt; in ${user.build.properties}
+        <fail>You are attempting to build NetBeans using JDK 8 (or higher).
+This is forbidden as it may lead to accidental usage of JDK 8+ APIs.
+Either run Ant with JDK 7, or set nbjdk.home=&lt;JDK 7 home&gt; in ${user.build.properties}
 (can be set from IDE by opening a module project's Properties dialog and picking the right Java Platform in Libraries).
 You can alternatively set this property in ${.nbbuild.properties} to affect all checkouts on this machine.
-If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=true</fail>
+If you are sure you want to build with JDK 8+ anyway, use: -Dpermit.jdk8.builds=true</fail>
     </target>
 
     <target name="-define-custom-javac-task" unless="have-custom-javac-task">
@@ -106,7 +106,7 @@ If you are sure you want to build with JDK 7+ anyway, use: -Dpermit.jdk7.builds=
         <property name="have-custom-javac-task" value="true" />
     </target>
 
-    <target name="build-init" depends="basic-init,jdk-6-check,set-buildnumber,-define-custom-javac-task">
+    <target name="build-init" depends="basic-init,jdk-7-check,set-buildnumber,-define-custom-javac-task">
         <property name="public.package.jar.dir" location="${nb.build.dir}/public-package-jars"/>
         <mkdir dir="${public.package.jar.dir}"/>
         <parseprojectxml

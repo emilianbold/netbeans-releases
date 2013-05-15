@@ -139,12 +139,12 @@ import org.netbeans.lib.nbjavac.services.NBMemberEnter;
 import org.netbeans.lib.nbjavac.services.NBParserFactory;
 import org.netbeans.lib.nbjavac.services.NBClassWriter;
 import org.netbeans.lib.nbjavac.services.NBJavacTrees;
+import org.netbeans.lib.nbjavac.services.NBMessager;
 import org.netbeans.lib.nbjavac.services.NBTreeMaker;
 import org.netbeans.lib.nbjavac.services.PartialReparser;
 import org.netbeans.modules.java.source.tasklist.CompilerSettings;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
@@ -162,6 +162,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.WeakListeners;
 
 /**
@@ -431,8 +432,8 @@ public class JavacParser extends Parser {
                     if (supportsReparse) {
                         final Pair<DocPositionRegion,MethodTree> _changedMethod = changedMethod.getAndSet(null);
                         if (_changedMethod != null && ciImpl != null) {
-                            LOGGER.log(Level.FINE, "\t:trying partial reparse:\n{0}", _changedMethod.first.getText());                           //NOI18N
-                            needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second, _changedMethod.first.getText());
+                            LOGGER.log(Level.FINE, "\t:trying partial reparse:\n{0}", _changedMethod.first().getText());                           //NOI18N
+                            needsFullReparse = !reparseMethod(ciImpl, snapshot, _changedMethod.second(), _changedMethod.first().getText());
                             if (!needsFullReparse) {
                                 ciImpl.setChangedMethod(_changedMethod);
                             }
@@ -752,7 +753,7 @@ public class JavacParser extends Parser {
             @NonNull final ClasspathInfo cpInfo,
             @NullAllowed final DiagnosticListener<? super JavaFileObject> diagnosticListener,
             @NullAllowed final String sourceLevel,
-            @NullAllowed final String sourceProfile,
+            @NullAllowed final SourceLevelQuery.Profile sourceProfile,
             @NullAllowed final ClassNamesForFileOraculum cnih,
             @NullAllowed final DuplicateClassChecker dcc,
             @NullAllowed final CancelService cancelService,
@@ -764,7 +765,7 @@ public class JavacParser extends Parser {
             @NonNull final ClasspathInfo cpInfo,
             @NullAllowed final DiagnosticListener<? super JavaFileObject> diagnosticListener,
             @NullAllowed final String sourceLevel,
-            @NullAllowed final String sourceProfile,
+            @NullAllowed SourceLevelQuery.Profile sourceProfile,
             final boolean backgroundCompilation,
             @NullAllowed final ClassNamesForFileOraculum cnih,
             @NullAllowed final DuplicateClassChecker dcc,
@@ -773,7 +774,6 @@ public class JavacParser extends Parser {
         final List<String> options = new ArrayList<String>();
         String lintOptions = CompilerSettings.getCommandLine();
         com.sun.tools.javac.code.Source validatedSourceLevel = validateSourceLevel(sourceLevel, cpInfo);
-        com.sun.tools.javac.jvm.Profile validatedProfile = validateSourceProfile(sourceProfile);
         if (lintOptions.length() > 0) {
             options.addAll(Arrays.asList(lintOptions.split(" ")));
         }
@@ -798,12 +798,14 @@ public class JavacParser extends Parser {
         options.add("-g:vars");  // NOI18N, Make the compiler to maintain local variables table
         options.add("-source");  // NOI18N
         options.add(validatedSourceLevel.name);
-        if (validatedProfile != null) {
+        if (sourceProfile != null &&
+            sourceProfile != SourceLevelQuery.Profile.DEFAULT) {
             options.add("-profile");    //NOI18N, Limit JRE to required compact profile
-            options.add(validatedProfile.name);
+            options.add(sourceProfile.getName());
         }
         options.add("-XDdiags=-source");  // NOI18N
         options.add("-XDdiagsFormat=%L%m|%L%m|%L%m");  // NOI18N
+        options.add("-XDbreakDocCommentParsingOnError=false");  // NOI18N
         boolean aptEnabled = aptUtils != null && aptUtils.aptEnabledOnScan() && (backgroundCompilation || aptUtils.aptEnabledInEditor())
                 && !ClasspathInfoAccessor.getINSTANCE().getCachedClassPath(cpInfo, PathKind.SOURCE).entries().isEmpty();
         Collection<? extends Processor> processors = null;
@@ -835,7 +837,7 @@ public class JavacParser extends Parser {
 
         Context context = new Context();
         //need to preregister the Messages here, because the getTask below requires Log instance:
-        Messager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
+        NBMessager.preRegister(context, null, DEV_NULL, DEV_NULL, DEV_NULL);
         JavacTaskImpl task = (JavacTaskImpl)JavacTool.create().getTask(null, 
                 ClasspathInfoAccessor.getINSTANCE().createFileManager(cpInfo),
                 diagnosticListener, options, null, Collections.<JavaFileObject>emptySet(),
@@ -871,10 +873,11 @@ public class JavacParser extends Parser {
         return task;
     }
 
-    private static @NonNull com.sun.tools.javac.code.Source validateSourceLevel(
+    static @NonNull com.sun.tools.javac.code.Source validateSourceLevel(
             @NullAllowed String sourceLevel,
             @NonNull final ClasspathInfo cpInfo) {
         ClassPath bootClassPath = cpInfo.getClassPath(PathKind.BOOT);
+        ClassPath classPath = null;
         ClassPath srcClassPath = cpInfo.getClassPath(PathKind.SOURCE);
         com.sun.tools.javac.code.Source[] sources = com.sun.tools.javac.code.Source.values();
         Level warnLevel;
@@ -889,23 +892,31 @@ public class JavacParser extends Parser {
             if (source.name.equals(sourceLevel)) {
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_4) >= 0) {
                     if (bootClassPath != null && bootClassPath.findResource("java/lang/AssertionError.class") == null) { //NOI18N
-                        if (srcClassPath != null && srcClassPath.findResource("java/lang/AssertionError.java") == null) {
-                            LOGGER.log(warnLevel,
-                                       "Even though the source level of {0} is set to: {1}, java.lang.AssertionError cannot be found on the bootclasspath: {2}\n" +
-                                       "Changing source level to 1.3",
-                                       new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
-                            return com.sun.tools.javac.code.Source.JDK1_3;
+                        if (bootClassPath.findResource("java/lang/Object.class") == null) { // NOI18N
+                            // empty bootClassPath also check classpath
+                            classPath = cpInfo.getClassPath(PathKind.COMPILE);
+                        }
+                        if (srcClassPath != null && srcClassPath.findResource("java/lang/AssertionError.java") == null) { // NOI18N
+                            if (classPath == null || classPath.findResource("java/lang/AssertionError.class") == null) { // NOI18N
+                                LOGGER.log(warnLevel,
+                                           "Even though the source level of {0} is set to: {1}, java.lang.AssertionError cannot be found on the bootclasspath: {2}\n" +
+                                           "Changing source level to 1.3",
+                                           new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                                return com.sun.tools.javac.code.Source.JDK1_3;
+                            }
                         }
                     }
                 }
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_5) >= 0) {
                     if (bootClassPath != null && bootClassPath.findResource("java/lang/StringBuilder.class") == null) { //NOI18N
                         if (srcClassPath != null && srcClassPath.findResource("java/lang/StringBuilder.java")==null) {
-                            LOGGER.log(warnLevel,
-                                       "Even though the source level of {0} is set to: {1}, java.lang.StringBuilder cannot be found on the bootclasspath: {2}\n" +
-                                       "Changing source level to 1.4",
-                                       new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
-                            return com.sun.tools.javac.code.Source.JDK1_4;
+                            if (classPath == null || classPath.findResource("java/lang/StringBuilder.class") == null) { // NOI18N
+                                LOGGER.log(warnLevel,
+                                           "Even though the source level of {0} is set to: {1}, java.lang.StringBuilder cannot be found on the bootclasspath: {2}\n" +
+                                           "Changing source level to 1.4",
+                                           new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                                return com.sun.tools.javac.code.Source.JDK1_4;
+                            }
                         }
                     }
                 }
@@ -922,16 +933,7 @@ public class JavacParser extends Parser {
             return sources[sources.length-1];
         }
     }
-
-    @CheckForNull
-    private static com.sun.tools.javac.jvm.Profile validateSourceProfile(
-            @NullAllowed String profileName) {
-        if (profileName == null) {
-            return null;
-        }
-        return com.sun.tools.javac.jvm.Profile.lookup(profileName);
-    }
-
+    
     private static void logTime (FileObject source, Phase phase, long time) {
         assert source != null && phase != null;
         String message = phase2Message.get(phase);
@@ -1242,7 +1244,7 @@ public class JavacParser extends Parser {
                     int end = evt.affectedEndOffset();
                     synchronized (positions) {
                         for (Pair<DocPositionRegion,MethodTree> pe : positions) {
-                            PositionRegion p = pe.first;
+                            PositionRegion p = pe.first();
                             if (start > p.getStartOffset() && end < p.getEndOffset()) {
                                 changedMethod = pe;
                                 break;

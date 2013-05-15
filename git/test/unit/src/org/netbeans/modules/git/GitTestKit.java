@@ -48,7 +48,7 @@ import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.EnumSet;
 import org.netbeans.libs.git.GitUser;
-import org.netbeans.modules.git.ui.commit.GitFileNode;
+import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
 
 /**
  *
@@ -64,15 +64,15 @@ public class GitTestKit {
         return new FileInformation(status, false);
     }
     
-    public static GitFileNode createFileNode(File root, String file, FileInformation.Status status, boolean excluded) throws IOException {
+    public static GitLocalFileNode createFileNode(File root, String file, FileInformation.Status status, boolean excluded) throws IOException {
         return new TestNode(root, file, status, excluded);
     }
     
-    public static GitFileNode createFileNode(File root, String file, FileInformation.Status status) throws IOException {
+    public static GitLocalFileNode createFileNode(File root, String file, FileInformation.Status status) throws IOException {
         return new TestNode(root, file, status);
     }
     
-    public static GitFileNode createFileNode(File root, String file, EnumSet<FileInformation.Status> status) throws IOException {
+    public static GitLocalFileNode createFileNode(File root, String file, EnumSet<FileInformation.Status> status) throws IOException {
         return new TestNode(root, file, status);
     }
     
@@ -82,7 +82,7 @@ public class GitTestKit {
         return cnst.newInstance("Test User", "test@user.org");
     }
     
-    private static class TestNode extends GitFileNode {
+    private static class TestNode extends GitFileNode.GitLocalFileNode {
         private FileInformation info;
         
         public TestNode(File root, String file, FileInformation.Status status, boolean excluded) throws IOException {

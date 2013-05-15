@@ -49,7 +49,7 @@ import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
 import org.netbeans.spi.editor.bracesmatching.MatcherContext;

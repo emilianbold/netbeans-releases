@@ -104,9 +104,10 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     private static final Logger LOG = Logger.getLogger(POMModelPanel.class.getName());
 
     private static final String NAVIGATOR_SHOW_UNDEFINED = "navigator.showUndefined"; //NOI18N
-    private transient ExplorerManager explorerManager = new ExplorerManager();
+    private static final String NAVIGATOR_SORT_LISTS = "navigator.sortLists"; //NOI18N
+    private final transient ExplorerManager explorerManager = new ExplorerManager();
     
-    private BeanTreeView treeView;
+    private final BeanTreeView treeView;
     private DataObject current;
     private Reference<JTextComponent> currentComponent;
     private int currentDot = -1;
@@ -122,23 +123,25 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
     private final RequestProcessor.Task showTask = RP.create(this);
 
 
-    private FileChangeAdapter adapter = new FileChangeAdapter(){
+    private final FileChangeAdapter adapter = new FileChangeAdapter(){
             @Override
             public void fileChanged(FileEvent fe) {
                 showWaitNode();
                 showTask.schedule(0);
             }
         };
-    private TapPanel filtersPanel;
+    private final TapPanel filtersPanel;
 
-    private Configuration configuration;
+    private final Configuration configuration;
 
     /** Creates new form POMInheritancePanel */
     public POMModelPanel() {
         initComponents();
         configuration = new Configuration();
         boolean filterIncludeUndefined = NbPreferences.forModule(POMModelPanel.class).getBoolean(NAVIGATOR_SHOW_UNDEFINED, true);
+        boolean sortLists = NbPreferences.forModule(POMModelPanel.class).getBoolean(NAVIGATOR_SORT_LISTS, false);
         configuration.setFilterUndefined(filterIncludeUndefined);
+        configuration.setSortLists(sortLists);
 
         treeView = (BeanTreeView)jScrollPane1;
         // filters
@@ -488,6 +491,9 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             JToggleButton tg1 = new JToggleButton(new ShowUndefinedAction());
             tg1.setSelected(configuration.isFilterUndefined());
             toolbar.add(tg1);
+            JToggleButton tg2 = new JToggleButton(new SortListsAction());
+            tg2.setSelected(configuration.isSortLists());
+            toolbar.add(tg2);
             Dimension space = new Dimension(3, 0);
             toolbar.addSeparator(space);
 
@@ -735,11 +741,33 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
         }
         
     }
+    
+    private class SortListsAction extends AbstractAction {
+
+        public SortListsAction() {
+            putValue(SMALL_ICON, ImageUtilities.image2Icon(ImageUtilities.loadImage("org/netbeans/modules/maven/navigator/sortAlpha.png"))); //NOI18N
+            putValue(SHORT_DESCRIPTION, org.openide.util.NbBundle.getMessage(POMModelPanel.class, "DESC_SortLists"));
+        }
+
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            boolean current = configuration.isSortLists();
+            configuration.setSortLists(!current);
+            NbPreferences.forModule(POMModelPanel.class).putBoolean( NAVIGATOR_SORT_LISTS, !current);
+        }
+        
+    }
 
     static class Configuration {
 
         private boolean filterUndefined;
+        private boolean sortLists;
+
+        private final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+    
         public static final String PROP_FILTERUNDEFINED = "filterUndefined"; //NOI18N
+        public static final String PROP_SORT_LISTS = "sortLists";  
 
         /**
          * Get the value of filterUndefined
@@ -760,7 +788,18 @@ public class POMModelPanel extends javax.swing.JPanel implements ExplorerManager
             this.filterUndefined = filterUndefined;
             propertyChangeSupport.firePropertyChange(PROP_FILTERUNDEFINED, oldFilterUndefined, filterUndefined);
         }
-        private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+        
+        
+        public boolean isSortLists() {
+            return sortLists;
+        }
+
+        public void setSortLists(boolean sortLists) {
+            boolean old = this.sortLists;
+            this.sortLists = sortLists;
+            propertyChangeSupport.firePropertyChange(PROP_SORT_LISTS, old, sortLists);
+        } 
+        
 
         /**
          * Add PropertyChangeListener.

@@ -87,8 +87,18 @@ public class SiteOutputProcessor implements OutputProcessor {
     
     @Override
     public void sequenceEnd(String sequenceId, OutputVisitor visitor) {
-        visitor.setLine("     View Generated Project Site"); //NOI18N shows up in maven output.
-        visitor.setOutputListener(new Listener(project), false);
+        //now that in m3 site plugin embeds other plugin's execution, the eventspy will report site as started and within the site execution report other sequences
+        // (maybe) ideally we would only let site plugin to process output and start/end sequences not owned by child executions.
+        if ("mojo-execute#site:site".equals(sequenceId)) {
+            visitor.setLine("     View Generated Project Site"); //NOI18N shows up in maven output.
+            OutputVisitor.Context con = visitor.getContext();
+            if (con != null && con.getCurrentProject() != null) {
+                visitor.setOutputListener(new Listener(con.getCurrentProject()), false);
+            } else {
+                //hope for the best, but generally the root project might not be the right project to use.
+                visitor.setOutputListener(new Listener(project), false);
+            }
+        }
     }
     
     @Override

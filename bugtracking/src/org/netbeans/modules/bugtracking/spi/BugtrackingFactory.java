@@ -37,9 +37,13 @@
  */
 package org.netbeans.modules.bugtracking.spi;
 
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.tasks.DashboardTopComponent;
+import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
+import static org.netbeans.modules.bugtracking.util.BugtrackingUtil.editRepository;
 import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 
 /**
@@ -102,10 +106,26 @@ public final class BugtrackingFactory<R, Q, I> {
         }
     }
     
+    public void addToCategory(final Repository repository, final I i) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                IssueImpl issue = getIssueImpl(repository, i);
+                if (issue != null) {
+                    DashboardTopComponent.findInstance().addTask(issue);
+                }
+            }
+        });
+    }
+    
     public UndoRedoSupport getUndoRedoSupport(Repository repository, I i) {
         return UndoRedoSupport.getSupport(getIssueImpl(repository, i));
     }
     
+    public boolean editRepository(Repository repository, String errorMessage) {
+        return BugtrackingUtil.editRepository(APIAccessor.IMPL.getImpl(repository), errorMessage);
+    }
+        
     private QueryImpl getQueryImpl(Repository repository, Q q) {
         RepositoryImpl<R, Q, I> repositoryImpl = APIAccessor.IMPL.getImpl(repository);
         QueryImpl impl = repositoryImpl.getQuery(q);

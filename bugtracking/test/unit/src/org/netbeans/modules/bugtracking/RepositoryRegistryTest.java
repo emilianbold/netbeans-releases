@@ -236,11 +236,6 @@ public class RepositoryRegistryTest extends NbTestCase {
         }
 
         @Override
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
-        }
-
-        @Override
         public Image getIcon() {
             throw new UnsupportedOperationException("Not supported yet.");
         }

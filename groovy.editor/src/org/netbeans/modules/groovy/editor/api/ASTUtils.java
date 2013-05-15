@@ -283,7 +283,7 @@ public class ASTUtils {
         // Logger PRIV_LOG = Logger.getLogger(AstUtilities.class.getName());
         // PRIV_LOG.log(Level.FINEST, "children(ASTNode):Name" + root.getClass().getName() +":"+ root.getText());
 
-        List<ASTNode> children = new ArrayList<ASTNode>();
+        List<ASTNode> children = new ArrayList<>();
 
         if (root instanceof ModuleNode) {
             ModuleNode moduleNode = (ModuleNode) root;
@@ -292,7 +292,7 @@ public class ASTUtils {
         } else if (root instanceof ClassNode) {
             ClassNode classNode = (ClassNode) root;
 
-            Set<String> possibleMethods = new HashSet<String>();
+            Set<String> possibleMethods = new HashSet<>();
             for (Object object : classNode.getProperties()) {
                 PropertyNode property = (PropertyNode) object;
                 if (property.getLineNumber() >= 0) {
@@ -481,16 +481,20 @@ public class ASTUtils {
                 TokenSequence<GroovyTokenId> ts = LexUtilities.getPositionedSequence(doc, startOffset);
                 if (ts != null) {
                     Token<GroovyTokenId> token = ts.token();
-                    if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), identifier)) {
-                        int offset = ts.offset();
-                        result[0] = new OffsetRange(offset, offset + identifier.length());
+                    if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.endsWith(identifier, token.text())) {
+                        int start = ts.offset() + token.text().length() - identifier.length();
+                        int end = ts.offset() + token.text().length();
+                        
+                        result[0] = new OffsetRange(start, end);
                         return;
                     }
                     while (ts.moveNext()) {
                         token = ts.token();
-                        if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.equals(token.text(), identifier)) {
-                            int offset = ts.offset();
-                            result[0] = new OffsetRange(offset, offset + identifier.length());
+                        if (token != null && token.id() == GroovyTokenId.IDENTIFIER && TokenUtilities.endsWith(identifier, token.text())) {
+                            int start = ts.offset() + token.text().length() - identifier.length();
+                            int end = ts.offset() + token.text().length();
+                            
+                            result[0] = new OffsetRange(start, end);
                             return;
                         }
                     }

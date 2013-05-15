@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.modules.web.webkit.debugging.TransportHelper;
@@ -76,6 +77,8 @@ public class DOM {
     private final List<Listener> listeners = new CopyOnWriteArrayList<Listener>();
     /** Document node */
     private Node documentNode;
+    /** Counter of documents the user navigated across. */
+    private int documentCounter;
     /** Known nodes - maps node ID to Node. */
     private final Map<Integer,Node> nodes = new HashMap<Integer,Node>();
 
@@ -96,19 +99,42 @@ public class DOM {
      * 
      * @return document node.
      */
-    public synchronized Node getDocument() {
-        if (documentNode == null) {
+    public Node getDocument() {
+        Node document;
+        int counter;
+        synchronized (this) {
+            document = documentNode;
+            counter = documentCounter;
+        }
+        if (document == null) {
             Response response = transport.sendBlockingCommand(new Command("DOM.getDocument")); // NOI18N
-            if (response != null) {
-                JSONObject result = response.getResult();
-                if (result != null) {
-                    JSONObject node = (JSONObject)result.get("root"); // NOI18N
-                    documentNode = new Node(node);
-                    updateNodesMap(documentNode);
+            synchronized (this) {
+                if (documentNode == null) {
+                    if (counter == documentCounter) {
+                        if (response != null) {
+                            JSONObject result = response.getResult();
+                            if (result != null) {
+                                JSONObject node = (JSONObject)result.get("root"); // NOI18N
+                                documentNode = new Node(node);
+                                updateNodesMap(documentNode);
+                            }
+                        }
+                        return documentNode;
+                    }
+                    // else {
+                    //     Navigation occured before we obtained the response
+                    //     => return the document node of the new document
+                    //     (which is done by the return statement behind
+                    //     this synchronized block)
+                    // }
+                } else {
+                    // another thread already updated documentNode field
+                    return documentNode;
                 }
             }
+            return getDocument();
         }
-        return documentNode;
+        return document;
     }
 
     /**
@@ -118,6 +144,7 @@ public class DOM {
      * @param node node to check/insert.
      */
     private synchronized void updateNodesMap(Node node) {
+        removeClassForHover(node);
         nodes.put(node.getNodeId(), node);
         synchronized (node) {
             List<Node> subNodes = node.getChildren();
@@ -451,6 +478,50 @@ public class DOM {
      */
     public synchronized void reset() {
         documentNode = null;
+        classForHover = null;
+    }
+
+    /** CSS class used to simulate hovering. */
+    private String classForHover;
+
+    /**
+     * Sets the CSS class that is used to simulate hovering.
+     * 
+     * @param classForHover class to simulate hovering.
+     */
+    public void setClassForHover(String classForHover) {
+        this.classForHover = classForHover;
+    }
+
+    /**
+     * Returns the class used to simulate hovering.
+     * 
+     * @return class to simulate hovering.
+     */
+    private String getClassForHover() {
+        return classForHover;
+    }
+
+    /**
+     * Remove the class used for simulation of hovering from the {@code class}
+     * attribute of the specified node.
+     * 
+     * @param node node to remove the class from.
+     */
+    private void removeClassForHover(Node node) {
+        Node.Attribute attr = node.getAttribute("class"); // NOI18N
+        if (attr != null) {
+            String value = attr.getValue();
+            String clazz = getClassForHover();
+            if (clazz != null && value.contains(clazz)) {
+                value = Pattern.compile(Pattern.quote(clazz)).matcher(value).replaceAll("").trim(); // NOI18N
+                if (value.isEmpty()) {
+                    node.removeAttribute(attr.getName());
+                } else {
+                    attr.setValue(value);
+                }
+            }
+        }
     }
 
     /**
@@ -609,6 +680,7 @@ public class DOM {
         synchronized (this) {
             nodes.clear();
             documentNode = null;
+            documentCounter++;
         }
         notifyDocumentUpdated();
     }
@@ -624,6 +696,12 @@ public class DOM {
             }
             name = (String)params.get("name"); // NOI18N
             String value = (String)params.get("value"); // NOI18N
+            if ("class".equals(name)) { // NOI18N
+                String clazz = getClassForHover();
+                if (clazz != null && value.contains(clazz)) {
+                    value = Pattern.compile(Pattern.quote(clazz)).matcher(value).replaceAll("").trim();
+                }
+            }
             node.setAttribute(name, value);
         }
         notifyAttributeModified(node, name);

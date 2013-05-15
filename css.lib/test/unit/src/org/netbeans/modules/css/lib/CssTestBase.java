@@ -97,6 +97,18 @@ public class CssTestBase extends CslTestBase {
         return Collections.emptyList();
     }
 
+    protected void assertParses(String cssCode, boolean debug) {
+        CssParserResult result = TestUtil.parse(cssCode);
+        if(debug) {
+            TestUtil.dumpResult(result);
+        }
+        assertResultOK(result);
+        
+    }
+    protected void assertParses(String cssCode) {
+        assertParses(cssCode, false);
+    }
+    
     protected CssParserResult assertResultOK(CssParserResult result) {
         return assertResult(result, 0);
     }

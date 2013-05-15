@@ -421,8 +421,6 @@ public class Utilities {
             expression = false;
         }
 
-        int syntheticOffset = 0;
-
         if (scope != null) {
             TypeMirror type = attributeTree(jti, patternTree, scope, patternTreeErrors);
 
@@ -483,12 +481,12 @@ public class Utilities {
                     }
                 }
             }
-
-            syntheticOffset = 1;
         }
 
         if (classMember) {
             List<? extends Tree> members = ((NewClassTree) patternTree).getClassBody().getMembers();
+            
+            int syntheticOffset = !members.isEmpty() && members.get(0).getKind() == Kind.METHOD && (((JCMethodDecl) members.get(0)).mods.flags & Flags.GENERATEDCONSTR) != 0 ? 1 : 0;
 
             if (members.size() > 1 + syntheticOffset) {
                 ModifiersTree mt = make.Modifiers(EnumSet.noneOf(Modifier.class));
@@ -1258,6 +1256,24 @@ public class Utilities {
             return super.formalParameter(lambdaParam);
         }
 
+        @Override
+        protected JCVariableDecl implicitParameter() {
+            if (token.kind == TokenKind.IDENTIFIER) {
+                if (token.name().startsWith(dollar)) {
+                    com.sun.tools.javac.util.Name name = token.name();
+
+                    Token peeked = S.token(1);
+
+                    if (peeked.kind == TokenKind.COMMA || peeked.kind == TokenKind.RPAREN) {
+                        nextToken();
+                        return new VariableWildcard(ctx, name, F.Ident(name));
+                    }
+                }
+            }
+
+            return super.implicitParameter();
+        }
+        
         @Override
         protected JCCatch catchClause() {
             if (token.kind == TokenKind.CATCH) {

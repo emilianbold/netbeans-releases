@@ -52,7 +52,6 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.css.lib.Css3Lexer;
 import static org.netbeans.modules.css.lib.api.CssTokenIdCategory.*;
-import org.netbeans.modules.css.lib.api.properties.Token;
 
 /**
  * Token ids of CSS language
@@ -87,6 +86,7 @@ public enum CssTokenId implements TokenId {
     ERROR(org.antlr.runtime.Token.INVALID_TOKEN_TYPE, ERRORS),
     
     AND(Css3Lexer.AND, OPERATORS),
+    OR(Css3Lexer.OR, OPERATORS),
     NOT(Css3Lexer.NOT, OPERATORS),
     ONLY(Css3Lexer.ONLY, OPERATORS),
     RESOLUTION(Css3Lexer.RESOLUTION, NUMBERS),
@@ -173,7 +173,7 @@ public enum CssTokenId implements TokenId {
     
     INVALID(Css3Lexer.INVALID, OTHERS),
     DIMENSION(Css3Lexer.DIMENSION, NUMBERS),
-    NL(Css3Lexer.NL, OTHERS), //newline
+    NL(Css3Lexer.NL, WHITESPACES), //newline
     PIPE(Css3Lexer.PIPE, OPERATORS),  //NOI18N
     
     GEN(Css3Lexer.GEN, OTHERS),
@@ -265,9 +265,11 @@ public enum CssTokenId implements TokenId {
 //    SASS_ELSEIF(Css3Lexer.SASS_ELSEIF, AT_RULE_SYMBOL),
     SASS_CONTENT(Css3Lexer.SASS_CONTENT, AT_RULE_SYMBOL),
     
+    CP_NOT_EQ(Css3Lexer.CP_NOT_EQ, AT_RULE_SYMBOL),
+    
     ;
     
-    private static final Map<Integer, CssTokenId> codesMap = new HashMap<Integer, CssTokenId>();
+    private static final Map<Integer, CssTokenId> codesMap = new HashMap<>();
     static {
         for(CssTokenId id : values()) {
             codesMap.put(id.code, id);

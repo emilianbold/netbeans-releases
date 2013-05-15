@@ -72,6 +72,8 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener, Doc
         internalDiff.addChangeListener(this);
         externalDiff.addChangeListener(this);
         ignoreWhitespace.addChangeListener(this);
+        ignoreAllWhitespace.addChangeListener(this);
+        ignoreCase.addChangeListener(this);
         externalCommand.getDocument().addDocumentListener(this);
         refreshComponents();
     }

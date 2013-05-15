@@ -79,13 +79,13 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
-import org.netbeans.modules.parsing.impl.indexing.Pair;
 import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.netbeans.modules.parsing.impl.indexing.Util;
 import org.netbeans.modules.parsing.spi.*;
 import org.netbeans.modules.parsing.spi.Parser.Result;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
@@ -438,12 +438,12 @@ public class TaskProcessor {
         return parserLock.isHeldByCurrentThread();
     }
     
-    static void scheduleSpecialTask (final Runnable runnable, final int priority) {
+    static void scheduleSpecialTask (@NonNull final Runnable runnable, final int priority) {
         assert runnable != null;
         final ParserResultTask<? extends Result> task = new ParserResultTask<Result>() {
             @Override
             public int getPriority() {
-                return 0;
+                return priority;
             }
 
             @Override
@@ -476,12 +476,12 @@ public class TaskProcessor {
         Parameters.notNull("cache", cache);   //NOI18N
         List<Request> _requests = new ArrayList<Request> ();
         for (Pair<SchedulerTask,Class<? extends Scheduler>> task : tasks) {
-            final String taskClassName = task.first.getClass().getName();
+            final String taskClassName = task.first().getClass().getName();
             if (excludedTasks != null && excludedTasks.matcher(taskClassName).matches()) {
                 if (includedTasks == null || !includedTasks.matcher(taskClassName).matches())
                     continue;
             }
-            _requests.add (new Request (task.first, cache, bridge ? ReschedulePolicy.ON_CHANGE : ReschedulePolicy.CANCELED, task.second));
+            _requests.add (new Request (task.first(), cache, bridge ? ReschedulePolicy.ON_CHANGE : ReschedulePolicy.CANCELED, task.second()));
         }
         return _requests;
     }

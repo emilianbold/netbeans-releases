@@ -252,12 +252,15 @@ public class OutputTabOperator extends JComponentOperator {
             public int map() {
                 Document document = documentForTab(getSource());
                 try {
-                    Method getLengthMethod = getOutputDocumentClass().getDeclaredMethod("getLength", (Class[]) null);
-                    getLengthMethod.setAccessible(true);
-                    return ((Integer) getLengthMethod.invoke(document, (Object[]) null)).intValue();
+                    if (getOutputDocumentClass().isInstance(document)) {
+                        Method getLengthMethod = getOutputDocumentClass().getDeclaredMethod("getLength", (Class[]) null);
+                        getLengthMethod.setAccessible(true);
+                        return ((Integer) getLengthMethod.invoke(document, (Object[]) null)).intValue();
+                    }
                 } catch (Exception e) {
                     throw new JemmyException("getLength() by reflection failed.", e);
                 }
+                return 0;
             }
         });
     }
@@ -291,12 +294,15 @@ public class OutputTabOperator extends JComponentOperator {
             public Object map() {
                 Document document = documentForTab(getSource());
                 try {
-                    Method getTextMethod = getOutputDocumentClass().getDeclaredMethod("getText", new Class[]{int.class, int.class});
-                    getTextMethod.setAccessible(true);
-                    return getTextMethod.invoke(document, new Object[]{Integer.valueOf(0), Integer.valueOf(length)}).toString();
+                    if (getOutputDocumentClass().isInstance(document)) {
+                        Method getTextMethod = getOutputDocumentClass().getDeclaredMethod("getText", new Class[]{int.class, int.class});
+                        getTextMethod.setAccessible(true);
+                        return getTextMethod.invoke(document, new Object[]{Integer.valueOf(0), Integer.valueOf(length)}).toString();
+                    }
                 } catch (Exception e) {
                     throw new JemmyException("Getting text by reflection failed.", e);
                 }
+                return "";
             }
         });
     }
@@ -346,12 +352,15 @@ public class OutputTabOperator extends JComponentOperator {
             public Object map() {
                 Document document = documentForTab(getSource());
                 try {
-                    Method getElementCountMethod = getOutputDocumentClass().getDeclaredMethod("getElementCount", (Class[]) null);
-                    getElementCountMethod.setAccessible(true);
-                    return (Integer) getElementCountMethod.invoke(document, (Object[]) null);
+                    if (getOutputDocumentClass().isInstance(document)) {
+                        Method getElementCountMethod = getOutputDocumentClass().getDeclaredMethod("getElementCount", (Class[]) null);
+                        getElementCountMethod.setAccessible(true);
+                        return (Integer) getElementCountMethod.invoke(document, (Object[]) null);
+                    }
                 } catch (Exception e) {
                     throw new JemmyException("getElementCount() by reflection failed.", e);
                 }
+                return 0;
             }
         })).intValue();
     }
@@ -404,23 +413,26 @@ public class OutputTabOperator extends JComponentOperator {
             public Object map() {
                 Document document = documentForTab(getSource());
                 try {
-                    Class clazz = getOutputDocumentClass();
-                    Method getLineStartMethod = clazz.getDeclaredMethod("getLineStart", new Class[]{int.class});
-                    getLineStartMethod.setAccessible(true);
-                    Integer lineStart = (Integer) getLineStartMethod.invoke(document, new Object[]{Integer.valueOf(line)});
-                    Method getLineEndMethod = clazz.getDeclaredMethod("getLineEnd", new Class[]{int.class});
-                    getLineEndMethod.setAccessible(true);
-                    Integer lineEnd = (Integer) getLineEndMethod.invoke(document, new Object[]{Integer.valueOf(line)});
-                    if (lineStart.intValue() == lineEnd.intValue()) {
-                        // line is empty
-                        return "";
+                    if (getOutputDocumentClass().isInstance(document)) {
+                        Class clazz = getOutputDocumentClass();
+                        Method getLineStartMethod = clazz.getDeclaredMethod("getLineStart", new Class[]{int.class});
+                        getLineStartMethod.setAccessible(true);
+                        Integer lineStart = (Integer) getLineStartMethod.invoke(document, new Object[]{Integer.valueOf(line)});
+                        Method getLineEndMethod = clazz.getDeclaredMethod("getLineEnd", new Class[]{int.class});
+                        getLineEndMethod.setAccessible(true);
+                        Integer lineEnd = (Integer) getLineEndMethod.invoke(document, new Object[]{Integer.valueOf(line)});
+                        if (lineStart.intValue() == lineEnd.intValue()) {
+                            // line is empty
+                            return "";
+                        }
+                        Method getTextMethod = clazz.getDeclaredMethod("getText", new Class[]{int.class, int.class});
+                        getTextMethod.setAccessible(true);
+                        return getTextMethod.invoke(document, new Object[]{lineStart, Integer.valueOf(lineEnd.intValue() - lineStart.intValue())}).toString();
                     }
-                    Method getTextMethod = clazz.getDeclaredMethod("getText", new Class[]{int.class, int.class});
-                    getTextMethod.setAccessible(true);
-                    return getTextMethod.invoke(document, new Object[]{lineStart, Integer.valueOf(lineEnd.intValue() - lineStart.intValue())}).toString();
                 } catch (Exception e) {
                     throw new JemmyException("Getting text by reflection failed.", e);
                 }
+                return "";
             }
         });
     }

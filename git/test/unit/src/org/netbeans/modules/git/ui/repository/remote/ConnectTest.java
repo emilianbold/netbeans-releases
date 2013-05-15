@@ -85,6 +85,7 @@ public class ConnectTest extends AbstractGitTestCase {
         client = Git.getInstance().getClient(repositoryLocation, null, false);
         prefs = NbPreferences.forModule(GitModuleConfig.class);
         prefs.clear();
+        GitModuleConfig.getDefault().removeConnectionSettings(new GitURI(URL));
     }
 
     public void testConnectNoCredentials () throws Exception {

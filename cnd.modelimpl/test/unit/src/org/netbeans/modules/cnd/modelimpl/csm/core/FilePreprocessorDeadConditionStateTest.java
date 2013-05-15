@@ -76,7 +76,7 @@ public class FilePreprocessorDeadConditionStateTest extends CndBaseTestCase {
 
         FilePreprocessorConditionState state7 = new FilePreprocessorConditionState.Builder("state7").addBlockImpl(50, 60).addBlockImpl(70, 80).build();
 
-        FilePreprocessorConditionState empty = new FilePreprocessorConditionState.Builder("emtpy").build();
+        FilePreprocessorConditionState empty = new FilePreprocessorConditionState.Builder("empty").build();
 
         assertTrue("state can replace itself " + state1, state1.isBetterOrEqual(state1));
         assertTrue("state can replace itself " + state2, state2.isBetterOrEqual(state2));
@@ -99,17 +99,17 @@ public class FilePreprocessorDeadConditionStateTest extends CndBaseTestCase {
         assertTrue("state4:"+state4 + " must replace " + biggest, state4.isBetterOrEqual(biggest));
         assertFalse("state4:"+state4 + " is not replaceable by " + biggest, biggest.isBetterOrEqual(state4));
 
-        assertTrue("emtpy:"+empty + " must replace " + state1, empty.isBetterOrEqual(state1));
-        assertFalse("emtpy:"+empty + " is not replaceable by " + state1, state1.isBetterOrEqual(empty));
+        assertTrue("empty:"+empty + " must replace " + state1, empty.isBetterOrEqual(state1));
+        assertFalse("empty:"+empty + " is not replaceable by " + state1, state1.isBetterOrEqual(empty));
 
-        assertTrue("emtpy:"+empty + " must replace " + state2, empty.isBetterOrEqual(state2));
-        assertFalse("emtpy:"+empty + " is not replaceable by " + state2, state2.isBetterOrEqual(empty));
+        assertTrue("empty:"+empty + " must replace " + state2, empty.isBetterOrEqual(state2));
+        assertFalse("empty:"+empty + " is not replaceable by " + state2, state2.isBetterOrEqual(empty));
 
-        assertTrue("emtpy:"+empty + " must replace " + biggest, empty.isBetterOrEqual(biggest));
-        assertFalse("emtpy:"+empty + " is not replaceable by " + biggest, biggest.isBetterOrEqual(empty));
+        assertTrue("empty:"+empty + " must replace " + biggest, empty.isBetterOrEqual(biggest));
+        assertFalse("empty:"+empty + " is not replaceable by " + biggest, biggest.isBetterOrEqual(empty));
         
-        assertTrue("emtpy:"+empty + " must replace " + state4, empty.isBetterOrEqual(state4));
-        assertFalse("emtpy:"+empty + " is not replaceable by " + state4, state4.isBetterOrEqual(empty));
+        assertTrue("empty:"+empty + " must replace " + state4, empty.isBetterOrEqual(state4));
+        assertFalse("empty:"+empty + " is not replaceable by " + state4, state4.isBetterOrEqual(empty));
 
         assertFalse("state4:"+state4 + " is not comaprable with " + state2, state4.isBetterOrEqual(state2));
         assertFalse("state2:"+state2 + " is not comaprable with " + state4, state2.isBetterOrEqual(state4));

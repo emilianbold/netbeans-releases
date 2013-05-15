@@ -406,7 +406,9 @@ public final class J2SEProject implements Project {
             WhiteListQueryMergerSupport.createWhiteListQueryMerger(),
             BrokenReferencesSupport.createReferenceProblemsProvider(helper, refHelper, eval, lvp.getBreakableProperties(), lvp.getPlatformProperties()),
             BrokenReferencesSupport.createPlatformVersionProblemProvider(helper, eval, new PlatformChangedHook(), JavaPlatform.getDefault().getSpecification().getName(), J2SEProjectProperties.JAVA_PLATFORM, J2SEProjectProperties.JAVAC_SOURCE, J2SEProjectProperties.JAVAC_TARGET),
-            UILookupMergerSupport.createProjectProblemsProviderMerger()
+            BrokenReferencesSupport.createProfileProblemProvider(helper, refHelper, eval, J2SEProjectProperties.JAVAC_PROFILE, ProjectProperties.RUN_CLASSPATH, ProjectProperties.ENDORSED_CLASSPATH),
+            UILookupMergerSupport.createProjectProblemsProviderMerger(),
+            new J2SEProjectPlatformImpl(this)
         );
         lookup = base; // in case LookupProvider's call Project.getLookup
         return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-java-j2seproject/Lookup"); //NOI18N
@@ -1053,47 +1055,10 @@ public final class J2SEProject implements Project {
     }
 
     private final class PlatformChangedHook implements BrokenReferencesSupport.PlatformUpdatedCallBack {
-
         @Override
         public void platformPropertyUpdated(@NonNull final JavaPlatform platform) {
-            final boolean remove = platform.equals(JavaPlatformManager.getDefault().getDefaultPlatform());
-            final Element root = helper.getPrimaryConfigurationData(true);
-            boolean changed = false;
-            if (remove) {
-                final Element platformElement = XMLUtil.findElement(
-                    root,
-                    "explicit-platform",    //NOI18N
-                    PROJECT_CONFIGURATION_NAMESPACE);
-                if (platformElement != null) {
-                    root.removeChild(platformElement);
-                    changed = true;
-                }
-            } else {
-                Element insertBefore = null;
-                for (Element e : XMLUtil.findSubElements(root)) {
-                    final String name = e.getNodeName();
-                    if (! "name".equals(name) &&                  //NOI18N
-                        ! "minimum-ant-version".equals(name)) {   //NOI18N
-                        insertBefore = e;
-                        break;
-                    }
-                }
-                final Element platformNode = insertBefore.getOwnerDocument().createElementNS(
-                        PROJECT_CONFIGURATION_NAMESPACE,
-                        "explicit-platform"); //NOI18N
-                platformNode.setAttribute(
-                        "explicit-source-supported",                                                             //NOI18N
-                        platform.getSpecification().getVersion().compareTo(new SpecificationVersion("1.3"))>0?   //NOI18N
-                            "true":                                                                              //NOI18N
-                            "false");                                                                            //NOI18N
-                root.insertBefore(platformNode, insertBefore);
-                changed = true;
-            }
-            if (changed) {
-                helper.putPrimaryConfigurationData(root, true);
-            }
+            J2SEProjectPlatformImpl.updateProjectXml(platform, updateHelper);
         }
-
     }
 
 }

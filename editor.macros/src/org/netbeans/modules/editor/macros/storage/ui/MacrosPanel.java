@@ -76,8 +76,11 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
+import org.openide.util.AsyncGUIJob;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Implementation of one panel in Options Dialog.
@@ -162,7 +165,7 @@ public class MacrosPanel extends JPanel {
         loc(lMacroCode, "Macro_Code"); //NOI18N
         lMacroCode.setLabelFor(epMacroCode);
         
-        finder = Lookup.getDefault().lookup(ShortcutsFinder.class).localCopy();
+        initializeFinder();
     }
 
     public MacrosModel getModel() {
@@ -175,6 +178,32 @@ public class MacrosPanel extends JPanel {
             macro.setCode(code);
         }
     }
+    
+    private void initializeFinder() {
+        if (finder != null) {
+            lWait.setVisible(false);
+            return;
+        }
+        org.openide.util.Utilities.attachInitJob(this, new AsyncGUIJob() {
+            ShortcutsFinder.Writer initFinder;
+            
+            @Override
+            public void construct() {
+                initFinder = Lookup.getDefault().lookup(ShortcutsFinder.class).localCopy();
+            }
+
+            @Override
+            public void finished() {
+                lWait.setVisible(false);
+                finder = initFinder;
+                updateButtons(tMacros.getSelectedRow());
+            }
+            
+        });
+        bSetShortcut.setEnabled(false);
+        bRemove.setEnabled(false);
+    }
+    
 
     // UI form .................................................................
     /** This method is called from within the constructor to
@@ -194,6 +223,7 @@ public class MacrosPanel extends JPanel {
         lMacroCode = new javax.swing.JLabel();
         sMacroCode = new javax.swing.JScrollPane();
         epMacroCode = new javax.swing.JEditorPane();
+        lWait = new javax.swing.JLabel();
 
         lMacros.setText("Macros:");
 
@@ -235,6 +265,9 @@ public class MacrosPanel extends JPanel {
 
         sMacroCode.setViewportView(epMacroCode);
 
+        lWait.setFont(lWait.getFont().deriveFont((lWait.getFont().getStyle() | java.awt.Font.ITALIC) & ~java.awt.Font.BOLD));
+        lWait.setText(org.openide.util.NbBundle.getMessage(MacrosPanel.class, "LABEL_ShortcutsLoading")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -243,13 +276,16 @@ public class MacrosPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(lMacros)
                     .addComponent(lMacroCode)
-                    .addComponent(spMacros, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
+                    .addComponent(spMacros, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                     .addComponent(sMacroCode, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addComponent(bNew, javax.swing.GroupLayout.DEFAULT_SIZE, 128, Short.MAX_VALUE)
+                    .addComponent(bNew, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(bSetShortcut, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(bRemove, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(lWait)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -262,14 +298,16 @@ public class MacrosPanel extends JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(bSetShortcut)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(bRemove)
-                        .addContainerGap())
+                        .addComponent(bRemove))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(spMacros, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lMacroCode)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(sMacroCode, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE))))
+                        .addComponent(sMacroCode, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(lWait)
+                .addGap(0, 0, 0))
         );
 
         getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MacrosPanel.class, "AN_MacrosPanel")); // NOI18N
@@ -282,33 +320,33 @@ public class MacrosPanel extends JPanel {
     }//GEN-LAST:event_bNewActionPerformed
 
     private void bSetShortcutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_bSetShortcutActionPerformed
-	int selectedRow = tMacros.getSelectedRow();
-	finder.refreshActions();
+	       int selectedRow = tMacros.getSelectedRow();
+        finder.refreshActions();
         String shortcut = finder.showShortcutsDialog();
         // is there already an action with such SC defined?
         ShortcutAction act = finder.findActionForShortcut(shortcut);
-	
-	List<Macro> list = model.getAllMacros();
-	Iterator<Macro> it = list.iterator();
-	while (it.hasNext()) {
-	    Macro m = it.next();
-	    if (m.getShortcuts().size() > 0) {
+
+        List<Macro> list = model.getAllMacros();
+        Iterator<Macro> it = list.iterator();
+        while (it.hasNext()) {
+            Macro m = it.next();
+            if (m.getShortcuts().size() > 0) {
                 List<KeyStroke> l2 = m.getShortcuts().get(0).getKeyStrokeList();
                 KeyStroke[] arr = l2.toArray(new KeyStroke[l2.size()]);
-                String sc  = KeyStrokeUtils.getKeyStrokesAsText(arr, " "); // NOI18N
-		if (sc.equals(shortcut)) {
-		    m.setShortcuts(Collections.<String>emptySet());
+                String sc = KeyStrokeUtils.getKeyStrokesAsText(arr, " "); // NOI18N
+                if (sc.equals(shortcut)) {
+                    m.setShortcuts(Collections.<String>emptySet());
                 }
-	    }
-	}
-	
+            }
+        }
+
         if (act != null) {
             Set<String> set = Collections.<String>emptySet();
-	    // This colliding SC is not a macro, don't try to clean it up
-	    if(act instanceof MacrosModel.Macro) {
-		((MacrosModel.Macro) act).setShortcuts(set);
+            // This colliding SC is not a macro, don't try to clean it up
+            if (act instanceof MacrosModel.Macro) {
+                ((MacrosModel.Macro) act).setShortcuts(set);
             }
-	    
+
             finder.setShortcuts(act, set);
         }
         
@@ -330,7 +368,10 @@ public class MacrosPanel extends JPanel {
 
     private void tMacrosValueChanged(ListSelectionEvent evt) {
         int index = tMacros.getSelectedRow();
+        updateButtons(index);
+    }
     
+    private void updateButtons(int index) {
         if (index < 0 || index >= tMacros.getRowCount()) {
             epMacroCode.setText(""); //NOI18N
             epMacroCode.setEnabled(false);
@@ -343,8 +384,8 @@ public class MacrosPanel extends JPanel {
             epMacroCode.setEnabled(true);
             // Fix for #135985 commented to avoid focus
             //epMacroCode.requestFocusInWindow();
-            bRemove.setEnabled(true);
-            bSetShortcut.setEnabled(true);
+            bRemove.setEnabled(true && finder != null);
+            bSetShortcut.setEnabled(true && finder != null);
         }
     }
     
@@ -386,6 +427,7 @@ public class MacrosPanel extends JPanel {
     private javax.swing.JEditorPane epMacroCode;
     private javax.swing.JLabel lMacroCode;
     private javax.swing.JLabel lMacros;
+    private javax.swing.JLabel lWait;
     private javax.swing.JScrollPane sMacroCode;
     private javax.swing.JScrollPane spMacros;
     private javax.swing.JTable tMacros;
@@ -422,7 +464,12 @@ public class MacrosPanel extends JPanel {
 
         if (DialogDisplayer.getDefault().notify(descriptor)==DialogDescriptor.OK_OPTION) {
             String macroName = panel.getNameValue().trim();
-            return model.createMacro(MimePath.EMPTY, macroName);
+	    final Macro macro = model.createMacro(MimePath.EMPTY, macroName);
+	    sorter.resortAfterModelChange();
+            int sel = sorter.viewIndex(model.getAllMacros().size() - 1);
+            tMacros.getSelectionModel().setSelectionInterval(sel, sel);
+            tMacros.scrollRectToVisible(tMacros.getCellRect(sel, 0, true));
+            return macro;
         }
         return null;
     }
@@ -430,6 +477,8 @@ public class MacrosPanel extends JPanel {
     public void save() {
         getModel().save();
         // force shortcut finder flush
-        finder.apply();
+        if (finder != null) {
+            finder.apply();
+        }
     }
 }

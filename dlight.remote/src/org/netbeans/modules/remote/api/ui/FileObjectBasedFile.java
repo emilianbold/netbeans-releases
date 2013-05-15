@@ -79,6 +79,7 @@ public class FileObjectBasedFile extends File {
     /** to be used ONLY when fo is null !!! */
     private final String path;
     private File[] NO_CHILDREN = new File[0];
+    private final Object lock = new Object();
 
     public FileObjectBasedFile(ExecutionEnvironment env, String path) {
         super(path);
@@ -323,7 +324,7 @@ public class FileObjectBasedFile extends File {
             return NO_CHILDREN;
         }
 
-        FileObject[] children = fo.getChildren();
+        FileObject[] children = getChilfdrenFO();
 
         List<File> res = new ArrayList<File>(children.length);
         for (FileObject child : children) {
@@ -332,6 +333,12 @@ public class FileObjectBasedFile extends File {
             }
         }
         return res.toArray(new File[res.size()]);
+    }
+
+    private FileObject[] getChilfdrenFO() {
+        synchronized (lock) {
+            return fo.getChildren();
+        }
     }
 
     @Override
@@ -379,5 +386,5 @@ public class FileObjectBasedFile extends File {
 
         processor.post(ftask);
         return ftask;
-    }    
+    }
 }

@@ -70,30 +70,33 @@ public class ProgressListenerImpl implements CsmProgressListener {
     private synchronized ParsingProgress getHandle(final CsmProject project, boolean createIfNeed) {
         ParsingProgress handle = handles.get(project);
         if (handle == null && createIfNeed) {
-            handle = new ParsingProgress(project, new Cancellable() {
+            Cancellable cancellable = null;
+            // disable by default, because cancel is called on IDE exit and 
+            // code model is left in confusing "turned off" state for project being parsed
+            if (Boolean.getBoolean("cnd.cancellable.parse")) { // NOI18N
+                cancellable = new Cancellable() {
+                    @Override
+                    public boolean cancel() {
+                        UIGesturesSupport.submit("USG_CND_CANCEL_PARSE"); //NOI18N
+                        LOG.log(Level.INFO, "Cancel Parse requst for project {0}", project); //NOI18N
+                        CsmModel model = CsmModelAccessor.getModel();
+                        if (model instanceof ModelImpl && project instanceof ProjectBase) {
+                            final ModelImpl modelImpl = (ModelImpl) model;
+                            modelImpl.enqueueModelTask(new Runnable() {
+                                @Override
+                                public void run() {
+                                    LOG.log(Level.INFO, "Enqueue disabling Code Assistance for project {0}", project); //NOI18N
+                                    modelImpl.disableProjectBase((ProjectBase) project);
+                                }
+                            }, "disable " + project.getDisplayName()); // NOI18N
 
-                @Override
-                public boolean cancel() {
-                    UIGesturesSupport.submit("USG_CND_CANCEL_PARSE"); //NOI18N
-                    LOG.log(Level.INFO, "Cancel Parse requst for project {0}", project); //NOI18N
-                    CsmModel model = CsmModelAccessor.getModel();
-                    if (model instanceof ModelImpl && project instanceof ProjectBase) {
-                        final ModelImpl modelImpl = (ModelImpl)model;
-                        modelImpl.enqueueModelTask(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                LOG.log(Level.INFO, "Enqueue disabling Code Assistance for project {0}", project); //NOI18N
-                                modelImpl.disableProject((ProjectBase)project);
-                            }
-                        }, "disable " + project.getDisplayName()); // NOI18N
-                        
-                        return true;
+                            return true;
+                        }
+                        return false;
                     }
-                    return false;
-                }
-                
-            });
+                };
+            }
+            handle = new ParsingProgress(project, cancellable);
             handles.put(project, handle);
         }
         return handle;

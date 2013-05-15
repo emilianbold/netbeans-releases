@@ -42,7 +42,6 @@
 
 package org.netbeans.lib.xml.lexer;
 
-import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.xml.lexer.XMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.spi.lexer.Lexer;
@@ -67,7 +66,7 @@ public class XMLLexer implements Lexer<XMLTokenId> {
     private TokenFactory<XMLTokenId> tokenFactory;
     
     public Object state() {
-        Integer encoded = (prevState << 030) + (subState << 020) + (this.state << 010) + (subInternalDTD ? 1 : 0);
+        Integer encoded = (this.state << 1) + (subInternalDTD ? 1 : 0);
         return encoded;
     }
     
@@ -79,9 +78,7 @@ public class XMLLexer implements Lexer<XMLTokenId> {
         } else {
             int encoded = ((Integer) state).intValue();
             
-            this.prevState = (encoded & 0xff000000) >> 030;
-            subState = (encoded & 0xff0000) >> 020;
-            this.state    = (encoded & 0xff00) >> 010;
+            this.state    = (encoded & (0xff << 1)) >> 1;
             subInternalDTD = encoded % 2 == 1;
         }
     }
@@ -103,11 +100,6 @@ public class XMLLexer implements Lexer<XMLTokenId> {
     protected int subState = INIT;
 
     /**
-     * The previous saved state for transitions from _WS to non WS states.
-     */
-    protected int prevState = INIT;
-    
-    /**
      * Identifies internal DTD layer. Most of functionality is same
      * as at document layer, however there are minor exceptions.
      * @see isInternalDTD checks in code
@@ -120,71 +112,77 @@ public class XMLLexer implements Lexer<XMLTokenId> {
     // Internal states I = in state
     //                 P = expected (char probed but not consumed)
     //                 A = after (char probed and consumed)
+    // states, whcih are observable between token lexing are numbered from .
+    // states, which are used just within the nextToken() loop are numbered >= 100.
     
     
+    // the following states are observable from outside. We need to keep the number of those states < 64
     private static final int ISI_TEXT = 1;    // Plain text between tags
     private static final int ISI_ERROR = 2;   // Syntax error in XML syntax
-    private static final int ISA_LT = 3;      // After start of tag delimiter - "<"
-    private static final int ISA_SLASH = 4;   // After ETAGO - "</"
-    private static final int ISI_ENDTAG = 5;  // Inside endtag - "</[a..Z]+"
-    private static final int ISP_ENDTAG_X = 6;  // X-switch after ENDTAG's name
-    private static final int ISP_ENDTAG_WS = 7; // In WS in ENDTAG - "</A_ _>"
-    private static final int ISI_TAG = 8;     // Inside tag - "<[a..Z]+"
-    private static final int ISP_TAG_X = 9;   // X-switch after TAG's name
-    private static final int ISP_TAG_WS = 10; // In WS in TAG - "<A_ _...>"
-    private static final int ISI_ARG = 11;    // Inside tag's argument - "<A h_r_...>"
-    private static final int ISP_ARG_X = 12;  // X-switch after ARGUMENT's name
-    private static final int ISP_ARG_WS = 13; // Inside WS after argument awaiting '='
-    private static final int ISP_EQ = 14;     // X-switch after '=' in TAG's ARGUMENT
-    private static final int ISP_EQ_WS = 15;  // In WS after '='
-    private static final int ISI_VAL_APOS = 17;   // Single-quoted value - may contain " chars
-    private static final int ISI_VAL_QUOT = 18;  // Double-quoted value - may contain ' chars
-    private static final int ISA_SGML_ESCAPE = 19;  // After "<!"
-    private static final int ISA_SGML_DASH = 20;    // After "<!-"
-    private static final int ISI_XML_COMMENT = 21; // Somewhere after "<!--"
-    private static final int ISA_XML_COMMENT_DASH = 22;  // Dash in comment - maybe end of comment
-    private static final int ISI_XML_COMMENT_WS = 23;  // After end of comment, awaiting end of comment declaration
-    private static final int ISI_SGML_DECL = 24;
-    private static final int ISA_SGML_DECL_DASH = 25;
+    private static final int ISP_ENDTAG_X = 3;  // X-switch after ENDTAG's name
+    private static final int ISP_TAG_X = 4;   // X-switch after TAG's name
+    private static final int ISP_ARG_X = 5;  // X-switch after ARGUMENT's name
+    private static final int ISP_EQ = 6;     // X-switch after '=' in TAG's ARGUMENT
+    private static final int ISP_EQ_WS = 7;  // In WS after '='
+    private static final int ISI_VAL_APOS = 8;   // Single-quoted value - may contain " chars
+    private static final int ISI_VAL_QUOT = 9;  // Double-quoted value - may contain ' chars
+    private static final int ISI_SGML_DECL = 10;
+    private static final int ISA_REF = 11;    // when comes to character reference, e.g. &amp;, after &
+    private static final int ISI_PI = 12;  //after <?...
+    private static final int ISP_PI_TARGET_WS = 13; //after <?...|
+    private static final int ISI_PI_CONTENT = 14;   //in PI content
+    private static final int ISP_DECL_CHARS = 15;
+    private static final int ISP_DECL_STRING = 16;
+    private static final int ISP_PI_CONTENT_QMARK = 17;  //spotet ? in content
+    private static final int ISI_CDATA = 18;
+    
+    // observable just because the EOF condition
+    private static final int ISI_XML_COMMENT = 31; // Somewhere after "<!--"
+
+    // the following states should never escape the lexer.
+    private static final int ISA_LT = 103;      // After start of tag delimiter - "<"
+    private static final int ISA_SLASH = 104;   // After ETAGO - "</"
+    private static final int ISI_ENDTAG = 105;  // Inside endtag - "</[a..Z]+"
+    private static final int ISP_ENDTAG_WS = 107; // In WS in ENDTAG - "</A_ _>"
+    private static final int ISI_TAG = 108;     // Inside tag - "<[a..Z]+"
+    private static final int ISP_TAG_WS = 110; // In WS in TAG - "<A_ _...>"
+    private static final int ISI_ARG = 111;    // Inside tag's argument - "<A h_r_...>"
+    private static final int ISP_ARG_WS = 113; // Inside WS after argument awaiting '='
+    private static final int ISA_SGML_ESCAPE = 119;  // After "<!"
+    private static final int ISA_SGML_DASH = 120;    // After "<!-"
+    private static final int ISA_XML_COMMENT_DASH = 122;  // Dash in comment - maybe end of comment
+    private static final int ISI_XML_COMMENT_WS = 123;  // After end of comment, awaiting end of comment declaration
+    
+    // seems not used at all - an error ?
+    private static final int ISA_SGML_DECL_DASH = 125;
+    
     //    private static final int ISI_SGML_COMMENT = 26;
     //    private static final int ISA_SGML_COMMENT_DASH = 27;
-    private static final int ISA_REF = 28;    // when comes to character reference, e.g. &amp;, after &
-    private static final int ISI_REF_NAME = 29; // if the reference is symbolic - by predefined name
-    private static final int ISA_REF_HASH = 30; // for numeric references - after &#
-    private static final int ISI_REF_DEC = 31;  // decimal character reference, e.g. &#345;
-    private static final int ISA_REF_X = 32;    //
-    private static final int ISI_REF_HEX = 33;  // hexadecimal reference, in &#xa.. of &#X9..
-    
-    
-    private static final int ISI_PI = 35;  //after <?...
-    private static final int ISI_PI_TARGET = 36;  //in <?..|..
-    private static final int ISP_PI_TARGET_WS = 37; //after <?...|
-    private static final int ISI_PI_CONTENT = 38;   //in PI content
-    private static final int ISA_PI_CONTENT_QMARK = 39;  //after ? in content
-    private static final int ISP_PI_CONTENT_QMARK = 40;  //spotet ? in content
-    
+    private static final int ISI_REF_NAME = 129; // if the reference is symbolic - by predefined name
+    private static final int ISA_REF_HASH = 130; // for numeric references - after &#
+    private static final int ISI_REF_DEC = 131;  // decimal character reference, e.g. &#345;
+    private static final int ISA_REF_X = 132;    //
+    private static final int ISI_REF_HEX = 133;  // hexadecimal reference, in &#xa.. of &#X9..
+    private static final int ISI_PI_TARGET = 136;  //in <?..|..
+    private static final int ISA_PI_CONTENT_QMARK = 139;  //after ? in content
+
     // CDATA section handler
-    private static final int ISA_LTEXBR = 41;
-    private static final int ISA_LTEXBRC = 42;
-    private static final int ISA_LTEXBRCD = 43;
-    private static final int ISA_LTEXBRCDA = 44;
-    private static final int ISA_LTEXBRCDAT = 45;
-    private static final int ISA_LTEXBRCDATA = 46;
-    private static final int ISI_CDATA = 47;
-    private static final int ISA_CDATA_BR = 48;
-    private static final int ISA_CDATA_BRBR = 49;
-    
+    private static final int ISA_LTEXBR = 141;
+    private static final int ISA_LTEXBRC = 142;
+    private static final int ISA_LTEXBRCD = 143;
+    private static final int ISA_LTEXBRCDA = 144;
+    private static final int ISA_LTEXBRCDAT = 145;
+    private static final int ISA_LTEXBRCDATA = 146;
+    private static final int ISA_CDATA_BR = 148;
+    private static final int ISA_CDATA_BRBR = 149;
     // strings in declaration
-    private static final int ISI_DECL_CHARS = 50;
-    private static final int ISI_DECL_STRING = 51;
-    private static final int ISP_DECL_CHARS = 52;
-    private static final int ISP_DECL_STRING = 53;
-    
+    private static final int ISI_DECL_CHARS = 150;
+    private static final int ISI_DECL_STRING = 151;
+
     // internal DTD handling
-    private static final int ISA_INIT_BR = 54;
+    private static final int ISA_INIT_BR = 154;
     
-    private static final int ISI_ERROR_TAG = 55;
-    private static final int ISI_ERROR_TAG_RECOVER = 55;
+    private static final int ISI_ERROR_TAG = 155;
     
     public XMLLexer(LexerRestartInfo<XMLTokenId> info) {
         this.input = info.input();
@@ -224,8 +222,26 @@ public class XMLLexer implements Lexer<XMLTokenId> {
     }
     
     public Token<XMLTokenId> nextToken() {
-        
+        boolean ok = false;
+        try {
+            subState = state;
+            Token<XMLTokenId> tok = nextTokenInternal();
+            if (this.state >= 100) {
+                throw new IllegalArgumentException("Unexpected state: " + this.state + " at " + this.input);
+            }
+            ok = true;
+            return tok;
+        } finally {
+            if (!ok) {
+                this.state = INIT;
+                this.subState = INIT;
+            }
+        }
+    }
+    
+    public Token<XMLTokenId> nextTokenInternal() {
         int actChar;
+        int prevState = 0;
         while(true) {
             actChar = input.read();
             
@@ -241,6 +257,7 @@ public class XMLLexer implements Lexer<XMLTokenId> {
             
             switch( state ) {
                 case INIT:              //     DONE
+                    prevState = 0;
                     switch( actChar ) {
                         case '<':
                             state = ISA_LT;
@@ -591,12 +608,6 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                             if (input.readLength() > 1) {
                                 input.backup(1);
                             }
-                            if (prevState == ISP_ARG_WS) {
-                                prevState = 0;
-                                state = ISI_ERROR_TAG;
-                                continue;
-                            }
-                            prevState = state;
                             state = ISI_ERROR_TAG;
                             continue;
                     }
@@ -610,22 +621,18 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                     break;
                     
                 case ISP_EQ:
-                    if (prevState == ISI_VAL_APOS || prevState == ISI_VAL_QUOT) {
-                        state = prevState;
-                        break;
-                    }
                     if( isWS( actChar ) ) {
                         state = ISP_EQ_WS;
                         input.backup(1);
                         return token(XMLTokenId.OPERATOR);
                     }
-                    int pSubstate = prevState;
+                    int newState = 0;
                     switch( actChar ) {
                         case '\'':
-                            prevState = ISI_VAL_APOS;
+                            newState = ISI_VAL_APOS;
                             break;
                         case '"':
-                            prevState = ISI_VAL_QUOT;
+                            newState = ISI_VAL_QUOT;
                             break;
                         case '<':
                             if (input.readLength() > 0) {
@@ -642,11 +649,17 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                             continue;
                             
                     }
-                    input.backup(1);
-                    if (pSubstate == ISP_EQ_WS) {
+                    
+                    if (prevState == ISP_EQ_WS) {
+                        input.backup(1);
                         return token(XMLTokenId.WS);
+                    } else if (prevState == ISP_ARG_X) {
+                        input.backup(1);
+                        return token(XMLTokenId.OPERATOR);
+                    } else {
+                        state = newState;
+                        break;
                     }
-                    return token(XMLTokenId.OPERATOR);
                     
                 case ISP_EQ_WS:
                     if( isWS( actChar ) ) break;    // Consume all WS
@@ -781,6 +794,9 @@ public class XMLLexer implements Lexer<XMLTokenId> {
                 case ISI_CDATA:
                     if (actChar == ']') {
                         state = ISA_CDATA_BR;
+                        break;
+                    } else {
+                        state = ISI_CDATA;
                         break;
                     }
                     
@@ -997,23 +1013,31 @@ public class XMLLexer implements Lexer<XMLTokenId> {
             case ISA_SLASH:
             case ISA_SGML_ESCAPE:
             case ISA_SGML_DASH:
+                state = ISI_TEXT;
                 return token(XMLTokenId.TEXT);
                 
             case ISA_REF:
             case ISA_REF_HASH:
-                if( subState == ISI_TEXT ) return token(XMLTokenId.TEXT);
-                else return token(XMLTokenId.VALUE);
+                state = subState;
+                if( subState == ISI_TEXT ) {
+                    return token(XMLTokenId.TEXT);
+                } else {
+                    return token(XMLTokenId.VALUE);
+                }
                 
             case ISI_XML_COMMENT:
             case ISA_XML_COMMENT_DASH:
             case ISI_XML_COMMENT_WS:
+                state = ISI_XML_COMMENT;
                 return token(XMLTokenId.BLOCK_COMMENT);
                 
             case ISI_TAG:
             case ISI_ENDTAG:
+                state = ISP_TAG_X;
                 return token(XMLTokenId.TAG);
                 
             case ISI_ARG:
+                state = ISP_ARG_X;
                 return token(XMLTokenId.ARGUMENT);
                 
             case ISI_ERROR:
@@ -1023,43 +1047,52 @@ public class XMLLexer implements Lexer<XMLTokenId> {
             case ISP_TAG_WS:
             case ISP_ENDTAG_WS:
             case ISP_EQ_WS:
+                state = ISP_TAG_X;
                 return token(XMLTokenId.WS);
                 
             case ISP_ARG_X:
             case ISP_TAG_X:
             case ISP_ENDTAG_X:
             case ISP_EQ:
+                state = ISP_TAG_X;
                 return token(XMLTokenId.WS);
                 
             case ISI_VAL_APOS:
             case ISI_VAL_QUOT:
             case ISI_DECL_CHARS:
             case ISI_DECL_STRING:
+                state = ISI_VAL_APOS;
                 return token(XMLTokenId.VALUE);
                 
             case ISI_SGML_DECL:
             case ISA_SGML_DECL_DASH:
             case ISP_DECL_STRING:
             case ISP_DECL_CHARS:
+                state = ISI_SGML_DECL;
                 return token(XMLTokenId.DECLARATION);
                 
             case ISI_REF_NAME:
             case ISI_REF_DEC:
             case ISA_REF_X:
             case ISI_REF_HEX:
+                state = subState;
                 return token(XMLTokenId.CHARACTER);
                 
             case ISI_PI:
                 return token(XMLTokenId.PI_START);
             case ISI_PI_TARGET:
+                state = ISI_PI;
                 return token(XMLTokenId.PI_TARGET);
             case ISP_PI_TARGET_WS:
+                state = ISI_PI;
                 return token(XMLTokenId.WS);
             case ISI_PI_CONTENT:
+                state = ISI_PI;
                 return token(XMLTokenId.PI_CONTENT);
             case ISA_PI_CONTENT_QMARK:
             case ISP_PI_CONTENT_QMARK:
                 // we are at end of the last buffer and expect that next char will be '>'
+                state = ISI_PI;
                 return token(XMLTokenId.PI_END);
                 
             case ISA_LTEXBR:
@@ -1068,14 +1101,17 @@ public class XMLLexer implements Lexer<XMLTokenId> {
             case ISA_LTEXBRCDA:
             case ISA_LTEXBRCDAT:
             case ISA_LTEXBRCDATA:
+                state = ISI_TEXT;
                 return token(XMLTokenId.TEXT);
                 
             case ISI_CDATA:
             case ISA_CDATA_BR:
             case ISA_CDATA_BRBR:
+                state = ISI_CDATA;
                 return token(XMLTokenId.CDATA_SECTION);
                 
             case ISA_INIT_BR:
+                state = ISI_TEXT;
                 return token(XMLTokenId.TEXT);
                 
             default:

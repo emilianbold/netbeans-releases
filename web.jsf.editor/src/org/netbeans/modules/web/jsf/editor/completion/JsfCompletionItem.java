@@ -68,8 +68,8 @@ public class JsfCompletionItem {
     private static final int JSF_DEFAULT_SORT_PRIORITY = 5;
 
     //----------- Factory methods --------------
-    public static JsfTag createTag(int substitutionOffset, LibraryComponent component, String declaredPrefix, boolean autoimport) {
-        return new JsfTag(substitutionOffset, component, declaredPrefix, autoimport);
+    public static JsfTag createTag(int substitutionOffset, LibraryComponent component, String declaredPrefix, boolean autoimport, boolean isJsf22Plus) {
+        return new JsfTag(substitutionOffset, component, declaredPrefix, autoimport, isJsf22Plus);
     }
 
     public static JsfTagAttribute createAttribute(String name, int substitutionOffset, Library library, org.netbeans.modules.web.jsfapi.api.Tag tag, org.netbeans.modules.web.jsfapi.api.Attribute attr) {
@@ -86,11 +86,13 @@ public class JsfCompletionItem {
         
         private LibraryComponent component;
         private boolean autoimport; //autoimport (declare) the tag namespace if set to true
+        private boolean isJsf22Plus;
 
-        public JsfTag(int substitutionOffset, LibraryComponent component, String declaredPrefix, boolean autoimport) {
+        public JsfTag(int substitutionOffset, LibraryComponent component, String declaredPrefix, boolean autoimport, boolean isJsf22Plus) {
             super(generateItemText(component, declaredPrefix), substitutionOffset, null, true);
             this.component = component;
             this.autoimport = autoimport;
+            this.isJsf22Plus = isJsf22Plus;
         }
 
         private static String generateItemText(LibraryComponent component, String declaredPrefix) {
@@ -114,7 +116,7 @@ public class JsfCompletionItem {
         private void autoimportLibrary(JTextComponent component) {
             final BaseDocument doc = (BaseDocument) component.getDocument();
             Library lib = JsfTag.this.component.getLibrary();
-            LibraryUtils.importLibrary(doc, lib, null);
+            LibraryUtils.importLibrary(doc, lib, null, isJsf22Plus);
         }
 
         //use bold font
@@ -218,7 +220,7 @@ public class JsfCompletionItem {
         private org.netbeans.modules.web.jsfapi.api.Attribute attr;
 
         public JsfTagAttribute(String value, int offset, Library library, org.netbeans.modules.web.jsfapi.api.Tag tag, org.netbeans.modules.web.jsfapi.api.Attribute attr) {
-            super(value, offset, attr.isRequired(), null);
+            super(value, offset, attr.isRequired(), "");
             this.library = library;
             this.tag = tag;
             this.attr = attr;
@@ -265,6 +267,9 @@ public class JsfCompletionItem {
         StringBuilder sb = new StringBuilder();
         sb.append("<div><b>Library:</b> "); //NOI18N
         sb.append(library.getNamespace());
+        if (library.getLegacyNamespace() != null) {
+            sb.append(", ").append(library.getLegacyNamespace()); //NOI18N
+        }
         if(library.getDisplayName() != null) {
             sb.append(" ("); //NOI18N
             sb.append(library.getDisplayName());

@@ -95,7 +95,7 @@ public class JsParserResult extends ParserResult {
                 model = ModelFactory.getModel(this);
 
                 if (LOGGER.isLoggable(Level.FINEST)) {
-                    model.dumpModel(new Model.Printer() {
+                    model.writeModel(new Model.Printer() {
                         @Override
                         public void println(String str) {
                             LOGGER.log(Level.FINEST, str);

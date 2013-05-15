@@ -49,9 +49,6 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
@@ -69,10 +66,8 @@ import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.j2ee.BaseEEModuleImpl;
-import org.netbeans.modules.maven.j2ee.J2eeMavenSourcesImpl;
-import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileEvent;
@@ -138,12 +133,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
     
     @Override
     public FileObject getDocumentBase() {
-        Sources srcs = ProjectUtils.getSources(project);
-        SourceGroup[] grp = srcs.getSourceGroups(J2eeMavenSourcesImpl.TYPE_DOC_ROOT);
-        if (grp.length > 0) {
-            return grp[0].getRootFolder();
-        }
-        return null;
+        return WebProjectUtils.getDocumentBase(project);
     }
     
     /**
@@ -169,8 +159,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
     }
 
     private Profile getProfileFromProject() {
-        AuxiliaryProperties prop = project.getLookup().lookup(AuxiliaryProperties.class);
-        String version = prop.get(MavenJavaEEConstants.HINT_J2EE_VERSION, true);
+        String version = MavenProjectSupport.readJ2eeVersion(project);
         if (version != null) {
             return Profile.fromPropertiesString(version);
         }
@@ -194,12 +183,15 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
                 if (WebApp.VERSION_3_0.equals(waVersion)) {
                     return Profile.JAVA_EE_6_WEB;
                 }
+                if (WebApp.VERSION_3_1.equals(waVersion)) {
+                    return Profile.JAVA_EE_7_WEB;
+                }
             } catch (IOException exc) {
                 ErrorManager.getDefault().notify(exc);
             }
             return null;
         } else {
-            return Profile.JAVA_EE_6_WEB;
+            return Profile.JAVA_EE_7_WEB;
         }
     }
 
@@ -261,7 +253,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
             version = wapp.getVersion();
         }
         if (version == null) {
-            version = WebApp.VERSION_3_0;
+            version = WebApp.VERSION_3_1;
         }
         return version;
     }

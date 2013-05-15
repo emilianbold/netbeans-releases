@@ -46,15 +46,10 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
@@ -70,10 +65,8 @@ import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.openide.util.NbBundle.Messages;
 
 public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
 
@@ -81,8 +74,6 @@ public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final WizardDescriptor wizardDescriptor;
     private final EJBNameOptions ejbNames;
-    //TODO: RETOUCHE
-//    private boolean isWaitingForScan = false;
 
     public MdbLocationPanel(WizardDescriptor wizardDescriptor) {
         this.wizardDescriptor = wizardDescriptor;
@@ -99,15 +90,12 @@ public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
         changeSupport.removeChangeListener(changeListener);
     }
 
-    @Messages({
-        "MdbLocationPanel.warn.scanning.in.progress=Scanning in progress, message destination don't have to be complete"
-    })
     @Override
     public boolean isValid() {
         Project project = Templates.getProject(wizardDescriptor);
         J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
         String j2eeVersion = j2eeModuleProvider.getJ2eeModule().getModuleVersion();
-        if (!EjbJar.VERSION_3_1.equals(j2eeVersion) && !EjbJar.VERSION_3_0.equals(j2eeVersion) && !EjbJar.VERSION_2_1.equals(j2eeVersion)) {
+        if (!EjbJar.VERSION_3_2.equals(j2eeVersion) && !EjbJar.VERSION_3_1.equals(j2eeVersion) && !EjbJar.VERSION_3_0.equals(j2eeVersion) && !EjbJar.VERSION_2_1.equals(j2eeVersion)) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(MdbLocationPanel.class,"MSG_WrongJ2EESpecVersion")); //NOI18N
             return false;
         }
@@ -119,25 +107,6 @@ public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
             if (targetFolder.getFileObject(name + ".java") != null) { // NOI18N
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, // NOI18N
                         NbBundle.getMessage(MdbLocationPanel.class, "ERR_FileAlreadyExists", name + ".java")); //NOI18N
-                return false;
-            }
-        }
-
-        if (SourceUtils.isScanInProgress()) {
-            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, Bundle.MdbLocationPanel_warn_scanning_in_progress());
-            ClasspathInfo classPathInfo = getClassPathInfo(project);
-            JavaSource javaSource = JavaSource.create(classPathInfo);
-            try {
-                javaSource.runWhenScanFinished(new Task<CompilationController>() {
-                    @Override
-                    public void run(CompilationController parameter) throws Exception {
-                        fireChangeEvent();
-                    }
-                }, true);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            if (locationPanel.getDestination() == null || locationPanel.getDestination().getName().isEmpty()) {
                 return false;
             }
         }
@@ -186,8 +155,8 @@ public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
     @Override
     public java.awt.Component getComponent() {
         if (locationPanel == null) {
-            Project project = Templates.getProject(wizardDescriptor);
-            J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+            final Project project = Templates.getProject(wizardDescriptor);
+            final J2eeModuleProvider j2eeModuleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
             MessageDestinationUiSupport.DestinationsHolder holder =
                     MessageDestinationUiSupport.getDestinations(project, j2eeModuleProvider);
             locationPanel = MdbLocationPanelVisual.newInstance(
@@ -195,10 +164,16 @@ public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
                     j2eeModuleProvider,
                     holder.getModuleDestinations(),
                     holder.getServerDestinations());
-            locationPanel.addPropertyChangeListener(MdbLocationPanelVisual.CHANGED,
-                    new PropertyChangeListener() {
+            locationPanel.addPropertyChangeListener(new PropertyChangeListener() {
                         @Override
                         public void propertyChange(PropertyChangeEvent event) {
+                            if (event.getPropertyName().equals(MdbLocationPanelVisual.SCANNED)) {
+                                MessageDestinationUiSupport.DestinationsHolder destinations =
+                                        MessageDestinationUiSupport.getDestinations(project, j2eeModuleProvider);
+                                locationPanel.refreshDestinations(
+                                        destinations.getModuleDestinations(),
+                                        destinations.getServerDestinations());
+                            }
                             fireChangeEvent();
                         }
                     });
@@ -213,7 +188,7 @@ public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
         return locationPanel.getDestination();
     }
 
-    private ClasspathInfo getClassPathInfo(Project project) {
+    protected static ClasspathInfo getClassPathInfo(Project project) {
         return ClasspathInfo.create(
                 getClassPath(project, ClassPath.BOOT),
                 getClassPath(project, ClassPath.COMPILE),

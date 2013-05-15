@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.lib;
 
-import org.antlr.runtime.RecognitionException;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.ProblemDescription;
 

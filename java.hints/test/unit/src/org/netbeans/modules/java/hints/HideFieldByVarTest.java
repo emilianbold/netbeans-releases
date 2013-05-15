@@ -102,9 +102,9 @@ public class HideFieldByVarTest extends TreeRuleTestBase {
             "}";
         
         for (int i = 0; i < text.length(); i++) {
-            SourceUtils.waitScanFinished();
             clearWorkDir();
             performAnalysisTest("test/Test.java", "// index: " + i + "\n" + text, i);
+            SourceUtils.waitScanFinished();
         }
     }
     public void testLocaVarAgainsInhVar() throws Exception {

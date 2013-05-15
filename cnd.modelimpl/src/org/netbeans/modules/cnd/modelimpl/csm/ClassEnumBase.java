@@ -288,7 +288,8 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
         CsmScope scope = this.scopeRef;
         if (scope == null) {
             scope = UIDCsmConverter.UIDtoScope(this.scopeUID);
-            assert (scope != null || this.scopeUID == null || !isValid()) : "null object for UID " + this.scopeUID;
+//            there could be a situation when scope is already disposed (like in onDispose())
+//            assert (scope != null || this.scopeUID == null || !isValid()) : "null object for UID " + this.scopeUID;
         }
         return scope;
     }

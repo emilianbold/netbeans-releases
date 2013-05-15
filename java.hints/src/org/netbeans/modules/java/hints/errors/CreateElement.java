@@ -85,7 +85,6 @@ import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateInnerClassFix;
 import org.netbeans.modules.java.hints.errors.CreateClassFix.CreateOuterClassFix;
 import org.netbeans.modules.java.hints.infrastructure.ErrorHintsProvider;
-import org.netbeans.modules.java.hints.infrastructure.Pair;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.ErrorManager;
@@ -94,7 +93,9 @@ import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 import static org.netbeans.modules.java.hints.errors.CreateElementUtilities.*;
+import org.netbeans.modules.java.hints.errors.ErrorFixesFakeHint.FixKind;
 import org.netbeans.modules.java.hints.errors.Utilities.MethodArguments;
+import org.openide.util.Pair;
 
 /**
  *
@@ -390,7 +391,7 @@ public final class CreateElement implements ErrorRule<Void> {
                         }
                         }
                     } else {
-                        if (firstMethod != null && info.getTrees().getElement(firstMethod).getKind() == ElementKind.CONSTRUCTOR && ErrorFixesFakeHint.isCreateFinalFieldsForCtor()) {
+                        if (firstMethod != null && info.getTrees().getElement(firstMethod).getKind() == ElementKind.CONSTRUCTOR && ErrorFixesFakeHint.isCreateFinalFieldsForCtor(ErrorFixesFakeHint.getPreferences(targetFile, FixKind.CREATE_FINAL_FIELD_CTOR))) {
                             modifiers.add(Modifier.FINAL);
                         }
                         if (ErrorFixesFakeHint.enabled(ErrorFixesFakeHint.FixKind.CREATE_FINAL_FIELD_CTOR)) {
@@ -448,7 +449,7 @@ public final class CreateElement implements ErrorRule<Void> {
     }
 
     private static List<Fix> prepareCreateOuterClassFix(CompilationInfo info, TreePath invocation, Element source, Set<Modifier> modifiers, String simpleName, List<? extends ExpressionTree> realArguments, TypeMirror superType, ElementKind kind, int numTypeParameters) {
-        Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments, null) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
+        Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments, null) : Pair.<List<? extends TypeMirror>, List<String>>of(null, null);
 
         if (formalArguments == null) {
             return Collections.<Fix>emptyList();
@@ -463,11 +464,11 @@ public final class CreateElement implements ErrorRule<Void> {
 
         PackageElement packageElement = (PackageElement) (source instanceof PackageElement ? source : info.getElementUtilities().outermostTypeElement(source).getEnclosingElement());
 
-        return Collections.<Fix>singletonList(new CreateOuterClassFix(info, root, packageElement.getQualifiedName().toString(), simpleName, modifiers, formalArguments.getA(), formalArguments.getB(), superType, kind, numTypeParameters));
+        return Collections.<Fix>singletonList(new CreateOuterClassFix(info, root, packageElement.getQualifiedName().toString(), simpleName, modifiers, formalArguments.first(), formalArguments.second(), superType, kind, numTypeParameters));
     }
 
     private static List<Fix> prepareCreateInnerClassFix(CompilationInfo info, TreePath invocation, TypeElement target, Set<Modifier> modifiers, String simpleName, List<? extends ExpressionTree> realArguments, TypeMirror superType, ElementKind kind, int numTypeParameters) {
-        Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments, target) : new Pair<List<? extends TypeMirror>, List<String>>(null, null);
+        Pair<List<? extends TypeMirror>, List<String>> formalArguments = invocation != null ? Utilities.resolveArguments(info, invocation, realArguments, target) : Pair.<List<? extends TypeMirror>, List<String>>of(null, null);
 
         if (formalArguments == null) {
             return Collections.<Fix>emptyList();
@@ -482,7 +483,7 @@ public final class CreateElement implements ErrorRule<Void> {
         if (targetFile == null)
             return Collections.<Fix>emptyList();
 
-        return Collections.<Fix>singletonList(new CreateInnerClassFix(info, simpleName, modifiers, target, formalArguments.getA(), formalArguments.getB(), superType, kind, numTypeParameters, targetFile));
+        return Collections.<Fix>singletonList(new CreateInnerClassFix(info, simpleName, modifiers, target, formalArguments.first(), formalArguments.second(), superType, kind, numTypeParameters, targetFile));
     }
 
     private static ElementKind getClassType(Set<ElementKind> types) {

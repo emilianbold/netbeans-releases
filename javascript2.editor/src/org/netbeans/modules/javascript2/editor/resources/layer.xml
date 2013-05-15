@@ -477,4 +477,18 @@
             </folder>
         </folder>
        </folder>
+       <folder name="JavaScript">
+           <folder name="Model">
+               <folder name="MethodCallProcessors">
+                   <file name="org-netbeans-modules-javascript2-editor-extjs-ExtModelExtender$ExtDefineMethodProcessor.instance">
+                       <attr name="instanceOf" stringvalue="org.netbeans.modules.javascript2.editor.model.MethodCallProcessor"/>
+                       <attr name="position" intvalue="2"/>
+                   </file>
+                   <file name="org-netbeans-modules-javascript2-editor-extjs-ExtModelExtender$ExtNamespaceMethodProcessor.instance">
+                       <attr name="instanceOf" stringvalue="org.netbeans.modules.javascript2.editor.model.MethodCallProcessor"/>
+                       <attr name="position" intvalue="1"/>
+                   </file>
+               </folder>
+           </folder>
+       </folder>
 </filesystem>

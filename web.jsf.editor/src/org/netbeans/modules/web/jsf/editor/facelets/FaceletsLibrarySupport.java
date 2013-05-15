@@ -103,6 +103,8 @@ public class FaceletsLibrarySupport {
 
     private static final Logger LOGGER = Logger.getLogger(FaceletsLibrarySupport.class.getSimpleName());
 
+    private final ThreadLocal<Collection<? extends Library>> declaredFacesComponentsCache = new ThreadLocal<Collection<? extends Library>>();
+
     private FileChangeListener DDLISTENER = new FileChangeAdapter() {
 
         @Override
@@ -251,8 +253,13 @@ public class FaceletsLibrarySupport {
     /**
      * This method obtains a library instances for the elements declared by annotation without a library descriptor.
      */
-    private void updateFacesComponentLibraries(Map<String, Library> faceletsLibraries) {
-        for (Library library : JsfFacesComponentsProvider.getLibraries(jsfSupport.getProject())) {
+    private synchronized void updateFacesComponentLibraries(Map<String, Library> faceletsLibraries) {
+        if (declaredFacesComponentsCache.get() == null) {
+            Collection<? extends Library> libraries = JsfFacesComponentsProvider.getLibraries(jsfSupport.getProject());
+            declaredFacesComponentsCache.set(libraries);
+        }
+
+        for (Library library : declaredFacesComponentsCache.get()) {
             faceletsLibraries.put(library.getDefaultNamespace(), library);
         }
     }
@@ -400,18 +407,20 @@ public class FaceletsLibrarySupport {
         
         Map<String, Library> libsMap = new HashMap<String, Library>();
         for (Library lib : processor.compiler.libraries) {
-            libsMap.put(lib.getNamespace(), lib);
+            if (lib.getLegacyNamespace() != null) {
+                libsMap.put(lib.getLegacyNamespace(), lib);
+            } else {
+                libsMap.put(lib.getNamespace(), lib);
+            }
         }
 
         //4. in case of JSF2.2 include pseudo-libraries (http://java.sun.com/jsf/passthrough, http://java.sun.com/jsf)
         // right now, we have no idea whether such libraries will be included into the JSF bundle or not
-        List<URL> cp = new ArrayList<URL>();
-        for (ClassPath.Entry cpEntry : jsfSupport.getClassPath().entries()) {
-            cp.add(cpEntry.getURL());
-        }
-        JSFVersion jsfVersion = JSFVersion.forClasspath(cp);
-        if (jsfVersion != null && jsfVersion.isAtLeast(JSFVersion.JSF_2_2)) {
-            libsMap.putAll(DefaultFaceletLibraries.getJsf22FaceletPseudoLibraries(this));
+        if (webModule != null) {
+            JSFVersion jsfVersion = JSFVersion.forWebModule(webModule);
+            if (jsfVersion != null && jsfVersion.isAtLeast(JSFVersion.JSF_2_2)) {
+                libsMap.putAll(DefaultFaceletLibraries.getJsf22FaceletPseudoLibraries(this));
+            }
         }
 
         return libsMap;

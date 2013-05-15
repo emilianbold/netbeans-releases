@@ -684,7 +684,8 @@ made subject to such option by the copyright holder.
             <file name="O-PAGE_DOWN.shadow">
                 <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-MakeCallerCurrentAction.instance"/>
             </file>
-            <file name="D-COMMA.shadow">
+            <!-- On Mac, META-comma is a system shortcut which activates preferences -->
+            <file name="C-COMMA.shadow">
                 <attr name="originalFile" stringvalue="Actions/System/org-netbeans-core-actions-JumpPrevAction.instance"/>
             </file>
             <file name="C-G.shadow">

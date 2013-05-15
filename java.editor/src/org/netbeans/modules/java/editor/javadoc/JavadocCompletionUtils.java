@@ -43,9 +43,10 @@
 package org.netbeans.modules.java.editor.javadoc;
 
 import com.sun.javadoc.Doc;
-import com.sun.javadoc.Tag;
+import com.sun.source.doctree.DocTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.DocTreePath;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
 import java.io.File;
@@ -141,6 +142,45 @@ final class JavadocCompletionUtils {
         
         // this checks /** and */ headers
         return isInsideToken(jdts, offset) && !isInsideIndent(jdts.token(), offset - jdts.offset());
+    }
+    
+    public static TreePath findJavadoc(CompilationInfo javac, int offset) {
+        TokenSequence<JavaTokenId> ts = SourceUtils.getJavaTokenSequence(javac.getTokenHierarchy(), offset);
+        if (ts == null || !movedToJavadocToken(ts, offset)) {
+            return null;
+        }
+
+        int offsetBehindJavadoc = ts.offset() + ts.token().length();
+
+        while (ts.moveNext()) {
+            TokenId tid = ts.token().id();
+            if (tid == JavaTokenId.BLOCK_COMMENT) {
+                if ("/**/".contentEquals(ts.token().text())) { // NOI18N
+                    // see #147533
+                    return null;
+                }
+            } else if (tid == JavaTokenId.JAVADOC_COMMENT) {
+                if (ts.token().partType() == PartType.COMPLETE) {
+                    return null;
+                }
+            } else if (!IGNORE_TOKES.contains(tid)) {
+                offsetBehindJavadoc = ts.offset();
+                // it is magic for TreeUtilities.pathFor
+                ++offsetBehindJavadoc;
+                break;
+            }
+        }
+
+        TreePath tp = javac.getTreeUtilities().pathFor(offsetBehindJavadoc);
+        
+        while (!TreeUtilities.CLASS_TREE_KINDS.contains(tp.getLeaf().getKind()) && tp.getLeaf().getKind() != Kind.METHOD && tp.getLeaf().getKind() != Kind.VARIABLE && tp.getLeaf().getKind() != Kind.COMPILATION_UNIT) {
+            tp = tp.getParentPath();
+            if (tp == null) {
+                break;
+            }
+        }
+        
+        return tp;
     }
     
     public static Doc findJavadoc(CompilationInfo javac, Document doc, int offset) {
@@ -323,7 +363,7 @@ final class JavadocCompletionUtils {
                     && (pos == token.length() || !isInsideIndent(token, pos));
             return result;
         } catch (IndexOutOfBoundsException e) {
-            throw new IndexOutOfBoundsException("pos: " + pos + ", token.length: " + token.length() + ", token text: " + token.text());
+            throw (IndexOutOfBoundsException) new IndexOutOfBoundsException("pos: " + pos + ", token.length: " + token.length() + ", token text: " + token.text()).initCause(e);
         }
     }
     
@@ -387,16 +427,13 @@ final class JavadocCompletionUtils {
         return result;
     }
     
-    public static boolean isBlockTag(Tag tag) {
-        Doc holder = tag.holder();
-        Tag[] tags = holder.tags();
-        for (int i = 0; i < tags.length; i++) {
-            if (tag == tags[i]) {
-                return true;
-            }
-        }
-
-        return false;
+    private static final Set<DocTree.Kind> BLOCK_TAGS =
+            EnumSet.of(DocTree.Kind.AUTHOR, DocTree.Kind.DEPRECATED, DocTree.Kind.PARAM,
+                       DocTree.Kind.RETURN, DocTree.Kind.SEE, DocTree.Kind.SERIAL,
+                       DocTree.Kind.SERIAL_DATA, DocTree.Kind.SERIAL_FIELD, DocTree.Kind.SINCE,
+                       DocTree.Kind.THROWS, DocTree.Kind.UNKNOWN_BLOCK_TAG, DocTree.Kind.VERSION);
+    public static boolean isBlockTag(DocTreePath tag) {
+        return BLOCK_TAGS.contains(tag.getLeaf().getKind());
     }
     
     static CharSequence getCharSequence(Document doc) {

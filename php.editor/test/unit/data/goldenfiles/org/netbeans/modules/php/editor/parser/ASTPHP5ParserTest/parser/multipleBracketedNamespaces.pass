@@ -96,7 +96,7 @@
                 <NamespaceName start='16' end='19' isCurrent='false' isGlobal='false'>
                     <Identifier start='16' end='19' name='NS1'/>
                 </NamespaceName>
-                <Block start='6' end='49' isCurly='true'>
+                <Block start='20' end='49' isCurly='true'>
                     <ClassDeclaration start='21' end='31' modifier='NONE'>
                         <ClassName>
                             <Identifier start='27' end='28' name='A'/>
@@ -121,7 +121,7 @@
                 <NamespaceName start='60' end='63' isCurrent='false' isGlobal='false'>
                     <Identifier start='60' end='63' name='NS2'/>
                 </NamespaceName>
-                <Block start='50' end='97' isCurly='true'>
+                <Block start='64' end='97' isCurly='true'>
                     <ClassDeclaration start='65' end='75' modifier='NONE'>
                         <ClassName>
                             <Identifier start='71' end='72' name='A'/>

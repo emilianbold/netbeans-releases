@@ -227,8 +227,8 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     }
 
     private void setModel (Map<String, GitBranch> branches) {
-        final List<GitBranch> branchList = new ArrayList<GitBranch>(branches.size());
-        List<GitBranch> remoteBranchList = new ArrayList<GitBranch>(branches.size());
+        final List<Revision> branchList = new ArrayList<Revision>(branches.size());
+        List<Revision> remoteBranchList = new ArrayList<Revision>(branches.size());
         GitBranch activeBranch = null;
         for (Map.Entry<String, GitBranch> e : branches.entrySet()) {
             GitBranch branch = e.getValue();
@@ -236,14 +236,14 @@ public class RevisionDialogController implements ActionListener, DocumentListene
                 activeBranch = branch;
             }
             if (branch.isRemote()) {
-                remoteBranchList.add(branch);
+                remoteBranchList.add(new Revision(branch.getId(), branch.getName()));
             } else if (branch.getName() != GitBranch.NO_BRANCH) {
-                branchList.add(branch);
+                branchList.add(new Revision(branch.getId(), branch.getName()));
             }
         }
-        Comparator<GitBranch> comp = new Comparator<GitBranch>() {
+        Comparator<Revision> comp = new Comparator<Revision>() {
             @Override
-            public int compare (GitBranch b1, GitBranch b2) {
+            public int compare (Revision b1, Revision b2) {
                 return b1.getName().compareTo(b2.getName());
             }
         };
@@ -255,11 +255,11 @@ public class RevisionDialogController implements ActionListener, DocumentListene
             @Override
             public void run () {
                 panel.cmbBranches.setModel(new DefaultComboBoxModel(branchList.isEmpty() ? new Object[] { NbBundle.getMessage(RevisionDialogController.class, "MSG_RevisionDialog.selectBranch") } 
-                        : branchList.toArray(new GitBranch[branchList.size()])));//NOI18N
+                        : branchList.toArray(new Revision[branchList.size()])));//NOI18N
                 panel.cmbBranches.setRenderer(new DefaultListCellRenderer() {
                     @Override
                     public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                        return super.getListCellRendererComponent(list, value instanceof GitBranch ? ((GitBranch) value).getName() : value, index, isSelected, cellHasFocus);
+                        return super.getListCellRendererComponent(list, value instanceof Revision ? ((Revision) value).getName() : value, index, isSelected, cellHasFocus);
                     }
                 });
                 if (toSelect != null) {
@@ -272,7 +272,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
 
     private void selectedBranchChanged () {
         Object activeBranch = panel.cmbBranches.getSelectedItem();
-        revision = activeBranch instanceof GitBranch ? ((GitBranch) activeBranch).getName() : NbBundle.getMessage(RevisionDialogController.class, "MSG_RevisionDialog.selectBranch"); //NOI18N
+        revision = activeBranch instanceof Revision ? ((Revision) activeBranch).getName() : NbBundle.getMessage(RevisionDialogController.class, "MSG_RevisionDialog.selectBranch"); //NOI18N
         updateRevision();
     }
 }

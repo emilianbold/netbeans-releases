@@ -78,6 +78,7 @@ import junit.framework.*;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -86,6 +87,7 @@ import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
@@ -104,7 +106,6 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.java.source.parsing.DocPositionRegion;
 import org.netbeans.modules.java.source.parsing.JavaFileObjectProvider;
 import org.netbeans.modules.java.source.parsing.SourceFileObject;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.parsing.lucene.IndexFactory;
 import org.netbeans.modules.parsing.lucene.support.Convertor;
 import org.netbeans.modules.parsing.lucene.support.Index;
@@ -131,12 +132,14 @@ import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.TestUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
+import org.netbeans.modules.parsing.impl.TaskProcessor;
 import org.netbeans.modules.parsing.impl.Utilities;
 import org.netbeans.modules.parsing.lucene.support.IndexManagerTestUtilities;
 import org.netbeans.modules.parsing.lucene.support.StoppableConvertor;
 import org.netbeans.modules.parsing.spi.TaskIndexingMode;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 /**
  *
  * @author Tomas Zezula
@@ -1650,6 +1653,19 @@ public class JavaSourceTest extends NbTestCase {
         JavaSourceAccessor.getINSTANCE().addPhaseCompletionTask(js,task, Phase.PARSED, Priority.NORMAL, TaskIndexingMode.ALLOWED_DURING_SCAN);
         assertTrue(latch1.await(10, TimeUnit.SECONDS));
         JavaSourceAccessor.getINSTANCE().removePhaseCompletionTask(js,task);
+        //When the last element is removed from j.u.c.PriorityBlockingQueue
+        //the queue still holds a reference to it and assertGC does not work
+        //see PBQ.siftDownComparator
+        Field f = TaskProcessor.class.getDeclaredField("requests");   //NOI18N
+        f.setAccessible(true);
+        final Collection<?> requests = (Collection<?>) f.get(null);
+        assertTrue(requests.isEmpty());
+        f = PriorityBlockingQueue.class.getDeclaredField("queue");  //NOI18N
+        f.setAccessible(true);
+        final Object[] queue = (Object[]) f.get(requests);
+        queue[0] = null;
+        //WB
+        assertTrue(requests.isEmpty());
         Reference<JavaSource> r = new WeakReference<JavaSource>(js);
         js = null;
 

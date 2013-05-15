@@ -60,6 +60,14 @@ public abstract class MultipleRepositoryAction extends GitAction {
 
     private static final Logger LOG = Logger.getLogger(MultipleRepositoryAction.class.getName());
 
+    protected MultipleRepositoryAction () {
+        this(null);
+    }
+
+    protected MultipleRepositoryAction (String iconResource) {
+        super(iconResource);
+    }
+
     @Override
     protected final void performContextAction (final Node[] nodes) {
         Utils.postParallel(new Runnable () {

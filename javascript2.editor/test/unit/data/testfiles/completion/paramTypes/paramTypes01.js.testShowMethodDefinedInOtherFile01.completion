@@ -22,7 +22,7 @@ METHOD     preventExtensions(O: Object):   [PUBLIC,   JS Platform
 METHOD     propertyIsEnumerable(V: String  [PUBLIC]   JS Platform
 METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
 METHOD     testParamDoc(param1: String, p  [PUBLIC]   paramTypes01.js
-METHOD     testParamDoc2(param1, param2):  [PUBLIC]   paramTypes01.js
+METHOD     testParamDoc2(param1, param2)   [PUBLIC]   paramTypes01.js
 METHOD     toLocaleString(): String        [PUBLIC]   JS Platform
 METHOD     toString(): String              [PUBLIC]   JS Platform
 METHOD     valueOf(): Object               [PUBLIC]   JS Platform

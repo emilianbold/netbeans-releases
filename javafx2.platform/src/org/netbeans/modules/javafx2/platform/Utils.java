@@ -46,9 +46,7 @@ import java.io.FileFilter;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -82,15 +80,17 @@ public final class Utils {
 
     private static final String PLATFORM_PREFIX = "platforms"; // NOI18N
     private static final String JAVAFX_SDK_PREFIX = "javafx.sdk.home"; // NOI18N
-    private static final String JAVAFX_RUNTIME_PREFIX = "javafx.runtime.home"; // NOI18N
-    private static final String JAVAFX_SOURCES_PREFIX = "javafx.src"; // NOI18N
-    private static final String JAVAFX_JAVADOC_PREFIX = "javafx.javadoc"; // NOI18N
+    private static final String JAVAFX_RUNTIME_PREFIX = "javafx.runtime.home"; // NOI18N    
+    private static final String JFXRT_JAR_NAME = "jfxrt.jar"; //NOI18N
+    private static final String JDK_JRE_PATH = "jre/"; //NOI18N
+    private static final String[] JFXRT_JAR_JRE_PATHS = {"lib/", "lib/ext/"}; //NOI18N
+    private static final String[] JFXRT_OPTIONAL_JARS = {"javaws.jar", "deploy.jar", "plugin.jar"}; // NOI18N
 
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.javafx2.platform.Utils"); // NOI18N
     
     private Utils() {
     }
-
+    
     /**
      * Indicates whether running inside a test.
      * Used to bypass J2SE platform creation
@@ -115,32 +115,45 @@ public final class Utils {
     public static void setIsTest(boolean test) {
         isTest = test;
     }
-    
+
     /**
-     * Returns key for <b>JavaFX SDK location</b> IDE global property value for given java platform
-     * 
-     * @param IDE java platform instance
-     * @return key for JavaFX SDK location
+     * Return paths relative to FX RT installation dir where
+     * FX RT artifacts may be found
+     * @return relative paths
      */
     @NonNull
-    public static String getSDKPropertyKey(@NonNull JavaPlatform platform) {
-        Parameters.notNull("platform", platform); // NOI18N
-        String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
-        return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_SDK_PREFIX; // NOI18N
+    public static String[] getJavaFxRuntimeLocations() {
+        return JFXRT_JAR_JRE_PATHS;
     }
-    
+
     /**
-     * Returns key for <b>JavaFX Runtime location</b> IDE global property value for given java platform
-     * 
-     * @param IDE java platform instance
-     * @return key for JavaFX Runtime location
+     * Return subdirectory in which FX RT resider under JDK
+     * @return relative path
      */
     @NonNull
-    public static String getRuntimePropertyKey(@NonNull JavaPlatform platform) {
-        Parameters.notNull("platform", platform); // NOI18N
-        String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
-        return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_RUNTIME_PREFIX; // NOI18N
+    public static String getJavaFxRuntimeSubDir() {
+        return JDK_JRE_PATH;
     }
+
+    /**
+    * Return file name of FX RT jar
+     * @return file name
+     */
+    @NonNull
+    public static String getJavaFxRuntimeArchiveName() {
+        return JFXRT_JAR_NAME;
+    }
+
+    /**
+     * Return file names of optional jars than may need to be added to classpath
+     * together with FX RT jar
+     * @return file names
+     */
+    @NonNull
+    public static String[] getJavaFxRuntimeOptionalNames() {
+        return JFXRT_OPTIONAL_JARS;
+    }
+            
 
     /**
      * Returns key for <b>JavaFX SDK location</b> IDE global property value for given java platform
@@ -162,32 +175,6 @@ public final class Utils {
     @NonNull
     public static String getRuntimePropertyKey(@NonNull String platformName) {
         return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_RUNTIME_PREFIX; // NOI18N
-    }
-
-    /**
-     * Returns key for <b>JavaFX Javadoc location</b> IDE global property value for given java platform
-     * 
-     * @param IDE java platform instance
-     * @return key for JavaFX Javadoc location
-     */
-    @NonNull
-    public static String getJavadocPropertyKey(@NonNull JavaPlatform platform) {
-        Parameters.notNull("platform", platform); // NOI18N
-        String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
-        return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_JAVADOC_PREFIX; // NOI18N
-    }
-
-    /**
-     * Returns key for <b>JavaFX Sources location</b> IDE global property value for given java platform
-     * 
-     * @param IDE java platform instance
-     * @return key for JavaFX Sources location
-     */
-    @NonNull
-    public static String getSourcesPropertyKey(@NonNull JavaPlatform platform) {
-        Parameters.notNull("platform", platform); // NOI18N
-        String platformName = platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
-        return PLATFORM_PREFIX + '.' + platformName + '.' + JAVAFX_SOURCES_PREFIX; // NOI18N
     }
     
     /**
@@ -241,23 +228,6 @@ public final class Utils {
                 }
             }
         }
-        
-        if (platform != null) {
-            Map<String, String> map = new HashMap<String, String>(2);
-            map.put(Utils.getSDKPropertyKey(platform), sdkPath);
-            map.put(Utils.getRuntimePropertyKey(platform), runtimePath);
-            if (javadocPath != null) {
-                map.put(Utils.getJavadocPropertyKey(platform), javadocPath);
-            }
-            if (srcPath != null) {
-                map.put(Utils.getSourcesPropertyKey(platform), srcPath);
-            }
-            PlatformPropertiesHandler.saveGlobalProperties(map);
-            LOGGER.log(Level.INFO, "Java FX extension for \"{0}\" has been registered successfully", platformName); // NOI18N
-        } else {
-            LOGGER.log(Level.WARNING, "Java FX extension for \"{0}\" has not been registered!", platformName); // NOI18N
-        }
-        
         return platform;
     }
     

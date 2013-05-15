@@ -43,6 +43,7 @@ package org.netbeans.modules.css.lib.nbparser;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.css.lib.ExtCss3Lexer;
@@ -62,7 +63,6 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
-import org.netbeans.modules.web.common.api.Lines;
 import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
 
@@ -105,15 +105,16 @@ public class CssParser extends Parser {
             parser.styleSheet();
 
             AbstractParseTreeNode tree = builder.getTree();
-            List<ProblemDescription> problems = new ArrayList<ProblemDescription>();
+            List<ProblemDescription> problems = new ArrayList<>();
             //add lexer issues
             problems.addAll(lexer.getProblems());
             //add parser issues
             problems.addAll(builder.getProblems());
             
-            
+            filterProblemsInVirtualCode(snapshot, problems);
+            filterTemplatingProblems(snapshot, problems);
 
-            return new CssParserResult(snapshot, tree, filterTemplatingProblems(snapshot, problems));
+            return new CssParserResult(snapshot, tree, problems);
         } catch (RecognitionException ex) {
             throw new ParseException(String.format("Error parsing %s snapshot.", snapshot), ex); //NOI18N
         } finally {
@@ -122,9 +123,20 @@ public class CssParser extends Parser {
         }
     }
     
+    private static void filterProblemsInVirtualCode(Snapshot snapshot, List<ProblemDescription> problems) {
+        ListIterator<ProblemDescription> listIterator = problems.listIterator();
+        while(listIterator.hasNext()) {
+            ProblemDescription p = listIterator.next();
+            int from = p.getFrom();
+            int to = p.getTo();
+            if(snapshot.getOriginalOffset(from) == -1 || snapshot.getOriginalOffset(to) == -1) {
+                listIterator.remove();
+            }
+        }
+    }
     
     //filtering out problems caused by templating languages
-    private static List<ProblemDescription> filterTemplatingProblems(Snapshot snapshot, List<ProblemDescription> problems) {
+    private static void filterTemplatingProblems(Snapshot snapshot, List<ProblemDescription> problems) {
         MimePath mimePath = snapshot.getMimePath();
         CharSequence text = snapshot.getText();
         if(mimePath.size() <= 2 || mimePath.size() == 3 && mimePath.getMimeType(0).equals("text/xhtml")) { //NOI18N
@@ -134,11 +146,11 @@ public class CssParser extends Parser {
             //or
             //hack for the fake text/xhtml language:
             //for .xhtml files the mime is text/xhtml/text/html/text/css
-            return problems;
         } else {
             //typically text/php/text/html/text/css
-            List<ProblemDescription> filtered = new ArrayList<ProblemDescription>(problems.size());
-            for(ProblemDescription p : problems) {
+            ListIterator<ProblemDescription> listIterator = problems.listIterator();
+            while(listIterator.hasNext()) {
+                ProblemDescription p = listIterator.next();
                 //XXX Idealy the filtering context should be dependent on the enclosing node
                 //sg. like if there's a templating error in an declaration - search the whole
                 //declaration for the templating mark. 
@@ -150,7 +162,8 @@ public class CssParser extends Parser {
                 
                 //the "premature end of file" error has position pointing after the last char (=text.length())!
                 if(p.getFrom() == text.length()) {
-                    continue; //consider this as hidden error
+                    listIterator.remove(); //consider this as hidden error
+                    continue;
                 }
                 
                 int from, to;
@@ -168,11 +181,10 @@ public class CssParser extends Parser {
                 }
                 //check if there's the templating mark (@@@) in the context
                 CharSequence img = snapshot.getText().subSequence(from, to);
-                if(CharSequences.indexOf(img, TEMPLATING_MARK) == -1) {
-                    filtered.add(p);
+                if(CharSequences.indexOf(img, TEMPLATING_MARK) != -1) {
+                    listIterator.remove();
                 }
             }
-            return filtered;
         }
     }
 

@@ -178,7 +178,7 @@ public interface AnnotationParsedLine {
          */
         @Override
         public Map<OffsetRange, String> getTypes() {
-            Map<OffsetRange, String> result = Collections.EMPTY_MAP;
+            Map<OffsetRange, String> result = Collections.emptyMap();
             if (types != null) {
                 result = new HashMap<OffsetRange, String>(types);
             }

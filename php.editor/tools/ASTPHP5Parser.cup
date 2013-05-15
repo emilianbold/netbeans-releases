@@ -329,6 +329,7 @@ non terminal Expression exit_expr;
 non terminal List ctor_arguments;
 non terminal Expression common_scalar;
 non terminal Expression static_scalar;
+non terminal Expression static_scalar_without_array;
 non terminal Expression scalar;
 non terminal List static_array_pair_list;
 non terminal possible_comma;
@@ -2038,14 +2039,14 @@ class_variable_declaration:list T_COMMA T_VARIABLE:var
 ;
 
 constant_declaration ::=
-constant_declaration:list T_COMMA T_STRING:constName T_EQUAL static_scalar:expr
+constant_declaration:list T_COMMA T_STRING:constName T_EQUAL static_scalar_without_array:expr
 {:
 	Identifier constId = new Identifier(constNameleft, constNameright, constName);
 	list.add(new ASTNode[] {constId, expr});
 	RESULT = list;
 :}
 
-| T_CONST T_STRING:constName T_EQUAL static_scalar:expr
+| T_CONST T_STRING:constName T_EQUAL static_scalar_without_array:expr
 {:
 	List list = new LinkedList();
 	Identifier constId = new Identifier(constNameleft, constNameright, constName);
@@ -2804,7 +2805,7 @@ T_LNUMBER:scalar
 :}
 ;
 
-static_scalar ::=  /* compile-time evaluated scalars */
+static_scalar_without_array ::=
 common_scalar:scalar
 {:
 	RESULT = scalar;
@@ -2841,6 +2842,23 @@ common_scalar:scalar
 	RESULT = op;
 :}
 
+| static_class_constant:classConstant
+{:
+	RESULT = classConstant;
+:}
+
+| heredoc:doc
+{:
+	RESULT = doc;
+:}
+;
+
+static_scalar ::=  /* compile-time evaluated scalars */
+static_scalar_without_array:scalar
+{:
+	RESULT = scalar;
+:}
+
 | T_ARRAY:start T_OPEN_PARENTHESE static_array_pair_list:list T_CLOSE_PARENTHESE:end
 {:
 	ArrayCreation array = new ArrayCreation(startleft, endright, list);
@@ -2851,16 +2869,6 @@ common_scalar:scalar
 {:
 	ArrayCreation array = new ArrayCreation(startleft, endright, list);
 	RESULT = array;
-:}
-
-| static_class_constant:classConstant
-{:
-	RESULT = classConstant;
-:}
-
-| heredoc:doc
-{:
-	RESULT = doc;
 :}
 ;
 

@@ -45,6 +45,8 @@ package org.netbeans.modules.maven.newproject;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -139,9 +141,9 @@ public class ChooseArchetypePanel extends JPanel {
     }
 
     private void updateList() {
-        DefaultListModel model = new DefaultListModel();
         Set<String> ids = new HashSet<String>();
         String filter = textFilter.getText();
+        List<Archetype> filtered = new ArrayList<Archetype>();
         for (Archetype a : archetypes) {
             if (!showOld.isSelected() && !ids.add(a.getGroupId() + ":" + a.getArtifactId())) {
                 continue;
@@ -151,6 +153,17 @@ public class ChooseArchetypePanel extends JPanel {
                     && !matches(a.getName(), filter) && (a.getDescription() == null || !matches(a.getDescription(), filter))) {
                 continue;
             }
+            filtered.add(a);
+        }
+        Collections.sort(filtered, new Comparator<Archetype>() {
+
+            @Override
+            public int compare(Archetype o1, Archetype o2) {
+                return o1.getArtifactId().compareTo(o2.getArtifactId());
+            }
+        });
+        DefaultListModel model = new DefaultListModel();
+        for (Archetype a : filtered) {
             model.addElement(a);
         }
         listArtifact.setModel(model);

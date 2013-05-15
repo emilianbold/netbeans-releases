@@ -56,6 +56,7 @@ import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.LibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.LibraryType;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
@@ -73,9 +74,6 @@ public class DefaultFaceletLibraries {
     private Collection<FileObject> libraryDescriptorsFiles;
     private Map<String, FaceletsLibraryDescriptor> librariesDescriptors;
     private static Map<String, Library> jsf22FaceletPseudoLibraries;
-
-    public static final String JSF_NS = "http://java.sun.com/jsf"; //NOI18N
-    public static final String JSF_PASSTHROUGH_NS = "http://java.sun.com/jsf/passthrough"; //NOI18N
 
     public static synchronized DefaultFaceletLibraries getInstance() {
         if (INSTANCE == null) {
@@ -154,10 +152,8 @@ public class DefaultFaceletLibraries {
     protected synchronized static Map<String, Library> getJsf22FaceletPseudoLibraries(FaceletsLibrarySupport support) {
         if (jsf22FaceletPseudoLibraries == null) {
             jsf22FaceletPseudoLibraries = new HashMap<String, Library>(2);
-            jsf22FaceletPseudoLibraries.put(DefaultLibraryInfo.JSF.getNamespace(),
-                    new JsfFaceletPseudoLibrary(support, DefaultLibraryInfo.JSF));
-            jsf22FaceletPseudoLibraries.put(DefaultLibraryInfo.PASSTHROUGH.getNamespace(),
-                    new JsfFaceletPseudoLibrary(support, DefaultLibraryInfo.PASSTHROUGH));
+            jsf22FaceletPseudoLibraries.put(DefaultLibraryInfo.JSF.getLegacyNamespace(), new JsfFaceletPseudoLibrary(support, DefaultLibraryInfo.JSF));
+            jsf22FaceletPseudoLibraries.put(DefaultLibraryInfo.PASSTHROUGH.getLegacyNamespace(), new JsfFaceletPseudoLibrary(support, DefaultLibraryInfo.PASSTHROUGH));
         }
         return jsf22FaceletPseudoLibraries;
     }
@@ -207,6 +203,11 @@ public class DefaultFaceletLibraries {
         @Override
         public String getDisplayName() {
             return displayName;
+        }
+
+        @Override
+        public String getLegacyNamespace() {
+            return NamespaceUtils.NS_MAPPING.get(namespace);
         }
 
     }

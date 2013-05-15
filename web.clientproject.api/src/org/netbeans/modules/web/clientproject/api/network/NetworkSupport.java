@@ -49,20 +49,26 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.web.clientproject.api.network.ui.NetworkErrorPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 
 /**
@@ -138,28 +144,141 @@ public final class NetworkSupport {
     /**
      * Download the given URL to the target file.
      * <p>
-     * This method must be called only in a background thread.
+     * This method must be called only in a background thread. To cancel the download, interrupt the current thread.
      * @param url URL to be downloaded
      * @param target target file
      * @throws NetworkException if any network error occurs
      * @throws IOException if any error occurs
-     * @since 1.22
+     * @throws InterruptedException if the download is cancelled
+     * @see #downloadWithProgress(java.lang.String, java.io.File, java.lang.String)
+     * @see #downloadWithProgress(java.lang.String, java.io.File, org.netbeans.api.progress.ProgressHandle)
+     * @since 1.25
      */
-    public static void download(@NonNull String url, @NonNull File target) throws NetworkException, IOException {
+    public static void download(@NonNull String url, @NonNull File target) throws NetworkException, IOException, InterruptedException {
+        downloadInternal(url, target, null, false);
+    }
+
+    /**
+     * Download the given URL to the target file with showing its progress.
+     * <p>
+     * This method must be called only in a background thread. To cancel the download, interrupt the current thread.
+     * @param url URL to be downloaded
+     * @param target target file
+     * @param displayName display name of the progress
+     * @throws NetworkException if any network error occurs
+     * @throws IOException if any error occurs
+     * @throws InterruptedException if the download is cancelled
+     * @see #download(java.lang.String, java.io.File)
+     * @see #downloadWithProgress(java.lang.String, java.io.File, org.netbeans.api.progress.ProgressHandle)
+     * @since 1.25
+     */
+    public static void downloadWithProgress(@NonNull String url, @NonNull File target, @NonNull String displayName)
+            throws NetworkException, IOException, InterruptedException {
+        Parameters.notNull("displayName", displayName);
+        final Thread downloadThread = Thread.currentThread();
+        downloadInternal(url, target, ProgressHandleFactory.createHandle(displayName, new Cancellable() {
+            @Override
+            public boolean cancel() {
+                downloadThread.interrupt();
+                return true;
+            }
+        }), true);
+    }
+
+    /**
+     * Download the given URL to the target file with showing its progress
+     * using the given, <b>already started</b> progress handle. Such progress handle is
+     * neither started nor finished.
+     * <p>
+     * This method must be called only in a background thread. To cancel the download, interrupt the current thread.
+     * @param url URL to be downloaded
+     * @param target target file
+     * @param progressHandle existing, <b>already started</b> progress handle
+     * @throws NetworkException if any network error occurs
+     * @throws IOException if any error occurs
+     * @throws InterruptedException if the download is cancelled
+     * @see #download(java.lang.String, java.io.File)
+     * @see #downloadWithProgress(java.lang.String, java.io.File, java.lang.String)
+     * @since 1.25
+     */
+    public static void downloadWithProgress(@NonNull String url, @NonNull File target, @NonNull ProgressHandle progressHandle)
+            throws NetworkException, IOException, InterruptedException {
+        Parameters.notNull("progressHandle", progressHandle);
+        downloadInternal(url, target, progressHandle, false);
+    }
+
+    @NbBundle.Messages({
+        "# {0} - file name",
+        "NetworkSupport.progress.download=Downloading {0}",
+    })
+    private static void downloadInternal(@NonNull String url, @NonNull File target, @NullAllowed ProgressHandle progressHandle,
+            boolean startFinishProgress) throws NetworkException, IOException, InterruptedException {
         Parameters.notNull("url", url);
         Parameters.notNull("target", target);
         if (EventQueue.isDispatchThread()) {
             throw new IllegalStateException("Cannot run in UI thread");
         }
-        InputStream is;
+
+        if (progressHandle != null
+                && startFinishProgress) {
+            progressHandle.start();
+        }
+        Pair<InputStream, Integer> downloadSetup = prepareDownload(url, progressHandle);
+        checkInterrupted();
+        doDownload(url, target, downloadSetup, progressHandle, startFinishProgress);
+    }
+
+    @NbBundle.Messages("NetworkSupport.progress.prepare=Preparing download...")
+    private static Pair<InputStream, Integer> prepareDownload(String url, @NullAllowed ProgressHandle progressHandle) throws NetworkException, InterruptedException {
         try {
-            is = new URL(url).openStream();
+            int contentLength = -1;
+            URL resource = new URL(url);
+            if (progressHandle != null) {
+                progressHandle.switchToIndeterminate();
+                progressHandle.progress(Bundle.NetworkSupport_progress_prepare());
+                contentLength = getContentLength(resource);
+                if (contentLength != -1) {
+                    progressHandle.switchToDeterminate(contentLength);
+                }
+            }
+            checkInterrupted();
+            return Pair.of(resource.openStream(), contentLength);
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
             throw new NetworkException(url, ex);
         }
+    }
+
+    private static int getContentLength(URL url) throws IOException, InterruptedException {
+        checkInterrupted();
+        URLConnection urlConnection = url.openConnection();
+        int length = urlConnection.getContentLength();
+        if (length != -1) {
+            return length;
+        }
+        // fallback
+        if (urlConnection instanceof HttpURLConnection) {
+            checkInterrupted();
+            HttpURLConnection httpUrlConnection = (HttpURLConnection) url.openConnection();
+            httpUrlConnection.setRequestMethod("HEAD"); // NOI18N
+            InputStream inputStream = httpUrlConnection.getInputStream();
+            try {
+                return httpUrlConnection.getContentLength();
+            } finally {
+                inputStream.close();
+            }
+        }
+        return -1;
+    }
+
+    private static void doDownload(String url, File target, Pair<InputStream, Integer> downloadSetup, @NullAllowed ProgressHandle progressHandle,
+            boolean startFinishProgress) throws IOException, InterruptedException {
+        if (progressHandle != null) {
+            progressHandle.progress(Bundle.NetworkSupport_progress_download(url));
+        }
+        InputStream is = downloadSetup.first();
         try {
-            copyToFile(is, target);
+            copyToFile(is, target, progressHandle, downloadSetup.second());
         } catch (IOException ex) {
             // error => ensure file is deleted
             if (!target.delete()) {
@@ -167,18 +286,43 @@ public final class NetworkSupport {
             }
             throw ex;
         } finally {
+            if (progressHandle != null
+                    && startFinishProgress) {
+                progressHandle.finish();
+            }
             is.close();
         }
     }
 
-    private static File copyToFile(InputStream is, File target) throws IOException {
+    private static File copyToFile(InputStream is, File target, @NullAllowed ProgressHandle progressHandle, int contentLength) throws IOException, InterruptedException {
         OutputStream os = new FileOutputStream(target);
         try {
-            FileUtil.copy(is, os);
+            final byte[] buffer = new byte[65536];
+            int len;
+            int read = 0;
+            for (;;) {
+                checkInterrupted();
+                len = is.read(buffer);
+                if (len == -1) {
+                    break;
+                }
+                os.write(buffer, 0, len);
+                if (contentLength != -1) {
+                    assert progressHandle != null;
+                    read += len;
+                    progressHandle.progress(read);
+                }
+            }
         } finally {
             os.close();
         }
         return target;
+    }
+
+    private static void checkInterrupted() throws InterruptedException {
+        if (Thread.currentThread().isInterrupted()) {
+            throw new InterruptedException();
+        }
     }
 
 }

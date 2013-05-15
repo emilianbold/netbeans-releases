@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.php.editor.nav;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
 
 /**
  *
@@ -56,7 +58,12 @@ public class PhpStructureScanner implements StructureScanner {
 
     @Override
     public List<? extends StructureItem> scan(final ParserResult info) {
-        return NavigatorScanner.create().scan(info);
+        List<? extends StructureItem> result = Collections.<StructureItem>emptyList();
+        if (info instanceof PHPParseResult) {
+            PHPParseResult phpParseResult = (PHPParseResult) info;
+            result = NavigatorScanner.create(phpParseResult.getModel()).scan();
+        }
+        return result;
     }
 
     @Override

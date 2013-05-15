@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBTable;
-import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
 /**
  * Wrapper class provides ordered columns and tooltips
@@ -63,7 +62,6 @@ public class DataViewDBTable {
 
     private final DBTable[] dbTables;
     private final List<DBColumn> columns;
-    private String[] columnTooltipStr;
 
     public DataViewDBTable(Collection<DBTable> tables) {
         assert tables != null;
@@ -78,11 +76,11 @@ public class DataViewDBTable {
         columns = Collections.unmodifiableList(cols);
     }
 
-    public DBTable geTable(int index) {
+    public DBTable getTable(int index) {
         return dbTables[index];
     }
 
-    public int geTableCount() {
+    public int getTableCount() {
         return dbTables.length;
     }
 
@@ -114,23 +112,16 @@ public class DataViewDBTable {
         return columns.size();
     }
 
-    public synchronized Map<String,DBColumn> getColumns() {
+    public List<DBColumn> getColumns() {
+        return Collections.unmodifiableList(columns);
+    }
+
+    public synchronized Map<String,DBColumn> getColumnMap() {
         Map<String, DBColumn> colMap = new HashMap<String, DBColumn>();
         for (DBTable tbl : dbTables) {
             colMap.putAll(tbl.getColumns());
         }
         return Collections.unmodifiableMap(colMap);
-    }
-
-    public synchronized String[] getColumnToolTips() {
-        if (columnTooltipStr == null) {
-            columnTooltipStr = new String[columns.size()];
-            int i = 0;
-            for (DBColumn column : columns) {
-                columnTooltipStr[i++] = DataViewUtils.getColumnToolTip(column);
-            }
-        }
-        return columnTooltipStr;
     }
 
     final class ColumnOrderComparator implements Comparator<DBColumn> {

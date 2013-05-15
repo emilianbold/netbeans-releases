@@ -56,7 +56,6 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.AnnotatedType;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ErrorType;
@@ -196,7 +195,9 @@ public class ClassFileUtil {
             final StringBuilder retType = new StringBuilder ();
             if (kind == ElementKind.METHOD) {
                 result[1] = ee.getSimpleName().toString();
-                encodeType(ee.getReturnType(), retType);
+                if (ee.asType().getKind() == TypeKind.EXECUTABLE) {
+                    encodeType(ee.getReturnType(), retType);
+                }
             }
             else {
                 result[1] = "<init>";   // NOI18N
@@ -312,11 +313,6 @@ public class ClassFileUtil {
             case INTERSECTION:
             {
                 encodeType(((IntersectionType) type).getBounds().get(0), sb);
-                break;
-            }
-            case ANNOTATED:
-            {
-                encodeType(((AnnotatedType) type).getUnderlyingType(), sb);
                 break;
             }
 	    default:

@@ -826,7 +826,6 @@ public class FastMatcher extends AbstractMatcher {
         private boolean isLineTerminator(int ch) {
             return ch == BufferedCharSequence.UnicodeLineTerminator.LF
                     || ch == BufferedCharSequence.UnicodeLineTerminator.CR
-                    || ch == BufferedCharSequence.UnicodeLineTerminator.FF
                     || ch == BufferedCharSequence.UnicodeLineTerminator.LS
                     || ch == BufferedCharSequence.UnicodeLineTerminator.NEL
                     || ch == BufferedCharSequence.UnicodeLineTerminator.PS;

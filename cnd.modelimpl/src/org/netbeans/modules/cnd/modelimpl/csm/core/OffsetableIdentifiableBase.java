@@ -111,9 +111,14 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
     public static class NameBuilder extends OffsetableBuilder {
         
         boolean global = false;
-        List<NamePart> nameParts = new ArrayList<NamePart>();
+        final List<NamePart> nameParts = new ArrayList<NamePart>();
         
         public void addNamePart(CharSequence part) {
+            // detect and merge ~ in destructor name
+            if (!nameParts.isEmpty() && "~".contentEquals(getLastNamePart())) { //NOI18N
+                nameParts.remove(nameParts.size() - 1);
+                part = CharSequences.create("~" + part); //NOI18N
+            }
             nameParts.add(new NamePart(part));
         }
 
@@ -127,6 +132,10 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
                 names.add(namePart.part);
             }
             return names;
+        }
+        
+        public boolean isEmpty() {
+            return nameParts.isEmpty();
         }
 
         public List<NamePart> getNames() {
@@ -156,10 +165,10 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
             }
         }
         
-        public static class NamePart {
-            CharSequence part;
+        public static final class NamePart {
+            final CharSequence part;
             
-            List<SpecializationDescriptor.SpecializationParameterBuilder> params = new ArrayList<SpecializationDescriptor.SpecializationParameterBuilder>();
+            final List<SpecializationDescriptor.SpecializationParameterBuilder> params = new ArrayList<SpecializationDescriptor.SpecializationParameterBuilder>();
 
             public NamePart(CharSequence part) {
                 this.part = part;
@@ -168,13 +177,21 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
             public CharSequence getPart() {
                 return part;
             }
-
+            
             public List<SpecializationDescriptor.SpecializationParameterBuilder> getParams() {
                 return params;
             }
-            
+
+            @Override
+            public String toString() {
+                return part.toString();
+            }
         }
-        
+
+        @Override
+        public String toString() {
+            return "NameBuilder{" + getName() + super.toString() + '}'; //NOI18N
+        }
     }
     
     public static abstract class OffsetableIdentifiableBuilder extends OffsetableBuilder implements CsmObjectBuilder {
@@ -236,7 +253,13 @@ public abstract class OffsetableIdentifiableBase<T> extends OffsetableBase imple
         protected void addReference(CsmObject obj) {
             getNameHolder().addReference(getFileContent(), obj);
         }
-        
+
+        @Override
+        public String toString() {
+            return "{" + "name=" + name + ", nameStartOffset=" + nameStartOffset + //NOI18N
+                    ", nameEndOffset=" + nameEndOffset + ", isMacroExpanded=" + //NOI18N
+                    isMacroExpanded + super.toString() + '}'; //NOI18N
+        }
     }    
     
     ////////////////////////////////////////////////////////////////////////////

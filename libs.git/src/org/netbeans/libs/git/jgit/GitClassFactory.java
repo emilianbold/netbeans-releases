@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.api.RebaseResult;
 import org.eclipse.jgit.blame.BlameResult;
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.lib.ObjectId;
@@ -64,9 +65,11 @@ import org.netbeans.libs.git.GitConflictDescriptor.Type;
 import org.netbeans.libs.git.GitMergeResult;
 import org.netbeans.libs.git.GitPullResult;
 import org.netbeans.libs.git.GitPushResult;
+import org.netbeans.libs.git.GitRebaseResult;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRevertResult;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitRevisionInfo.GitFileInfo;
 import org.netbeans.libs.git.GitStatus;
 import org.netbeans.libs.git.GitStatus.Status;
 import org.netbeans.libs.git.GitTag;
@@ -84,12 +87,17 @@ public abstract class GitClassFactory {
     public abstract GitBranch createBranch (String name, boolean remote, boolean active, ObjectId id);
 
     public abstract GitConflictDescriptor createConflictDescriptor (Type type);
+
+    public abstract GitFileInfo createFileInfo (File file, String oldPath, GitFileInfo.Status status, File originalFile, String originalPath);
     
     public abstract GitMergeResult createMergeResult (MergeResult mergeResult, File workTree);
 
     public abstract GitPullResult createPullResult (Map<String, GitTransportUpdate> fetchUpdates, GitMergeResult mergeResult);
 
     public abstract GitPushResult createPushResult (Map<String, GitTransportUpdate> remoteRepositoryUpdates, Map<String, GitTransportUpdate> localRepositoryUpdates);
+    
+    public abstract GitRebaseResult createRebaseResult (RebaseResult rebaseResult, List<File> rebaseConflicts, List<File> failures,
+            String newHead);
 
     public abstract GitRemoteConfig createRemoteConfig (RemoteConfig remoteConfig);
 

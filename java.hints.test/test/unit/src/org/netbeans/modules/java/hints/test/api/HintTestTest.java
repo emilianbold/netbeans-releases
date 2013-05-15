@@ -55,11 +55,14 @@ import org.junit.Test;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
+import org.netbeans.spi.java.hints.JavaFix.TransformationContext;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -233,6 +236,72 @@ public class HintTestTest {
         @TriggerTreeKind(Kind.CLASS)
         public static ErrorDescription hint(HintContext ctx) {
             throw new NullPointerException("a");
+        }
+    }
+
+    @Test
+    public void testNonJavaFix() throws Exception {
+        HintTest ht = HintTest.create()
+                              .input("package test;\n" +
+                                     "public class Test { }\n");
+        try {
+            ht.run(NonJavaFix.class)
+              .findWarning("1:0-1:21:verifier:Test")
+              .applyFix();
+            Assert.fail("No exception thrown");
+        } catch (AssertionError ae) {
+            //ok
+            Assert.assertEquals("The fix must be a JavaFix", ae.getMessage());
+        }
+    }
+    
+    @Hint(displayName="nonJavaFix", description="nonJavaFix", category="test")
+    public static final class NonJavaFix {
+        @TriggerTreeKind(Kind.CLASS)
+        public static ErrorDescription hint(HintContext ctx) {
+            return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), "Test", new Fix() {
+                @Override public String getText() {
+                    return "Fix";
+                }
+                @Override public ChangeInfo implement() throws Exception {
+                    return null;
+                }
+            });
+        }
+    }
+    
+    @Test
+    public void testNotRepeatableJavaFix() throws Exception {
+        HintTest ht = HintTest.create()
+                              .input("package test;\n" +
+                                     "public class Test { }\n");
+        try {
+            ht.run(NotRepeatableJavaFix.class)
+              .findWarning("1:0-1:21:verifier:Test")
+              .applyFix();
+            Assert.fail("No exception thrown");
+        } catch (AssertionError ae) {
+            //ok
+            Assert.assertTrue(ae.getMessage().startsWith("The fix must be repeatable"));
+        }
+    }
+    
+    @Hint(displayName="notRepeatableJavaFix", description="notRepeatableJavaFix", category="test")
+    public static final class NotRepeatableJavaFix {
+        @TriggerTreeKind(Kind.CLASS)
+        public static ErrorDescription hint(HintContext ctx) {
+            Fix f = new JavaFix(ctx.getInfo(), ctx.getPath()) {
+                private boolean wasRun;
+                @Override protected String getText() {
+                    return "Fix";
+                }
+                @Override protected void performRewrite(TransformationContext ctx) throws Exception {
+                    if (wasRun) return ;
+                    ctx.getWorkingCopy().rewrite(ctx.getPath().getLeaf(), ctx.getWorkingCopy().getTreeMaker().setLabel(ctx.getPath().getLeaf(), "Nue"));
+                    wasRun = true;
+                }
+            }.toEditorFix();
+            return ErrorDescriptionFactory.forTree(ctx, ctx.getPath(), "Test", f);
         }
     }
 }

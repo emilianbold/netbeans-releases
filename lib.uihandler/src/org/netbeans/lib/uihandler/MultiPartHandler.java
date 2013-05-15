@@ -53,7 +53,7 @@ import java.util.Hashtable;
 import java.util.HashMap;
 import java.util.Vector;
 
-public class MultiPartHandler {
+class MultiPartHandler {
   public interface InputFacade {
       public int readLine(byte[] arr, int off, int len) throws IOException;
       public InputStream getInputStream();

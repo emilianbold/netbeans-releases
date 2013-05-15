@@ -49,6 +49,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.io.IOException;
@@ -96,7 +97,8 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
         return new HashSet<String>(Arrays.asList(
                 "compiler.err.abstract.cant.be.instantiated", // NOI18N
                 "compiler.err.does.not.override.abstract", // NOI18N
-                "compiler.err.abstract.cant.be.instantiated")); // NOI18N
+                "compiler.err.abstract.cant.be.instantiated", // NOI18N
+                "compiler.err.enum.constant.does.not.override.abstract")); // NOI18N
     }
     
     public List<Fix> run(final CompilationInfo info, String diagnosticKey, final int offset, TreePath treePath, Data<Void> data) {
@@ -137,8 +139,19 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
 
     }
 
+    private static TreePath deepTreePath(CompilationInfo info, int offset) {
+        TreePath basic = info.getTreeUtilities().pathFor(offset);
+        TreePath plusOne = info.getTreeUtilities().pathFor(offset + 1);
+        
+        if (plusOne.getParentPath() != null && plusOne.getParentPath().getLeaf() == basic.getLeaf()) {
+            return plusOne;
+        }
+        
+        return basic;
+    }
+    
     private static void analyze(int offset, CompilationInfo info, Performer performer) {
-        final TreePath path = info.getTreeUtilities().pathFor(offset + 1);
+        final TreePath path = deepTreePath(info, offset);
         Element e = info.getTrees().getElement(path);
         boolean isUsableElement = e != null && (e.getKind().isClass() || e.getKind().isInterface());
         final Tree leaf = path.getLeaf();
@@ -171,24 +184,33 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
             
             if (e.getKind() == ElementKind.CLASS && e.getSimpleName() != null && !e.getSimpleName().contentEquals(""))
                 performer.makeClassAbstract(leaf, e.getSimpleName().toString());
-        } else {
-            if (leaf.getKind() == Kind.NEW_CLASS) {
-                //if the parent of path.getLeaf is an error, the situation probably is like:
-                //new Runnable {}
-                //(missing '()' for constructor)
-                //do not propose the hint in this case:
-                final boolean[] parentError = new boolean[] {false};
-                new TreePathScanner() {
-                    @Override
-                    public Object visitNewClass(NewClassTree nct, Object o) {
-                        if (leaf == nct) {
-                            parentError[0] = getCurrentPath().getParentPath().getLeaf().getKind() == Kind.ERRONEOUS;
-                        }
-                        return super.visitNewClass(nct, o);
+        } else if (leaf.getKind() == Kind.NEW_CLASS) {
+            //if the parent of path.getLeaf is an error, the situation probably is like:
+            //new Runnable {}
+            //(missing '()' for constructor)
+            //do not propose the hint in this case:
+            final boolean[] parentError = new boolean[] {false};
+            new TreePathScanner() {
+                @Override
+                public Object visitNewClass(NewClassTree nct, Object o) {
+                    if (leaf == nct) {
+                        parentError[0] = getCurrentPath().getParentPath().getLeaf().getKind() == Kind.ERRONEOUS;
                     }
-                }.scan(path.getParentPath(), null);
-                if (!parentError[0]) {
-                    performer.fixAllAbstractMethods(path, leaf);
+                    return super.visitNewClass(nct, o);
+                }
+            }.scan(path.getParentPath(), null);
+            if (!parentError[0]) {
+                performer.fixAllAbstractMethods(path, leaf);
+            }
+        } else if (e != null && e.getKind() == ElementKind.ENUM_CONSTANT && leaf.getKind() == Kind.VARIABLE) {
+            VariableTree var = (VariableTree) leaf;
+            if (var.getInitializer() != null && var.getInitializer().getKind() == Kind.NEW_CLASS) {
+                NewClassTree nct = (NewClassTree) var.getInitializer();
+                TreePath toModify = new TreePath(path, var.getInitializer());
+                if (nct.getClassBody() != null) {
+                    performer.fixAllAbstractMethods(new TreePath(toModify, nct.getClassBody()), nct.getClassBody());
+                } else {
+                    performer.fixAllAbstractMethods(toModify, leaf);
                 }
             }
         }
@@ -224,7 +246,7 @@ public final class ImplementAllAbstractMethods implements ErrorRule<Void> {
                         analyze(offset, copy, new Performer() {
                             public void fixAllAbstractMethods(TreePath pathToModify, Tree toModify) {
                                 if (makeClassAbstractName != null) return;
-                                if (toModify.getKind() == Kind.NEW_CLASS) {
+                                if (toModify.getKind() == Kind.NEW_CLASS || toModify.getKind() == Kind.VARIABLE) {
                                     int insertOffset = (int) copy.getTrees().getSourcePositions().getEndPosition(copy.getCompilationUnit(), toModify);
                                     if (insertOffset != (-1)) {
                                         try {

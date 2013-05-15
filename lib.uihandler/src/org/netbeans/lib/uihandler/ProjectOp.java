@@ -38,7 +38,7 @@ import java.util.logging.LogRecord;
  * @author Jaroslav Tulach
  * @since 1.7
  */
-public final class ProjectOp {
+final class ProjectOp {
     private final String name;
     private final String type;
     private final boolean startup;

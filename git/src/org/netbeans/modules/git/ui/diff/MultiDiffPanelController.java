@@ -43,6 +43,7 @@
 package org.netbeans.modules.git.ui.diff;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -53,6 +54,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -69,26 +71,50 @@ import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
+import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.KeyStroke;
 import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import org.netbeans.api.diff.DiffController;
 import org.netbeans.api.diff.StreamSource;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitClient.DiffMode;
+import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitStatus;
 import org.netbeans.modules.git.FileInformation;
 import org.netbeans.modules.git.FileInformation.Mode;
 import org.netbeans.modules.git.FileInformation.Status;
 import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
+import org.netbeans.modules.git.GitFileNode;
+import org.netbeans.modules.git.GitFileNode.GitHistoryFileNode;
 import org.netbeans.modules.git.GitModuleConfig;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
+import org.netbeans.modules.git.ui.actions.AddAction;
+import org.netbeans.modules.git.ui.checkout.CheckoutPathsAction;
 import org.netbeans.modules.git.ui.checkout.RevertChangesAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
-import org.netbeans.modules.git.ui.commit.GitFileNode;
+import org.netbeans.modules.git.ui.commit.ExcludeFromCommitAction;
+import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
+import org.netbeans.modules.git.ui.commit.IncludeInCommitAction;
+import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
+import org.netbeans.modules.git.ui.diff.DiffNode.DiffHistoryNode;
+import org.netbeans.modules.git.ui.diff.DiffNode.DiffLocalNode;
+import org.netbeans.modules.git.ui.ignore.IgnoreAction;
+import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.ui.repository.Revision;
+import org.netbeans.modules.git.ui.repository.RevisionPicker;
 import org.netbeans.modules.versioning.util.status.VCSStatusTableModel;
 import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -100,7 +126,9 @@ import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.CollectionUtils;
 import org.netbeans.modules.versioning.util.DelegatingUndoRedo;
 import org.netbeans.modules.versioning.util.NoContentPanel;
+import org.netbeans.modules.versioning.util.OpenInEditorAction;
 import org.netbeans.modules.versioning.util.PlaceholderPanel;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.UndoRedo;
 import org.openide.cookies.EditorCookie;
@@ -115,6 +143,10 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
+import org.netbeans.modules.versioning.util.status.VCSStatusNode;
+import org.openide.awt.Mnemonics;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -168,25 +200,33 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
 
     private GitProgressSupport statusRefreshSupport;
     private PreferenceChangeListener prefList;
+    
+    private final Revision revisionOriginalLeft;
+    private final Revision revisionOriginalRight;
+    private Revision revisionLeft;
+    private Revision revisionRight;
+    private final boolean fixedRevisions;
+    @NbBundle.Messages("MSG_Revision_Select=Select...")
+    private static final String REVISION_SELECT = Bundle.MSG_Revision_Select();
+    @NbBundle.Messages("MSG_Revision_Select_Separator=----------------------")
+    private static final String REVISION_SELECT_SEP = Bundle.MSG_Revision_Select_Separator();
+    private RequestProcessor.Task refreshComboTask;
 
-    public MultiDiffPanelController (VCSContext context) {
-        this.context = context;
-        panel = new MultiDiffPanel();
-        diffViewPanel = null;
+    public MultiDiffPanelController (VCSContext context, Revision rev1, Revision rev2) {
+        this(context, rev1, rev2, false);
         initFileTable();
         initToolbarButtons();
         initNextPrevActions();
         initPanelMode();
         attachListeners();
         refreshComponents();
+        refreshComboTask = Git.getInstance().getRequestProcessor().create(new RefreshComboTask());
+        refreshSelectionCombos();
     }
 
     public MultiDiffPanelController (File file) {
-        this.context = null;
-        panel = new MultiDiffPanel();
+        this(null, Revision.BASE, Revision.LOCAL, true);
         this.currentFile = file;
-        diffViewPanel = new PlaceholderPanel();
-        diffViewPanel.setComponent(getInfoPanelLoading());
         replaceVerticalSplitPane(diffViewPanel);
         initToolbarButtons();
         initNextPrevActions();
@@ -195,12 +235,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         refreshComponents();
     }
 
-    public MultiDiffPanelController (File file, String rev1, String rev2) {
-        context = null;
+    public MultiDiffPanelController (File file, Revision rev1, Revision rev2) {
+        this(null, rev1, rev2, true);
         this.currentFile = file;
-        panel = new MultiDiffPanel();
-        diffViewPanel = new PlaceholderPanel();
-        diffViewPanel.setComponent(getInfoPanelLoading());
         replaceVerticalSplitPane(diffViewPanel);
         initToolbarButtons();
         initNextPrevActions();
@@ -208,12 +245,52 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             c.setVisible(false);
         }
         // mimics refreshSetups()
-        Map<File, Setup> localSetups = Collections.singletonMap(currentFile, new Setup(file, rev1, rev2));
+        Map<File, Setup> localSetups = Collections.singletonMap(currentFile, new Setup(file, rev1, rev2, null));
         setSetups(localSetups, Collections.<File, EditorCookie>emptyMap());
         setDiffIndex(file, 0, false);
         dpt = new DiffPrepareTask(setups.values().toArray(new Setup[setups.size()]));
-        prepareTask = Utils.createTask(dpt);
+        prepareTask = RP.create(dpt);
         prepareTask.schedule(0);
+    }
+    
+    private MultiDiffPanelController (VCSContext context, Revision revisionLeft, Revision revisionRight, boolean fixedRevisions) {
+        this.context = context;
+        this.revisionLeft = revisionOriginalLeft = revisionLeft;
+        this.revisionRight = revisionOriginalRight = revisionRight;
+        this.fixedRevisions = fixedRevisions;
+        panel = new MultiDiffPanel();
+        if (fixedRevisions) {
+            diffViewPanel = new PlaceholderPanel();
+            diffViewPanel.setComponent(getInfoPanelLoading());
+            panel.treeSelectionPanel.setVisible(false);
+        } else {
+            diffViewPanel = null;
+        }
+        initSelectionCombos();
+    }
+
+    private void initSelectionCombos () {
+        if (fixedRevisions) {
+            panel.treeSelectionPanel.setVisible(false);
+        } else {
+            panel.cmbDiffTreeFirst.setMinimumSize(panel.cmbDiffTreeFirst.getMinimumSize());
+            panel.cmbDiffTreeSecond.setMinimumSize(panel.cmbDiffTreeSecond.getMinimumSize());
+            panel.treeSelectionPanel.setMinimumSize(panel.treeSelectionPanel.getMinimumSize());
+            panel.cmbDiffTreeFirst.setRenderer(new RevisionCellRenderer());
+            panel.cmbDiffTreeFirst.setModel(new DefaultComboBoxModel(new Revision[] { revisionRight }));
+            panel.cmbDiffTreeFirst.addActionListener(this);
+            panel.cmbDiffTreeSecond.setRenderer(new RevisionCellRenderer());
+            panel.cmbDiffTreeSecond.setModel(new DefaultComboBoxModel(new Revision[] { revisionLeft }));
+            panel.cmbDiffTreeSecond.addActionListener(this);
+        }
+    }
+
+    private void refreshSelectionCombos () {
+        if (!fixedRevisions && GitUtils.getRepositoryRoots(context).size() == 1) {
+            panel.cmbDiffTreeFirst.setEnabled(false);
+            panel.cmbDiffTreeSecond.setEnabled(false);
+            refreshComboTask.schedule(100);
+        }
     }
 
     private void replaceVerticalSplitPane(JComponent replacement) {
@@ -342,6 +419,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         if(supp != null) {
             supp.cancel();
         }
+        refreshNodesTask.cancel();
     }
 
     void focus () {
@@ -384,7 +462,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     }
 
     private void initFileTable () {
-        fileTable = new DiffFileTable(new VCSStatusTableModel<DiffNode>(new DiffNode[0]));
+        fileTable = new DiffFileTable(new VCSStatusTableModel<DiffNode>(new DiffNode[0]), this);
         fileTable.addPropertyChangeListener(this);
         panel.splitPane.setTopComponent(fileTable.getComponent());
         panel.splitPane.setBottomComponent(getInfoPanelLoading());
@@ -463,17 +541,14 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             mode = Mode.HEAD_VS_WORKING_TREE;
             setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_WORKING);
             if (context != null) GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
-            if (fileTable != null) fileTable.setSelectedMode(DiffMode.HEAD_VS_WORKINGTREE);
         } else if (panel.tgbHeadVsIndex.isSelected()) {
             mode = Mode.HEAD_VS_INDEX;
             setDisplayStatuses(FileInformation.STATUS_MODIFIED_HEAD_VS_INDEX);
             if (context != null) GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
-            if (fileTable != null) fileTable.setSelectedMode(DiffMode.HEAD_VS_INDEX);
         } else {
             mode = Mode.INDEX_VS_WORKING_TREE;
             setDisplayStatuses(FileInformation.STATUS_MODIFIED_INDEX_VS_WORKING);
             if (context != null) GitModuleConfig.getDefault().setLastUsedModificationContext(mode);
-            if (fileTable != null) fileTable.setSelectedMode(DiffMode.INDEX_VS_WORKINGTREE);
         }
     }
 
@@ -486,7 +561,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             Map<File, EditorCookie> localCookies = getCookiesFromSetups(localSetups);
             setSetups(localSetups, localCookies);
             dpt = new DiffPrepareTask(setups.values().toArray(new Setup[setups.size()]));
-            prepareTask = Utils.createTask(dpt);
+            prepareTask = RP.create(dpt);
             prepareTask.schedule(0);
         }
     }
@@ -601,19 +676,40 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     }
 
     @Override
-    public void actionPerformed (final ActionEvent e) {
-        if (e.getSource() == panel.tgbHeadVsIndex || e.getSource() == panel.tgbHeadVsWorking
-                || e.getSource() == panel.tgbIndexVsWorking) {
+    public void actionPerformed (ActionEvent e) {
+        final Object source = e.getSource();
+        if (source == panel.tgbHeadVsIndex || e.getSource() == panel.tgbHeadVsWorking
+                || source == panel.tgbIndexVsWorking) {
             onDisplayedStatusChanged();
+        } else if (source == panel.cmbDiffTreeSecond) {
+            Revision oldSelection = revisionLeft;
+            Revision newSelection = getSelectedRevision(panel.cmbDiffTreeSecond);
+            if (newSelection != null) {
+                revisionLeft = newSelection;
+            }
+            boolean refresh = !oldSelection.getRevision().equals(revisionLeft.getRevision());
+            if (refresh) {
+                refreshNodes();
+            }
+        } else if (source == panel.cmbDiffTreeFirst) {
+            Revision oldSelection = revisionRight;
+            Revision newSelection = getSelectedRevision(panel.cmbDiffTreeFirst);
+            if (newSelection != null) {
+                revisionRight = newSelection;
+            }
+            boolean refresh = !oldSelection.getRevision().equals(revisionRight.getRevision());
+            if (refresh) {
+                refreshNodes();
+            }
         } else {
             Utils.postParallel(new Runnable() {
                 @Override
                 public void run() {
-                    if (e.getSource() == panel.btnRevert) {
+                    if (source == panel.btnRevert) {
                         SystemAction.get(RevertChangesAction.class).performAction(context);
-                    } else if (e.getSource() == panel.btnCommit) {
+                    } else if (source == panel.btnCommit) {
                         SystemAction.get(CommitAction.GitViewCommitAction.class).performAction(context);
-                    } else if (e.getSource() == panel.btnRefresh) {
+                    } else if (source == panel.btnRefresh) {
                         statusRefreshSupport = SystemAction.get(StatusAction.class).scanStatus(context);
                         if (statusRefreshSupport != null) {
                             statusRefreshSupport.getTask().waitFinished();
@@ -625,6 +721,108 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 }
             }, 0);
         }
+    }
+
+    JPopupMenu getPopupFor (final VCSStatusNode[] selectedNodes, File[] selectedFiles) {
+        JPopupMenu menu = new JPopupMenu();
+        if (isLocal()) {
+            Lookup lkp = Lookups.fixed((Object[]) selectedNodes);
+            JMenuItem item;
+            item = menu.add(new OpenInEditorAction(selectedFiles));
+            Mnemonics.setLocalizedText(item, item.getText());
+            if (revisionLeft == Revision.BASE) {
+                menu.addSeparator();
+                item = menu.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp)); //NOI18N
+                Mnemonics.setLocalizedText(item, item.getText());
+                item = menu.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"), lkp)); //NOI18N
+                Mnemonics.setLocalizedText(item, item.getText());
+                SystemActionBridge efca = SystemActionBridge.createAction(SystemAction.get(ExcludeFromCommitAction.class), NbBundle.getMessage(ExcludeFromCommitAction.class, "LBL_ExcludeFromCommitAction_PopupName"), lkp);
+                SystemActionBridge iica = SystemActionBridge.createAction(SystemAction.get(IncludeInCommitAction.class), NbBundle.getMessage(IncludeInCommitAction.class, "LBL_IncludeInCommitAction_PopupName"), lkp);
+                if (efca.isEnabled() || iica.isEnabled()) {
+                    if (efca.isEnabled()) {
+                        item = menu.add(efca);
+                        Mnemonics.setLocalizedText(item, item.getText());
+                    } else if (iica.isEnabled()) {
+                        item = menu.add(iica);
+                        Mnemonics.setLocalizedText(item, item.getText());
+                    }
+                }
+                SystemActionBridge ia = SystemActionBridge.createAction(SystemAction.get(IgnoreAction.class),
+                        NbBundle.getMessage(IgnoreAction.class, "LBL_IgnoreAction_PopupName"), lkp);
+                if (ia.isEnabled()) {
+                    item = menu.add(ia);
+                    org.openide.awt.Mnemonics.setLocalizedText(item, item.getText());
+                }
+                item = menu.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_RevertChangesAction_PopupName"), lkp)); //NOI18N
+                Mnemonics.setLocalizedText(item, item.getText());
+                item = menu.add(new AbstractAction(NbBundle.getMessage(ExportUncommittedChangesAction.class, "LBL_ExportUncommittedChangesAction_PopupName")) { //NOI18N
+                    @Override
+                    public void actionPerformed (ActionEvent e) {
+                        SystemAction.get(ExportUncommittedChangesAction.class).exportDiff(selectedNodes, getDiffMode());
+                    }
+                });
+                Mnemonics.setLocalizedText(item, item.getText());
+                item = menu.add(SystemActionBridge.createAction(SystemAction.get(CheckoutPathsAction.class), NbBundle.getMessage(CheckoutPathsAction.class, "LBL_CheckoutPathsAction_PopupName"), lkp)); //NOI18N
+                Mnemonics.setLocalizedText(item, item.getText());
+
+                ResolveConflictsAction a = SystemAction.get(ResolveConflictsAction.class);
+                if (a.isEnabled()) {
+                    menu.addSeparator();
+                    item = menu.add(SystemActionBridge.createAction(a, NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"), lkp)); //NOI18N);
+                    Mnemonics.setLocalizedText(item, item.getText());
+                }
+            }
+        }
+        return menu;
+    }
+
+    private DiffMode getDiffMode () {
+        DiffMode diffMode = DiffMode.HEAD_VS_WORKINGTREE;
+        if (mode == Mode.HEAD_VS_INDEX) {
+            diffMode = DiffMode.HEAD_VS_INDEX;
+        } else if (mode == Mode.INDEX_VS_WORKING_TREE) {
+            diffMode = DiffMode.INDEX_VS_WORKINGTREE;
+        }
+        return diffMode;
+    }
+    
+    private Revision getSelectedRevision (JComboBox cmbDiffTree) {
+        Object selectedItem = cmbDiffTree.getSelectedItem();
+        Revision selection = null;
+        if (selectedItem instanceof Revision) {
+            selection = (Revision) selectedItem;
+        } else if (selectedItem == REVISION_SELECT) {
+            RevisionPicker picker = new RevisionPicker(GitUtils.getRootFile(context), new File[0]);
+            if (picker.open()) {
+                Revision selectedRevision = picker.getRevision();
+                selectedRevision = new Revision(selectedRevision.getName(), selectedRevision.getName());
+                addToModel(selectedRevision, cmbDiffTree);
+            }
+        }
+        return selection;
+    }
+
+    private void addToModel (final Revision newItem, final JComboBox cmbDiffTree) {
+        DefaultComboBoxModel model = (DefaultComboBoxModel) cmbDiffTree.getModel();
+        for (int i = 0; i < model.getSize(); ++i) {
+            final Object item = model.getElementAt(i);
+            if (item instanceof Revision && ((Revision) item).getRevision().equals(newItem.getRevision())) {
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        cmbDiffTree.setSelectedItem(item);
+                    }
+                });
+                return;
+            }
+        }
+        model.addElement(newItem);
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                cmbDiffTree.setSelectedItem(newItem);
+            }
+        });
     }
 
     private void applyChange (FileStatusCache.ChangedEvent event) {
@@ -647,7 +845,8 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                     changedEvent.getOldInfo(),
                     changedEvent.getNewInfo() } );
             }
-            if (affectsView(changedEvent)) {
+            if (revisionLeft == Revision.BASE // remove when we're able to refresh single file changes for Local vs. any revision 
+                    && revisionRight == Revision.LOCAL && affectsView(changedEvent)) {
                 applyChange(changedEvent);
             }
         } else if (DiffController.PROP_DIFFERENCES.equals(evt.getPropertyName())) {
@@ -726,7 +925,18 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     // <editor-fold defaultstate="collapsed" desc="refreshing tasks">
     private void refreshNodes () {
         if (context != null) {
+            synchronized (changes) {
+                changes.clear();
+            }
+            changeTask.cancel();
             refreshNodesTask.cancel();
+            panel.btnCommit.setEnabled(false);
+            panel.btnRevert.setEnabled(false);
+            boolean enabledToggles = revisionRight == Revision.LOCAL;
+            panel.btnRefresh.setEnabled(enabledToggles);
+            panel.tgbHeadVsIndex.setEnabled(enabledToggles);
+            panel.tgbHeadVsWorking.setEnabled(enabledToggles);
+            panel.tgbIndexVsWorking.setEnabled(enabledToggles);
             refreshNodesTask.schedule(0);
         }
     }
@@ -735,7 +945,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         Setup[] toInitialize = getSetupsToRefresh();
         if (toInitialize.length > 0) {
             dpt = new DiffPrepareTask(toInitialize);
-            prepareTask = Utils.createTask(dpt);
+            prepareTask = RP.create(dpt);
             prepareTask.schedule(0);
         }
     }
@@ -771,19 +981,35 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
 
     private class RefreshViewTask {
 
+        @NbBundle.Messages({
+            "MSG_No_Changes_Revisions=<No Changes Between Revisions>",
+            "MSG_No_Changes_HeadWorking=<No Head/Working Tree Changes>",
+            "MSG_No_Changes_HeadIndex=<No Head/Index Tree Changes>",
+            "MSG_No_Changes_IndexWorking=<No Index/Working Tree Changes>",
+            "# {0} - revision", "MSG_No_Changes_RevisionIndex=<No Changes Between {0} and Index>",
+            "# {0} - revision", "MSG_No_Changes_RevisionWorking=<No Changes Between {0} and Working Tree>"
+        })
         protected void updateView() {
             if (setups.isEmpty()) {
                 String noContentLabel = ""; //NOI18N
-                switch (mode) {
-                    case HEAD_VS_WORKING_TREE:
-                        noContentLabel = NbBundle.getMessage(MultiDiffPanelController.class, "MSG_No_Changes_HeadWorking"); //NOI18N
-                        break;
-                    case HEAD_VS_INDEX:
-                        noContentLabel = NbBundle.getMessage(MultiDiffPanelController.class, "MSG_No_Changes_HeadIndex"); //NOI18N
-                        break;
-                    case INDEX_VS_WORKING_TREE:
-                        noContentLabel = NbBundle.getMessage(MultiDiffPanelController.class, "MSG_No_Changes_IndexWorking"); //NOI18N
-                        break;
+                if (isLocal()) {
+                    switch (mode) {
+                        case HEAD_VS_WORKING_TREE:
+                            noContentLabel = revisionLeft == Revision.BASE
+                                    ? Bundle.MSG_No_Changes_HeadWorking()
+                                    : Bundle.MSG_No_Changes_RevisionWorking(revisionLeft.getName());
+                            break;
+                        case HEAD_VS_INDEX:
+                            noContentLabel = revisionLeft == Revision.BASE
+                                    ? Bundle.MSG_No_Changes_HeadIndex()
+                                    : Bundle.MSG_No_Changes_RevisionIndex(revisionLeft.getName());
+                            break;
+                        case INDEX_VS_WORKING_TREE:
+                            noContentLabel = Bundle.MSG_No_Changes_IndexWorking();
+                            break;
+                    }
+                } else {
+                    noContentLabel = Bundle.MSG_No_Changes_Revisions();
                 }
                 fileTable.getComponent().setEnabled(false);
                 fileTable.getComponent().setPreferredSize(null);
@@ -800,8 +1026,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 fileTable.getComponent().setPreferredSize(null);
                 Dimension dim = fileTable.getComponent().getPreferredSize();
                 fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
-                panel.btnCommit.setEnabled(true);
-                panel.btnRevert.setEnabled(true);
+                boolean buttonsEnabled = revisionRight == Revision.LOCAL && revisionLeft == Revision.BASE;
+                panel.btnCommit.setEnabled(buttonsEnabled);
+                panel.btnRevert.setEnabled(buttonsEnabled);
             }
             if (panel.splitPane != null) {
                 updateSplitLocation();
@@ -817,19 +1044,15 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         @Override
         public void run() {
             final List<DiffNode> nodes = new LinkedList<DiffNode>();
-            Git git = Git.getInstance();
-            File[] interestingFiles = git.getFileStatusCache().listFiles(context.getRootFiles(), displayStatuses);
-            final Map<File, Setup> localSetups = new HashMap<File, Setup>(interestingFiles.length);
-            for (File f : interestingFiles) {
-                File root = git.getRepositoryRoot(f);
-                if (root != null) {
-                    GitFileNode fNode = new GitFileNode(root, f);
-                    Setup setup = new Setup(fNode, mode);
-                    DiffNode diffNode = new DiffNode(fNode, DiffUtils.getEditorCookie(setup), mode);
-                    nodes.add(diffNode);
-                    setup.setNode(diffNode);
-                    localSetups.put(f, setup);
+            final Map<File, Setup> localSetups;
+            if (isLocal()) {
+                if (revisionLeft == Revision.BASE) {
+                    localSetups = getLocalToBaseSetups(nodes);
+                } else {
+                    localSetups = getLocalToRevisionSetups(nodes);
                 }
+            } else {
+                localSetups = getRevisionToRevisionSetups(nodes);
             }
             final Map<File, EditorCookie> cookies = getCookiesFromSetups(localSetups);
             Mutex.EVENT.readAccess(new Runnable() {
@@ -842,6 +1065,101 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 }
             });
         }
+
+        private Map<File, Setup> getLocalToBaseSetups (final List<DiffNode> nodes) {
+            Git git = Git.getInstance();
+            File[] interestingFiles = git.getFileStatusCache().listFiles(context.getRootFiles(), displayStatuses);
+            final Map<File, Setup> localSetups = new HashMap<File, Setup>(interestingFiles.length);
+            for (File f : interestingFiles) {
+                File root = git.getRepositoryRoot(f);
+                if (root != null) {
+                    GitLocalFileNode fNode = new GitLocalFileNode(root, f);
+                    Setup setup = new Setup(fNode, mode, Revision.HEAD);
+                    DiffNode diffNode = new DiffLocalNode(fNode, DiffUtils.getEditorCookie(setup), mode);
+                    nodes.add(diffNode);
+                    setup.setNode(diffNode);
+                    localSetups.put(f, setup);
+                }
+            }
+            return localSetups;
+        }
+
+        private Map<File, Setup> getLocalToRevisionSetups (final List<DiffNode> nodes) {
+            Git git = Git.getInstance();
+            File repository = GitUtils.getRootFile(context);
+            GitClient client = null;
+            try {
+                client = git.getClient(repository);
+                Map<File, GitStatus> statuses = client.getStatus(context.getRootFiles().toArray(new File[context.getRootFiles().size()]),
+                        revisionLeft.getRevision(), GitUtils.NULL_PROGRESS_MONITOR);
+                statuses.keySet().retainAll(Utils.flattenFiles(context.getRootFiles().toArray(
+                        new File[context.getRootFiles().size()]), statuses.keySet()));
+                final Map<File, Setup> localSetups = new HashMap<File, Setup>(statuses.size());
+                for (Map.Entry<File, GitStatus> e : statuses.entrySet()) {
+                    File f = e.getKey();
+                    GitStatus status = e.getValue();
+                    if (status.isFolder()) {
+                        continue;
+                    }
+                    final FileInformation fi = new FileInformation(status);
+                    if (!fi.containsStatus(displayStatuses)) {
+                        continue;
+                    }
+                    GitLocalFileNode fNode = new GitLocalFileNode(repository, f) {
+                        @Override
+                        public FileInformation getInformation () {
+                            return fi;
+                        }
+                    };
+                    Setup setup = new Setup(fNode, mode, revisionLeft);
+                    DiffNode diffNode = new DiffLocalNode(fNode, DiffUtils.getEditorCookie(setup), mode);
+                    nodes.add(diffNode);
+                    setup.setNode(diffNode);
+                    localSetups.put(f, setup);
+                }
+                return localSetups;
+            } catch (GitException ex) {
+                LOG.log(Level.INFO, null, ex);
+            } finally {
+                if (client != null) {
+                    client.release();
+                }
+            }
+            return Collections.<File, Setup>emptyMap();
+        }
+
+        private Map<File, Setup> getRevisionToRevisionSetups (final List<DiffNode> nodes) {
+            Git git = Git.getInstance();
+            File repository = GitUtils.getRootFile(context);
+            GitClient client = null;
+            try {
+                client = git.getClient(repository);
+                Map<File, GitRevisionInfo.GitFileInfo> statuses = client.getStatus(context.getRootFiles().toArray(new File[context.getRootFiles().size()]),
+                        revisionLeft.getRevision(), revisionRight.getRevision(), GitUtils.NULL_PROGRESS_MONITOR);
+                final Map<File, Setup> historySetups = new HashMap<File, Setup>();
+                for (Map.Entry<File, GitRevisionInfo.GitFileInfo> e : statuses.entrySet()) {
+                    File f = e.getKey();
+                    GitRevisionInfo.GitFileInfo info = e.getValue();
+                    GitFileNode.HistoryFileInformation fi = new GitFileNode.HistoryFileInformation(info);
+                    Setup setup = new Setup(f, revisionLeft, revisionRight, fi);
+                    DiffNode historyNode = new DiffHistoryNode(new GitHistoryFileNode(repository, f, fi));
+                    nodes.add(historyNode);
+                    historySetups.put(f, setup);
+                }
+                return historySetups;
+            } catch (GitException ex) {
+                LOG.log(Level.INFO, null, ex);
+            } finally {
+                if (client != null) {
+                    client.release();
+                }
+            }
+            return Collections.<File, Setup>emptyMap();
+        }
+    }
+
+    private boolean isLocal () {
+        return revisionRight == Revision.LOCAL;
     }
 
     private final Map<File, FileStatusCache.ChangedEvent> changes = new HashMap<File, FileStatusCache.ChangedEvent>();
@@ -881,17 +1199,21 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 DiffNode node = nodes.get(evt.getFile());
                 if (newInfo.containsStatus(displayStatuses)) {
                     if (node != null) {
-                        toRefresh.add(node);
-                        Setup setup = new Setup(node.getFileNode(), mode);
-                        setup.setNode(node);
-                        localSetups.put(evt.getFile(), setup);
-                        LOG.log(Level.FINE, "ApplyChanges: refreshing node {0}", node);
+                        if (node instanceof DiffLocalNode) {
+                            toRefresh.add(node);
+                            Setup setup = new Setup(((DiffLocalNode) node).getFileNode(), mode, Revision.HEAD);
+                            setup.setNode(node);
+                            localSetups.put(evt.getFile(), setup);
+                            LOG.log(Level.FINE, "ApplyChanges: refreshing node {0}", node);
+                        } else {
+                            toRemove.add(node);
+                        }
                     } else {
                         File root = git.getRepositoryRoot(evt.getFile());
                         if (root != null) {
-                            GitFileNode fNode = new GitFileNode(root, evt.getFile());
-                            Setup setup = new Setup(fNode, mode);
-                            DiffNode toAddNode = new DiffNode(fNode, DiffUtils.getEditorCookie(setup), mode);
+                            GitLocalFileNode fNode = new GitLocalFileNode(root, evt.getFile());
+                            Setup setup = new Setup(fNode, mode, Revision.HEAD);
+                            DiffNode toAddNode = new DiffLocalNode(fNode, DiffUtils.getEditorCookie(setup), mode);
                             setup.setNode(toAddNode);
                             localSetups.put(evt.getFile(), setup);
                             toAdd.add(toAddNode);
@@ -905,6 +1227,9 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             }
 
             final Map<File, EditorCookie> cookies = getCookiesFromSetups(localSetups);
+            if (Thread.interrupted()) {
+                return;
+            }
             Mutex.EVENT.readAccess(new Runnable() {
                 @Override
                 public void run() {
@@ -921,6 +1246,58 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                     }
                     fileTable.updateNodes(new HashMap<File, EditorCookie>(MultiDiffPanelController.this.editorCookies), toRemove, toRefresh, toAdd);
                     updateView();
+                }
+            });
+        }
+    }
+    
+    private class RefreshComboTask implements Runnable {
+
+        @Override
+        public void run () {
+            File repository = GitUtils.getRootFile(context);
+            final List<Object> modelRight = new ArrayList<Object>(10);
+            final List<Object> modelLeft = new ArrayList<Object>(10);
+            modelLeft.add(revisionOriginalLeft);
+            if (revisionOriginalLeft != Revision.BASE) {
+                modelLeft.add(Revision.BASE);
+            }
+            modelRight.add(revisionOriginalRight);            
+            if (revisionOriginalRight != Revision.LOCAL) {
+                modelRight.add(Revision.LOCAL);
+            }
+            if (revisionOriginalRight != Revision.BASE) {
+                modelRight.add(Revision.BASE);
+            }
+            modelLeft.add(REVISION_SELECT_SEP);
+            modelRight.add(REVISION_SELECT_SEP);
+            RepositoryInfo info = RepositoryInfo.getInstance(repository);
+            info.refresh();
+            boolean added = false;
+            for (Map.Entry<String, GitBranch> e : info.getBranches().entrySet()) {
+                String branchName = e.getValue().getName();
+                if (branchName != GitBranch.NO_BRANCH) {
+                    Revision revision = new Revision(branchName, branchName);
+                    modelLeft.add(revision);
+                    modelRight.add(revision);
+                    added = true;
+                }
+            }
+            if (added) {
+                modelLeft.add(REVISION_SELECT_SEP);
+                modelRight.add(REVISION_SELECT_SEP);
+            }
+            modelLeft.add(REVISION_SELECT);
+            modelLeft.add(REVISION_SELECT_SEP);
+            modelRight.add(REVISION_SELECT);
+            modelRight.add(REVISION_SELECT_SEP);
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    panel.cmbDiffTreeFirst.setModel(new DefaultComboBoxModel(modelRight.toArray(new Object[modelRight.size()])));
+                    panel.cmbDiffTreeSecond.setModel(new DefaultComboBoxModel(modelLeft.toArray(new Object[modelLeft.size()])));
+                    panel.cmbDiffTreeFirst.setEnabled(true);
+                    panel.cmbDiffTreeSecond.setEnabled(true);
                 }
             });
         }
@@ -989,4 +1366,28 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             return this.canceled = true;
         }
     }// </editor-fold>
+    
+    @NbBundle.Messages({
+        "MSG_Revision_Select_Tooltip=Select a revision from the picker"
+    })
+    private static class RevisionCellRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            String tooltip = null;
+            if (value instanceof Revision) {
+                Revision rev = (Revision) value;
+                value = rev.toString(true);
+            } else if (value instanceof String) {
+                value = "<html><i>" + value + "</i></html>"; //NOI18N
+                tooltip = Bundle.MSG_Revision_Select_Tooltip();
+            }
+            Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (comp instanceof JComponent) {
+                ((JComponent) comp).setToolTipText(tooltip);
+            }
+            return comp;
+        }
+
+    }
 }

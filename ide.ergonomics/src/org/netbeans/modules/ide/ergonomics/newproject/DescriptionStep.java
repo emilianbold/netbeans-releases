@@ -240,7 +240,7 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                 Exceptions.printStackTrace(ex);
             }
             // hot-fixed wizard providers - temporary
-            if (templateResource.startsWith("Servers/WizardProvider")) {
+            if (templateResource.startsWith("Servers/J2eeWizardProvider")) {
                 try {
                     ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
                     Class<?> clazz = Class.forName("org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory", true, loader);
@@ -256,8 +256,9 @@ public class DescriptionStep implements WizardDescriptor.Panel<WizardDescriptor>
                     Exceptions.printStackTrace(ex);
                     break;
                 }
-            } else if (templateResource.startsWith("Cloud/WizardProvider")) { // NOI18N
-                String resource = "Cloud/" + templateResource.substring(templateResource.indexOf('-') + 1); // NOI18N
+            } else if (templateResource.startsWith("Servers/WizardProvider") || templateResource.startsWith("Cloud/WizardProvider")) { // NOI18N
+                String resource = templateResource.substring(0, templateResource.indexOf('/') + 1)
+                        + templateResource.substring(templateResource.indexOf('-') + 1); // NOI18N
                 fo = FileUtil.getConfigFile(resource);
                 try {
                     if (fo != null) {

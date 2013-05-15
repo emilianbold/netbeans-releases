@@ -82,14 +82,23 @@ public class TemplateInstantiationTestCase extends CompletionBaseTestCase {
         super.performTest("instantiation.cc", 11, 16);
     }
 
-    public void testFoo1() throws Exception {
+    public void testFoo1_1() throws Exception {
         super.performTest("instantiation.cc", 8, 21);
+    }
+    
+    public void testFoo1_2() throws Exception {
         super.performTest("instantiation.cc", 10, 24);
+    }
+    
+    public void testFoo1_3() throws Exception {
         super.performTest("instantiation.cc", 11, 34);
-    }
+    }    
 
-    public void testBoo1() throws Exception {
+    public void testBoo1_1() throws Exception {
         super.performTest("instantiation.cc", 9, 20);
-        super.performTest("instantiation.cc", 12, 36);
     }
+    
+    public void testBoo1_2() throws Exception {
+        super.performTest("instantiation.cc", 12, 36);
+    }    
 }

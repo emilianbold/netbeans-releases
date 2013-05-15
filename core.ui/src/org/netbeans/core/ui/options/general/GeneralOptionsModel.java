@@ -44,11 +44,34 @@
 
 package org.netbeans.core.ui.options.general;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
+import java.net.MalformedURLException;
+import java.net.Proxy;
+import java.net.URL;
+import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.core.ProxySettings;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 
 class GeneralOptionsModel {
+    
+    enum TestingStatus {
+        OK,
+        FAILED,
+        WAITING,
+        NOT_TESTED
+    }
+    
+    private static final Logger LOGGER = Logger.getLogger(GeneralOptionsModel.class.getName()); 
+    
+    private static final String NON_PROXY_HOSTS_DELIMITER = "|"; //NOI18N
+    
+    private static final RequestProcessor rp = new RequestProcessor(GeneralOptionsModel.class);
     
     private static Preferences getProxyPreferences () {
         return NbPreferences.root ().node ("org/netbeans/core");
@@ -207,12 +230,129 @@ class GeneralOptionsModel {
     }
     
     static boolean usePAC() {
-        String s = System.getProperty ("netbeans.system_http_proxy"); // NOI18N
-        boolean usePAC = s != null && s.startsWith("PAC"); // NOI18N
-        return usePAC;
+        String pacUrl = getProxyPreferences().get(ProxySettings.SYSTEM_PAC, ""); // NOI18N
+        return pacUrl != null && pacUrl.length() > 0;
     }
     
+    static void testConnection(final GeneralOptionsPanel panel, final int proxyType, 
+           final String proxyHost, final String proxyPortString, final String nonProxyHosts){
+        rp.post(new Runnable() {
+
+            @Override
+            public void run() {
+                testProxy(panel, proxyType, proxyHost, proxyPortString, nonProxyHosts);
+            }
+        });
+    }    
+        
     // private helper methods ..................................................
+    
+    private static void testProxy(GeneralOptionsPanel panel, int proxyType,
+            String proxyHost, String proxyPortString, String nonProxyHosts) {
+        panel.updateTestConnectionStatus(TestingStatus.WAITING, null);
+        
+        TestingStatus status = TestingStatus.FAILED;
+        String message = null;
+        String testingUrlHost;
+        URL testingUrl;
+        Proxy testingProxy;             
+        
+        try {
+            testingUrl = new URL(ProxySettings.HTTP_CONNECTION_TEST_URL);
+            testingUrlHost = testingUrl.getHost();
+        } catch (MalformedURLException ex) {
+            LOGGER.log(Level.SEVERE, "Cannot create url from string.", ex);
+            panel.updateTestConnectionStatus(status, message);
+            return;
+        }
+             
+        switch(proxyType) {
+            case ProxySettings.DIRECT_CONNECTION:
+                testingProxy = Proxy.NO_PROXY;
+                break;
+            case ProxySettings.AUTO_DETECT_PROXY:
+            case ProxySettings.AUTO_DETECT_PAC:
+                nonProxyHosts = ProxySettings.getSystemNonProxyHosts();            
+                if (isNonProxy(testingUrlHost, nonProxyHosts)) {
+                    testingProxy = Proxy.NO_PROXY;
+                } else {
+                    String host = ProxySettings.getTestSystemHttpHost();
+                    int port = 0;
+                    try {
+                        port = Integer.valueOf(ProxySettings.getTestSystemHttpPort());
+                    } catch (NumberFormatException ex) {
+                        LOGGER.log(Level.INFO, "Cannot parse port number", ex); //NOI18N
+                    }
+                    testingProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(host, port));
+                }
+                break;
+            case ProxySettings.MANUAL_SET_PROXY:
+                nonProxyHosts = view2code(nonProxyHosts);
+                if (isNonProxy(testingUrl.getHost(), nonProxyHosts)) {
+                    testingProxy = Proxy.NO_PROXY;
+                } else {
+                    try {
+                        int proxyPort = Integer.valueOf(proxyPortString);
+                        testingProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
+                    } catch (NumberFormatException ex) {
+                        LOGGER.log(Level.INFO, "Cannot parse port number", ex);
+                        status = TestingStatus.FAILED;
+                        message = "Port is not number!";
+                        panel.updateTestConnectionStatus(status, message);
+                        return;
+                    }                    
+                }
+                break;
+            case ProxySettings.MANUAL_SET_PAC:
+                // Never should get here, user cannot set up PAC manualy from IDE
+            default:
+                testingProxy = Proxy.NO_PROXY;
+        }        
+            
+        try {
+            status = testHttpConnection(testingUrl, testingProxy) ? TestingStatus.OK : TestingStatus.FAILED;
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Cannot connect via http protocol.", ex); //NOI18N
+            message = ex.getLocalizedMessage();
+        }
+        
+        panel.updateTestConnectionStatus(status, message);
+    }        
+    
+    private static boolean testHttpConnection(URL url, Proxy proxy) throws IOException{
+        boolean result = false;
+        
+        HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection(proxy);
+        // Timeout shorten to 5s
+        httpConnection.setConnectTimeout(5000);
+        httpConnection.connect();
+
+        if (httpConnection.getResponseCode() == HttpURLConnection.HTTP_OK || 
+                httpConnection.getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP) {
+            result = true;
+        }
+
+        httpConnection.disconnect();
+        
+        return result;
+    }
+    
+    // Simplified to use only with supposed netbeans.org host
+    private static boolean isNonProxy(String host, String nonProxyHosts) {
+        boolean isNonProxy = false;
+        
+        if (host != null && nonProxyHosts != null) {
+            StringTokenizer st = new StringTokenizer(nonProxyHosts, NON_PROXY_HOSTS_DELIMITER, false);
+            while (st.hasMoreTokens()) {
+                if (st.nextToken().equals(host)) {
+                    isNonProxy = true;
+                    break;
+                }
+            }            
+        }
+            
+        return isNonProxy;
+    }
 
     private static boolean validatePort (String port) {
         if (port.trim ().length () == 0) return true;

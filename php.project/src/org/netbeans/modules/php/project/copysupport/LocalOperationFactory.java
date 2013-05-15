@@ -50,13 +50,13 @@ import java.util.logging.Logger;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.api.util.Pair;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  * @author Radek Matous
@@ -137,6 +137,16 @@ final class LocalOperationFactory extends FileOperationFactory {
     @Override
     protected Callable<Boolean> createInitHandlerInternal(final FileObject source) {
         LOGGER.log(Level.FINE, "Creating INIT handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
+        if (!ProjectPropertiesSupport.isCopySourcesOnOpen(project)) {
+            LOGGER.log(Level.FINE, "Copying on open not enabled for project (project {0})", project.getName());
+            return null;
+        }
+        return createCopyFolderHandler(source);
+    }
+
+    @Override
+    protected Callable<Boolean> createReinitHandlerInternal(final FileObject source) {
+        LOGGER.log(Level.FINE, "Creating REINIT handler for {0} (project {1})", new Object[] {getPath(source), project.getName()});
         return createCopyFolderHandler(source);
     }
 
@@ -304,8 +314,8 @@ final class LocalOperationFactory extends FileOperationFactory {
             return null;
         }
 
-        FileObject sourceRoot = cfgPair.first;
-        File targetRoot = cfgPair.second;
+        FileObject sourceRoot = cfgPair.first();
+        File targetRoot = cfgPair.second();
         assert sourceRoot != null;
         assert targetRoot != null;
 
@@ -353,7 +363,7 @@ final class LocalOperationFactory extends FileOperationFactory {
     }
 
     private static boolean isPairValid(Pair<FileObject, File> pair) {
-        return pair != null && pair.first != null && pair.second != null;
+        return pair != null && pair.first() != null && pair.second() != null;
     }
 
     @Override

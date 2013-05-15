@@ -75,7 +75,8 @@ public class BrandingEditorPanel extends javax.swing.JPanel {
             new BasicBrandingPanel(model),
             new SplashBrandingPanel(model),
             new WindowSystemBrandingPanel(model),
-            new ResourceBundleBrandingPanel(model)
+            new ResourceBundleBrandingPanel(model),
+            new InternationalizationResourceBundleBrandingPanel(model)
         };
         for( AbstractBrandingPanel panel : panels ) {
             panel.init(this);

@@ -55,7 +55,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.netbeans.modules.glassfish.common.ServerDetails;
-import org.netbeans.modules.glassfish.spi.TreeParser;
 import org.netbeans.modules.glassfish.spi.Utils;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -195,7 +194,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
                         wizard.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(
                                 AddServerLocationPanel.class, "ERR_DefaultDomainInvalid", getSanitizedPath(installDir)));
                     } else {
-                        org.netbeans.modules.glassfish.common.Util.readServerConfiguration(domainDir, wizardIterator);
+                        org.netbeans.modules.glassfish.common.utils.Util.readServerConfiguration(domainDir, wizardIterator);
                         // finish initializing the registration data
                         if (installDir.equals(glassfishDir)) {
                             installDir = glassfishDir.getParentFile();
@@ -328,7 +327,7 @@ public class AddServerLocationPanel implements WizardDescriptor.FinishablePanel,
             testFile = domainDir;
         }
         return Utils.canWrite(testFile) &&
-                org.netbeans.modules.glassfish.common.Util.readServerConfiguration(domainDir, null);
+                org.netbeans.modules.glassfish.common.utils.Util.readServerConfiguration(domainDir, null);
     }
     
     private File getGlassfishRoot(File installDir) {

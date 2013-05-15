@@ -62,6 +62,7 @@ import javax.lang.model.util.ElementFilter;
 import org.netbeans.modules.java.hints.spiimpl.TestBase;
 import org.netbeans.modules.java.hints.spiimpl.hints.HintsInvoker;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.PatternDescription;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.java.hints.spiimpl.pm.PatternCompilerUtilities;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -1047,6 +1048,64 @@ public class JavaFixUtilitiesTest extends TestBase {
 		           "}\n");
     }
     
+    public void testExpression2ExpressionStatementTolerance227429() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t() {\n" +
+                           "        System.err.println(1);\n" +
+                           "    }\n" +
+                           "}\n",
+                           "java.lang.System.err.println($args$) => java.lang.System.out.println($args$);",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t() {\n" +
+                           "        System.out.println(1);\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testSplitIfOr() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t(int i) {\n" +
+                           "        if (i == 0 || i == 1) {\n" +
+                           "            System.err.println();\n" +
+                           "        }\n" +
+                           "    }\n" +
+                           "}\n",
+                           "if ($cond1 || $cond2) $then; => if ($cond1) $then; else if ($cond2) $then;",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    private static void t(int i) {\n" +
+                           "        if (i == 0) {\n" +
+                           "            System.err.println();\n" +
+                           "        } else if (i == 1) {\n" +
+                           "            System.err.println();\n" +
+                           "        }\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
+    public void testLambdaExpr2Block() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "import java.util.*;\n" +
+                           "public class Test {\n" +
+                           "    public void main(List<String> list) {\n" +
+                           "        Collections.sort(list, (l, r) -> l.compareTo(r));\n" +
+                           "    }\n" +
+                           "}\n",
+                           "($args$) -> $expr => ($args$) -> { return $expr; }",
+                           "package test;\n" +
+                           "import java.util.*;\n" +
+                           "public class Test {\n" +
+                           "    public void main(List<String> list) {\n" +
+                           "        Collections.sort(list, (l, r) -> {\n" +
+                           "            return l.compareTo(r);\n" +
+                           "        });\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);
 
@@ -1067,7 +1126,7 @@ public class JavaFixUtilitiesTest extends TestBase {
             }
         }).produce();
 
-        List<ErrorDescription> computeHints = new HintsInvoker(info, new AtomicBoolean()).computeHints(info, Collections.singleton(hd));
+        List<ErrorDescription> computeHints = new HintsInvoker(HintsSettings.getGlobalSettings(), new AtomicBoolean()).computeHints(info, Collections.singleton(hd));
 
         assertEquals(computeHints.toString(), 1, computeHints.size());
 
@@ -1089,7 +1148,7 @@ public class JavaFixUtilitiesTest extends TestBase {
             }
         }).produce();
 
-        List<ErrorDescription> computeHints = new HintsInvoker(info, new AtomicBoolean()).computeHints(info, Collections.singleton(hd));
+        List<ErrorDescription> computeHints = new HintsInvoker(HintsSettings.getGlobalSettings(), new AtomicBoolean()).computeHints(info, Collections.singleton(hd));
 
         assertEquals(computeHints.toString(), 1, computeHints.size());
 

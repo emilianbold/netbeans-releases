@@ -45,11 +45,16 @@ package org.netbeans.modules.nativeexecution.api.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.nativeexecution.api.util.ShellScriptRunner.BufferedLineProcessor;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -75,7 +80,8 @@ public class PathUtils {
                 }
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            //NO exception here
+            //Exceptions.printStackTrace(ex);
         }
         return null;
     }
@@ -90,6 +96,39 @@ public class PathUtils {
             if (path != null && path.length() > 0) {
                 return path;
             }
+            //alternative: run script on the remote machine which will provide the information about executable for pid
+           path = getExePath_(pid, execEnv);           
+           return path;
+        }
+        return null;
+    }
+    
+    private static String getExePath_(long pid, ExecutionEnvironment execEnv) {
+        return run_("exepath.sh", pid, execEnv);//NOI18N
+    }
+    
+    private static String getCwdPath_(long pid, ExecutionEnvironment execEnv) {  
+        return run_("cwdpath.sh", pid, execEnv);//NOI18N
+    }
+    
+    private static String run_(String scriptName, long pid, ExecutionEnvironment execEnv) {
+        try {
+            InstalledFileLocator fl = InstalledFileLocator.getDefault();//InstalledFileLocatorProvider.getDefault();
+            File localScript = fl.locate("bin/nativeexecution/" + scriptName, "org.netbeans.modules.nativeexecution", false); // NOI18N                
+            if (localScript == null) {
+                return null;
+            }                    
+            BufferedLineProcessor bufferedLineProcessor = new ShellScriptRunner.BufferedLineProcessor();
+            ShellScriptRunner scriptRunner = new ShellScriptRunner(execEnv, Utilities.toURI(localScript), bufferedLineProcessor);
+            scriptRunner.setArguments(pid + "");//NOI18N
+            int execute = scriptRunner.execute();
+            if (execute != 0) {
+                return null;
+            }
+            
+            return bufferedLineProcessor.getAsString();
+        } catch (IOException ex) {            
+        } catch (CancellationException ex) {            
         }
         return null;
     }
@@ -102,6 +141,9 @@ public class PathUtils {
             if (path != null && path.length() > 0) {
                 return path;
             }
+            //alternative: run script on the remote machine which will provide the information about executable for pid
+           path = getCwdPath_(pid, execEnv);
+           return path;            
         }
         return null;
     }

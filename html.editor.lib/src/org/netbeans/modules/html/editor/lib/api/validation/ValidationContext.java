@@ -42,9 +42,9 @@
 
 package org.netbeans.modules.html.editor.lib.api.validation;
 
+import java.io.Reader;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.openide.filesystems.FileObject;
@@ -57,13 +57,13 @@ import org.openide.filesystems.FileObject;
  */
 public final class ValidationContext {
 
-    private String source;
+    private Reader source;
     private FileObject file;
     private HtmlVersion version;
     private SyntaxAnalyzerResult result;
-    private Map<String, Boolean> features = new HashMap<String, Boolean>();
+    private Map<String, Boolean> features = new HashMap<>();
 
-    public ValidationContext(String source, HtmlVersion version, FileObject file, SyntaxAnalyzerResult result) {
+    public ValidationContext(Reader source, HtmlVersion version, FileObject file, SyntaxAnalyzerResult result) {
         this.source = source;
         this.file = file;
         this.version = version;
@@ -74,7 +74,7 @@ public final class ValidationContext {
         return file;
     }
 
-    public String getSource() {
+    public Reader getSourceReader() {
         return source;
     }
 

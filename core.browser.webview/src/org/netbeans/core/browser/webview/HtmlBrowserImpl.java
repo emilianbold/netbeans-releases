@@ -53,8 +53,8 @@ import org.netbeans.core.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.api.WebKitUIManager;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
-import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -71,6 +71,8 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
     private WebBrowser browser;
     private final Object LOCK = new Object();
     private Session session;
+    private Lookup consoleLogger;
+    private Lookup networkMonitor;
     private boolean disablePageInspector = false;
     private Lookup projectContext;
 
@@ -150,8 +152,8 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
             ((TransportImplementationWithURLToLoad) transport).setURLToLoad(url);
         }
         final WebKitDebugging webkitDebugger = getLookup().lookup(WebKitDebugging.class);
-        final NetBeansJavaScriptDebuggerFactory debuggerFactory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
-        if (webkitDebugger == null || debuggerFactory == null || projectContext == null) {
+
+        if (webkitDebugger == null || projectContext == null) {
             setBrowserTo(url);
             return;
         }
@@ -160,7 +162,9 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
             public void run() {
                 transport.attach();
                 webkitDebugger.getDebugger().enable();
-                session = debuggerFactory.createDebuggingSession(webkitDebugger, projectContext);
+                session = WebKitUIManager.getDefault().createDebuggingSession(webkitDebugger, projectContext);
+                consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webkitDebugger, projectContext);
+                networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webkitDebugger, projectContext);
 
                 PageInspector inspector = PageInspector.getDefault();
                 if (inspector != null && !disablePageInspector) {
@@ -195,18 +199,25 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
         initialized = false;
         final TransportImplementation transport = getLookup().lookup(TransportImplementation.class);
         final WebKitDebugging webkitDebugger = getLookup().lookup(WebKitDebugging.class);
-        final NetBeansJavaScriptDebuggerFactory debuggerFactory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
         final MessageDispatcherImpl dispatcher = getLookup().lookup(MessageDispatcherImpl.class);
-        if (webkitDebugger == null || debuggerFactory == null) {
+        if (webkitDebugger == null) {
             return;
         }
         RP.post(new Runnable() {
             @Override
             public void run() {
                 if (session != null) {
-                    debuggerFactory.stopDebuggingSession(session);
+                    WebKitUIManager.getDefault().stopDebuggingSession(session);
                 }
                 session = null;
+                if (consoleLogger != null) {
+                    WebKitUIManager.getDefault().stopBrowserConsoleLogger(consoleLogger);
+                }
+                consoleLogger = null;
+                if (networkMonitor != null) {
+                    WebKitUIManager.getDefault().stopNetworkMonitor(networkMonitor);
+                }
+                networkMonitor = null;
                 if (dispatcher != null) {
                     dispatcher.dispatchMessage(PageInspector.MESSAGE_DISPATCHER_FEATURE_ID, null);
                 }
@@ -309,21 +320,6 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
     }
 
     @Override
-    public boolean hasEnhancedMode() {
-        if (getEnhancedBrowser() != null) {
-            return getEnhancedBrowser().hasEnhancedMode();
-        }
-        return false;
-    }
-
-    @Override
-    public void setEnhancedMode(boolean mode) {
-        if (getEnhancedBrowser() != null) {
-            getEnhancedBrowser().setEnhancedMode(mode);
-        }
-    }
-
-    @Override
     public void disablePageInspector() {
         disablePageInspector = true;
         if (getEnhancedBrowser() != null) {
@@ -355,6 +351,11 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
         if (getEnhancedBrowser() != null) {
             getEnhancedBrowser().setProjectContext(projectContext);
         }
+    }
+
+    @Override
+    public boolean canReloadPage() {
+        return true;
     }
     
 }

@@ -86,7 +86,6 @@ public class CssStylesPanel extends javax.swing.JPanel {
      
      private CssStylesPanelProvider active;
      private JComponent activePanel;
-     private FileObject context;
      
      /**
       * Remember last selected tab per mimetype.
@@ -226,7 +225,7 @@ public class CssStylesPanel extends javax.swing.JPanel {
         
         boolean first = true;
         
-        CssStylesPanelProvider selected = selectedTabs.get(file.getMIMEType());
+        CssStylesPanelProvider selected = (file == null) ? null : selectedTabs.get(file.getMIMEType());
         
         //do the active providers contain the pre-selected provider for this mimetype?
         boolean containsPreselected = selected == null ? false : activeProviders.contains(selected);
@@ -280,10 +279,10 @@ public class CssStylesPanel extends javax.swing.JPanel {
     }
     
     public void setContext(FileObject file) {
-        this.context = file;
-        
         InstanceContent ic = new InstanceContent();
-        ic.add(context);
+        if (file != null) {
+            ic.add(file);
+        }
         ic.add(getRuleEditorController());
         providersLookup.updateLookup(new AbstractLookup(ic));
         

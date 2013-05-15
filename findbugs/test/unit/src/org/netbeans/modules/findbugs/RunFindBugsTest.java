@@ -111,7 +111,7 @@ public class RunFindBugsTest extends NbTestCase {
 
         List<String> errors = new ArrayList<String>();
 
-        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null)) {
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null, null)) {
             errors.add(ed.toString());
         }
 
@@ -129,7 +129,7 @@ public class RunFindBugsTest extends NbTestCase {
 
         SourceUtilsTestUtil.compileRecursively(sourceRoot);
 
-        assertEquals(0, RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null).size());
+        assertEquals(0, RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null, null).size());
     }
     
     public void testRunFindBugsFromDocument() throws Exception {
@@ -147,7 +147,7 @@ public class RunFindBugsTest extends NbTestCase {
         
         List<String> errors = new ArrayList<String>();
 
-        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null)) {
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null, null)) {
             errors.add(ed.toString());
         }
 
@@ -165,7 +165,7 @@ public class RunFindBugsTest extends NbTestCase {
 
         SourceUtilsTestUtil.compileRecursively(sourceRoot);
 
-        assertEquals(0, RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null).size());
+        assertEquals(0, RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null, null).size());
         assertNotNull(doc);
     }
 
@@ -177,7 +177,7 @@ public class RunFindBugsTest extends NbTestCase {
 
         List<String> errors = new ArrayList<String>();
 
-        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null)) {
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null, null)) {
             errors.add(ed.toString());
         }
 
@@ -185,19 +185,37 @@ public class RunFindBugsTest extends NbTestCase {
                      errors);
     }
 
-    public void DtestMethodAnnotation() throws Exception {
+    public void testUnusedMethod1() throws Exception {
         prepareTest("package test;\n" +
                     "public class Test {\n" +
-                    "    private void str() {};\n" +
+                    "    private void str() {\n" +
+                    "        System.err.println(1);\n" +
+                    "    }\n" +
                     "}\n");
 
         List<String> errors = new ArrayList<String>();
 
-        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null)) {
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null, null)) {
             errors.add(ed.toString());
         }
 
         assertEquals(Arrays.asList("2:17-2:20:verifier:Private method test.Test.str() is never called"),
+                     errors);
+    }
+    
+    public void testUnusedMethod2() throws Exception {
+        prepareTest("package test;\n" +
+                    "public class Test {\n" +
+                    "    private void str() { System.err.println(1); }\n" +
+                    "}\n");
+
+        List<String> errors = new ArrayList<String>();
+
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null, null)) {
+            errors.add(ed.toString());
+        }
+
+        assertEquals(Arrays.asList("2:4-2:49:verifier:Private method test.Test.str() is never called"),
                      errors);
     }
 
@@ -208,7 +226,7 @@ public class RunFindBugsTest extends NbTestCase {
 
         List<String> errors = new ArrayList<String>();
 
-        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null)) {
+        for (ErrorDescription ed : RunFindBugs.runFindBugs(null, null, null, sourceRoot, null, null, null, null)) {
             errors.add(ed.toString());
         }
 

@@ -44,10 +44,12 @@ package org.netbeans.libs.git;
 
 import java.io.IOException;
 import org.eclipse.jgit.api.MergeResult;
+import org.eclipse.jgit.api.RebaseResult;
 import org.eclipse.jgit.lib.RefUpdate;
 import org.eclipse.jgit.lib.RepositoryState;
 import org.eclipse.jgit.transport.RemoteRefUpdate;
 import org.netbeans.libs.git.jgit.AbstractGitTestCase;
+import org.netbeans.libs.git.jgit.commands.RebaseCommand;
 
 /**
  *
@@ -80,6 +82,12 @@ public class GitEnumsStateTest extends AbstractGitTestCase {
     public void testRepositoryState () {
         for (RepositoryState state : RepositoryState.values()) {
             assertNotNull(GitRepositoryState.getStateFor(state));
+        }
+    }
+    
+    public void testRebaseStatus () {
+        for (RebaseResult.Status status : RebaseResult.Status.values()) {
+            assertNotNull(GitRebaseResult.parseRebaseStatus(status));
         }
     }
 }

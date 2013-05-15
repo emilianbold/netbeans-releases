@@ -50,11 +50,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -79,7 +80,9 @@ public class JsIndexer extends EmbeddingIndexer {
     @Override
     protected void index(Indexable indexable, Result result, Context context) {
         LOG.log(Level.FINE, "Indexing: {0}, fullPath: {1}", new Object[]{indexable.getRelativePath(), result.getSnapshot().getSource().getFileObject().getPath()});
-        JsIndex.changeInIndex();
+        if (!context.checkForEditorModifications()) {
+            JsIndex.changeInIndex();
+        }
         JsParserResult parserResult = (JsParserResult) result;
         Model model = parserResult.getModel();
 
@@ -94,22 +97,28 @@ public class JsIndexer extends EmbeddingIndexer {
         JsObject globalObject = model.getGlobalObject();
         for(JsObject object : globalObject.getProperties().values()) {
             if (object.getParent() != null) {
-                storeObject(object, support, indexable);
+                storeObject(object, object.getName(), support, indexable);
             }
         }
     }
 
-    private void storeObject(JsObject object, IndexingSupport support, Indexable indexable) {
+    private void storeObject(JsObject object, String fqn, IndexingSupport support, Indexable indexable) {
         if (!isInvisibleFunction(object)) {
-            if (object.isDeclared() || object.getName().equals("prototype")) {
+            if (object.isDeclared() || ModelUtils.PROTOTYPE.equals(object.getName())) {
                 // if it's delcared, then store in the index as new document.
-                IndexDocument document = IndexedElement.createDocument(object, support, indexable);
+                IndexDocument document = IndexedElement.createDocument(object, fqn, support, indexable);
                 support.addDocument(document);
             }
             // look for all other properties. Even if the object doesn't have to be delcared in the file
             // there can be declared it's properties or methods
             for (JsObject property : object.getProperties().values()) {
-                storeObject(property, support, indexable);
+                storeObject(property, fqn + '.' + property.getName(), support, indexable);
+            }
+            if(object instanceof JsFunction) {
+                // store parameters
+                for (JsObject parameter : ((JsFunction)object).getParameters()) {
+                    storeObject(parameter, fqn + '.' + parameter.getName(), support, indexable);
+                }
             }
         }
     }
@@ -127,7 +136,7 @@ public class JsIndexer extends EmbeddingIndexer {
     public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "js"; // NOI18N
-        public static final int VERSION = 5;
+        public static final int VERSION = 9;
 
         private static final ThreadLocal<Collection<Runnable>> postScanTasks = new ThreadLocal<Collection<Runnable>>();
 

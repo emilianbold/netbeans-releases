@@ -163,6 +163,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             advancedSettingsPanel.setThreadsMonitoring(settings.getThreadsMonitoringEnabled());
             advancedSettingsPanel.setThreadsSampling(settings.getThreadsSamplingEnabled());
+            advancedSettingsPanel.setLockContentionMonitoring(settings.getLockContentionMonitoringEnabled());
 
             if (settings.isPreset()) {
                 advancedSettingsPanel.disableAll();
@@ -205,6 +206,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             finalSettings.setThreadsMonitoringEnabled(advancedSettingsPanel.getThreadsMonitoring());
             finalSettings.setThreadsSamplingEnabled(advancedSettingsPanel.getThreadsSampling());
+            finalSettings.setLockContentionMonitoringEnabled(advancedSettingsPanel.getLockContentionMonitoring());
             
             // generated settings
 //            ClientUtils.SourceCodeSelection[] emptyRoots = new ClientUtils.SourceCodeSelection[0];
@@ -291,6 +293,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             settings.setThreadsMonitoringEnabled(advancedSettingsPanel.getThreadsMonitoring());
             settings.setThreadsSamplingEnabled(advancedSettingsPanel.getThreadsSampling());
+            settings.setLockContentionMonitoringEnabled(advancedSettingsPanel.getLockContentionMonitoring());
         }
 
         private void fireSettingsChanged() {
@@ -389,6 +392,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             advancedSettingsPanel.setThreadsMonitoring(settings.getThreadsMonitoringEnabled());
             advancedSettingsPanel.setThreadsSampling(settings.getThreadsSamplingEnabled());
+            advancedSettingsPanel.setLockContentionMonitoring(settings.getLockContentionMonitoringEnabled());
 
             if (settings.isPreset()) {
                 advancedSettingsPanel.disableAll();
@@ -421,6 +425,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             finalSettings.setThreadsMonitoringEnabled(advancedSettingsPanel.getThreadsMonitoring());
             finalSettings.setThreadsSamplingEnabled(advancedSettingsPanel.getThreadsSampling());
+            finalSettings.setLockContentionMonitoringEnabled(advancedSettingsPanel.getLockContentionMonitoring());
 
             return finalSettings;
         }
@@ -467,6 +472,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             settings.setThreadsMonitoringEnabled(advancedSettingsPanel.getThreadsMonitoring());
             settings.setThreadsSamplingEnabled(advancedSettingsPanel.getThreadsSampling());
+            settings.setLockContentionMonitoringEnabled(advancedSettingsPanel.getLockContentionMonitoring());
         }
 
         private void fireSettingsChanged() {
@@ -542,6 +548,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             // basicSettingsPanel
             basicSettingsPanel.setThreadsMonitoring(settings.getThreadsMonitoringEnabled());
             basicSettingsPanel.setThreadsSampling(settings.getThreadsSamplingEnabled());
+            basicSettingsPanel.setLockContentionMonitoring(settings.getLockContentionMonitoringEnabled());
 
             internalChange = false;
 
@@ -561,6 +568,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             // basicSettingsPanel
             finalSettings.setThreadsMonitoringEnabled(basicSettingsPanel.getThreadsMonitoring());
             finalSettings.setThreadsSamplingEnabled(basicSettingsPanel.getThreadsSampling());
+            finalSettings.setLockContentionMonitoringEnabled(basicSettingsPanel.getLockContentionMonitoring());
 
             // advancedSettingsPanel
 
@@ -593,6 +601,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
 
             // basicSettingsPanel
             settings.setThreadsMonitoringEnabled(basicSettingsPanel.getThreadsMonitoring());
+            settings.setThreadsSamplingEnabled(basicSettingsPanel.getThreadsSampling());
             settings.setThreadsSamplingEnabled(basicSettingsPanel.getThreadsSampling());
 
             // advancedSettingsPanel

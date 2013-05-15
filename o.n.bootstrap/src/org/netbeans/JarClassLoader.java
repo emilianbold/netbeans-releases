@@ -508,11 +508,7 @@ public class JarClassLoader extends ProxyClassLoader {
                                         try {
                                             ret = new JarFile(file, false);
                                         } catch (FileNotFoundException ex) {
-                                            if (ex.getMessage().contains("Too many open files")) {
-                                                throw (ZipException)new ZipException(ex.getMessage()).initCause(ex);
-                                            } else {
-                                                throw ex;
-                                            }
+                                            throw (ZipException)new ZipException(ex.getMessage()).initCause(ex);
                                         }
                                         long took = System.currentTimeMillis() - now;
                                         opened(JarClassLoader.JarSource.this, forWhat);
@@ -627,12 +623,13 @@ public class JarClassLoader extends ProxyClassLoader {
                             }
                             continue;
                         }
+                        if (itm.startsWith("META-INF/")) {
+                            String res = itm.substring(8); // "/services/pkg.Service"
+                            if (known.add(res)) save.append(res).append(',');
+                            continue;
+                        }
                         String pkg = slash > 0 ? itm.substring(0, slash).replace('/','.') : "";
                         if (known.add(pkg)) save.append(pkg).append(',');
-                        if (itm.startsWith("META-INF/")) {
-                                String res = itm.substring(8); // "/services/pkg.Service"
-                                if (known.add(res)) save.append(res).append(',');
-                        }
                     }
                 }
             } catch (ZipException x) { // Unix

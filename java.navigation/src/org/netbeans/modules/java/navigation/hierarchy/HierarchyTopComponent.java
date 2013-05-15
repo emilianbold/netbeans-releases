@@ -95,7 +95,6 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.modules.java.navigation.JavadocTopComponent;
 import org.netbeans.modules.java.navigation.NoBorderToolBar;
 import org.netbeans.modules.java.navigation.base.HistorySupport;
-import org.netbeans.modules.java.navigation.base.Pair;
 import org.netbeans.modules.java.navigation.base.Resolvers;
 import org.netbeans.modules.java.navigation.base.SelectJavadocTask;
 import org.netbeans.modules.java.navigation.base.TapPanel;
@@ -116,6 +115,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.windows.TopComponent;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -530,20 +530,20 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                 final Pair<URI,ElementHandle<TypeElement>> pair = toShow.get();
                 if (pair != null) {
                     if (viewType == ViewType.SUB_TYPE &&
-                        Object.class.getName().equals(pair.second.getQualifiedName())) {
+                        Object.class.getName().equals(pair.second().getQualifiedName())) {
                         nonActiveInfo.setText(Bundle.WARN_Object());
                         ((CardLayout)contentView.getLayout()).show(contentView, NON_ACTIVE_CONTENT);
                     } else {
-                        final FileObject file = URLMapper.findFileObject(pair.first.toURL());
+                        final FileObject file = URLMapper.findFileObject(pair.first().toURL());
                         JavaSource js;
                         if (file != null && (js=JavaSource.forFileObject(file)) != null) {
-                            LOG.log(Level.FINE, "Showing hierarchy for: {0}", pair.second.getQualifiedName());  //NOI18N
+                            LOG.log(Level.FINE, "Showing hierarchy for: {0}", pair.second().getQualifiedName());  //NOI18N
                             history.addToHistory(pair);
                             js.runUserActionTask(new Task<CompilationController>() {
                                 @Override
                                 public void run(CompilationController cc) throws Exception {
                                     cc.toPhase(Phase.ELEMENTS_RESOLVED);
-                                    final TypeElement te = pair.second.resolve(cc);
+                                    final TypeElement te = pair.second().resolve(cc);
                                     if (te != null) {
                                         final Node root;
                                         if (viewType == ViewType.SUPER_TYPE) {
@@ -583,7 +583,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
                             }, true);
                         } else {
                             rootChildren.set(null);
-                            StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(pair.second.getQualifiedName()));
+                            StatusDisplayer.getDefault().setStatusText(Bundle.ERR_Cannot_Resolve_File(pair.second().getQualifiedName()));
                         }
                     }
                 } else {
@@ -642,7 +642,7 @@ public final class HierarchyTopComponent extends TopComponent implements Explore
             toolbar.setFocusable(false);
             toolbar.setLayout(new GridBagLayout());
             for (Pair<JComponent,GridBagConstraints> p : components) {
-                toolbar.add(p.first,p.second);
+                toolbar.add(p.first(),p.second());
             }
             add (toolbar);
         }

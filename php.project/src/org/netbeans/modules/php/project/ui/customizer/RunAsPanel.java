@@ -88,7 +88,7 @@ public final class RunAsPanel extends JPanel {
             Collection<InsidePanel> insidePanels = allInsidePanels.values();
             initComboModel(insidePanels);
             for (InsidePanel insidePanel : insidePanels) {
-                final JComboBox comboBox = insidePanel.getRunAsCombo();
+                final JComboBox<String> comboBox = insidePanel.getRunAsCombo();
                 comboBox.setModel(comboBoxModel);
             }
             comboBoxModel.setAsInitialized();
@@ -123,7 +123,7 @@ public final class RunAsPanel extends JPanel {
 
         protected abstract String getDisplayName();
 
-        protected abstract JComboBox getRunAsCombo();
+        protected abstract JComboBox<String> getRunAsCombo();
         protected abstract JLabel getRunAsLabel();
 
         protected abstract void loadFields();
@@ -254,9 +254,12 @@ public final class RunAsPanel extends JPanel {
         }
     }
 
-    private class ComboModel extends DefaultComboBoxModel {
-        private static final long serialVersionUID = -569511034282161517L;
+    private class ComboModel extends DefaultComboBoxModel<String> {
+
+        private static final long serialVersionUID = -68784654654657987L;
+
         private boolean isInitialized;
+
 
         private void setAsInitialized() {
             isInitialized = true;

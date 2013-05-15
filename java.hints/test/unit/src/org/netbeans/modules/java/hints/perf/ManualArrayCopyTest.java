@@ -290,4 +290,19 @@ public class ManualArrayCopyTest extends NbTestCase {
                 .run(ManualArrayCopy.class)
                 .assertWarnings();
     }
+    
+    public void testArrayCopy227264() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    void test(String[] result, String[][] vals) {\n" +
+                       "        for (int i = 0; i < result.length; i++) {\n" +
+                       "            result[i] = vals[i][i];\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .run(ManualArrayCopy.class)
+                .assertWarnings();
+    }
 }

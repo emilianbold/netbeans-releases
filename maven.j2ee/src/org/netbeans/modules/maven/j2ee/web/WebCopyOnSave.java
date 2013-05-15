@@ -55,6 +55,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.Co
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.CopyOnSave;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -185,7 +186,7 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
     public void deployed(Iterable<ArtifactListener.Artifact> artifacts) {
         ClientSideDevelopmentSupport easelSupport = project.getLookup().lookup(ClientSideDevelopmentSupport.class);
         
-        if (!easelSupport.canReload()) {
+        if (easelSupport == null || !easelSupport.canReload()) {
             return;
         }
         for (ArtifactListener.Artifact artifact : artifacts) {
@@ -229,6 +230,10 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
 
     private class FileListenerImpl extends FileChangeAdapter {
 
+        private void checkPreprocessors(FileObject file) {
+            CssPreprocessors.getDefault().process(project, file);
+        }
+        
         /** Fired when a file is changed.
          * @param fe the event describing context where action has taken place
          */
@@ -244,6 +249,8 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                 return;
             }
             try {
+                checkPreprocessors(fe.getFile());
+                
                 if (!isInPlace()) {
                     handleCopyFileToDestDir(fe.getFile());
                 }
@@ -264,6 +271,8 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                 return;
             }
             try {
+                checkPreprocessors(fe.getFile());
+                
                 if (!isInPlace()) {
                     handleCopyFileToDestDir(fe.getFile());
                 }
@@ -284,6 +293,8 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                 return;
             }
             try {
+                checkPreprocessors(fe.getFile());
+                
                 if (isInPlace()) {
                     return;
                 }
@@ -322,6 +333,8 @@ public class WebCopyOnSave extends CopyOnSave implements PropertyChangeListener,
                 return;
             }
             try {
+                checkPreprocessors(fe.getFile());
+                
                 if (isInPlace()) {
                     return;
                 }

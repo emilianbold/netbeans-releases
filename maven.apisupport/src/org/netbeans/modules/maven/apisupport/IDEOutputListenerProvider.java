@@ -68,7 +68,7 @@ public class IDEOutputListenerProvider implements OutputProcessor {
         "mojo-execute#nbm:run-ide", //NOI18N
         "mojo-execute#nbm:run-platform" //NOI18N
     };
-    private Project project;
+    private final Project project;
     private ClassPath classpath;
     
     /** Creates a new instance of TestOutputListenerProvider */
@@ -119,7 +119,12 @@ public class IDEOutputListenerProvider implements OutputProcessor {
 
     @Override
     public void sequenceStart(String sequenceId, OutputVisitor visitor) {
-        classpath = createCP(project, new HashSet<Project>());
+        OutputVisitor.Context context = visitor.getContext();
+        Project prj = project;
+        if (context != null && context.getCurrentProject() != null) {
+            prj = context.getCurrentProject();
+        }        
+        classpath = createCP(prj, new HashSet<Project>());
     }
 
     @Override

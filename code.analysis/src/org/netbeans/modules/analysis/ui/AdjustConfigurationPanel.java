@@ -84,7 +84,7 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
     private ModifiedPreferences currentPreferencesOverlay;
     private final String preselected;
 
-    public AdjustConfigurationPanel(Iterable<? extends AnalyzerFactory> analyzers, AnalyzerFactory preselectedAnalyzer, String preselected) {
+    public AdjustConfigurationPanel(Iterable<? extends AnalyzerFactory> analyzers, AnalyzerFactory preselectedAnalyzer, String preselected, Configuration configurationToSelect) {
         this.preselected = preselected;
         initComponents();
 
@@ -133,6 +133,9 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
         analyzerCombo.setRenderer(new AnalyzerRenderer());
 
         updateConfiguration();
+        
+        if (configurationToSelect != null)
+            configurationCombo.setSelectedItem(configurationToSelect);
     }
 
     private void updateConfiguration() {
@@ -182,6 +185,10 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
         currentPreferencesOverlay.store(currentPreferences);
     }
 
+    public Configuration getSelectedConfiguration() {
+        return (Configuration) configurationCombo.getSelectedItem();
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always

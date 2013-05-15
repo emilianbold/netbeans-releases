@@ -43,26 +43,101 @@ package org.netbeans.modules.db.dataview.table.celleditor;
 
 import java.awt.Component;
 import javax.swing.BorderFactory;
+import javax.swing.InputVerifier;
 import javax.swing.JComponent;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.table.TableModel;
+import javax.swing.text.JTextComponent;
+import org.netbeans.modules.db.dataview.meta.DBColumn;
+import org.netbeans.modules.db.dataview.meta.DBException;
 import org.netbeans.modules.db.dataview.table.ResultSetTableCellEditor;
+import org.netbeans.modules.db.dataview.table.ResultSetTableModel;
+import org.netbeans.modules.db.dataview.util.DBReadWriteHelper;
+import org.openide.util.Exceptions;
 
 public class NumberFieldEditor extends ResultSetTableCellEditor {
+    private final JTextField textField;
+    private DBColumn dbColumn;
+    private Object oldValue;
+    private final InputVerifier verifier = new InputVerifier() {
+        @Override
+        public boolean verify(JComponent input) {
+            if (dbColumn != null && input instanceof JTextComponent) {
+                String inputText = ((JTextComponent) input).getText();
+                try {
+                    DBReadWriteHelper.validate(inputText, dbColumn);
+                } catch (DBException ex) {
+                    return false;
+                }
+                return true;
+            } else {
+                return true;
+            }
+        }
+    };
 
     public NumberFieldEditor(final JTextField textField) {
         super(textField);
+        this.textField = textField;
         ((JTextField) getComponent()).setHorizontalAlignment(JTextField.RIGHT);
     }
 
     @Override
     public Component getTableCellEditorComponent(final JTable table, Object value, boolean isSelected, int row, int column) {
-        this.table = table;
+        oldValue = value;
+        int modelColumn = table.convertColumnIndexToModel(column);
+        TableModel tm = table.getModel();
+        dbColumn = null;
+        if (tm instanceof ResultSetTableModel) {
+            textField.setInputVerifier(verifier);
+            dbColumn = ((ResultSetTableModel) tm).getColumn(modelColumn);
+        } else {
+            textField.setInputVerifier(null);
+        }
         Component c = super.getTableCellEditorComponent(table, value, isSelected, row, column);
         if (suppressEditorBorder && c instanceof JComponent) {
             ((JComponent) c).setBorder(BorderFactory.createEmptyBorder());
         }
-        setEditable(column, c, table.isCellEditable(row, column));
         return c;
+    }
+
+    /**
+     * Override getCellEditorValue to build a number.
+     */
+    @Override
+    public Object getCellEditorValue() {
+        try {
+            Object superVal = super.getCellEditorValue();
+            if (dbColumn != null) {
+                try {
+                    return DBReadWriteHelper.validate(superVal, dbColumn);
+                } catch (DBException ex) {
+                    Exceptions.printStackTrace(ex);
+                    return oldValue;
+                }
+            } else {
+                return superVal;
+            }
+        } finally {
+            oldValue = null;
+        }
+    }
+
+    @Override
+    public boolean stopCellEditing() {
+        try {
+            Object value = super.getCellEditorValue();
+            DBReadWriteHelper.validate(value, dbColumn);
+            return super.stopCellEditing();
+        } catch (DBException ex) {
+            return false;
+        }
+    }
+
+    @Override
+    public void cancelCellEditing() {
+        oldValue = null;
+        super.cancelCellEditing();
     }
 }

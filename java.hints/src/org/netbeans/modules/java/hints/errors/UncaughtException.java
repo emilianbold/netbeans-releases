@@ -136,8 +136,12 @@ public final class UncaughtException implements ErrorRule<Void> {
                     for (CatchTree c : tt.getCatches()) {
                         TreePath catchPath = new TreePath(new TreePath(path, c), c.getParameter());
                         VariableElement variable = (VariableElement) info.getTrees().getElement(catchPath);
-
-                        result.remove(variable.asType());
+                        TypeMirror variableType = variable.asType();
+                        if (variableType.getKind() == TypeKind.UNION) {
+                            result.removeAll(((UnionType)variableType).getAlternatives());
+                        } else {
+                            result.remove(variableType);
+                        }
                     }
                 }
             }
@@ -219,6 +223,24 @@ public final class UncaughtException implements ErrorRule<Void> {
             
             while (pathRec != null && pathRec.getLeaf().getKind() != Kind.METHOD) {
                 pathRec = pathRec.getParentPath();
+            }
+            
+            TreePath in = path;
+            Tree inLast = null;
+            boolean inResourceSection = false;
+            
+            LOOK_FOR_TWR: while (in != null) {
+                switch (in.getLeaf().getKind()) {
+                    case TRY:
+                        if (((TryTree) in.getLeaf()).getResources().contains(inLast)) {
+                            inResourceSection = true;
+                        }
+                    case METHOD: case ANNOTATION_TYPE: case CLASS:
+                    case ENUM: case INTERFACE:
+                        break LOOK_FOR_TWR;
+                }
+                inLast = in.getLeaf();
+                in = in.getParentPath();
             }
             
             ExecutableElement method = pathRec != null ? (ExecutableElement) info.getTrees().getElement(pathRec)  : null;
@@ -303,15 +325,17 @@ public final class UncaughtException implements ErrorRule<Void> {
                     if (tryTree != null) {
                         result.add(new AddCatchFix(info, tryTree, thandles).toEditorFix());
                     }
-                    result.add(new OrigSurroundWithTryCatchFix(info.getJavaSource(), thandles, TreePathHandle.create(path, info), fqns));
-                    //#134408: "Surround Block with try-catch" is redundant when the block contains just a single statement
-                    TreePath tp = findBlock(path);
-                    boolean magic = tryTree == null || allowMagicSurround;
-                    if(tp != null && tp.getLeaf().getKind() == Kind.BLOCK) {
-                        magic &= ((BlockTree) tp.getLeaf()).getStatements().size() != 1;
+                    if (!inResourceSection) {
+                        result.add(new OrigSurroundWithTryCatchFix(info.getJavaSource(), thandles, TreePathHandle.create(path, info), fqns));
+                        //#134408: "Surround Block with try-catch" is redundant when the block contains just a single statement
+                        TreePath tp = findBlock(path);
+                        boolean magic = tryTree == null || allowMagicSurround;
+                        if(tp != null && tp.getLeaf().getKind() == Kind.BLOCK) {
+                            magic &= ((BlockTree) tp.getLeaf()).getStatements().size() != 1;
+                        }
+                        if(magic)
+                            result.add(new MagicSurroundWithTryCatchFix(info.getJavaSource(), thandles, offset, method != null ? ElementHandle.create(method) : null, fqns));
                     }
-                    if(magic)
-                        result.add(new MagicSurroundWithTryCatchFix(info.getJavaSource(), thandles, offset, method != null ? ElementHandle.create(method) : null, fqns));
                 }
             }
         }

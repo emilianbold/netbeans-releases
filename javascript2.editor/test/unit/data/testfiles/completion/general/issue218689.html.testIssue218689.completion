@@ -3,5 +3,4 @@ b.v|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 METHOD     valueOf(): Object               [PUBLIC]   JS Platform
-FIELD      v                               [PUBLIC]   issue218689.html
 FIELD      value: Number                   [PUBLIC]   issue218689.html

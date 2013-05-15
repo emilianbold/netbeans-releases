@@ -42,11 +42,13 @@
 
 package org.netbeans.modules.git.ui.diff;
 
-import org.netbeans.modules.git.ui.status.*;
+import org.netbeans.modules.git.GitStatusNode;
 import java.io.File;
 import javax.swing.Action;
 import org.netbeans.modules.git.FileInformation.Mode;
-import org.netbeans.modules.git.ui.commit.GitFileNode;
+import org.netbeans.modules.git.GitFileNode;
+import org.netbeans.modules.git.GitFileNode.GitHistoryFileNode;
+import org.netbeans.modules.git.GitFileNode.GitLocalFileNode;
 import org.netbeans.modules.versioning.diff.DiffLookup;
 import org.netbeans.modules.versioning.util.OpenInEditorAction;
 import org.openide.cookies.EditorCookie;
@@ -55,15 +57,47 @@ import org.openide.cookies.EditorCookie;
  *
  * @author ondra
  */
-public class DiffNode extends GitStatusNode {
+public abstract class DiffNode<T extends GitFileNode> extends GitStatusNode<T> {
 
-    DiffNode (GitFileNode node, EditorCookie eCookie, Mode mode) {
-        super(node, mode, getLookupFor(eCookie, node.getLookupObjects()));
+    protected DiffNode (T node, EditorCookie eCookie) {
+        super(node, getLookupFor(eCookie, node.getLookupObjects()));
     }
+    
+    public static class DiffLocalNode extends DiffNode<GitLocalFileNode> {
+    
+        private final Mode mode;
 
-    @Override
-    public Action getPreferredAction () {
-        return new OpenInEditorAction(new File[] { getFile() });
+        DiffLocalNode (GitLocalFileNode node, EditorCookie eCookie, Mode mode) {
+            super(node, eCookie);
+            this.mode = mode;
+        }
+
+        @Override
+        public Action getPreferredAction () {
+            return new OpenInEditorAction(new File[] { getFile() });
+        }
+
+        @Override
+        public String getStatusText () {
+            return node.getInformation().getStatusText(mode);
+        }
+    }
+    
+    public static class DiffHistoryNode extends DiffNode<GitHistoryFileNode> {
+    
+        DiffHistoryNode (GitHistoryFileNode node) {
+            super(node, null);
+        }
+
+        @Override
+        public Action getPreferredAction () {
+            return null;
+        }
+
+        @Override
+        public String getStatusText () {
+            return node.getInformation().getStatusText();
+        }
     }
 
     private static org.openide.util.Lookup getLookupFor (EditorCookie eCookie, Object[] lookupObjects) {

@@ -1,13 +1,13 @@
-argc int
-argv char**
-GtkZZZZZ
-aliases() void
-foo() int
-innerNS3Func() void
-main(int argc, char** argv) int
-usingS1() void
-usingS1S2() void
-usingS2() void
-Gtk
-S1
-S3
+argc int	$	    argc
+argv char**	$	    argv
+GtkZZZZZ	$	    GtkZZZZZ
+aliases() void	$	    aliases()
+foo() int	$	    foo()
+innerNS3Func() void	$	    innerNS3Func()
+main(int argc, char** argv) int	$	    main()
+usingS1() void	$	    usingS1()
+usingS1S2() void	$	    usingS1S2()
+usingS2() void	$	    usingS2()
+Gtk	$	    Gtk
+S1	$	    S1
+S3	$	    S3

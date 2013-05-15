@@ -71,7 +71,6 @@ public final class BrowserSupport {
     private WebBrowser browser;
     private PropertyChangeListener listener;
     private FileObject file;
-    private boolean disableNetBeansIntegration;
 
     private static BrowserSupport INSTANCE = create();
     
@@ -111,18 +110,14 @@ public final class BrowserSupport {
      * Creates a new instance of BrowserSupport for given browser.
      */
     public static BrowserSupport create(WebBrowser browser) {
-        return create(browser, false);
-    }
-    
-    public static BrowserSupport create(WebBrowser browser, boolean disableNetBeansIntegration) {
-        return new BrowserSupport(browser, disableNetBeansIntegration);
+        return new BrowserSupport(browser);
     }
     
     public static BrowserSupport getDefaultEmbedded() {
         if (INSTANCE_EMBEDDED == null) {
             WebBrowser browser = WebBrowsers.getInstance().getEmbedded();
             if (browser != null) {
-                INSTANCE_EMBEDDED = create(browser, false);
+                INSTANCE_EMBEDDED = create(browser);
             }
         }
         return INSTANCE_EMBEDDED;
@@ -133,12 +128,11 @@ public final class BrowserSupport {
      * browser changes in IDE options.
      */
     private BrowserSupport() {
-        this(null, false);
+        this(null);
     }
     
-    private BrowserSupport(WebBrowser browser, boolean disableNetBeansIntegration) {
+    private BrowserSupport(WebBrowser browser) {
         this.browser = browser;
-        this.disableNetBeansIntegration = disableNetBeansIntegration;
     }
     
     public void disablePageInspector() {
@@ -177,7 +171,7 @@ public final class BrowserSupport {
                 };
                 WebBrowsers.getInstance().addPropertyChangeListener(listener);
             }
-            pane = browser.createNewBrowserPane(true, disableNetBeansIntegration);
+            pane = browser.createNewBrowserPane(true);
         }
         return pane;
     }
@@ -203,7 +197,8 @@ public final class BrowserSupport {
             } catch( DataObjectNotFoundException ex ) {
                 //ignore
             }
-            lkp = null == dob ? Lookups.fixed( project, context ) : Lookups.fixed( project, context, dob );
+            lkp = null == dob ? Lookups.fixed( project, context, browser.getBrowserFamily() ) :
+                    Lookups.fixed( project, context, dob, browser.getBrowserFamily() );
         }
         wbp.setProjectContext(lkp);
         wbp.showURL(url);
@@ -235,14 +230,35 @@ public final class BrowserSupport {
     }
 
     /**
+     * Does this browser supports page reload?
+     */
+    public boolean canReload() {
+        return getWebBrowserPane().canReloadPage();
+    }
+
+    /**
      * Has this URL being previous opened via load() method or not? BrowserSupport
      * remember last URL opened.
      */
     public boolean canReload(URL url) {
-        return currentURL != null && currentURL.equals(url);
+        return currentURL != null && currentURL.equals(url) &&
+                getWebBrowserPane().canReloadPage();
     }
-    
-         /**
+
+    /**
+     * Some file types should not be refresh upon save in case of some browsers.
+     * For example CSS are handled directly by CSS support in case of "Chrome with
+     * NetBeans integration" browser.
+     */
+    public boolean canRefreshOnSaveThisFileType(FileObject fo) {
+        if (getWebBrowserPane().hasNetBeansIntegration()) {
+            // #217284 - ignore changes in CSS
+            return !fo.hasExt("css");
+        }
+        return true;
+    }
+
+    /**
      * Returns URL which was opened in the browser and which was associated with
      * given FileObject. That is calling load(URL, FileObject) creates mapping 
      * between FileObject in IDE side and URL in browser side and this method 

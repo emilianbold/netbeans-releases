@@ -46,6 +46,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import javax.swing.JFileChooser;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import org.openide.DialogDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
@@ -54,9 +57,10 @@ import org.openide.util.NbBundle;
  *
  * @author Maros Sandor
  */
-public class SigningPanel extends javax.swing.JPanel implements ActionListener {
+public class SigningPanel extends javax.swing.JPanel implements ActionListener, DocumentListener {
     
     private final JWSProjectProperties props;
+    private DialogDescriptor desc;
 
     /** Creates new form SigningPanel */
     public SigningPanel(JWSProjectProperties props) {
@@ -80,6 +84,38 @@ public class SigningPanel extends javax.swing.JPanel implements ActionListener {
         refreshComponents();
     }
 
+    void setDialogDescriptor(DialogDescriptor desc) {
+        this.desc = desc;
+        updateDialogButtonsAndMessage();
+    }
+    
+    void registerListeners() {
+        path.getDocument().addDocumentListener(this);
+        password.getDocument().addDocumentListener(this);
+        key.getDocument().addDocumentListener(this);
+    }
+    
+    void unregisterListeners() {
+        path.getDocument().removeDocumentListener(this);
+        password.getDocument().removeDocumentListener(this);
+        key.getDocument().removeDocumentListener(this);
+    }
+
+    @Override
+    public void insertUpdate(DocumentEvent e) {
+        updateDialogButtonsAndMessage();
+    }
+
+    @Override
+    public void removeUpdate(DocumentEvent e) {
+        updateDialogButtonsAndMessage();
+    }
+
+    @Override
+    public void changedUpdate(DocumentEvent e) {
+        updateDialogButtonsAndMessage();
+    }
+    
     @Override
     public void addNotify() {
         super.addNotify();
@@ -91,6 +127,7 @@ public class SigningPanel extends javax.swing.JPanel implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         refreshComponents();
+        updateDialogButtonsAndMessage();
     }
 
     private void refreshComponents() {
@@ -105,6 +142,11 @@ public class SigningPanel extends javax.swing.JPanel implements ActionListener {
         jLabel4.setEnabled(keySign.isSelected());
         mixedCodeCombo.setEnabled(!noSign.isSelected());
         jLabel5.setEnabled(!noSign.isSelected());
+        if(keySign.isSelected()) {
+            labelWarning.setText(null);
+        } else {
+            labelWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.WarnDeprecated")); //NOI18N
+        }
     }
 
     void store() {
@@ -145,6 +187,7 @@ public class SigningPanel extends javax.swing.JPanel implements ActionListener {
         noSign = new javax.swing.JRadioButton();
         mixedCodeCombo = new javax.swing.JComboBox();
         jLabel5 = new javax.swing.JLabel();
+        labelWarning = new javax.swing.JLabel();
 
         bg.add(selfSign);
         org.openide.awt.Mnemonics.setLocalizedText(selfSign, org.openide.util.NbBundle.getMessage(SigningPanel.class, "SigningPanel.selfSign.text")); // NOI18N
@@ -186,6 +229,9 @@ public class SigningPanel extends javax.swing.JPanel implements ActionListener {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(SigningPanel.class, "SigningPanel.jLabel5.text")); // NOI18N
         jLabel5.setToolTipText(org.openide.util.NbBundle.getMessage(SigningPanel.class, "SigningPanel.jLabel5.toolTipText")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(labelWarning, org.openide.util.NbBundle.getMessage(SigningPanel.class, "SigningPanel.labelWarning.text")); // NOI18N
+        labelWarning.setPreferredSize(new java.awt.Dimension(300, 60));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -193,38 +239,44 @@ public class SigningPanel extends javax.swing.JPanel implements ActionListener {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(noSign)
-                    .addComponent(selfSign)
-                    .addComponent(keySign)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(12, 12, 12)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabel1)
-                            .addComponent(jLabel2)
-                            .addComponent(jLabel3)
-                            .addComponent(jLabel4)
-                            .addComponent(jLabel5))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabel1)
+                                    .addComponent(jLabel2)
+                                    .addComponent(jLabel3)
+                                    .addComponent(jLabel4)
+                                    .addComponent(jLabel5))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(mixedCodeCombo, 0, 391, Short.MAX_VALUE)
+                                    .addComponent(keyPass, javax.swing.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
+                                    .addComponent(key, javax.swing.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
+                                    .addComponent(password, javax.swing.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)
+                                    .addComponent(path, javax.swing.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(browse))
+                            .addComponent(labelWarning, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(mixedCodeCombo, 0, 415, Short.MAX_VALUE)
-                            .addComponent(keyPass, javax.swing.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
-                            .addComponent(key, javax.swing.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
-                            .addComponent(password, javax.swing.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE)
-                            .addComponent(path, javax.swing.GroupLayout.DEFAULT_SIZE, 415, Short.MAX_VALUE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(browse)))
+                            .addComponent(noSign)
+                            .addComponent(selfSign)
+                            .addComponent(keySign))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(noSign)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(selfSign)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(keySign)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(path, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -241,11 +293,13 @@ public class SigningPanel extends javax.swing.JPanel implements ActionListener {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
                     .addComponent(keyPass, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel5)
                     .addComponent(mixedCodeCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(11, 11, 11)
+                .addComponent(labelWarning, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(3, 3, 3))
         );
 
         selfSign.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(SigningPanel.class, "AD_SigningPanel.selfSign.text")); // NOI18N
@@ -264,7 +318,7 @@ public class SigningPanel extends javax.swing.JPanel implements ActionListener {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.setMultiSelectionEnabled(false);
-        chooser.setDialogTitle(NbBundle.getMessage(JWSCustomizerPanel.class, "TITLE_KeystoreBrowser"));
+        chooser.setDialogTitle(NbBundle.getMessage(JWSCustomizerPanel.class, "TITLE_KeystoreBrowser")); //NOI18N
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File file = FileUtil.normalizeFile(chooser.getSelectedFile());
             path.setText(file.getAbsolutePath());
@@ -282,10 +336,28 @@ public class SigningPanel extends javax.swing.JPanel implements ActionListener {
     javax.swing.JTextField key;
     javax.swing.JPasswordField keyPass;
     javax.swing.JRadioButton keySign;
+    javax.swing.JLabel labelWarning;
     javax.swing.JComboBox mixedCodeCombo;
     javax.swing.JRadioButton noSign;
     javax.swing.JPasswordField password;
     javax.swing.JTextField path;
     javax.swing.JRadioButton selfSign;
     // End of variables declaration//GEN-END:variables
+
+    private void updateDialogButtonsAndMessage() {
+        if(!keySign.isSelected() || (password.getDocument().getLength()>0 && key.getDocument().getLength()>0)) {
+           desc.setValid(true);
+           if(keySign.isSelected()) {
+               if(path.getDocument().getLength()>0) {
+                   labelWarning.setText(null);
+               } else {
+                   labelWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.InfoDefaultPath")); //NOI18N
+               }
+           }
+        } else {
+           desc.setValid(false);
+           labelWarning.setText(NbBundle.getMessage(JWSCustomizerPanel.class, "SigningPanel.WarnMissingInfo")); //NOI18N
+        }
+    }
+
 }

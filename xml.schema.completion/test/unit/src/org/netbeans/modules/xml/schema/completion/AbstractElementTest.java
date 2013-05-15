@@ -40,8 +40,6 @@ package org.netbeans.modules.xml.schema.completion;
 import java.util.List;
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
 
 /**
  * Tests for element substitution.
@@ -75,7 +73,7 @@ public class AbstractElementTest extends AbstractTestCase {
      */
     public void shouldNotSuggestAbstractElement() {
         List<CompletionResultItem> items = query(468);
-        assertThat(items, not(containsSuggestions("child")));
+        assertDoesNotContainSuggestions(items, false, "child");
     }
             
     /**
@@ -84,6 +82,6 @@ public class AbstractElementTest extends AbstractTestCase {
      */
     public void shouldExpandSubstitutionGroup() {
         List<CompletionResultItem> items = query(468);
-        assertThat(items, containsOnlySuggestions("c1:child-one", "c2:child-two"));
+        assertContainSuggestions(items, true, "c1:child-one", "c2:child-two");
     }
 }

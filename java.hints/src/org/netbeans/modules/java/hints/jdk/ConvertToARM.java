@@ -124,13 +124,13 @@ public class ConvertToARM {
     private static final String PTR_ENC_OUT_TRY_NULL = "$CV $var = null; try { $var = $init; try($armres$) {$stms$;} } catch $catches$ finally {if ($var != null) $var.close(); $finstms$;}"; //NOI18N
     private static final String PTR_ENC_OUT_TRY_NULL_SHADOW = "$CV_x $var_x = null; try { $var_x = $init_x; try($armres_x$) {$stms_x$;} } catch $catches_x$ finally {if ($var_x != null) $var_x.close(); $finstms_x$;}"; //NOI18N
        
-    private static final String PTR_ENC_IN_NO_TRY = "try($armres$) {$pref$; $CV $var = $init; $stms$; $var.close(); $suff$;} catch $catches$";
+    private static final String PTR_ENC_IN_NO_TRY = "try($armres$) {$CV $var = $init; $stms$; $var.close(); $suff$;} catch $catches$";
     private static final String PTR_ENC_IN_NO_TRY_SHADOW = "try($armres_x$) {$CV_x $var_x = $init_x; $stms_x$; $var_x.close();} catch $catches_x$";
-    private static final String PTR_ENC_IN_NO_TRY2 = "try($armres$) {$pref$; $CV $var = $init; $stms$; $var.close(); $suff$;} catch $catches$ finally {$finstms$;}";
+    private static final String PTR_ENC_IN_NO_TRY2 = "try($armres$) {$CV $var = $init; $stms$; $var.close(); $suff$;} catch $catches$ finally {$finstms$;}";
     private static final String PTR_ENC_IN_NO_TRY2_SHADOW = "try($armres_x$) {$CV_x $var_x = $init_x; $stms_x$; $var_x.close();} catch $catches_x$ finally {$finstms_x$;}";
-    private static final String PTR_ENC_IN_NO_TRY_FIN = "try($armres$) {$pref$; final $CV $var = $init; $stms$; $var.close(); $suff$;} catch $catches$";
+    private static final String PTR_ENC_IN_NO_TRY_FIN = "try($armres$) {final $CV $var = $init; $stms$; $var.close(); $suff$;} catch $catches$";
     private static final String PTR_ENC_IN_NO_TRY_FIN_SHADOW = "try($armres_x$) {final $CV_x $var_x = $init_x; $stms_x$; $var_x.close();} catch $catches_x$";
-    private static final String PTR_ENC_IN_NO_TRY2_FIN = "try($armres$) {$pref$; final $CV $var = $init; $stms$; $var.close(); $suff$;} catch $catches$ finally {$finstms$;}";
+    private static final String PTR_ENC_IN_NO_TRY2_FIN = "try($armres$) {final $CV $var = $init; $stms$; $var.close(); $suff$;} catch $catches$ finally {$finstms$;}";
     private static final String PTR_ENC_IN_NO_TRY2_FIN_SHADOW = "try($armres_x$) {$CV_x $var_x = $init_x; $stms_x$; $var_x.close();} catch $catches_x$ finally {$finstms_x$;}";
     private static final String PTR_ENC_IN_TRY = "try($armres$) { $CV $var = $init; try { $stms$; } finally {$var.close();}} catch $catches$";  //NOI18N
     private static final String PTR_ENC_IN_TRY_SHADOW = "try($armres_x$) { $CV_x $var_x = $init_x; try { $stms_x$; } finally {$var_x.close();}} catch $catches_x$";  //NOI18N

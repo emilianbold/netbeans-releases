@@ -124,6 +124,8 @@ public class FmtOptions {
     public static final String classMembersOrder = "classMembersOrder"; //NOI18N
     public static final String sortMembersByVisibility = "sortMembersByVisibility"; //NOI18N
     public static final String visibilityOrder = "visibilityOrder"; //NOI18N
+    public static final String keepGettersAndSettersTogether = "keepGettersAndSettersTogether"; //NOI18N
+    public static final String sortMembersInGroups = "sortMembersInGroups"; //NOI18N
     public static final String classMemberInsertionPoint = "classMemberInsertionPoint"; //NOI18N
     
     public static final String classDeclBracePlacement = "classDeclBracePlacement"; //NOI18N
@@ -174,6 +176,7 @@ public class FmtOptions {
     public static final String wrapIfStatement = "wrapIfStatement"; //NOI18N
     public static final String wrapWhileStatement = "wrapWhileStatement"; //NOI18N
     public static final String wrapDoWhileStatement = "wrapDoWhileStatement"; //NOI18N
+    public static final String wrapCaseStatements = "wrapCaseStatements"; //NOI18N
     public static final String wrapAssert = "wrapAssert"; //NOI18N
     public static final String wrapEnumConstants = "wrapEnumConstants"; //NOI18N
     public static final String wrapAnnotations = "wrapAnnotations"; //NOI18N
@@ -182,7 +185,10 @@ public class FmtOptions {
     public static final String wrapTernaryOps = "wrapTernaryOps"; //NOI18N
     public static final String wrapAfterTernaryOps = "wrapAfterTernaryOps"; //NOI18N
     public static final String wrapAssignOps = "wrapAssignOps"; //NOI18N
+    public static final String wrapAfterAssignOps = "wrapAfterAssignOps"; //NOI18N
     
+    public static final String blankLinesInDeclarations = "blankLinesInDeclarations"; //NOI18N
+    public static final String blankLinesInCode = "blankLinesInCode"; //NOI18N
     public static final String blankLinesBeforePackage = "blankLinesBeforePackage"; //NOI18N
     public static final String blankLinesAfterPackage = "blankLinesAfterPackage"; //NOI18N
     public static final String blankLinesBeforeImports = "blankLinesBeforeImports"; //NOI18N
@@ -260,6 +266,7 @@ public class FmtOptions {
     public static final String usePackageImport = "usePackageImport"; //NOI18N
     public static final String useFQNs = "useFQNs"; //NOI18N
     public static final String importInnerClasses = "importInnerClasses"; //NOI18N
+    public static final String preferStaticImports = "preferStaticImports"; //NOI18N
     public static final String allowConvertToStarImport = "allowConvertToStarImport"; //NOI18N
     public static final String countForUsingStarImport = "countForUsingStarImport"; //NOI18N
     public static final String allowConvertToStaticStarImport = "allowConvertToStaticStarImport"; //NOI18N
@@ -401,6 +408,8 @@ public class FmtOptions {
             { classMembersOrder, "STATIC FIELD;STATIC_INIT;STATIC METHOD;FIELD;INSTANCE_INIT;CONSTRUCTOR;METHOD;STATIC CLASS;CLASS"}, //NOI18N
             { sortMembersByVisibility, FALSE}, //NOI18N
             { visibilityOrder, "PUBLIC;PRIVATE;PROTECTED;DEFAULT"}, //NOI18N
+            { keepGettersAndSettersTogether, FALSE}, //NOI18N
+            { sortMembersInGroups, FALSE}, //NOI18N
             { classMemberInsertionPoint, IP_CARET},
 
             { classDeclBracePlacement, BP_SAME_LINE}, //NOI18N
@@ -451,6 +460,7 @@ public class FmtOptions {
             { wrapIfStatement, WRAP_ALWAYS}, //NOI18N
             { wrapWhileStatement, WRAP_ALWAYS}, //NOI18N
             { wrapDoWhileStatement, WRAP_ALWAYS}, //NOI18N
+            { wrapCaseStatements, WRAP_ALWAYS}, //NOI18N
             { wrapAssert, WRAP_NEVER}, //NOI18N
             { wrapEnumConstants, WRAP_NEVER}, //NOI18N
             { wrapAnnotations, WRAP_ALWAYS}, //NOI18N
@@ -459,7 +469,10 @@ public class FmtOptions {
             { wrapTernaryOps, WRAP_NEVER}, //NOI18N
             { wrapAfterTernaryOps, FALSE}, //NOI18N
             { wrapAssignOps, WRAP_NEVER}, //NOI18N
+            { wrapAfterAssignOps, FALSE}, //NOI18N
 
+            { blankLinesInDeclarations, "1"}, //NOI18N
+            { blankLinesInCode, "1"}, //NOI18N
             { blankLinesBeforePackage, "0"}, //NOI18N
             { blankLinesAfterPackage, "1"}, //NOI18N
             { blankLinesBeforeImports, "1"}, //NOI18N 
@@ -537,6 +550,7 @@ public class FmtOptions {
             { usePackageImport, FALSE}, //NOI18N
             { useFQNs, FALSE}, //NOI18N
             { importInnerClasses, FALSE}, //NOI18N
+            { preferStaticImports, FALSE}, //NOI18N
             { allowConvertToStarImport, FALSE}, //NOI18N
             { countForUsingStarImport, "5"}, //NOI18N
             { allowConvertToStaticStarImport, FALSE}, //NOI18N
@@ -600,6 +614,7 @@ public class FmtOptions {
         private static final ComboItem  insertionPoint[] = new ComboItem[] {
                 new ComboItem( InsertionPoint.LAST_IN_CATEGORY.name(), "LBL_ip_LAST_IN_CATEGORY" ), // NOI18N
                 new ComboItem( InsertionPoint.FIRST_IN_CATEGORY.name(), "LBL_ip_FIRST_IN_CATEGORY" ), // NOI18N
+                new ComboItem( InsertionPoint.ORDERED_IN_CATEGORY.name(), "LBL_ip_ORDERED_IN_CATEGORY" ), // NOI18N
                 new ComboItem( InsertionPoint.CARET_LOCATION.name(), "LBL_ip_CARET_LOCATION" ) // NOI18N
             };
         

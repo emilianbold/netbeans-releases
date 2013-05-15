@@ -57,7 +57,6 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsAction;
 import org.netbeans.modules.git.ui.conflicts.ResolveConflictsExecutor;
-import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
@@ -70,12 +69,12 @@ import org.openide.util.NbBundle;
 public class ResultProcessor {
 
     private static final Logger LOG = Logger.getLogger(ResultProcessor.class.getName());
-    private final GitClient client;
-    private final File repository;
+    protected final GitClient client;
+    protected final File repository;
     private final String revision;
-    private final ProgressMonitor pm;
+    protected final ProgressMonitor pm;
 
-    public ResultProcessor (GitClient client, File repository, String revision, OutputLogger logger, ProgressMonitor pm) {
+    public ResultProcessor (GitClient client, File repository, String revision, ProgressMonitor pm) {
         this.client = client;
         this.repository = repository;
         this.revision = revision;
@@ -106,8 +105,11 @@ public class ResultProcessor {
         }
     }
 
-    public boolean resolveLocalChanges (String[] conflicts) throws GitException {
-        File[] localChanges = getFilesInConflict(conflicts);
+    public final boolean resolveLocalChanges (String[] conflicts) throws GitException {
+        return resolveLocalChanges(getFilesInConflict(conflicts));
+    }
+        
+    public final boolean resolveLocalChanges (File[] localChanges) throws GitException {
         JButton revert = new JButton();
         Mnemonics.setLocalizedText(revert, NbBundle.getMessage(ResultProcessor.class, "LBL_ResultProcessor.revertButton.text")); //NOI18N
         revert.setToolTipText(NbBundle.getMessage(ResultProcessor.class, "LBL_ResultProcessor.revertButton.TTtext")); //NOI18N
@@ -140,7 +142,7 @@ public class ResultProcessor {
         return files.toArray(new File[files.size()]);
     }
 
-    private void openInVersioningView (final Collection<File> files) {
+    protected final void openInVersioningView (final Collection<File> files) {
         new GitProgressSupport() {
             @Override
             protected void perform () {

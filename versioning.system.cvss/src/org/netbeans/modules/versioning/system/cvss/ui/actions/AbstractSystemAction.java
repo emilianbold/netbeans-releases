@@ -64,6 +64,7 @@ import java.io.File;
 import java.util.MissingResourceException;
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
+import org.openide.util.ImageUtilities;
 
 /**
  * Base for all context-sensitive CVS actions.
@@ -79,8 +80,16 @@ public abstract class AbstractSystemAction extends NodeAction {
     protected abstract String getBaseName(Node [] activatedNodes);
 
     protected AbstractSystemAction() {
-        setIcon(null);
-        putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        this(null);
+    }
+
+    protected AbstractSystemAction (String iconResource) {
+        if (iconResource == null) {
+            setIcon(null);
+            putValue("noIconInMenu", Boolean.TRUE); // NOI18N
+        } else {
+            setIcon(ImageUtilities.loadImageIcon(iconResource, true));
+        }
     }
 
     /**

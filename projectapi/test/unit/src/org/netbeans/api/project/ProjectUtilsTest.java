@@ -56,6 +56,7 @@ import java.util.Set;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.spi.project.CacheDirectoryProvider;
 import org.netbeans.spi.project.ProjectIconAnnotator;
 import org.netbeans.spi.project.SubprojectProvider;
@@ -143,6 +144,7 @@ public class ProjectUtilsTest extends NbTestCase {
         assertEquals("D asked for subprojects just once", 1, d.getSubprojectsCalled());
     }
     
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
     public void testGenericSources() throws Exception {
         clearWorkDir();
         File topF = new File(getWorkDir(), "top");

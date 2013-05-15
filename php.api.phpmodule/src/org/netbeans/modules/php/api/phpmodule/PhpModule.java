@@ -62,7 +62,6 @@ import org.openide.windows.WindowManager;
  * Note: For public API, this should likely be final class using accessor pattern.
  * @author Tomas Mysik
  */
-// XXX add @NonNull etc.
 public abstract class PhpModule {
 
     /**
@@ -75,11 +74,13 @@ public abstract class PhpModule {
     /**
      * See {@link org.netbeans.api.project.ProjectInformation#getName}.
      */
+    @NonNull
     public abstract String getName();
 
     /**
      * See {@link org.netbeans.api.project.ProjectInformation#getDisplayName}.
      */
+    @NonNull
     public abstract String getDisplayName();
 
     /**
@@ -92,6 +93,7 @@ public abstract class PhpModule {
      * Get the project directory for this PHP module.
      * @return the project directory, never <code>null</code>
      */
+    @NonNull
     public abstract FileObject getProjectDirectory();
 
     /**
@@ -105,6 +107,7 @@ public abstract class PhpModule {
      * Get the test directory for this PHP module.
      * @return the test directory, can be <code>null</code> if not set yet
      */
+    @CheckForNull
     public abstract FileObject getTestDirectory();
 
     /**
@@ -113,6 +116,7 @@ public abstract class PhpModule {
      * change very often (if user changes Run Configuration).
      * @return the current {@link PhpModuleProperties properties}
      */
+    @NonNull
     public abstract PhpModuleProperties getProperties();
 
     /**
@@ -124,6 +128,7 @@ public abstract class PhpModule {
      * @return {@link Preferences} for this PHP module and the given class
      * @see org.netbeans.api.project.ProjectUtils#getPreferences(org.netbeans.api.project.Project, Class, boolean)
      */
+    @NonNull
     public abstract Preferences getPreferences(Class<?> clazz, boolean shared);
 
     /**
@@ -134,18 +139,31 @@ public abstract class PhpModule {
     public abstract void openCustomizer(String category);
 
     /**
+     * <b>Deprecated, use {@link #notifyPropertyChanged(java.beans.PropertyChangeEvent)}. This
+     * method will be removed after NB 7.4.</b>
      * A way for informing PHP module that something has changed.
      * @param propertyChangeEvent property change event
      * @since 2.4
      * @see #PROPERTY_FRAMEWORKS
+     * @deprecated use {@link #notifyPropertyChanged(java.beans.PropertyChangeEvent)}
      */
+    @Deprecated
     public abstract void propertyChanged(@NonNull PropertyChangeEvent propertyChangeEvent);
+
+    /**
+     * A way for informing PHP module that something has changed.
+     * @param propertyChangeEvent property change event
+     * @since 2.18
+     * @see #PROPERTY_FRAMEWORKS
+     */
+    public abstract void notifyPropertyChanged(@NonNull PropertyChangeEvent propertyChangeEvent);
 
     /**
      * Gets PHP module for the given {@link FileObject}.
      * @param fo {@link FileObject} to get PHP module for
      * @return PHP module or <code>null</code> if not found
      */
+    @CheckForNull
     public static PhpModule forFileObject(FileObject fo) {
         Parameters.notNull("fo", fo); // NOI18N
         Project project = FileOwnerQuery.getOwner(fo);
@@ -159,6 +177,7 @@ public abstract class PhpModule {
      * Infers PHP module - from the currently selected top component, open projects etc.
      * @return PHP module or <code>null</code> if not found.
      */
+    @CheckForNull
     public static PhpModule inferPhpModule() {
         // try current context firstly
         Node[] activatedNodes = WindowManager.getDefault().getRegistry().getActivatedNodes();
@@ -210,10 +229,11 @@ public abstract class PhpModule {
      * @return PHP module or {@code null} if not found
      * @see 1.38
      */
+    @CheckForNull
     public static PhpModule lookupPhpModule(Project project) {
         Parameters.notNull("project", project);
 
-        return lookupPhpModule(project.getLookup());
+        return project.getLookup().lookup(PhpModule.class);
     }
 
     /**
@@ -222,6 +242,7 @@ public abstract class PhpModule {
      * @return PHP module or {@code null} if not found
      * @see 1.38
      */
+    @CheckForNull
     public static PhpModule lookupPhpModule(Lookup lookup) {
         Parameters.notNull("lookup", lookup);
 
@@ -232,13 +253,10 @@ public abstract class PhpModule {
         }
         // try through Project instance
         Project project = lookup.lookup(Project.class);
-        if (project != null) {
-            result = project.getLookup().lookup(PhpModule.class);
-            if (result != null) {
-                return result;
-            }
+        if (project == null) {
+            return null;
         }
-        return null;
+        return lookupPhpModule(project);
     }
 
 }

@@ -1203,7 +1203,8 @@ class JavaCodeGenerator extends CodeGenerator {
                     emptyLineRequest++;
                     // some code of sub-components is generated after adding
                     // them to the container (a11y, after-all-set)
-                    for (RADComponent subcomp : visualCont.getSubComponents()) { // excluding menu
+                    for (RADVisualComponent subcomp : visualCont.getSubComponents()) { // excluding menu
+                        generateLayeredPaneCode(subcomp, writer);
                         generateComponentAddPost(subcomp, initCodeWriter, null);
                         generateAccessibilityCode(subcomp, initCodeWriter, null);
                         generateInjectionCode(subcomp, initCodeWriter, null);
@@ -1782,9 +1783,10 @@ class JavaCodeGenerator extends CodeGenerator {
                 writer.write(getComponentParameterString(comp, true));
                 writer.write(");\n"); // NOI18N
             } else { // adding visual component to container with old layout support
-                LayoutSupportManager laysup = ((RADVisualComponent)comp).getParentLayoutSupport();
+                RADVisualComponent visualComp = (RADVisualComponent) comp;
+                LayoutSupportManager laysup = visualComp.getParentLayoutSupport();
                 CodeGroup componentCode = laysup != null ?
-                    laysup.getComponentCode((RADVisualComponent)comp) : null;
+                    laysup.getComponentCode(visualComp) : null;
                 if (componentCode != null) {
                     Iterator it = componentCode.getStatementsIterator();
                     if (codeData == null && it.hasNext())
@@ -1794,6 +1796,7 @@ class JavaCodeGenerator extends CodeGenerator {
                         initCodeWriter.write(getStatementJavaString(statement, "")); // NOI18N
                         initCodeWriter.write("\n"); // NOI18N
                     }
+                    generateLayeredPaneCode(visualComp, writer);
                 }
             } // this method is not called for visual components in freee design
         }
@@ -1938,6 +1941,20 @@ class JavaCodeGenerator extends CodeGenerator {
             contVarName,
             infos,
             formModel.getSettings().getLayoutCodeTarget() == LAYOUT_CODE_LIBRARY);
+    }
+
+    private boolean generateLayeredPaneCode(RADVisualComponent metacomp, Writer writer) throws IOException {
+        String layerJavaString = metacomp.getComponentLayerJavaInitCode();
+        if (layerJavaString != null) {
+            writer.write(getComponentInvokeString(metacomp.getParentContainer(), true));
+            writer.write("setLayer("); // NOI18N
+            writer.write(metacomp.getName());
+            writer.write(", "); // NOI18N
+            writer.write(layerJavaString);
+            writer.write(");\n"); // NOI18N
+            return true;
+        }
+        return false;
     }
 
     private SwingLayoutCodeGenerator getSwingGenerator() {

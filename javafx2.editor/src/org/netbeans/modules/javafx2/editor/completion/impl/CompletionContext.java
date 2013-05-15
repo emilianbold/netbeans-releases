@@ -1274,9 +1274,18 @@ public final class CompletionContext {
                     type = Type.INSTRUCTION_END;
                     break;
 
-                case PI_CONTENT:
+                case PI_CONTENT: {
+                    // do not count whitespace after caret into the replacement length
+                    String tail = t.text().subSequence(diff, diff + tokenTail).toString();
+                    String trimmed = tail.trim();
+                    if (trimmed.isEmpty()) {
+                        tokenTail = 0;
+                    } else {
+                        tokenTail = tail.indexOf(trimmed) + trimmed.length();
+                    }
                     type = Type.INSTRUCTION_DATA;
                     break;
+                }
 
                 case PI_TARGET:
                     type = Type.INSTRUCTION_TARGET;

@@ -57,6 +57,10 @@ import org.netbeans.modules.css.lib.TokenNode;
  * @author mfukala@netbeans.org
  */
 public final class NodeUtil {
+    
+    private static final char ELEMENT_PATH_ELEMENTS_DELIMITER = '/'; //NOI18N
+    private static final char ELEMENT_PATH_INDEX_DELIMITER = '|'; //NOI18N
+    
 
     private static final String INDENT = "    ";//NOI18N
 
@@ -152,7 +156,7 @@ public final class NodeUtil {
     }
 
     public static Node getAncestorByType(Node node, final NodeType type) {
-        AtomicReference<Node> found = new AtomicReference<Node>();
+        AtomicReference<Node> found = new AtomicReference<>();
         NodeVisitor visitor = new NodeVisitor<AtomicReference<Node>>(found) {
 
             @Override
@@ -170,7 +174,7 @@ public final class NodeUtil {
     
     public static List<Node> getChildrenRecursivelyByType(Node root, final NodeType... type) {
         final EnumSet<NodeType> nodeTypes = EnumSet.of(type[0], type);
-        List<Node> found = new ArrayList<Node>();
+        List<Node> found = new ArrayList<>();
         NodeVisitor<List<Node>> visitor = new NodeVisitor<List<Node>>(found) {
 
             @Override
@@ -188,7 +192,7 @@ public final class NodeUtil {
 
     /** @return list of children of the node with the specified kind. */
     public static Node[] getChildrenByType(Node node, NodeType type) {
-        ArrayList<Node> list = new ArrayList<Node>(node.children().size() / 4);
+        ArrayList<Node> list = new ArrayList<>(node.children().size() / 4);
         for (Node child : node.children()) {
             if (child.type() == type) {
                 list.add(child);
@@ -230,6 +234,60 @@ public final class NodeUtil {
         return sibling;
     }
 
+    /**
+     * Gets a element identification id for the given element which may be used to resolve the element in another parse tree.
+     * 
+     * @since 1.42
+     */
+    public static String getElementId(Node node) {
+        TreePath tp = new TreePath(node);
+        return encodeToString(tp);
+    }
+    
+    /**
+     * Encodes the given {@link TreePath} into a string form. 
+     * 
+     * The encoded path can be later used as an argument of {@link #query(org.netbeans.modules.css.lib.api.elements.Node, java.lang.String) }
+     * 
+     * The root node is not listed in the path.
+
+     * @since 1.42
+     * @param treePath
+     * @return string representation of the {@link TreePath}
+     */
+    public static String encodeToString(TreePath treePath) {
+        StringBuilder sb = new StringBuilder();
+        List<Node> p = treePath.path();
+        for(int i = p.size() - 2; i >= 0; i-- ) { //do not include the root element
+            Node node = p.get(i);
+            Node parent = node.parent();
+            int myIndex = parent == null ? 0 : getIndexInSimilarNodes(node.parent(), node);
+            sb.append(node.name());
+            if(myIndex > 0) {
+                sb.append(ELEMENT_PATH_INDEX_DELIMITER);
+                sb.append(myIndex);
+            }
+            
+            if(i > 0) {
+                sb.append(ELEMENT_PATH_ELEMENTS_DELIMITER);
+            }
+        }
+        return sb.toString();
+    }
+    
+    private static int getIndexInSimilarNodes(Node parent, Node node) {
+        int index = -1;
+        for(Node child : parent.children()) {
+            if(node.name().equals(child.name()) && node.type() == child.type()) {
+                index++;
+            }
+            if(child == node) {
+                break;
+            }
+        }
+        return index;
+    }
+    
     public static Node query(Node base, String path) {
         return query(base, path, false);
     }

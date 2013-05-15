@@ -79,7 +79,8 @@ public class PHPHintsProvider implements HintsProvider {
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(false, context);
         List<? extends AstRule> modelHints = allHints.get(DEFAULT_HINTS);
         RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<Hint>(mgr, initializeContext(context), hints);
-        rulesRunner.run(modelHints, new PreferencesAdjuster(mgr));
+        RuleAdjuster forAllAdjusters = new ForAllAdjusters(Arrays.asList(new PreferencesAdjuster(mgr), new ResetCaretOffsetAdjuster()));
+        rulesRunner.run(modelHints, forAllAdjusters);
     }
 
     @Override
@@ -212,6 +213,20 @@ public class PHPHintsProvider implements HintsProvider {
             for (RuleAdjuster hintAdjuster : adjusters) {
                 hintAdjuster.adjust(rule);
             }
+        }
+
+    }
+
+    private static final class ResetCaretOffsetAdjuster implements RuleAdjuster {
+        private final RuleAdjuster caretOffsetAdjuster;
+
+        public ResetCaretOffsetAdjuster() {
+            caretOffsetAdjuster = new CaretOffsetAdjuster(-1);
+        }
+
+        @Override
+        public void adjust(Rule rule) {
+            caretOffsetAdjuster.adjust(rule);
         }
 
     }

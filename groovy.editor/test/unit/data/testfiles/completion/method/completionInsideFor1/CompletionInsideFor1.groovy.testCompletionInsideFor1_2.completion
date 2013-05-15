@@ -20,6 +20,7 @@ METHOD     containsValue(Object)           [PUBLIC]   boolean
 METHOD     count(Closure)                             Number
 METHOD     countBy(Closure)                           Map
 METHOD     drop(int)                                  Map
+METHOD     dropWhile(Closure)                         Map
 METHOD     dump()                                     String
 METHOD     each(Closure)                              Map
 METHOD     eachWithIndex(Closure)                     Map
@@ -58,6 +59,7 @@ METHOD     groupEntriesBy(Closure)                    Map
 METHOD     hasProperty(String)                        MetaProperty
 METHOD     hashCode()                      [PUBLIC]   int
 METHOD     identity(Closure)                          Object
+METHOD     inject(Closure)                            Object
 METHOD     inject(Object, Closure)                    Object
 METHOD     inspect()                                  String
 METHOD     intersect(Map)                             Map
@@ -106,6 +108,7 @@ METHOD     sprintf(String, Object)                    String
 METHOD     sprintf(String, Object)                    String
 METHOD     subMap(Collection)                         Map
 METHOD     take(int)                                  Map
+METHOD     takeWhile(Closure)                         Map
 METHOD     toMapString()                              String
 METHOD     toMapString(int)                           String
 METHOD     toSpreadMap()                              SpreadMap
@@ -119,5 +122,4 @@ METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
 METHOD     withDefault(Closure)                       Map
-FIELD      class                                      Class
-FIELD      empty                                      boolean
+FIELD      empty                           [PUBLIC]   boolean

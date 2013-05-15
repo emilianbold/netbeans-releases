@@ -154,7 +154,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     }
 
     @Override
-    public JComboBox getRunAsCombo() {
+    public JComboBox<String> getRunAsCombo() {
         return runAsCombo;
     }
 
@@ -219,13 +219,11 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         interpreterLabel = new JLabel();
         interpreterTextField = new JTextField();
         runAsLabel = new JLabel();
-        runAsCombo = new JComboBox();
+        runAsCombo = new JComboBox<String>();
         configureButton = new JButton();
         indexFileLabel = new JLabel();
         indexFileTextField = new JTextField();
         indexFileBrowseButton = new JButton();
-
-        setFocusTraversalPolicy(null);
 
         interpreterLabel.setLabelFor(interpreterTextField);
         Mnemonics.setLocalizedText(interpreterLabel, NbBundle.getMessage(RunAsScript.class, "LBL_PhpInterpreter")); // NOI18N
@@ -233,8 +231,9 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         interpreterTextField.setEditable(false);
 
         runAsLabel.setLabelFor(runAsCombo);
-        Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsScript.class, "LBL_RunAs"));
-        Mnemonics.setLocalizedText(configureButton, NbBundle.getMessage(RunAsScript.class, "LBL_Configure"));
+        Mnemonics.setLocalizedText(runAsLabel, NbBundle.getMessage(RunAsScript.class, "LBL_RunAs")); // NOI18N
+
+        Mnemonics.setLocalizedText(configureButton, NbBundle.getMessage(RunAsScript.class, "LBL_Configure")); // NOI18N
         configureButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 configureButtonActionPerformed(evt);
@@ -242,8 +241,9 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
         });
 
         indexFileLabel.setLabelFor(indexFileTextField);
-        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile"));
-        Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsScript.class, "LBL_BrowseIndex"));
+        Mnemonics.setLocalizedText(indexFileLabel, NbBundle.getMessage(RunAsScript.class, "LBL_IndexFile")); // NOI18N
+
+        Mnemonics.setLocalizedText(indexFileBrowseButton, NbBundle.getMessage(RunAsScript.class, "LBL_BrowseIndex")); // NOI18N
         indexFileBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 indexFileBrowseButtonActionPerformed(evt);
@@ -263,7 +263,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                     .addComponent(indexFileLabel))
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(runAsCombo, Alignment.TRAILING, 0, 128, Short.MAX_VALUE)
+                    .addComponent(runAsCombo, Alignment.TRAILING, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(Alignment.TRAILING, layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(Alignment.TRAILING)
                             .addComponent(indexFileTextField)
@@ -271,8 +271,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addComponent(configureButton, Alignment.TRAILING)
-                            .addComponent(indexFileBrowseButton, Alignment.TRAILING))))
-                .addGap(0, 0, 0))
+                            .addComponent(indexFileBrowseButton, Alignment.TRAILING)))))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {configureButton, indexFileBrowseButton});
@@ -336,7 +335,7 @@ public class RunAsScript extends RunAsPanel.InsidePanel {
     private JTextField indexFileTextField;
     private JLabel interpreterLabel;
     private JTextField interpreterTextField;
-    private JComboBox runAsCombo;
+    private JComboBox<String> runAsCombo;
     private JLabel runAsLabel;
     // End of variables declaration//GEN-END:variables
 

@@ -86,15 +86,16 @@ public class AutomaticRegistration {
      */
     public static void main(String[] args) throws IOException {
         if (args.length < 2) {
-            System.out.println("Parameters: <ide clusterDir> <GlassFishHome>");
+            System.out.println("Parameters: <ide clusterDir> <GlassFishHome> <Java 7 or later home>");
             System.exit(-1);
         }
         
-        int status = autoregisterGlassFishInstance(args[0], args[1]);
+        String javaExe = args.length == 3 ? args[2] : "";
+        int status = autoregisterGlassFishInstance(args[0], args[1], javaExe);
         System.exit(status);
     }
 
-    private static int autoregisterGlassFishInstance(String clusterDirValue, String glassfishRoot) throws IOException {
+    private static int autoregisterGlassFishInstance(String clusterDirValue, String glassfishRoot, String jdk7orLaterPath) throws IOException {
         // tell the infrastructure that the userdir is cluster dir
         System.setProperty("netbeans.user", clusterDirValue); // NOI18N
 
@@ -107,7 +108,12 @@ public class AutomaticRegistration {
         String config;
         String deployer;
         String defaultDisplayName;
-        if(new File(glassfishHome, "lib/dtds/glassfish-web-app_3_0-1.dtd").exists()) {
+        if(new File(glassfishHome, "lib/schemas/javaee_7.xsd").exists()) {
+            // ee6wc
+            config = "GlassFishEE6WC/Instances";
+            deployer = "deployer:gfv3ee6wc";
+            defaultDisplayName = "GlassFish Server 4.0";
+        } else if(new File(glassfishHome, "lib/dtds/glassfish-web-app_3_0-1.dtd").exists()) {
             // ee6wc
             config = "GlassFishEE6WC/Instances";
             deployer = "deployer:gfv3ee6wc";
@@ -153,8 +159,12 @@ public class AutomaticRegistration {
             }
         }
 
+        File jdk7orLaterExecutable = new File(jdk7orLaterPath);
+        if (!jdk7orLaterExecutable.exists()) {
+            jdk7orLaterExecutable = null;
+        }
         String displayName = generateUniqueDisplayName(serverInstanceDir, defaultDisplayName);
-        boolean ok = registerServerInstanceFO(serverInstanceDir, url, displayName, glassfishHome);
+        boolean ok = registerServerInstanceFO(serverInstanceDir, url, displayName, glassfishHome, jdk7orLaterExecutable);
         if (ok) {
             return 0;
         } else {
@@ -199,7 +209,7 @@ public class AutomaticRegistration {
      * @param url server instance url/ID
      * @param displayName display name
      */
-    private static boolean registerServerInstanceFO(FileObject serverInstanceDir, String url, String displayName, File glassfishRoot) {
+    private static boolean registerServerInstanceFO(FileObject serverInstanceDir, String url, String displayName, File glassfishRoot, File java7orLaterExecutable) {
         String name = FileUtil.findFreeFileName(serverInstanceDir, 
                 GlassfishInstanceProvider.GLASSFISH_AUTOREGISTERED_INSTANCE, null);
         FileObject instanceFO;
@@ -219,7 +229,7 @@ public class AutomaticRegistration {
             instanceFO.setAttribute(GlassfishModule.INSTALL_FOLDER_ATTR, glassfishRoot.getParent());
             instanceFO.setAttribute(GlassfishModule.HOSTNAME_ATTR, "localhost"); // NOI18N
             instanceFO.setAttribute(GlassfishModule.GLASSFISH_FOLDER_ATTR, glassfishRoot.getAbsolutePath());
-            instanceFO.setAttribute(GlassfishModule.JAVA_PLATFORM_ATTR, ""); // NOI18N
+            instanceFO.setAttribute(GlassfishModule.JAVA_PLATFORM_ATTR, java7orLaterExecutable == null ? "" : java7orLaterExecutable.getAbsolutePath()); // NOI18N
             instanceFO.setAttribute(GlassfishModule.HTTPPORT_ATTR, "8080"); // NOI18N
             instanceFO.setAttribute(GlassfishModule.HTTPHOST_ATTR, "localhost"); // NOI18N
             instanceFO.setAttribute(GlassfishModule.JVM_MODE, GlassfishModule.NORMAL_MODE);

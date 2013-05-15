@@ -79,7 +79,6 @@ import org.netbeans.modules.cnd.discovery.wizard.api.DiscoveryDescriptor;
 import org.netbeans.modules.cnd.discovery.wizard.api.ProjectConfiguration;
 import org.netbeans.modules.cnd.discovery.wizard.support.impl.DiscoveryProjectGeneratorImpl;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -136,7 +135,7 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     }
 
     public DiscoveryExtensionInterface.Applicable isApplicable(DiscoveryDescriptor descriptor, Interrupter interrupter, boolean findMain) {
-        Progress progress = new MyProgress();
+        Progress progress = new MyProgress(NbBundle.getMessage(DiscoveryExtension.class, "AnalyzingProjectProgress"));
         progress.start(0);
         try {
             List<String> errors = new  ArrayList<String>();
@@ -389,56 +388,62 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
             public boolean mergeProjectProperties() {
                 return wizardDescriptor.isIncrementalMode();
             }
-        }, new MyProgress(), interrupter);
+        }, new MyProgress(NbBundle.getMessage(DiscoveryExtension.class, "AnalyzingProjectProgress")), interrupter);
         if (interrupter != null && interrupter.cancelled()) {
             return;
         }
-        List<ProjectConfiguration> projectConfigurations = new ArrayList<ProjectConfiguration>();
-        List<String> includedFiles = new ArrayList<String>();
-        wizardDescriptor.setIncludedFiles(includedFiles);
-        Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
-        Set<String> dep = new HashSet<String>();
-        Set<String> buildArtifacts = new HashSet<String>();
-        for (Iterator<Configuration> it = configs.iterator(); it.hasNext();) {
-            Configuration conf = it.next();
-            includedFiles.addAll(conf.getIncludedFiles());
-            List<ProjectProperties> langList = conf.getProjectConfiguration();
-            for (Iterator<ProjectProperties> it2 = langList.iterator(); it2.hasNext();) {
-                ProjectConfiguration project = ConfigurationFactory.makeRoot(it2.next(), rootFolder);
-                ConsolidationStrategy.consolidateModel(project, consolidation);
-                projectConfigurations.add(project);
-            }
-            for (SourceFileProperties source : conf.getSourcesConfiguration()) {
-                String compiler = source.getCompilerName();
-                if (compiler != null) {
-                    AtomicInteger count = compilers.get(compiler);
-                    if (count == null) {
-                        count = new AtomicInteger();
-                        compilers.put(compiler, count);
+        MyProgress myProgress = new MyProgress(NbBundle.getMessage(DiscoveryExtension.class, "BuildCodeAssistanceProgress"));
+        try {
+            myProgress.start();
+            List<ProjectConfiguration> projectConfigurations = new ArrayList<ProjectConfiguration>();
+            List<String> includedFiles = new ArrayList<String>();
+            wizardDescriptor.setIncludedFiles(includedFiles);
+            Map<String, AtomicInteger> compilers = new HashMap<String, AtomicInteger>();
+            Set<String> dep = new HashSet<String>();
+            Set<String> buildArtifacts = new HashSet<String>();
+            for (Iterator<Configuration> it = configs.iterator(); it.hasNext();) {
+                Configuration conf = it.next();
+                includedFiles.addAll(conf.getIncludedFiles());
+                List<ProjectProperties> langList = conf.getProjectConfiguration();
+                for (Iterator<ProjectProperties> it2 = langList.iterator(); it2.hasNext();) {
+                    ProjectConfiguration project = ConfigurationFactory.makeRoot(it2.next(), rootFolder);
+                    ConsolidationStrategy.consolidateModel(project, consolidation);
+                    projectConfigurations.add(project);
+                }
+                for (SourceFileProperties source : conf.getSourcesConfiguration()) {
+                    String compiler = source.getCompilerName();
+                    if (compiler != null) {
+                        AtomicInteger count = compilers.get(compiler);
+                        if (count == null) {
+                            count = new AtomicInteger();
+                            compilers.put(compiler, count);
+                        }
+                        count.incrementAndGet();
                     }
-                    count.incrementAndGet();
+                }
+                if (conf.getDependencies() != null) {
+                    dep.addAll(conf.getDependencies());
+                }
+                if (conf.getBuildArtifacts() != null) {
+                    buildArtifacts.addAll(conf.getBuildArtifacts());
                 }
             }
-            if (conf.getDependencies() != null) {
-                dep.addAll(conf.getDependencies());
+            wizardDescriptor.setInvokeProvider(false);
+            wizardDescriptor.setDependencies(new ArrayList<String>(dep));
+            wizardDescriptor.setBuildArtifacts(new ArrayList<String>(buildArtifacts));
+            wizardDescriptor.setConfigurations(projectConfigurations);
+            int max = 0;
+            String top = "";
+            for(Map.Entry<String, AtomicInteger> entry : compilers.entrySet()){
+                if (entry.getValue().get() > max) {
+                    max = entry.getValue().get();
+                    top = entry.getKey();
+                }
             }
-            if (conf.getBuildArtifacts() != null) {
-                buildArtifacts.addAll(conf.getBuildArtifacts());
-            }
+            wizardDescriptor.setCompilerName(top);
+        } finally {
+            myProgress.done();
         }
-        wizardDescriptor.setInvokeProvider(false);
-        wizardDescriptor.setDependencies(new ArrayList<String>(dep));
-        wizardDescriptor.setBuildArtifacts(new ArrayList<String>(buildArtifacts));
-        wizardDescriptor.setConfigurations(projectConfigurations);
-        int max = 0;
-        String top = "";
-        for(Map.Entry<String, AtomicInteger> entry : compilers.entrySet()){
-            if (entry.getValue().get() > max) {
-                max = entry.getValue().get();
-                top = entry.getKey();
-            }
-        }
-        wizardDescriptor.setCompilerName(top);
     }
 
     @Override
@@ -469,9 +474,9 @@ public class DiscoveryExtension implements IteratorExtension, DiscoveryExtension
     @Override
     public void disableModel(Project makeProject) {
         final CsmModel model = CsmModelAccessor.getModel();
-        if (model instanceof ModelImpl && makeProject != null) {
+        if (model != null && makeProject != null) {
             NativeProject np = makeProject.getLookup().lookup(NativeProject.class);
-            ((ModelImpl) model).disableProject(np);
+            model.disableProject(np);
         }
     }
 

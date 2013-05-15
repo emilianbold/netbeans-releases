@@ -45,8 +45,7 @@ package org.netbeans.modules.versioning.util;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -57,8 +56,12 @@ import java.util.logging.Logger;
  * @author tomas
  */
 public class RootsToFile {
-    private LinkedList<File> order = new LinkedList<File>();
-    private Map<File, File> files = new HashMap<File, File>();
+    private final Map<File, File> files = new LinkedHashMap<File, File>() {
+        @Override
+        protected boolean removeEldestEntry (Map.Entry<File, File> eldest) {
+            return size() > 1500;
+        }
+    };
     private long cachedAccesCount = 0;
     private long accesCount = 0;
     private final int statisticsFrequency;
@@ -76,13 +79,6 @@ public class RootsToFile {
         }
     }
     synchronized void put (File file, File root) {
-        if(order.size() > 1500) {
-            for (int i = 0; i < 150; i++) {
-                files.remove(order.getFirst());
-                order.removeFirst();
-            }
-        }
-        order.addLast(file);
         files.put(file, root);
     }
     synchronized File get (File file) {
@@ -97,7 +93,7 @@ public class RootsToFile {
         return root;
     }
     synchronized int size () {
-        return order.size();
+        return files.size();
     }
     synchronized void logStatistics () {
         if(!log.isLoggable(Level.FINEST) ||
@@ -107,14 +103,13 @@ public class RootsToFile {
         }
 
         log.finest("Repository roots cache statistics:\n" +                                 // NOI18N
-                 "  cached roots size       = " + order.size() + "\n" +                         // NOI18N
+                 "  cached roots size       = " + files.size() + "\n" +                         // NOI18N
                  "  access count            = " + accesCount + "\n" +                           // NOI18N
                  "  cached access count     = " + cachedAccesCount + "\n" +                     // NOI18N
                  "  not cached access count = " + (accesCount - cachedAccesCount) + "\n");      // NOI18N
     }
 
     public synchronized void clear () {
-        order.clear();
         files.clear();
         cachedAccesCount = 0;
         accesCount = 0;

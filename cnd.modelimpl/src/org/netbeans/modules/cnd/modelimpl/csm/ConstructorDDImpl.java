@@ -63,8 +63,10 @@ import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl.FunctionParameterListBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.CompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.StatementBase.StatementBuilderContainer;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
+import org.netbeans.modules.cnd.modelimpl.parser.spi.CsmParserProvider;
 import org.netbeans.modules.cnd.modelimpl.repository.PersistentUtils;
 import org.netbeans.modules.cnd.modelimpl.textcache.NameCache;
 import org.netbeans.modules.cnd.modelimpl.textcache.QualifiedNameCache;
@@ -156,11 +158,19 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
     public static class ConstructorDDBuilder extends MethodDDBuilder implements StatementBuilderContainer {
 
         @Override
-        public ConstructorDDImpl create() {
+        public ConstructorDDImpl create(CsmParserProvider.ParserErrorDelegate delegate) {
+            final FunctionParameterListBuilder parameters = (FunctionParameterListBuilder)getParametersListBuilder();
+            if (parameters == null) {
+                return null;
+            }
+            final CompoundStatementImpl.CompoundStatementBuilder bodyBuilder = getBodyBuilder();
+            if (bodyBuilder == null) {
+                return null;
+            }
+            
             CsmClass cls = (CsmClass) getScope();
             boolean _virtual = false;
             boolean _explicit = false;
-
 
             ConstructorDDImpl method = new ConstructorDDImpl(getName(), getRawName(), cls, getVisibility(), _virtual, _explicit, isStatic(), isConst(), getFile(), getStartOffset(), getEndOffset(), true);
             temporaryRepositoryRegistration(true, method);
@@ -173,18 +183,16 @@ public final class ConstructorDDImpl extends MethodDDImpl<CsmConstructor> implem
             if(getTemplateDescriptorBuilder() != null) {
                 method.setTemplateDescriptor(getTemplateDescriptor(), NameCache.getManager().getString(CharSequences.create(""))); // NOI18N
             }
-
             //method.setReturnType(getType());
-            ((FunctionParameterListBuilder)getParametersListBuilder()).setScope(method);
-            method.setParameters(((FunctionParameterListBuilder)getParametersListBuilder()).create(), true);
+            parameters.setScope(method);
+            method.setParameters(parameters.create(), true);
 
             postObjectCreateRegistration(true, method);
             getNameHolder().addReference(getFileContent(), method);
 
             addDeclaration(method);
-            
-            getBodyBuilder().setScope(method);
-            method.setCompoundStatement(getBodyBuilder().create());
+            bodyBuilder.setScope(method);
+            method.setCompoundStatement(bodyBuilder.create());
 
             postObjectCreateRegistration(true, method);
             getNameHolder().addReference(getFileContent(), method);

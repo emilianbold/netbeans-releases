@@ -91,6 +91,7 @@ public class BrandingTest extends NbTestCase {
         b.setCluster(cluster);
         b.setOverrides(overrides);
         b.setToken("myapp");
+        b.setLocales("en");
         b.execute();
         File jar = new File(cluster, "core/locale/core_myapp.jar");
         assertTrue(jar.isFile());

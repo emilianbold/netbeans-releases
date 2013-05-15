@@ -128,4 +128,13 @@ interface Storage {
      * @return true if the storage has been closed
      */
     public boolean isClosed();
+
+    /**
+     * Shift start of the first character by specified offset. This method is
+     * called when a limit is reached and some part of the output should be
+     * forgotten.
+     *
+     * @param byteOffset How many bytes should be forgotten.
+     */
+    public void shiftStart(int byteOffset);
 }

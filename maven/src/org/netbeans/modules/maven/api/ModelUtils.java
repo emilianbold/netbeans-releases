@@ -47,9 +47,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.xml.namespace.QName;
+import org.apache.maven.model.InputLocation;
+import org.apache.maven.model.InputSource;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.repository.RepositorySystem;
 import org.netbeans.api.annotations.common.NonNull;
@@ -68,7 +72,13 @@ import org.netbeans.modules.maven.model.pom.Plugin;
 import org.netbeans.modules.maven.model.pom.Project;
 import org.netbeans.modules.maven.model.pom.Repository;
 import org.netbeans.modules.maven.options.MavenVersionSettings;
+import org.netbeans.modules.maven.spi.nodes.NodeUtils;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.text.Line;
 
 /**
  * Various maven model related utilities.
@@ -76,6 +86,8 @@ import org.openide.filesystems.FileObject;
  * @author Anuradha G
  */
 public final class ModelUtils {
+    private static final Logger LOG = Logger.getLogger(ModelUtils.class.getName());
+
     /**
      * library descriptor property containing whitespace separated list of maven coordinate values groupid:artifactId:version:[classifier:]type
      */
@@ -152,6 +164,31 @@ public final class ModelUtils {
     public static boolean hasModelDependency(POMModel mdl, String groupid, String artifactid) {
         return checkModelDependency(mdl, groupid, artifactid, false) != null;
     }
+    
+    /**
+     * Opens a pom file at location defined in InputLocation parameter
+     * @since 2.77
+     * @param location 
+     */
+    public static void openAtSource(InputLocation location) {
+        InputSource source = location.getSource();
+        if (source != null && source.getLocation() != null) {
+            FileObject fobj = FileUtilities.convertStringToFileObject(source.getLocation());
+            if (fobj != null) {
+                try {
+                    DataObject dobj = DataObject.find(NodeUtils.readOnlyLocalRepositoryFile(fobj));
+                    EditCookie edit = dobj.getLookup().lookup(EditCookie.class);
+                    if (edit != null) {
+                        edit.edit();
+                    }
+                    LineCookie lc = dobj.getLookup().lookup(LineCookie.class);
+                    lc.getLineSet().getOriginal(location.getLineNumber() - 1).show(Line.ShowOpenType.REUSE, Line.ShowVisibilityType.FOCUS, location.getColumnNumber() - 1);
+                } catch (DataObjectNotFoundException ex) {
+                    LOG.log(Level.FINE, "dataobject not found", ex);
+                }
+            }
+        }
+    }    
 
     /**
      *

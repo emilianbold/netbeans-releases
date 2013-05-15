@@ -65,7 +65,7 @@ import org.openide.util.Exceptions;
  *
  * @author Jan Becicka
  */
-@NodeFactory.Registration(projectType = "org-netbeans-modules-web-clientproject", position = 800)
+//@NodeFactory.Registration(projectType = "org-netbeans-modules-web-clientproject", position = 800)
 public class ClientProjectNodeFactory implements NodeFactory {
 
     

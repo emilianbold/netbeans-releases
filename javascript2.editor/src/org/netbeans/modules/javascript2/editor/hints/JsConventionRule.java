@@ -68,8 +68,8 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.PathNodeVisitor;
 import org.openide.util.NbBundle;
@@ -214,13 +214,17 @@ public class JsConventionRule extends JsAstRule {
                 if ((id == JsTokenId.EOL || id == JsTokenId.BRACKET_RIGHT_CURLY) && ts.movePrevious()) {
                     id = ts.token().id();
                 }
-                if (id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.LINE_COMMENT) {
+                if (id == JsTokenId.BLOCK_COMMENT || id == JsTokenId.LINE_COMMENT || id == JsTokenId.WHITESPACE) {
                     //try to find ; or , after
                     Token<? extends JsTokenId> next = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
                     id = next.id();
+                    if (id == JsTokenId.IDENTIFIER) {
+                       // probably we are at the beginning of the next expression
+                       ts.movePrevious();
+                    }
                 }
                 if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA) {
-                    Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT));
+                    Token<? extends JsTokenId> previous = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL, JsTokenId.LINE_COMMENT));
                     id = previous.id();
                     // check again whether there is not semicolon and it is not generated
                     if (id != JsTokenId.OPERATOR_SEMICOLON && id != JsTokenId.OPERATOR_COMMA

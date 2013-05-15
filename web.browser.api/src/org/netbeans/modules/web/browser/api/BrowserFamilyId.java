@@ -44,10 +44,8 @@ package org.netbeans.modules.web.browser.api;
 
 
 /**
- * Ids browser with available plugin 
+ * Identification of different browser types.
  * 
- * @author ads
- *
  */
 public enum BrowserFamilyId {
 
@@ -58,9 +56,14 @@ public enum BrowserFamilyId {
     SAFARI,
     IE,
     JAVAFX_WEBVIEW,
+    OPERA,
+    ANDROID,
+    IOS,
+    PHONEGAP,
     UNKNOWN;
     
-    public boolean hasNetBeansAdvancedIntegration() {
-        return this == CHROME || this == CHROMIUM || this == JAVAFX_WEBVIEW;
+    public boolean isMobile() {
+        return this == ANDROID || this == IOS || this == PHONEGAP;
     }
 }
+

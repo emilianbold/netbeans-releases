@@ -77,11 +77,13 @@ import javax.lang.model.util.*;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.annotations.common.NonNull;
 
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.CodeStyleUtils;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
@@ -111,12 +113,13 @@ public final class Utilities {
 
     private static boolean caseSensitive = true;
     private static boolean showDeprecatedMembers = true;
-    private static boolean guessMethodArguments = true;
-    private static boolean autoPopupOnJavaIdentifierPart = true;
-    private static boolean javaCompletionExcluderMethods;
-    private static String javaCompletionAutoPopupTriggers = null;
-    private static String javaCompletionSelectors = null;
-    private static String javadocCompletionAutoPopupTriggers = null;
+    private static boolean guessMethodArguments = CodeCompletionPanel.GUESS_METHOD_ARGUMENTS_DEFAULT;
+    private static boolean autoPopupOnJavaIdentifierPart = CodeCompletionPanel.JAVA_AUTO_POPUP_ON_IDENTIFIER_PART_DEFAULT;
+    private static boolean javaCompletionExcluderMethods = CodeCompletionPanel.JAVA_COMPLETION_EXCLUDER_METHODS_DEFAULT;
+    private static boolean javaCompletionSubwords = CodeCompletionPanel.JAVA_AUTO_COMPLETION_SUBWORDS_DEFAULT;
+    private static String javaCompletionAutoPopupTriggers = CodeCompletionPanel.JAVA_AUTO_COMPLETION_TRIGGERS_DEFAULT;
+    private static String javaCompletionSelectors = CodeCompletionPanel.JAVA_COMPLETION_SELECTORS_DEFAULT;
+    private static String javadocCompletionAutoPopupTriggers = CodeCompletionPanel.JAVADOC_AUTO_COMPLETION_TRIGGERS_DEFAULT;
     
     private static final AtomicBoolean inited = new AtomicBoolean(false);
     private static Preferences preferences;
@@ -156,25 +159,80 @@ public final class Utilities {
             if (settingName == null || CodeCompletionPanel.JAVA_COMPLETION_EXCLUDER_METHODS.equals(settingName)) {
                 javaCompletionExcluderMethods = preferences.getBoolean(CodeCompletionPanel.JAVA_COMPLETION_EXCLUDER_METHODS, CodeCompletionPanel.JAVA_COMPLETION_EXCLUDER_METHODS_DEFAULT);
             }
+            if (settingName == null || CodeCompletionPanel.JAVA_AUTO_COMPLETION_SUBWORDS.equals(settingName)) {
+                javaCompletionSubwords = preferences.getBoolean(CodeCompletionPanel.JAVA_AUTO_COMPLETION_SUBWORDS, CodeCompletionPanel.JAVA_AUTO_COMPLETION_SUBWORDS_DEFAULT);
+            }
         }
     };
     
     private static String cachedPrefix = null;
-    private static Pattern cachedPattern = null;
+    private static Pattern cachedCamelCasePattern = null;
+    private static Pattern cachedSubwordsPattern = null;    
     
     public static boolean startsWith(String theString, String prefix) {
         if (theString == null || theString.length() == 0 || ERROR.equals(theString))
             return false;
         if (prefix == null || prefix.length() == 0)
             return true;
+        
+        // sub word completion
+        if (javaCompletionSubwords) {
+            // example:
+            // 'out' produces '.*?[o|O].*?[u|U].*?[t|T].*?'
+            // org.openide.util.Utilities.acoh -> actionsForPath
+            // java.lang.System.out -> setOut
+            // argex -> IllegalArgumentException
+            // java.util.Collections.que -> asLifoQueue
+            // java.lang.System.sin -> setIn, getSecurityManager, setSecurityManager
+            
+            // check whether user input matches the regex
+            if (!prefix.equals(cachedPrefix)) {
+                cachedCamelCasePattern = cachedSubwordsPattern = null;
+            }
+            if (cachedSubwordsPattern == null) {
+                cachedPrefix = prefix;
+                String patternString = createSubwordsPattern(prefix);
+                cachedSubwordsPattern = patternString != null ? Pattern.compile(patternString) : null;
+            }
+            if (cachedSubwordsPattern != null && cachedSubwordsPattern.matcher(theString).matches()) {
+                return true;
+            };
+        }
+        
         return isCaseSensitive() ? theString.startsWith(prefix) :
             theString.toLowerCase(Locale.ENGLISH).startsWith(prefix.toLowerCase(Locale.ENGLISH));
+    }
+    
+    public static String createSubwordsPattern(String prefix) {
+        StringBuilder sb = new StringBuilder(3+8*prefix.length());
+        sb.append(".*?");
+        for (int i = 0; i < prefix.length(); i++) {
+            char charAt = prefix.charAt(i);
+            if (!Character.isJavaIdentifierPart(charAt)) {
+                return null;
+            }
+            if (Character.isLowerCase(charAt)) {
+                sb.append("[");
+                sb.append(charAt);
+                sb.append(Character.toUpperCase(charAt));
+                sb.append("]");
+            } else {
+                //keep uppercase characters as beacons
+                // for example: java.lang.System.sIn -> setIn
+                sb.append(charAt);
+            }
+            sb.append(".*?");
+        }
+        return sb.toString();
     }
     
     public static boolean startsWithCamelCase(String theString, String prefix) {
         if (theString == null || theString.length() == 0 || prefix == null || prefix.length() == 0)
             return false;
-        if (!prefix.equals(cachedPrefix) || cachedPattern == null) {
+        if (!prefix.equals(cachedPrefix)) {
+            cachedCamelCasePattern = cachedSubwordsPattern = null;
+        }
+        if (cachedCamelCasePattern == null) {
             StringBuilder sb = new StringBuilder();
             int lastIndex = 0;
             int index;
@@ -186,9 +244,9 @@ public final class Utilities {
                 lastIndex = index;
             } while (index != -1);
             cachedPrefix = prefix;
-            cachedPattern = Pattern.compile(sb.toString());
+            cachedCamelCasePattern = Pattern.compile(sb.toString());
         }
-        return cachedPattern.matcher(theString).matches();
+        return cachedCamelCasePattern.matcher(theString).matches();
     }
     
     private static int findNextUpper(String text, int offset) {        
@@ -207,6 +265,11 @@ public final class Utilities {
     public static void setCaseSensitive(boolean b) {
         lazyInit();
         caseSensitive = b;
+    }
+    
+    public static boolean isSubwordSensitive() {
+        lazyInit();
+        return javaCompletionSubwords;
     }
 
     public static boolean isShowDeprecatedMembers() {
@@ -315,6 +378,12 @@ public final class Utilities {
         }
     }
 
+    public static int getImportanceLevel(CompilationInfo info, ReferencesCount referencesCount, @NonNull Element element) {
+        boolean isType = element.getKind().isClass() || element.getKind().isInterface();
+        
+        return Utilities.getImportanceLevel(referencesCount, isType ? ElementHandle.create((TypeElement) element) : ElementHandle.create((TypeElement) element.getEnclosingElement()));
+    }
+    
     public static int getImportanceLevel(ReferencesCount referencesCount, ElementHandle<TypeElement> handle) {
         int typeRefCount = 999 - Math.min(referencesCount.getTypeReferenceCount(handle), 999);
         int pkgRefCount = 999;
@@ -436,6 +505,8 @@ public final class Utilities {
         while(path != null) {
             switch(path.getLeaf().getKind()) {
                 case BLOCK:
+                    if (path.getParentPath().getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION)
+                        break;
                 case ANNOTATION_TYPE:
                 case CLASS:
                 case ENUM:
@@ -463,11 +534,44 @@ public final class Utilities {
         return refs;
     }
     
-    public static List<String> varNamesSuggestions(TypeMirror type, String suggestedName, String prefix, Types types, Elements elements, Iterable<? extends Element> locals, boolean isConst) {
+    public static List<String> varNamesSuggestions(TypeMirror type, ElementKind kind, Set<Modifier> modifiers, String suggestedName, String prefix, Types types, Elements elements, Iterable<? extends Element> locals, CodeStyle codeStyle) {
         List<String> result = new ArrayList<String>();
         if (type == null && suggestedName == null)
             return result;
         List<String> vnct = suggestedName != null ? Collections.singletonList(suggestedName) : varNamesForType(type, types, elements, prefix);
+        boolean isConst = false;
+        String namePrefix = null;
+        String nameSuffix = null;
+        switch (kind) {
+            case FIELD:
+                if (modifiers.contains(Modifier.STATIC)) {
+                    if (codeStyle != null) {
+                        namePrefix = codeStyle.getStaticFieldNamePrefix();
+                        nameSuffix = codeStyle.getStaticFieldNameSuffix();
+                    }
+                    isConst = modifiers.contains(Modifier.FINAL);
+                } else {
+                    if (codeStyle != null) {
+                        namePrefix = codeStyle.getFieldNamePrefix();
+                        nameSuffix = codeStyle.getFieldNameSuffix();
+                    }
+                }
+                break;
+            case LOCAL_VARIABLE:
+            case EXCEPTION_PARAMETER:
+            case RESOURCE_VARIABLE:
+                if (codeStyle != null) {
+                    namePrefix = codeStyle.getLocalVarNamePrefix();
+                    nameSuffix = codeStyle.getLocalVarNameSuffix();
+                }
+                break;
+            case PARAMETER:
+                if (codeStyle != null) {
+                    namePrefix = codeStyle.getParameterNamePrefix();
+                    nameSuffix = codeStyle.getParameterNameSuffix();
+                }
+                break;
+        }
         if (isConst) {
             List<String> ls = new ArrayList<String>(vnct.size());
             for (String s : vnct)
@@ -499,14 +603,15 @@ public final class Utilities {
             }
             int cnt = 1;
             String baseName = name;
+            name = CodeStyleUtils.addPrefixSuffix(name, namePrefix, nameSuffix);
             while (isClashing(name, type, locals)) {
                 if (isPrimitive) {
-                    char c = name.charAt(0);
-                    name = Character.toString(++c);
-                    if (c == 'z') //NOI18N
+                    char c = name.charAt(namePrefix != null ? namePrefix.length() : 0);
+                    name = CodeStyleUtils.addPrefixSuffix(Character.toString(++c), namePrefix, nameSuffix);
+                    if (c == 'z' || c == 'Z') //NOI18N
                         isPrimitive = false;
                 } else {
-                    name = baseName + cnt++;
+                    name = CodeStyleUtils.addPrefixSuffix(baseName + cnt++, namePrefix, nameSuffix);
                 }
             }
             result.add(name);
@@ -573,11 +678,13 @@ public final class Utilities {
     public static boolean containErrors(Tree tree) {
         final AtomicBoolean containsErrors = new AtomicBoolean();
         new TreeScanner<Void, Void>() {
+            @Override
             public Void visitErroneous(ErroneousTree node, Void p) {
                 containsErrors.set(true);
                 return null;
             }
             
+            @Override
             public Void scan(Tree node, Void p) {
                 if (containsErrors.get()) {
                     return null;
@@ -738,6 +845,7 @@ public final class Utilities {
         
         if (type.getKind() == TypeKind.WILDCARD) {
             TypeMirror tmirr = ((WildcardType) type).getExtendsBound();
+            tmirr = tmirr != null ? tmirr : ((WildcardType) type).getSuperBound();
             if (tmirr != null)
                 return tmirr;
             else { //no extends, just '?'
@@ -932,9 +1040,6 @@ public final class Utilities {
         return found;
     }
 
-
     private Utilities() {
     }
-    
-    
 }

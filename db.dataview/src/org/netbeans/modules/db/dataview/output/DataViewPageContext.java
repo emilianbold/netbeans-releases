@@ -43,7 +43,10 @@ Other names may be trademarks of their respective owners.
  */
 package org.netbeans.modules.db.dataview.output;
 
-import java.util.List;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.db.dataview.meta.DBColumn;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
@@ -52,105 +55,140 @@ import org.openide.util.NbBundle;
  * @author Ahimanikya Satapathy
  */
 class DataViewPageContext {
-
+    public static final String PROP_pageSize = "pageSize";
+    public static final String PROP_totalRows = "totalRows";
+    public static final String PROP_currentPos = "currentPos";
+    public static final String PROP_tableMetaData = "tableMetaData";
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
     private int pageSize = 10;
     private int totalRows = -1;
     private int currentPos = 1;
-    private List<Object[]> rows;
+    private DataViewDBTable tableMetaData = null;
+    private final DataViewTableUIModel model = new DataViewTableUIModel(new DBColumn[0]);
 
     DataViewPageContext(int pageSize) {
         this.pageSize = pageSize;
+    }
+
+    public DataViewDBTable getTableMetaData() {
+        return tableMetaData;
+    }
+
+    public void setTableMetaData(DataViewDBTable tableMetaData) {
+        DataViewDBTable old = this.tableMetaData;
+        this.tableMetaData = tableMetaData;
+        firePropertyChange(PROP_tableMetaData, old, tableMetaData);
+        resetEditableState();
+    }
+
+    void resetEditableState() {
+        model.setEditable(tableMetaData == null ? false : tableMetaData.hasOneTable());
     }
 
     int getPageSize() {
         return pageSize;
     }
 
+    synchronized void setPageSize(int pageSize) {
+        int oldPageSize = this.pageSize;
+        this.pageSize = pageSize;
+        firePropertyChange(PROP_pageSize, oldPageSize, pageSize);
+    }
+
     int getCurrentPos() {
         return currentPos;
     }
 
-    List<Object[]> getCurrentRows() {
-        return rows;
+    synchronized private void setCurrentPos(int currentPos) {
+        int oldPos = this.currentPos;
+        this.currentPos = currentPos;
+        firePropertyChange(PROP_currentPos, oldPos, currentPos);
     }
 
-    Object getColumnData(int row, int column) {
-        return rows.get(row)[column];
+    synchronized void first() {
+        setCurrentPos(1);
+    }
+
+    synchronized void previous() {
+        setCurrentPos(getCurrentPos() - pageSize);
+    }
+
+    synchronized void next() {
+        setCurrentPos(getCurrentPos() + pageSize);
+    }
+
+    synchronized void last() {
+        if (pageSize < 1) {
+            return;
+        }
+
+        int rem = totalRows % pageSize;
+        int newCurrentPos = totalRows - (rem == 0 ? pageSize : rem) + 1;
+        setCurrentPos(newCurrentPos);
+    }
+
+    DataViewTableUIModel getModel() {
+        return model;
+    }
+
+    boolean isTotalRowCountAvailable() {
+        return totalRows >= 0;
     }
 
     int getTotalRows() {
         return totalRows;
     }
 
+    synchronized void setTotalRows(Integer totalCount) {
+        // Move logic from SQLExectionHelper
+        if (totalCount == null) {
+            totalCount = -1;
+        }
+        int oldTotalRows = this.totalRows;
+        this.totalRows = totalCount;
+        firePropertyChange(PROP_totalRows, oldTotalRows, totalCount);
+    }
+
     boolean hasRows() {
-        return (totalRows != 0 && pageSize != 0);
+        return model.getRowCount() > 0;
     }
 
     boolean hasNext() {
-        return ((currentPos + pageSize) <= totalRows) && hasRows();
+        return (((currentPos + pageSize) <= totalRows) && hasRows()) || (totalRows < 0 && getModel().getRowCount() >= pageSize);
     }
 
     boolean hasOnePageOnly() {
-        return (currentPos - pageSize) <= 0;
+        return totalRows > 0 && totalRows < pageSize;
     }
 
     boolean hasPrevious() {
-        return ((currentPos - pageSize) >= 0) && hasRows();
-    }
-
-    void first() {
-        currentPos = 1;
-    }
-
-    void previous() {
-        currentPos -= pageSize;
-    }
-
-    void next() {
-        currentPos += pageSize;
-    }
-
-    void last() {
-        if (pageSize < 1) {
-            return;
-        }
-
-        int rem = totalRows % pageSize;
-        currentPos = totalRows - (rem == 0 ? pageSize : rem) + 1;
+        return ((currentPos - pageSize) > 0) && hasRows();
     }
 
     boolean isLastPage() {
-        return (currentPos + pageSize) > totalRows;
+        return ((currentPos + pageSize) > totalRows) && totalRows > 0;
     }
 
     boolean refreshRequiredOnInsert() {
-        return (isLastPage() && rows.size() <= pageSize) ? true : false;
-    }
-
-    boolean hasDataRows() {
-        return (rows != null && !rows.isEmpty());
+        return (isLastPage() && model.getRowCount() <= pageSize);
     }
 
     String pageOf() {
-        if (pageSize < 1 || totalRows < 1) {
-            return ""; // NOI18N
+        String curPage = NbBundle.getMessage(DataViewUI.class, "LBL_not_available");
+        String totalPages = NbBundle.getMessage(DataViewUI.class, "LBL_not_available");
+
+        if (pageSize >= 0 && currentPos >= 0) {
+            curPage = Integer.toString(currentPos / pageSize + (pageSize == 1 ? 0 : 1));
         }
 
-        Integer curPage = currentPos / pageSize + (pageSize == 1 ? 0 : 1);
-        Integer totalPages = totalRows / pageSize + (totalRows % pageSize > 0 ? 1 : 0);
+        if (pageSize >= 0 && totalRows >= 0) {
+            totalPages = Integer.toString(totalRows / pageSize + (totalRows % pageSize > 0 ? 1 : 0));
+        }
         return NbBundle.getMessage(DataViewPageContext.class, "LBL_page_of", curPage, totalPages);
     }
 
-    synchronized void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
-    }
-
-    synchronized void setTotalRows(int totalCount) {
-        this.totalRows = totalCount;
-    }
-
     synchronized void decrementRowSize(int count) {
-        totalRows -= count;
+        setTotalRows(getTotalRows() - count);
         if (totalRows <= pageSize) {
             first();
         } else if (currentPos > totalRows) {
@@ -158,7 +196,45 @@ class DataViewPageContext {
         }
     }
 
-    synchronized void setCurrentRows(List<Object[]> rows) {
-        this.rows = rows;
+    synchronized void incrementRowSize(int count) {
+        setTotalRows(getTotalRows() + count);
+        if (totalRows <= pageSize) {
+            first();
+        } else if (currentPos > totalRows) {
+            previous();
+        }
+    }
+
+    /**
+     * Ensure the property change event is dispatched into the EDT
+     *
+     * @param propertyName
+     * @param oldValue
+     * @param newValue
+     */
+    protected void firePropertyChange(final String propertyName, final Object oldValue, final Object newValue) {
+        Mutex.EVENT.writeAccess(new Runnable() {
+            @Override
+            public void run() {
+                pcs.firePropertyChange(propertyName, oldValue, newValue);
+            }
+        });
+
+    }
+
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
+    }
+
+    public void addPropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(propertyName, listener);
+    }
+
+    public void removePropertyChangeListener(String propertyName, PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(propertyName, listener);
     }
 }

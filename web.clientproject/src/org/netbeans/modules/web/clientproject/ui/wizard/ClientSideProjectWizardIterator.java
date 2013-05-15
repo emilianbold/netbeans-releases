@@ -49,7 +49,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -88,13 +90,20 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     private int index;
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
     private WizardDescriptor.Panel<WizardDescriptor>[] extenderPanels;
+    private WizardDescriptor.Panel<WizardDescriptor>[] initPanels;
     private Collection<? extends ClientProjectExtender> extenders;
     private WizardDescriptor wizardDescriptor;
+    private boolean withExtenders;
 
 
     private ClientSideProjectWizardIterator(Wizard wizard) {
+        this(wizard, false);
+    }
+
+    private ClientSideProjectWizardIterator(Wizard wizard, boolean withExtenders) {
         assert wizard != null;
         this.wizard = wizard;
+        this.withExtenders = withExtenders;
     }
 
     @TemplateRegistration(folder="Project/ClientSide",
@@ -115,6 +124,10 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     @NbBundle.Messages("ClientSideProjectWizardIterator.existingProject.displayName=HTML5 Application with Existing Sources")
     public static ClientSideProjectWizardIterator existingProject() {
         return new ClientSideProjectWizardIterator(new ExistingProjectWizard());
+    }
+    
+    public static ClientSideProjectWizardIterator newProjectWithExtender() {
+        return new ClientSideProjectWizardIterator(new NewProjectWizard(true), true);
     }
 
     @NbBundle.Messages({
@@ -180,30 +193,58 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     public void initialize(WizardDescriptor wiz) {
         this.wizardDescriptor = wiz;
         index = 0;
-        extenders = Lookup.getDefault().lookupAll(ClientProjectExtender.class);
+        if (withExtenders) {
+            extenders = Lookup.getDefault().lookupAll(ClientProjectExtender.class);
+        } else {
+            extenders = Collections.EMPTY_LIST;
+        }
         panels = wizard.createPanels();
-
+        
         // Make sure list of steps is accurate.
-        ArrayList<String> steps = new ArrayList<String>();
+        LinkedList<String> steps = new LinkedList<String>();
         steps.addAll(Arrays.asList(wizard.createSteps()));
-
 
         //Compute steps from extenders
         ArrayList<Panel<? extends WizardDescriptor>> extenderPanelsCol = new ArrayList<Panel<? extends WizardDescriptor>>();
+        ArrayList<Panel<? extends WizardDescriptor>> initPanelsCol = new ArrayList<Panel<? extends WizardDescriptor>>();
         for (ClientProjectExtender extender: extenders) {
+            extender.initialize(wizardDescriptor);
             for (Panel<WizardDescriptor> panel: extender.createWizardPanels()) {
                 extenderPanelsCol.add(panel);
                 steps.add(panel.getComponent().getName());
             }
+            int i =0;
+            for (Panel<WizardDescriptor> panel: extender.createInitPanels()) {
+                initPanelsCol.add(panel);
+                steps.add(i++,panel.getComponent().getName());
+            }
+            
         }
 
         extenderPanels = extenderPanelsCol.toArray(new Panel[0]);
+        initPanels = initPanelsCol.toArray(new Panel[0]);
+
+        int i = 0;
+        // XXX should be lazy
+        //Extenders
+        for (; i < initPanels.length; i++) {
+            Component c = initPanels[i].getComponent();
+            assert steps.get(i) != null : "Missing name for step: " + i; //NOI18N
+            if (c instanceof JComponent) { // assume Swing components
+                JComponent jc = (JComponent) c;
+                // Step #.
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, Integer.valueOf(i));
+                // Step name (actually the whole list for reference).
+                jc.putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, steps.toArray());
+                // name
+                jc.setName(steps.get(i));
+            }
+        }
 
         // XXX should be lazy
         //Regular panels
-        int i = 0;
-        for (; i < panels.length; i++) {
-            Component c = panels[i].getComponent();
+        for (; i < panels.length + initPanels.length; i++) {
+            Component c = panels[i-initPanels.length].getComponent();
             assert steps.get(i) != null : "Missing name for step: " + i; //NOI18N
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
@@ -218,8 +259,8 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
         // XXX should be lazy
         //Extenders
-        for (; i < extenderPanels.length + panels.length; i++) {
-            Component c = extenderPanels[i-panels.length].getComponent();
+        for (; i < extenderPanels.length + panels.length + initPanels.length; i++) {
+            Component c = extenderPanels[i-panels.length-initPanels.length].getComponent();
             assert steps.get(i) != null : "Missing name for step: " + i; //NOI18N
             if (c instanceof JComponent) { // assume Swing components
                 JComponent jc = (JComponent) c;
@@ -242,6 +283,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         panels = null;
         extenders = null;
         extenderPanels = null;
+        initPanels = null;
     }
 
     @NbBundle.Messages({
@@ -256,7 +298,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
 
     @Override
     public boolean hasNext() {
-        return index < panels.length + extenderPanels.length -1;
+        return index < panels.length + extenderPanels.length + initPanels.length -1;
     }
 
     @Override
@@ -283,10 +325,13 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
     @Override
     public WizardDescriptor.Panel<WizardDescriptor> current() {
         setTitle();
-        if (index>=panels.length) {
-            return extenderPanels[index-panels.length];
+        if (index < initPanels.length) {
+            return initPanels[index];
         }
-        return panels[index];
+       if (index < initPanels.length + panels.length) {
+            return panels[index - initPanels.length];
+       }
+       return extenderPanels[index - initPanels.length - panels.length];
     }
 
     private void setTitle() {
@@ -340,8 +385,17 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public static final String LIBRARIES_FOLDER = "LIBRARIES_FOLDER"; // NOI18N
         public static final String LIBRARIES_PATH = "LIBRARIES_PATH";
         public static final String LIBRARY_NAMES = "LIBRARY_NAMES"; // NOI18N
+        
+        private boolean withExtenders;
 
-
+        public NewProjectWizard(boolean withExtenders) {
+            this.withExtenders = withExtenders;
+        }
+        
+        public NewProjectWizard() {
+            this(false);
+        }
+        
         @Override
         public Panel<WizardDescriptor>[] createPanels() {
             @SuppressWarnings({"rawtypes", "unchecked"})
@@ -415,8 +469,10 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
             }
 
             // apply extenders
-            for (ClientProjectExtender extender : Lookup.getDefault().lookupAll(ClientProjectExtender.class)) {
-                extender.apply(project.getProjectDirectory(), siteRootDir, (String) wizardDescriptor.getProperty(LIBRARIES_PATH));
+            if (withExtenders) {
+                for (ClientProjectExtender extender : Lookup.getDefault().lookupAll(ClientProjectExtender.class)) {
+                    extender.apply(project.getProjectDirectory(), siteRootDir, (String) wizardDescriptor.getProperty(LIBRARIES_PATH));
+                }
             }
 
             return siteRootDir;

@@ -65,6 +65,7 @@ class DiskMapTurboProvider implements TurboProvider {
 
     private static final int STATUS_VALUABLE = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_VERSIONED_UPTODATE;
     private static final String CACHE_DIRECTORY = "svncache"; // NOI18N
+    private static final int DIRECTORY = Integer.highestOneBit(Integer.MAX_VALUE);
 
     private File                            cacheStore;
     private int                             storeSerial;
@@ -435,7 +436,7 @@ class DiskMapTurboProvider implements TurboProvider {
             String name = readChars(dis, nameLen);
             File file = new File(dirPath, name);
             int status = dis.readInt();
-            FileInformation info = new FileInformation(status & 65535, status > 65535);
+            FileInformation info = new FileInformation(status & (DIRECTORY - 1), status > (DIRECTORY - 1));
             map.put(file, info);
         }
         return map;
@@ -454,7 +455,7 @@ class DiskMapTurboProvider implements TurboProvider {
             FileInformation info = (FileInformation) map.get(file);
             temp.writeInt(file.getName().length());
             temp.writeChars(file.getName());
-            temp.writeInt(info.getStatus() + (info.isDirectory() ? 65536 : 0));
+            temp.writeInt(info.getStatus() + (info.isDirectory() ? DIRECTORY : 0));
         }
         temp.close();
         byte [] valueBytes = baos.toByteArray();

@@ -323,7 +323,7 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="headerField" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="tasklistButton" min="-2" max="-2" attributes="0"/>
+                      <Component id="addToCategoryButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="separatorLabel2" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -482,7 +482,11 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="submitButton" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="btnSaveChanges" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
                                       <Component id="cancelButton" min="-2" max="-2" attributes="0"/>
+                                      <EmptySpace max="-2" attributes="0"/>
+                                      <Component id="btnDeleteTask" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Component id="attachLogCheckBox" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace max="-2" attributes="0"/>
@@ -505,7 +509,7 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="headerField" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="separatorLabel2" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="tasklistButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="addToCategoryButton" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="separatorLabel" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="reloadButton" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="refreshButton" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -661,14 +665,16 @@
                   <Group type="103" alignment="0" groupAlignment="3" attributes="0">
                       <Component id="submitButton" alignment="3" min="-2" max="-2" attributes="0"/>
                       <Component id="cancelButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="btnSaveChanges" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="btnDeleteTask" alignment="3" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="messagePanel" pref="2" max="32767" attributes="0"/>
+              <Component id="messagePanel" pref="3" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="separator" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="dummyCommentsPanel" pref="38" max="32767" attributes="0"/>
+              <Component id="dummyCommentsPanel" pref="37" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -1176,14 +1182,14 @@
         </Property>
       </Properties>
     </Component>
-    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="tasklistButton">
+    <Component class="org.netbeans.modules.bugtracking.util.LinkButton" name="addToCategoryButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.tasklistButton.add" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="tasklistButtonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addToCategoryButtonActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="separatorLabel2">
@@ -1445,6 +1451,33 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="viewLogButtonActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="btnSaveChanges">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.btnSaveChanges.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.jButton1.TTtext" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnSaveChangesActionPerformed"/>
+      </Events>
+    </Component>
+    <Component class="javax.swing.JButton" name="btnDeleteTask">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.btnDeleteTask.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="toolTipText" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/bugzilla/issue/Bundle.properties" key="IssuePanel.btnDeleteTask.TTtext" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnDeleteTaskActionPerformed"/>
       </Events>
     </Component>
   </SubComponents>

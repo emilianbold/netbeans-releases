@@ -73,6 +73,7 @@ import org.openide.filesystems.MultiFileSystem;
 import org.openide.filesystems.XMLFileSystem;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
+import org.openide.util.actions.SystemAction;
 import org.xml.sax.SAXException;
 
 /**
@@ -172,6 +173,63 @@ public final class LayerHandle {
         }
         return fs;
     }
+    
+    
+    /**
+     * Get the layer as a structured filesystem.
+     * You can make whatever Filesystems API calls you like to it.
+     * Just call {@link #save} when you are done so the modified XML document is saved
+     * (or the user can save it explicitly if you don't).
+     * No generated {@code META-INF/generated-layer.xml} will be included.
+     * @param create if true, and there is no layer yet, create it now; if false, just return null
+     */
+    public synchronized FileSystem explicitLayer(boolean create) {
+        if (fs == null) {
+            FileObject xml = getLayerFile();
+            if (xml == null) {
+                if (!create) {
+                    return new SingleLayer(null);
+                }
+                try {
+                    NbModuleProvider module = project.getLookup().lookup(NbModuleProvider.class);
+                    FileObject manifest = module.getManifestFile();
+                    if (manifest != null) { // #121056
+                        // Check to see if the manifest entry is already specified.
+                        String layerSrcPath = ManifestManager.getInstance(Util.getManifest(manifest), false).getLayer();
+                        if (layerSrcPath == null) {
+                            layerSrcPath = newLayerPath();
+                            EditableManifest m = Util.loadManifest(manifest);
+                            m.setAttribute(ManifestManager.OPENIDE_MODULE_LAYER, layerSrcPath, null);
+                            Util.storeManifest(manifest, m);
+                        }
+                    }
+                    xml = createLayer(project.getProjectDirectory(), module.getResourceDirectoryPath(false) + '/' + newLayerPath());
+                } catch (IOException e) {
+                    Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                    return fs = FileUtil.createMemoryFileSystem();
+                }
+            }
+            fs = new SingleLayer(new WritableXMLFileSystem(xml.toURL(), cookie = LayerUtils.cookieForFile(xml), LayerUtils.findResourceCP(project)));
+            cookie.addPropertyChangeListener(new PropertyChangeListener() {
+                public void propertyChange(PropertyChangeEvent evt) {
+                    //System.err.println("changed in mem");
+                    if (SavableTreeEditorCookie.PROP_DIRTY.equals(evt.getPropertyName())) {
+                        if (autosave) {
+                        //System.err.println("  will save...");
+                        try {
+                            save();
+                        } catch (IOException e) {
+                            Util.err.notify(ErrorManager.INFORMATIONAL, e);
+                        }
+                        } else if (ref != null) {
+                            ref.handle = LayerHandle.this;
+                        }
+                    }
+                }
+            });
+        }
+        return fs;
+    }
 
     public static FileObject createLayer(FileObject projectDir, String layerPath) throws IOException {
         FileObject layerFO = createFileObject(projectDir, layerPath);
@@ -241,6 +299,59 @@ public final class LayerHandle {
         }
         public @Override void fileFolderCreated(FileEvent fe) {}
         public @Override void fileAttributeChanged(FileAttributeEvent fe) {}
+    }
+    
+    private final class SingleLayer extends FileSystem implements FileChangeListener {
+        private final FileSystem explicit;
+        SingleLayer(FileSystem explicit) {
+            this.explicit = explicit;
+            configure();
+        }
+        private void configure() {
+            List<FileSystem> layers = new ArrayList<FileSystem>(2);
+            if (explicit != null) {
+                layers.add(explicit);
+            }
+        }
+        public @Override void fileDataCreated(FileEvent fe) {
+            configure();
+        }
+        public @Override void fileChanged(FileEvent fe) {
+            configure();
+        }
+        public @Override void fileDeleted(FileEvent fe) {
+            configure();
+        }
+        public @Override void fileRenamed(FileRenameEvent fe) {
+            configure(); // ???
+        }
+        public @Override void fileFolderCreated(FileEvent fe) {}
+        public @Override void fileAttributeChanged(FileAttributeEvent fe) {}
+
+        @Override
+        public String getDisplayName() {
+            return this.explicit!=null?this.explicit.getDisplayName():null;
+        }
+
+        @Override
+        public boolean isReadOnly() {
+            return this.explicit!=null?this.explicit.isReadOnly():false;
+        }
+
+        @Override
+        public FileObject getRoot() {
+            return this.explicit!=null?this.explicit.getRoot():null;
+        }
+
+        @Override
+        public FileObject findResource(String name) {
+            return this.explicit!=null?this.explicit.findResource(name):null;
+        }
+
+        @Override
+        public SystemAction[] getActions() {
+            return this.explicit!=null?this.explicit.getActions():null;
+        }
     }
 
     /**

@@ -56,6 +56,7 @@ import org.netbeans.Module;
 import org.netbeans.ModuleManager;
 import org.netbeans.SetupHid;
 import org.netbeans.Util;
+import org.netbeans.junit.RandomlyFails;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 
@@ -65,6 +66,7 @@ import org.osgi.framework.BundleContext;
  *
  * @author Jaroslav Tulach
  */
+@RandomlyFails // http://netbeans.org/bugzilla/show_bug.cgi?id=227778
 public class NetigsoOSGiActivationVisibleTest extends SetupHid {
     private static Module m1;
     private static Module m2;
@@ -138,6 +140,13 @@ public class NetigsoOSGiActivationVisibleTest extends SetupHid {
         someModule = m2.getClassLoader().loadClass("org.foo.Something");
         loadClass = directBundle.getMethod("loadClass", String.class, ClassLoader.class);
     }
+
+    @Override
+    protected int timeOut() {
+        return 300000;
+    }
+    
+    
     
     public void testClassFromBundle() throws Exception {
         assertNotNull("Bundle knows how to load the class", directBundle);

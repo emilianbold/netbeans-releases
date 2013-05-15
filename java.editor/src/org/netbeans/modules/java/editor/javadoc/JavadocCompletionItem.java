@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.java.editor.javadoc;
 
-import com.sun.javadoc.Doc;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -178,7 +177,7 @@ final class JavadocCompletionItem implements CompletionItem {
                 txt, substitutionOffset);
     }
 
-    public static List<CompletionItem> addBlockTagItems(Doc fd, ElementKind kind,
+    public static List<CompletionItem> addBlockTagItems(ElementKind kind,
             String prefix, int startOffset) {
         
         List<TagEntry> tags = TagRegistery.getDefault().getTags(kind, false);
@@ -192,7 +191,7 @@ final class JavadocCompletionItem implements CompletionItem {
         return items;
     }
 
-    public static List<CompletionItem> addInlineTagItems(Doc fd, ElementKind kind,
+    public static List<CompletionItem> addInlineTagItems(ElementKind kind,
             String prefix, int startOffset) {
         
         List<TagEntry> tags = TagRegistery.getDefault().getTags(kind, true);

@@ -43,420 +43,240 @@
  */
 package org.netbeans.modules.javadoc.hints;
 
-import com.sun.javadoc.ClassDoc;
-import com.sun.javadoc.Doc;
-import com.sun.javadoc.ExecutableMemberDoc;
-import com.sun.javadoc.Tag;
-import java.io.IOException;
+import com.sun.source.doctree.DocCommentTree;
+import com.sun.source.doctree.DocTree;
+import com.sun.source.doctree.ParamTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.DocTreePath;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.lang.model.SourceVersion;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Position;
-import javax.swing.text.StyledDocument;
-import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.api.java.source.CancellableTask;
-import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.source.ElementHandle;
-import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.DocTreePathHandle;
+import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.spi.editor.hints.ChangeInfo;
-import org.netbeans.spi.editor.hints.Fix;
-import org.openide.filesystems.FileObject;
-import org.openide.text.NbDocument;
+import org.netbeans.spi.java.hints.JavaFix;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.javadoc.hints.Bundle.*;
 
 /**
  *
  * @author Jan Pokorsky
+ * @author Ralph Benjamin Ruijs
  */
-final class AddTagFix implements Fix, CancellableTask<WorkingCopy> {
+@NbBundle.Messages({"# {0} - @param name", "MISSING_PARAM_HINT=Add @param {0} tag",
+    "# {0} - @param name", "MISSING_TYPEPARAM_HINT=Add @param {0} tag",
+    "MISSING_RETURN_HINT=Add @return tag",
+    "# {0} - Throwable name", "MISSING_THROWS_HINT=Add @throws {0} tag",
+    "MISSING_DEPRECATED_HINT=Add @deprecated tag"})
+abstract class AddTagFix extends JavaFix {
 
-    private enum Kind {PARAM, RETURN, THROWS, TYPEPARAM, DEPRECATED}
-    private final ElementHandle methodHandle;
-    private final String paramName;
-    /** index of throwable in throwables list */
+    private final String message;
+    private final DocTreePathHandle dtph;
     private final int index;
-    private final FileObject file;
-    private final SourceVersion spec;
-    private final String descKey;
-    private final Kind kind;
 
-    private Position insertPosition;
-    String insertJavadoc;
-    private int openOffset;
-    Document doc;
-
-    private AddTagFix(ElementHandle methodHandle, String paramName, int index,
-            FileObject file, SourceVersion spec, String descKey, Kind tagKind) {
-        this.methodHandle = methodHandle;
-        this.paramName = paramName;
+    private AddTagFix(DocTreePathHandle dtph, String message, int index) {
+        super(dtph.getTreePathHandle());
+        this.dtph = dtph;
+        this.message = message;
         this.index = index;
-        this.file = file;
-        this.spec = spec;
-        this.descKey = descKey;
-        this.kind = tagKind;
-    }
-
-    public static Fix createAddParamTagFix(ExecutableElement elm,
-            String paramName, FileObject file, SourceVersion spec) {
-        return new AddTagFix(ElementHandle.create(elm), paramName, -1, file, spec, "MISSING_PARAM_HINT", Kind.PARAM); // NOI18N
-    }
-
-    public static Fix createAddTypeParamTagFix(Element elm,
-            String paramName, FileObject file, SourceVersion spec) {
-        return new AddTagFix(ElementHandle.create(elm), paramName, -1, file, spec, "MISSING_TYPEPARAM_HINT", Kind.TYPEPARAM); // NOI18N
-    }
-
-    public static Fix createAddReturnTagFix(ExecutableElement elm,
-            FileObject file, SourceVersion spec) {
-        return new AddTagFix(ElementHandle.create(elm), "", -1, file, spec, "MISSING_RETURN_HINT", Kind.RETURN); // NOI18N
-    }
-
-    public static Fix createAddThrowsTagFix(ExecutableElement elm,
-            String fqn, int throwIndex, FileObject file, SourceVersion spec) {
-        return new AddTagFix(ElementHandle.create(elm), fqn, throwIndex, file, spec, "MISSING_THROWS_HINT", Kind.THROWS); // NOI18N
-    }
-
-    public static Fix createAddDeprecatedTagFix(Element elm,
-            FileObject file, SourceVersion spec) {
-        return new AddTagFix(ElementHandle.create(elm), "", -1, file, spec, "MISSING_DEPRECATED_HINT", Kind.DEPRECATED); // NOI18N
-    }
-
-    public String getText() {
-        return NbBundle.getMessage(AddTagFix.class, descKey, this.paramName);
-    }
-
-    public ChangeInfo implement() {
-        JavaSource js = JavaSource.forFileObject(file);
-        try {
-            js.runModificationTask(this).commit();
-            if (doc == null || insertPosition == null || insertJavadoc == null) {
-                return null;
-            }
-            insertJavadoc();
-            JavadocUtilities.open(file, openOffset);
-        } catch (BadLocationException ex) {
-            Logger.getLogger(AddTagFix.class.getName()).
-                    log(Level.SEVERE, ex.getMessage(), ex);
-        } catch (IOException ex) {
-            Logger.getLogger(AddTagFix.class.getName()).
-                    log(Level.SEVERE, ex.getMessage(), ex);
-        }
-        return null;
-    }
-
-    public void run(final WorkingCopy wc) throws Exception {
-        wc.toPhase(JavaSource.Phase.RESOLVED);
-        final Element elm = methodHandle.resolve(wc);
-        if (elm == null) {
-            return;
-        }
-
-        final Doc jdoc = wc.getElementUtilities().javaDocFor(elm);
-        doc = wc.getDocument();
-        if (doc == null) {
-            return;
-        }
-
-        NbDocument.runAtomicAsUser((StyledDocument) doc, new Runnable() {
-            public void run() {
-                try {
-                    computeInsertPositionAndJavadoc(wc, elm, jdoc);
-                } catch (BadLocationException ex) {
-                    Logger.getLogger(AddTagFix.class.getName()).
-                            log(Level.SEVERE, ex.getMessage(), ex);
-                }
-            }
-        });
-    }
-
-    private void computeInsertPositionAndJavadoc(CompilationInfo wc, Element elm, Doc jdoc) throws BadLocationException {
-        // find position where to add
-        boolean[] isLastTag = new boolean[1];
-        switch (this.kind) {
-        case PARAM:
-            insertPosition = getParamInsertPosition(wc, doc, (ExecutableElement) elm, (ExecutableMemberDoc) jdoc, isLastTag);
-            insertJavadoc = "@param " + paramName + " "; // NOI18N
-            break;
-        case TYPEPARAM:
-            insertPosition = getTypeParamInsertPosition(wc, doc, elm, jdoc, isLastTag);
-            insertJavadoc = "@param <" + paramName + "> "; // NOI18N
-            break;
-        case RETURN:
-            insertPosition = getReturnInsertPosition(wc, doc, jdoc, isLastTag);
-            insertJavadoc = "@return "; // NOI18N
-            break;
-        case THROWS:
-            insertPosition = getThrowsInsertPosition(wc, doc, (ExecutableMemberDoc) jdoc, isLastTag);
-            insertJavadoc = "@throws " + paramName + " "; // NOI18N
-            break;
-        case DEPRECATED:
-            insertPosition = getDeprecatedInsertPosition(wc, doc, jdoc, isLastTag);
-            insertJavadoc = "@deprecated "; // NOI18N
-            break;
-        default:
-            throw new IllegalStateException();
-        }
-
-        if (insertPosition == null) {
-            return;
-        }
-        // create tag string
-        // resolve indentation
-        // take start of javadoc and find /** and compute distance od \n and first *
-        Position[] jdBounds = JavadocUtilities.findDocBounds(wc, doc, jdoc);
-        int jdBeginLine = NbDocument.findLineNumber((StyledDocument) doc, jdBounds[0].getOffset());
-        int jdEndLine = NbDocument.findLineNumber((StyledDocument) doc, jdBounds[1].getOffset());
-        int insertLine = NbDocument.findLineNumber((StyledDocument) doc, insertPosition.getOffset());
-
-        if (jdBeginLine == insertLine && insertLine == jdEndLine) {
-            // one line javadoc
-            insertJavadoc = '\n' + insertJavadoc;
-            openOffset = insertJavadoc.length();
-            insertJavadoc += '\n';
-        } else if (insertLine == jdEndLine) {
-            if (isLastTag[0]) {
-                // /**\n* @return r |*/ or /**\n* \n*/
-                // insert after the last block tag that ends with */
-                if (!isEmptyLine(doc, insertPosition.getOffset())) {
-                    insertJavadoc = '\n' + insertJavadoc;
-                }
-            }
-            openOffset = insertJavadoc.length();
-            insertJavadoc += '\n';
-        } else if (insertLine == jdBeginLine) {
-            /** |@return r\n*/
-            insertJavadoc = '\n' + insertJavadoc;
-            openOffset = insertJavadoc.length();
-            if (!isLastTag[0]) {
-                insertJavadoc += '\n';
-            }
-        } else if (isLastTag[0]) {
-            // insert after the last block tag
-            insertJavadoc = '\n' + insertJavadoc;
-            openOffset = insertJavadoc.length();
-        } else {
-            // insert before some block tag
-            openOffset = insertJavadoc.length();
-            insertJavadoc = insertJavadoc + '\n';
-        }
     }
     
-    /**
-     * checks if the chars before offset can be considered as an empty line.
-     */
-    private boolean isEmptyLine(Document doc, int offset) throws BadLocationException {
-        CharSequence txt = (CharSequence) doc.getProperty(CharSequence.class);
-        if (txt == null) {
-            txt = doc.getText(0, offset + 1);
-        }
+    @Override
+    protected void performRewrite(TransformationContext ctx) throws Exception {
+        WorkingCopy javac = ctx.getWorkingCopy();
+        DocTreePath path = dtph.resolve(javac);
+        DocCommentTree docComment = path.getDocComment();
+        TreeMaker make = javac.getTreeMaker();
+        TagComparator comparator = new TagComparator();
+        final List<DocTree> blockTags = new LinkedList<DocTree>();
+        DocTree newTree = getNewTag(make);
         
-        // line contains non white space other then '*'
-        boolean isClean = true;
-        int asterisks = 0;
-        
-        for (int i = offset; i >= 0 ; i--) {
-            char c = txt.charAt(i);
-            if (c == '\n') {
-                break;
-            } else if (c == '*') {
-                if (asterisks > 0) {
-                    isClean = false;
-                    break;
-                }
-                ++asterisks;
-            } else if (Character.isSpaceChar(c)) {
-                continue;
-            } else {
-                isClean = false;
-                break;
+        boolean added = false;
+        int count = 0;
+        for (DocTree docTree : docComment.getBlockTags()) {
+            if (!added && comparator.compare(newTree, docTree) == TagComparator.HIGHER) {
+                blockTags.add(newTree);
+                added = true;
             }
+            if (!added && comparator.compare(newTree, docTree) == TagComparator.EQUAL &&
+                    index == count++) {
+                blockTags.add(newTree);
+                added = true;
+            }
+            blockTags.add(docTree);
         }
+        if (!added) {
+            blockTags.add(newTree);
+        }
+        
+        DocCommentTree newDoc = make.DocComment(docComment.getFirstSentence(), docComment.getBody(), blockTags);
+        Tree tree = ctx.getPath().getLeaf();
+        javac.rewrite(tree, docComment, newDoc);
+    }
+    
+    protected abstract DocTree getNewTag(TreeMaker make);
 
-        return isClean;
+    public static JavaFix createAddParamTagFix(DocTreePathHandle dtph, final String name, final boolean isTypeParam, int index) {
+        return new AddTagFix(dtph, isTypeParam? MISSING_TYPEPARAM_HINT("<" + name + ">"):MISSING_PARAM_HINT(name), index) {
+            @Override
+            protected DocTree getNewTag(TreeMaker make) {
+                return make.Param(isTypeParam, make.DocIdentifier(name), Collections.EMPTY_LIST);
+            }
+        };
     }
 
-    private void insertJavadoc() throws BadLocationException {
-        final Indent indent = Indent.get(doc);
-        try {
-            indent.lock();
-            NbDocument.runAtomicAsUser((StyledDocument) doc, new Runnable() {
-                public void run() {
-                    try {
-                        // insert indented string to text
-                        int begin = insertPosition.getOffset();
-                        int end = begin + insertJavadoc.length() + 1;
-                        doc.insertString(begin, insertJavadoc, null);
-                        Position openPos = doc.createPosition(begin + openOffset - 1);
-                        indent.reindent(begin, end);
-                        // insert space since the JavaFormatter cleans up trailing spaces :-(
-                        doc.insertString(openPos.getOffset(), " ", null); // NOI18N
-                        openOffset = openPos.getOffset();
-                    } catch (BadLocationException ex) {
-                        Logger.getLogger(AddTagFix.class.getName()).
-                                log(Level.SEVERE, ex.getMessage(), ex);
+    public static JavaFix createAddReturnTagFix(DocTreePathHandle dtph) {
+        return new AddTagFix(dtph, MISSING_RETURN_HINT(), -1) {
+            @Override
+            protected DocTree getNewTag(TreeMaker make) {
+                return make.DocReturn(Collections.EMPTY_LIST);
+            }
+        };
+    }
+
+    public static JavaFix createAddThrowsTagFix(DocTreePathHandle dtph, final String fqn, int throwIndex) {
+        return new AddTagFix(dtph, MISSING_THROWS_HINT(fqn), throwIndex) {
+            @Override
+            protected DocTree getNewTag(TreeMaker make) {
+                return make.Throws(make.Reference(make.Identifier(fqn), null, null), Collections.EMPTY_LIST);
+            }
+        };
+    }
+
+    public static JavaFix createAddDeprecatedTagFix(DocTreePathHandle dtph) {
+        return new AddTagFix(dtph, MISSING_DEPRECATED_HINT(), -1) {
+            @Override
+            protected DocTree getNewTag(TreeMaker make) {
+                return make.Deprecated(Collections.EMPTY_LIST);
+            }
+        };
+    }
+    
+    
+    /**
+     * Orders tags as follows
+     * <ul>
+     * <li>@author (classes and interfaces only, required)</li>
+     * <li>@version (classes and interfaces only, required. See footnote 1)</li>
+     * <li>@param (methods and constructors only)</li>
+     * <li>@return (methods only)</li>
+     * <li>@exception (</li>
+     * <li>@throws is a synonym added in Javadoc 1.2)</li>
+     * <li>@see</li>
+     * <li>@since</li>
+     * <li>@serial (or @serialField or @serialData)</li>
+     * <li>@deprecated (see How and When To Deprecate APIs)</li>
+     * </ul>
+     */
+    private static class TagComparator implements Comparator<DocTree> {
+        
+        private final static int HIGHER = -1;
+        private final static int EQUAL = 0;
+        private final static int LOWER = 1;
+
+        @Override
+        public int compare(DocTree t, DocTree t1) {
+            if(t.getKind() == t1.getKind()) {
+                if(t.getKind() == DocTree.Kind.PARAM) {
+                    ParamTree p = (ParamTree) t;
+                    ParamTree p1 = (ParamTree) t1;
+                    if(p.isTypeParameter() && !p1.isTypeParameter()) {
+                        return HIGHER;
+                    } else if(!p.isTypeParameter() && p1.isTypeParameter()) {
+                        return LOWER;
                     }
                 }
-            });
-        } finally {
-            indent.unlock();
-        }
-    }
-
-    public void cancel() {
-    }
-
-    private Position getDeprecatedInsertPosition(CompilationInfo wc, Document doc, Doc jdoc, boolean[] isLastTag) throws BadLocationException {
-        // find last javadoc token position
-        return getTagInsertPosition(wc, doc, jdoc, null, false, isLastTag);
-    }
-
-    private Position getTypeParamInsertPosition(CompilationInfo wc, Document doc, Element elm, Doc jdoc, boolean[] isLastTag) throws BadLocationException {
-        // 1. find @param tags + find index of param and try to apply on @param array
-        ElementKind elmkind = elm.getKind();
-        Tag[] tags;
-        if (elmkind.isClass() || elmkind.isInterface()) {
-            tags = ((ClassDoc) jdoc).typeParamTags();
-        } else if (elmkind == ElementKind.METHOD || elmkind == ElementKind.CONSTRUCTOR) {
-            tags = ((ExecutableMemberDoc) jdoc).typeParamTags();
-        } else {
-            throw new IllegalStateException(elm + ", " + elmkind + "\n" + jdoc.getRawCommentText()); // NOI18N
-        }
-        Tag where = null;
-        boolean insertBefore = true;
-        if (tags.length > 0) {
-            List<? extends TypeParameterElement> typeParameters =
-                    elmkind == ElementKind.METHOD || elmkind == ElementKind.CONSTRUCTOR
-                    ? ((ExecutableElement) elm).getTypeParameters()
-                    : ((TypeElement) elm).getTypeParameters();
-            int pindex = findParamIndex(typeParameters, paramName);
-            where = pindex < tags.length? tags[pindex]: tags[tags.length - 1];
-            insertBefore = pindex < tags.length;
-        } else {
-            // 2. if not, find first tag + insert before
-            tags = jdoc.tags();
-            if (tags.length > 0) {
-                where = tags[0];
+                return EQUAL;
             }
+            switch(t.getKind()) {
+                case AUTHOR:
+                    return HIGHER;
+                case VERSION:
+                    if(t1.getKind() == DocTree.Kind.AUTHOR) {
+                        return LOWER;
+                    }
+                    return HIGHER;
+                case PARAM:
+                    if(t1.getKind() == DocTree.Kind.AUTHOR
+                            || t1.getKind() == DocTree.Kind.VERSION) {
+                        return LOWER;
+                    }
+                    return HIGHER;
+                case RETURN:
+                    if(t1.getKind() == DocTree.Kind.AUTHOR
+                            || t1.getKind() == DocTree.Kind.VERSION
+                            || t1.getKind() == DocTree.Kind.PARAM) {
+                        return LOWER;
+                    }
+                    return HIGHER;
+                case EXCEPTION:
+                    if(t1.getKind() == DocTree.Kind.AUTHOR
+                            || t1.getKind() == DocTree.Kind.VERSION
+                            || t1.getKind() == DocTree.Kind.PARAM
+                            || t1.getKind() == DocTree.Kind.RETURN) {
+                        return LOWER;
+                    }
+                    return HIGHER;
+                case THROWS:
+                    if(t1.getKind() == DocTree.Kind.AUTHOR
+                            || t1.getKind() == DocTree.Kind.VERSION
+                            || t1.getKind() == DocTree.Kind.PARAM
+                            || t1.getKind() == DocTree.Kind.RETURN
+                            || t1.getKind() == DocTree.Kind.EXCEPTION) {
+                        return LOWER;
+                    }
+                    return HIGHER;
+                case SEE:
+                    if(t1.getKind() == DocTree.Kind.AUTHOR
+                            || t1.getKind() == DocTree.Kind.VERSION
+                            || t1.getKind() == DocTree.Kind.PARAM
+                            || t1.getKind() == DocTree.Kind.RETURN
+                            || t1.getKind() == DocTree.Kind.EXCEPTION
+                            || t1.getKind() == DocTree.Kind.THROWS) {
+                        return LOWER;
+                    }
+                    return HIGHER;
+                case SINCE:
+                    if(t1.getKind() == DocTree.Kind.AUTHOR
+                            || t1.getKind() == DocTree.Kind.VERSION
+                            || t1.getKind() == DocTree.Kind.PARAM
+                            || t1.getKind() == DocTree.Kind.RETURN
+                            || t1.getKind() == DocTree.Kind.EXCEPTION
+                            || t1.getKind() == DocTree.Kind.THROWS
+                            || t1.getKind() == DocTree.Kind.SEE) {
+                        return LOWER;
+                    }
+                    return HIGHER;
+                case SERIAL:
+                case SERIAL_DATA:
+                case SERIAL_FIELD:
+                    if(t1.getKind() == DocTree.Kind.AUTHOR
+                            || t1.getKind() == DocTree.Kind.VERSION
+                            || t1.getKind() == DocTree.Kind.PARAM
+                            || t1.getKind() == DocTree.Kind.RETURN
+                            || t1.getKind() == DocTree.Kind.EXCEPTION
+                            || t1.getKind() == DocTree.Kind.THROWS
+                            || t1.getKind() == DocTree.Kind.SEE
+                            || t1.getKind() == DocTree.Kind.SINCE) {
+                        return LOWER;
+                    }
+                    return HIGHER;
+                case DEPRECATED:
+                    if(t1.getKind() == DocTree.Kind.UNKNOWN_BLOCK_TAG) {
+                        return HIGHER;
+                    }
+                    return LOWER;
+                case UNKNOWN_BLOCK_TAG:
+                    return LOWER;
+            }
+            return LOWER;
         }
-        return getTagInsertPosition(wc, doc, jdoc, where, insertBefore, isLastTag);
+        
     }
-
-    private Position getThrowsInsertPosition(CompilationInfo wc, Document doc, ExecutableMemberDoc jdoc, boolean[] isLastTag) throws BadLocationException {
-        // 1. find @param tags + find index of param and try to apply on @param array
-        Tag[] tags = jdoc.throwsTags(); // NOI18N
-        // XXX filter type params?
-        Tag where = null;
-        boolean insertBefore = true;
-        if (tags.length > 0) {
-            where = index < tags.length? tags[index]: tags[tags.length - 1];
-            insertBefore = index < tags.length;
-        } else {
-            // 2. if not, find first tag + insert before
-            tags = jdoc.tags("@return"); // NOI18N
-            if (tags.length == 0) {
-                tags = jdoc.tags("@param"); // NOI18N
-            }
-            if (tags.length == 0) {
-                tags = jdoc.tags();
-            } else {
-                // in case @return or @param
-                insertBefore = false;
-            }
-            if (tags.length > 0) {
-                where = tags[tags.length - 1];
-            }
-        }
-        return getTagInsertPosition(wc, doc, jdoc, where, insertBefore, isLastTag);
-    }
-
-    private Position getReturnInsertPosition(CompilationInfo wc, Document doc, Doc jdoc, boolean[] isLastTag) throws BadLocationException {
-        // 1. find @param tags
-        Tag[] tags = jdoc.tags("@param"); // NOI18N
-        Tag where = null;
-        boolean insertBefore = true;
-        if (tags.length > 0) {
-            where = tags[tags.length - 1];
-            insertBefore = false;
-        } else {
-            // 2. if not, find first tag + insert before
-            tags = jdoc.tags();
-            if (tags.length > 0) {
-                where = tags[0];
-            }
-        }
-        return getTagInsertPosition(wc, doc, jdoc, where, insertBefore, isLastTag);
-    }
-
-    private Position getParamInsertPosition(CompilationInfo wc, Document doc, ExecutableElement elm, ExecutableMemberDoc jdoc, boolean[] isLastTag) throws BadLocationException {
-        // 1. find @param tags + find index of param and try to apply on @param array
-        Tag[] tags = jdoc.paramTags();
-        Tag where = null;
-        boolean insertBefore = true;
-        if (tags.length > 0) {
-            int pindex = findParamIndex(elm.getParameters(), paramName);
-            where = pindex < tags.length? tags[pindex]: tags[tags.length - 1];
-            insertBefore = pindex < tags.length;
-        } else {
-            tags = jdoc.typeParamTags();
-            // 2. if not, find last type param tag + insert after
-            if (tags.length > 0) {
-                where = tags[tags.length - 1];
-                insertBefore = false;
-            } else {
-                // 3. if not, find first tag + insert before
-                tags = jdoc.tags();
-                if (tags.length > 0) {
-                    where = tags[0];
-                }
-            }
-        }
-        return getTagInsertPosition(wc, doc, jdoc, where, insertBefore, isLastTag);
-    }
-
-    private Position getTagInsertPosition(CompilationInfo wc, Document doc, Doc jdoc, Tag where, boolean insertBefore, boolean[] isLastTag) throws BadLocationException {
-        // find insert position
-        Position[] bounds = null;
-        if (where != null) {
-            try {
-                bounds = JavadocUtilities.findTagBounds(wc, doc, where, isLastTag);
-                if (insertBefore) {
-                    isLastTag[0] = false;
-                }
-            } catch (IllegalStateException ise) {
-                // insert at the last token; resolve \n and /***/ cases
-                bounds = JavadocUtilities.findLastTokenBounds(wc, doc, jdoc);
-                insertBefore = false;
-                isLastTag[0] = true;
-            }
-        } else {
-            // 3. if not, insert at the last token; resolve \n and /***/ cases
-            bounds = JavadocUtilities.findLastTokenBounds(wc, doc, jdoc);
-            insertBefore = false;
-            isLastTag[0] = true;
-        }
-
-        return bounds == null
-                ? null
-                : insertBefore ? bounds[0] : bounds[1];
-    }
-
-    private int findParamIndex(List<? extends Element> params, String name) {
-        int i = 0;
-        for (Element param : params) {
-            if (name.contentEquals(param.getSimpleName())) {
-                return i;
-            }
-            i++;
-        }
-        throw new IllegalArgumentException("Unknown param: " + name); // NOI18N
+    
+    @Override
+    public String getText() {
+        return message;
     }
 }

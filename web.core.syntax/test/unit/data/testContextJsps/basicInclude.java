@@ -22,9 +22,7 @@ class SimplifiedJSPServlet extends HttpServlet {
 		PageContext pageContext,
 		Throwable exception
 	) throws Throwable {
-
   System.err.println(testProp);
-
 
 	}
 }

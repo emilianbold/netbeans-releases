@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 
 /**

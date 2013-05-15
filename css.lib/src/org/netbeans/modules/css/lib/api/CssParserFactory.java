@@ -42,7 +42,6 @@
 package org.netbeans.modules.css.lib.api;
 
 import java.util.Collection;
-import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.css.lib.nbparser.CssParser;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;

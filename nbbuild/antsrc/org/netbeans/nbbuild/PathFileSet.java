@@ -51,6 +51,7 @@ import org.apache.tools.ant.DirectoryScanner;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.types.DataType;
 import org.apache.tools.ant.types.Path;
+import org.apache.tools.ant.types.Resource;
 import org.apache.tools.ant.types.ResourceCollection;
 import org.apache.tools.ant.types.resources.FileResource;
 import org.apache.tools.ant.types.selectors.AbstractSelectorContainer;
@@ -83,7 +84,7 @@ public class PathFileSet extends DataType implements ResourceCollection, Selecto
     private Path clusterPath;
     private String include;
     private AbstractSelectorContainer selectors = new AbstractSelectorContainer() {};
-    private ArrayList<FileResource> files;
+    private ArrayList<Resource> files;
 
     /**
      * Optional include pattern for filtering files. The same as fileset's nested &gt;include&lt; tag.
@@ -125,7 +126,7 @@ public class PathFileSet extends DataType implements ResourceCollection, Selecto
 
     // SelectorContainer impl.
 
-    public Enumeration selectorElements() {
+    public Enumeration<FileSelector> selectorElements() {
         return selectors.selectorElements();
     }
 
@@ -223,7 +224,7 @@ public class PathFileSet extends DataType implements ResourceCollection, Selecto
 
     // ResourceCollection impl.
 
-    public Iterator iterator() {
+    public Iterator<Resource> iterator() {
         initFiles();
         return files.iterator();
     }
@@ -240,7 +241,7 @@ public class PathFileSet extends DataType implements ResourceCollection, Selecto
     private void initFiles() throws BuildException {
         if (files != null) return;
         try {
-            files = new ArrayList<FileResource>();
+            files = new ArrayList<Resource>();
             log("ClusterPathSet: scanning " + paths.size() + " paths.", Project.MSG_VERBOSE);
             DirectoryScanner scanner = new DirectoryScanner();
             if (paths.size() == 0) {

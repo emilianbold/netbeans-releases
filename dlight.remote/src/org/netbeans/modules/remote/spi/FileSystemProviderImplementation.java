@@ -43,8 +43,10 @@
 package org.netbeans.modules.remote.spi;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider.FileSystemProblemListener;
 import org.openide.filesystems.FileChangeListener;
@@ -80,6 +82,7 @@ public interface FileSystemProviderImplementation {
     void scheduleRefresh(FileObject fileObject);
     void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths);
     void addRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath);
+    void addRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath,  FileFilter recurseInto, Callable<Boolean> interrupter);
     void removeRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath);
     boolean canExecute(FileObject fileObject);
     public void addFileChangeListener(FileChangeListener listener, FileSystem fileSystem, String path);

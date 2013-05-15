@@ -117,6 +117,8 @@ public class CSSUtils {
         "widows", // NOI18N
         "word-spacing" // NOI18N
     });
+    /** Name of the class that is used to simulate hovering. */
+    public static final String HOVER_CLASS = "-netbeans-hover"; // NOI18N
 
     /**
      * Determines whether the CSS property with the specified name is inherited.

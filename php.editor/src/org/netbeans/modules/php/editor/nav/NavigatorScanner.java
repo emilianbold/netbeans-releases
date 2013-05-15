@@ -53,10 +53,12 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.api.AliasedName;
+import org.netbeans.modules.php.editor.api.NameKind;
 import org.netbeans.modules.php.editor.api.QualifiedName;
+import org.netbeans.modules.php.editor.api.elements.ElementFilter;
 import org.netbeans.modules.php.editor.api.elements.ParameterElement;
+import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
 import org.netbeans.modules.php.editor.model.ClassConstantElement;
 import org.netbeans.modules.php.editor.model.ClassScope;
@@ -74,7 +76,7 @@ import org.netbeans.modules.php.editor.model.Scope;
 import org.netbeans.modules.php.editor.model.TraitScope;
 import org.netbeans.modules.php.editor.model.TypeScope;
 import org.netbeans.modules.php.editor.model.UseScope;
-import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -82,24 +84,24 @@ import org.openide.util.ImageUtilities;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public final class NavigatorScanner {
-
-    private static ImageIcon interfaceIcon = null;
-    private static ImageIcon traitIcon = null;
     private static final String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
     private static final String CLOSE_FONT = "</font>"; //NOI18N
+    private static ImageIcon interfaceIcon = null;
+    private static ImageIcon traitIcon = null;
+    private final FileScope fileScope;
+    private final Set<TypeElement> deprecatedTypes;
 
-    public static NavigatorScanner create() {
-        return new NavigatorScanner();
+    public static NavigatorScanner create(Model model) {
+        return new NavigatorScanner(model);
     }
 
-    private NavigatorScanner() {
+    private NavigatorScanner(Model model) {
+        fileScope = model.getFileScope();
+        deprecatedTypes = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()));
     }
 
-    public List<? extends StructureItem> scan(final ParserResult info) {
-        final List<StructureItem> items = new ArrayList<StructureItem>();
-        PHPParseResult result = (PHPParseResult) info;
-        final Model model = result.getModel();
-        FileScope fileScope = model.getFileScope();
+    public List<? extends StructureItem> scan() {
+        final List<StructureItem> items = new ArrayList<>();
         Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
         for (NamespaceScope nameScope : declaredNamespaces) {
             List<StructureItem> namespaceChildren = nameScope.isDefaultNamespace() ? items : new ArrayList<StructureItem>();
@@ -116,7 +118,7 @@ public final class NavigatorScanner {
                 if (fnc.isAnonymous()) {
                     continue;
                 }
-                List<StructureItem> variables = new ArrayList<StructureItem>();
+                List<StructureItem> variables = new ArrayList<>();
                 namespaceChildren.add(new PHPFunctionStructureItem(fnc, variables));
             }
             Collection<? extends ConstantElement> declaredConstants = nameScope.getDeclaredConstants();
@@ -125,7 +127,7 @@ public final class NavigatorScanner {
             }
             Collection<? extends TypeScope> declaredTypes = nameScope.getDeclaredTypes();
             for (TypeScope type : declaredTypes) {
-                List<StructureItem> children = new ArrayList<StructureItem>();
+                List<StructureItem> children = new ArrayList<>();
                 if (type instanceof ClassScope) {
                     namespaceChildren.add(new PHPClassStructureItem((ClassScope) type, children));
                 } else if (type instanceof InterfaceScope) {
@@ -139,7 +141,7 @@ public final class NavigatorScanner {
                     // For example when user writes in  a php doc @method and parsing is
                     // started when there is no name yet.
                     if (method.getName() != null && !method.getName().isEmpty()) {
-                        List<StructureItem> variables = new ArrayList<StructureItem>();
+                        List<StructureItem> variables = new ArrayList<>();
                         if (method.isConstructor()) {
                             children.add(new PHPConstructorStructureItem(method, variables));
                         } else {
@@ -168,6 +170,18 @@ public final class NavigatorScanner {
             }
         }
         return items;
+    }
+
+    private boolean isDeprecatedType(String type, ModelElement modelElement) {
+        boolean result = false;
+        QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(type), modelElement.getOffset(), modelElement.getInScope());
+        for (TypeElement typeElement : deprecatedTypes) {
+            if (typeElement.getFullyQualifiedName().equals(fullyQualifiedName)) {
+                result = true;
+                break;
+            }
+        }
+        return result;
     }
 
     private abstract class PHPStructureItem implements StructureItem {
@@ -304,8 +318,10 @@ public final class NavigatorScanner {
                 formatter.deprecated(true);
             }
             formatter.appendText(function.getName());
+            if (function.isDeprecated()) {
+                formatter.deprecated(false);
+            }
             formatter.appendText("(");   //NOI18N
-
             List<? extends ParameterElement> parameters = function.getParameters();
             if (parameters != null && parameters.size() > 0) {
                 boolean first = true;
@@ -315,28 +331,30 @@ public final class NavigatorScanner {
                     if (name != null) {
                         if (!first) {
                             formatter.appendText(", "); //NOI18N
-
                         }
-
                         if (!types.isEmpty()) {
                             formatter.appendHtml(FONT_GRAY_COLOR);
-                            StringBuilder typeSb = new StringBuilder();
+                            int i = 0;
                             for (TypeResolver typeResolver : types) {
+                                i++;
                                 if (typeResolver.isResolved()) {
                                     QualifiedName typeName = typeResolver.getTypeName(false);
                                     if (typeName != null) {
-                                        if (typeSb.length() > 0) {
-                                            typeSb.append("|"); //NOI18N
+                                        if (i > 1) {
+                                            formatter.appendText("|"); //NOI18N
                                         }
-                                        typeSb.append(typeName.toString());
+                                        boolean deprecatedType = isDeprecatedType(typeName.toString(), function);
+                                        if (deprecatedType) {
+                                            formatter.deprecated(true);
+                                        }
+                                        formatter.appendText(typeName.toString());
+                                        if (deprecatedType) {
+                                            formatter.deprecated(false);
+                                        }
                                     }
                                 }
                             }
-                            if (typeSb.length() > 0) {
-                                formatter.appendText(typeSb.toString());
-                            }
                             formatter.appendText(" ");   //NOI18N
-
                             formatter.appendHtml(CLOSE_FONT);
                         }
                         formatter.appendText(name);
@@ -348,20 +366,22 @@ public final class NavigatorScanner {
             Collection<? extends String> returnTypes = function.getReturnTypeNames();
             if (!returnTypes.isEmpty()) {
                 formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
-                StringBuilder sb = null;
+                int i = 0;
                 for (String type : returnTypes) {
-                    if (sb == null) {
-                        sb = new StringBuilder();
-                    } else {
-                        sb.append(", "); //NOI18N
+                    i++;
+                    if (i > 1) {
+                        formatter.appendText(", "); //NOI18N
                     }
-                    sb.append(type);
+                    boolean deprecatedType = isDeprecatedType(type.toString(), function);
+                    if (deprecatedType) {
+                        formatter.deprecated(true);
+                    }
+                    formatter.appendText(type);
+                    if (deprecatedType) {
+                        formatter.deprecated(false);
+                    }
                 }
-                formatter.appendText(sb.toString());
                 formatter.appendHtml(CLOSE_FONT);
-            }
-            if (function.isDeprecated()) {
-                formatter.deprecated(false);
             }
         }
     }
@@ -392,24 +412,28 @@ public final class NavigatorScanner {
                 formatter.deprecated(true);
             }
             formatter.appendText(field.getName());
-            Collection<? extends String> types = field.getDefaultTypeNames();
-            StringBuilder sb = null;
-            if (!types.isEmpty()) {
-                formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
-                for (String type : types) {
-                    if (sb == null) {
-                        sb = new StringBuilder();
-                    } else {
-                        sb.append(", "); //NOI18N
-                    }
-                    sb.append(type);
-
-                }
-                formatter.appendText(sb.toString());
-                formatter.appendHtml(CLOSE_FONT);
-            }
             if (field.isDeprecated()) {
                 formatter.deprecated(false);
+            }
+            Collection<? extends String> types = field.getDefaultTypeNames();
+            if (!types.isEmpty()) {
+                formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
+                int i = 0;
+                for (String type : types) {
+                    i++;
+                    if (i > 1) {
+                        formatter.appendText(", "); //NOI18N
+                    }
+                    boolean deprecatedType = isDeprecatedType(type, field);
+                    if (deprecatedType) {
+                        formatter.deprecated(true);
+                    }
+                    formatter.appendText(type);
+                    if (deprecatedType) {
+                        formatter.deprecated(false);
+                    }
+                }
+                formatter.appendHtml(CLOSE_FONT);
             }
             return formatter.getText();
         }
@@ -468,12 +492,20 @@ public final class NavigatorScanner {
         @Override
         public String getHtml(HtmlFormatter formatter) {
             formatter.reset();
-            formatter.appendText(getName());
             UseScope useElement = (UseScope) getElementHandle();
+            String name = getName();
+            boolean deprecatedType = isDeprecatedType(name, useElement);
+            if (deprecatedType) {
+                formatter.deprecated(true);
+            }
+            formatter.appendText(name);
             final AliasedName aliasedName = useElement.getAliasedName();
             if (aliasedName != null) {
                 formatter.appendText(" as "); //NOI18N
                 formatter.appendText(aliasedName.getAliasName());
+            }
+            if (deprecatedType) {
+                formatter.deprecated(false);
             }
             return formatter.getText();
         }
@@ -537,6 +569,9 @@ public final class NavigatorScanner {
                 formatter.deprecated(true);
             }
             formatter.appendText(getName());
+            if (getConstant().isDeprecated()) {
+                formatter.deprecated(false);
+            }
             final ConstantElement constant = getConstant();
             String value = constant.getValue();
             if (value != null) {
@@ -544,9 +579,6 @@ public final class NavigatorScanner {
                 formatter.appendHtml(FONT_GRAY_COLOR); //NOI18N
                 formatter.appendText(value);
                 formatter.appendHtml(CLOSE_FONT);
-            }
-            if (getConstant().isDeprecated()) {
-                formatter.deprecated(false);
             }
             return formatter.getText();
         }

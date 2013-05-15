@@ -43,6 +43,7 @@
 package org.netbeans.modules.java.hints.spiimpl;
 
 import com.sun.source.tree.IfTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Scope;
@@ -64,6 +65,13 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 import javax.tools.JavaFileObject;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.JavaSource.Phase;
+import org.netbeans.api.java.source.Task;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
 import org.netbeans.modules.java.source.save.DiffContext;
 
@@ -336,6 +344,7 @@ public class UtilitiesTest extends TestBase {
         assertPositions(result, positions[0], code, "foo", "foo bar");
     }
 
+    @RandomlyFails
     public void testErrorsForPatterns2() throws Exception {
         prepareTest("test/Test.java", "package test; public class Test{}");
 
@@ -503,6 +512,39 @@ public class UtilitiesTest extends TestBase {
         String golden = "$mods$,@Deprecated(), [public]";
         
         assertEquals(golden.replaceAll("[ \n\r]+", " "), mods.getAnnotations().toString() + ", " + mods.getFlags().toString());
+    }
+    
+    public void testBrokenPlatform226678() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        JavaSource.create(ClasspathInfo.create(ClassPath.EMPTY, ClassPath.EMPTY, ClassPath.EMPTY), info.getFileObject()).runUserActionTask(new Task<CompilationController>() {
+            @Override public void run(CompilationController parameter) throws Exception {
+                parameter.toPhase(Phase.RESOLVED);
+                info = parameter;
+            }
+        }, true);
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        String methodCode = "private int test(int i) { return i; }";
+        Tree result = Utilities.parseAndAttribute(info, methodCode, s);
+
+        assertEquals(Kind.METHOD, result.getKind());
+        assertEquals(methodCode.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " ").trim());
+    }
+    
+    public void testLambdaExpression1() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Tree result = Utilities.parseAndAttribute(info, "($args$) -> $expression", s);
+
+        assertTrue(result.getKind().name(), result.getKind() == Kind.LAMBDA_EXPRESSION);
+
+        LambdaExpressionTree let = (LambdaExpressionTree) result;
+        
+        assertEquals(Kind.IDENTIFIER, let.getParameters().get(0).getKind());
+        String golden = "($args$)->$expression";
+        
+        assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString());
     }
     
     public void testToHumanReadableTime() {

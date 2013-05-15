@@ -465,7 +465,7 @@ public class UIDUtilities {
      */
     /* package */ static class CachedUID<T> extends KeyBasedUID<T> {
         private static final SoftReference<Object> DUMMY = new SoftReference<Object>(null);
-        private Reference<Object> weakT;
+        private volatile Reference<Object> weakT;
 
         protected CachedUID(Key key, T obj) {
             super(key);

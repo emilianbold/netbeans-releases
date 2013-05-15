@@ -47,6 +47,7 @@ import com.sun.tools.javac.tree.JCTree;
 import java.util.Comparator;
 import static org.netbeans.modules.java.source.save.Measure.*;
 import static com.sun.source.tree.Tree.Kind;
+import com.sun.tools.javac.tree.DCTree;
 
 /**
  * Used for distance measuring of two elements.
@@ -87,6 +88,49 @@ public class Measure {
                 // does not match
                 return INFINITE_DISTANCE;
             }
+        }
+    };
+    
+    /**
+     * Default measure based on equals.
+     */
+    static final Comparator<DCTree> DOCTREE = new Comparator<DCTree>() {
+
+        /**
+         * Compares two objects and returns distance between
+         * them. (Value expressing how far they are.)
+         *
+         * @param first First object to be compared.
+         * @param second Second object to be compared.
+         * @return Distance between compared objects (0 = objects perfectly match,
+         * <code>INFINITE_DISTANCE</code> = objects are completely different)
+         */
+        public int compare(DCTree first, DCTree second) {
+            assert first != null && second != null : "Shouldn't pass null value!";
+
+            if (first == second || first.equals(second)) {
+                // pefectly match
+                return OBJECTS_MATCH;
+            } else {
+                // does not match
+                return INFINITE_DISTANCE;
+            }
+        }
+    };
+    
+    /**
+     * Used for measuring distance of two <code>Method invocation arguments</code>s.
+     */
+    static final Comparator<DCTree> TAGS = new Comparator<DCTree>() {
+
+        public int compare(DCTree t1, DCTree t2) {
+            int distance = DOCTREE.compare(t1, t2);
+            if (distance == INFINITE_DISTANCE) {
+                if (t1.getKind() == t2.getKind()) {
+                    return t1.pos == t2.pos ? ALMOST_THE_SAME : THE_SAME_KIND;
+                }
+            }
+            return distance;
         }
     };
 

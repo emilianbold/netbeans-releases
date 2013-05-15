@@ -2,6 +2,7 @@ Code completion result for source line:
 var x= Math.|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
+CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     abs(x: Number): Number          [PUBLIC]   JS Platform
 METHOD     acos(x: Number): Number         [PUBLIC]   JS Platform
 METHOD     asin(x: Number): Number         [PUBLIC]   JS Platform
@@ -48,4 +49,3 @@ FIELD      PI: Number                      [PUBLIC]   JS Platform
 FIELD      SQRT1_2: Number                 [PUBLIC]   JS Platform
 FIELD      SQRT2: Number                   [PUBLIC]   JS Platform
 FIELD      constructor: Function           [PUBLIC]   JS Platform
-FIELD      prototype                       [PUBLIC]   JS Platform

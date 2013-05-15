@@ -733,11 +733,14 @@ public class NbEditorKit extends ExtKit implements Callable {
                 target = null;
             }
             if (kit == null) return;
-            
+                
             boolean foldingEnabled = false;
             if (target != null) {
-                Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(target)).lookup(Preferences.class);
-                foldingEnabled = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, EditorPreferencesDefaults.defaultCodeFoldingEnable);
+                FoldHierarchy h = FoldHierarchy.get(target);
+                if (h.isActive()) {
+                    Preferences prefs = MimeLookup.getLookup(DocumentUtilities.getMimeType(target)).lookup(Preferences.class);
+                    foldingEnabled = prefs.getBoolean(SimpleValueNames.CODE_FOLDING_ENABLE, EditorPreferencesDefaults.defaultCodeFoldingEnable);
+                }
             }
             
             Action a = kit.getActionByName(actionName);
@@ -766,7 +769,7 @@ public class NbEditorKit extends ExtKit implements Callable {
                     menu.add(item);
                 }
 
-            } else { // action-name is null, add the separator
+            } else if (actionName == null) { // action-name is null, add the separator
                 menu.addSeparator();
             }
         }        
@@ -790,6 +793,10 @@ public class NbEditorKit extends ExtKit implements Callable {
             setAddSeparatorBeforeNextAction(true);
             addAction(target, menu, BaseKit.collapseAllFoldsAction);
             addAction(target, menu, BaseKit.expandAllFoldsAction);
+            // this is a hack, which assumes a certain action name from editor.fold.ui
+            // if the action does not exist, nothing will be added to the menu.
+            addAction(target, menu, "collapse-fold-tree"); // NOI18N
+            addAction(target, menu, "expand-fold-tree"); // NOI18N
             // By default add separator before next actions (can be overriden if unwanted)
             setAddSeparatorBeforeNextAction(true);
             if (target != null) addAdditionalItems(target, menu);

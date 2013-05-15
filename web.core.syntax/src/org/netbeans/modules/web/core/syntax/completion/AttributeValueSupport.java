@@ -114,7 +114,7 @@ public abstract class AttributeValueSupport {
         putSupport(new AttrSupports.TrueFalseSupport(false, "attribute", "required")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(false, "attribute", "fragment")); // NOI18N
         putSupport(new AttrSupports.TrueFalseSupport(false, "attribute", "rtexprvalue")); // NOI18N
-        putSupport(new AttrSupports.PackageListSupport(false, "attribute", "type")); // NOI18N
+        //putSupport(new AttrSupports.PackageListSupport(false, "attribute", "type")); // NOI18N
         // @variable
         putSupport(new AttrSupports.TrueFalseSupport(false, "variable", "declare")); // NOI18N
         putSupport(new AttrSupports.VariableScopeSupport(false, "variable", "scope")); // NOI18N

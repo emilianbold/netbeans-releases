@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.db.dataview.output;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -56,6 +57,7 @@ import org.netbeans.modules.db.dataview.util.DBTestUtil;
 import org.netbeans.modules.db.dataview.util.DbUtil;
 import org.netbeans.modules.db.dataview.util.TestCaseContext;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 
 /**
  *
@@ -78,7 +80,7 @@ public class DataViewTest extends NbTestCase {
 
     @Override
     public boolean runInEQ () {
-        return true;
+        return false;
     }
 
     @Override
@@ -156,7 +158,8 @@ public class DataViewTest extends NbTestCase {
             ResultSet rset = stmt.executeQuery(sqlStr);
             Collection<DBTable> tables = dbMeta.generateDBTables(rset, sqlStr, true); //generateDBTables(rset);
             DataViewDBTable expResult = new DataViewDBTable(tables);
-            DataViewDBTable result = instance.getDataViewDBTable();
+            DataViewPageContext pageContext = instance.getPageContext(0);
+            DataViewDBTable result = pageContext.getTableMetaData();
             assertEquals(expResult.getQualifiedName(0, false), result.getQualifiedName(0, false));
             assertEquals(expResult.getColumnCount(), result.getColumnCount());
             assertEquals(expResult.getColumnType(2), result.getColumnType(2));
@@ -170,9 +173,14 @@ public class DataViewTest extends NbTestCase {
         String sqlStr =context.getSqlSelect();
         int pageSize = 4;
         DataView instance = DataView.create(dbconn, sqlStr, pageSize);
-        DataViewPageContext result = instance.getDataViewPageContext();
+        final DataViewPageContext result = instance.getPageContext(0);
         assertEquals(1, result.getTotalRows());
-        assertTrue(result.hasDataRows());
+        assertTrue(Mutex.EVENT.writeAccess(new Mutex.Action<Boolean>() {
+            @Override
+            public Boolean run() {
+                return result.hasRows();
+            }
+        }));
     }
 
     public void testGetDatabaseConnection() {
@@ -194,15 +202,6 @@ public class DataViewTest extends NbTestCase {
         assertEquals(expResult, result);
     }
 
-    public void testGetUpdatedRowContext() {
-        String selectStr = "select * from simpletable";
-        int pageSize = 5;
-        DataView instance = DataView.create(dbconn, selectStr, pageSize);
-        instance.createComponents();
-        UpdatedRowContext result = instance.getUpdatedRowContext();
-        assertNotNull(result);
-    }
-
     /**
      * Test of getSQLExecutionHelper method, of class DataView.
      */
@@ -214,18 +213,5 @@ public class DataViewTest extends NbTestCase {
         assertFalse(instance.hasExceptions());
         assertNotNull(instance);
         assertNotNull(result);
-
-    }
-
-    /**
-     * Test of getSQLStatementGenerator method, of class DataView.
-     */
-    public void testGetSQLStatementGenerator() {
-        String sqlStr = "select * from simpletable";
-        int pageSize = 5;
-        DataView instance = DataView.create(dbconn, sqlStr, pageSize);
-        SQLStatementGenerator expResult = new SQLStatementGenerator(instance);
-        SQLStatementGenerator result = instance.getSQLStatementGenerator();
-        assertEquals(SQLStatementGenerator.getCountSQLQuery(sqlStr), SQLStatementGenerator.getCountSQLQuery(sqlStr));
     }
 }

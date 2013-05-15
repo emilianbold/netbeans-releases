@@ -66,6 +66,7 @@ import java.util.concurrent.TimeoutException;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
@@ -247,7 +248,7 @@ public final class AddDependencyPanel extends JPanel {
     private void initResults() {
         // results
         resultsList.setModel(resultsModel);
-        resultsList.setCellRenderer(new ResultListCellRenderer(resultsList.getCellRenderer()));
+        resultsList.setCellRenderer(new ResultListCellRenderer());
         // details
         updateResultDetailsAndVersions(false);
         // listeners
@@ -576,11 +577,11 @@ public final class AddDependencyPanel extends JPanel {
         packagesLabel = new JLabel();
         outputSplitPane = new JSplitPane();
         resultsScrollPane = new JScrollPane();
-        resultsList = new JList();
+        resultsList = new JList<SearchResult>();
         detailsScrollPane = new JScrollPane();
         detailsTextPane = new JTextPane();
         versionLabel = new JLabel();
-        versionComboBox = new JComboBox();
+        versionComboBox = new JComboBox<String>();
 
         Mnemonics.setLocalizedText(requireDevButton, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.requireDevButton.text")); // NOI18N
         requireDevButton.addActionListener(new ActionListener() {
@@ -685,7 +686,7 @@ public final class AddDependencyPanel extends JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void searchButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
+    private void searchButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_searchButtonActionPerformed
         final Composer composer = getComposer();
         if (composer == null) {
             return;
@@ -793,20 +794,20 @@ public final class AddDependencyPanel extends JPanel {
     private JLabel packagesLabel;
     private JButton requireButton;
     private JButton requireDevButton;
-    private JList resultsList;
+    private JList<SearchResult> resultsList;
     private JScrollPane resultsScrollPane;
     private JButton searchButton;
     private JLabel tokenLabel;
     private JTextField tokenTextField;
-    private JComboBox versionComboBox;
+    private JComboBox<String> versionComboBox;
     private JLabel versionLabel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
 
-    private static final class ResultsListModel extends AbstractListModel {
+    private static final class ResultsListModel extends AbstractListModel<SearchResult> {
 
-        private static final long serialVersionUID = -46871206788954L;
+        private static final long serialVersionUID = -897454654321324564L;
 
         // @GuardedBy("EDT")
         private final List<SearchResult> searchResults;
@@ -824,7 +825,7 @@ public final class AddDependencyPanel extends JPanel {
         }
 
         @Override
-        public Object getElementAt(int index) {
+        public SearchResult getElementAt(int index) {
             assert EventQueue.isDispatchThread();
             try {
                 return searchResults.get(index);
@@ -841,14 +842,9 @@ public final class AddDependencyPanel extends JPanel {
 
     }
 
-    private static final class ResultListCellRenderer implements ListCellRenderer {
+    private static final class ResultListCellRenderer implements ListCellRenderer<SearchResult> {
 
-        private final ListCellRenderer originalRenderer;
-
-        public ResultListCellRenderer(ListCellRenderer originalRenderer) {
-            assert originalRenderer != null;
-            this.originalRenderer = originalRenderer;
-        }
+        private final ListCellRenderer<Object> defaultRenderer = new DefaultListCellRenderer();
 
         @NbBundle.Messages({
             "# {0} - name",
@@ -858,9 +854,9 @@ public final class AddDependencyPanel extends JPanel {
             "AddDependencyPanel.results.noResults=<html><i>No results found.</i>"
         })
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<? extends SearchResult> list, SearchResult value, int index, boolean isSelected, boolean cellHasFocus) {
             String label;
-            SearchResult result = (SearchResult) value;
+            SearchResult result = value;
             if (result == SEARCHING_SEARCH_RESULT) {
                 label = Bundle.AddDependencyPanel_results_searching();
             } else if (result == NO_RESULTS_SEARCH_RESULT) {
@@ -868,14 +864,14 @@ public final class AddDependencyPanel extends JPanel {
             } else {
                 label = Bundle.AddDependencyPanel_results_result(result.getName(), result.getDescription());
             }
-            return originalRenderer.getListCellRendererComponent(list, label.toString(), index, isSelected, cellHasFocus);
+            return defaultRenderer.getListCellRendererComponent(list, label, index, isSelected, cellHasFocus);
         }
 
     }
 
-    private static final class VersionComboBoxModel extends AbstractListModel implements ComboBoxModel {
+    private static final class VersionComboBoxModel extends AbstractListModel<String> implements ComboBoxModel<String> {
 
-        private static final long serialVersionUID = -46861432132123L;
+        private static final long serialVersionUID = -7546812657897987L;
 
         @NbBundle.Messages("VersionComboBoxModel.noVersions=<no versions available>")
         static final String NO_VERSIONS_AVAILABLE = Bundle.VersionComboBoxModel_noVersions();
@@ -898,7 +894,7 @@ public final class AddDependencyPanel extends JPanel {
         }
 
         @Override
-        public Object getElementAt(int index) {
+        public String getElementAt(int index) {
             assert EventQueue.isDispatchThread();
             return versions.get(index);
         }
@@ -906,6 +902,7 @@ public final class AddDependencyPanel extends JPanel {
         @Override
         public void setSelectedItem(Object anItem) {
             selectedVersion = (String) anItem;
+            fireContentsChanged();
         }
 
         @CheckForNull

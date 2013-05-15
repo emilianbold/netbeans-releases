@@ -45,11 +45,12 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import org.eclipse.jgit.api.Git;
+import static junit.framework.Assert.assertFalse;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheBuilder;
 import org.eclipse.jgit.dircache.DirCacheEntry;
 import org.eclipse.jgit.lib.ConfigConstants;
+import org.eclipse.jgit.lib.Constants;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.netbeans.libs.git.GitClient;
@@ -165,6 +166,120 @@ public class StatusTest extends AbstractGitTestCase {
         assertStatus(statuses, workDir, deleted_modified, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_MODIFIED, false, listener);
         // what about isIgnored() here?
         assertStatus(statuses, workDir, ignored, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false, listener);
+    }
+    
+    // diff WT against a commit other than HEAD
+    public void testMiscStatusCommit () throws Exception {
+        write(new File(workDir, ".gitignore"), "ignored");
+        File untracked = new File(workDir, "untracked");
+        write(untracked, "untracked");
+        File ignored = new File(workDir, "ignored");
+        write(ignored, "ignored");
+        File added_uptodate = new File(workDir, "added-uptodate");
+        write(added_uptodate, "added-uptodate");
+        File added_modified = new File(workDir, "added-modified");
+        write(added_modified, "added_modified");
+        File added_deleted = new File(workDir, "added-deleted");
+        write(added_deleted, "added_deleted");
+
+        File uptodate_uptodate = new File(workDir, "uptodate-uptodate");
+        write(uptodate_uptodate, "uptodate_uptodate");
+        File uptodate_modified = new File(workDir, "uptodate-modified");
+        write(uptodate_modified, "uptodate_modified");
+        File uptodate_deleted = new File(workDir, "uptodate-deleted");
+        write(uptodate_deleted, "uptodate_deleted");
+
+        File modified_uptodate = new File(workDir, "modified-uptodate");
+        write(modified_uptodate, "modified_uptodate");
+        File modified_modified = new File(workDir, "modified-modified");
+        write(modified_modified, "modified_modified");
+        File modified_reset = new File(workDir, "modified-reset");
+        write(modified_reset, "modified_reset");
+        File modified_deleted = new File(workDir, "modified-deleted");
+        write(modified_deleted, "modified_deleted");
+
+        // we cannot
+        File deleted_uptodate = new File(workDir, "deleted-uptodate");
+        write(deleted_uptodate, "deleted_uptodate");
+        File deleted_untracked = new File(workDir, "deleted-untracked");
+        write(deleted_untracked, "deleted_untracked");
+        File deleted_modified = new File(workDir, "deleted-modified");
+        write(deleted_modified, "deleted_modified");
+
+        add(uptodate_uptodate, uptodate_modified, uptodate_deleted, modified_uptodate, modified_modified, modified_reset, modified_deleted, deleted_uptodate, deleted_untracked, deleted_modified);
+        commit(workDir);
+        add(added_uptodate, added_modified, added_deleted);
+        write(modified_deleted, "modification modified_deleted");
+        write(modified_modified, "modification modified_modified");
+        write(modified_reset, "modification modified_reset");
+        write(modified_uptodate, "modification modified_uptodate");
+        add(modified_deleted, modified_modified, modified_reset, modified_uptodate);
+        deleted_uptodate.delete();
+        deleted_untracked.delete();
+        deleted_modified.delete();
+        remove(true, deleted_uptodate, deleted_untracked, deleted_modified);
+        write(added_modified, "modification2 added_modified");
+        write(uptodate_modified, "modification2 uptodate_modified");
+        write(modified_modified, "modification2 modified_modified");
+        write(modified_reset, "modified_reset");
+        added_deleted.delete();
+        modified_deleted.delete();
+        uptodate_deleted.delete();
+        write(deleted_untracked, "deleted_untracked");
+        write(deleted_modified, "deleted_modified\nchange");
+        
+        GitClient client = getClient(workDir);
+        String revId = client.getBranches(false, NULL_PROGRESS_MONITOR).get(Constants.MASTER).getId();
+        
+        File someFile = new File(workDir, "fileforothercommit");
+        write(someFile, "fileforothercommit");
+        add(someFile);
+        commit(someFile);
+
+        TestStatusListener listener = new TestStatusListener();
+        client.addNotificationListener(listener);
+        Map<File, GitStatus> statuses = client.getStatus(new File[] { workDir }, Constants.HEAD, NULL_PROGRESS_MONITOR);
+        assertFalse(statuses.isEmpty());
+        assertStatus(statuses, workDir, untracked, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false, listener);
+        assertStatus(statuses, workDir, added_uptodate, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false, listener);
+        assertStatus(statuses, workDir, added_modified, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_ADDED, false, listener);
+        assertStatus(statuses, workDir, added_deleted, true, Status.STATUS_ADDED, Status.STATUS_REMOVED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, uptodate_uptodate, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, uptodate_modified, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, uptodate_deleted, true, Status.STATUS_NORMAL, Status.STATUS_REMOVED, Status.STATUS_REMOVED, false, listener);
+        assertStatus(statuses, workDir, modified_uptodate, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, modified_modified, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, modified_reset, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, modified_deleted, true, Status.STATUS_MODIFIED, Status.STATUS_REMOVED, Status.STATUS_REMOVED, false, listener);
+        assertStatus(statuses, workDir, deleted_uptodate, true, Status.STATUS_REMOVED, Status.STATUS_NORMAL, Status.STATUS_REMOVED, false, listener);
+        assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, deleted_modified, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, someFile, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, listener);
+        // what about isIgnored() here?
+        assertStatus(statuses, workDir, ignored, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false, listener);
+        
+        listener = new TestStatusListener();
+        client.addNotificationListener(listener);
+        statuses = client.getStatus(new File[] { workDir }, revId, NULL_PROGRESS_MONITOR);
+        assertFalse(statuses.isEmpty());
+        assertStatus(statuses, workDir, untracked, false, Status.STATUS_NORMAL, Status.STATUS_ADDED, Status.STATUS_ADDED, false, listener);
+        assertStatus(statuses, workDir, added_uptodate, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false, listener);
+        assertStatus(statuses, workDir, added_modified, true, Status.STATUS_ADDED, Status.STATUS_MODIFIED, Status.STATUS_ADDED, false, listener);
+        assertStatus(statuses, workDir, added_deleted, true, Status.STATUS_ADDED, Status.STATUS_REMOVED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, uptodate_uptodate, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, uptodate_modified, true, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, uptodate_deleted, true, Status.STATUS_NORMAL, Status.STATUS_REMOVED, Status.STATUS_REMOVED, false, listener);
+        assertStatus(statuses, workDir, modified_uptodate, true, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, modified_modified, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, false, listener);
+        assertStatus(statuses, workDir, modified_reset, true, Status.STATUS_MODIFIED, Status.STATUS_MODIFIED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, modified_deleted, true, Status.STATUS_MODIFIED, Status.STATUS_REMOVED, Status.STATUS_REMOVED, false, listener);
+        assertStatus(statuses, workDir, deleted_uptodate, true, Status.STATUS_REMOVED, Status.STATUS_NORMAL, Status.STATUS_REMOVED, false, listener);
+        assertStatus(statuses, workDir, deleted_untracked, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_NORMAL, false, listener);
+        assertStatus(statuses, workDir, deleted_modified, true, Status.STATUS_REMOVED, Status.STATUS_ADDED, Status.STATUS_MODIFIED, false, listener);
+        // what about isIgnored() here?
+        assertStatus(statuses, workDir, ignored, false, Status.STATUS_NORMAL, Status.STATUS_IGNORED, Status.STATUS_ADDED, false, listener);
+        // file somefile was not known in that revision
+        assertStatus(statuses, workDir, someFile, true, Status.STATUS_ADDED, Status.STATUS_NORMAL, Status.STATUS_ADDED, false, listener);
     }
 
     public void testStatusSingleFile () throws Exception {

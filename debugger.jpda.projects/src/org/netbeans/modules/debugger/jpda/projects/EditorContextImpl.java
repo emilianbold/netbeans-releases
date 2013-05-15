@@ -80,6 +80,7 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Scope;
+import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
@@ -88,6 +89,8 @@ import com.sun.source.util.Trees;
 
 import java.util.Collections;
 import java.util.Date;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -110,6 +113,7 @@ import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 
@@ -166,6 +170,8 @@ public class EditorContextImpl extends EditorContext {
 
     private static String fronting =
         System.getProperty ("netbeans.debugger.fronting", "true");
+    
+    private static final Logger logger = Logger.getLogger(EditorContextImpl.class.getName());
 
     private PropertyChangeSupport   pcs;
     private Map<Annotation, String> annotationToURL = new HashMap<Annotation, String>();
@@ -322,8 +328,8 @@ public class EditorContextImpl extends EditorContext {
             return null;
         }
         Annotation annotation;
-        if (timeStamp instanceof Breakpoint) {
-            annotation = new DebuggerBreakpointAnnotation(annotationType, l, (Breakpoint) timeStamp);
+        if (timeStamp instanceof JPDABreakpoint) {
+            annotation = new DebuggerBreakpointAnnotation(annotationType, l, (JPDABreakpoint) timeStamp);
         } else {
             annotation = new DebuggerAnnotation (annotationType, l, thread);
         }
@@ -2597,19 +2603,24 @@ public class EditorContextImpl extends EditorContext {
                     "\nFree memory = "+Runtime.getRuntime().freeMemory());
             return new Operation[] {};
         }
-        Scope scope = ci.getTreeUtilities().scopeFor(offset);
-        Element method = scope.getEnclosingMethod();
-        if (method == null) {
-            return new Operation[] {};
+        // We need the enclosing statement/block
+        Tree statementTree = findStatementInScope(ci.getTreeUtilities().pathFor(offset));
+        logger.log(Level.FINE, "Statement tree found at line {0}:\n{1}\n", new Object[]{ lineNumber, statementTree });
+        if (statementTree == null) {
+            Scope scope = ci.getTreeUtilities().scopeFor(offset);
+            Element method = scope.getEnclosingMethod();
+            if (method == null) {
+                return new Operation[] {};
+            }
+            statementTree = ci.getTrees().getTree(method);
         }
-        Tree methodTree = ci.getTrees().getTree(method);
-        if (methodTree == null) { // method not found
+        if (statementTree == null) { // method not found
             return new Operation[] {};
         }
         CompilationUnitTree cu = ci.getCompilationUnit();
         ExpressionScanner scanner = new ExpressionScanner(lineNumber, cu, ci.getTrees().getSourcePositions());
         ExpressionScanner.ExpressionsInfo info = new ExpressionScanner.ExpressionsInfo();
-        List<Tree> expTrees = methodTree.accept(scanner, info);
+        List<Tree> expTrees = statementTree.accept(scanner, info);
 
         //com.sun.source.tree.ExpressionTree expTree = scanner.getExpressionTree();
         if (expTrees == null || expTrees.isEmpty()) {
@@ -2641,9 +2652,27 @@ public class EditorContextImpl extends EditorContext {
                 new OperationCreationDelegateImpl(),
                 nodeOperations);
         if (ops != null) {
-            assignNextOperations(methodTree, cu, ci, bytecodeProvider, expTrees, info, nodeOperations);
+            assignNextOperations(statementTree, cu, ci, bytecodeProvider, expTrees, info, nodeOperations);
         }
         return ops;
+    }
+    
+    private Tree findStatementInScope(TreePath tp) {
+        Tree tree = tp.getLeaf();
+        Kind kind = tree.getKind();
+        switch (kind) {
+            case BLOCK:
+            case EXPRESSION_STATEMENT:
+            case LAMBDA_EXPRESSION:
+            case METHOD:
+                return tree;
+        }
+        tp = tp.getParentPath();
+        if (tp == null) {
+            return null;
+        } else {
+            return findStatementInScope(tp);
+        }
     }
 
     private static RequestProcessor scanningProcessor = new RequestProcessor("Debugger Context Scanning", 1);   // NOI18N

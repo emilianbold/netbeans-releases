@@ -57,7 +57,11 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.core.api.support.Strings;
 import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.provider.DefaultProvider;
@@ -242,6 +246,12 @@ public class PersistenceUnitWizardPanelDS extends PersistenceUnitWizardPanel imp
     
     @Override
     public boolean isValidPanel() {
+        Sources sources=ProjectUtils.getSources(project);
+        SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if(groups == null || groups.length == 0) {
+            setErrorMessage(NbBundle.getMessage(PersistenceUnitWizardDescriptor.class,"ERR_JavaSourceGroup")); //NOI18N
+            return false;
+        }
         try{
             if (!isNameValid()){
                 return false;

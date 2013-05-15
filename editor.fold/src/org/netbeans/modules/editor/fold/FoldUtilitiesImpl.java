@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.prefs.Preferences;
+import javax.swing.event.DocumentEvent;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.fold.Fold;
@@ -541,4 +542,118 @@ public final class FoldUtilitiesImpl {
         return sb.toString();
     }
     
+    /**
+     * Flags to encode fold state. A damaged to a fold will be never undone.
+     */
+    public static final byte FLAG_NOTHING_DAMAGED = 0;
+    public static final byte FLAG_COLLAPSED = 1;
+    public static final byte FLAG_START_DAMAGED = 1 << 1;
+    public static final byte FLAG_END_DAMAGED = 1 << 2;
+    public static final byte FLAGS_DAMAGED = FLAG_START_DAMAGED | FLAG_END_DAMAGED;
+
+    /**
+     * Determines whether the fold is damaged by insert operation.
+     * Returns FLAG_ bitfield, which describes the damaged areas. For insert
+     * the fold can be damaged only at the start or end, not at both places
+     * 
+     * @param f the fold to check
+     * @param evt document change event
+     * @return bitfield of damages. 0 means no damage.
+     */
+    public static int isFoldDamagedByInsert(Fold f, DocumentEvent evt) {
+        int o = evt.getOffset();
+        int s = f.getStartOffset();
+        if (o < s) {
+            return FLAG_NOTHING_DAMAGED;
+        }
+        int gs = f.getGuardedStart();
+        if (gs == s) {
+            gs++;
+        }
+        if (o >= s && o < gs) {
+            return FLAG_START_DAMAGED;
+        }
+        // if insertion was done before fold's end pos, the end position has advanced by inserion length.
+        int e = f.getEndOffset();
+        if (o >= e) {
+            return FLAG_NOTHING_DAMAGED;
+        }
+        int l = evt.getLength();
+        int gel = ApiPackageAccessor.get().foldEndGuardedLength(f);
+        e -= l;
+        int ge = e - gel;
+        
+        if (o <= ge) {
+            return FLAG_NOTHING_DAMAGED;
+        }
+        if (e == ge) {
+            ge--;
+        }
+        if (o >= ge && o < e) {
+            return FLAG_END_DAMAGED;
+        } else {
+            return FLAG_NOTHING_DAMAGED;
+        }
+    }
+
+    /**
+     * Checks whether fold's start or end guarded area become damaged by the edit
+     * @param f fold to check
+     * @param evt document event
+     * @return FLAG_ bitfield
+     */
+    public static int becomesDamagedByRemove(Fold f, DocumentEvent evt, boolean zero) {
+        assert evt.getType() == DocumentEvent.EventType.REMOVE;
+        ApiPackageAccessor api = ApiPackageAccessor.get();
+        int fs = f.getStartOffset();
+        int fe = f.getEndOffset();
+        int gs = fs + api.foldStartGuardedLength(f);
+        int ge = fe - api.foldEndGuardedLength(f);
+        int removeStart = evt.getOffset();
+        int removeEnd = removeStart + evt.getLength();
+        
+        if (zero) {
+            if (gs == fs) {
+                gs++;
+            } else {
+                gs = -1;
+            }
+            if (ge == fe) {
+                ge--;
+            } else {
+                ge = removeEnd + 1;
+            }
+        } else {
+            if (gs == fs) {
+                gs = -1;
+            }
+            if (ge == fe) {
+                ge = removeEnd + 1;
+            }
+        }
+        int ret = FLAG_NOTHING_DAMAGED;
+        
+        if (removeStart < gs && removeEnd >= fs) {
+            ret |= FLAG_START_DAMAGED;
+        }
+        if (removeStart < fe && removeEnd > ge) {
+            ret |= FLAG_END_DAMAGED;
+        }
+        return ret;
+    }
+
+    /**
+     * Determines whether the fold becomes empty after removal. Works only for remove events
+     * 
+     * @param f fold to check
+     * @param evt document remove event
+     * @return true, if the fold become empty after the mutation
+     */
+    public static boolean becomesEmptyAfterRemove(Fold f, DocumentEvent evt) {
+        assert evt.getType() == DocumentEvent.EventType.REMOVE;
+        int s = evt.getOffset();
+        int e = evt.getLength() + s;
+        return s <= f.getStartOffset() &&
+               e >= f.getEndOffset();
+    }
 }

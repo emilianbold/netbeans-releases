@@ -60,8 +60,8 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
-import org.netbeans.modules.cnd.repository.util.Pair;
 import org.netbeans.modules.cnd.utils.CndUtils;
+import org.openide.util.Pair;
 
 /**
  * An in-memory cache for storing repository objects 
@@ -380,7 +380,7 @@ public final class MemoryCache {
                     s.r.unlock();
                 }
                 if (value instanceof Persistent ) {
-                    result.add(new Pair<Key,Persistent>(key, (Persistent) value));
+                    result.add(Pair.<Key,Persistent>of(key, (Persistent) value));
                     s.w.lock();
                     try {
                         s.storage.remove(key);

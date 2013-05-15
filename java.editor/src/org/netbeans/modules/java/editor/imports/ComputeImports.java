@@ -46,6 +46,7 @@ package org.netbeans.modules.java.editor.imports;
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -59,10 +60,10 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -71,15 +72,24 @@ import java.util.logging.Logger;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ClassIndex.NameKind;
+import org.netbeans.api.java.source.ClassIndex.Symbols;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.modules.editor.java.Utilities;
@@ -111,7 +121,7 @@ public class ComputeImports {
         return cancelled;
     }
     
-    public Pair<Map<String, List<TypeElement>>, Map<String, List<TypeElement>>> computeCandidates(CompilationInfo info) {
+    public Pair<Map<String, List<Element>>, Map<String, List<Element>>> computeCandidates(CompilationInfo info) {
         return computeCandidates(info, Collections.<String>emptySet());
     }
     
@@ -121,9 +131,9 @@ public class ComputeImports {
         this.visitor = visitor;
     }
     
-    Pair<Map<String, List<TypeElement>>, Map<String, List<TypeElement>>> computeCandidates(CompilationInfo info, Set<String> forcedUnresolved) {
-        Map<String, List<TypeElement>> candidates = new HashMap<String, List<TypeElement>>();
-        Map<String, List<TypeElement>> notFilteredCandidates = new HashMap<String, List<TypeElement>>();
+    Pair<Map<String, List<Element>>, Map<String, List<Element>>> computeCandidates(CompilationInfo info, Set<String> forcedUnresolved) {
+        Map<String, List<Element>> candidates = new HashMap<String, List<Element>>();
+        Map<String, List<Element>> notFilteredCandidates = new HashMap<String, List<Element>>();
         TreeVisitorImpl v = new TreeVisitorImpl(info);
 
         setVisitor(v);
@@ -142,7 +152,7 @@ public class ComputeImports {
             if (isCancelled())
                 return null;
             
-            List<TypeElement> classes = new ArrayList<TypeElement>();
+            List<Element> classes = new ArrayList<Element>();
             Set<ElementHandle<TypeElement>> typeNames = info.getClasspathInfo().getClassIndex().getDeclaredTypes(unresolved, NameKind.SIMPLE_NAME,EnumSet.allOf(ClassIndex.SearchScope.class));
             if (typeNames == null) {
                 //Canceled
@@ -162,11 +172,26 @@ public class ComputeImports {
                     classes.add(te);
                 }
             }
-            Collections.sort(classes, new Comparator<TypeElement>() {
-                public int compare(TypeElement te1, TypeElement te2) {
-                    return (te1 == te2) ? 0 : te1.getQualifiedName().toString().compareTo(te2.getQualifiedName().toString());
+            
+            Iterable<Symbols> simpleNames = info.getClasspathInfo().getClassIndex().getDeclaredSymbols(unresolved, NameKind.SIMPLE_NAME,EnumSet.allOf(ClassIndex.SearchScope.class));
+
+            if (simpleNames == null) {
+                //Canceled:
+                return null;
+            }
+            
+            for (final Symbols p : simpleNames) {
+                final TypeElement te = p.getEnclosingType().resolve(info);
+                final Set<String> idents = p.getSymbols();
+                if (te != null) {
+                    for (Element ne : te.getEnclosedElements()) {
+                        if (!ne.getModifiers().contains(Modifier.STATIC)) continue;
+                        if (idents.contains(getSimpleName(ne, te))) {
+                            classes.add(ne);
+                        }
+                    }
                 }
-            });
+            }
             
             candidates.put(unresolved, new ArrayList(classes));
             notFilteredCandidates.put(unresolved, classes);
@@ -185,17 +210,55 @@ public class ComputeImports {
             }
         }
             
-        return new Pair<Map<String, List<TypeElement>>, Map<String, List<TypeElement>>>(candidates, notFilteredCandidates);
+        return new Pair<Map<String, List<Element>>, Map<String, List<Element>>>(candidates, notFilteredCandidates);
     }
     
-    private static boolean filter(Types types, List<TypeElement> left, List<TypeElement> right, boolean leftReadOnly, boolean rightReadOnly) {
+    public static String displayNameForImport(@NonNull CompilationInfo info, @NonNull Element element) {
+        if (element.getKind().isClass() || element.getKind().isInterface()) {
+            return ((TypeElement) element).getQualifiedName().toString();
+        }
+        
+        StringBuilder fqnSB = new StringBuilder();
+
+        fqnSB.append(((TypeElement) element.getEnclosingElement()).getQualifiedName());
+        fqnSB.append('.');
+        fqnSB.append(element.getSimpleName());
+
+        if (element.getKind() == ElementKind.METHOD) {
+            fqnSB.append('(');
+            boolean first = true;
+            for (VariableElement var : ((ExecutableElement) element).getParameters()) {
+                if (!first) {
+                    fqnSB.append(", ");
+                }
+                fqnSB.append(info.getTypeUtilities().getTypeName(info.getTypes().erasure(var.asType())));
+                first = false;
+            }
+            fqnSB.append(')');
+        }
+        
+        return fqnSB.toString();
+    }
+
+    private static final String INIT = "<init>"; //NOI18N
+    private String getSimpleName (
+            @NonNull final Element element,
+            @NullAllowed final Element enclosingElement) {
+        String result = element.getSimpleName().toString();
+        if (enclosingElement != null && INIT.equals(result)) {
+            result = enclosingElement.getSimpleName().toString();
+        }
+        return result;
+    }
+    
+    private static boolean filter(Types types, List<Element> left, List<Element> right, boolean leftReadOnly, boolean rightReadOnly) {
         boolean changed = false;
         Map<TypeElement, List<TypeElement>> validPairs = new HashMap<TypeElement, List<TypeElement>>();
         
-        for (TypeElement l : left) {
+        for (TypeElement l : ElementFilter.typesIn(left)) {
             List<TypeElement> valid = new ArrayList<TypeElement>();
             
-            for (TypeElement r : right) {
+            for (TypeElement r : ElementFilter.typesIn(right)) {
                 TypeMirror t1 = types.erasure(l.asType());
                 TypeMirror t2 = types.erasure(r.asType());
                 
@@ -338,7 +401,11 @@ public class ComputeImports {
                 MethodInvocationTree mit = (MethodInvocationTree) getCurrentPath().getParentPath().getLeaf();
                 
                 if (mit.getMethodSelect() == tree) {
-                    return null;
+                    List<TypeMirror> params = new ArrayList<TypeMirror>();
+                    for (ExpressionTree realParam : mit.getArguments()) {
+                        params.add(info.getTrees().getTypeMirror(new TreePath(getCurrentPath().getParentPath(), realParam)));
+                    }
+                    this.hints.add(new MethodParamsHint(tree.getName().toString(), params));
                 }
             }
             
@@ -491,7 +558,7 @@ public class ComputeImports {
     
     public static interface Hint {
         
-        public abstract boolean filter(CompilationInfo info, Map<String, List<TypeElement>> rawCandidates, Map<String, List<TypeElement>> candidates);
+        public abstract boolean filter(CompilationInfo info, Map<String, List<Element>> rawCandidates, Map<String, List<Element>> candidates);
         
     }
     
@@ -505,9 +572,9 @@ public class ComputeImports {
             this.right = right;
         }
         
-        public boolean filter(CompilationInfo info, Map<String, List<TypeElement>> rawCandidates, Map<String, List<TypeElement>> candidates) {
-            List<TypeElement> left = null;
-            List<TypeElement> right = null;
+        public boolean filter(CompilationInfo info, Map<String, List<Element>> rawCandidates, Map<String, List<Element>> candidates) {
+            List<Element> left = null;
+            List<Element> right = null;
             boolean leftReadOnly = false;
             boolean rightReadOnly = false;
             
@@ -516,7 +583,7 @@ public class ComputeImports {
                 
                 //TODO do not use instanceof!
                 if (el instanceof TypeElement) {
-                    left = Collections.singletonList((TypeElement) el);
+                    left = Collections.singletonList(el);
                     leftReadOnly = true;
                 }
             } else {
@@ -528,7 +595,7 @@ public class ComputeImports {
                 
                 //TODO do not use instanceof!
                 if (el instanceof TypeElement) {
-                    right = Collections.singletonList((TypeElement) el);
+                    right = Collections.singletonList(el);
                     rightReadOnly = true;
                 }
             } else {
@@ -556,15 +623,15 @@ public class ComputeImports {
             this.allowPrefix = allowPrefix;
         }
         
-        public boolean filter(CompilationInfo info, Map<String, List<TypeElement>> rawCandidates, Map<String, List<TypeElement>> candidates) {
-            List<TypeElement> cands = candidates.get(simpleName);
+        public boolean filter(CompilationInfo info, Map<String, List<Element>> rawCandidates, Map<String, List<Element>> candidates) {
+            List<Element> cands = candidates.get(simpleName);
             
             if (cands == null || cands.isEmpty())
                 return false;
             
             List<TypeElement> toRemove = new ArrayList<TypeElement>();
             
-            for (TypeElement te : cands) {
+            for (TypeElement te : ElementFilter.typesIn(cands)) {
                 boolean found = false;
                 
                 for (Element e : te.getEnclosedElements()) {
@@ -603,15 +670,15 @@ public class ComputeImports {
             this.notAcceptedKinds = notAcceptedKinds;
         }
         
-        public boolean filter(CompilationInfo info, Map<String, List<TypeElement>> rawCandidates, Map<String, List<TypeElement>> candidates) {
-            List<TypeElement> cands = candidates.get(simpleName);
+        public boolean filter(CompilationInfo info, Map<String, List<Element>> rawCandidates, Map<String, List<Element>> candidates) {
+            List<Element> cands = candidates.get(simpleName);
             
             if (cands == null || cands.isEmpty())
                 return false;
             
             List<TypeElement> toRemove = new ArrayList<TypeElement>();
             
-            for (TypeElement te : cands) {
+            for (TypeElement te : ElementFilter.typesIn(cands)) {
                 if (!acceptedKinds.isEmpty() && !acceptedKinds.contains(te.getKind())) {
                     toRemove.add(te);
                     continue;
@@ -637,16 +704,17 @@ public class ComputeImports {
             this.scope = scope;
         }
         
-        public boolean filter(CompilationInfo info, Map<String, List<TypeElement>> rawCandidates, Map<String, List<TypeElement>> candidates) {
-            List<TypeElement> cands = candidates.get(simpleName);
+        public boolean filter(CompilationInfo info, Map<String, List<Element>> rawCandidates, Map<String, List<Element>> candidates) {
+            List<Element> cands = candidates.get(simpleName);
             
             if (cands == null || cands.isEmpty())
                 return false;
             
-            List<TypeElement> toRemove = new ArrayList<TypeElement>();
+            List<Element> toRemove = new ArrayList<Element>();
             
-            for (TypeElement te : cands) {
-                if (!info.getTrees().isAccessible(scope, te)) {
+            for (Element te : cands) {
+                if (te.getKind().isClass() || te.getKind().isInterface() ? !info.getTrees().isAccessible(scope, (TypeElement) te)
+                                                                         : !info.getTrees().isAccessible(scope, te, (DeclaredType) te.getEnclosingElement().asType())) {
                     toRemove.add(te);
                 }
             }
@@ -655,6 +723,77 @@ public class ComputeImports {
             rawCandidates.get(simpleName).removeAll(toRemove);
             
             return cands.removeAll(toRemove);
+        }
+        
+    }
+    
+    public static final class MethodParamsHint implements Hint {
+        
+        private final String simpleName;
+        private final List<TypeMirror> paramTypes;
+
+        public MethodParamsHint(String simpleName, List<TypeMirror> paramTypes) {
+            this.simpleName = simpleName;
+            this.paramTypes = paramTypes;
+        }
+
+        public boolean filter(CompilationInfo info, Map<String, List<Element>> rawCandidates, Map<String, List<Element>> candidates) {
+            List<Element> rawCands = rawCandidates.get(simpleName);
+            List<Element> cands = candidates.get(simpleName);
+            
+            if (rawCands == null || cands == null) {
+                return false;
+            }
+
+            boolean modified = false;
+            
+            for (Element c : new ArrayList<Element>(rawCands)) {
+                if (c.getKind() != ElementKind.METHOD) {
+                    rawCands.remove(c);
+                    cands.remove(c);
+                    modified |= true;
+                } else {
+                    //XXX: varargs
+                    Iterator<? extends TypeMirror> real = paramTypes.iterator();
+                    Iterator<? extends TypeMirror> formal = ((ExecutableType) c.asType()).getParameterTypes().iterator();
+                    boolean matches = true;
+                    boolean inVarArgs = false;
+                    TypeMirror currentFormal = null;
+                    
+                    while (real.hasNext() && (formal.hasNext() || inVarArgs)) {
+                        TypeMirror currentReal = real.next();
+                        
+                        if (!inVarArgs)
+                            currentFormal = formal.next();
+                        
+                        if (!info.getTypes().isAssignable(info.getTypes().erasure(currentReal), info.getTypes().erasure(currentFormal))) {
+                            if (((ExecutableElement) c).isVarArgs() && !formal.hasNext()) {
+                                currentFormal = ((ArrayType) currentFormal).getComponentType();
+                                
+                                if (!info.getTypes().isAssignable(info.getTypes().erasure(currentReal), info.getTypes().erasure(currentFormal))) {
+                                    matches = false;
+                                    break;
+                                }
+                                
+                                inVarArgs = true;
+                            } else {
+                                matches = false;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    matches &= real.hasNext() == formal.hasNext();
+
+                    if (!matches) {
+                        rawCands.remove(c);
+                        cands.remove(c);
+                        modified |= true;
+                    }
+                }
+            }
+            
+            return modified;
         }
         
     }

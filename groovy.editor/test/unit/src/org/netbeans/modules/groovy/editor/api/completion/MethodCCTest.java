@@ -63,12 +63,9 @@ public class MethodCCTest extends GroovyCCTestBase {
         checkCompletion(BASE + "CompletionInsideFor1.groovy", "for(new Date().get^", false);
     }
 
-    /*
-    @RandomlyFails
     public void testCompletionInsideFor1_2() throws Exception {
         checkCompletion(BASE + "CompletionInsideFor1.groovy", "for (String other in [1:\"Alice\", 2:\"Bob\"].^) {", false);
     }
-    */
 
     public void testMethods1_1() throws Exception {
         checkCompletion(BASE + "Methods1.groovy", "        new URL(\"http://google.com\").getPr^", false);
@@ -170,17 +167,12 @@ public class MethodCCTest extends GroovyCCTestBase {
         checkCompletion(BASE + "CompletionNoDot1.groovy", "        n^", false);
     }
 
-    // For some reason there is a StringBuilder as a return type for leftShift method
-    // This should be fixed, but it's not a top priority - see issue #205951
-
-    /*
     public void testCompletionNoPrefixString1() throws Exception {
-        checkCompletion(getTestFolderPath() + "CompletionNoPrefixString1.groovy", "println \"Hello $name!\".^", false);
+        checkCompletion(BASE + "CompletionNoPrefixString1.groovy", "println \"Hello $name!\".^", false);
     }
 
     public void testCompletionNoPrefixString2() throws Exception {
-        checkCompletion(getTestFolderPath() + "CompletionNoPrefixString2.groovy", "def name='Petr'.^", false);
+        checkCompletion(BASE + "CompletionNoPrefixString2.groovy", "def name='Petr'.^", false);
     }
-    */
 }
 

@@ -51,12 +51,13 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaClient;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.internal.bugzilla.core.RepositoryConfiguration;
+import org.netbeans.modules.bugtracking.issuetable.IssueNode;
 import org.netbeans.modules.bugtracking.spi.BugtrackingFactory;
 import org.netbeans.modules.bugtracking.util.UndoRedoSupport;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
-import org.netbeans.modules.bugzilla.issue.BugzillaTaskListProvider;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -77,19 +78,12 @@ public class Bugzilla {
     private BugzillaIssueProvider bip;
     private BugzillaQueryProvider bqp;
     private BugzillaRepositoryProvider brp;
+    private IssueNode.ChangesProvider<BugzillaIssue> bcp;
 
     private Bugzilla() {
-
         brc = new BugzillaRepositoryConnector();
         clientManager = brc.getClientManager();
-
-        // lazy ping tasklist issue provider to load issues ...
-        getRequestProcessor().post(new Runnable() {
-            @Override
-            public void run() {
-                BugzillaTaskListProvider.getInstance();
-            }
-        });
+        MylynSupport.getInstance().addRepositoryListener(clientManager);
     }
 
     public static synchronized Bugzilla getInstance() {
@@ -163,6 +157,18 @@ public class Bugzilla {
         return brp; 
     }
 
+    public IssueNode.ChangesProvider<BugzillaIssue> getChangesProvider() {
+        if(bcp == null) {
+            bcp = new IssueNode.ChangesProvider<BugzillaIssue>() {
+                @Override
+                public String getRecentChanges(BugzillaIssue i) {
+                    return i.getRecentChanges();
+                }
+            };
+        }
+        return bcp;
+    }
+    
     public UndoRedoSupport getUndoRedoSupport(BugzillaIssue issue) {
         return getBugtrackingFactory().getUndoRedoSupport(BugzillaUtil.getRepository(issue.getRepository()), issue);
     }

@@ -540,7 +540,7 @@ public class Css3ParserScssTest extends CssTestBase {
     //.body.firefox #{$selector}:before 
     //
     //selector is parsed as property declaration - due to the colon presence - FIXME!!!
-    public void testInterpolationExpressionComplex_fails() {
+    public void testInterpolationExpressionComplex() {
         String source =
                 "@mixin firefox-message($selector) {\n"
                 + "  .body.firefox #{$selector}:before {\n"
@@ -753,9 +753,7 @@ public class Css3ParserScssTest extends CssTestBase {
 
     }
 
-    //the scss_mq_interpolation_expression doesn't want to be extended 
-    //by LPAREN and RPAREN from some reason (endless loop).
-    public void testInterpolationExpressionWithParenMediaQuery_fails() {
+    public void testInterpolationExpressionWithParenMediaQuery() {
         String source = "$media: screen;\n"
                 + "$feature: -webkit-min-device-pixel-ratio;\n"
                 + "$value: 1.5;\n"
@@ -947,7 +945,7 @@ public class Css3ParserScssTest extends CssTestBase {
 
     }
 
-    public void testAmpProblem_fails() {
+    public void testAmpProblem() {
         String source =
                 ".clazz {\n"
                 + "    &.position#{$i} {\n"
@@ -980,8 +978,8 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
         //the "$width: 1000px;" is supposed to be parsed as variable declaration, not property declaration!
-        assertNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/declaration"));
-        assertNotNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/cp_variable_declaration"));
+        assertNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/declaration/propertyDeclaration"));
+        assertNotNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/declaration/cp_variable_declaration"));
 
     }
 
@@ -1142,5 +1140,246 @@ public class Css3ParserScssTest extends CssTestBase {
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
+    }
+
+    public void testIfControlExpression() {
+        assertParses(" @if $arg != null and $arg2 != transparent { }");
+        assertParses(" @if not $arg != null and $arg2 != transparent { }");
+        assertParses(" @if not $arg != null or not $arg2 != transparent { }");
+        assertParses(" @if true or not $arg2 != transparent { }");
+    }
+
+    public void testMixinWithFirstParamOnNewLine() {
+        assertParses("@mixin color(\n"
+                + "$bgcolor: red,"
+                + "$fgcolor: blue) {\n"
+                + "}");
+    }
+
+    public void testFunctionInIfStatementExpression() {
+        assertParses("@function myfn($color) {\n"
+                + "    @if lightness($color) > 50 {\n"
+                + "        @return light;\n"
+                + "    } @else {\n"
+                + "        @return dark;\n"
+                + "    }\n"
+                + "}");
+    }
+
+    public void testImportInDeclarations() {
+        assertParses(".clz { @import \"hello\"; }");
+    }
+
+    public void testCommaInSelectorInterpolationExpression() {
+        assertParses(".#{$prefix}sg,.#{$prefix}ag .#{$prefix}xx { }");
+    }
+
+    public void testIfCondition() {
+        assertParses(" @if ($mode == light) {}");
+    }
+
+    public void testSassFunctionWhereWithArgDefiningValue() {
+        assertParses("@function color-by-background($bg-color, $contrast: $default-text-contrast) {\n"
+                + "    @return color-offset($bg-color, $contrast, $tmpmode, $inverse: true);\n"
+                + "}");
+    }
+
+    public void testWeirdControlBlockOperator() {
+        assertParses("@if $right =< 0 {}");
+        assertParses("@if $right <= 0 {}");
+        assertParses("@if $right >= 0 {}");
+        assertParses("@if $right => 0 {}");
+    }
+
+    public void testWSBetweenMixinCallArgAndComma() {
+        assertParses(".clz {\n"
+                + "     @include background-gradient(\n"
+                + "         $background-color ,\n"
+                + "         $background-direction\n"
+                + ");\n"
+                + "}");
+    }
+
+    public void testControlBlockExpression() {
+        assertParses("@if $arg != null and ($arg2 == val1 or $arg2 == val2) {}");
+    }
+
+    public void testControlBlockExpression2() {
+        assertParses("@if (not $arg or $arg2) and $arg3 != null {}");
+    }
+
+    public void testControlBlockExpression3() {
+        assertParses("@if ($arg or $arg2) and arg3 != null {}");
+    }
+
+    public void testControlBlockExpression4() {
+        assertParses("@if $arg != null and ($arg2 or arg3) {}");
+    }
+
+    public void testDashInSelectorInterpolationExpression() {
+        assertParses(".#{$v1}#{$v2}-post {}");
+    }
+
+    public void testFunctionReturnBooleanExpression() {
+        assertParses("@function even($number) {\n"
+                + "    @return ceil($number / 2) == ($number / 2);\n"
+                + "}");
+    }
+
+    public void testStarInSelectorInterpolationExpression() {
+        assertParses(".#{$prefix}border-box * {}");
+    }
+
+    public void testGreaterSymbolInSelectorInterpolationExpression() {
+        assertParses(".#{$prefix}rtl > .#{$prefix}box-item {}");
+    }
+
+    public void testLRPARENInPropertyValueInterpolationExpression() {
+        assertParses(".clz { $rotation: rotate(#{$angle}deg); }");
+        assertParses(".clz { background-image: slicer-corner-sprite(btn-#{$ui}-over, 'btn/btn-#{$ui}-over-corners'); }");
+    }
+
+    public void testCPExpressionInPropertyValue() {
+        assertParses(".clz { background-position: 0 ($accordion-header-tool-size * -17); }");
+    }
+
+    public void testCPExpressionInPropertyValue2() {
+        assertParses(".clz { padding: $toolbar-vertical-spacing ($toolbar-horizontal-spacing / 2) $toolbar-vertical-spacing ($toolbar-horizontal-spacing / 2); }");
+    }
+
+    public void testCPExpressionInPropertyValue3() {
+        assertParses(".clz { $fieldset-collapse-tool-background-position-over: 0 (-$fieldset-collapse-tool-size) !default; }");
+    }
+
+    public void testFunctionInsideSASSInterpolationExpression() {
+        assertParses(".clz { padding-left: #{left($fieldset-header-padding) - 2}; }");
+    }
+
+    public void testSimplePropertyValue() {
+        assertParses(".clz { prop: t1 t2; }", true);
+    }
+
+    public void testPropertyValue2() {
+        assertParses(".clz { padding-left: "
+                + "top($form-error-under-padding) "
+                + "right($form-error-under-padding) "
+                + "bottom($form-error-under-padding) "
+                + "(left($form-error-under-padding) + $form-error-icon-width + $form-error-under-icon-spacing); "
+                + "}");
+    }
+
+    public void testPropertyValue3() {
+        assertParses(".clz { background-position: 0 (0 - $form-checkbox-size); }");
+    }
+
+    public void testPropertyValue4() {
+        assertParses(".clz { background-position: (-$html-editor-toolbar-icon-size) 0; }");
+        assertParses(".clz { background-position: 0 (-$spinner-btn-height); }");
+    }
+
+    public void testPropertyValue5() {
+        assertParses(".clz { background-position: 0 (-$spinner-btn-height); }");
+    }
+
+    public void testPropertyValueUnaryOperatorBeforeBrace() {
+        assertParses(".clz { background-position: -($form-trigger-width * 3) (-$spinner-btn-height); }");
+    }
+
+    public void testCPVariableDeclaration() {
+        assertParses("$panel-frame-header-padding:\n"
+                + "    (top($panel-header-padding) - top($panel-frame-border-width))\n"
+                + "    (right($panel-header-padding) - right($panel-frame-border-width))\n"
+                + "    (bottom($panel-header-padding) - bottom($panel-frame-border-width))\n"
+                + "    (left($panel-header-padding) - left($panel-frame-border-width))\n"
+                + "    !default;");
+    }
+
+    public void testSASSInterpolationExpressionInCPVariableDeclaration() {
+        assertParses("$fieldset-header-font: #{$fieldset-header-font-size}/#{$fieldset-header-line-height} $fieldset-header-font-weight $fieldset-header-font-family !default;");
+        assertParses("$form-label-font: $form-label-font-weight #{$form-label-font-size}/#{$form-label-line-height} $form-label-font-family !default;");
+        assertParses("$grid-editor-font: normal #{$grid-row-cell-font-size}/#{$grid-editor-line-height} $font-family !default;");
+        assertParses("$grid-row-cell-font: normal #{$grid-row-cell-font-size}/#{$grid-row-cell-line-height} $font-family !default;");
+    }
+
+    public void testImportantKeywordInCPVariableDeclaration() {
+        assertParses("$grid-row-editor-border: $grid-row-editor-border-width solid $grid-row-editor-border-color !important !default;");
+    }
+
+    public void testCommaSeparatedPropertyValues() {
+        assertParses(".x { background-size: $majorsteps $majorsteps, $majorsteps $majorsteps, $minorsteps $minorsteps, $minorsteps $minorsteps; }");
+    }
+
+    public void testImportantSymbolJustAfterPropertyValue() throws ParseException, BadLocationException {
+        assertParses(".x { z-index: 1000000!important; }");
+        assertParses(".x { z-index: 1000000 !important; }");
+    }
+
+    public void testInclude() throws ParseException, BadLocationException {
+        assertParses(".x { @include x-slicer($panel-header-ui + '-top'); }");
+    }
+
+    public void testMSPropertyValueAndInterpolationExpression() throws ParseException, BadLocationException {
+        assertParses(".x { filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=#{$ie-rotation}); }");
+    }
+
+    public void testLastItemInBlockDoesntNeedToBeTerminatedWithSemicolon() throws ParseException, BadLocationException {
+        assertParses(".x { $image-search-path: '.' !default }"); //doesn't work
+        assertParses(".x { $image-search-path: '.' !default; }"); //works
+    }
+
+    public void testUnaryOperatorWithIE() throws ParseException, BadLocationException {
+        assertParses(".x { margin-top: -#{top($fieldset-border-width)}; }");
+    }
+
+    public void testFunctionArgumentsCanBeBooleanExpression() throws ParseException, BadLocationException {
+        assertParses("$foo: if($direction == top or $direction == bottom, 0, 1);");
+    }
+
+    public void testFunction3() throws ParseException, BadLocationException {
+        assertParses(".clz { @include linear-gradient(#3875d7 20%, #2a62bc 90%); }");
+    }
+
+    public void testFont_FaceInMixin() throws ParseException, BadLocationException {
+        assertParses("@mixin font-face($name){\n"
+                + "    @font-face {\n"
+                + "        font-family: $name;\n"
+                + "    }\n"
+                + "}");
+    }
+
+    public void testCommaInCPExpression() throws ParseException, BadLocationException {
+        assertParses(".highlighted {\n"
+                + "    @include linear-gradient((#3875d7 20%, #2a62bc 90%));\n"
+                + "    color: #fff;\n"
+                + "}");
+    }
+
+    public void testSassInclude() throws ParseException, BadLocationException {
+        assertParses(".clz { @include extjs-button-ui(\n"
+                + "    $ui: 'default-small',\n"
+                + "\n"
+                + "    $border-radius: $button-small-border-radius,\n"
+                + "    $border-width: $button-small-border-width); }");
+    }
+
+    public void testSassInclude2() throws ParseException, BadLocationException {
+        assertParses(".clz { @include extjs-toolbar-ui(\n"
+                + "    'default',\n"
+                + "    $background-color: $toolbar-background-color,\n"
+                + "    $background-gradient: $toolbar-background-gradient,\n"
+                + "    $border-color: $toolbar-border-color\n"
+                + "); "
+                + "}");
+    }
+    
+    public void testNestedRules2() throws ParseException, BadLocationException {
+        assertParses("x { y {} z {} }");
+        assertParses("x { y {} }");
+    }
+    
+    public void testNestedIfs() throws ParseException, BadLocationException {
+        assertParses("x { @if true {} }");
+        assertParses("x { @if $a==10 {} }");
+        assertParses("x { @if true {} @if false {} }");
     }
 }

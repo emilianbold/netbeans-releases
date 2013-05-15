@@ -304,9 +304,9 @@ public class LocalServer implements Comparable<LocalServer> {
         }
     }
 
-    public static class ComboBoxRenderer extends JLabel implements ListCellRenderer, UIResource {
+    public static class ComboBoxRenderer extends JLabel implements ListCellRenderer<LocalServer>, UIResource {
 
-        private static final long serialVersionUID = 31965318763243602L;
+        private static final long serialVersionUID = 146876454678878410L;
 
         public ComboBoxRenderer() {
             super();
@@ -314,12 +314,11 @@ public class LocalServer implements Comparable<LocalServer> {
         }
 
         @Override
-        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+        public Component getListCellRendererComponent(JList<? extends LocalServer> list, LocalServer value, int index, boolean isSelected,
                 boolean cellHasFocus) {
             setName("ComboBox.listRenderer"); // NOI18N
             if (value != null) {
-                assert value instanceof LocalServer;
-                String srcRoot = ((LocalServer) value).getSrcRoot();
+                String srcRoot = value.getSrcRoot();
                 setText(srcRoot.length() == 0 ? " " : srcRoot); // NOI18N // combo is too low otherwise
             }
 
@@ -334,11 +333,13 @@ public class LocalServer implements Comparable<LocalServer> {
         }
     }
 
-    public static class ComboBoxModel extends AbstractListModel implements MutableComboBoxModel {
-        private static final long serialVersionUID = 194511142310432557L;
+    public static class ComboBoxModel extends AbstractListModel<LocalServer> implements MutableComboBoxModel<LocalServer> {
+
+        private static final long serialVersionUID = 4857683465761112L;
 
         private final List<LocalServer> data;
         private LocalServer selected = null;
+
 
         public ComboBoxModel(LocalServer... defaultLocalServers) {
             if (defaultLocalServers == null || defaultLocalServers.length == 0) {
@@ -361,9 +362,7 @@ public class LocalServer implements Comparable<LocalServer> {
         }
 
         @Override
-        public void addElement(Object object) {
-            assert object instanceof LocalServer;
-            LocalServer localServer = (LocalServer) object;
+        public void addElement(LocalServer localServer) {
             if (!data.add(localServer)) {
                 return;
             }
@@ -373,9 +372,7 @@ public class LocalServer implements Comparable<LocalServer> {
         }
 
         @Override
-        public void insertElementAt(Object object, int index) {
-            assert object instanceof LocalServer;
-            LocalServer localServer = (LocalServer) object;
+        public void insertElementAt(LocalServer localServer, int index) {
             data.add(index, localServer);
             fireIntervalAdded(this, index, index);
         }

@@ -41,11 +41,14 @@
  */
 package org.netbeans.modules.javafx2.project.api;
 
+import java.util.Arrays;
 import javax.swing.ComboBoxModel;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.api.common.ui.PlatformFilter;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
+import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.modules.javafx2.project.J2SEProjectType;
 import org.netbeans.modules.javafx2.project.JFXProjectUtils;
 import org.netbeans.modules.javafx2.project.ui.PlatformsComboBoxModel;
@@ -53,6 +56,7 @@ import org.netbeans.modules.javafx2.project.ui.PlatformsComboBoxModel;
 /**
  * 
  * @author Anton Chechel
+ * @author Petr Somol
  */
 public final class JavaFXProjectUtils {
 
@@ -67,7 +71,13 @@ public final class JavaFXProjectUtils {
     }
 
     public static ComboBoxModel createPlatformComboBoxModel() {
-        return new PlatformsComboBoxModel(PlatformUiSupport.createPlatformComboBoxModel("default_platform")); // NOI18N
+        return new PlatformsComboBoxModel(PlatformUiSupport.createPlatformComboBoxModel(JavaFXPlatformUtils.DEFAULT_PLATFORM,  // NOI18N
+                Arrays.<PlatformFilter>asList(new PlatformFilter() {
+                    @Override
+                    public boolean accept(JavaPlatform platform) {
+                        return JavaFXPlatformUtils.isJavaFXEnabled(platform);
+                    }                    
+                })));
     }
 
     public static ListCellRenderer createPlatformListCellRenderer() {

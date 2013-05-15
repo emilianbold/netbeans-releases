@@ -59,6 +59,7 @@ import javax.swing.*;
 import javax.swing.event.HyperlinkEvent;
 import javax.swing.event.HyperlinkListener;
 import javax.swing.plaf.TextUI;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
@@ -111,6 +112,7 @@ public class DocumentationScrollPane extends JScrollPane {
     protected CompletionDocumentation currentDocumentation = null;
     
     private Dimension documentationPreferredSize;
+    private final JTextComponent editorComponent;
 
     /** Creates a new instance of ScrollJavaDocPane */
     public DocumentationScrollPane(JTextComponent editorComponent) {
@@ -133,6 +135,7 @@ public class DocumentationScrollPane extends JScrollPane {
         
         installTitleComponent();
         installKeybindings(editorComponent);
+        this.editorComponent = editorComponent;
         setFocusable(true);
     }
     
@@ -239,11 +242,9 @@ public class DocumentationScrollPane extends JScrollPane {
                         ((HTMLDocument)document).setBase(url);
                     }
                 }
-                view.setContent(text, null);
+                view.setContent(text, url != null ? url.getRef() : null);
             } else if (url != null){
                 try{
-                    view.setContent("", null); //NOI18N
-                    view.getDocument().putProperty("javax.swing.JEditorPane.postdata", ""); //NOI18N
                     view.setPage(url);
                 }catch(IOException ioe){
                     StatusDisplayer.getDefault().setStatusText(ioe.toString());
@@ -312,7 +313,12 @@ public class DocumentationScrollPane extends JScrollPane {
     }
     
     private void copy() {
-        view.copy();
+        Caret caret = view.getCaret();
+        if (caret.getDot() != caret.getMark()) {
+            view.copy();
+        } else {
+            editorComponent.copy();
+        }
     }
 
     /** Attempt to find the editor keystroke for the given editor action. */

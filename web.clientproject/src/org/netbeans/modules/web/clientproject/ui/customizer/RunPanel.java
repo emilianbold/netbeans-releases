@@ -43,23 +43,24 @@ package org.netbeans.modules.web.clientproject.ui.customizer;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.annotations.common.CheckForNull;
-import org.netbeans.modules.web.clientproject.ClientSideConfigurationProvider;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport.BrowserComboBoxModel;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.ui.BrowseFolders;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties.ProjectServer;
@@ -129,11 +130,6 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
     }
 
     private void init() {
-        // config
-        ClientSideConfigurationProvider configProvider = project.getProjectConfigurations();
-        jConfigurationComboBox.setRenderer(new ConfigRenderer(jConfigurationComboBox.getRenderer()));
-        jConfigurationComboBox.setModel(new DefaultComboBoxModel(configProvider.getConfigurations().toArray()));
-        jConfigurationComboBox.setSelectedItem(uiProperties.getActiveConfiguration());
         updateConfigurationCustomizer();
         // start file
         jFileToRunTextField.setText(uiProperties.getStartFile());
@@ -151,9 +147,11 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
 
     private void initListeners() {
         // config
-        jConfigurationComboBox.addActionListener(new ActionListener() {
+        jBrowserComboBox.addItemListener(new ItemListener() {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void itemStateChanged( ItemEvent e ) {
+                if( e.getStateChange() == ItemEvent.DESELECTED )
+                    return;
                 validateAndStore();
             }
         });
@@ -197,18 +195,20 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
     }
 
     private void storeData() {
-        uiProperties.setActiveConfiguration(getActiveConfiguration());
         uiProperties.setStartFile(getStartFile());
         uiProperties.setProjectServer(getProjectServer());
         uiProperties.setProjectUrl(getProjectUrl());
         uiProperties.setWebRoot(getWebRoot());
+        uiProperties.setSelectedBrowser(getSelectedBrowserId());
     }
 
     private void updateConfigurationCustomizer() {
         jConfigurationPlaceholder.removeAll();
-        ClientProjectConfigurationImplementation selectedConfiguration = getActiveConfiguration();
-        if (selectedConfiguration != null) {
-            ProjectConfigurationCustomizer customizerPanel = selectedConfiguration.getProjectConfigurationCustomizer();
+        WebBrowser wb = getSelectedBrowser();
+        ClientProjectEnhancedBrowserImplementation enhancedBrowser =
+                uiProperties.createEnhancedBrowserSettings(wb);
+        if (enhancedBrowser != null) {
+            ProjectConfigurationCustomizer customizerPanel = enhancedBrowser.getProjectConfigurationCustomizer();
             if (customizerPanel != null) {
                 jConfigurationPlaceholder.add(customizerPanel.createPanel(), BorderLayout.CENTER);
             }
@@ -217,16 +217,20 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         repaint();
     }
 
-    private ClientProjectConfigurationImplementation getActiveConfiguration() {
-        return (ClientProjectConfigurationImplementation) jConfigurationComboBox.getSelectedItem();
-    }
-
     private File getSiteRoot() {
         return uiProperties.getResolvedSiteRootFolder();
     }
 
     private String getStartFile() {
         return jFileToRunTextField.getText();
+    }
+
+    private String getSelectedBrowserId() {
+        return ((BrowserComboBoxModel)jBrowserComboBox.getModel()).getSelectedBrowserId();
+    }
+
+    private WebBrowser getSelectedBrowser() {
+        return ((BrowserComboBoxModel)jBrowserComboBox.getModel()).getSelectedBrowser();
     }
 
     @CheckForNull
@@ -282,7 +286,7 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         jWebRootTextField = new javax.swing.JTextField();
         jWebRootExampleLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jConfigurationComboBox = new javax.swing.JComboBox();
+        jBrowserComboBox = createBrowserComboBox();
         jProjectURLLabel = new javax.swing.JLabel();
         jProjectURLTextField = new javax.swing.JTextField();
         jConfigurationPlaceholder = new javax.swing.JPanel();
@@ -311,9 +315,9 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(RunPanel.class, "RunPanel.jLabel3.text")); // NOI18N
 
-        jConfigurationComboBox.addActionListener(new java.awt.event.ActionListener() {
+        jBrowserComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jConfigurationComboBoxActionPerformed(evt);
+                jBrowserComboBoxActionPerformed(evt);
             }
         });
 
@@ -340,12 +344,12 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
                     .addComponent(jProjectURLLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jWebRootExampleLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 290, Short.MAX_VALUE)
+                    .addComponent(jWebRootExampleLabel)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jFileToRunTextField)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jBrowseButton))
-                    .addComponent(jConfigurationComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jBrowserComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jServerComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jProjectURLTextField)
                     .addComponent(jWebRootTextField)
@@ -357,7 +361,7 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addComponent(jConfigurationComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jBrowserComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jConfigurationPlaceholder, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
@@ -394,13 +398,13 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
         }
     }//GEN-LAST:event_jBrowseButtonActionPerformed
 
-    private void jConfigurationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jConfigurationComboBoxActionPerformed
+    private void jBrowserComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBrowserComboBoxActionPerformed
         updateConfigurationCustomizer();
-    }//GEN-LAST:event_jConfigurationComboBoxActionPerformed
+    }//GEN-LAST:event_jBrowserComboBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jBrowseButton;
-    private javax.swing.JComboBox jConfigurationComboBox;
+    private javax.swing.JComboBox jBrowserComboBox;
     private javax.swing.JPanel jConfigurationPlaceholder;
     private javax.swing.JTextField jFileToRunTextField;
     private javax.swing.JLabel jLabel1;
@@ -473,6 +477,17 @@ public class RunPanel extends JPanel implements DocumentListener, ItemListener, 
     @Override
     public void itemStateChanged(ItemEvent e) {
         updateWebRootEnablement();
+    }
+
+    private JComboBox createBrowserComboBox() {
+        String selectedBrowser = uiProperties.getSelectedBrowser();
+        if (selectedBrowser == null || BrowserUISupport.getBrowser(selectedBrowser) == null) {
+            WebBrowser wb = project.getProjectWebBrowser();
+            if (wb != null) {
+                selectedBrowser = wb.getId();
+            }
+        }
+        return BrowserUISupport.createBrowserPickerComboBox( selectedBrowser, false, true );
     }
 
     //~ Inner classes

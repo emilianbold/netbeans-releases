@@ -25,7 +25,7 @@
               </image>
             <rect   id="%%COMPONENT_ID%%_up_button" x="22.25" y="0.0" rx="2" ry="2" width="16" height="10" fill="none" stroke="rgb(73,46,55)" stroke-width="1">
                 <animate id="%%COMPONENT_ID%%_up_button_pressed" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="red"/>
-                <animate id="%%COMPONENT_ID%%_up_button_realeased" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(73,46,55)"/>
+                <animate id="%%COMPONENT_ID%%_up_button_released" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(73,46,55)"/>
             </rect>
         </g>
         <g>	    	<!-- Metadata information. Please don't edit. -->
@@ -38,7 +38,7 @@
               </image>
             <rect id="%%COMPONENT_ID%%_down_button" rx="2" ry="2" x="22.25" y="10.0" width="16" height="10" fill="none" stroke="rgb(73,46,55)" stroke-width="1">
                 <animate id="%%COMPONENT_ID%%_down_button_pressed" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="red"/>
-                <animate id="%%COMPONENT_ID%%_down_button_realeased" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(73,46,55)"/>
+                <animate id="%%COMPONENT_ID%%_down_button_released" attributeName="stroke" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(73,46,55)"/>
             </rect>
         </g>
         <polygon transform="translate(29.0,6.0)" points="0,0 2,0 1,-2" fill="blue" stroke="rgb(73,46,55)" stroke-width="2"/>

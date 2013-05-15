@@ -132,9 +132,9 @@ public class NavigatorPanelUI extends JPanel implements ExplorerManager.Provider
         return content;
     }
     
-    void selectNode(Node node){
+    void selectNodes(Node nodes[]){
         try {
-            explorerManager.setSelectedNodes(new Node[] {node});
+            explorerManager.setSelectedNodes(nodes);
         } catch (IllegalArgumentException ex) {
             // FIXUP me
             //ex.printStackTrace();

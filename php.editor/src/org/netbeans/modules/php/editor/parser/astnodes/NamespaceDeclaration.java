@@ -64,7 +64,7 @@ public class NamespaceDeclaration extends Statement {
         this.bracketed = bracketed;
 
         if (body == null) {
-            body = new Block(start, end, new ArrayList());
+            body = new Block(end, end, new ArrayList());
         }
 
         this.name = name;

@@ -94,8 +94,10 @@ import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import org.netbeans.api.annotations.common.CheckForNull;
 
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -268,7 +270,7 @@ public final class ElementUtilities {
                                 members.add(member);
                         }
                     }
-                    if (te.getKind().isClass()) {
+                    if (te.getKind().isClass() || te.getKind().isInterface() && Source.instance(ctx).allowDefaultMethods()) {
                         VarSymbol thisPseudoMember = new VarSymbol(Flags.FINAL | Flags.HASINIT, Names.instance(ctx)._this, (ClassType)te.asType(), (ClassSymbol)te);
                         if (acceptor == null || acceptor.accept(thisPseudoMember, type))
                             members.add(thisPseudoMember);
@@ -287,14 +289,13 @@ public final class ElementUtilities {
                 case LONG:
                 case SHORT:
                 case VOID:
-                    Symtab syms = Symtab.instance(ctx);
-                    Type t = syms.classType;
+                    Type t = Symtab.instance(ctx).classType;
                     com.sun.tools.javac.util.List<Type> typeargs = Source.instance(ctx).allowGenerics() ?
                         com.sun.tools.javac.util.List.of((Type)type) :
                         com.sun.tools.javac.util.List.<Type>nil();
                     t = new ClassType(t.getEnclosingType(), typeargs, t.tsym);
                     Element classPseudoMember = new VarSymbol(Flags.STATIC | Flags.PUBLIC | Flags.FINAL, Names.instance(ctx)._class, t, ((Type)type).tsym);
-                    if (acceptor == null || acceptor.accept(classPseudoMember, syms.objectType))
+                    if (acceptor == null || acceptor.accept(classPseudoMember, type))
                         members.add(classPseudoMember);
                     break;
                 case ARRAY:
@@ -302,14 +303,13 @@ public final class ElementUtilities {
                         if (acceptor == null || acceptor.accept(member, type))
                             members.add(member);
                     }
-                    syms = Symtab.instance(ctx);
-                    t = syms.classType;
+                    t = Symtab.instance(ctx).classType;
                     typeargs = Source.instance(ctx).allowGenerics() ?
                         com.sun.tools.javac.util.List.of((Type)type) :
                         com.sun.tools.javac.util.List.<Type>nil();
                     t = new ClassType(t.getEnclosingType(), typeargs, t.tsym);
                     classPseudoMember = new VarSymbol(Flags.STATIC | Flags.PUBLIC | Flags.FINAL, Names.instance(ctx)._class, t, ((Type)type).tsym);
-                    if (acceptor == null || acceptor.accept(classPseudoMember, syms.objectType))
+                    if (acceptor == null || acceptor.accept(classPseudoMember, type))
                         members.add(classPseudoMember);
                     break;
             }
@@ -452,7 +452,7 @@ public final class ElementUtilities {
                         if (types.isSubsignature((ExecutableType)hiderType, (ExecutableType)memberType))
                             return true;
                     } else {
-                        return true;
+                        return false;
                     }
                 }
             }
@@ -547,7 +547,107 @@ public final class ElementUtilities {
      */
     public boolean isEffectivelyFinal(VariableElement e) {
         return (((Symbol) e).flags() & (Flags.EFFECTIVELY_FINAL | Flags.FINAL)) != 0;
-    };
+    }
+    
+    /**Looks up the given Java element.
+     * 
+     * The <code>elementDescription</code> format is as follows:
+     * <dl>
+     *   <dt>for type (class, enum, interface or annotation type)</dt>
+     *     <dd><em>the FQN of the type</em></dd>
+     *   <dt>for field or enum constant</dt>
+     *     <dd><em>the FQN of the enclosing type</em><code>.</code><em>field name</em></dd>
+     *   <dt>for method</dt>
+     *     <dd><em>the FQN of the enclosing type</em><code>.</code><em>method name</em><code>(</code><em>comma separated parameter types</em><code>)</code><br>
+     *         The parameter types may include type parameters, but these are ignored. The last parameter type can use ellipsis (...) to denote vararg method.</dd>
+     *   <dt>for constructor</dt>
+     *     <dd><em>the FQN of the enclosing type</em><code>.</code><em>simple name of enclosing type</em><code>(</code><em>comma separated parameter types</em><code>)</code><br>
+     *         See method format for more details on parameter types.</dd>
+     * </dl>
+     * 
+     * @param elementDescription the description of the element that should be checked for existence
+     * @return the found element, or null if not available
+     * @since 0.115
+     */
+    public @CheckForNull Element findElement(@NonNull String description) {
+        if (description.contains("(")) {
+            //method:
+            String methodFullName = description.substring(0, description.indexOf('('));
+            String className = methodFullName.substring(0, methodFullName.lastIndexOf('.'));
+            TypeElement clazz = info.getElements().getTypeElement(className);
+            
+            if (clazz == null) return null;
+            
+            String methodSimpleName = methodFullName.substring(methodFullName.lastIndexOf('.') + 1);
+            boolean constructor = clazz.getSimpleName().contentEquals(methodSimpleName);
+            String parameters = description.substring(description.indexOf('(') + 1, description.lastIndexOf(')') + 1);
+            
+            int paramIndex = 0;
+            int lastParamStart = 0;
+            int angleDepth = 0;
+            //XXX:
+            List<TypeMirror> types = new ArrayList<TypeMirror>();
+            
+            while (paramIndex < parameters.length()) {
+                switch (parameters.charAt(paramIndex)) {
+                    case '<': angleDepth++; break;
+                    case '>': angleDepth--; break; //TODO: check underflow
+                    case ',':
+                        if (angleDepth > 0) break;
+                    case ')':
+                        if (paramIndex > lastParamStart) {
+                            String type = parameters.substring(lastParamStart, paramIndex).replace("...", "[]");
+                            //TODO: handle varargs
+                            types.add(info.getTypes().erasure(info.getTreeUtilities().parseType(type, info.getTopLevelElements().get(0)/*XXX*/)));
+                            lastParamStart = paramIndex + 1;
+                        }
+                        break;
+                }
+                
+                paramIndex++;
+            }
+            
+            OUTER: for (ExecutableElement ee : constructor ? ElementFilter.constructorsIn(clazz.getEnclosedElements()) : ElementFilter.methodsIn(clazz.getEnclosedElements())) {
+                if ((constructor || ee.getSimpleName().contentEquals(methodSimpleName)) && ee.getParameters().size() == types.size()) {
+                    Iterator<? extends TypeMirror> real = ((ExecutableType) info.getTypes().erasure(ee.asType())).getParameterTypes().iterator();
+                    Iterator<TypeMirror> expected = types.iterator();
+                    
+                    while (real.hasNext() && expected.hasNext()) {
+                        if (!info.getTypes().isSameType(real.next(), expected.next())) {
+                            continue OUTER;
+                        }
+                    }
+                    
+                    assert real.hasNext() == expected.hasNext();
+                    
+                    return ee;
+                }
+            }
+        }
+        
+        //field or class:
+        TypeElement el = info.getElements().getTypeElement(description);
+        
+        if (el != null) return el;
+        
+        int dot = description.lastIndexOf('.');
+        
+        if (dot != (-1)) {
+            String simpleName = description.substring(dot + 1);
+            
+            el = info.getElements().getTypeElement(description.substring(0, dot));
+            
+            if (el != null) {
+                for (VariableElement var : ElementFilter.fieldsIn(el.getEnclosedElements())) {
+                    if (var.getSimpleName().contentEquals(simpleName)) {
+                        return var;
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
     
     // private implementation --------------------------------------------------
 
@@ -557,7 +657,7 @@ public final class ElementUtilities {
         Types types = JavacTypes.instance(ctx);
         com.sun.tools.javac.code.Types implTypes = com.sun.tools.javac.code.Types.instance(ctx);
         DeclaredType implType = (DeclaredType)impl.asType();
-        if (element.getModifiers().contains(Modifier.ABSTRACT)) {
+        if (element.getKind().isInterface() || element.getModifiers().contains(Modifier.ABSTRACT)) {
             for (Element e : element.getEnclosedElements()) {
                 if (e.getKind() == ElementKind.METHOD && e.getModifiers().contains(Modifier.ABSTRACT)) {
                     ExecutableElement ee = (ExecutableElement)e;

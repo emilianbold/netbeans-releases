@@ -1,1 +1,1 @@
-method() void
+method() void	$	    select<Person>().one().method()

@@ -56,6 +56,7 @@ import org.netbeans.modules.diff.cmdline.CmdlineDiffProvider;
 import java.util.prefs.Preferences;
 import java.util.*;
 import java.awt.Color;
+import javax.swing.UIManager;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.openide.filesystems.FileUtil;
@@ -84,20 +85,59 @@ public class DiffModuleConfig {
     
     private static final DiffModuleConfig INSTANCE = new DiffModuleConfig();
     
-    private final Color defaultAddedColor = new Color(180, 255, 180);
-    private final Color defaultChangedColor = new Color(160, 200, 255);
-    private final Color defaultDeletedColor = new Color(255, 160, 180);
-    private final Color defaultAppliedColor = new Color(180, 255, 180);
-    private final Color defaultNotAppliedColor = new Color(160, 200, 255);
-    private final Color defaultUnresolvedColor = new Color(255, 160, 180);
-    private final Color defaultSidebarDeletedColor = new Color(255, 225, 232);
-    private final Color defaultSidebarChangedColor = new Color(233, 241, 255);
+    private final Color defaultAddedColor;
+    private final Color defaultChangedColor;
+    private final Color defaultDeletedColor;
+    private final Color defaultAppliedColor;
+    private final Color defaultNotAppliedColor;
+    private final Color defaultUnresolvedColor;
+    private final Color defaultSidebarDeletedColor;
+    private final Color defaultSidebarChangedColor;
 
     public static DiffModuleConfig getDefault() {
         return INSTANCE;
     }
 
     private DiffModuleConfig() {
+        Color c = UIManager.getColor( "nb.diff.added.color" ); //NOI18N
+        if( null == c )
+            c = new Color(180, 255, 180);
+        defaultAddedColor = c;
+
+        c = UIManager.getColor( "nb.diff.changed.color" ); //NOI18N
+        if( null == c )
+            c = new Color(160, 200, 255);
+        defaultChangedColor = c;
+
+        c = UIManager.getColor( "nb.diff.deleted.color" ); //NOI18N
+        if( null == c )
+            c = new Color(255, 160, 180);
+        defaultDeletedColor = c;
+
+        c = UIManager.getColor( "nb.diff.applied.color" ); //NOI18N
+        if( null == c )
+            c = new Color(180, 255, 180);
+        defaultAppliedColor = c;
+
+        c = UIManager.getColor( "nb.diff.notapplied.color" ); //NOI18N
+        if( null == c )
+            c = new Color(160, 200, 255);
+        defaultNotAppliedColor = c;
+
+        c = UIManager.getColor( "nb.diff.unresolved.color" ); //NOI18N
+        if( null == c )
+            c = new Color(255, 160, 180);
+        defaultUnresolvedColor = c;
+
+        c = UIManager.getColor( "nb.diff.sidebar.deleted.color" ); //NOI18N
+        if( null == c )
+            c = new Color(255, 225, 232);
+        defaultSidebarDeletedColor = c;
+
+        c = UIManager.getColor( "nb.diff.sidebar.changed.color" ); //NOI18N
+        if( null == c )
+            c = new Color(233, 241, 255);
+        defaultSidebarChangedColor = c;
     }
     
     public Color getAddedColor() {

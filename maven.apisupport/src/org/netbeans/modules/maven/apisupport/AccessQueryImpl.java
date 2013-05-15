@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.maven.apisupport;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.InputStream;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
@@ -66,8 +68,9 @@ import org.openide.util.Exceptions;
  */
 @ProjectServiceProvider(service=AccessibilityQueryImplementation.class, projectType="org-netbeans-modules-maven/" + NbMavenProject.TYPE_NBM)
 public class AccessQueryImpl implements AccessibilityQueryImplementation {
-    private Project project;
+    private final Project project;
     private WeakReference<List<Pattern>> ref;
+    private PropertyChangeListener projectListener;
     
     private static final String MANIFEST_PATH = "src/main/nbm/manifest.mf"; //NOI18N
     private static final String ATTR_PUBLIC_PACKAGE = "OpenIDE-Module-Public-Packages"; //NOI18N
@@ -108,36 +111,27 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
     }
     
     
-    List<Pattern> getPublicPackagesPatterns() {
+    synchronized List<Pattern> getPublicPackagesPatterns() {
+        if (projectListener == null) {
+            projectListener = new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (NbMavenProject.PROP_PROJECT.equals(evt.getPropertyName())) {
+                        synchronized (AccessQueryImpl.this) {
+                            ref = null;
+                        }
+                    }
+                }
+            };
+            project.getLookup().lookup(NbMavenProject.class).addPropertyChangeListener(projectListener);
+        }
         if (ref != null) {
             List<Pattern> patterns = ref.get();
             if (patterns != null) {
                 return patterns;
             }
         }
-        List<Pattern> toRet = new ArrayList<Pattern>();
-        String[] params = PluginPropertyUtils.getPluginPropertyList(project, 
-                MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, //NOI18N
-                "publicPackages", "publicPackage", "manifest"); //NOI18N
-        if (params != null) {
-            toRet = prepareMavenPublicPackagesPatterns(params);
-        } else {
-            FileObject obj = project.getProjectDirectory().getFileObject(MANIFEST_PATH);
-            if (obj != null) {
-                InputStream in = null;
-                try {
-                    in = obj.getInputStream();
-                    Manifest man = new Manifest();
-                    man.read(in);
-                    String value = man.getMainAttributes().getValue(ATTR_PUBLIC_PACKAGE);
-                    toRet = prepareManifestPublicPackagesPatterns(value);
-                } catch (Exception ex) {
-                    Exceptions.printStackTrace(ex);
-                } finally {
-                    IOUtil.close(in);
-                }
-            }
-        }
+        List<Pattern> toRet = loadPublicPackagesPatterns(project);
         ref = new WeakReference<List<Pattern>>(toRet);
         return toRet;
     }
@@ -182,6 +176,33 @@ public class AccessQueryImpl implements AccessibilityQueryImplementation {
                     token = token + ".*"; //NOI18N
                 }
                 toRet.add(Pattern.compile(token));
+            }
+        }
+        return toRet;
+    }
+
+    private static List<Pattern> loadPublicPackagesPatterns(Project project) {
+        List<Pattern> toRet = new ArrayList<Pattern>();
+        String[] params = PluginPropertyUtils.getPluginPropertyList(project, 
+                MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN, //NOI18N
+                "publicPackages", "publicPackage", "manifest"); //NOI18N
+        if (params != null) {
+            toRet = prepareMavenPublicPackagesPatterns(params);
+        } else {
+            FileObject obj = project.getProjectDirectory().getFileObject(MANIFEST_PATH);
+            if (obj != null) {
+                InputStream in = null;
+                try {
+                    in = obj.getInputStream();
+                    Manifest man = new Manifest();
+                    man.read(in);
+                    String value = man.getMainAttributes().getValue(ATTR_PUBLIC_PACKAGE);
+                    toRet = prepareManifestPublicPackagesPatterns(value);
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                } finally {
+                    IOUtil.close(in);
+                }
             }
         }
         return toRet;

@@ -22,7 +22,7 @@
  * accompanied this code. If applicable, add the following below the
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
- * "Portions Copyrighted [year] [name of copyright owner]"
+ * "Portions Copyrighted [year] [name of copyright owner]"  
  *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.bugtracking.util;
 
-import org.netbeans.modules.bugtracking.kenai.spi.RecentIssue;
+import org.netbeans.modules.bugtracking.team.spi.RecentIssue;
 import java.awt.Dimension;
 import java.io.File;
 import java.util.ArrayList;
@@ -52,7 +52,6 @@ import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.regex.Pattern;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -62,19 +61,16 @@ import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import org.netbeans.api.keyring.Keyring;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.bugtracking.*;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.ide.spi.ProjectServices;
 import org.netbeans.modules.bugtracking.spi.BugtrackingConnector;
 import org.netbeans.modules.bugtracking.ui.issue.IssueTopComponent;
-import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
-import org.netbeans.modules.bugtracking.ui.issue.PatchContextChooser;
 import org.netbeans.modules.bugtracking.ui.query.QueryAction;
 import org.netbeans.modules.bugtracking.ui.query.QueryTopComponent;
 import org.netbeans.modules.bugtracking.ui.search.QuickSearchComboBar;
@@ -88,6 +84,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.*;
 import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -97,7 +94,12 @@ import org.openide.windows.TopComponent;
 public class BugtrackingUtil {
     private static RequestProcessor parallelRP;
 
-    public static boolean show(JPanel panel, String title, String okName) {
+    public static void notifyError (final String title, final String message) {
+        NotifyDescriptor nd = new NotifyDescriptor(message, title, NotifyDescriptor.DEFAULT_OPTION, NotifyDescriptor.ERROR_MESSAGE, new Object[] {NotifyDescriptor.OK_OPTION}, NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notifyLater(nd);
+    }          
+        
+    public static boolean show(JPanel panel, String title, String okName, HelpCtx helpCtx) {
         JButton ok = new JButton(okName);
         ok.getAccessibleContext().setAccessibleDescription(ok.getText());
         JButton cancel = new JButton(NbBundle.getMessage(BugtrackingUtil.class, "LBL_Cancel")); // NOI18N
@@ -110,9 +112,13 @@ public class BugtrackingUtil {
                     new Object[]{ok, cancel},
                     ok,
                     DialogDescriptor.DEFAULT_ALIGN,
-                    new HelpCtx(panel.getClass()),
+                    helpCtx,
                     null);
         return DialogDisplayer.getDefault().notify(dd) == ok;
+    }
+    
+    public static boolean show(JPanel panel, String title, String okName) {
+        return show(panel, title, okName, new HelpCtx(panel.getClass()));
     }
 
     /**
@@ -220,23 +226,15 @@ public class BugtrackingUtil {
         return repo;
     }
 
-    public static boolean editRepository(Repository repository, String errorMessage) {
+    public static boolean editRepository(RepositoryImpl repository, String errorMessage) {
         RepositorySelector rs = new RepositorySelector();
-        return rs.edit(APIAccessor.IMPL.getImpl(repository), errorMessage);
+        return rs.edit(repository, errorMessage);
     }
 
     public static boolean editRepository(Repository repository) {
-        return editRepository(repository, null);
+        return editRepository(APIAccessor.IMPL.getImpl(repository), null);
     }
 
-    public static Collection<RepositoryImpl> getKnownRepositories(boolean pingOpenProjects) {
-        return RepositoryRegistry.getInstance().getKnownRepositories(pingOpenProjects);
-    }
-
-    public static Collection<RepositoryImpl> getRepositories(String id) {
-        return RepositoryRegistry.getInstance().getRepositories(id);
-    }    
-    
     public static BugtrackingConnector[] getBugtrackingConnectors() {
         DelegatingConnector[] dcs = BugtrackingManager.getInstance().getConnectors();
         BugtrackingConnector[] cons = new BugtrackingConnector[dcs.length];
@@ -303,28 +301,6 @@ public class BugtrackingUtil {
         return issue != null ? issue.getID() : null;
     }
 
-    public static File selectPatchContext() {
-        PatchContextChooser chooser = new PatchContextChooser();
-        ResourceBundle bundle = NbBundle.getBundle(BugtrackingUtil.class);
-        JButton ok = new JButton(bundle.getString("LBL_Apply")); // NOI18N
-        JButton cancel = new JButton(bundle.getString("LBL_Cancel")); // NOI18N
-        DialogDescriptor descriptor = new DialogDescriptor(
-                chooser,
-                bundle.getString("LBL_ApplyPatch"), // NOI18N
-                true,
-                NotifyDescriptor.OK_CANCEL_OPTION,
-                ok,
-                null);
-        descriptor.setOptions(new Object [] {ok, cancel});
-        descriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.bugtracking.patchContextChooser")); // NOI18N
-        File context = null;
-        DialogDisplayer.getDefault().createDialog(descriptor).setVisible(true);
-        if (descriptor.getValue() == ok) {
-            context = chooser.getSelectedFile();
-        }
-        return context;
-    }
-
     /**
      * Recursively deletes all files and directories under a given file/directory.
      *
@@ -338,26 +314,6 @@ public class BugtrackingUtil {
             }
         }
         file.delete();
-    }
-
-    private static Pattern netbeansUrlPattern = Pattern.compile("(https|http)://(([a-z]|\\d)+\\.)*([a-z]|\\d)*netbeans([a-z]|\\d)*(([a-z]|\\d)*\\.)+org(.*)"); // NOI18N
-    /**
-     * Determines wheter the given {@link RepositoryProvider} is the
-     * repository hosting netbeans or not
-     *
-     * @param repo
-     * @return true if the given repository is the netbenas bugzilla, otherwise false
-     */
-    public static boolean isNbRepository(String url) {
-        boolean ret = netbeansUrlPattern.matcher(url).matches();
-        if(ret) {
-            return true;
-        }
-        String nbUrl = System.getProperty("netbeans.bugzilla.url");  // NOI18N
-        if(nbUrl == null || nbUrl.equals("")) {                      // NOI18N
-            return false;
-        }
-        return url.startsWith(nbUrl);
     }
 
     /**
@@ -453,73 +409,15 @@ public class BugtrackingUtil {
         return "******"; // NOI18N
     }
 
-    private static final String NB_BUGZILLA_PASSWORD = "nbbugzilla.password";                // NOI18N
-    private static final String NB_BUGZILLA_USERNAME = "nbbugzilla.username";                // NOI18N
-    
-    /**
-     * Returns the netbeans.org username
-     * Shouldn't be called in awt
-     *
-     * @return username
-     */
-    public static String getNBUsername() {
-        String user = BugtrackingConfig.getInstance().getPreferences().get(NB_BUGZILLA_USERNAME, ""); // NOI18N
-        if("".equals(user)) {
-            user = RepositoryRegistry.getBugzillaNBUsername();
-        }
-        return user.equals("") ? null : user;                         // NOI18N
-    }
-
-    /**
-     * Returns the netbeans.org password
-     * Shouldn't be called in awt
-     *
-     * @return password
-     */
-    public static char[] getNBPassword() {
-        return Keyring.read(NB_BUGZILLA_PASSWORD);
-    }
-
-    /**
-     * Save the given username as a netbeans.org username.
-     * Shouldn't be called in awt
-     */
-    public static void saveNBUsername(String username) {
-        if(username == null) {
-            return;
-        }
-        BugtrackingConfig.getInstance().getPreferences().put(NB_BUGZILLA_USERNAME, username);
-    }
-
-    /**
-     * Saves the given value as a netbeans.org password
-     * Shouldn't be called in awt
-     */
-    public static void saveNBPassword(char[] password) {
-        if(password == null) {
-            Keyring.delete(NB_BUGZILLA_PASSWORD);
-        } else {
-            Keyring.save(
-                NB_BUGZILLA_PASSWORD,
-                password,
-                NbBundle.getMessage(
-                    BugtrackingUtil.class,
-                    "NBRepositorySupport.password_keyring_description"));       // NOI18N
-
-        }
-    }
-    
     public static File getFile(Node[] nodes) {
         if(nodes == null || nodes.length == 0) {
             return null;
         }
-        final Lookup nodeLookup = nodes[0].getLookup();
-
-        Project project = nodeLookup.lookup(Project.class);
-        if (project != null) {
-            return getFile(project);
+        Lookup nodeLookup = nodes[0].getLookup();
+        FileObject[] fos = getProjectDirectories(nodeLookup);
+        if(fos != null && fos.length > 0) {
+            return org.openide.filesystems.FileUtil.toFile(fos[0]);
         }
-
         DataObject dataObj = nodeLookup.lookup(DataObject.class);
         if (dataObj != null) {
             return getFile(dataObj);
@@ -527,22 +425,41 @@ public class BugtrackingUtil {
         return null;
     }
     
-    private static File getFile(Project project) {
-        FileObject fileObject = project.getProjectDirectory();
-        return org.openide.filesystems.FileUtil.toFile(fileObject);
+    public static void openTasksDashboard() {
+         Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                TopComponent tc = WindowManager.getDefault().findTopComponent("DashboardTopComponent"); // NOI18N
+                if (tc == null) {
+                    BugtrackingManager.LOG.fine("No Tasks Dashboard found"); // NOI18N
+                    return;
+                }
+                tc.open();
+                tc.requestActive();
+            }
+        });
     }
-
+    
     private static File getFile(DataObject dataObj) {
         FileObject fileObj = dataObj.getPrimaryFile();
         if (fileObj == null) {
             return null;
         }
-
-        Project project = FileOwnerQuery.getOwner(fileObj);
-        if (project != null) {
-            return getFile(project);
+        FileObject ownerDirectory = getFileOwnerDirectory(fileObj);
+        if (ownerDirectory != null) {
+            return org.openide.filesystems.FileUtil.toFile(ownerDirectory);
         }
         return org.openide.filesystems.FileUtil.toFile(fileObj);
     }  
-      
+
+    public static FileObject getFileOwnerDirectory(FileObject fileObject) {
+        ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
+        return projectServices != null ? projectServices.getFileOwnerDirectory(fileObject): null;
+    }
+    
+    public static FileObject[] getProjectDirectories(Lookup lookup) {
+        ProjectServices projectServices = BugtrackingManager.getInstance().getProjectServices();
+        return projectServices != null ? projectServices.getProjectDirectories(lookup) : null;
+    }
+    
 }

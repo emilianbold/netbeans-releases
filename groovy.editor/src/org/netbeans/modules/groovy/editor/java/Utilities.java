@@ -111,7 +111,7 @@ public final class Utilities {
         return type;
     }
 
-    public static Collection<javax.lang.model.element.Modifier> reflectionModifiersToModel(int modifiers) {
+    public static Set<javax.lang.model.element.Modifier> reflectionModifiersToModel(int modifiers) {
         Set<javax.lang.model.element.Modifier> ret = new HashSet<javax.lang.model.element.Modifier>();
 
         if (java.lang.reflect.Modifier.isAbstract(modifiers)) {

@@ -49,18 +49,25 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractButton;
+import javax.swing.JCheckBox;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
+import javax.swing.ListCellRenderer;
+import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -144,6 +151,13 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         
         epExpandedText.addKeyListener(this);
         epDescription.addKeyListener(this);
+        
+        lContexts = new javax.swing.JList<>();
+        lContexts.setCellRenderer(new ListRenderer());
+        CheckListener checkListener = new CheckListener();
+        lContexts.addMouseListener(checkListener);
+        lContexts.addKeyListener(checkListener);
+        spContexts = new javax.swing.JScrollPane(lContexts);
     }
     
     private static String loc (String key) {
@@ -173,7 +187,9 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         if (idx != -1 && idx + 1 < tabName.length()) {
             char ch = Character.toUpperCase(tabName.charAt(idx + 1));
             p.setMnemonicAt(tabIdx, ch);
-            ep.setFocusAccelerator(ch);
+            if (ep != null) {
+                ep.setFocusAccelerator(ch);
+            }
         }
     }
     
@@ -335,6 +351,17 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
                     // Need to re-add the document listeners since pane.setEditorKit() changes the document
                     epExpandedText.getDocument().addDocumentListener(CodeTemplatesPanel.this);
                     epDescription.getDocument().addDocumentListener(CodeTemplatesPanel.this);
+                    
+                    ListModel<String> supportedContexts = tableModel.getSupportedContexts();
+                    if (supportedContexts.getSize() > 0) {
+                        lContexts.setModel(supportedContexts);
+                        if (tabPane.getTabCount() < 3) {
+                            tabPane.addTab(null, spContexts);
+                            loc(tabPane, 2, "Contexts", null); //NOI18N
+                        }
+                    } else if (tabPane.getTabCount() > 2) {
+                        tabPane.remove(2);
+                    }
                 }
             });
         } else if (e.getSource () == bNew) {
@@ -467,6 +494,8 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         // translations). See #130095 for details.
         setDocumentText(epDescription.getDocument(), tableModel.getDescription(index));
         setDocumentText(epExpandedText.getDocument(), tableModel.getText(index));
+        selectedContexts = tableModel.getContexts(index);
+        lContexts.repaint();
         // Mark unmodified explicitly - setDocumentText() marked as modified
         unsavedTemplateIndex = -1;
         bRemove.setEnabled(true);
@@ -696,4 +725,61 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
     private javax.swing.JTabbedPane tabPane;
     // End of variables declaration//GEN-END:variables
 
+    private javax.swing.JScrollPane spContexts;
+    private JList<String> lContexts;
+    private Set<String> selectedContexts;
+
+    private class ListRenderer implements ListCellRenderer<String> {
+
+        private final JCheckBox renderer = new JCheckBox();
+
+        @Override
+        public Component getListCellRendererComponent(JList<? extends String> list, String value, int index, boolean isSelected, boolean cellHasFocus) {
+            renderer.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
+            renderer.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
+            renderer.setText(value);
+            renderer.setSelected(selectedContexts.contains(value));
+            return renderer;
+        }
+    }
+    
+    private class CheckListener implements MouseListener, KeyListener {
+
+        public void mouseEntered(MouseEvent e) {}
+
+        public void mouseExited(MouseEvent e) {}
+
+        public void mousePressed(MouseEvent e) {}
+
+        public void mouseReleased(MouseEvent e) {}
+
+        public void mouseClicked(MouseEvent e) {
+            if (!e.isPopupTrigger()) {
+                contextsModified();
+                e.consume();
+            }
+        }
+
+        public void keyPressed(KeyEvent e) {
+            if (e.getKeyCode() == KeyEvent.VK_SPACE || e.getKeyCode() == KeyEvent.VK_ENTER) {
+                contextsModified();
+                e.consume();
+            }
+        }
+        
+        public void keyReleased(KeyEvent e) {}
+
+        public void keyTyped(KeyEvent e) {}
+
+        private void contextsModified() {
+            String value = lContexts.getSelectedValue();
+            if (!selectedContexts.remove(value)) {
+                selectedContexts.add(value);
+            }
+            lContexts.repaint();
+            if (unsavedTemplateIndex < 0) {
+                unsavedTemplateIndex = tTemplates.getSelectedRow();
+            }
+        }
+    }
 }

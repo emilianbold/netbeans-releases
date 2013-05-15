@@ -120,7 +120,7 @@ public class PhpRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
         String newName = panel.getNameValue();
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(newName);
-            ((RenameRefactoring) refactoring).getContext().add(new RenameDeclarationFile(panel.renameDeclarationFile()));
+            ((RenameRefactoring) refactoring).getContext().add(new RenameDeclarationFile(panel.renameDeclarationFile(), panel.lowerCaseFileName()));
         }
         return refactoring.checkParameters();
     }
@@ -132,7 +132,7 @@ public class PhpRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
         }
         if (refactoring instanceof RenameRefactoring) {
             ((RenameRefactoring) refactoring).setNewName(panel.getNameValue());
-            ((RenameRefactoring) refactoring).getContext().add(new RenameDeclarationFile(panel.renameDeclarationFile()));
+            ((RenameRefactoring) refactoring).getContext().add(new RenameDeclarationFile(panel.renameDeclarationFile(), panel.lowerCaseFileName()));
         }
         return refactoring.checkParameters();
     }
@@ -164,13 +164,19 @@ public class PhpRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
 
     public static final class RenameDeclarationFile {
         private final boolean renameDeclarationFile;
+        private final boolean lowerCaseFileName;
 
-        public RenameDeclarationFile(boolean renameDeclarationFile) {
+        public RenameDeclarationFile(boolean renameDeclarationFile, boolean lowerCaseFileName) {
             this.renameDeclarationFile = renameDeclarationFile;
+            this.lowerCaseFileName = lowerCaseFileName;
         }
 
         public boolean renameDeclarationFile() {
             return renameDeclarationFile;
+        }
+
+        public String adjustName(String newName) {
+            return lowerCaseFileName ? newName.toLowerCase() : newName;
         }
 
     }

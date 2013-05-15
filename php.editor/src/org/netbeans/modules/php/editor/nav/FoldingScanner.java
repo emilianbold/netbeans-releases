@@ -81,20 +81,21 @@ import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.php.editor.nav.Bundle.*;
+import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public final class FoldingScanner {
-    
+
     public static final FoldType TYPE_CODE_BLOCKS = FoldType.CODE_BLOCK;
-    
+
     /**
      * FoldType for the PHP class (either nested, or top-level)
      */
     @NbBundle.Messages("FT_Classes=Classes")
     public static final FoldType TYPE_CLASS = FoldType.NESTED.derive(
-            "class", 
+            "class",
             FT_Classes(), FoldTemplate.DEFAULT_BLOCK);
 
     /**
@@ -104,19 +105,19 @@ public final class FoldingScanner {
     public static final FoldType TYPE_PHPDOC = FoldType.DOCUMENTATION.override(
             FT_PHPDoc(),        // NOI18N
             new FoldTemplate(3, 2, "/**...*/")); // NOI18N
-    
+
     public static final FoldType TYPE_COMMENT = FoldType.COMMENT.override(
             FoldType.COMMENT.getLabel(),
             new FoldTemplate(2, 2, "/*...*/")); // NOI18N
-    
+
     /**
-     * 
+     *
      */
     @NbBundle.Messages("FT_Functions=Functions and methods")
-    public static final FoldType TYPE_FUNCTION = FoldType.MEMBER.derive("function", 
-            FT_Functions(), 
+    public static final FoldType TYPE_FUNCTION = FoldType.MEMBER.derive("function",
+            FT_Functions(),
             FoldTemplate.DEFAULT_BLOCK);
-    
+
     private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY"; //NOI18N
 
     public static FoldingScanner create() {
@@ -186,7 +187,7 @@ public final class FoldingScanner {
         }
         return Collections.emptyMap();
     }
-    
+
     private OffsetRange createOffsetRange(ASTNode node, int startShift) {
         return new OffsetRange(node.getStartOffset() + startShift, node.getEndOffset());
     }
@@ -319,7 +320,9 @@ public final class FoldingScanner {
         }
 
         private void addFold(final ASTNode node) {
-            addFold(createOffsetRange(node));
+            if (!(node instanceof ASTError) && !(node instanceof EmptyStatement)) {
+                addFold(createOffsetRange(node));
+            }
         }
 
         private void addFold(final OffsetRange offsetRange) {

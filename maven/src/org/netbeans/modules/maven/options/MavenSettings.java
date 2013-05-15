@@ -58,6 +58,7 @@ import java.util.prefs.Preferences;
 import org.apache.maven.execution.MavenExecutionRequest;
 import org.codehaus.plexus.util.cli.CommandLineUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -78,6 +79,10 @@ public final class MavenSettings  {
     private static final String PROP_LAST_ARCHETYPE_VERSION = "lastArchetypeVersion"; //NOI18N
     private static final String PROP_SKIP_TESTS = "skipTests"; //NOI18N
     private static final String PROP_MAVEN_RUNTIMES = "mavenRuntimes"; //NOI18N
+    public static final String PROP_PROJECTNODE_NAME_PATTERN = "project.displayName"; //NOI18N
+    private static final String PROP_ALWAYS_OUTPUT = "alwaysShowOutput";
+    private static final String PROP_REUSE_OUTPUT = "reuseOutputTabs";
+    private static final String PROP_COLLAPSE_FOLDS = "collapseSuccessFolds";
 
     //these are from former versions (6.5) and are here only for conversion
     private static final String PROP_DEBUG = "showDebug"; // NOI18N
@@ -86,7 +91,7 @@ public final class MavenSettings  {
     private static final String PROP_PLUGIN_POLICY = "pluginUpdatePolicy"; //NOI18N
     private static final String PROP_FAILURE_BEHAVIOUR = "failureBehaviour"; //NOI18N
     private static final String PROP_USE_REGISTRY = "usePluginRegistry"; //NOI18N
-    
+      
     private static final MavenSettings INSTANCE = new MavenSettings();
     
     public static MavenSettings getDefault() {
@@ -250,7 +255,22 @@ public final class MavenSettings  {
     public void setSkipTests(boolean skipped) {
         getPreferences().putBoolean(PROP_SKIP_TESTS, skipped);
     }
+    
+    public boolean isAlwaysShowOutput() {
+        return getPreferences().getBoolean(PROP_ALWAYS_OUTPUT, true);
+    }
 
+    public void setAlwaysShowOutput(boolean show) {
+        getPreferences().putBoolean(PROP_ALWAYS_OUTPUT, show);
+    }
+    
+    public boolean isReuseOutputTabs() {
+        return getPreferences().getBoolean(PROP_REUSE_OUTPUT, true);
+    }
+
+    public void setReuseOutputTabs(boolean reuse) {
+        getPreferences().putBoolean(PROP_REUSE_OUTPUT, reuse);
+    }
     
     public String getLastArchetypeVersion() {
         return getPreferences().get(PROP_LAST_ARCHETYPE_VERSION, "1.0-SNAPSHOT"); //NOI18N
@@ -260,6 +280,26 @@ public final class MavenSettings  {
         putProperty(PROP_LAST_ARCHETYPE_VERSION, version); //NOI18N
     }
 
+    public void setProjectNodeNamePattern(String pattern) {
+        if (null == pattern) {
+            getPreferences().remove(PROP_PROJECTNODE_NAME_PATTERN);
+        } else {
+            putProperty(PROP_PROJECTNODE_NAME_PATTERN, pattern);
+        }
+    }
+
+    public String getProjectNodeNamePattern() {
+        return getPreferences().get(PROP_PROJECTNODE_NAME_PATTERN, null); //NOI18N
+    }
+
+    public boolean isCollapseSuccessFolds() {
+        return getPreferences().getBoolean(PROP_COLLAPSE_FOLDS, false);
+    }
+    
+    public void setCollapseSuccessFolds(boolean collapse) {
+        getPreferences().putBoolean(PROP_COLLAPSE_FOLDS, collapse);
+    }
+    
     public static enum DownloadStrategy {
         NEVER,
         FIRST_OPEN,

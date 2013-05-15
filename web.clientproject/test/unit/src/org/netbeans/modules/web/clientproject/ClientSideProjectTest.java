@@ -41,10 +41,16 @@
  */
 package org.netbeans.modules.web.clientproject;
 
+import java.awt.Component;
+import java.awt.Image;
+import java.beans.PropertyChangeListener;
+import java.net.URL;
 import java.util.Collection;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 import org.netbeans.modules.web.clientproject.sites.SiteZip;
 import org.netbeans.modules.web.clientproject.sites.SiteZipPanel;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
@@ -53,10 +59,12 @@ import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
 import org.netbeans.spi.project.support.ant.AntBasedProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
+import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.test.MockLookup;
 
 public class ClientSideProjectTest extends NbTestCase {
@@ -68,16 +76,11 @@ public class ClientSideProjectTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        MockLookup.init();
-        Collection<? extends AntBasedProjectType> all = Lookups.forPath("Services/AntBasedProjectTypes").lookupAll(AntBasedProjectType.class);
-        MockLookup.setInstances(
-                all.iterator().next()
-                );
+        MockLookup.setLayersAndInstances("smth");
     }
 
     @Override
     protected void tearDown() throws Exception {
-        MockLookup.setLookup(Lookup.EMPTY);
         super.tearDown();
     }
 
@@ -134,4 +137,111 @@ public class ClientSideProjectTest extends NbTestCase {
         assertEquals("project does not have any problems", 0, ppp.getProblems().size());
     }
 
+    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
+    public static class DummyBrowser implements HtmlBrowser.Factory, EnhancedBrowserFactory {
+
+        @Override
+        public HtmlBrowser.Impl createHtmlBrowserImpl() {
+            return new HtmlBrowser.Impl() {
+
+                @Override
+                public Component getComponent() {
+                    return null;
+                }
+
+                @Override
+                public void reloadDocument() {
+                }
+
+                @Override
+                public void stopLoading() {
+                }
+
+                @Override
+                public void setURL(URL url) {
+                }
+
+                @Override
+                public URL getURL() {
+                    return null;
+                }
+
+                @Override
+                public String getStatusMessage() {
+                    return null;
+                }
+
+                @Override
+                public String getTitle() {
+                    return null;
+                }
+
+                @Override
+                public boolean isForward() {
+                    return false;
+                }
+
+                @Override
+                public void forward() {
+                }
+
+                @Override
+                public boolean isBackward() {
+                    return false;
+                }
+
+                @Override
+                public void backward() {
+                }
+
+                @Override
+                public boolean isHistory() {
+                    return false;
+                }
+
+                @Override
+                public void showHistory() {
+                }
+
+                @Override
+                public void addPropertyChangeListener(PropertyChangeListener l) {
+                }
+
+                @Override
+                public void removePropertyChangeListener(PropertyChangeListener l) {
+                }
+            };
+        }
+
+        @Override
+        public BrowserFamilyId getBrowserFamilyId() {
+            return BrowserFamilyId.ANDROID;
+        }
+
+        @Override
+        public Image getIconImage() {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "some";
+        }
+
+        @Override
+        public String getId() {
+            return "some";
+        }
+
+        @Override
+        public boolean hasNetBeansIntegration() {
+            return false;
+        }
+
+        @Override
+        public boolean canCreateHtmlBrowserImpl() {
+            return true;
+        }
+
+    }
 }

@@ -108,6 +108,17 @@ public class VisualReplicator {
         return idToClone.get(id);
     }
 
+    private Object getClonedComponent(RADComponent metacomp, boolean nonWindow) {
+        Object clone = getClonedComponent(metacomp);
+        if (!nonWindow && clone instanceof JRootPane) {
+            Object w = ((JRootPane)clone).getClientProperty(RADVisualContainer.CUSTOM_WINDOW_CONTAINER);
+            if (w instanceof RootPaneContainer) {
+                clone = w;
+            }
+        }
+        return clone;
+    }
+
     public String getClonedComponentId(Object component) {
         return cloneToId.get(component);
     }
@@ -227,6 +238,22 @@ public class VisualReplicator {
             clone = null;
         }
 
+        if (getDesignRestrictions() && clone instanceof RootPaneContainer && clone instanceof Window) {
+            // For a custom widnow we show its root pane (so not just the container delegate) in the
+            // design view so there is the maximum of the superclass visible. We need to remember
+            // the window instance to be able to determine the real container delegate and to set
+            // the window bean properties (might affect a subcomponent, so be visible in the designer).
+            // It's a hack that we steal the window's root pane and add it to a different container,
+            // but seems working thanks to that the window keeps its reference to the root pane and
+            // that the window itself is never shown.
+            JRootPane rootPane = ((RootPaneContainer)clone).getRootPane();
+            rootPane.putClientProperty(RADVisualContainer.CUSTOM_WINDOW_CONTAINER, clone);
+            cloneToId.remove(clone);
+            clone = rootPane;
+            idToClone.put(metacomp.getId(), clone);
+            cloneToId.put(clone, metacomp.getId());
+        }
+
         return clone;
     }
 
@@ -335,6 +362,19 @@ public class VisualReplicator {
 
             setupContainerLayout(metacont, comps, compIds);
         }
+
+        updateLayeredPane(cont, metacomps, comps);
+    }
+
+    private static void updateLayeredPane(Container cont, RADVisualComponent[] metacomps, Component[] comps) {
+        if (cont instanceof JLayeredPane) {
+            JLayeredPane layeredPane = (JLayeredPane) cont;
+            for (int i=0; i < metacomps.length; i++) {
+                RADVisualComponent sub = metacomps[i];
+                int layer = sub.getComponentLayer();
+                layeredPane.setLayer(comps[i], layer);
+            }
+        }
     }
 
     public void updateAddedComponents(ComponentContainer metacont) {
@@ -401,6 +441,10 @@ public class VisualReplicator {
                             new Component[] { (Component) clone },
                             ((RADVisualComponent)metacomp).getComponentIndex());
                     laysup.arrangeContainer(cont, contDelegate);
+                    if (contDelegate instanceof JLayeredPane) {
+                        int layer = ((RADVisualComponent)metacomp).getComponentLayer();
+                        ((JLayeredPane)contDelegate).setLayer((Component)clone, layer);
+                    }
                 }
     //            else { // new layout support
     //                getLayoutBuilder(metacont.getId()).addComponentsToContainer(
@@ -527,7 +571,7 @@ public class VisualReplicator {
         RADComponent metacomp = property.getRADComponent();
 
         // target component of the property
-        Object targetComp = getClonedComponent(metacomp);
+        Object targetComp = getClonedComponent(metacomp, false);
         if (targetComp == null)
             return;
 
@@ -680,21 +724,29 @@ public class VisualReplicator {
             if (convert != null) {
                 clone = convert.getConverted();
                 compClone = convert.getEnclosed();
-
-                Iterator<RADProperty> applyProperties;
-                if (clone instanceof Window) { // some properties should not be set to Window, e.g. visible
-                    applyProperties = metacomp.getBeanPropertiesIterator(new FormProperty.Filter() {
-                        @Override
-                        public boolean accept(FormProperty property) {
-                            return !"visible".equals(property.getName()); // NOI18N
-                        }
-                    }, false);
-                } else {
-                    applyProperties = Arrays.asList(metacomp.getKnownBeanProperties()).iterator();
-                }
-                FormUtils.copyPropertiesToBean(applyProperties,
-                                               compClone != null ? compClone : clone,
-                                               relativeProperties);
+                java.util.List<RADProperty> relProps = relativeProperties;
+                Object target = compClone != null ? compClone : clone;
+                do {
+                    Iterator<RADProperty> applyProperties;
+                    if (target instanceof Window) { // some properties should not be set to Window, e.g. visible
+                        applyProperties = metacomp.getBeanPropertiesIterator(new FormProperty.Filter() {
+                            @Override
+                            public boolean accept(FormProperty property) {
+                                return !"visible".equals(property.getName()); // NOI18N
+                            }
+                        }, false);
+                    } else {
+                        applyProperties = Arrays.asList(metacomp.getKnownBeanProperties()).iterator();
+                    }
+                    FormUtils.copyPropertiesToBean(applyProperties, target, relProps);
+                    if (target != clone && target instanceof RootPaneContainer) {
+                        // second time apply to the subst. JFrame that was created for the original window
+                        target = clone;
+                        relProps = null;
+                    } else {
+                        target = null;
+                    }
+                } while (target != null);
                 break;
             }
         }
@@ -761,6 +813,7 @@ public class VisualReplicator {
                 else { // new layout support
                     setupContainerLayout(metacont, comps, compIds);
                 }
+                updateLayeredPane(cont, metacomps, comps);
             }
         }
         else if (metacomp instanceof RADMenuComponent) {
@@ -1021,11 +1074,15 @@ public class VisualReplicator {
         @Override
         public Convert convert(Object component, boolean root, boolean designRestrictions) {
             Class compClass = component.getClass();
+            boolean basicSwing = compClass.getName().startsWith("javax.swing."); // NOI18N
             Class convClass = null;
             if (designRestrictions) { // convert windows and AWT menus for design view
                 if ((RootPaneContainer.class.isAssignableFrom(compClass)
-                            && Window.class.isAssignableFrom(compClass))
-                        || Frame.class.isAssignableFrom(compClass)) {
+                            && Window.class.isAssignableFrom(compClass))) {
+                    if (basicSwing || !canUseRootPaneFromWindow((RootPaneContainer)component)) {
+                        convClass = JRootPane.class;
+                    } // otherwise for custom window do no conversion, will use its JRootPane in design view
+                } else if (Frame.class.isAssignableFrom(compClass)) {
                     convClass = JRootPane.class;
                 } else if (Window.class.isAssignableFrom(compClass)
                            || java.applet.Applet.class.isAssignableFrom(compClass)) {
@@ -1036,11 +1093,11 @@ public class VisualReplicator {
             } else if (root) { // need to enclose in JFrame/Frame for preview
                 if (RootPaneContainer.class.isAssignableFrom(compClass)
                         || JComponent.class.isAssignableFrom(compClass)) { // Swing
-                    if (!JFrame.class.isAssignableFrom(compClass)) {
+                    if (!JFrame.class.isAssignableFrom(compClass) || ((JFrame)component).isDisplayable()) {
                         convClass = JFrame.class;
                     }
                 } else if (Component.class.isAssignableFrom(compClass)) { // AWT
-                    if (!Frame.class.isAssignableFrom(compClass)) {
+                    if (!Frame.class.isAssignableFrom(compClass) || ((Frame)component).isDisplayable()) {
                         convClass = Frame.class;
                     }
                 }
@@ -1053,14 +1110,19 @@ public class VisualReplicator {
                 Component converted = (Component) CreationFactory.createDefaultInstance(convClass);
                 Component enclosed = null;
 
-                if (converted instanceof JFrame) {
-                    if (JComponent.class.isAssignableFrom(compClass)
-                            && !RootPaneContainer.class.isAssignableFrom(compClass)) {
-                        // JComponent but not JInternalFrame
+                if (converted instanceof JFrame) { // for preview
+                    if (RootPaneContainer.class.isAssignableFrom(compClass)) {
+                        if (!basicSwing) {
+                            // for custom window components use its root pane in the subst. frame and
+                            // keep the instance for setting properties
+                            enclosed = (Component) CreationFactory.createDefaultInstance(compClass);
+                            transferRootPane((JFrame)converted, ((RootPaneContainer)enclosed).getRootPane());
+                        } // for Swing windows will just copy properties to the subst. frame
+                    } else if (JComponent.class.isAssignableFrom(compClass)) {
                         enclosed = (Component) CreationFactory.createDefaultInstance(compClass);
                         ((JFrame)converted).getContentPane().add(enclosed);
                     }
-                } else if (converted instanceof JRootPane) { // RootPaneContainer or Frame converted to JRootPane
+                } else if (converted instanceof JRootPane) { // RootPaneContainer or Frame converted to JRootPane (for design view)
                     Container contentCont = (Container) CreationFactory.createDefaultInstance(
                             RootPaneContainer.class.isAssignableFrom(compClass) ? JPanel.class : Panel.class);
                     ((JRootPane)converted).setContentPane(contentCont);
@@ -1097,6 +1159,28 @@ public class VisualReplicator {
         @Override
         public Object getEnclosed() {
             return enclosed;
+        }
+    }
+
+    private static final String KEEP_ROOTPANE = "netbeans.form.no_custom_rootpane"; // NOI18N
+
+    private static boolean canUseRootPaneFromWindow(RootPaneContainer window) {
+        if (Boolean.getBoolean(KEEP_ROOTPANE)) {
+            return false;
+        }
+        JRootPane rootPane = window.getRootPane();
+        if (rootPane != null && Boolean.TRUE.equals(rootPane.getClientProperty(KEEP_ROOTPANE))) {
+            return false;
+        }
+        return true;
+    }
+
+    private static void transferRootPane(JFrame frame, JRootPane otherRootPane) {
+        try {
+            Method m = JFrame.class.getDeclaredMethod("setRootPane", JRootPane.class); // NOI18N
+            m.setAccessible(true);
+            m.invoke(frame, otherRootPane);
+        } catch (Exception ex) { // should not fail, the method is protected, can't be changed
         }
     }
 }

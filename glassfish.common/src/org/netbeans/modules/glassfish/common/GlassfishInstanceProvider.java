@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.glassfish.common;
 
-import java.io.File;
+import org.netbeans.modules.glassfish.common.utils.Util;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
@@ -50,18 +50,15 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.admin.CommandSetProperty;
-import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
-import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
-import org.netbeans.modules.glassfish.common.ui.WarnPanel;
+import org.netbeans.modules.glassfish.common.utils.ServerUtils;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.RegisteredDDCatalog;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 
@@ -71,9 +68,13 @@ import org.openide.util.lookup.Lookups;
  * @author vince kraemer
  */
 public final class GlassfishInstanceProvider implements ServerInstanceProvider, LookupListener {
+
+    /** Local logger. */
+    private static final Logger LOGGER
+            = GlassFishLogger.get(GlassfishInstanceProvider.class);
+
     public static final String GLASSFISH_AUTOREGISTERED_INSTANCE = "glassfish_autoregistered_instance";
 
-    static final String INSTANCE_FO_ATTR = "InstanceFOPath"; // NOI18N
     private static final String AUTOINSTANCECOPIED = "autoinstance-copied"; // NOI18N
 
     private volatile static GlassfishInstanceProvider ee6Provider;
@@ -137,40 +138,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         }
     }
 
-//    public static GlassfishInstanceProvider getPrelude() {
-//        if (preludeProvider != null) {
-//            return preludeProvider;
-//        }
-//        else {
-//            boolean runInit = false;
-//            synchronized(GlassfishInstanceProvider.class) {
-//                if (preludeProvider == null) {
-//                    runInit = true;
-//                    preludeProvider = new GlassfishInstanceProvider(
-//                            new String[]{PRELUDE_DEPLOYER_FRAGMENT},
-//                            new String[]{PRELUDE_INSTANCES_PATH},
-//                            org.openide.util.NbBundle.getMessage(GlassfishInstanceProvider.class,
-//                                "STR_PRELUDE_SERVER_NAME", new Object[]{}), // NOI18N
-//                            false,
-//                            null,
-//                            new CommandFactory()  {
-//
-//                                @Override
-//                                public SetPropertyCommand getSetPropertyCommand(String name, String value) {
-//                                    return new ServerCommand.SetPropertyCommand(name, value,
-//                                            "target={0}&value={1}"); // NOI18N
-//                                }
-//
-//                            });
-//                }
-//            }
-//            if (runInit) {
-//                preludeProvider.init();                
-//            }
-//            return preludeProvider;
-//        }
-//    }
-
     public static final Set<String> activeRegistrationSet = Collections.synchronizedSet(new HashSet<String>());
     
     private final Map<String, GlassfishInstance> instanceMap =
@@ -211,7 +178,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
 
     @Override
     public void resultChanged(LookupEvent ev) {
-        Logger.getLogger("glassfish").log(Level.FINE, "***** resultChanged fired ********  {0}", hashCode()); // NOI18N
+        LOGGER.log(Level.FINE, "***** resultChanged fired ********  {0}", hashCode()); // NOI18N
         RegisteredDDCatalog catalog = getDDCatalog();
         if (null != catalog) {
             catalog.registerEE6RunTimeDDCatalog(this);
@@ -227,10 +194,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
      */
     public static synchronized boolean initialized() {
         return ee6Provider != null;
-    }
-
-    public static Logger getLogger() {
-        return Logger.getLogger("glassfish"); // NOI18N
     }
 
     private static RegisteredDDCatalog getDDCatalog() {
@@ -262,9 +225,10 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                         catalog.refreshRunTimeDDCatalog(this, si.getGlassfishRoot());
                     }
                 }
-                writeInstanceToFile(si,true);
+                GlassfishInstance.writeInstanceToFile(si);
             } catch(IOException ex) {
-                getLogger().log(Level.INFO, null, ex);
+                LOGGER.log(Level.INFO,
+                        "Could not store GlassFish server attributes", ex);
             }
         }
 
@@ -348,7 +312,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                     result.add(si);
                 } else {
                     String message = "invalid commonInstance for " + instance.getDeployerUri(); // NOI18N
-                    Logger.getLogger("glassfish").log(Level.WARNING, message);   // NOI18N
+                    LOGGER.log(Level.WARNING, message);   // NOI18N
                     if (null != instance.getDeployerUri())
                         instanceMap.remove(instance.getDeployerUri());
                 }
@@ -379,7 +343,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             rv = instance.getCommonInstance();
             if (null == rv) {
                 String message = "invalid commonInstance for " + instance.getDeployerUri(); // NOI18N
-                Logger.getLogger("glassfish").log(Level.WARNING, message);
+                LOGGER.log(Level.WARNING, message);
                 if (null != instance.getDeployerUri())
                     instanceMap.remove(instance.getDeployerUri());
             }
@@ -387,7 +351,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         return rv;
     }
 
-    String getInstancesDirName() {
+    String getInstancesDirFirstName() {
         return instancesDirNames[0];
     }
 
@@ -408,7 +372,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             try {
                 loadServerInstances();
             } catch (RuntimeException ex) {
-                getLogger().log(Level.INFO, null, ex);
+                LOGGER.log(Level.INFO, null, ex);
             }
             RegisteredDDCatalog catalog = getDDCatalog();
             if (null != catalog) {
@@ -428,7 +392,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         FileObject installedInstance = null;
         int savedj = -1;
         for (int j = 0; j < instancesDirNames.length; j++) {
-            FileObject dir = getRepositoryDir(instancesDirNames[j], false);
+            FileObject dir
+                    = ServerUtils.getRepositoryDir(instancesDirNames[j], false);
             if (dir != null) {
                 FileObject[] instanceFOs = dir.getChildren();
                 if (instanceFOs != null && instanceFOs.length > 0) {
@@ -440,18 +405,17 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                                 savedj = j;
                                 continue;
                             }
-                            GlassfishInstance si
-                                    = readInstanceFromFile(instanceFOs[i],
-                                    uriFragments[j]);
+                            GlassfishInstance si = GlassfishInstance
+                                    .readInstanceFromFile(instanceFOs[i]);
                             if (si != null) {
                                 activeDisplayNames.add(si.getDisplayName());
                             } else {
-                                getLogger().log(Level.FINER,
+                                LOGGER.log(Level.FINER,
                                         "Unable to create glassfish instance for {0}", // NOI18N
                                         instanceFOs[i].getPath());
                             }
                         } catch (IOException ex) {
-                            getLogger().log(Level.INFO, null, ex);
+                            LOGGER.log(Level.INFO, null, ex);
                         }
                     }
                 }
@@ -461,155 +425,21 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                 && null == NbPreferences.forModule(this.getClass())
                 .get(AUTOINSTANCECOPIED, null)) {
             try {
-                GlassfishInstance igi = readInstanceFromFile(installedInstance,
-                        uriFragments[savedj]);
+                GlassfishInstance igi = GlassfishInstance.
+                        readInstanceFromFile(installedInstance);
                 try {
                     NbPreferences.forModule(this.getClass())
                             .put(AUTOINSTANCECOPIED, "true"); // NOI18N
                     NbPreferences.forModule(this.getClass()).flush();
                 } catch (BackingStoreException ex) {
-                    Logger.getLogger("glassfish").log(Level.INFO,
+                    LOGGER.log(Level.INFO,
                             "auto-registered instance may reappear", ex); // NOI18N
                 }
                 activeDisplayNames.add(igi.getDisplayName());
             } catch (IOException ex) {
-                getLogger().log(Level.INFO, null, ex);
+                LOGGER.log(Level.INFO, null, ex);
             }
         }
-    }
-
-    /**
-     * Fix attributes being imported from old NetBeans.
-     * <p/>
-     * Password for local server is changed from <code>"adminadmin"</code>
-     * to <code>""</code>.
-     * Fixed attributes are marked with new property to avoid multiple fixes
-     * in the future.
-     * <p/>
-     * Argument <code>ip</code> shall not be <code>null</code>.
-     * <p/>
-     * @param ip Instance properties <code>Map</code>.
-     * @param fo Instance file object.
-     */
-    private void fixImportedAttributes(Map<String, String> ip,
-            FileObject fo) {
-        if (!ip.containsKey(GlassfishModule.NB73_IMPORT_FIXED)) {
-            String password = ip.get(GlassfishModule.PASSWORD_ATTR);
-            if (password != null) {
-                boolean local
-                        = ip.get(GlassfishModule.DOMAINS_FOLDER_ATTR) != null;
-                if (local && GlassfishInstance.OLD_DEFAULT_ADMIN_PASSWORD
-                        .equals(password)) {
-                    ip.put(GlassfishModule.PASSWORD_ATTR,
-                            GlassfishInstance.DEFAULT_ADMIN_PASSWORD);
-                    setStringAttribute(fo, GlassfishModule.PASSWORD_ATTR,
-                            GlassfishInstance.DEFAULT_ADMIN_PASSWORD);
-                }
-            }
-            ip.put(GlassfishModule.NB73_IMPORT_FIXED, Boolean.toString(true));
-        }
-    }
-
-    // Password from keyring (GlassfishModule.PASSWORD_ATTR) is read on demand
-    // using code in GlassfishInstance.Props class.
-    private GlassfishInstance readInstanceFromFile(FileObject instanceFO,
-            String uriFragment) throws IOException {
-        GlassfishInstance instance = null;
-
-        String installRoot = getStringAttribute(instanceFO,
-                GlassfishModule.INSTALL_FOLDER_ATTR);
-        String glassfishRoot = getStringAttribute(instanceFO,
-                GlassfishModule.GLASSFISH_FOLDER_ATTR);
-        
-        // Existing installs may lack "installRoot", but glassfishRoot and 
-        // installRoot are the same in that case.
-        if(installRoot == null) {
-            installRoot = glassfishRoot;
-        }
-
-        if(isValidHomeFolder(installRoot)
-                && isValidGlassfishFolder(glassfishRoot)) {
-            // collect attributes and pass to create()
-            Map<String, String> ip = new HashMap<String, String>();
-            Enumeration<String> iter = instanceFO.getAttributes();
-            while(iter.hasMoreElements()) {
-                String name = iter.nextElement();
-                String value = getStringAttribute(instanceFO, name);
-                ip.put(name, value);
-            }
-            ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
-            fixImportedAttributes(ip, instanceFO);
-            instance = GlassfishInstance.create(ip,this,false);
-            // Display warning popup message for GlassFish 3.1.2 which is known
-            // to have bug in WS.
-            if (instance.getVersion() == GlassFishVersion.GF_3_1_2) {
-                WarnPanel.gf312WSWarning(instance.getName());
-            }
-        } else {
-            getLogger().log(Level.FINER,
-                    "GlassFish folder {0} is not a valid install.",
-                    instanceFO.getPath()); // NOI18N
-            instanceFO.delete();
-        }
-
-        return instance;
-    }
-
-    private void writeInstanceToFile(GlassfishInstance instance,boolean search) throws IOException {
-        String glassfishRoot = instance.getGlassfishRoot();
-        if(glassfishRoot == null) {
-            getLogger().log(Level.SEVERE, NbBundle.getMessage(GlassfishInstanceProvider.class, "MSG_NullServerFolder")); // NOI18N
-            return;
-        }
-
-        String url = instance.getDeployerUri();
-
-        // For GFV3 managed instance files
-        {
-            FileObject dir = getRepositoryDir(instancesDirNames[0], true);
-            FileObject[] instanceFOs = dir.getChildren();
-            FileObject instanceFO = null;
-
-            for(int i = 0; search && i < instanceFOs.length; i++) {
-                if(url.equals(instanceFOs[i].getAttribute(GlassfishModule.URL_ATTR))) {
-                    instanceFO = instanceFOs[i];
-                }
-            }
-
-            if(instanceFO == null) {
-                String name = FileUtil.findFreeFileName(dir, "instance", null); // NOI18N
-                instanceFO = dir.createData(name);
-            }
-
-            Map<String, String> attrMap = instance.getProperties();
-            for(Map.Entry<String, String> entry: attrMap.entrySet()) {
-                String key = entry.getKey();
-                if(!filterKey(key)) {
-                    Object currentValue = instanceFO.getAttribute(key);
-                    if (null != currentValue && currentValue.equals(entry.getValue())) {
-                        // do nothing
-                    } else {
-                        if (key.equals(GlassfishModule.PASSWORD_ATTR)) {
-                            String serverName = attrMap.get(GlassfishModule.DISPLAY_NAME_ATTR);
-                            String userName = attrMap.get(GlassfishModule.USERNAME_ATTR);
-                            Keyring.save(GlassfishInstance.passwordKey(
-                                    serverName, userName),
-                                    entry.getValue().toCharArray(),
-                                    "GlassFish administrator user password");
-                        } else {
-                            instanceFO.setAttribute(key, entry.getValue());
-                        }
-                    }
-                }
-            }
-            
-            instance.putProperty(INSTANCE_FO_ATTR, instanceFO.getName());
-            instance.getCommonSupport().setFileObject(instanceFO);
-        }
-    }
-    
-    private static boolean filterKey(String key) {
-        return INSTANCE_FO_ATTR.equals(key);
     }
 
     private void removeInstanceFromFile(String url) {
@@ -618,20 +448,23 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
             try {
                 instanceFO.delete();
             } catch(IOException ex) {
-                getLogger().log(Level.INFO, null, ex);
+                LOGGER.log(Level.INFO, null, ex);
             }
         }
     }
 
     private FileObject getInstanceFileObject(String url) {
         for (String instancesDirName : instancesDirNames) {
-            FileObject dir = getRepositoryDir(instancesDirName, false);
+            FileObject dir = ServerUtils.getRepositoryDir(
+                    instancesDirName, false);
             if(dir != null) {
                 FileObject[] installedServers = dir.getChildren();
                 for(int i = 0; i < installedServers.length; i++) {
-                    String val = getStringAttribute(installedServers[i], GlassfishModule.URL_ATTR);
+                    String val = ServerUtils.getStringAttribute(
+                            installedServers[i], GlassfishModule.URL_ATTR);
                     if(val != null && val.equals(url) &&
-                            !GLASSFISH_AUTOREGISTERED_INSTANCE.equals(installedServers[i].getName())) {
+                            !GLASSFISH_AUTOREGISTERED_INSTANCE
+                            .equals(installedServers[i].getName())) {
                         return installedServers[i];
                     }
                 }
@@ -640,72 +473,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         return null;
     }
 
-    private FileObject getRepositoryDir(String path, boolean create) {
-        FileObject dir = FileUtil.getConfigFile(path);
-        if(dir == null && create) {
-            try {
-                dir = FileUtil.createFolder(FileUtil.getConfigRoot(), path);
-            } catch(IOException ex) {
-                getLogger().log(Level.INFO, null, ex);
-            }
-        }
-        return dir;
-    }
-
-    private static boolean isValidHomeFolder(String folderName) {
-        boolean result = false;
-        if(folderName != null) {
-            File f = new File(folderName);
-            // !PW FIXME better heuristics to identify a valid V3 install
-            result = f.exists();
-            result = result && f.isDirectory();
-            result = result && f.canRead();
-        }
-        return result;    
-    }
-    
-    private static boolean isValidGlassfishFolder(String folderName) {
-        boolean result = false;
-        if(folderName != null) {
-            File f = new File(folderName);
-            // !PW FIXME better heuristics to identify a valid V3 install
-            result = f.exists();
-            result = result && f.isDirectory();
-            result = result && f.canRead();
-        }
-        return result;    
-    }
-
-    private static String getStringAttribute(FileObject fo, String attrName) {
-        return getStringAttribute(fo, attrName, null);
-    }
-
-    private static String getStringAttribute(FileObject fo, String attrName, String defValue) {
-        String result = defValue;
-        Object attr = fo.getAttribute(attrName);
-        if(attr instanceof String) {
-            result = (String) attr;
-        }
-        return result;
-    }
-
-    /**
-     * Set file attribute of given file object.
-     * @param fo File object.
-     * @param key Attribute key.
-     * @param value Attribute value.
-     */
-    private static void setStringAttribute(FileObject fo, String key,
-            String value) {
-        try {
-            fo.setAttribute(key, value);
-        } catch (IOException ioe) {
-            getLogger().log(Level.WARNING,
-                    "Cannot update file object value: {0} -> {1} in {2}",
-                    new Object[]{key, value, fo.getPath()});
-        }
-    }
-        
     String[] getNoPasswordCreatDomainCommand(String startScript, String jarLocation, 
             String domainDir, String portBase, String uname, String domain) {
             List<String> retVal = new ArrayList<String>();
@@ -729,7 +496,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         return retVal.toArray(new String[retVal.size()]);
     }
 
-    CommandFactory getCommandFactory() {
+    public CommandFactory getCommandFactory() {
        return cf;
     }
 

@@ -48,7 +48,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JTextField;
-import static junit.framework.Assert.fail;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
@@ -56,8 +55,7 @@ import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
-import org.netbeans.modules.web.clientproject.browser.ClientProjectConfigurationImpl;
-import org.netbeans.modules.web.clientproject.browser.ClientProjectConfigurationImpl.BrowserIntegration;
+import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
@@ -247,15 +245,15 @@ public class GeneralHTMLProject extends JellyTestCase {
         NbDialogOperator propertiesDialogOper = new NbDialogOperator("Project Properties");
         new Node(new JTreeOperator(propertiesDialogOper), "Run").select();
         JComboBoxOperator browsers = new JComboBoxOperator(propertiesDialogOper, "Browser");
-        ClientProjectConfigurationImpl browser;
+        WebBrowser browser;
         GeneralHTMLProject.setRunTimeout(browserName);
         GeneralHTMLProject.currentBrowser = browserName;
         for (int i = 0; i < browsers.getModel().getSize(); i++) {
-            browser = (ClientProjectConfigurationImpl) browsers.getModel().getElementAt(i);
+            browser = (WebBrowser) browsers.getModel().getElementAt(i);
 
-            if (browser.getDisplayName().equals(browserName)) {
-                browsers.selectItem(i);
-                if (browser.getBrowserIntegration() == BrowserIntegration.ENABLED) {
+            if (browser.getName().equals(browserName)) {
+                browsers.setSelectedIndex(i);
+                if (browser.hasNetBeansIntegration()) {
                     (new JCheckBoxOperator(propertiesDialogOper, "Auto-refresh")).setSelected(autoRefresh);
                     (new JCheckBoxOperator(propertiesDialogOper, "Synchronize")).setSelected(syncHover);
                 }
@@ -564,7 +562,7 @@ class HTMLElement {
     }
 
     /**
-     * Returns string that is same as returned by {@link HTMLNavigatorOperator#getFocusedElement()
+     * Returns string that is same as returned by {@link DomOperator#getFocusedElement()
      * }
      *
      * @return sample output {@code [root, html, body]body#foo.bar}
@@ -572,10 +570,10 @@ class HTMLElement {
     public String getNavigatorString() {
         StringBuilder sb = new StringBuilder();
         sb.append("[");
-        for (String parent : this.parentsPlain) {
+        for (String parent : this.parents) {
             sb.append(parent).append(", ");
         }
-        sb.append(this.namePlain).append("]").append(this.name);
+        sb.append(this.name).append("]");
         return sb.toString();
     }
 

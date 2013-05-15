@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.bugtracking.issuetable;
 
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCacheUtils;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -81,35 +80,41 @@ public abstract class IssueNode<I> extends AbstractNode {
 
     public static final String LABEL_NAME_SUMMARY          = "issue.summary";     // NOI18N
 
-    private IssueImpl issue;
+    public interface ChangesProvider<I> {
+        public String getRecentChanges(I i);
+    }
+        
+    private IssueImpl issueImpl;
     private I issueData;
 
     private String htmlDisplayName;
     private Action preferedAction = new AbstractAction() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            issue.open(true);
+            issueImpl.open(true);
         }
     };
+    private final ChangesProvider<I> changesProvider;
 
     /**
      * Creates a {@link IssueNode}
      * @param issue - the {@link Issue} to be represented by this IssueNode
      */
-    public IssueNode(Repository repository, I issueData) {
-        this(Children.LEAF, APIAccessor.IMPL.getImpl(repository).getIssue(issueData), issueData);
+    public IssueNode(Repository repository, I issueData, ChangesProvider<I> changesProvider) {
+        this(Children.LEAF, APIAccessor.IMPL.getImpl(repository).getIssue(issueData), issueData, changesProvider);
     }
 
-    private IssueNode(Children children, IssueImpl issue, I issueData) {
+    private IssueNode(Children children, IssueImpl issue, I issueData, ChangesProvider<I> changesProvider) {
         super(children, Lookups.fixed(issue));
-        this.issue = issue;
+        this.issueImpl = issue;
         this.issueData = issueData;
+        this.changesProvider = changesProvider;
         initProperties();
         refreshHtmlDisplayName();
         issue.addIssueStatusListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if(!IssueNode.this.issue.isData(evt.getSource())) {
+                if(!IssueNode.this.issueImpl.isData(evt.getSource())) {
                     return;
                 }
                 if(evt.getPropertyName().equals(IssueStatusProvider.EVENT_SEEN_CHANGED)) {
@@ -120,7 +125,7 @@ public abstract class IssueNode<I> extends AbstractNode {
     }
     
     public IssueImpl getIssue() {
-        return issue;
+        return issueImpl;
     }
     
     public I getIssueData() {
@@ -141,7 +146,7 @@ public abstract class IssueNode<I> extends AbstractNode {
     }
 
     public boolean wasSeen() {
-        return issue.getStatus() == IssueStatusProvider.Status.SEEN;
+        return issueImpl.getStatus() == IssueStatusProvider.Status.SEEN;
     }
 
     private void initProperties() {
@@ -159,7 +164,7 @@ public abstract class IssueNode<I> extends AbstractNode {
     }
 
     private void refreshHtmlDisplayName() {
-        htmlDisplayName = issue.getDisplayName();
+        htmlDisplayName = issueImpl.getDisplayName();
     }
 
     @Override
@@ -223,7 +228,7 @@ public abstract class IssueNode<I> extends AbstractNode {
             return IssueNode.this.issueData;
         }
         public Issue getIssue() {
-            return IssueNode.this.issue.getIssue();
+            return IssueNode.this.issueImpl.getIssue();
         }
         @Override
         public int compareTo(IssueNode<I>.IssueProperty<T> o) {
@@ -232,8 +237,22 @@ public abstract class IssueNode<I> extends AbstractNode {
         
         @Override
         public abstract T getValue() throws IllegalAccessException, InvocationTargetException;        
-    }
 
+        String getRecentChanges() {
+            String changes = changesProvider.getRecentChanges(getIssueData());
+            if(changes == null) {
+                changes = ""; // NOI18N
+            } else {
+                changes = changes.trim();
+            }
+            IssueStatusProvider.Status status = IssueNode.this.issueImpl.getStatus();
+            if(changes.equals("") && status == IssueStatusProvider.Status.MODIFIED) { // NOI18N
+                changes = NbBundle.getMessage(IssueNode.class, "LBL_IssueModified"); // NOI18N
+            }
+            return changes;
+        }
+    }
+    
     // XXX the same for id
     // XXX CTL_Issue_Summary_Title also defined in bugzilla nad jira!!!
     public class SummaryProperty extends IssueProperty<String> {
@@ -268,7 +287,7 @@ public abstract class IssueNode<I> extends AbstractNode {
         }
         @Override
         public Boolean getValue() {
-            return issue.getStatus() == IssueStatusProvider.Status.SEEN;
+            return issueImpl.getStatus() == IssueStatusProvider.Status.SEEN;
         }
         @Override
         public int compareTo(IssueProperty p) {
@@ -292,16 +311,14 @@ public abstract class IssueNode<I> extends AbstractNode {
         }
         @Override
         public String getValue() {
-            return IssueCacheUtils.getRecentChanges(APIAccessor.IMPL.getImpl(getIssue()));
+            return changesProvider.getRecentChanges(issueData);
         }
         @Override
         public int compareTo(IssueNode<I>.IssueProperty<String> p) {
             if(p == null) return 1;
             if(p.getClass().isAssignableFrom(RecentChangesProperty.class)) {
-                IssueImpl issueImpl = APIAccessor.IMPL.getImpl(getIssue());
-                String recentChanges1 = IssueCacheUtils.getRecentChanges(issueImpl);
-                issueImpl = APIAccessor.IMPL.getImpl(((RecentChangesProperty)p).getIssue());
-                String recentChanges2 = IssueCacheUtils.getRecentChanges(issueImpl);
+                String recentChanges1 = changesProvider.getRecentChanges(issueData);;
+                String recentChanges2 = changesProvider.getRecentChanges(p.getIssueData());
                 return recentChanges1.compareToIgnoreCase(recentChanges2);
             }
             return 1;

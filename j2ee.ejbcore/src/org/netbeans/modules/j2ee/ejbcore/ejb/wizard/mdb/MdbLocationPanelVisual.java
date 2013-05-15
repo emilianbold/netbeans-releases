@@ -46,9 +46,15 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.Set;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.api.java.source.SourceUtils;
+import org.netbeans.api.java.source.Task;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination.Type;
@@ -57,6 +63,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.JmsDestinationDefinition;
 import org.openide.WizardDescriptor;
+import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  * Panel for specifying message destination. Project or server message destination can be chosen.
@@ -64,26 +72,48 @@ import org.openide.WizardDescriptor;
  */
 @SuppressWarnings("serial") // not used to be serialized
 public class MdbLocationPanelVisual extends javax.swing.JPanel {
-    
+
     public static final String CHANGED = MdbLocationPanelVisual.class.getName() + ".CHANGED";
+    public static final String SCANNED = MdbLocationPanelVisual.class.getName() + ".SCANNED";
 
     private final Project project;
     private final J2eeModuleProvider provider;
-    private final Set<MessageDestination> moduleDestinations;
-    private final Set<MessageDestination> serverDestinations;
     private final boolean isDestinationCreationSupportedByServerPlugin;
+
+    private Set<MessageDestination> moduleDestinations;
+    private Set<MessageDestination> serverDestinations;
     
     // private because correct initialization is needed
+    @NbBundle.Messages({
+        "MdbLocationPanel.warn.scanning.in.progress=Scanning in progress, parial results shown..."
+    })
     private MdbLocationPanelVisual(Project project, J2eeModuleProvider provider, Set<MessageDestination> moduleDestinations, Set<MessageDestination> serverDestinations) {
         initComponents();
-
         this.project = project;
         this.provider = provider;
         this.moduleDestinations = moduleDestinations;
         this.serverDestinations = serverDestinations;
         isDestinationCreationSupportedByServerPlugin = provider.getConfigSupport().supportsCreateMessageDestination();
+
+        // scanning in progress?
+        if (!SourceUtils.isScanInProgress()) {
+            scanningLabel.setVisible(false);
+        } else {
+            ClasspathInfo classPathInfo = MdbLocationPanel.getClassPathInfo(project);
+            JavaSource javaSource = JavaSource.create(classPathInfo);
+            try {
+                javaSource.runWhenScanFinished(new Task<CompilationController>() {
+                    @Override
+                    public void run(CompilationController parameter) throws Exception {
+                        fire(true);
+                    }
+                }, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
     }
-    
+
     /**
      * Factory method for creating new instance.
      * @param provider Java EE module provider.
@@ -150,27 +180,30 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
     private void registerListeners() {
         // radio buttons
         projectDestinationsRadio.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                fire();
+                fire(false);
                 handleComboBoxes();
             }
         });
         serverDestinationsRadio.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                fire();
+                fire(false);
                 handleComboBoxes();
             }
         });
-        
         // combo boxes
         projectDestinationsCombo.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                fire();
+                fire(false);
             }
         });
         serverDestinationsCombo.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent actionEvent) {
-                fire();
+                fire(false);
             }
         });
     }
@@ -191,7 +224,11 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
         MessageDestinationUiSupport.populateDestinations(serverDestinations, serverDestinationsCombo, null);
     }
     
-    private void fire() {
+    private void fire(boolean fromScanning) {
+        if (fromScanning) {
+            firePropertyChange(SCANNED, null, null);
+            scanningLabel.setVisible(SourceUtils.isScanInProgress());
+        }
         firePropertyChange(CHANGED, null, null);
     }
 
@@ -213,6 +250,7 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
         projectDestinationsCombo = new javax.swing.JComboBox();
         addButton = new javax.swing.JButton();
         serverDestinationsCombo = new javax.swing.JComboBox();
+        scanningLabel = new javax.swing.JLabel();
 
         destinationsGroup.add(projectDestinationsRadio);
         projectDestinationsRadio.setSelected(true);
@@ -235,6 +273,9 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
             }
         });
 
+        scanningLabel.setForeground(new java.awt.Color(102, 102, 102));
+        org.openide.awt.Mnemonics.setLocalizedText(scanningLabel, org.openide.util.NbBundle.getMessage(MdbLocationPanelVisual.class, "MdbLocationPanelVisual.scanningLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -242,20 +283,24 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(projectDestinationsRadio)
-                    .addComponent(serverDestinationsRadio))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(serverDestinationsCombo, 0, 261, Short.MAX_VALUE)
-                    .addComponent(projectDestinationsCombo, 0, 261, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(addButton)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(projectDestinationsRadio)
+                            .addComponent(serverDestinationsRadio))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(serverDestinationsCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(projectDestinationsCombo, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(addButton))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(scanningLabel)
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(projectDestinationsRadio)
                     .addComponent(addButton)
@@ -264,7 +309,8 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(serverDestinationsRadio)
                     .addComponent(serverDestinationsCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(scanningLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -283,9 +329,15 @@ public class MdbLocationPanelVisual extends javax.swing.JPanel {
     private javax.swing.ButtonGroup destinationsGroup;
     private javax.swing.JComboBox projectDestinationsCombo;
     private javax.swing.JRadioButton projectDestinationsRadio;
+    private javax.swing.JLabel scanningLabel;
     private javax.swing.JComboBox serverDestinationsCombo;
     private javax.swing.JRadioButton serverDestinationsRadio;
     // End of variables declaration//GEN-END:variables
+
+    void refreshDestinations(Set<MessageDestination> moduleDestinations, Set<MessageDestination> serverDestinations) {
+        this.moduleDestinations = moduleDestinations;
+        this.serverDestinations = serverDestinations;
+    }
 
     @SuppressWarnings("serial") // not used to be serialized
     private static class PDComboModel extends DefaultComboBoxModel {

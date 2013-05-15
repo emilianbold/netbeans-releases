@@ -106,7 +106,37 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-
+        <change id="HintTest-singleHint">
+            <api name="JavaHintsTest"/>
+            <summary>Allowed to check a single hint</summary>
+            <version major="1" minor="9"/>
+            <date day="3" month="4" year="2013"/>
+            <author login="sdedic"/>
+            <compatibility addition="yes" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="compatible" source="compatible"/>
+            <description>
+                New method <code>run(Class, String)</code> was added so that hint with a specific ID can be run, if the
+                class contains multiple hint implementations.
+            </description>
+            <class name="HintTest" package="org.netbeans.modules.java.hints.test.api"/>
+            <issue number="227962"/>
+        </change>
+        <change id="HintTest-ensureJavaFixes">
+             <api name="JavaHintsTest"/>
+             <summary>Added assertFixes method to HintWarning</summary>
+             <version major="1" minor="8"/>
+             <date day="22" month="3" year="2013"/>
+             <author login="jlahoda"/>
+             <compatibility addition="no" binary="compatible" deletion="no" deprecation="no" modification="no" semantic="incompatible" source="compatible"/>
+             <description>
+                 <code>HintTest.HintWarning.applyFix</code> now enforces constraints for Inspect&amp;Transform. Unless a hint
+                 is marked as <code>Options.QUERY</code>, <code>Options.NO_BULK</code> or <code>Kind.ACTION</code>,
+                 the <code>Fix</code> that is being applied is tested to be <code>JavaFix</code> and repeatable,
+                 which are the requirements of Inspect&amp;Transform.
+             </description>
+             <class name="HintTest" package="org.netbeans.modules.java.hints.test.api"/>
+             <issue number="227271"/>
+        </change>
+        
         <change id="HintWarning-assertFixes">
              <api name="JavaHintsTest"/>
              <summary>Added assertFixes method to HintWarning</summary>

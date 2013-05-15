@@ -105,19 +105,26 @@ public class QuickSearchComboBar extends javax.swing.JPanel {
     }
 
     public Issue getIssue() {
-        IssueImpl impl = (IssueImpl) command.getEditor().getItem();
+        IssueImpl impl = getIssueImpl();
         return impl != null ? impl.getIssue() : null;
+    }
+    
+    public IssueImpl getIssueImpl() {
+        return (IssueImpl) command.getEditor().getItem();
     }
 
     public void setRepository(Repository repo) {
-        RepositoryImpl repositoryImpl = APIAccessor.IMPL.getImpl(repo);
+        setRepository(APIAccessor.IMPL.getImpl(repo));
+    }
+    
+    public void setRepository(RepositoryImpl repositoryImpl) {
         displayer.setRepository(repositoryImpl);
         Collection<IssueImpl> issues = BugtrackingManager.getInstance().getRecentIssues(repositoryImpl);
         command.setModel(new DefaultComboBoxModel(issues.toArray(new IssueImpl[issues.size()])));
         command.setSelectedItem(null);
     }
-
-    void setIssue(IssueImpl issue) {
+    
+    public void setIssue(IssueImpl issue) {
         if(issue != null) {
             command.getEditor().setItem(issue);
             displayer.setVisible(false);

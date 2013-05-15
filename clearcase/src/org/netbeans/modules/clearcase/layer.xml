@@ -51,16 +51,6 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-clearcase-ui-status-OpenVersioningAction.instance"/>
         </folder>
     </folder>
-    <folder name="Menu">
-        <folder name="Window">
-            <folder name="Versioning">            
-                <file name="org-netbeans-modules-clearcase-ui-status-OpenVersioningAction.shadow">
-                    <attr name="originalFile" stringvalue="Actions/Window/org-netbeans-modules-clearcase-ui-status-OpenVersioningAction.instance"/>
-                    <attr name="position" intvalue="500"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
 
     <folder name="VersioningOptionsDialog">
         <file name="Clearcase.instance">

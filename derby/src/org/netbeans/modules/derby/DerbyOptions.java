@@ -215,7 +215,7 @@ public class DerbyOptions {
     }
 
     /**
-     * Returns the Derby system home or an emtpy string if the system home
+     * Returns the Derby system home or an empty string if the system home
      * is not set. Never returns null.
      */
     public String getSystemHome() {

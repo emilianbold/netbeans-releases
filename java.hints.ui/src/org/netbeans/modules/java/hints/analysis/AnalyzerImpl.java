@@ -67,6 +67,7 @@ import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 import org.netbeans.modules.java.hints.spiimpl.refactoring.Utilities;
 import org.netbeans.modules.java.hints.spiimpl.refactoring.Utilities.ClassPathBasedHintWrapper;
 import org.netbeans.spi.editor.hints.ErrorDescription;
+import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -103,13 +104,14 @@ public class AnalyzerImpl implements Analyzer {
         final List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         ProgressHandleWrapper w = new ProgressHandleWrapper(ctx, 10, 90);
         Collection<HintDescription> hints = new ArrayList<HintDescription>();
+        HintsSettings settings = HintsSettings.createPreferencesBasedHintsSettings(ctx.getSettings(), false, null);
 
         for (Entry<? extends HintMetadata, ? extends Collection<? extends HintDescription>> e : Utilities.getBatchSupportedHints(new ClassPathBasedHintWrapper()).entrySet()) {
             if (singleWarning != null) {
                 if (!singleWarning.equals(e.getKey().id)) continue;
             } else if (ctx.getSettings() != null) {
-                if (!HintsSettings.isEnabled(e.getKey(), ctx.getSettings().node(e.getKey().id))) continue;
-            } else if (!HintsSettings.isEnabled(e.getKey())) continue;
+                if (!settings.isEnabled(e.getKey())) continue;
+            }
 
             hints.addAll(e.getValue());
         }
@@ -120,9 +122,9 @@ public class AnalyzerImpl implements Analyzer {
         todo.addAll(ctx.getScope().getFolders());
         todo.addAll(ctx.getScope().getFiles());
 
-        BatchResult candidates = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(Folder.convert(todo)), w);
+        BatchResult candidates = BatchSearch.findOccurrences(hints, Scopes.specifiedFoldersScope(Folder.convert(todo)), w, settings);
         List<MessageImpl> problems = new LinkedList<MessageImpl>(candidates.problems);
-
+        
         BatchSearch.getVerifiedSpans(candidates, w, new BatchSearch.VerifiedSpansCallBack() {
             public void groupStarted() {}
             public boolean spansVerified(CompilationController wc, Resource r, Collection<? extends ErrorDescription> inHints) throws Exception {
@@ -202,7 +204,7 @@ public class AnalyzerImpl implements Analyzer {
                     if (context.getPreselectId() == null) {
                         HintsPanel prev = context.getPreviousComponent();
                         if (prev != null) {
-                            prev.setOverlayPreferences(context.getSettings());
+                            prev.setOverlayPreferences(HintsSettings.createPreferencesBasedHintsSettings(context.getSettings(), false, Severity.VERIFIER));
                             return prev;
                         }
                         return new HintsPanel(context.getSettings(), context.getData());

@@ -44,14 +44,16 @@ package org.netbeans.modules.db.dataview.output;
 import java.sql.Connection;
 import java.sql.Date;
 import javax.swing.SortOrder;
-import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.db.dataview.meta.DBTable;
 import org.netbeans.modules.db.dataview.spi.DBConnectionProviderImpl;
+import org.netbeans.modules.db.dataview.table.ResultSetTableModel;
 import org.netbeans.modules.db.dataview.util.DBTestUtil;
 import org.netbeans.modules.db.dataview.util.DbUtil;
 import org.netbeans.modules.db.dataview.util.TestCaseContext;
+import org.openide.util.Mutex;
 
 /**
  * Test for InsertRecordTableUI
@@ -68,7 +70,7 @@ public class InsertRecordTableUITest extends NbTestCase {
 
     @Override
     public boolean runInEQ() {
-        return true;
+        return false;
     }
 
     @Override
@@ -93,24 +95,33 @@ public class InsertRecordTableUITest extends NbTestCase {
     //--------------------- Test Case ---------------------
     public void testCreate() {
         String sqlString = context.getSqlSelect();
-        DataView dv = DataView.create(dbconn, sqlString, 5);
-        dv.createComponents();
+        final DataView dv = DataView.create(dbconn, sqlString, 5);
 
-        InsertRecordDialog ird = new InsertRecordDialog(dv);
+        Mutex.EVENT.writeAccess(new Mutex.Action<Object>() {
+            @Override
+            public Void run() {
+                dv.createComponents();
 
-        DefaultTableModel model =
-                (DefaultTableModel) ird.insertRecordTableUI.getModel();
-        ird.insertRecordTableUI.createNewRow();
-        model.addRow(ird.insertRecordTableUI.createNewRow());
-        model.addRow(ird.insertRecordTableUI.createNewRow());
-        // Column 5 is the date column => Insert a "real" Date
-        // => creates conflict with String inserted by "createNewRow"
-        ird.insertRecordTableUI.setValueAt(
-                new Date(new java.util.Date().getTime()), 1, 5);
-        try {
-            ird.insertRecordTableUI.setSortOrder(5, SortOrder.ASCENDING);
-        } catch (ClassCastException ex) {
-            assert false : "Bug 219011 - should not be reached!";
-        }
+                DataViewPageContext pageContext = dv.getPageContext(0);
+                DBTable table = pageContext.getTableMetaData().getTable(0);
+
+                InsertRecordDialog ird = new InsertRecordDialog(dv, pageContext, table);
+
+                ResultSetTableModel model = ird.insertRecordTableUI.getModel();
+                ird.insertRecordTableUI.appendEmptyRow();
+                ird.insertRecordTableUI.appendEmptyRow();
+
+                // Column 5 is the date column => Insert a "real" Date
+                // => creates conflict with String inserted by "createNewRow"
+                ird.insertRecordTableUI.setValueAt(
+                        new Date(new java.util.Date().getTime()), 1, 5);
+                try {
+                    ird.insertRecordTableUI.setSortOrder(5, SortOrder.ASCENDING);
+                } catch (ClassCastException ex) {
+                    assert false : "Bug 219011 - should not be reached!";
+                }
+                return null;
+            }
+        });
     }
 }

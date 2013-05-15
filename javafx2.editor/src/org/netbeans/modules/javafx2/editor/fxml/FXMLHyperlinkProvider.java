@@ -162,6 +162,10 @@ public class FXMLHyperlinkProvider implements HyperlinkProviderExt {
         FileObject fo;
         String rootPath = FileUtil.normalizePath(rootFolder.getPath());
         String docPath = FileUtil.normalizePath(docFO.getParent().getPath());
+        if (!docPath.startsWith(rootPath)) {
+            // #228262 sanity check, for files which are outside of any source root
+            return null;
+        }
 
         // Java Controller
         String javaPath = path.trim().replace("\"", "").replace('.', '/') + ".java"; // NOI18N

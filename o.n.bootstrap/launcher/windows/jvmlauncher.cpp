@@ -288,7 +288,7 @@ bool JvmLauncher::startInProcJvm(const char *mainClassName, const std::list<std:
                 jvmOptions[i].extraInfo = 0;
             }
             JavaVMInitArgs jvmArgs;
-            jvmOptions[options.size()].optionString = "exit";
+            jvmOptions[options.size()].optionString = (char *) "exit";
             jvmOptions[options.size()].extraInfo    = (void *) &exitHook;
             
             jvmArgs.options = jvmOptions;

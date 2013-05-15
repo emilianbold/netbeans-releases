@@ -925,4 +925,14 @@ public class DatabaseMetaDataAdapter implements DatabaseMetaData {
     public boolean isWrapperFor(Class<?> iface) throws SQLException {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+
+    @Override
+    public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public boolean generatedKeyAlwaysReturned() throws SQLException {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
 }

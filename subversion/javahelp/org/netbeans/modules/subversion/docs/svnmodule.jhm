@@ -141,8 +141,8 @@ Other names may be trademarks of their respective owners.
     <!-- Select dialog -->
     <mapID target="org.netbeans.modules.subversion.FileSelector" url="svnmodule/csh/svn_select_dialog.html" />
 
-    <!-- TODO find out what this is for -->
-    <mapID target="org.netbeans.modules.subversion.client.SvnClientExceptionHandler" url="pending.html" />
+    <!-- Authentication/Connection Failure dialog -->
+    <mapID target="org.netbeans.modules.subversion.client.SvnClientExceptionHandler" url="svnmodule/csh/svn_auth_failed_dialog.html" />
 
     <!-- Search Revisions dialog (i.e. Search button) -->
  
@@ -160,6 +160,9 @@ Other names may be trademarks of their respective owners.
 
         <!-- Revert Modifications dialog -->
         <mapID target="org.netbeans.modules.subversion.ui.search.revert" url="svnmodule/csh/svn_search_rev_dialog.html" />
+
+        <!-- Update To Revision dialog -->
+        <mapID target="org.netbeans.modules.subversion.ui.search.update" url="svnmodule/csh/svn_search_rev_dialog.html" />
 
         <!-- TODO: find out what this target is for -->
         <mapID target="org.netbeans.modules.subversion.ui.search.urlpattern" url="svnmodule/csh/svn_search_rev_dialog.html" />
@@ -195,6 +198,9 @@ Other names may be trademarks of their respective owners.
 
         <!-- Shelve Changes dialog box -->
         <mapID target="org.netbeans.modules.subversion.ui.shelve.ShelveChangesPanel" url="svnmodule/csh/svn_shelve.html" />
+        
+        <!-- Update To Revision dialog box -->
+        <mapID target="org.netbeans.modules.subversion.ui.update.UpdateTo" url="svnmodule/csh/svn_update_rev_dialog.html" />
 
 </map>
 

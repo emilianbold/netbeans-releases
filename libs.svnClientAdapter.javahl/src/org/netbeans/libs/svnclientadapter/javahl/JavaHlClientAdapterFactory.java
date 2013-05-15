@@ -184,7 +184,7 @@ public class JavaHlClientAdapterFactory extends SvnClientAdapterFactory {
         }
         String name = "libsvnjavahl-1.so";
         String[] locations = new String[] {"/usr/lib/", "/usr/lib/jni/", "/usr/local/lib/",
-            "/usr/lib64/", "/usr/lib64/jni/", "/usr/local/lib64/"};
+            "/usr/lib64/", "/usr/lib64/jni/", "/usr/local/lib64/", "/opt/csw/bin/svn/"};
         File location = null;
         for (String loc : locations) {
             File file = new File(loc, name);

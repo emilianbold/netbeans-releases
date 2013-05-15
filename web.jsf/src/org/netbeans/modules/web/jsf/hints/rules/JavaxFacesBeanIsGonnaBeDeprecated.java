@@ -68,7 +68,7 @@ public class JavaxFacesBeanIsGonnaBeDeprecated implements JsfHintsRule {
 
     @NbBundle.Messages({
         "JavaxFacesBeanIsGonnaBeDeprecated.lbl.package.will.be.deprecated=Annotations from the package javax.faces.bean"
-            + "will be deprecated in the next JSF version. CDI ones are recommended instead."
+            + " will be deprecated in the next JSF version. CDI ones are recommended instead."
     })
     @Override
     public Collection<ErrorDescription> check(JsfHintsContext ctx) {

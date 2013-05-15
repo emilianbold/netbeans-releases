@@ -110,6 +110,7 @@ import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDObjectFactory;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDUtilities;
+import org.netbeans.modules.cnd.modelutil.Tracer;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
@@ -174,8 +175,6 @@ public final class FileImpl implements CsmFile,
     
     public static final boolean reportErrors = TraceFlags.REPORT_PARSING_ERRORS | TraceFlags.DEBUG;
     public static final int PARSE_FILE_TIMEOUT = 30;
-    public static final String PARSE_FILE_PERFORMANCE_EVENT = "PARSE_FILE_PERFORMANCE_EVENT"; //NOI18N
-    public static final String READ_FILE_PERFORMANCE_EVENT = "READ_FILE_PERFORMANCE_EVENT"; //NOI18N
     private static final boolean reportParse = Boolean.getBoolean("parser.log.parse");
     // the next flag(s) make sense only in the casew reportParse is true
     private static final boolean logState = Boolean.getBoolean("parser.log.state");
@@ -974,7 +973,7 @@ public final class FileImpl implements CsmFile,
 
     private CsmParserResult _parse(ParseDescriptor parseParams) {
         parsingFileContentRef.get().set(parseParams.content);
-        PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(FileImpl.PARSE_FILE_PERFORMANCE_EVENT, getFileObject());
+        PerformanceLogger.PerformaceAction performanceEvent = PerformanceLogger.getLogger().start(Tracer.PARSE_FILE_PERFORMANCE_EVENT, getFileObject());
         try {
             performanceEvent.setTimeOut(FileImpl.PARSE_FILE_TIMEOUT);
             Diagnostic.StopWatch sw = TraceFlags.TIMING_PARSE_PER_FILE_DEEP ? new Diagnostic.StopWatch() : null;

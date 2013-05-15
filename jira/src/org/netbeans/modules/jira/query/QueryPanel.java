@@ -89,7 +89,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
 
         Font f = new JLabel().getFont();
         int s = f.getSize();
-        nameLabel.setFont(jLabel1.getFont().deriveFont(s * 1.7f));
+        nameLabel.setFont(nameLabel.getFont().deriveFont(s * 1.7f));
         jiraFilterLabel.setVisible(isFilter);
         if(isFilter) {
             jiraFilterLabel.setFont(new Font(f.getName(), f.getStyle(), (int) (s * 1.7)));
@@ -114,7 +114,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         byOther = new ExpandablePanel(byOtherLabel, byOtherContainer, ei, ci);
 
         Color bkColor = UIUtils.getSectionPanelBackground();
-        gotoPanel.setBackground( bkColor );
         tablePanel.setBackground( bkColor );
         criteriaPanel.setBackground( bkColor );
 
@@ -130,7 +129,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         cancelChangesButton.setVisible(false);
         filterComboBox.setVisible(false);
         filterLabel.setVisible(false);
-        refreshCheckBox.setVisible(false);
         noContentPanel.setVisible(false);
 
         summaryCheckBox.setSelected(true);
@@ -155,19 +153,17 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         descriptionCheckBox.setOpaque(false);
         commentsCheckBox.setOpaque(false);
         environmentCheckBox.setOpaque(false);
-        refreshCheckBox.setOpaque(false);
 
-        lblIssueKeyWarning.setVisible(false);
         warningLabel.setVisible(false);
 
         UIUtils.keepFocusedComponentVisible(this);
-        UIUtils.keepComponentsWidthByVisibleArea(this, new UIUtils.SizeController() {
-            @Override
-            public void setWidth(int width) {
-                byTextContainer.setPreferredSize(new Dimension(width, byTextPanel.getPreferredSize().height));
-                byTextContainer.revalidate();
-            }
-        });
+//        UIUtils.keepComponentsWidthByVisibleArea(this, new UIUtils.SizeController() {
+//            @Override
+//            public void setWidth(int width) {
+//                byTextContainer.setPreferredSize(new Dimension(width, byTextPanel.getPreferredSize().height));
+//                byTextContainer.revalidate();
+//            }
+//        });
         
         validate();
         repaint();
@@ -213,7 +209,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         tableHeaderPanel = new javax.swing.JPanel();
         filterLabel = new javax.swing.JLabel();
         criteriaPanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
         separatorLabel1 = new javax.swing.JLabel();
         separatorLabel2 = new javax.swing.JLabel();
         queryHeaderPanel = new javax.swing.JPanel();
@@ -814,19 +809,18 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                     .addComponent(byOtherLabel)
                     .addComponent(byDetailsLabel)
                     .addComponent(byPeopleLabel))
-                .addContainerGap())
-            .addGroup(criteriaPanelLayout.createSequentialGroup()
-                .addComponent(byTextContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addComponent(byTextContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         criteriaPanelLayout.setVerticalGroup(
             criteriaPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(criteriaPanelLayout.createSequentialGroup()
                 .addComponent(byTextLabel)
                 .addGap(0, 0, 0)
-                .addComponent(byTextContainer, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(0, 0, 0)
+                .addComponent(byTextContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, Short.MAX_VALUE)
                 .addComponent(byDetailsLabel)
+                .addGap(0, 0, 0)
                 .addComponent(byDetailsContainer, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, 0)
                 .addComponent(byPeopleLabel)
@@ -849,43 +843,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
             }
         });
 
-        gotoPanel.setBackground(new java.awt.Color(224, 224, 224));
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel1.text_1")); // NOI18N
-
-        idTextField.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.idTextField.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(gotoIssueButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.gotoIssueButton.text")); // NOI18N
-
-        lblIssueKeyWarning.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/jira/resources/warning.gif"))); // NOI18N
-
-        javax.swing.GroupLayout gotoPanelLayout = new javax.swing.GroupLayout(gotoPanel);
-        gotoPanel.setLayout(gotoPanelLayout);
-        gotoPanelLayout.setHorizontalGroup(
-            gotoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(gotoPanelLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblIssueKeyPrefix)
-                .addGap(0, 0, 0)
-                .addComponent(idTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 191, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(gotoIssueButton)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(lblIssueKeyWarning)
-                .addContainerGap())
-        );
-        gotoPanelLayout.setVerticalGroup(
-            gotoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(gotoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                .addComponent(jLabel1)
-                .addComponent(lblIssueKeyPrefix)
-                .addComponent(gotoIssueButton)
-                .addComponent(idTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addComponent(lblIssueKeyWarning))
-        );
-
         org.openide.awt.Mnemonics.setLocalizedText(separatorLabel1, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.separatorLabel1.text")); // NOI18N
         separatorLabel1.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
@@ -905,7 +862,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         searchPanel.setLayout(searchPanelLayout);
         searchPanelLayout.setHorizontalGroup(
             searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(gotoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, searchPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
@@ -933,8 +889,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         searchPanelLayout.setVerticalGroup(
             searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(searchPanelLayout.createSequentialGroup()
-                .addComponent(gotoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addContainerGap()
                 .addComponent(criteriaPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(searchPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -998,8 +953,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jLabel6.text")); // NOI18N
         jLabel6.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
-        org.openide.awt.Mnemonics.setLocalizedText(refreshCheckBox, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.refreshCheckBox.text")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(jiraFilterLabel, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.jiraFilterLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cloneQueryButton, org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.cloneQueryButton.text")); // NOI18N
@@ -1033,9 +986,7 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         .addComponent(nameLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(jiraFilterLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 327, Short.MAX_VALUE)
-                        .addComponent(refreshCheckBox)
-                        .addGap(18, 18, 18)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addComponent(lastRefreshLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lastRefreshDateLabel))
@@ -1076,9 +1027,8 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
                         .addContainerGap()
                         .addGroup(queryHeaderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(lastRefreshDateLabel)
-                            .addComponent(lastRefreshLabel)
-                            .addComponent(refreshCheckBox))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 10, Short.MAX_VALUE)
+                            .addComponent(lastRefreshLabel))))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 12, Short.MAX_VALUE)
                 .addGroup(queryHeaderPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
                     .addComponent(jLabel4, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel5, javax.swing.GroupLayout.PREFERRED_SIZE, 11, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1221,10 +1171,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JLabel fixForLabel = new javax.swing.JLabel();
     final javax.swing.JList fixForList = new javax.swing.JList();
     final javax.swing.JScrollPane fixForScrollPane = new HackedScrollPane();
-    final javax.swing.JButton gotoIssueButton = new javax.swing.JButton();
-    final javax.swing.JPanel gotoPanel = new javax.swing.JPanel();
-    final javax.swing.JTextField idTextField = new javax.swing.JTextField();
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
@@ -1254,8 +1200,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JLabel jiraFilterLabel = new javax.swing.JLabel();
     final javax.swing.JLabel lastRefreshDateLabel = new javax.swing.JLabel();
     private javax.swing.JLabel lastRefreshLabel;
-    final javax.swing.JLabel lblIssueKeyPrefix = new javax.swing.JLabel();
-    final javax.swing.JLabel lblIssueKeyWarning = new javax.swing.JLabel();
     public final org.netbeans.modules.bugtracking.util.LinkButton modifyButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JLabel nameLabel = new javax.swing.JLabel();
     private javax.swing.JLabel noContentLabel;
@@ -1272,7 +1216,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     final javax.swing.JTextField ratioMaxTextField = new javax.swing.JTextField();
     final javax.swing.JTextField ratioMinTextField = new javax.swing.JTextField();
     final org.netbeans.modules.bugtracking.util.LinkButton refreshButton = new org.netbeans.modules.bugtracking.util.LinkButton();
-    final javax.swing.JCheckBox refreshCheckBox = new javax.swing.JCheckBox();
     final org.netbeans.modules.bugtracking.util.LinkButton reloadAttributesButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     public final org.netbeans.modules.bugtracking.util.LinkButton removeButton = new org.netbeans.modules.bugtracking.util.LinkButton();
     final javax.swing.JComboBox reporterComboBox = new javax.swing.JComboBox();
@@ -1300,27 +1243,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
     // End of variables declaration//GEN-END:variables
 
     /**
-     * Sets the issue prefix' text. Null value hides the field
-     * @param text
-     */
-    public void setIssuePrefixText (String text) {
-        if (text == null) {
-            lblIssueKeyPrefix.setVisible(false);
-        } else {
-            lblIssueKeyPrefix.setText(text);
-            lblIssueKeyPrefix.setVisible(true);
-        }
-    }
-
-    /**
-     * Returns the value of issue' prefix
-     * @return
-     */
-    public String getIssuePrefixText () {
-        return lblIssueKeyPrefix.getText();
-    }
-
-    /**
      * enables/disables all but the parameter fields
      * @param enable
      */
@@ -1344,8 +1266,6 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         searchButton.setEnabled(enable);
         saveButton.setEnabled(enable);
         webButton.setEnabled(enable);
-
-        refreshCheckBox.setEnabled(enable);
 
         queryTextField.setEnabled(enable);
         summaryCheckBox.setEnabled(enable);

@@ -44,6 +44,7 @@ package org.netbeans.modules.j2ee.persistence.editor;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -86,6 +87,10 @@ import org.w3c.dom.Node;
  * @author Dongmei Cao
  */
 public class JPAEditorUtil {
+    
+    public static final String JDBCURLKEY="url";//NOI18N
+    public static final String JDBCUSERKEY="user";//NOI18N
+    public static final String JDBCDRIVERKEY="driver";//NOI18N
 
     public static JavaSource getJavaSource(Document doc) {
         FileObject fileObject = NbEditorUtilities.getFileObject(doc);
@@ -312,6 +317,44 @@ public class JPAEditorUtil {
             return dbconns.get(0);
         }
         return null;
+    }
+    public static HashMap<String,String> findDatabaseConnectionProperties(PersistenceUnit pu, Project project) {
+
+        // try to find a connection specified using the PU properties
+        HashMap<String,String> props = ProviderUtil.getConnectionProperties(pu);
+        if (props != null && props.size()>0) {
+            return props;
+        }
+
+        // try to find a datasource-based connection, but only for a FileObject-based context,
+        // otherwise we don't have a J2eeModuleProvider to retrieve the DS's from
+        String datasourceName = ProviderUtil.getDatasourceName(pu);
+        if (datasourceName == null) {
+            return null;
+        }
+
+        if (project == null) {
+            return null;
+        }
+        JPADataSource datasource = null;
+        JPADataSourceProvider dsProvider = project.getLookup().lookup(JPADataSourceProvider.class);
+        if (dsProvider == null) {
+            return null;
+        }
+        for (JPADataSource each : dsProvider.getDataSources()) {
+            if (datasourceName.equals(each.getJndiName())) {
+                datasource = each;
+            }
+        }
+        if (datasource == null) {
+            ErrorManager.getDefault().log(ErrorManager.INFORMATIONAL, "The " + datasourceName + " was not found."); // NOI18N
+            return null;
+        }
+        props = new HashMap<String,String>();
+        props.put(JDBCURLKEY,datasource.getUrl());
+        props.put(JDBCUSERKEY,datasource.getUsername());
+        props.put(JDBCDRIVERKEY, datasource.getDriverClassName());
+        return props;
     }
     private static List<DatabaseConnection> findDatabaseConnections(JPADataSource datasource) {
         // copied from j2ee.common.DatasourceHelper (can't depend on that)

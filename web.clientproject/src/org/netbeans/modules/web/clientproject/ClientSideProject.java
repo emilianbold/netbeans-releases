@@ -69,20 +69,27 @@ import org.netbeans.api.search.SearchScopeOptions;
 import org.netbeans.api.search.provider.SearchInfo;
 import org.netbeans.api.search.provider.SearchInfoUtils;
 import org.netbeans.api.search.provider.SearchListener;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
+import org.netbeans.modules.web.clientproject.problems.CssPreprocessorsProblemsSupport;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
 import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
-import org.netbeans.modules.web.clientproject.spi.RefreshOnSaveSupport;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectConfigurationImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
+import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
 import org.netbeans.modules.web.clientproject.ui.ClientSideProjectLogicalView;
 import org.netbeans.modules.web.clientproject.ui.action.ProjectOperations;
 import org.netbeans.modules.web.clientproject.ui.customizer.ClientSideProjectProperties;
 import org.netbeans.modules.web.clientproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
+import org.netbeans.modules.web.common.api.CssPreprocessor;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.netbeans.spi.project.support.LookupProviderSupport;
 import org.netbeans.spi.project.support.ant.AntBasedProjectRegistration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.ProjectXmlSavedHook;
@@ -104,6 +111,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -125,50 +133,111 @@ public class ClientSideProject implements Project {
     final AntProjectHelper projectHelper;
     private final ReferenceHelper referenceHelper;
     private final PropertyEvaluator eval;
-    private final Lookup lookup;
+    private final DynamicProjectLookup lookup;
     volatile String name;
     private RefreshOnSaveListener refreshOnSaveListener;
     private ClassPath sourcePath;
     private RemoteFiles remoteFiles;
-    private ClientSideConfigurationProvider configurationProvider;
-    private ClientProjectConfigurationImplementation lastActiveConfiguration;
+    private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
+    private WebBrowser projectWebBrowser;
+    private ClientSideProjectBrowserProvider projectBrowserProvider;
+
+    // css preprocessors
+    final CssPreprocessorsListener cssPreprocessorsListener = new CssPreprocessorsListener() {
+        @Override
+        public void preprocessorsChanged() {
+            // noop?
+        }
+        @Override
+        public void optionsChanged(CssPreprocessor cssPreprocessor) {
+            recompileSources(cssPreprocessor);
+        }
+        @Override
+        public void customizerChanged(Project project, CssPreprocessor cssPreprocessor) {
+            if (project.equals(ClientSideProject.this)) {
+                recompileSources(cssPreprocessor);
+            }
+        }
+        @Override
+        public void processingErrorOccured(Project project, CssPreprocessor cssPreprocessor, String error) {
+            // noop
+        }
+    };
+
 
     public ClientSideProject(AntProjectHelper helper) {
         this.projectHelper = helper;
         AuxiliaryConfiguration configuration = helper.createAuxiliaryConfiguration();
         eval = createEvaluator();
         referenceHelper = new ReferenceHelper(helper, configuration, eval);
-        configurationProvider = new ClientSideConfigurationProvider(this);
+        projectBrowserProvider = new ClientSideProjectBrowserProvider(this);
         lookup = createLookup(configuration);
+        ClientProjectEnhancedBrowserImplementation ebi = getEnhancedBrowserImpl();
+        if (ebi != null) {
+            lookup.setConfigurationProvider(ebi.getProjectConfigurationProvider());
+        }
         remoteFiles = new RemoteFiles(this);
-        lastActiveConfiguration = getProjectConfigurations().getActiveConfiguration();
-        configurationProvider.addPropertyChangeListener(new PropertyChangeListener() {
+        eval.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE.equals(evt.getPropertyName())) {
+                if (ClientSideProjectConstants.PROJECT_SELECTED_BROWSER.equals(evt.getPropertyName())) {
                     refreshOnSaveListener = null;
-                    if (lastActiveConfiguration != null) {
-                        lastActiveConfiguration.deactivate();
+                    ClientProjectEnhancedBrowserImplementation ebi = projectEnhancedBrowserImpl;
+                    if (ebi != null) {
+                        ebi.deactivate();
                     }
-                    lastActiveConfiguration = getProjectConfigurations().getActiveConfiguration();
-                    if (lastActiveConfiguration != null) {
+                    projectEnhancedBrowserImpl = null;
+                    projectWebBrowser = null;
+                    WebBrowser wb = getProjectWebBrowser();
+                    if (wb != null) {
                         ClientSideProjectUtilities.logUsage(ClientSideProject.class,
                                 "USG_PROJECT_HTML5_CONFIGURATION_CHANGE", // NOI18N
-                                new Object[] { lastActiveConfiguration.getBrowserId()});
+                                new Object[] { wb.getId()});
                     }
+                    ebi = getEnhancedBrowserImpl();
+                    if (ebi != null) {
+                        lookup.setConfigurationProvider(ebi.getProjectConfigurationProvider());
+                    }
+                    projectBrowserProvider.activeBrowserHasChanged();
                 }
             }
         });
     }
 
-    public final ClientSideConfigurationProvider getProjectConfigurations() {
-        return configurationProvider;
+    public synchronized ClientProjectEnhancedBrowserImplementation getEnhancedBrowserImpl() {
+        if (projectEnhancedBrowserImpl == null) {
+            projectEnhancedBrowserImpl = createEnhancedBrowserImpl(this, getProjectWebBrowser());
+        }
+        return projectEnhancedBrowserImpl;
+    }
+
+    public static ClientProjectEnhancedBrowserImplementation createEnhancedBrowserImpl(Project p, WebBrowser wb) {
+        for (ClientProjectEnhancedBrowserProvider provider : p.getLookup().lookupAll(ClientProjectEnhancedBrowserProvider.class)) {
+            ClientProjectEnhancedBrowserImplementation impl = provider.getEnhancedBrowser(wb);
+            if (impl != null) {
+                return impl;
+            }
+        }
+        return null;
+    }
+
+    public synchronized WebBrowser getProjectWebBrowser() {
+        if (projectWebBrowser == null) {
+            String id = getSelectedBrowser();
+            if (id != null) {
+                projectWebBrowser = BrowserUISupport.getBrowser(id);
+            }
+            if (projectWebBrowser == null) {
+                projectWebBrowser = BrowserUISupport.getDefaultBrowserChoice(false);
+            }
+        }
+        return projectWebBrowser;
     }
 
     private RefreshOnSaveListener getRefreshOnSaveListener() {
-        ClientProjectConfigurationImplementation cfg = configurationProvider.getActiveConfiguration();
-        if (cfg != null) {
-            return cfg.getRefreshOnSaveListener();
+        ClientProjectEnhancedBrowserImplementation ebi = getEnhancedBrowserImpl();
+        if (ebi != null) {
+            return ebi.getRefreshOnSaveListener();
         } else {
             return null;
         }
@@ -212,6 +281,11 @@ public class ClientSideProject implements Project {
         if (s == null) {
             s = "index.html"; //NOI18N
         }
+        return s;
+    }
+
+    public String getSelectedBrowser() {
+        String s = getEvaluator().getProperty(ClientSideProjectConstants.PROJECT_SELECTED_BROWSER);
         return s;
     }
 
@@ -294,8 +368,8 @@ public class ClientSideProject implements Project {
                 projectHelper.getPropertyProvider(AntProjectHelper.PROJECT_PROPERTIES_PATH));
     }
 
-    private Lookup createLookup(AuxiliaryConfiguration configuration) {
-       return Lookups.fixed(new Object[] {
+    private DynamicProjectLookup createLookup(AuxiliaryConfiguration configuration) {
+       Lookup base = Lookups.fixed(new Object[] {
                this,
                new Info(),
                new ClientSideProjectXmlSavedHook(),
@@ -312,19 +386,50 @@ public class ClientSideProject implements Project {
                new ClientSideProjectActionProvider(this),
                new OpenHookImpl(this),
                new CustomizerProviderImpl(this),
-               new ClientSideConfigurationProvider(this),
                //getBrowserSupport(),
                new ClassPathProviderImpl(this),
-               configurationProvider,
                new PageInspectorCustomizerImpl(this),
                new ProjectWebRootProviderImpl(),
                new ClientSideProjectSources(this, projectHelper, eval),
                new ClientSideModuleImpl(this),
                ProjectPropertiesProblemProvider.createForProject(this),
+               CssPreprocessors.getDefault().createProjectProblemsProvider(new CssPreprocessorsProblemsSupport(this)),
                UILookupMergerSupport.createProjectProblemsProviderMerger(),
                SharabilityQueryImpl.create(projectHelper, eval, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER,
                     ClientSideProjectConstants.PROJECT_TEST_FOLDER, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER),
+               projectBrowserProvider,
        });
+       return new DynamicProjectLookup(this,
+               LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-web-clientproject/Lookup"));
+    }
+
+    void recompileSources(CssPreprocessor cssPreprocessor) {
+        assert cssPreprocessor != null;
+        FileObject siteRootFolder = getSiteRootFolder();
+        if (siteRootFolder == null) {
+            return;
+        }
+        // force recompiling
+        CssPreprocessors.getDefault().process(cssPreprocessor, this, siteRootFolder);
+    }
+
+    private static class DynamicProjectLookup extends ProxyLookup {
+        private Lookup base;
+        private ClientSideProject project;
+
+        private DynamicProjectLookup(ClientSideProject project, Lookup base) {
+            super(base);
+            this.project = project;
+            this.base = base;
+        }
+
+        public void setConfigurationProvider(ProjectConfigurationProvider provider) {
+            if (provider == null) {
+                setLookups(base);
+            } else {
+                setLookups(base, Lookups.fixed(provider));
+            }
+        }
     }
 
     ClassPath getSourceClassPath() {
@@ -430,10 +535,11 @@ public class ClientSideProject implements Project {
             addSiteRootListener();
             GlobalPathRegistry.getDefault().register(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
             String browserId = "";
-            ClientProjectConfigurationImplementation cfg = project.getProjectConfigurations().getActiveConfiguration();
-            if (cfg != null) {
-                browserId = cfg.getBrowserId();
+            WebBrowser wb = project.getProjectWebBrowser();
+            if (wb != null) {
+                browserId = wb.getId();
             }
+            CssPreprocessors.getDefault().addCssPreprocessorsListener(project.cssPreprocessorsListener);
             ClientSideProjectUtilities.logUsage(ClientSideProject.class, "USG_PROJECT_HTML5_OPEN", // NOI18N
                     new Object[] { browserId,
                     project.getTestsFolder() != null && project.getTestsFolder().getChildren().length > 0 ? "YES" : "NO"}); // NOI18N
@@ -444,6 +550,7 @@ public class ClientSideProject implements Project {
             project.getEvaluator().removePropertyChangeListener(this);
             removeSiteRootListener();
             GlobalPathRegistry.getDefault().unregister(ClassPathProviderImpl.SOURCE_CP, new ClassPath[]{project.getSourceClassPath()});
+            CssPreprocessors.getDefault().removeCssPreprocessorsListener(project.cssPreprocessorsListener);
         }
 
         private synchronized void addSiteRootListener() {
@@ -499,48 +606,60 @@ public class ClientSideProject implements Project {
 
         @Override
         public void fileFolderCreated(FileEvent fe) {
+            checkPreprocessors(fe.getFile());
         }
 
         @Override
         public void fileDataCreated(FileEvent fe) {
+            checkPreprocessors(fe.getFile());
         }
 
         @Override
         public void fileChanged(FileEvent fe) {
             RefreshOnSaveListener r = p.getRefreshOnSaveListener();
             if (r != null) {
-                if (RefreshOnSaveSupport.canRefreshOnSaveFileFilter(fe.getFile())) {
-                    r.fileChanged(fe.getFile());
-                }
+                r.fileChanged(fe.getFile());
             }
+            checkPreprocessors(fe.getFile());
         }
 
         @Override
         public void fileDeleted(FileEvent fe) {
             RefreshOnSaveListener r = p.getRefreshOnSaveListener();
             if (r != null) {
-                if (RefreshOnSaveSupport.canRefreshOnSaveFileFilter(fe.getFile())) {
-                    r.fileDeleted(fe.getFile());
-                }
+                r.fileDeleted(fe.getFile());
             }
+            checkPreprocessors(fe.getFile());
         }
 
         @Override
         public void fileRenamed(FileRenameEvent fe) {
             // XXX: notify BrowserReload about filename change
+            checkPreprocessors(fe.getFile());
         }
 
         @Override
         public void fileAttributeChanged(FileAttributeEvent fe) {
         }
 
+        private void checkPreprocessors(FileObject file) {
+            CssPreprocessors.getDefault().process(p, file);
+        }
     }
 
     private final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
 
         @Override
         public FileObject getWebRoot(FileObject file) {
-            return getSiteRootFolder();
+            FileObject siteRoot = getSiteRootFolder();
+            if (siteRoot == null) {
+                return null;
+            }
+            if (siteRoot.equals(file)
+                    || FileUtil.isParentOf(siteRoot, file)) {
+                return siteRoot;
+            }
+            return null;
         }
     }
 

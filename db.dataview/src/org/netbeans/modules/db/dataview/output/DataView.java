@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.db.dataview.output;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -50,7 +51,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.JButton;
+import javax.swing.JComponent;
+import javax.swing.JPanel;
+import javax.swing.JTabbedPane;
 import org.netbeans.api.db.explorer.DatabaseConnection;
+import org.netbeans.modules.db.dataview.meta.DBColumn;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.awt.StatusDisplayer;
 import org.openide.util.Mutex;
@@ -67,20 +72,19 @@ import org.openide.util.NbBundle;
  * @author Ahimanikya Satapathy
  */
 public class DataView {
-
+    private static final int MAX_TAB_LENGTH = 25;
     private DatabaseConnection dbConn;
     private List<Throwable> errMessages = new ArrayList<Throwable>();
     private String sqlString; // Once Set, Data View assumes it will never change
-    private DataViewDBTable tblMeta;
     private SQLStatementGenerator stmtGenerator;
     private SQLExecutionHelper execHelper;
-    private DataViewPageContext dataPage;
-    private DataViewUI dataViewUI;
+    private final List<DataViewPageContext> dataPage = new ArrayList<DataViewPageContext>();
+    private final List<DataViewUI> dataViewUI = new ArrayList<DataViewUI>();
+    private JComponent container;
+    private int initialPageSize = org.netbeans.modules.db.dataview.api.DataViewPageContext.getStoredPageSize();
     private boolean nbOutputComponent = false;
-    private boolean hasResultSet = false;
     private int updateCount;
     private long executionTime;
-    private boolean supportsLimit = false;
 
     /**
      * Create and populate a DataView Object. Populates 1st data page of default size.
@@ -99,11 +103,13 @@ public class DataView {
         dv.dbConn = dbConn;
         dv.sqlString = sqlString.trim();
         dv.nbOutputComponent = false;
+        if(pageSize > 0) {
+            dv.initialPageSize = pageSize;
+        }
         try {
-            dv.dataPage = new DataViewPageContext(pageSize);
             dv.execHelper = new SQLExecutionHelper(dv);
             dv.execHelper.initialDataLoad();
-            dv.stmtGenerator = new SQLStatementGenerator(dv);
+            dv.stmtGenerator = new SQLStatementGenerator();
         } catch (Exception ex) {
             dv.setErrorStatusText(ex);
         }
@@ -122,20 +128,37 @@ public class DataView {
      * @param dataView DataView Object created using create()
      * @return a JComponent that after rending the given dataview
      */
-    public List<Component> createComponents() {
+    public synchronized List<Component> createComponents() {
         List<Component> results;
-        if (!hasResultSet) {
+        if (! hasResultSet()) {
             return Collections.emptyList();
         }
 
-        synchronized (this) {
-            this.dataViewUI = new DataViewUI(this, nbOutputComponent);
-            setRowsInTableModel();
-            dataViewUI.setEditable(tblMeta == null ? false : tblMeta.hasOneTable());
+        if(dataPage.size() > 1) {
+            container = new JTabbedPane();
+        } else {
+            container = new JPanel(new BorderLayout());
+        }
+
+        for (int i = 0; i < dataPage.size(); i++) {
+            DataViewUI ui = new DataViewUI(this, dataPage.get(i), nbOutputComponent);
+            ui.setName("Result Set " + i);
+            dataViewUI.add(ui);
+            container.add(ui);
             resetToolbar(hasExceptions());
         }
+
+        String sql = getSQLString();
+        if (sql.length() > MAX_TAB_LENGTH) {
+            String trimmed = NbBundle.getMessage(DataViewUI.class, "DataViewUI_TrimmedTabName", sql.substring(0, Math.min(sql.length(), MAX_TAB_LENGTH)));
+            container.setName(trimmed);
+        } else {
+            container.setName(sql);
+        }
+        container.setToolTipText(sql);
+
         results = new ArrayList<Component>();
-        results.add(dataViewUI);
+        results.add(container);
         return results;
     }
 
@@ -154,7 +177,7 @@ public class DataView {
      * @return true if the statement executed has ResultSet, false otherwise.
      */
     public boolean hasResultSet() {
-        return hasResultSet;
+        return dataPage.size() > 0;
     }
 
     /**
@@ -192,19 +215,51 @@ public class DataView {
      */
     public JButton[] getEditButtons() {
         assert nbOutputComponent != false;
-        return dataViewUI.getEditButtons();
+        return dataViewUI.get(0).getEditButtons();
     }
 
-    public synchronized void setEditable(boolean editable) {
-        dataViewUI.setEditable(editable);
+    public synchronized void setEditable(final boolean editable) {
+        Mutex.EVENT.writeAccess(new Mutex.Action<Object>() {
+            @Override
+            public Void run() {
+                for (DataViewPageContext pageContext : dataPage) {
+                    pageContext.getModel().setEditable(editable);
+                }
+                return null;
+            }
+        });
     }
 
-    public DataViewDBTable getDataViewDBTable() {
-        return tblMeta;
+    // Used by org.netbeans.modules.db.dataview.api.DataViewPageContext#getPageSize
+    public int getPageSize() {
+        if (dataViewUI.isEmpty()) {
+            return initialPageSize;
+        }
+        return dataViewUI.get(0).getPageSize();
     }
 
-    DataViewPageContext getDataViewPageContext() {
-        return dataPage;
+    // Non API modules follow
+
+    List<DataViewPageContext> getPageContexts() {
+        return this.dataPage;
+    }
+
+    DataViewPageContext getPageContext(int i) {
+        return this.dataPage.get(i);
+    }
+
+    DataViewPageContext addPageContext(final DataViewDBTable table) {
+        final DataViewPageContext pageContext = new DataViewPageContext(initialPageSize);
+        this.dataPage.add(pageContext);
+        Mutex.EVENT.writeAccess(new Mutex.Action<Object>() {
+            @Override
+            public Void run() {
+                pageContext.setTableMetaData(table);
+                pageContext.getModel().setColumns(table.getColumns().toArray(new DBColumn[0]));
+                return null;
+            }
+        });
+        return pageContext;
     }
 
     DatabaseConnection getDatabaseConnection() {
@@ -213,10 +268,6 @@ public class DataView {
 
     String getSQLString() {
         return sqlString;
-    }
-
-    UpdatedRowContext getUpdatedRowContext() {
-        return dataViewUI.getUpdatedRowContext();
     }
 
     SQLExecutionHelper getSQLExecutionHelper() {
@@ -228,17 +279,37 @@ public class DataView {
 
     SQLStatementGenerator getSQLStatementGenerator() {
         if (stmtGenerator == null) {
-            stmtGenerator = new SQLStatementGenerator(this);
+            stmtGenerator = new SQLStatementGenerator();
         }
         return stmtGenerator;
     }
 
-    public boolean isEditable() {
-        return dataViewUI.isEditable();
+    public void resetEditable() {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run() {
+                for (DataViewPageContext pageContext : dataPage) {
+                    pageContext.resetEditableState();
+                }
+            }
+        });
     }
 
-    boolean isLimitSupported() {
-        return supportsLimit;
+    public boolean isEditable() {
+        if(dataPage.isEmpty()) {
+            return false;
+        } else {
+            return Mutex.EVENT.readAccess(new Mutex.Action<Boolean>() {
+                @Override
+                public Boolean run() {
+                    boolean editable = true;
+                    for (DataViewPageContext pageContext : dataPage) {
+                        editable &= pageContext.getModel().isEditable();
+                    }
+                    return editable;
+                }
+            });
+        }
     }
 
     synchronized void disableButtons() {
@@ -247,7 +318,9 @@ public class DataView {
 
             @Override
             public void run() {
-                dataViewUI.disableButtons();
+                for(DataViewUI ui: dataViewUI) {
+                    ui.disableButtons();
+                }
             }
         });
         errMessages.clear();
@@ -258,13 +331,13 @@ public class DataView {
 
             @Override
             public void run() {
-                if (dataViewUI != null) {
-                    if (dataViewUI.getParent() != null) {
-                        dataViewUI.getParent().remove(dataViewUI);
+                if (container != null) {
+                    if (container != null) {
+                        container.getParent().remove(container);
                     }
-                    dataViewUI.removeAll();
-                    dataViewUI.repaint();
-                    dataViewUI.revalidate();
+                    container.removeAll();
+                    container.repaint();
+                    container.revalidate();
                 }
             }
         });
@@ -305,61 +378,11 @@ public class DataView {
 
             @Override
             public void run() {
-                dataViewUI.resetToolbar(wasError);
-            }
-        });
-    }
-
-    void setLimitSupported(boolean supportsLimit) {
-        this.supportsLimit = supportsLimit;
-    }
-
-    void setRowsInTableModel() {
-        assert dataViewUI != null;
-        assert dataPage != null;
-
-        if (dataPage.getCurrentRows() != null) {
-            Mutex.EVENT.readAccess(new Runnable() {
-
-                @Override
-                public void run() {
-                    dataViewUI.setDataRows(dataPage.getCurrentRows());
-                    dataViewUI.setTotalCount(dataPage.getTotalRows());
+                for(DataViewUI ui: dataViewUI) {
+                    ui.resetToolbar(wasError);
                 }
-            });
-        }
-    }
-
-    synchronized void incrementRowSize(int count) {
-        assert dataViewUI != null;
-        dataPage.setTotalRows(dataPage.getTotalRows() + count);
-        Mutex.EVENT.readAccess(new Runnable() {
-
-            @Override
-            public void run() {
-                dataViewUI.setTotalCount(dataPage.getTotalRows());
             }
         });
-    }
-
-    synchronized void decrementRowSize(int count) {
-        assert dataViewUI != null;
-        dataPage.decrementRowSize(count);
-        Mutex.EVENT.readAccess(new Runnable() {
-
-            @Override
-            public void run() {
-                dataViewUI.setTotalCount(dataPage.getTotalRows());
-            }
-        });
-    }
-
-    synchronized void syncPageWithTableModel() {
-        dataViewUI.syncPageWithTableModel();
-    }
-
-    void setHasResultSet(boolean hasResultSet) {
-        this.hasResultSet = hasResultSet;
     }
 
     void setUpdateCount(int updateCount) {
@@ -370,17 +393,6 @@ public class DataView {
         this.executionTime = executionTime;
     }
 
-    void setDataViewDBTable(DataViewDBTable tblMeta) {
-        this.tblMeta = tblMeta;
-    }
-
     private DataView() {
-    }
-
-    public int getPageSize() {
-        if (dataViewUI == null) {
-            return -1;
-        }
-        return dataViewUI.getPageSize();
     }
 }

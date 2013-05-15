@@ -56,6 +56,7 @@ import com.sun.jdi.CharValue;
 import com.sun.jdi.ClassLoaderReference;
 import com.sun.jdi.ClassNotLoadedException;
 import com.sun.jdi.ClassNotPreparedException;
+import com.sun.jdi.ClassObjectReference;
 import com.sun.jdi.ClassType;
 import com.sun.jdi.DoubleType;
 import com.sun.jdi.DoubleValue;
@@ -88,6 +89,8 @@ import com.sun.jdi.Type;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.InvalidStackFrameException;
+import com.sun.jdi.Location;
+import com.sun.source.tree.AnnotatedTypeTree;
 
 import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.ArrayAccessTree;
@@ -115,8 +118,11 @@ import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.IfTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.InstanceOfTree;
+import com.sun.source.tree.IntersectionTypeTree;
 import com.sun.source.tree.LabeledStatementTree;
+import com.sun.source.tree.LambdaExpressionTree;
 import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -136,6 +142,7 @@ import com.sun.source.tree.TryTree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.UnionTypeTree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.tree.WhileLoopTree;
 import com.sun.source.tree.WildcardTree;
@@ -145,6 +152,7 @@ import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
@@ -870,6 +878,16 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             return false;
         }
         if (left.equals(right)) {
+            return true;
+        }
+        
+        if (right instanceof IntersectionType) {
+            Type[] types = ((IntersectionType) right).getTypes();
+            for (Type type : types) {
+                if (!instanceOf(left, type)) {
+                    return false;
+                }
+            }
             return true;
         }
 
@@ -3470,6 +3488,63 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return null;
     }
 
+    @Override
+    public Mirror visitUnionType(UnionTypeTree node, EvaluationContext p) {
+        // union type expression in a multicatch var declaration
+        // unsupported, since catch is unsupported
+        Assert.error(node, "unsupported");
+        return null;
+    }
+
+    // JDK 8 language features:
+
+    @Override
+    public Mirror visitAnnotatedType(AnnotatedTypeTree node, EvaluationContext p) {
+        // Annotations are ignored and super delegates to the underlying type
+        return super.visitAnnotatedType(node, p);
+    }
+    
+    @Override
+    public Mirror visitIntersectionType(IntersectionTypeTree node, EvaluationContext p) {
+        // intersection type in a cast expression
+        List<? extends Tree> bounds = node.getBounds();
+        List<ReferenceType> typeList = new ArrayList<ReferenceType>();
+        for (Tree type : bounds) {
+            Mirror typeMirror = type.accept(this, p);
+            if (typeMirror instanceof ReferenceType) {
+                typeList.add((ReferenceType) typeMirror);
+            }
+        }
+        Type intersectionType = new IntersectionType(typeList.toArray(new ReferenceType[] {}));
+        subExpressionTypes.put(node, intersectionType);
+        return intersectionType;
+    }
+    
+    @Override
+    public Mirror visitLambdaExpression(LambdaExpressionTree node, EvaluationContext p) {
+        /**
+         * A tree node for a lambda expression.
+         * It creates a new class, which is unsupported.
+         */
+        
+        Assert.error(node, "noNewClassWithBody");
+        return super.visitLambdaExpression(node, p);
+    }
+
+    @Override
+    public Mirror visitMemberReference(MemberReferenceTree node, EvaluationContext p) {
+        /**
+         * A tree node for a member reference expression.
+         * There are two kinds of member references:
+         *   method references (ReferenceMode.INVOKE) and
+         *   constructor references (ReferenceMode.NEW).
+         * It creates a new class, which is unsupported.
+         */
+
+        Assert.error(node, "noNewClassWithBody");
+        return super.visitMemberReference(node, p);
+    }
+
     private Value setToMirror(Tree var, Value value, EvaluationContext evaluationContext) {
         VariableInfo varInfo = evaluationContext.getVariableInfo(var);
         if (varInfo == null) {
@@ -3826,7 +3901,7 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
         return pv;
     }
 
-    private static ReferenceType adjustBoxingType(ReferenceType type, PrimitiveType primitiveType,
+    public static ReferenceType adjustBoxingType(ReferenceType type, PrimitiveType primitiveType,
                                                   EvaluationContext evaluationContext) {
         if (primitiveType instanceof BooleanType) {
             type = getOrLoadClass(type.virtualMachine(), Boolean.class.getName(), evaluationContext);
@@ -4108,11 +4183,13 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             if (types.size() == 1) {
                 return types.get(0);
             }
-            ClassLoaderReference contextClassLoader = evaluationContext.getFrame().location().declaringType().classLoader();
-            // Return the class which was loaded by the context class loader
-            for (ReferenceType type : types) {
-                if (contextClassLoader.equals(type.classLoader())) {
-                    return type;
+            if (evaluationContext != null) {
+                ClassLoaderReference contextClassLoader = evaluationContext.getFrame().location().declaringType().classLoader();
+                // Return the class which was loaded by the context class loader
+                for (ReferenceType type : types) {
+                    if (contextClassLoader.equals(type.classLoader())) {
+                        return type;
+                    }
                 }
             }
             // No type was loaded by our context classloader, select the preferred one:
@@ -4868,6 +4945,429 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             throw new UnsupportedOperationException("No value.");
         }
         
+    }
+    
+    private static final class IntersectionType extends ArtificialMirror implements ReferenceType {
+        
+        private final ReferenceType[] types;
+        
+        public IntersectionType(ReferenceType[] types) {
+            this.types = types;
+        }
+
+        @Override
+        public String name() {
+            return types[0].name();
+        }
+        
+        @Override
+        public String signature() {
+            return types[0].signature();
+        }
+
+        @Override
+        public Mirror getVMMirror() {
+            return types[0];
+        }
+        
+        public Type[] getTypes() {
+            return types;
+        }
+
+        @Override
+        public String genericSignature() {
+            return types[0].genericSignature();
+        }
+
+        @Override
+        public ClassLoaderReference classLoader() {
+            return types[0].classLoader();
+        }
+
+        @Override
+        public String sourceName() throws AbsentInformationException {
+            return types[0].sourceName();
+        }
+
+        @Override
+        public List<String> sourceNames(String string) throws AbsentInformationException {
+            return types[0].sourceNames(string);
+        }
+
+        @Override
+        public List<String> sourcePaths(String string) throws AbsentInformationException {
+            return types[0].sourcePaths(string);
+        }
+
+        @Override
+        public String sourceDebugExtension() throws AbsentInformationException {
+            return types[0].sourceDebugExtension();
+        }
+
+        @Override
+        public boolean isStatic() {
+            boolean isStatic = true;
+            for (ReferenceType t : types) {
+                if (!t.isStatic()) {
+                    isStatic = false;
+                    break;
+                }
+            }
+            return isStatic;
+        }
+
+        @Override
+        public boolean isAbstract() {
+            return true;
+        }
+
+        @Override
+        public boolean isFinal() {
+            boolean isFinal = true;
+            for (ReferenceType t : types) {
+                if (!t.isFinal()) {
+                    isFinal = false;
+                    break;
+                }
+            }
+            return isFinal;
+        }
+
+        @Override
+        public boolean isPrepared() {
+            boolean isPrepared = true;
+            for (ReferenceType t : types) {
+                if (!t.isPrepared()) {
+                    isPrepared = false;
+                    break;
+                }
+            }
+            return isPrepared;
+        }
+
+        @Override
+        public boolean isVerified() {
+            boolean isVerified = true;
+            for (ReferenceType t : types) {
+                if (!t.isVerified()) {
+                    isVerified = false;
+                    break;
+                }
+            }
+            return isVerified;
+        }
+
+        @Override
+        public boolean isInitialized() {
+            boolean isInitialized = true;
+            for (ReferenceType t : types) {
+                if (!t.isInitialized()) {
+                    isInitialized = false;
+                    break;
+                }
+            }
+            return isInitialized;
+        }
+
+        @Override
+        public boolean failedToInitialize() {
+            boolean failedToInitialize = false;
+            for (ReferenceType t : types) {
+                if (t.failedToInitialize()) {
+                    failedToInitialize = true;
+                    break;
+                }
+            }
+            return failedToInitialize;
+        }
+
+        @Override
+        public List<Field> fields() {
+            List<Field> fields = new ArrayList<Field>();
+            for (ReferenceType t : types) {
+                fields.addAll(t.fields());
+            }
+            return Collections.unmodifiableList(fields);
+        }
+
+        @Override
+        public List<Field> visibleFields() {
+            List<Field> visibleFields = new ArrayList<Field>();
+            for (ReferenceType t : types) {
+                visibleFields.addAll(t.visibleFields());
+            }
+            return Collections.unmodifiableList(visibleFields);
+        }
+
+        @Override
+        public List<Field> allFields() {
+            List<Field> allFields = new ArrayList<Field>();
+            for (ReferenceType t : types) {
+                allFields.addAll(t.allFields());
+            }
+            return Collections.unmodifiableList(allFields);
+        }
+
+        @Override
+        public Field fieldByName(String string) {
+            for (ReferenceType t : types) {
+                Field field = t.fieldByName(string);
+                if (field != null) {
+                    return field;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        public List<Method> methods() {
+            List<Method> methods = new ArrayList<Method>();
+            for (ReferenceType t : types) {
+                methods.addAll(t.methods());
+            }
+            return Collections.unmodifiableList(methods);
+        }
+
+        @Override
+        public List<Method> visibleMethods() {
+            List<Method> visibleMethods = new ArrayList<Method>();
+            for (ReferenceType t : types) {
+                visibleMethods.addAll(t.visibleMethods());
+            }
+            return Collections.unmodifiableList(visibleMethods);
+        }
+
+        @Override
+        public List<Method> allMethods() {
+            List<Method> allMethods = new ArrayList<Method>();
+            for (ReferenceType t : types) {
+                allMethods.addAll(t.allMethods());
+            }
+            return Collections.unmodifiableList(allMethods);
+        }
+
+        @Override
+        public List<Method> methodsByName(String string) {
+            List<Method> methodsByName = new ArrayList<Method>();
+            for (ReferenceType t : types) {
+                methodsByName.addAll(t.methodsByName(string));
+            }
+            return Collections.unmodifiableList(methodsByName);
+        }
+
+        @Override
+        public List<Method> methodsByName(String string, String string1) {
+            List<Method> methodsByName = new ArrayList<Method>();
+            for (ReferenceType t : types) {
+                methodsByName.addAll(t.methodsByName(string, string1));
+            }
+            return Collections.unmodifiableList(methodsByName);
+        }
+
+        @Override
+        public List<ReferenceType> nestedTypes() {
+            return Collections.EMPTY_LIST;
+        }
+
+        @Override
+        public Value getValue(Field field) {
+            String name = field.name();
+            for (ReferenceType t : types) {
+                if (field.equals(t.fieldByName(name))) {
+                    return t.getValue(field);
+                }
+            }
+            return types[0].getValue(field); // Likely throws some appropriate error.
+        }
+
+        @Override
+        public Map<Field, Value> getValues(List<? extends Field> list) {
+            List[] listByTypes = new List[types.length];
+            for (int i = 0; i < types.length; i++) {
+                listByTypes[i] = new ArrayList();
+                ReferenceType t = types[i];
+                for (Field field : list) {
+                    String name = field.name();
+                    if (field.equals(t.fieldByName(name))) {
+                        listByTypes[i].add(field);
+                    }
+                }
+            }
+            Map<Field, Value> map = null;
+            Map<Field, Value> singleMap = null;
+            for (int i = 0; i < types.length; i++) {
+                if (!listByTypes[i].isEmpty()) {
+                    Map<Field, Value> tmap = types[i].getValues(listByTypes[i]);
+                    if (singleMap == null) {
+                        singleMap = tmap;
+                    } else {
+                        if (map == null) {
+                            map = new HashMap<Field, Value>(list.size());
+                            map.putAll(singleMap);
+                        }
+                        map.putAll(tmap);
+                    }
+                }
+            }
+            if (map != null) {
+                return map;
+            } else {
+                return singleMap;
+            }
+        }
+
+        @Override
+        public ClassObjectReference classObject() {
+            return types[0].classObject();
+        }
+
+        @Override
+        public List<Location> allLineLocations() throws AbsentInformationException {
+            throw new AbsentInformationException("IntersectionType");
+        }
+
+        @Override
+        public List<Location> allLineLocations(String string, String string1) throws AbsentInformationException {
+            throw new AbsentInformationException("IntersectionType");
+        }
+
+        @Override
+        public List<Location> locationsOfLine(int i) throws AbsentInformationException {
+            throw new AbsentInformationException("IntersectionType");
+        }
+
+        @Override
+        public List<Location> locationsOfLine(String string, String string1, int i) throws AbsentInformationException {
+            throw new AbsentInformationException("IntersectionType");
+        }
+
+        @Override
+        public List<String> availableStrata() {
+            List<String> mstrata = null;
+            List<String> strata = null;
+            for (ReferenceType t : types) {
+                List<String> tstrata = t.availableStrata();
+                if (strata == null) {
+                    strata = tstrata;
+                } else if (!tstrata.containsAll(strata)) {
+                    if (mstrata == null) {
+                        mstrata = new ArrayList<String>(strata);
+                    }
+                    mstrata.retainAll(tstrata);
+                }
+            }
+            if (mstrata != null) {
+                return mstrata;
+            } else {
+                return strata;
+            }
+        }
+
+        @Override
+        public String defaultStratum() {
+            return types[0].defaultStratum();
+        }
+
+        @Override
+        public List<ObjectReference> instances(long l) {
+            return Collections.EMPTY_LIST;
+        }
+
+        @Override
+        public int majorVersion() {
+            return types[0].majorVersion();
+        }
+
+        @Override
+        public int minorVersion() {
+            return types[0].minorVersion();
+        }
+
+        @Override
+        public int constantPoolCount() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public byte[] constantPool() {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (!(obj instanceof IntersectionType)) {
+                return false;
+            }
+            IntersectionType it = (IntersectionType) obj;
+            return Arrays.equals(types, it.types);
+        }
+
+        @Override
+        public int hashCode() {
+            int h = 0;
+            for (ReferenceType t : types) {
+                h += t.hashCode();
+            }
+            return h;
+        }
+        
+        @Override
+        public int compareTo(ReferenceType o) {
+            if (!(o instanceof IntersectionType)) {
+                return +1;
+            }
+            IntersectionType it = (IntersectionType) o;
+            if (types.length != it.types.length) {
+                return types.length - it.types.length;
+            }
+            if (Arrays.equals(types, it.types)) {
+                return 0;
+            }
+            int d = 0;
+            int nd = 0;
+            for (int i = 0; i < types.length && i < it.types.length; i++) {
+                d += types[i].compareTo(it.types[i]);
+                if (nd == 0 && d != 0) {
+                    nd = d;
+                }
+            }
+            if (d == 0) {
+                // Must not return 0 when not equal.
+                return nd;
+            } else {
+                return d;
+            }
+        }
+
+        @Override
+        public int modifiers() {
+            int modifiers = -1;
+            for (ReferenceType t : types) {
+                modifiers &= t.modifiers();
+            }
+            return modifiers;
+        }
+
+        @Override
+        public boolean isPrivate() {
+            return true;
+        }
+
+        @Override
+        public boolean isPackagePrivate() {
+            return false;
+        }
+
+        @Override
+        public boolean isProtected() {
+            return false;
+        }
+
+        @Override
+        public boolean isPublic() {
+            return false;
+        }
+
     }
 
 }

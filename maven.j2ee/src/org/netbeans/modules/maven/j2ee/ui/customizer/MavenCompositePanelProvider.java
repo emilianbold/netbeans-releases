@@ -43,7 +43,10 @@ package org.netbeans.modules.maven.j2ee.ui.customizer;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.util.List;
 import javax.swing.JComponent;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
@@ -51,8 +54,14 @@ import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerFrameworks;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunEar;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunEjb;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb;
+import org.netbeans.modules.maven.j2ee.web.WebProjectUtils;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
+import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -79,6 +88,65 @@ public final class MavenCompositePanelProvider implements ProjectCustomizer.Comp
     public static MavenCompositePanelProvider createFrameworks() {
         return new MavenCompositePanelProvider(FRAMEWORKS);
     }
+    
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 258)
+    public static ProjectCustomizer.CompositeCategoryProvider createJavaScriptLibraries() {
+        return new FilterProvider(JavaScriptLibraries.createCustomizer(new JavaScriptLibraries.CustomizerSupport() {
+
+            @Override
+            public File getWebRoot(Lookup context) {
+                final Project project = context.lookup(Project.class);
+                assert project != null;
+                FileObject docBase = WebProjectUtils.getDocumentBase(project);
+                if (docBase != null) {
+                    return FileUtil.toFile(docBase);
+                }
+                return null;
+            }
+
+            @Override
+            public void setLibrariesFolder(@NonNull Lookup context, String librariesFolder) {
+                // noop
+            }
+
+            @Override
+            public void setSelectedLibraries(@NonNull Lookup context, List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries) {
+                // noop
+            }
+        }));
+     }
+    
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 259)
+    public static ProjectCustomizer.CompositeCategoryProvider createCssPreprocessors() {
+        return new FilterProvider(CssPreprocessors.getDefault().createCustomizer());
+    }
+
+    // We want to create JavaScript libraries customizer/CSS Processors only for Maven Web Project:
+    private static class FilterProvider implements ProjectCustomizer.CompositeCategoryProvider {
+
+        private ProjectCustomizer.CompositeCategoryProvider original;
+
+        public FilterProvider(ProjectCustomizer.CompositeCategoryProvider original) {
+            this.original = original;
+        }
+
+        @Override
+        public Category createCategory(Lookup context) {
+            Project project = context.lookup(Project.class);
+            assert project != null;
+            String projectType = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
+            if (NbMavenProject.TYPE_WAR.equalsIgnoreCase(projectType) == false) {
+                return null;
+            }
+            return original.createCategory(context);
+        }
+
+        @Override
+        public JComponent createComponent(Category category, Lookup context) {
+            return original.createComponent(category, context);
+        }
+
+    }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType = "org-netbeans-modules-maven", position = 301)
     public static MavenCompositePanelProvider createRun() {
@@ -90,6 +158,7 @@ public final class MavenCompositePanelProvider implements ProjectCustomizer.Comp
     public Category createCategory(Lookup context) {
         Project project = context.lookup(Project.class);
         String projectType = project.getLookup().lookup(NbMavenProject.class).getPackagingType();
+        
         if (FRAMEWORKS.equals(type)) {
             if (NbMavenProject.TYPE_WAR.equalsIgnoreCase(projectType) == false) {
                 return null; // We want to create Framework customizer only for Maven Web Project
@@ -110,7 +179,7 @@ public final class MavenCompositePanelProvider implements ProjectCustomizer.Comp
     public JComponent createComponent(Category category, Lookup context) {
         String name = category.getName();
         ModelHandle2 handle = context.lookup(ModelHandle2.class);
-        Project project = context.lookup(Project.class);
+        final Project project = context.lookup(Project.class);
 
         category.setOkButtonListener(listenerAWT);
         category.setStoreListener(listenerNonAWT);

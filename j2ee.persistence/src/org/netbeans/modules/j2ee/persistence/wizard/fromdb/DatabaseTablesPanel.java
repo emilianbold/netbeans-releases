@@ -71,8 +71,11 @@ import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.db.explorer.support.DatabaseExplorerUIs;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.Sources;
 import org.netbeans.modules.dbschema.SchemaElement;
 import org.netbeans.modules.j2ee.core.api.support.SourceGroups;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
@@ -85,6 +88,7 @@ import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider2;
 import org.netbeans.modules.j2ee.persistence.unit.PUDataObject;
 import org.netbeans.modules.j2ee.persistence.util.SourceLevelChecker;
 import org.netbeans.modules.j2ee.persistence.wizard.Util;
+import org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizardDescriptor;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -1156,6 +1160,14 @@ public class DatabaseTablesPanel extends javax.swing.JPanel implements AncestorL
                     setErrorMessage(NbBundle.getMessage(DatabaseTablesPanel.class, "scanning-in-progress"));
                     task.schedule(0);
                 }
+                return false;
+            }
+            Sources sources=ProjectUtils.getSources(project);
+            SourceGroup groups[]=sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            if(groups == null || groups.length == 0) {
+                setErrorMessage(NbBundle.getMessage(DatabaseTablesPanel.class,"ERR_JavaSourceGroup")); //NOI18N
+                getComponent().datasourceComboBox.setEnabled(false);
+                getComponent().dbschemaComboBox.setEnabled(false);
                 return false;
             }
 

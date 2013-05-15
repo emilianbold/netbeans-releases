@@ -50,7 +50,7 @@ import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.indent.api.Indent;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 

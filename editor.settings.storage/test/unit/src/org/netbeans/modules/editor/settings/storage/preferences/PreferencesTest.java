@@ -47,10 +47,12 @@ import java.util.Map;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import junit.framework.TestSuite;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.core.startup.Main;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.editor.settings.storage.EditorTestLookup;
 import org.netbeans.modules.editor.settings.storage.StorageImpl;
@@ -88,6 +90,18 @@ public class PreferencesTest extends NbTestCase {
         // which is needed by Nb EntityCatalog (org.netbeans.core).
         // Also see the test dependencies in project.xml
         Main.initializeURLFactory();
+    }
+    
+    public static TestSuite suite() {
+        NbTestSuite suite = new NbTestSuite();
+        
+        suite.addTest(new PreferencesTest("testSimple"));
+        suite.addTest(new PreferencesTest("testWriting"));
+        suite.addTest(new PreferencesTest("testEvents1"));
+        suite.addTest(new PreferencesTest("testEvents2"));
+        suite.addTest(new PreferencesTest("testEvents142723"));
+        
+        return suite;
     }
     
     public void testSimple() {

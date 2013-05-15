@@ -58,6 +58,8 @@ import org.openide.util.Utilities;
 // FIXME this is copied from core.ui and should be removed once #210679 is implemented
 public final class NonProxyHostsHelper {
 
+    public static final String HTTP_NON_PROXY_HOSTS = "http.nonProxyHosts";
+
     private static final String NOT_PROXY_HOSTS = "proxyNonProxyHosts";
 
     private NonProxyHostsHelper() {
@@ -152,7 +154,7 @@ public final class NonProxyHostsHelper {
     }
 
     // avoid duplicate hosts
-    private static String compactNonProxyHosts (String hosts) {
+    public static String compactNonProxyHosts (String hosts) {
         StringTokenizer st = new StringTokenizer(hosts, ","); //NOI18N
         StringBuilder nonProxyHosts = new StringBuilder();
         while (st.hasMoreTokens()) {

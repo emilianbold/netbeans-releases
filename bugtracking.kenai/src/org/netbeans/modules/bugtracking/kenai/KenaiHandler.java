@@ -59,8 +59,8 @@ import javax.swing.Action;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiBugtrackingConnector;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiUtil;
+import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiNotification;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -119,7 +119,6 @@ class KenaiHandler {
                         }
                         user = lastLoggedUser;
                     }
-                    refreshKenaiQueries();
                 }
             }
         });
@@ -183,9 +182,9 @@ class KenaiHandler {
     private QueryHandleImpl createQueryHandle(Query q, boolean needsRefresh) {
         Repository repo = q.getRepository();
         boolean predefined = false;
-        if(KenaiUtil.isKenai(repo)) {
-            boolean needsLogin = KenaiUtil.needsLogin(q);
-            predefined = KenaiUtil.getAllIssuesQuery(repo) == q || KenaiUtil.getMyIssuesQuery(repo) == q;
+        if(TeamUtil.isFromTeamServer(repo)) {
+            boolean needsLogin = TeamUtil.needsLogin(q);
+            predefined = TeamUtil.getAllIssuesQuery(repo) == q || TeamUtil.getMyIssuesQuery(repo) == q;
             if(needsLogin) {
                 return new LoginAwareQueryHandle(q, needsRefresh, predefined);
             }
@@ -265,12 +264,8 @@ class KenaiHandler {
     }
 
     private String getKenaiUser() {
-        PasswordAuthentication pa = KenaiAccessorImpl.getPasswordAuthentication(kenai, false);
+        PasswordAuthentication pa = TeamAccessorImpl.getPasswordAuthentication(kenai, false);
         return pa != null ? pa.getUserName() : null;
-    }
-
-    private void refreshKenaiQueries() {
-        KenaiUtil.refreshOpenedQueries();
     }
 
     void clear() {
@@ -289,16 +284,16 @@ class KenaiHandler {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(!KenaiAccessorImpl.isLoggedIn(kenai) &&
-                    KenaiBugtrackingConnector.BugtrackingType.JIRA == getBugtrackingType(repo) &&
-                   !KenaiAccessorImpl.showLoginIntern())
+                if(!TeamAccessorImpl.isLoggedIn(kenai) &&
+                    TeamBugtrackingConnector.BugtrackingType.JIRA == getBugtrackingType(repo) &&
+                   !TeamAccessorImpl.showLoginIntern())
                 {
                     return;
                 }
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run() {
-                        KenaiUtil.openNewQuery(repo, true);
+                        TeamUtil.openNewQuery(repo, true);
                     }
                 });
             }
@@ -309,24 +304,24 @@ class KenaiHandler {
         return new AbstractAction() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                if(!KenaiAccessorImpl.isLoggedIn(kenai) &&
-                    KenaiBugtrackingConnector.BugtrackingType.JIRA == getBugtrackingType(repo) &&
-                   !KenaiAccessorImpl.showLoginIntern())
+                if(!TeamAccessorImpl.isLoggedIn(kenai) &&
+                    TeamBugtrackingConnector.BugtrackingType.JIRA == getBugtrackingType(repo) &&
+                   !TeamAccessorImpl.showLoginIntern())
                 {
                     return;
                 }
                 Support.getInstance().post(new Runnable() { // XXX add post method to BM
                     @Override
                     public void run() {
-                        KenaiUtil.createIssue(repo);
+                        TeamUtil.createIssue(repo);
                     }
                 });
             }
         };
     }
 
-    private KenaiBugtrackingConnector.BugtrackingType getBugtrackingType(Repository repo) {
-        return KenaiUtil.getType(repo);
+    private TeamBugtrackingConnector.BugtrackingType getBugtrackingType(Repository repo) {
+        return TeamUtil.getType(repo);
     }
 
     private class ProjectListener implements PropertyChangeListener {
@@ -364,7 +359,7 @@ class KenaiHandler {
         public void closeQueries() {
             for (QueryHandle qh : queries) {
                 if(qh instanceof QueryHandleImpl) {
-                    KenaiUtil.closeQuery(((QueryHandleImpl) qh).getQuery());
+                    TeamUtil.closeQuery(((QueryHandleImpl) qh).getQuery());
                 }
             }
             synchronized (projectListeners) {
@@ -426,15 +421,15 @@ class KenaiHandler {
         }
         @Override
         public String getDisplayName() {
-            return super.getDisplayName() + (KenaiAccessorImpl.isLoggedIn(kenai) ? "" : " " + notLoggedIn);        // NOI18N
+            return super.getDisplayName() + (TeamAccessorImpl.isLoggedIn(kenai) ? "" : " " + notLoggedIn);        // NOI18N
         }
         @Override
         List<QueryResultHandle> getQueryResults() {
-            return KenaiAccessorImpl.isLoggedIn(kenai) ? super.getQueryResults() : Collections.EMPTY_LIST;
+            return TeamAccessorImpl.isLoggedIn(kenai) ? super.getQueryResults() : Collections.EMPTY_LIST;
         }
         @Override
         void refreshIfNeeded() {
-            if(!KenaiAccessorImpl.isLoggedIn(kenai)) {
+            if(!TeamAccessorImpl.isLoggedIn(kenai)) {
                 return;
             }
             super.refreshIfNeeded();

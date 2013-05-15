@@ -45,9 +45,14 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.api.WebClientProjectConstants;
+import org.netbeans.modules.web.clientproject.api.ClientProjectWizardProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -78,10 +83,19 @@ public class ClientProjectUtilities {
     }
     
     public static String getProperty(Project p, String key) {
-        ProjectConfigurationProvider provider = p.getLookup().lookup(ProjectConfigurationProvider.class);
-        if (!(provider.getActiveConfiguration() instanceof ClientProjectConfigurationImpl))
-            return null;
-        ClientProjectConfigurationImpl activeConfiguration = (ClientProjectConfigurationImpl) provider.getActiveConfiguration();
-        return activeConfiguration.getProperty(key);
+        ProjectBrowserProvider provider = p.getLookup().lookup(ProjectBrowserProvider.class);
+        WebBrowser activeConfiguration = provider.getActiveBrowser();
+        MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(p, activeConfiguration.getId());
+        return mobileConfig.getProperty(key);
     }
+    
+    @TemplateRegistration(folder = "Project/ClientSide",
+            displayName = "#CordovaPanel.phoneGapCheckBox.text",
+            description = "../resources/PhoneGapProjectDescription.html",
+            iconBase = "org/netbeans/modules/cordova/resources/project.png",
+            position = 400)
+    public static WizardDescriptor.InstantiatingIterator newProjectWithExtender() {
+        return ClientProjectWizardProvider.newProjectWithExtender();
+    }
+
 }

@@ -44,6 +44,8 @@ package org.netbeans.modules.php.project.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -89,12 +91,19 @@ public class CopyFilesVisual extends JPanel {
                 changeSupport.fireChange();
             }
         });
+        copyOnOpenCheckBox.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                changeSupport.fireChange();
+            }
+        });
     }
 
     void copyFilesCheckBoxChanged() {
         boolean selected = copyFilesCheckBox.isSelected();
         localServerLabel.setEnabled(selected);
         localServerController.setEnabled(selected);
+        copyOnOpenCheckBox.setEnabled(selected);
     }
 
     public void addChangeListener(ChangeListener listener) {
@@ -118,16 +127,24 @@ public class CopyFilesVisual extends JPanel {
         return localServerController.getLocalServer();
     }
 
-    public MutableComboBoxModel getLocalServerModel() {
+    public MutableComboBoxModel<LocalServer> getLocalServerModel() {
         return localServerController.getLocalServerModel();
     }
 
-    public void setLocalServerModel(MutableComboBoxModel localServers) {
+    public void setLocalServerModel(MutableComboBoxModel<LocalServer> localServers) {
         localServerController.setLocalServerModel(localServers);
     }
 
     public void selectLocalServer(LocalServer localServer) {
         localServerController.selectLocalServer(localServer);
+    }
+
+    public boolean isCopyOnOpen() {
+        return copyOnOpenCheckBox.isSelected();
+    }
+
+    public void setCopyOnOpen(boolean copy) {
+        copyOnOpenCheckBox.setSelected(copy);
     }
 
     // to enable/disable components
@@ -150,10 +167,9 @@ public class CopyFilesVisual extends JPanel {
 
         copyFilesCheckBox = new JCheckBox();
         localServerLabel = new JLabel();
-        copyFilesComboBox = new JComboBox();
+        copyFilesComboBox = new JComboBox<LocalServer>();
         copyFilesButton = new JButton();
-
-        setFocusTraversalPolicy(null);
+        copyOnOpenCheckBox = new JCheckBox();
 
         Mnemonics.setLocalizedText(copyFilesCheckBox, NbBundle.getMessage(CopyFilesVisual.class, "LBL_CopyFiles")); // NOI18N
 
@@ -167,18 +183,25 @@ public class CopyFilesVisual extends JPanel {
         Mnemonics.setLocalizedText(copyFilesButton, NbBundle.getMessage(CopyFilesVisual.class, "LBL_Browse")); // NOI18N
         copyFilesButton.setEnabled(false);
 
+        copyOnOpenCheckBox.setSelected(true);
+        Mnemonics.setLocalizedText(copyOnOpenCheckBox, NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.copyOnOpenCheckBox.text")); // NOI18N
+        copyOnOpenCheckBox.setEnabled(false);
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
-            .addComponent(copyFilesCheckBox)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(localServerLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(copyFilesComboBox, 0, 141, Short.MAX_VALUE)
+                .addComponent(copyFilesComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(copyFilesButton))
+            .addComponent(copyFilesCheckBox)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(copyOnOpenCheckBox))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
@@ -188,7 +211,9 @@ public class CopyFilesVisual extends JPanel {
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(copyFilesButton)
                     .addComponent(copyFilesComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                    .addComponent(localServerLabel)))
+                    .addComponent(localServerLabel))
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(copyOnOpenCheckBox))
         );
 
         copyFilesCheckBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CopyFilesVisual.class, "CopyFilesVisual.copyFilesCheckBox.AccessibleContext.accessibleName")); // NOI18N
@@ -208,7 +233,8 @@ public class CopyFilesVisual extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton copyFilesButton;
     private JCheckBox copyFilesCheckBox;
-    private JComboBox copyFilesComboBox;
+    private JComboBox<LocalServer> copyFilesComboBox;
+    private JCheckBox copyOnOpenCheckBox;
     private JLabel localServerLabel;
     // End of variables declaration//GEN-END:variables
 

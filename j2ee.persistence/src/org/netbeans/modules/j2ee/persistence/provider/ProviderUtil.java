@@ -64,6 +64,7 @@ import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.dd.common.PersistenceUnit;
 import org.netbeans.modules.j2ee.persistence.dd.common.Properties;
 import org.netbeans.modules.j2ee.persistence.dd.common.Property;
+import org.netbeans.modules.j2ee.persistence.editor.JPAEditorUtil;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider;
 import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider2;
@@ -216,6 +217,44 @@ public class ProviderUtil {
             }
         }
         return null;
+    }
+    /**
+     * Gets the database connection properties (irl,name,password) specified in the given persistence
+     * unit.
+     * 
+     * @param pu the persistence unit whose database connection is to 
+     * be retrieved; must not be null.
+     * 
+     * @rerturn the connection properties specified in the given persistence unit or
+     * <code>null</code> if it didn't specify a connectioh.
+     * 
+     */
+    public static HashMap<String, String> getConnectionProperties(PersistenceUnit pu) {
+
+        Parameters.notNull("pu", pu); //NOI18N
+
+        if (pu.getProperties() == null) {
+            return null;
+        }
+
+        HashMap<String, String> ret = new HashMap<String,String>();
+        Property[] properties = pu.getProperties().getProperty2();
+        Provider provider = getProvider(pu);
+
+        for (int i = 0; i < properties.length; i++) {
+            String key = properties[i].getName();
+            if (key == null) {
+                continue;
+            }
+            if (key.equals(provider.getJdbcUrl())) {
+                ret.put(JPAEditorUtil.JDBCURLKEY, properties[i].getValue());//NOI18N
+            } else if (key.equals(provider.getJdbcDriver())) {
+                ret.put(JPAEditorUtil.JDBCDRIVERKEY, properties[i].getValue());
+            } else if (key.equals(provider.getJdbcUsername())) {
+                ret.put(JPAEditorUtil.JDBCUSERKEY, properties[i].getValue());
+            }
+        }
+        return ret;
     }
 
     /**

@@ -43,7 +43,7 @@
 package org.netbeans.modules.jira.repository;
 
 import com.atlassian.connector.eclipse.internal.jira.core.JiraRepositoryConnector;
-import org.netbeans.modules.bugtracking.kenai.spi.RepositoryUser;
+import org.netbeans.modules.bugtracking.team.spi.RepositoryUser;
 import com.atlassian.connector.eclipse.internal.jira.core.model.NamedFilter;
 import com.atlassian.connector.eclipse.internal.jira.core.model.User;
 import com.atlassian.connector.eclipse.internal.jira.core.model.filter.ContentFilter;
@@ -75,14 +75,12 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttributeMapper;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.modules.bugtracking.spi.*;
-import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConfig;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.JiraExecutor;
 import org.netbeans.modules.jira.commands.NamedFiltersCommand;
-import org.netbeans.modules.jira.issue.JiraTaskListProvider;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
 import org.netbeans.modules.jira.query.JiraQuery;
 import org.netbeans.modules.jira.query.QueryController;
@@ -109,7 +107,7 @@ public class JiraRepository {
     private JiraRepositoryController controller;
     private Set<JiraQuery> queries = null;
     private Set<JiraQuery> remoteFilters = null;
-    private IssueCache<NbJiraIssue, TaskData> cache;
+    private IssueCache<NbJiraIssue> cache;
     private Image icon;
 
     private final Set<String> issuesToRefresh = new HashSet<String>(5);
@@ -157,7 +155,6 @@ public class JiraRepository {
         String url = info.getUrl();
 
         taskRepository = createTaskRepository(name, url, user, password, httpUser, httpPassword);
-        JiraTaskListProvider.getInstance().notifyRepositoryCreated(this);
     }
     
     public RepositoryInfo getInfo() {
@@ -238,7 +235,8 @@ public class JiraRepository {
             return null;
         }
         try {
-            return getIssueCache().setIssueData(key, taskData);
+            NbJiraIssue issue = getIssueCache().getIssue(key);
+            return getIssueCache().setIssueData(key, issue != null ? issue : new NbJiraIssue(taskData, this));
         } catch (IOException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
             return null;
@@ -276,7 +274,6 @@ public class JiraRepository {
             }
         }
         resetRepository(true);
-        JiraTaskListProvider.getInstance().notifyRepositoryRemoved(this);
     }
 
     public void removeQuery(JiraQuery query) {
@@ -424,7 +421,7 @@ public class JiraRepository {
         return issues;
     }
 
-    public IssueCache<NbJiraIssue, TaskData> getIssueCache() {
+    public IssueCache<NbJiraIssue> getIssueCache() {
         if(cache == null) {
             cache = new Cache();
         }
@@ -559,7 +556,8 @@ public class JiraRepository {
                             if(data == null) {
                                 Jira.LOG.log(Level.WARNING, "No task data available for issue with id {0}", id); // NOI18N
                             } else {
-                                getIssueCache().setIssueData(id, data);
+                                NbJiraIssue issue = getIssueCache().getIssue(id);
+                                getIssueCache().setIssueData(id, issue != null ? issue : new NbJiraIssue(data, JiraRepository.this));
                             }
                         } catch (IOException ex) {
                             Jira.LOG.log(Level.SEVERE, null, ex); // NOI18N
@@ -656,7 +654,7 @@ public class JiraRepository {
     }
     
     public boolean authenticate(String errroMsg) {
-        return BugtrackingUtil.editRepository(JiraUtils.getRepository(this), errroMsg);
+        return Jira.getInstance().getBugtrackingFactory().editRepository(JiraUtils.getRepository(this), errroMsg);
     }
 
     private RequestProcessor getRefreshProcessor() {
@@ -709,32 +707,12 @@ public class JiraRepository {
         return null;
     }
 
-    private class Cache extends IssueCache<NbJiraIssue, TaskData> {
+    private class Cache extends IssueCache<NbJiraIssue> {
         Cache() {
-            super(
-                JiraRepository.this.getUrl(), 
-                new IssueAccessorImpl(),
-                Jira.getInstance().getIssueProvider(),
-                JiraUtils.getRepository(JiraRepository.this));
+            super(JiraRepository.this.getUrl(), new IssueAccessorImpl());
         }
     }
-    private class IssueAccessorImpl implements IssueCache.IssueAccessor<NbJiraIssue, TaskData> {
-        @Override
-        public NbJiraIssue createIssue(TaskData taskData) {
-            NbJiraIssue issue = new NbJiraIssue(taskData, JiraRepository.this);
-            org.netbeans.modules.jira.issue.JiraTaskListProvider.getInstance().notifyIssueCreated(issue);
-            return issue;
-        }
-        @Override
-        public void setIssueData(NbJiraIssue issue, TaskData taskData) {
-            assert issue != null && taskData != null;
-            ((NbJiraIssue)issue).setTaskData(taskData);
-        }
-        @Override
-        public String getRecentChanges(NbJiraIssue issue) {
-            assert issue != null;
-            return ((NbJiraIssue)issue).getRecentChanges();
-        }
+    private class IssueAccessorImpl implements IssueCache.IssueAccessor<NbJiraIssue> {
         @Override
         public long getLastModified(NbJiraIssue issue) {
             assert issue != null;
@@ -744,11 +722,6 @@ public class JiraRepository {
         public long getCreated(NbJiraIssue issue) {
             assert issue != null;
             return ((NbJiraIssue)issue).getCreated();
-        }
-        @Override
-        public String getID(TaskData issueData) {
-            assert issueData != null;
-            return NbJiraIssue.getID(issueData);
         }
         @Override
         public Map<String, String> getAttributes(NbJiraIssue issue) {

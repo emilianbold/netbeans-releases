@@ -107,7 +107,7 @@ public final class J2eeArchetypeFactory {
     private static class AppClientArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
-            addMojoArchetype(Profile.JAVA_EE_7_FULL, "0.2-SNAPSHOT", "appclient-javaee7"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_7_FULL, "0.4-SNAPSHOT", "appclient-javaee7"); //NOI18N
             addMojoArchetype(Profile.JAVA_EE_6_FULL, "1.0", "appclient-javaee6"); //NOI18N
             addMojoArchetype(Profile.JAVA_EE_5, "1.0", "appclient-jee5"); //NOI18N
             addMojoArchetype(Profile.J2EE_14, "1.0", "appclient-jee5"); //NOI18N
@@ -125,7 +125,7 @@ public final class J2eeArchetypeFactory {
     private static class EarArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
-            addMojoArchetype(Profile.JAVA_EE_7_FULL, "0.2-SNAPSHOT", "ear-javaee7"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_7_FULL, "0.4-SNAPSHOT", "ear-javaee7"); //NOI18N
             addMojoArchetype(Profile.JAVA_EE_6_FULL, "1.5", "ear-javaee6"); //NOI18N
             addMojoArchetype(Profile.JAVA_EE_5, "1.4", "ear-jee5"); //NOI18N
             addMojoArchetype(Profile.J2EE_14, "1.4", "ear-j2ee14"); //NOI18N
@@ -135,7 +135,7 @@ public final class J2eeArchetypeFactory {
     private static class EjbArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
-            addMojoArchetype(Profile.JAVA_EE_7_FULL, "0.2-SNAPSHOT", "ejb-javaee7"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_7_FULL, "0.4-SNAPSHOT", "ejb-javaee7"); //NOI18N
             addMojoArchetype(Profile.JAVA_EE_6_FULL, "1.5", "ejb-javaee6"); //NOI18N
             addMojoArchetype(Profile.JAVA_EE_5, "1.3", "ejb-jee5"); //NOI18N
             addMojoArchetype(Profile.J2EE_14, "1.3", "ejb-j2ee14"); //NOI18N
@@ -145,7 +145,7 @@ public final class J2eeArchetypeFactory {
     private static class WebArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
-            addMojoArchetype(Profile.JAVA_EE_7_WEB, "0.2-SNAPSHOT", "webapp-javaee7"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_7_WEB, "0.4-SNAPSHOT", "webapp-javaee7"); //NOI18N
             addMojoArchetype(Profile.JAVA_EE_6_WEB, "1.5", "webapp-javaee6"); //NOI18N
             addMojoArchetype(Profile.JAVA_EE_5, "1.3", "webapp-jee5"); //NOI18N
             addMojoArchetype(Profile.J2EE_14, "1.3", "webapp-j2ee14"); //NOI18N
@@ -154,7 +154,7 @@ public final class J2eeArchetypeFactory {
             // using Java EE 6 Full profile, then the same profile applies to Ejb, Web and Parent project creation - In that case
             // application is looking for Java EE 6 Full archetype to create the Web project with it, so we need to have it here
             // or otherwise Java EE project would not be created properly
-            addMojoArchetype(Profile.JAVA_EE_7_FULL, "0.2-SNAPSHOT", "webapp-javaee7"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_7_FULL, "0.4-SNAPSHOT", "webapp-javaee7"); //NOI18N
             addMojoArchetype(Profile.JAVA_EE_6_FULL, "1.5", "webapp-javaee6"); //NOI18N
         }
     }

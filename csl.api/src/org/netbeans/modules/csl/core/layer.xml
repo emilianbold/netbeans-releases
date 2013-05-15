@@ -39,5 +39,14 @@
             </file>
         </folder>
     </folder>
+    
+    <folder name="TaskList">
+        <folder name="Scanners">
+            <file name="CslBackdoor.instance">
+                <attr name="instanceOf" stringvalue="org.netbeans.spi.tasklist.PushTaskScanner"/>
+                <attr name="instanceCreate" methodvalue="org.netbeans.modules.csl.core.TasklistStateBackdoor.getInstance"/>
+            </file>
+        </folder>
+    </folder>
 
 </filesystem>

@@ -38,7 +38,10 @@
  */
 package org.netbeans.modules.refactoring.java.test;
 
+import java.io.EOFException;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -119,7 +122,7 @@ public class RefactoringTestBase extends NbTestCase {
             FileObject file = todo.remove(0);
 
             if (file.isData()) {
-                content.put(FileUtil.getRelativePath(sourceRoot, file), TestUtilities.copyFileToString(FileUtil.toFile(file)));
+                content.put(FileUtil.getRelativePath(sourceRoot, file), copyFileToString(FileUtil.toFile(file)));
             } else {
                 todo.addAll(Arrays.asList(file.getChildren()));
             }
@@ -131,10 +134,26 @@ public class RefactoringTestBase extends NbTestCase {
             assertNotNull(f);
             assertNotNull(f.content);
             assertNotNull("Cannot find " + f.filename + " in map " + content, fileContent);
-            assertEquals(getName() ,f.content.replaceAll("[ \t\n]+", " "), fileContent.replaceAll("[ \t\n]+", " "));
+            assertEquals(getName() ,f.content.replaceAll("[ \t\r\n\n]+", " "), fileContent.replaceAll("[ \t\r\n\n]+", " "));
         }
 
         assertTrue(content.toString(), content.isEmpty());
+    }
+    
+    /**
+     * Returns a string which contains the contents of a file.
+     *
+     * @param f the file to be read
+     * @return the contents of the file(s).
+     */
+    private static String copyFileToString(java.io.File f) throws java.io.IOException {
+        int s = (int) f.length();
+        byte[] data = new byte[s];
+        int len = new FileInputStream(f).read(data);
+        if (len != s) {
+            throw new EOFException("truncated file");
+        }
+        return new String(data, Charset.forName("UTF8"));
     }
 
     protected static void addAllProblems(List<Problem> problems, Problem head) {
@@ -183,6 +202,7 @@ public class RefactoringTestBase extends NbTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.setProperty("org.netbeans.modules.java.source.usages.SourceAnalyser.fullIndex", "true");
         TREEUTILITIESLOGGER.setLevel(Level.SEVERE);
         MimeTypes.setAllMimeTypes(new HashSet<String>());
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/openide/loaders/layer.xml",

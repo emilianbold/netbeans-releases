@@ -89,6 +89,11 @@ public class SQLExecutionHelperTest extends NbTestCase {
         dbconn = null;
     }
 
+    @Override
+    protected boolean runInEQ() {
+        return false;
+    }
+
     //------------Test Case ----------------
 
     public void testInitialDataLoad() throws Exception {

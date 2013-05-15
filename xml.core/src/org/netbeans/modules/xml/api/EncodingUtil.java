@@ -164,6 +164,7 @@ public class EncodingUtil {
     * @return java encoding names ("UTF8", "ASCII", etc.) or null
     * if the stream is not markable or enoding cannot be detected.
     */
+    @SuppressWarnings("StringEquality")
     private static String doDetectEncoding(InputStream in) throws IOException {
 
         if (! in.markSupported()) {            
@@ -184,10 +185,12 @@ public class EncodingUtil {
             String enc = autoDetectEncoding(bytes, size);
             if (enc == null) return null;
             
-            enc = detectDeclaredEncoding(bytes, enc, size);
-            if (enc == null) return null;
+            String detectedEnc = detectDeclaredEncoding(bytes, enc, size);
+            if (detectedEnc == null) {
+                return enc == UTF8_DEFAULT ? null : enc;
+            }
             
-            return getIANA2JavaMapping(enc);
+            return getIANA2JavaMapping(detectedEnc);
         } finally {
             in.reset();
         }
@@ -200,6 +203,17 @@ public class EncodingUtil {
     static String autoDetectEncoding(byte[] buf) throws IOException {
         return autoDetectEncoding(buf, buf.length);
     }
+    
+    /**
+     * This is a hack to distinguish default/UTF8 encoding, which permits perhaps to
+     * read the header of the XML from 'undetected' (null) encoding, which signals the file
+     * may not be XML at all.
+     * The caller should compare using == the returned value and if UTF8_DEFAULT, it should
+     * return no encoding if the xml header does not specify any. The String constructor prevents
+     * canonicalization with other UTF8 constants.
+     */
+    @SuppressWarnings("")
+    static final String UTF8_DEFAULT = new String("UTF8"); // NOI18N
     
     private static String autoDetectEncoding(byte[] buf, int len) throws IOException {
         if (len >= 4) {
@@ -229,7 +243,8 @@ public class EncodingUtil {
                         // 3c 3f 78 6d == ASCII and supersets '<?xm'
                         case '?':
                             if (buf [2] == 'x' && buf [3] == 'm') {
-                                return  "UTF8"; // NOI18N
+                                // note: this is a hack to indicate that 
+                                return UTF8_DEFAULT;
                             }
                             break;
                     }

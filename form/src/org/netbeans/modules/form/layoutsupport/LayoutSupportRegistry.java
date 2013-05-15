@@ -323,9 +323,6 @@ public class LayoutSupportRegistry {
                 "javax.swing.JTabbedPane", // NOI18N
                 "org.netbeans.modules.form.layoutsupport.delegates.JTabbedPaneSupport"); // NOI18N
             containerToLayoutDelegate.put(
-                "javax.swing.JLayeredPane", // NOI18N
-                "org.netbeans.modules.form.layoutsupport.delegates.JLayeredPaneSupport"); // NOI18N
-            containerToLayoutDelegate.put(
                 "javax.swing.JToolBar", // NOI18N
                 "org.netbeans.modules.form.layoutsupport.delegates.JToolBarSupport"); // NOI18N
             containerToLayoutDelegate.put(
@@ -354,6 +351,9 @@ public class LayoutSupportRegistry {
             layoutToLayoutDelegate.put(
                 "javax.swing.BoxLayout", // NOI18N
                 "org.netbeans.modules.form.layoutsupport.delegates.BoxLayoutSupport"); // NOI18N
+            layoutToLayoutDelegate.put(
+                "javax.swing.OverlayLayout", // NOI18N
+                "org.netbeans.modules.form.layoutsupport.delegates.OverlayLayoutSupport"); // NOI18N
             layoutToLayoutDelegate.put(
                 "java.awt.GridBagLayout", // NOI18N
                 "org.netbeans.modules.form.layoutsupport.delegates.GridBagLayoutSupport"); // NOI18N

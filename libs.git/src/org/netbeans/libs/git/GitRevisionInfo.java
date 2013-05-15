@@ -50,9 +50,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.eclipse.jgit.diff.DiffEntry;
-import org.eclipse.jgit.diff.RenameDetector;
 import org.eclipse.jgit.lib.ObjectId;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevWalk;
@@ -61,6 +60,7 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.TreeFilter;
+import org.netbeans.libs.git.jgit.Utils;
 
 /**
  * Provides information about a certain commit, usually is returned by 
@@ -105,7 +105,12 @@ public final class GitRevisionInfo {
      * @return time this commit was created in milliseconds.
      */
     public long getCommitTime () {
-        return (long) revCommit.getCommitTime() * 1000;
+        PersonIdent author = revCommit.getAuthorIdent();
+        if (author == null) {
+            return (long) revCommit.getCommitTime() * 1000;
+        } else {
+            return author.getWhen().getTime();
+        }
     }
 
     /**
@@ -158,7 +163,7 @@ public final class GitRevisionInfo {
         RevWalk revWalk = new RevWalk(repository);
         TreeWalk walk = new TreeWalk(repository);
         try {
-            ArrayList<GitFileInfo> result = new ArrayList<GitFileInfo>();
+            List<GitFileInfo> result;
             walk.reset();
             walk.setRecursive(true);
             RevCommit parentCommit = null;
@@ -178,52 +183,9 @@ public final class GitRevisionInfo {
             walk.addTree(revCommit.getTree().getId());
             walk.setFilter(AndTreeFilter.create(TreeFilter.ANY_DIFF, PathFilter.ANY_DIFF));
             if (parentCommit != null) {
-                List<DiffEntry> entries = DiffEntry.scan(walk);
-                RenameDetector rd = new RenameDetector(repository);
-                rd.addAll(entries);
-                entries = rd.compute();
-                for (DiffEntry e : entries) {
-                    GitFileInfo.Status status;
-                    File oldFile = null;
-                    String oldPath = null;
-                    String path = e.getOldPath();
-                    if (path == null) {
-                        path = e.getNewPath();
-                    }
-                    switch (e.getChangeType()) {
-                        case ADD:
-                            status = GitFileInfo.Status.ADDED;
-                            path = e.getNewPath();
-                            break;
-                        case COPY:
-                            status = GitFileInfo.Status.COPIED;
-                            oldFile = new File(repository.getWorkTree(), e.getOldPath());
-                            oldPath = e.getOldPath();
-                            path = e.getNewPath();
-                            break;
-                        case DELETE:
-                            status = GitFileInfo.Status.REMOVED;
-                            path = e.getOldPath();
-                            break;
-                        case MODIFY:
-                            status = GitFileInfo.Status.MODIFIED;
-                            path = e.getOldPath();
-                            break;
-                        case RENAME:
-                            status = GitFileInfo.Status.RENAMED;
-                            oldFile = new File(repository.getWorkTree(), e.getOldPath());
-                            oldPath = e.getOldPath();
-                            path = e.getNewPath();
-                            break;
-                        default:
-                            status = GitFileInfo.Status.UNKNOWN;
-                    }
-                    if (status == GitFileInfo.Status.RENAMED) {
-                        result.add(new GitFileInfo(new File(repository.getWorkTree(), e.getOldPath()), e.getOldPath(), GitFileInfo.Status.REMOVED, null, null));
-                    }
-                    result.add(new GitFileInfo(new File(repository.getWorkTree(), path), path, status, oldFile, oldPath));
-                }
+                result = Utils.getDiffEntries(repository, walk, GitClassFactoryImpl.getInstance());
             } else {
+                result = new ArrayList<GitFileInfo>();
                 while (walk.next()) {
                     result.add(new GitFileInfo(new File(repository.getWorkTree(), walk.getPathString()), walk.getPathString(), GitFileInfo.Status.ADDED, null, null));
                 }

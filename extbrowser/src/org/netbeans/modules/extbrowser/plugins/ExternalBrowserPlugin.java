@@ -66,9 +66,9 @@ import org.netbeans.modules.web.browser.api.ResizeOption;
 import org.netbeans.modules.web.browser.api.ResizeOptions;
 import org.netbeans.modules.web.browser.spi.ExternalModificationsSupport;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
+import org.netbeans.modules.web.webkit.debugging.api.WebKitUIManager;
 import org.netbeans.modules.web.webkit.debugging.spi.Response;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
-import org.netbeans.modules.web.webkit.debugging.spi.netbeansdebugger.NetBeansJavaScriptDebuggerFactory;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -167,11 +167,16 @@ public final class ExternalBrowserPlugin {
         });
     }
 
-    public void close(BrowserTabDescriptor tab, boolean closeTab) {
-        tab.deinitialize();
-        if (closeTab) {
-            server.sendMessage(tab.keyForFeature(FEATURE_ROS), createCloseTabMessage(tab.tabID));
-        }
+    public void close(final BrowserTabDescriptor tab, final boolean closeTab) {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                tab.deinitialize();
+                if (closeTab) {
+                    server.sendMessage(tab.keyForFeature(FEATURE_ROS), createCloseTabMessage(tab.tabID));
+                }
+            }
+        });
     }
     
     public void attachWebKitDebugger(BrowserTabDescriptor tab) {
@@ -478,13 +483,14 @@ public final class ExternalBrowserPlugin {
 
         private void handleURLChange( Message message, SelectionKey key  ){
             int tabId = message.getTabId();
+            String url = (String)message.getValue().get(URL);
             if ( tabId == -1 ){
                 return;
             }
             for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
                 BrowserTabDescriptor browserTab = iterator.next();
                 if ( tabId == browserTab.tabID ) {
-                    browserTab.browserImpl.urlHasChanged();
+                    browserTab.browserImpl.urlHasChanged(url);
                     return;
                 }
             }
@@ -694,6 +700,8 @@ public final class ExternalBrowserPlugin {
         private ResponseCallback callback;
         private boolean initialized;
         private Session session;
+        private Lookup consoleLogger;
+        private Lookup networkMonitor;
 
         public BrowserTabDescriptor(int tabID, ExtBrowserImpl browserImpl) {
             this.tabID = tabID;
@@ -767,18 +775,25 @@ public final class ExternalBrowserPlugin {
         }
 
         private void init() {
-            if (initialized) {
+            if (initialized || !browserImpl.hasEnhancedMode()) {
                 return;
             }
             initialized = true;
             
+            // perform session closing before creating a new one:
+            PageInspector inspector = PageInspector.getDefault();
+            if (inspector != null && !browserImpl.isDisablePageInspector()) {
+                // #219241 - "Web inspection is broken when switching 2 projects with different configuration"
+                // a solution is to close previous debugging sessions:
+                ExternalBrowserPlugin.getInstance().closeOtherDebuggingSessionsWithPageInspector(tabID);
+            }
+
             // lookup which contains Project instance if URL being opened is from a project:
             Lookup projectContext = browserImpl.getProjectContext();
             
             WebKitDebuggingTransport transport = browserImpl.getLookup().lookup(WebKitDebuggingTransport.class);
             WebKitDebugging webkitDebugger = browserImpl.getLookup().lookup(WebKitDebugging.class);
-            NetBeansJavaScriptDebuggerFactory factory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
-            if (webkitDebugger == null || factory == null || projectContext == null) {
+            if (webkitDebugger == null || projectContext == null) {
                 return;
             }
             transport.attach();
@@ -787,34 +802,37 @@ public final class ExternalBrowserPlugin {
             } else {
                 webkitDebugger.getDebugger().enable();
             }
-            session = factory.createDebuggingSession(webkitDebugger, projectContext);
+            session = WebKitUIManager.getDefault().createDebuggingSession(webkitDebugger, projectContext);
+            consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webkitDebugger, projectContext);
+            networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webkitDebugger, projectContext);
 
-            PageInspector inspector = PageInspector.getDefault();
             if (inspector != null && !browserImpl.isDisablePageInspector()) {
-                
-                // #219241 - "Web inspection is broken when switching 2 projects with different configuration"
-                // a solution is to close previous debugging sessions:
-                ExternalBrowserPlugin.getInstance().closeOtherDebuggingSessionsWithPageInspector(tabID);
-                
                 inspector.inspectPage(new ProxyLookup(browserImpl.getLookup(), browserImpl.getProjectContext()));
             }
         }
 
         private void deinitialize() {
-            if (!initialized) {
+            if (!initialized || !browserImpl.hasEnhancedMode()) {
                 return;
             }
             initialized = false;
             WebKitDebuggingTransport transport = browserImpl.getLookup().lookup(WebKitDebuggingTransport.class);
             WebKitDebugging webkitDebugger = browserImpl.getLookup().lookup(WebKitDebugging.class);
-            NetBeansJavaScriptDebuggerFactory factory = Lookup.getDefault().lookup(NetBeansJavaScriptDebuggerFactory.class);
-            if (webkitDebugger == null || factory == null) {
+            if (webkitDebugger == null) {
                 return;
             }
             if (session != null) {
-                factory.stopDebuggingSession(session);
+                WebKitUIManager.getDefault().stopDebuggingSession(session);
             }
             session = null;
+            if (consoleLogger != null) {
+                WebKitUIManager.getDefault().stopBrowserConsoleLogger(consoleLogger);
+            }
+            consoleLogger = null;
+            if (networkMonitor != null) {
+                WebKitUIManager.getDefault().stopNetworkMonitor(networkMonitor);
+            }
+            networkMonitor = null;
             if (webkitDebugger.getDebugger().isEnabled()) {
                 webkitDebugger.getDebugger().disable();
             }

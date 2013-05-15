@@ -40,7 +40,8 @@ package org.netbeans.modules.jira;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import org.netbeans.modules.bugtracking.kenai.spi.KenaiRepositoryProvider;
+import org.netbeans.modules.bugtracking.team.spi.TeamProject;
+import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
 import org.netbeans.modules.bugtracking.spi.RepositoryInfo;
 import org.netbeans.modules.jira.issue.NbJiraIssue;
@@ -53,7 +54,7 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Stupka
  */
-public class JiraRepositoryProvider extends KenaiRepositoryProvider<JiraRepository, JiraQuery, NbJiraIssue> {
+public class JiraRepositoryProvider extends TeamRepositoryProvider<JiraRepository, JiraQuery, NbJiraIssue> {
 
     @Override
     public Image getIcon(JiraRepository r) {
@@ -101,11 +102,6 @@ public class JiraRepositoryProvider extends KenaiRepositoryProvider<JiraReposito
     }
 
     @Override
-    public Lookup getLookup(JiraRepository r) {
-        return r.getLookup();
-    }
-    
-    @Override
     public void removePropertyChangeListener(JiraRepository r, PropertyChangeListener listener) {
         
     }
@@ -129,6 +125,13 @@ public class JiraRepositoryProvider extends KenaiRepositoryProvider<JiraReposito
     public JiraQuery getMyIssuesQuery(JiraRepository repository) {
         assert repository instanceof KenaiRepository;
         return ((KenaiRepository)repository).getMyIssuesQuery();
+    }
+
+    @Override
+    public TeamProject getTeamProject(JiraRepository repository) {
+        return repository instanceof KenaiRepository ? 
+            ((KenaiRepository)repository).getKenaiProject() :
+            null;
     }
 
 }

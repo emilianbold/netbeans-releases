@@ -69,6 +69,7 @@ import org.netbeans.spi.queries.VisibilityQueryChangeEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 
@@ -229,21 +230,21 @@ class VisibilitySupport implements ChangeListener {
                     if (owner != null) {
                         final boolean visible = vq.isVisible(chf);
                         try {
-                            final URI ownerURI = owner.first.toURI();
+                            final URI ownerURI = owner.first().toURI();
                             if (visible) {
                                 Collection<URL> files = srcShownPerRoot.get(ownerURI);
                                 if (files == null) {
                                     files = new ArrayList<URL>();
                                     srcShownPerRoot.put(ownerURI, files);
                                 }
-                                if (chf.equals(owner.second)) {
+                                if (chf.equals(owner.second())) {
                                     for (FileObject cld : chf.getChildren()) {
                                         files.add(cld.toURL());
                                     }
                                 } else {
                                     files.add(chf.toURL());
                                 }
-                            } else if (owner.second != null) {
+                            } else if (owner.second() != null) {
                                 Set<String> files = srcHiddenPerRoot.get(ownerURI);
                                 if (files == null) {
                                     files = new HashSet<String>();
@@ -252,12 +253,12 @@ class VisibilitySupport implements ChangeListener {
                                 if (chf.isFolder()) {
                                     TimeStamps ts = tsPerRoot.get(ownerURI);
                                     if (ts == null) {
-                                        ts = TimeStamps.forRoot(owner.first, false);
+                                        ts = TimeStamps.forRoot(owner.first(), false);
                                         tsPerRoot.put(ownerURI, ts);
                                     }
-                                    files.addAll(ts.getEnclosedFiles(FileUtil.getRelativePath(owner.second, chf)));
+                                    files.addAll(ts.getEnclosedFiles(FileUtil.getRelativePath(owner.second(), chf)));
                                 } else {
-                                    files.add(FileUtil.getRelativePath(owner.second, chf));
+                                    files.add(FileUtil.getRelativePath(owner.second(), chf));
                                 }
                             }
                         } catch (URISyntaxException e) {
@@ -270,7 +271,7 @@ class VisibilitySupport implements ChangeListener {
                     owner = ru.getOwningBinaryRoot(chf);
                     if (owner != null) {
                         try {
-                            final URI ownerURI = owner.first.toURI();
+                            final URI ownerURI = owner.first().toURI();
                             binChangedRoot.add(ownerURI);
                         } catch (URISyntaxException e) {
                             Exceptions.printStackTrace(e);

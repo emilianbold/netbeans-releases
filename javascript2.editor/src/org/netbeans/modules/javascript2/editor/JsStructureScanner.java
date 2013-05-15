@@ -45,14 +45,15 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.*;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -65,17 +66,23 @@ import org.openide.util.ImageUtilities;
 public class JsStructureScanner implements StructureScanner {
 
     //private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY";
-    
+
     private static final String FOLD_FUNCTION = "codeblocks"; //NOI18N
     private static final String FOLD_JSDOC = "comments"; //NOI18N
     private static final String FOLD_COMMENT = "initial-comment"; //NOI18N
     private static final String FOLD_OTHER_CODE_BLOCKS = "othercodeblocks"; //NOI18N
-    
+
     private static final String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
     private static final String CLOSE_FONT = "</font>";                   //NOI18N
-    
+
     private static final Logger LOGGER = Logger.getLogger(JsStructureScanner.class.getName());
-    
+
+    private final Language<JsTokenId> language;
+
+    public JsStructureScanner(Language<JsTokenId> language) {
+        this.language = language;
+    }
+
     @Override
     public List<? extends StructureItem> scan(ParserResult info) {
         final List<StructureItem> items = new ArrayList<StructureItem>();
@@ -95,11 +102,12 @@ public class JsStructureScanner implements StructureScanner {
         Collection<? extends JsObject> properties = jsObject.getProperties().values();
         boolean countFunctionChild = (jsObject.getJSKind().isFunction() && !jsObject.isAnonymous() && jsObject.getJSKind() != JsElement.Kind.CONSTRUCTOR
                 && !containsFunction(jsObject)) 
-                || ("prototype".equals(jsObject.getName()) && properties.isEmpty());
+                || (ModelUtils.PROTOTYPE.equals(jsObject.getName()) && properties.isEmpty());
         
         for (JsObject child : properties) {
             List<StructureItem> children = new ArrayList<StructureItem>();
-            if ((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
+            if ((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)
+                    && !child.getName().equals(ModelUtils.PROTOTYPE)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
                 // don't count children for functions and methods and anonyms
                 continue;
             }
@@ -109,7 +117,7 @@ public class JsStructureScanner implements StructureScanner {
                 if (function.isAnonymous()) {
                     collectedItems.addAll(children);
                 } else {
-                    if (function.isDeclared() && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && ModelUtils.createFQN(jsObject).indexOf('.') == -1))) {
+                    if (function.isDeclared() && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && jsObject.getFullyQualifiedName().indexOf('.') == -1))) {
                         collectedItems.add(new JsFunctionStructureItem(function, children, result));                          
                     }
                 }
@@ -121,7 +129,7 @@ public class JsStructureScanner implements StructureScanner {
                         || !(jsObject.getParent() instanceof JsFunction)))
                 collectedItems.add(new JsSimpleStructureItem(child, "prop-", result)); //NOI18N
             } else if (child.getJSKind() == JsElement.Kind.VARIABLE && child.isDeclared()
-                && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && ModelUtils.createFQN(jsObject).indexOf('.') == -1))) {
+                && (!jsObject.isAnonymous() || (jsObject.isAnonymous() && jsObject.getFullyQualifiedName().indexOf('.') == -1))) {
                     collectedItems.add(new JsSimpleStructureItem(child, "var-", result)); //NOI18N
             }
          }
@@ -151,7 +159,6 @@ public class JsStructureScanner implements StructureScanner {
         // expect that the ts in on "{"
         int position = ts.offset();
         boolean value = false;
-        TokenId tokenId = ts.token().id();
         // find the function keyword
         ts.move(functionKeywordPosition);
         ts.movePrevious();
@@ -195,7 +202,7 @@ public class JsStructureScanner implements StructureScanner {
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
          
         TokenHierarchy th = info.getSnapshot().getTokenHierarchy();
-        TokenSequence ts = th.tokenSequence(JsTokenId.javascriptLanguage());
+        TokenSequence ts = th.tokenSequence(language);
         List<TokenSequence<?>> list = th.tokenSequenceList(ts.languagePath(), 0, info.getSnapshot().getText().length());
         List<FoldingItem> stack = new ArrayList<FoldingItem>();
 
@@ -289,7 +296,7 @@ public class JsStructureScanner implements StructureScanner {
             this.modelElement = elementHandle;
             this.sortPrefix = sortPrefix;
             this.parserResult = parserResult;
-            this.fqn = ModelUtils.createFQN(modelElement);
+            this.fqn = modelElement.getFullyQualifiedName();
             if (children != null) {
                 this.children = children;
             } else {
@@ -369,13 +376,7 @@ public class JsStructureScanner implements StructureScanner {
         }
         
         protected void appendTypeInfo(HtmlFormatter formatter, Collection<? extends Type> types) {
-            List<String> displayNames = new ArrayList<String>(types.size());
-            for (Type type : types) { 
-                String displayName = type.getDisplayName();
-                if (!displayName.isEmpty()) {
-                    displayNames.add(displayName);
-                }
-            }
+            Collection<String> displayNames = Utils.getDisplayNames(types);
             if (!displayNames.isEmpty()) {
                 formatter.appendHtml(FONT_GRAY_COLOR);
                 formatter.appendText(" : ");

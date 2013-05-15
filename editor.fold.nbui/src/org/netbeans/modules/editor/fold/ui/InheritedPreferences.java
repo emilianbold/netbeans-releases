@@ -162,7 +162,7 @@ public final class InheritedPreferences extends AbstractPreferences implements P
 
     @Override
     public void preferenceChange(PreferenceChangeEvent evt) {
-        if (!isOverriden(evt.getKey())) {
+        if (evt.getKey() != null && !isOverriden(evt.getKey())) {
             // jusr refires an event
             ignorePut.set(true);
             try {

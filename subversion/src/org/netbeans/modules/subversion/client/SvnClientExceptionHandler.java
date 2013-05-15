@@ -915,9 +915,7 @@ public class SvnClientExceptionHandler {
             return;
         }
         if(isCancelledAction(message)) {
-            if (annotate) {
-                cancelledAction();
-            }
+            Subversion.LOG.log(Level.FINE, message, ex);
             return;
         }                   
         Subversion.LOG.log(Level.INFO, message, ex);
@@ -989,19 +987,6 @@ public class SvnClientExceptionHandler {
                 new Object [] { ok },
                 ok);
         DialogDisplayer.getDefault().notify(descriptor);        
-    }
-    
-    private static void cancelledAction() {
-        JButton ok = new JButton(NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_OK")); // NOI18N
-        NotifyDescriptor descriptor = new NotifyDescriptor(
-                ACTION_CANCELED_BY_USER,
-                NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_ActionCanceled_Title"), // NOI18N
-                NotifyDescriptor.DEFAULT_OPTION,
-                NotifyDescriptor.WARNING_MESSAGE,
-                new Object [] { ok },
-                ok);
-        DialogDisplayer.getDefault().notify(descriptor);
-        return;
     }
 
     static void handleInvalidKeyException(InvalidKeyException ike) {

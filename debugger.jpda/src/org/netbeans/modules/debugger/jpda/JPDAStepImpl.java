@@ -760,16 +760,21 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                         return false;   // Already running.
                     }
                     // Synthetic method?
-                    Method m = LocationWrapper.method(StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0)));
+                    Location loc = StackFrameWrapper.location(ThreadReferenceWrapper.frame(tr, 0));
+                    Method m = LocationWrapper.method(loc);
                     boolean doStepAgain = false;
                     int doStepDepth = getDepth();
 
                     boolean filterSyntheticMethods = useStepFilters && p.getBoolean("FilterSyntheticMethods", true);
                     boolean filterStaticInitializers = useStepFilters && p.getBoolean("FilterStaticInitializers", false);
                     boolean filterConstructors = useStepFilters && p.getBoolean("FilterConstructors", false);
-                    if (filterSyntheticMethods && TypeComponentWrapper.isSynthetic(m)) {
+                    int syntheticStep = isSyntheticMethod(m, loc);
+                    if (filterSyntheticMethods && syntheticStep != 0) {
                         //S ystem.out.println("In synthetic method -> STEP INTO again");
                         doStepAgain = true;
+                        if (syntheticStep > 0) {
+                            doStepDepth = syntheticStep;
+                        }
                     }
                     if (filterStaticInitializers && MethodWrapper.isStaticInitializer(m) ||
                         filterConstructors && MethodWrapper.isConstructor(m)) {
@@ -929,6 +934,38 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         } catch (VMDisconnectedExceptionWrapper e) {
         } catch (InternalExceptionWrapper e) {
         }
+    }
+    
+    /**
+     * Test whether the method is considered to be synthetic
+     * @param m The method
+     * @param loc The current location in that method
+     * @return  0 when not synthetic
+     *          positive when suggested step depth is returned
+     *          negative when is synthetic and no further step depth is suggested.
+     */
+    public static int isSyntheticMethod(Method m, Location loc) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper {
+        String name = TypeComponentWrapper.name(m);
+        if (name.startsWith("lambda$")) {                                       // NOI18N
+            int lineNumber = LocationWrapper.lineNumber(loc);
+            if (lineNumber == 1) {
+                // We're in the initialization of the Lambda. We need to step over it.
+                return StepRequest.STEP_OVER;
+            }
+            return 0; // Do not treat Lambda methods as synthetic, because they contain user code.
+        } else {
+            // Do check the class for being Lambda synthetic class:
+            ReferenceType declaringType = LocationWrapper.declaringType(loc);
+            try {
+                String className = ReferenceTypeWrapper.name(declaringType);
+                if (className.contains("$$Lambda$")) {                          // NOI18N
+                    // Lambda synthetic class
+                    return -1;
+                }
+            } catch (ObjectCollectedExceptionWrapper ex) {
+            }
+        }
+        return TypeComponentWrapper.isSynthetic(m) ? -1 : 0;
     }
     
     public static final class MethodExitBreakpointListener implements JPDABreakpointListener {

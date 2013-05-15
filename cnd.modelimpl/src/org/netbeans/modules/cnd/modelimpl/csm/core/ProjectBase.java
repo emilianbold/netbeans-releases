@@ -102,7 +102,6 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.APTSystemStorage;
 import org.netbeans.modules.cnd.apt.support.APTWalker;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
-import org.netbeans.modules.cnd.apt.support.PostIncludeData;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
@@ -127,7 +126,6 @@ import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.Terminator;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.impl.services.FileInfoQueryImpl;
-import org.netbeans.modules.cnd.modelimpl.parser.apt.APTParseFileWalker;
 import org.netbeans.modules.cnd.modelimpl.parser.apt.APTRestorePreprocStateWalker;
 import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.ClassifierContainerKey;
@@ -256,7 +254,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         if (getGlobalNamespace() == FAKE_GLOBAL_NAMESPACE) {
             return false;
         }
-        if (TraceFlags.TIMING || CndUtils.isUnitTestMode()) {
+        if (TraceFlags.CHECK_CONSISTENCY || CndUtils.isUnitTestMode()) {
             if (TraceFlags.TIMING) {
                 System.err.printf("Consistency check took %d ms\n", System.currentTimeMillis() - time);
             }
@@ -579,7 +577,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 sb.append(parent.getNameForUnnamedElement());
             }
             if (!parent.isGlobal()) {
-                sb.insert(0, "::"); // NOI18N
+                sb.insert(0, APTUtils.SCOPE);
                 sb.insert(0, parent.getQualifiedName());
             }
         }
@@ -2618,22 +2616,26 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             synchronized (fileContainerLock) {
                 impl = getFile(absPath, treatSymlinkAsSeparateFile);
                 if (impl == null) {
-                    impl = new FileImpl(fileBuffer, this, fileType, nativeFileItem);
-                    if (nativeFileItem != null) {
-                        putNativeFileItem(impl.getUID(), nativeFileItem);
-                    }
+                    try {
+                        impl = new FileImpl(fileBuffer, this, fileType, nativeFileItem);
+                        if (nativeFileItem != null) {
+                            putNativeFileItem(impl.getUID(), nativeFileItem);
+                        }
                     // initial can be null here and due to this we have warnings from ParserThread like:
                     // SEVERE [org.netbeans.modules.cnd.modelimpl]: Adding a file with an emty preprocessor state set
                     // TODO: do we need to set up initial value?
 //                    if (initial == null) {
 //                        initial = APTHandlersSupport.createCleanPreprocState(preprocHandler.getState());
 //                    }
-                    putFile(impl, initial);
-                    putContainer = true;
-                    // NB: parse only after putting into a map
-                    if (scheduleParseIfNeed) {
-                        APTPreprocHandler.State ppState = preprocHandler.getState();
-                        ParserQueue.instance().add(impl, ppState, ParserQueue.Position.TAIL);
+                        putFile(impl, initial);
+                        putContainer = true;
+                        // NB: parse only after putting into a map
+                        if (scheduleParseIfNeed) {
+                            APTPreprocHandler.State ppState = preprocHandler.getState();
+                            ParserQueue.instance().add(impl, ppState, ParserQueue.Position.TAIL);
+                        }
+                    } finally {
+                        Notificator.instance().flush();
                     }
                 }
             }
@@ -2651,7 +2653,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         return impl;
     }
-    
+
     protected final FileImpl createOrFindFileImpl(final FileBuffer buf, final NativeFileItem nativeFile) {
         return createOrFindFileImpl(buf, nativeFile, Utils.getFileType(nativeFile)).fileImpl;
     }
@@ -3696,7 +3698,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
     }
 
-    public static void dumpProjectGrapthContainer(ProjectBase project, PrintWriter printStream) {
+    public static void dumpProjectGrapthContainer(CsmProject prj, PrintWriter printStream) {
+        ProjectBase project = (ProjectBase) prj;
         GraphContainer container = project.getGraphStorage();
         printStream.println("\n++++++++++ Dumping Graph container " + project.getDisplayName()); // NOI18N
         Map<CharSequence, CsmFile> map = new TreeMap<CharSequence, CsmFile>();

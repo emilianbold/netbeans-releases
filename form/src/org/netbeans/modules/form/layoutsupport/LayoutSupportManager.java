@@ -278,6 +278,17 @@ public final class LayoutSupportManager implements LayoutSupportContext {
         return layoutDelegate instanceof DefaultLayoutSupport;
     }
 
+    public boolean hasComponentConstraints() {
+        if (layoutDelegate != null) {
+            for (int i=0, n=getComponentCount(); i < n; i++) {
+                if (layoutDelegate.getConstraints(i) != null) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     // copy layout delegate from another container
     public void copyLayoutDelegateFrom(
                     LayoutSupportManager sourceLayoutSupport,

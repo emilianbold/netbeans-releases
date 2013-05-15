@@ -61,8 +61,8 @@ made subject to such option by the copyright holder.
                 <package>org.testng.xml</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/testng-6.5.1-dist.jar</runtime-relative-path>
-                <binary-origin>external/testng-6.5.1-dist.jar</binary-origin>
+                <runtime-relative-path>ext/testng-6.8.1-dist.jar</runtime-relative-path>
+                <binary-origin>external/testng-6.8.1-dist.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

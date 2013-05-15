@@ -60,6 +60,7 @@ import org.codehaus.groovy.ast.PropertyNode;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ArrayExpression;
+import org.codehaus.groovy.ast.expr.AttributeExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstantExpression;
@@ -157,7 +158,7 @@ public final class VariableScopeVisitor extends TypeVisitor {
         // second check is here because we want to have occurences also at the end of the identifier (see issue #155574)
         return currentToken.id() == GroovyTokenId.IDENTIFIER || previousToken.id() == GroovyTokenId.IDENTIFIER;
     }
-
+    
     @Override
     public void visitVariableExpression(VariableExpression variableExpression) {
         final ClassNode visitedType = variableExpression.getType();
@@ -435,20 +436,34 @@ public final class VariableScopeVisitor extends TypeVisitor {
             addAnnotationOccurrences(annotation, findingNode);
         }
     }
+    
+    @Override
+    public void visitAttributeExpression(AttributeExpression expression) {
+        addExpressionOccurrences(expression);
+        super.visitAttributeExpression(expression);
+    }
 
     @Override
     public void visitPropertyExpression(PropertyExpression node) {
-        Expression property = node.getProperty();
-        if (leaf instanceof Variable && ((Variable) leaf).getName().equals(node.getPropertyAsString())) {
-            occurrences.add(property);
-        } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
-            PropertyExpression propertyUnderCursor = (PropertyExpression) leafParent;
-            String nodeAsString = node.getPropertyAsString();
-            if (nodeAsString != null && nodeAsString.equals(propertyUnderCursor.getPropertyAsString())) {
+        addExpressionOccurrences(node);
+        super.visitPropertyExpression(node);
+    }
+    
+    private void addExpressionOccurrences(PropertyExpression expression) {
+        final Expression property = expression.getProperty();
+        final String nodeAsString = expression.getPropertyAsString();
+        
+        if (nodeAsString != null) {
+            if (leaf instanceof Variable && nodeAsString.equals(((Variable) leaf).getName())) {
                 occurrences.add(property);
+            } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
+                PropertyExpression propertyUnderCursor = (PropertyExpression) leafParent;
+
+                if (nodeAsString.equals(propertyUnderCursor.getPropertyAsString())) {
+                    occurrences.add(property);
+                }
             }
         }
-        super.visitPropertyExpression(node);
     }
 
     @Override

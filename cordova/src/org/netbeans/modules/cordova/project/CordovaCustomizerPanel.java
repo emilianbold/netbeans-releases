@@ -66,11 +66,13 @@ import org.openide.util.Lookup;
 public class CordovaCustomizerPanel extends javax.swing.JPanel implements ActionListener {
 
     private Project project;
+    final SourceConfig config;
     /**
      * Creates new form CordovaCustomizerPanel
      */
     public CordovaCustomizerPanel(Project p) {
         this.project = p;
+        config = CordovaPerformer.getConfig(project);
         if (!CordovaPlatform.getDefault().isReady()) {
             setLayout(new BorderLayout());
             add(new MobilePlatformsSetup(), BorderLayout.CENTER);
@@ -108,9 +110,9 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        cordovaPanel = new org.netbeans.modules.cordova.project.CordovaPanel();
         createConfigs = new javax.swing.JButton();
         createConfigsLabel = new javax.swing.JLabel();
+        cordovaPanel = new org.netbeans.modules.cordova.project.CordovaPanel();
 
         org.openide.awt.Mnemonics.setLocalizedText(createConfigs, org.openide.util.NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaPanel.createConfigs.text")); // NOI18N
         createConfigs.addActionListener(new java.awt.event.ActionListener() {
@@ -125,23 +127,13 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(createConfigsLabel)
-                    .addComponent(createConfigs))
-                .addGap(0, 0, Short.MAX_VALUE))
             .addComponent(cordovaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 752, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(createConfigsLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(createConfigs)
                 .addGap(0, 0, 0)
-                .addComponent(cordovaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE)
+                .addComponent(cordovaPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 500, Short.MAX_VALUE)
                 .addGap(0, 0, 0))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -162,29 +154,35 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
 
     private void initControls() {
         initComponents();
-        ProjectConfigurationProvider provider = project.getLookup().lookup(ProjectConfigurationProvider.class);
-        boolean isCordovaProject = false;
-        if (provider!=null) {
-            for (Object conf:provider.getConfigurations()) {
-                if (conf instanceof ClientProjectConfigurationImpl) {
-                    isCordovaProject = true;
-                    break;
-                }
-            }
-            
-        }
+        // XXX: should be changed probably:
+//        ProjectConfigurationProvider provider = project.getLookup().lookup(ProjectConfigurationProvider.class);
+//        boolean isCordovaProject = false;
+//        if (provider!=null) {
+//            for (Object conf:provider.getConfigurations()) {
+//                if (conf instanceof MobileConfigurationImpl) {
+//                    isCordovaProject = true;
+//                    break;
+//                }
+//            }
+//            
+//        }
         
-        createConfigs.setVisible(!isCordovaProject);
-        createConfigsLabel.setVisible(!isCordovaProject);
-        cordovaPanel.setVisible(isCordovaProject);
+//        createConfigs.setVisible(!isCordovaProject);
+//        createConfigsLabel.setVisible(!isCordovaProject);
+//        cordovaPanel.setVisible(isCordovaProject);
+
+        createConfigs.setVisible(false);
+        createConfigsLabel.setVisible(false);
+        cordovaPanel.setVisible(true);
+
         Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
         String phoneGapEnabled = preferences.get("phonegap", "false");
-        cordovaPanel.setPanelEnabled(Boolean.parseBoolean(phoneGapEnabled));
+        
+//        cordovaPanel.setPanelEnabled(Boolean.parseBoolean(phoneGapEnabled));
+         cordovaPanel.setPanelEnabled(true);
+
         cordovaPanel.update();
-        String pkg = CordovaPerformer.getConfig(project).getId();
-        if (pkg!=null) {
-            cordovaPanel.setPackageName(pkg);
-        }
+        cordovaPanel.load(config);
         validate();
     }
 
@@ -200,17 +198,12 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
         preferences.put("phonegap", Boolean.toString(cordovaPanel.isPanelEnabled()));
         
         try {
-            SourceConfig config = CordovaPerformer.getConfig(project);
-            config.setId(cordovaPanel.getPackageName());
-            config.save();
+            cordovaPanel.save(config);
         } catch (IOException iOException) {
             Exceptions.printStackTrace(iOException);
         }
-        
-        
         if (cordovaPanel.isPanelEnabled()) {
-            Lookup.getDefault().lookup(CordovaPerformer.class).perform("create-android", project);
-            Lookup.getDefault().lookup(CordovaPerformer.class).perform("create-ios", project);
+            CordovaPerformer.getDefault().createPlatforms(project);
         }
     }
 }

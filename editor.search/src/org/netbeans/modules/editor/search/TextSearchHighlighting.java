@@ -115,14 +115,17 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
         fillInTheBag();
     }
 
+    @Override
     public HighlightsSequence getHighlights(int startOffset, int endOffset) {
         return bag.getHighlights(startOffset, endOffset);
     }
     
+    @Override
     public void highlightChanged(HighlightsChangeEvent event) {
         fireHighlightsChange(event.getStartOffset(), event.getEndOffset());
     }
     
+    @Override
     public void propertyChange(PropertyChangeEvent evt) {
         if (evt.getPropertyName() == null ||
             EditorFindSupport.FIND_WHAT.equals(evt.getPropertyName()) ||
@@ -132,14 +135,17 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
         }
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         this.bag.removeHighlights(Math.max(e.getOffset() - 1, 0), Math.min(e.getOffset() + 1, document.getLength()), false);
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         this.bag.removeHighlights(e.getOffset(), e.getOffset() + e.getLength(), false);
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         // not interested
     }
@@ -150,6 +156,7 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
         RP.post(new Runnable() {
             private boolean documentLocked = false;
 
+            @Override
             public void run() {
                 if (!documentLocked) {
                     documentLocked = true;
@@ -160,7 +167,7 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
                 OffsetsBag newBag = new OffsetsBag(d);
 
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.fine("TSH: filling the bag; enabled = " + isEnabled());
+                    LOG.log(Level.FINE, "TSH: filling the bag; enabled = {0}", isEnabled());
                 }
 
                 if (isEnabled() && component.equals(EditorFindSupport.getInstance().getFocusedTextComponent())) {
@@ -211,7 +218,7 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
     @MimeRegistration(mimeType = "", service = HighlightsLayerFactory.class)
     public static final class FactoryImpl implements HighlightsLayerFactory {
 
-        public final class SearchBlockHighlighting extends BlockHighlighting {
+        public final static class SearchBlockHighlighting extends BlockHighlighting {
             public SearchBlockHighlighting(String layerId, JTextComponent component) {
                 super(layerId,component);
                 EditorFindSupport.getInstance().hookLayer(this, component);
@@ -220,7 +227,7 @@ public class TextSearchHighlighting extends AbstractHighlightsContainer implemen
 
         @Override
         public HighlightsLayer[] createLayers(HighlightsLayerFactory.Context context) {
-            ArrayList<HighlightsLayer> layers = new ArrayList<HighlightsLayer>();
+            ArrayList<HighlightsLayer> layers = new ArrayList<>();
             layers.add(HighlightsLayer.create(
                     TextSearchHighlighting.LAYER_TYPE_ID,
                     ZOrder.SHOW_OFF_RACK.forPosition(200),

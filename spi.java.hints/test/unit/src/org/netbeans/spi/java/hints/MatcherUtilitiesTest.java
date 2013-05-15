@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 import org.netbeans.modules.java.hints.spiimpl.SPIAccessor;
 import org.netbeans.modules.java.hints.spiimpl.TestBase;
+import org.netbeans.modules.java.hints.spiimpl.options.HintsSettings;
 
 /**
  *
@@ -70,7 +71,7 @@ public class MatcherUtilitiesTest extends TestBase {
         prepareTest("test/Test.java", code);
 
         TreePath tp = info.getTreeUtilities().pathFor(pos);
-        HintContext ctx = SPIAccessor.getINSTANCE().createHintContext(info, null, tp, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap());
+        HintContext ctx = SPIAccessor.getINSTANCE().createHintContext(info, HintsSettings.getGlobalSettings(), null, tp, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap());
 
         assertTrue(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), "$0 = $_"));
     }
@@ -84,7 +85,7 @@ public class MatcherUtilitiesTest extends TestBase {
         prepareTest("test/Test.java", code);
 
         TreePath tp = info.getTreeUtilities().pathFor(pos);
-        HintContext ctx = SPIAccessor.getINSTANCE().createHintContext(info, null, tp, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap());
+        HintContext ctx = SPIAccessor.getINSTANCE().createHintContext(info, HintsSettings.getGlobalSettings(), null, tp, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap());
 
         assertTrue(MatcherUtilities.matches(ctx, ctx.getPath().getParentPath(), "$1 $0 = $_;"));
     }
@@ -98,7 +99,7 @@ public class MatcherUtilitiesTest extends TestBase {
         prepareTest("test/Test.java", code);
 
         TreePath tp = info.getTreeUtilities().pathFor(pos);
-        HintContext ctx = SPIAccessor.getINSTANCE().createHintContext(info, null, tp, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap());
+        HintContext ctx = SPIAccessor.getINSTANCE().createHintContext(info, HintsSettings.getGlobalSettings(), null, tp, Collections.<String, TreePath>emptyMap(), Collections.<String, Collection<? extends TreePath>>emptyMap(), Collections.<String, String>emptyMap());
 
         Map<String, TreePath> outVariables = new HashMap<String, TreePath>();
         Map<String, Collection<? extends TreePath>> outMultiVariables = new HashMap<String, Collection<? extends TreePath>>();

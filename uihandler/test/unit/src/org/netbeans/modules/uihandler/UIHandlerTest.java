@@ -59,7 +59,7 @@ import org.netbeans.junit.NbTestCase;
  * @author Jaroslav Tulach
  */
 public class UIHandlerTest extends NbTestCase {
-    private static Logger UILOG = Logger.getLogger("org.netbeans.ui.actions");
+    private static Logger UILOG = Logger.getLogger(Installer.UI_LOGGER_NAME + ".actions");
 
     
     public UIHandlerTest(String testName) {

@@ -42,6 +42,9 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.Collection;
+import java.util.Set;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
@@ -53,15 +56,16 @@ import org.netbeans.modules.javascript2.editor.model.TypeUsage;
  */
 public class JsFunctionReference extends JsObjectReference implements JsFunction {
     
-    private final JsFunctionImpl original;
+    private final JsFunction original;
     
-    public JsFunctionReference(JsObject parent, Identifier declarationName, JsFunctionImpl original, boolean isDeclared) {
-        super(parent, declarationName, original, isDeclared);
+    public JsFunctionReference(JsObject parent, Identifier declarationName,
+            JsFunction original, boolean isDeclared, Set<Modifier> modifiers) {
+        super(parent, declarationName, original, isDeclared, modifiers);
         this.original = original;
     }
 
     @Override
-    public JsFunctionImpl getOriginal() {
+    public JsFunction getOriginal() {
         return this.original;
     }
     
@@ -76,7 +80,22 @@ public class JsFunctionReference extends JsObjectReference implements JsFunction
     }
 
     @Override
+    public void addReturnType(TypeUsage type) {
+        original.addReturnType(type);
+    }
+
+    @Override
     public Collection<? extends TypeUsage> getReturnTypes() {
         return original.getReturnTypes();
+    }
+
+    @Override
+    public Collection<? extends DeclarationScope> getDeclarationsScope() {
+        return original.getDeclarationsScope();
+    }
+
+    @Override
+    public DeclarationScope getInScope() {
+        return original.getInScope();
     }
 }

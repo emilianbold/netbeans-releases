@@ -59,29 +59,29 @@ public class CreateDDTest extends JavaEEMavenTestBase {
      ***********************************************************************************************************/
     public void testCreateDDIfRequired_nullServerPassed_webLogic() {
         MavenProjectSupport.setServerID(project, WEBLOGIC);
-        MavenProjectSupport.createDDIfRequired(project, null);
+        MavenProjectSupport.createWebXMLIfRequired(project, null);
 
         assertEquals(true, isWebDDpresent(project));
     }
 
     public void testCreateDDIfRequired_nullServerPassed_glassfish() {
         MavenProjectSupport.setServerID(project, GLASSFISH);
-        MavenProjectSupport.createDDIfRequired(project, null);
+        MavenProjectSupport.createWebXMLIfRequired(project, null);
 
         assertEquals(false, isWebDDpresent(project));
     }
 
     public void testCreateDDIfRequired_nullServerPassed_tomcat() {
         MavenProjectSupport.setServerID(project, TOMCAT);
-        MavenProjectSupport.createDDIfRequired(project, null);
+        MavenProjectSupport.createWebXMLIfRequired(project, null);
 
         assertEquals(false, isWebDDpresent(project));
     }
 
     public void testCreateDDIfRequired_nullServerPassed_jboss() {
         MavenProjectSupport.setServerID(project, JBOSS);
-        MavenProjectSupport.createDDIfRequired(project, null);
-
+        MavenProjectSupport.createWebXMLIfRequired(project, null);
+        
         assertEquals(false, isWebDDpresent(project));
     }
 
@@ -91,22 +91,22 @@ public class CreateDDTest extends JavaEEMavenTestBase {
      * Calling createDDIfRequired with server passed to the method as a parameter
      ****************************************************************************/
     public void testCreateDDIfRequired_weblogicPassed() {
-        MavenProjectSupport.createDDIfRequired(project, WEBLOGIC);
+        MavenProjectSupport.createWebXMLIfRequired(project, WEBLOGIC);
         assertEquals(true, isWebDDpresent(project));
     }
 
     public void testCreateDDIfRequired_glassfishPassed() {
-        MavenProjectSupport.createDDIfRequired(project, GLASSFISH);
+        MavenProjectSupport.createWebXMLIfRequired(project, GLASSFISH);
         assertEquals(false, isWebDDpresent(project));
     }
 
     public void testCreateDDIfRequired_tomcatPassed() {
-        MavenProjectSupport.createDDIfRequired(project, TOMCAT);
+        MavenProjectSupport.createWebXMLIfRequired(project, TOMCAT);
         assertEquals(false, isWebDDpresent(project));
     }
 
     public void testCreateDDIfRequired_jbossPassed() {
-        MavenProjectSupport.createDDIfRequired(project, JBOSS);
+        MavenProjectSupport.createWebXMLIfRequired(project, JBOSS);
         assertEquals(false, isWebDDpresent(project));
     }
 }

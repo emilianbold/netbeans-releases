@@ -84,7 +84,6 @@ public class WritingQueueTestCase extends RemoteFileTestBase {
                 ref.replace(0, ref.length()-1, "" + i);
                 writeFile(fo, ref);
             }
-            WritingQueue.getInstance(execEnv).waitFinished(null);
             String readContent = ProcessUtils.execute(execEnv, "cat", tempFile).output;
             if (!readContent.contentEquals(ref)) {
                 assertTrue("File content differ: expected " + ref.substring(0, 32) + 
@@ -127,7 +126,6 @@ public class WritingQueueTestCase extends RemoteFileTestBase {
                     failuresCount++;
                 }
 
-                WritingQueue.getInstance(execEnv).waitFinished(null);
             }
             
             if (failuresCount == triesCount) {

@@ -97,7 +97,7 @@ import org.netbeans.modules.bugtracking.spi.IssueProvider;
 import org.netbeans.modules.bugtracking.spi.BugtrackingController;
 import org.netbeans.modules.bugtracking.issuetable.ColumnDescriptor;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.bugtracking.ui.issue.cache.IssueCache;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.TextUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.jira.repository.JiraConfiguration;
@@ -525,13 +525,13 @@ public class NbJiraIssue {
     }
 
     public IssueStatusProvider.Status getIssueStatus() {
-        int status = getRepository().getIssueCache().getStatus(getID());
+        IssueCache.Status status = getRepository().getIssueCache().getStatus(getID());
         switch(status) {
-            case IssueCache.ISSUE_STATUS_NEW:
+            case ISSUE_STATUS_NEW:
                 return IssueStatusProvider.Status.NEW;
-            case IssueCache.ISSUE_STATUS_MODIFIED:
+            case ISSUE_STATUS_MODIFIED:
                 return IssueStatusProvider.Status.MODIFIED;
-            case IssueCache.ISSUE_STATUS_SEEN:
+            case ISSUE_STATUS_SEEN:
                 return IssueStatusProvider.Status.SEEN;
         }
         return null;
@@ -539,7 +539,7 @@ public class NbJiraIssue {
 
     public void setUpToDate(boolean seen) {
         try {
-            final IssueCache<NbJiraIssue, TaskData> issueCache = getRepository().getIssueCache();
+            final IssueCache<NbJiraIssue> issueCache = getRepository().getIssueCache();
             boolean wasSeen = issueCache.wasSeen(getID());
             if(seen != wasSeen) {
                 issueCache.setSeen(getID(), seen);
@@ -562,7 +562,9 @@ public class NbJiraIssue {
             if(td == null) {
                 return false;
             }
-            getRepository().getIssueCache().setIssueData(this, td); // XXX
+            IssueCache<NbJiraIssue> cache = getRepository().getIssueCache();
+            NbJiraIssue issue = cache.getIssue(key);
+            cache.setIssueData(td.getTaskId(), issue != null ? issue : new NbJiraIssue(td, repository)); // XXX
             refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
@@ -582,7 +584,9 @@ public class NbJiraIssue {
             if(td == null) {
                 return false;
             }
-            getRepository().getIssueCache().setIssueData(this, td);
+            IssueCache<NbJiraIssue> cache = getRepository().getIssueCache();
+            NbJiraIssue issue = cache.getIssue(id);
+            cache.setIssueData(td.getTaskId(), issue != null ? issue : new NbJiraIssue(td, repository));
             refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
@@ -928,10 +932,10 @@ public class NbJiraIssue {
         if(wasSeen()) {
             return "";                                                          // NOI18N
         }
-        int status = repository.getIssueCache().getStatus(getID());
-        if(status == IssueCache.ISSUE_STATUS_NEW) {
+        IssueCache.Status status = repository.getIssueCache().getStatus(getID());
+        if(status == IssueCache.Status.ISSUE_STATUS_NEW) {
             return NbBundle.getMessage(NbJiraIssue.class, "LBL_NEW_STATUS");
-        } else if(status == IssueCache.ISSUE_STATUS_MODIFIED) {
+        } else if(status == IssueCache.Status.ISSUE_STATUS_MODIFIED) {
             List<IssueField> changedFields = new ArrayList<IssueField>();
             Map<String, String> attr = getSeenAttributes();
             assert attr != null;

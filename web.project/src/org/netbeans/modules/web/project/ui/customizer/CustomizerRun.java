@@ -45,13 +45,9 @@
 package org.netbeans.modules.web.project.ui.customizer;
 
 
-import java.io.IOException;
 import javax.swing.*;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.modules.j2ee.common.SharabilityUtility;
-import org.netbeans.modules.java.api.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.MessageUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -59,13 +55,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
-import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.modules.web.browser.api.WebBrowserSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.openide.util.Exceptions;
 
 public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
@@ -75,10 +68,11 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     
     /** Creates new form CustomizerRun */
     public CustomizerRun(ProjectCustomizer.Category category, WebProjectProperties uiProperties) {
+        this.uiProperties = uiProperties;
+        
         initComponents();
 
         this.category = category;
-        this.uiProperties = uiProperties;
         
         this.oldServerInstanceId = uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null
                 ? J2eePlatformUiSupport.getServerInstanceID(uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem())
@@ -105,10 +99,14 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         if (j2eeProfile != null) {
             jTextFieldJ2EE_Display.setText(j2eeProfile.getDisplayName());
         }
-        jBrowserCombo.setModel(uiProperties.BROWSERS_MODEL);
-        jBrowserCombo.setRenderer(WebBrowserSupport.createBrowserRenderer());
-
         setDeployOnSaveState();
+    }
+
+    private JComboBox createBrowserComboBox() {
+        JComboBox combo = BrowserUISupport.createBrowserPickerComboBox(
+                uiProperties.BROWSERS_MODEL.getSelectedBrowserId(), true, false,
+                uiProperties.BROWSERS_MODEL);
+        return combo;
     }
 
     /** This method is called from within the constructor to
@@ -135,7 +133,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabel2 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jLabelURLExample = new javax.swing.JLabel();
-        jBrowserCombo = new javax.swing.JComboBox();
+        jBrowserCombo = createBrowserComboBox();
         jTextFieldRelativeURL = new javax.swing.JTextField();
         jLabelRelativeURL = new javax.swing.JLabel();
         jBrowserLabel = new javax.swing.JLabel();
@@ -324,11 +322,11 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jTextFieldContextPathKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldContextPathKeyReleased
-        setMessages();//GEN-LAST:event_jTextFieldContextPathKeyReleased
-    }                                                 
+        setMessages();
+    }//GEN-LAST:event_jTextFieldContextPathKeyReleased
 
     private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBoxDisplayBrowserActionPerformed
-        boolean editable = jCheckBoxDisplayBrowser.isSelected();//GEN-LAST:event_jCheckBoxDisplayBrowserActionPerformed
+        boolean editable = jCheckBoxDisplayBrowser.isSelected();
         
         jLabelRelativeURL.setEnabled(editable);
         jTextFieldRelativeURL.setEditable(editable);
@@ -336,12 +334,12 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabelURLExample.setEnabled(editable);
         jBrowserLabel.setEnabled(editable);
         jBrowserCombo.setEnabled(editable);
-    }                                                       
+    }//GEN-LAST:event_jCheckBoxDisplayBrowserActionPerformed
 
-private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxServerActionPerformed
-        setDeployOnSaveState();//GEN-LAST:event_jComboBoxServerActionPerformed
+    private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jComboBoxServerActionPerformed
+        setDeployOnSaveState();
         setMessages();
-}                                               
+    }//GEN-LAST:event_jComboBoxServerActionPerformed
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel dosDescription;
@@ -403,13 +401,6 @@ private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//G
             return;
         }
 
-        if (uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem() != null &&
-            isServerLibraryMessageNeeded(J2eePlatformUiSupport.getServerInstanceID(
-                    uiProperties.J2EE_SERVER_INSTANCE_MODEL.getSelectedItem()), uiProperties))
-        {
-            MessageUtils.setMessage(errorLabel, MessageUtils.MessageType.WARNING,
-                "<html>"+NbBundle.getMessage(CustomizerRun.class, "MSG_CREATING_LIBRARY")+"</html>"); // NOI18N
-        }
     }
 
     private String contextPathValidation() {
@@ -425,23 +416,6 @@ private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//G
             }
         }
         return message;
-    }
-
-    private boolean isServerLibraryMessageNeeded(String serverInstanceId, WebProjectProperties uiProperties) {
-        UpdateHelper helper = uiProperties.getProject().getUpdateHelper();
-
-        try {
-            if (SharabilityUtility.isLibrarySwitchIntended(serverInstanceId,
-                    oldServerInstanceId, ClassPathUiSupport.getList(uiProperties.JAVAC_CLASSPATH_MODEL.getDefaultListModel()), helper)) {
-
-                    AntProjectHelper antHelper = helper.getAntProjectHelper();
-                    Library[] libs = SharabilityUtility.getLibraries(antHelper.resolveFile(antHelper.getLibrariesLocation()), serverInstanceId);
-                    return libs.length <= 0;
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        return false;
     }
 
 }

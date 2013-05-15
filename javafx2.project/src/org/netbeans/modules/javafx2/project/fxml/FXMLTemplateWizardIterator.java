@@ -55,6 +55,8 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.javafx2.project.JFXProjectUtils;
+import org.netbeans.modules.javafx2.project.fxml.SourceGroupSupport.SourceGroupProxy;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -75,17 +77,28 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
     
     static final String PROP_SRC_ROOTS = "srcRootFolder"; // NOI18N
     static final String PROP_ROOT_FOLDER = "rootFolder"; // NOI18N
-    static final String PROP_JAVA_CONTROLLER_CREATE = "javaControllerCreate"; // NOI18N
+    static final String PROP_JAVA_CONTROLLER_ENABLED = "javaControllerEnabled"; // NOI18N
     static final String PROP_JAVA_CONTROLLER_NAME_PROPERTY = "javaController"; // NOI18N
-    static final String PROP_JAVA_CONTROLLER_FULLNAME_PROPERTY = "javaControllerFull"; // NOI18N
-    static final String PROP_CSS_CREATE = "cssCreate"; // NOI18N
+    static final String PROP_JAVA_CONTROLLER_EXISTING_PROPERTY = "javaControllerExisting"; // NOI18N
+    static final String PROP_CSS_ENABLED = "cssEnabled"; // NOI18N
     static final String PROP_CSS_NAME_PROPERTY = "CSS"; // NOI18N
+    static final String PROP_CSS_EXISTING_PROPERTY = "CSSExisting"; // NOI18N
 
     static final String FXML_FILE_EXTENSION = ".fxml"; // NOI18N
     static final String JAVA_FILE_EXTENSION = ".java"; // NOI18N
     static final String CSS_FILE_EXTENSION = ".css"; // NOI18N
+
+    static final String defaultMavenFXMLPackage = "fxml"; //NOI18N
+    static final String defaultMavenImagesPackage = "images"; //NOI18N
+    static final String defaultMavenCSSPackage = "styles"; //NOI18N
+    
+    static final char[] NO_FILENAME_CHARS = { ' ', '/', '<', '>', '\\', '|', '\"', '\n', '\r', '\t', '\0', '\f', '`', '?', '*', ':' };
     
     private WizardDescriptor wizard;
+    private SourceGroupSupport supportFXML;
+    private SourceGroupSupport supportController;
+    private SourceGroupSupport supportCSS;
+    private boolean isMaven = false;
     private transient int index;
     private transient WizardDescriptor.Panel[] panels;
 
@@ -119,20 +132,41 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
                     NbBundle.getMessage(FXMLTemplateWizardIterator.class,
                     "MSG_ConfigureFXMLPanel_Project_Null_Error")); // NOI18N
         }
-
+        isMaven = JFXProjectUtils.isMavenProject(project);
+        
         Sources sources = ProjectUtils.getSources(project);
-        SourceGroup[] groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (groups == null) {
+        SourceGroup[] sourceGroupsJava = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        SourceGroup[] sourceGroupsResources = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+        if (sourceGroupsJava == null) {
             throw new IllegalStateException(
                     NbBundle.getMessage(FXMLTemplateWizardIterator.class,
                     "MSG_ConfigureFXMLPanel_SGs_Error")); // NOI18N
         }
-        if (groups.length == 0) {
-            groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
+        if(isMaven) {
+            supportFXML = new SourceGroupSupport(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+            supportCSS = new SourceGroupSupport(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
+            if(sourceGroupsResources != null && sourceGroupsResources.length > 0) {
+                supportFXML.addSourceGroups(sourceGroupsResources);
+                supportCSS.addSourceGroups(sourceGroupsResources);
+            } else {
+                supportFXML.addSourceGroupProxy(project, NbBundle.getMessage(FXMLTemplateWizardIterator.class,"LAB_ProjectResources"), // NOI18N
+                        new String[]{defaultMavenFXMLPackage, defaultMavenImagesPackage, defaultMavenCSSPackage});
+                supportCSS.addSourceGroupProxy(project, NbBundle.getMessage(FXMLTemplateWizardIterator.class,"LAB_ProjectResources"), // NOI18N
+                        new String[]{defaultMavenFXMLPackage, defaultMavenImagesPackage, defaultMavenCSSPackage});
+            }
+        } else {
+            supportFXML = new SourceGroupSupport(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            supportFXML.addSourceGroups(sourceGroupsJava); //must exist
+            supportCSS = new SourceGroupSupport(JavaProjectConstants.SOURCES_TYPE_JAVA);
+            supportCSS.addSourceGroups(sourceGroupsJava); //must exist
         }
-
+        supportController = new SourceGroupSupport(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        supportController.addSourceGroups(sourceGroupsJava); //must exist
+        supportController.setParent(supportFXML);
+        supportCSS.setParent(supportFXML);
+        
         index = 0;
-        panels = createPanels(project, groups);
+        panels = createPanels(project, supportFXML, supportController, supportCSS);
         String[] steps = createSteps();
         for (int i = 0; i < panels.length; i++) {
             Component c = panels[i].getComponent();
@@ -152,11 +186,11 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         }
     }
 
-    private WizardDescriptor.Panel[] createPanels(Project project, SourceGroup[] groups) {
+    private WizardDescriptor.Panel[] createPanels(Project project, SourceGroupSupport supportFXML, SourceGroupSupport supportController, SourceGroupSupport supportCSS) {
         return new WizardDescriptor.Panel[]{
-                    new ConfigureFXMLPanelVisual.Panel(project, groups),
-                    new ConfigureFXMLControllerPanelVisual.Panel(),
-                    new ConfigureFXMLCSSPanelVisual.Panel()
+                    new ConfigureFXMLPanelVisual.Panel(project, supportFXML, isMaven),
+                    new ConfigureFXMLControllerPanelVisual.Panel(supportController, isMaven),
+                    new ConfigureFXMLCSSPanelVisual.Panel(supportCSS, isMaven)
                 };
     }
 
@@ -176,50 +210,111 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
     @Override
     public Set instantiate() throws IOException, IllegalArgumentException {
         Set<FileObject> set = new HashSet<FileObject>(3);
-        FileObject dir = Templates.getTargetFolder(wizard);
-        DataFolder df = DataFolder.findFolder(dir);
+        FileObject dirFXML = supportFXML.getCurrentPackageFolder(true);
+        DataFolder dfFXML = DataFolder.findFolder(dirFXML);        
+        String targetNameFXML = supportFXML.getCurrentFileName();
         
-        String targetName = Templates.getTargetName(wizard);
-        Object createControllerProperty = wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_CREATE);
+        DataFolder dfController = null;
+        String targetNameController = null;
+        Object enabledControllerProperty = wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_ENABLED);
         Object controllerNameProperty = wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_NAME_PROPERTY);
-        Object controllerFullNameProperty = wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_FULLNAME_PROPERTY);
-        Object createCSSProperty = wizard.getProperty(FXMLTemplateWizardIterator.PROP_CSS_CREATE);
-        Object cssProperty = wizard.getProperty(FXMLTemplateWizardIterator.PROP_CSS_NAME_PROPERTY);
-        boolean createController = createControllerProperty != null ? (Boolean) createControllerProperty : false;
+        Object controllerExistingProperty = wizard.getProperty(FXMLTemplateWizardIterator.PROP_JAVA_CONTROLLER_EXISTING_PROPERTY);
+        boolean enabledController = enabledControllerProperty != null ? (Boolean) enabledControllerProperty : false;
         String controllerName = controllerNameProperty != null ? (String) controllerNameProperty : null;
-        String controllerFullName = controllerFullNameProperty != null ? (String) controllerFullNameProperty : null;
-        boolean createCSS = createCSSProperty != null ? (Boolean) createCSSProperty : false;
-        String css = cssProperty != null ? (String) cssProperty : null;
+        String controllerExisting = controllerExistingProperty != null ? (String) controllerExistingProperty : null;
+        String controllerFullName = null;
+        if(controllerExisting != null && !controllerExisting.isEmpty()) {
+            File f = new File(controllerExisting);
+            if(f.exists()) {
+                FileObject fo = FileUtil.toFileObject(f);
+                controllerFullName = JFXProjectUtils.getRelativePath(dirFXML, fo);
+                if(controllerFullName == null) {
+                    controllerFullName = controllerExisting;
+                }
+            } else {
+                controllerFullName = controllerExisting;
+            }
+        } else {
+            if(enabledController) {
+                FileObject dirController = supportController.getCurrentPackageFolder(true);
+                dfController = DataFolder.findFolder(dirController);
+                targetNameController = supportController.getCurrentFileName();
+                controllerFullName = getPreselectedPackage(supportController.getCurrentSourceGroup(), dirController) + "." + targetNameController; // NOI18N
+            }
+        }
+        
+        DataFolder dfCSS = null;
+        Object enabledCSSProperty = wizard.getProperty(FXMLTemplateWizardIterator.PROP_CSS_ENABLED);
+        Object cssNameProperty = wizard.getProperty(FXMLTemplateWizardIterator.PROP_CSS_NAME_PROPERTY);
+        Object cssExistingProperty = wizard.getProperty(FXMLTemplateWizardIterator.PROP_CSS_EXISTING_PROPERTY);
+        boolean enabledCSS = enabledCSSProperty != null ? (Boolean) enabledCSSProperty : false;
+        String cssName = cssNameProperty != null ? (String) cssNameProperty : null;
+        String cssExisting = cssExistingProperty != null ? (String) cssExistingProperty : null;
+        String cssFullName = null;
+        if(enabledCSS) {
+            if(cssExisting != null && !cssExisting.isEmpty()) {
+                File f = new File(cssExisting);
+                if(f.exists()) {
+                    FileObject fo = FileUtil.toFileObject(f);
+                    cssFullName = JFXProjectUtils.getRelativePath(dirFXML, fo);
+                    if(cssFullName == null) {
+                        cssFullName = cssExisting;
+                    }
+                } else {
+                    cssFullName = cssExisting;
+                }
+                if((cssFullName.contains("/") || cssFullName.contains("\\")) && 
+                        !cssFullName.startsWith("/") && !cssFullName.startsWith("\\")) {
+                    cssFullName = "/" + cssFullName;
+                }
+            } else {
+                FileObject dirCSS = supportCSS.getCurrentPackageFolder(true);
+                dfCSS = DataFolder.findFolder(dirCSS);
+                String targetNameCSS = supportCSS.getCurrentFileName();
+                assert targetNameCSS.equals(cssName);
+                Object path = getPreselectedPackage(supportCSS.getCurrentSourceGroup(), dirCSS);
+                if(path != null) {
+                    cssFullName =  "/" + ((String) path).replace('.', '/') + "/" + targetNameCSS; // NOI18N
+                } else {
+                    cssFullName = targetNameCSS;
+                }
+            }
+        }
         
         Map<String, String> params = new HashMap<String, String>();
         if (controllerFullName != null) {
             params.put("controller", controllerFullName); // NOI18N
         }
-        if (css != null) {
+        if (cssFullName != null) {
             //remove file extension from name
-            css = css.substring(0, css.length() - CSS_FILE_EXTENSION.length());
+            cssFullName = cssFullName.substring(0, cssFullName.length() - CSS_FILE_EXTENSION.length());
             // normalize path
-            css = css.replace("\\", "/"); // NOI18N
+            cssFullName = cssFullName.replace("\\", "/"); // NOI18N
         
-            params.put("css", css); // NOI18N
+            params.put("css", cssFullName); // NOI18N
+        }
+        if (cssName != null) {
+            //remove file extension from name
+            cssName = cssName.substring(0, cssName.length() - CSS_FILE_EXTENSION.length());
         }
 
         FileObject xmlTemplate = FileUtil.getConfigFile("Templates/javafx/FXML.fxml"); // NOI18N
         DataObject dXMLTemplate = DataObject.find(xmlTemplate);
-        DataObject dobj = dXMLTemplate.createFromTemplate(df, targetName, params);
+        DataObject dobj = dXMLTemplate.createFromTemplate(dfFXML, targetNameFXML, params);
         set.add(dobj.getPrimaryFile());
 
-        if (createController && controllerName != null) {
+        if (enabledController && dfController != null) {
+            assert controllerName.equals(targetNameController);
             FileObject javaTemplate = FileUtil.getConfigFile("Templates/javafx/FXMLController.java"); // NOI18N
             DataObject dJavaTemplate = DataObject.find(javaTemplate);
-            DataObject dobj2 = dJavaTemplate.createFromTemplate(df, controllerName);
+            DataObject dobj2 = dJavaTemplate.createFromTemplate(dfController, controllerName);
             set.add(dobj2.getPrimaryFile());
         }
 
-        if (createCSS && css != null) {
+        if (enabledCSS && dfCSS != null) {
             FileObject cssTemplate = FileUtil.getConfigFile("Templates/javafx/FXML.css"); // NOI18N
             DataObject dCSSTemplate = DataObject.find(cssTemplate);
-            DataObject dobj3 = dCSSTemplate.createFromTemplate(df, css);
+            DataObject dobj3 = dCSSTemplate.createFromTemplate(dfCSS, cssName);
             set.add(dobj3.getPrimaryFile());
         }
 
@@ -273,7 +368,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
      * instance if there is a well-defined package but it is not listed among
      * the packages shown in the list model.
      */
-    static Object getPreselectedPackage(SourceGroup group, FileObject folder) {
+    static Object getPreselectedPackage(SourceGroupProxy group, FileObject folder) {
         if (folder == null) {
             return null;
         }
@@ -307,7 +402,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         }
     }
 
-    static boolean isValidPackageName(String str) {
+    public static boolean isValidPackageName(String str) {
         if (str.length() > 0 && str.charAt(0) == '.') { // NOI18N
             return false;
         }
@@ -324,7 +419,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         return true;
     }
 
-    static boolean isValidPackage(FileObject root, final String path) {
+    public static boolean isValidPackage(FileObject root, final String path) {
         //May be null when nothing selected in the GUI.
         if (root == null || path == null) {
             return false;
@@ -348,11 +443,30 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         }
         return null;
     }
+    
+    static boolean validFileName(String name) {
+        if(name == null) {
+            return false;
+        }
+        for(int i = 0; i < name.length(); i++) {
+            for(int j = 0; j < NO_FILENAME_CHARS.length; j++) {
+                if(name.charAt(i) == NO_FILENAME_CHARS[j]) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
 
-    static String canUseFileName(File rootFolder, String fileName) {
+    public static String canUseFileName(File rootFolder, String fileName) {
         assert rootFolder != null;
         String relFileName = rootFolder.getPath() + File.separatorChar + fileName;
 
+        // test for illegal characters in file name
+        if (!validFileName(fileName)) {
+            return NbBundle.getMessage(FXMLTemplateWizardIterator.class, "MSG_invalid_file_name"); // NOI18N
+        }
+        
         // test whether the file already exists
         if (new File(relFileName).exists()) {
             return NbBundle.getMessage(FXMLTemplateWizardIterator.class, "MSG_file_already_exist", relFileName); // NOI18N

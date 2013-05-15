@@ -75,12 +75,12 @@ import org.netbeans.modules.java.source.parsing.ProcessorGenerated;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexManager;
 import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
-import org.netbeans.modules.java.source.usages.Pair;
 import org.netbeans.modules.java.source.usages.SourceAnalyzerFactory;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.Pair;
 import org.openide.util.lookup.Lookups;
 
 //@NotThreadSafe
@@ -161,7 +161,7 @@ final class JavaParsingContext {
     }
 
     @CheckForNull
-    String getProfile() {
+    SourceLevelQuery.Profile getProfile() {
         final SourceLevelQuery.Result sl = initSourceLevel();
         return sl == null ? null : sl.getProfile();
     }

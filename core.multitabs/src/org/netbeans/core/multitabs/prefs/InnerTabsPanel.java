@@ -252,8 +252,9 @@ class InnerTabsPanel extends javax.swing.JPanel {
         changed |= settings.setRowCount( rowCount );
         changed |= settings.setTabRowPerProject( radioRowPerProject.isSelected() );
 
-        settings.setShowFolderName( checkShowFolderName.isSelected() );
-        settings.setSortDocumentListByProject( checkSortDocumentList.isSelected() );
+        changed |= settings.setShowFolderName( checkShowFolderName.isSelected() );
+        changed |= settings.setSortDocumentListByProject( checkSortDocumentList.isSelected() );
+
         return changed;
 
     }

@@ -282,6 +282,11 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     }
     
     @Override
+    public void type_parameter(int kind, Token token, Token token2, Token token3, Token token4) {
+        orig.type_parameter(kind, convertToken(token), convertToken(token2), convertToken(token3), convertToken(token4));
+    }
+    
+    @Override
     public void elaborated_type_specifier(Token token) {
         orig.elaborated_type_specifier(convertToken(token));        
     }
@@ -427,6 +432,10 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     @Override public void end_block_declaration(Token token) {orig.end_block_declaration(convertToken(token));}
     @Override public void id_expression(Token token) {orig.id_expression(convertToken(token));}
     @Override public void end_id_expression(Token token) {orig.end_id_expression(convertToken(token));}
+
+    @Override public void tilde_class_name(Token token) {orig.tilde_class_name(convertToken(token));}
+    @Override public void end_tilde_class_name(Token token) {orig.end_tilde_class_name(convertToken(token));}
+    
     @Override public void alias_declaration(Token usingToken, Token identToken, Token assignequalToken) {orig.alias_declaration(convertToken(usingToken), convertToken(identToken), convertToken(assignequalToken));}
     @Override public void end_alias_declaration(Token token) {orig.end_alias_declaration(convertToken(token));}
     @Override public void function_specifier(int kind, Token token) {orig.function_specifier(kind, convertToken(token));}
@@ -526,6 +535,7 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     @Override public void member_declaration(Token token){orig.member_declaration(convertToken(token));}
     @Override public void member_declaration(int kind, Token token){orig.member_declaration(kind, convertToken(token));}
     @Override public void end_member_declaration(Token token){orig.end_member_declaration(convertToken(token));}    
+    @Override public void member_bitfield_declarator(Token token){orig.member_bitfield_declarator(convertToken(token));}    
     @Override public void simple_member_declaration(Token token){orig.simple_member_declaration(convertToken(token));}
     @Override public void simple_member_declaration(int kind, Token token){orig.simple_member_declaration(kind, convertToken(token));}
     @Override public void end_simple_member_declaration(Token token){orig.end_simple_member_declaration(convertToken(token));}    
@@ -624,6 +634,9 @@ public class CXXParserActionImpl implements CXXParserActionEx {
     }
 
     @Override public void skip_balanced_curlies(Token token) {orig.skip_balanced_curlies(convertToken(token));}    
-    
-    
+
+    @Override
+    public CsmFile getCurrentFile() {
+        return orig.getCurrentFile();
+    }
 }

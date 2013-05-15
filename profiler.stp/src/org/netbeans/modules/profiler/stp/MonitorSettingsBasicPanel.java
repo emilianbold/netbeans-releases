@@ -64,7 +64,8 @@ import org.netbeans.lib.profiler.ui.UIUtils;
  */
 @NbBundle.Messages({
     "MonitorSettingsBasicPanel_EnableThreadsCheckboxText=&Enable threads monitoring",
-    "MonitorSettingsBasicPanel_EnableSamplingCheckboxText=&Sample threads states"
+    "MonitorSettingsBasicPanel_EnableSamplingCheckboxText=&Sample threads states",
+    "MonitorSettingsBasicPanel_EnableLockContentionCheckboxText=En&able lock contention monitoring"
 })
 public class MonitorSettingsBasicPanel extends DefaultSettingsPanel implements HelpCtx.Provider {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
@@ -77,6 +78,7 @@ public class MonitorSettingsBasicPanel extends DefaultSettingsPanel implements H
     // --- UI components declaration ---------------------------------------------
     private JCheckBox threadsMonitoringCheckbox;
     private JCheckBox threadsSamplingCheckbox;
+    private JCheckBox lockContentionMonitoringCheckbox;
 
     //~ Constructors -------------------------------------------------------------------------------------------------------------
 
@@ -107,6 +109,15 @@ public class MonitorSettingsBasicPanel extends DefaultSettingsPanel implements H
 
     public boolean getThreadsSampling() {
         return threadsSamplingCheckbox.isSelected();
+    }
+    
+    public void setLockContentionMonitoring(boolean enabled) {
+        lockContentionMonitoringCheckbox.setSelected(enabled);
+        updateControls();
+    }
+
+    public boolean getLockContentionMonitoring() {
+        return lockContentionMonitoringCheckbox.isSelected();
     }
 
     // --- Static tester frame ---------------------------------------------------
@@ -178,11 +189,26 @@ public class MonitorSettingsBasicPanel extends DefaultSettingsPanel implements H
         constraints.insets = new Insets(3, 30, 0, 0);
         add(threadsSamplingCheckbox, constraints);
         threadsSamplingCheckbox.addActionListener(getSettingsChangeListener());
+        
+        // threadsSamplingCheckbox
+        lockContentionMonitoringCheckbox = new JCheckBox();
+        org.openide.awt.Mnemonics.setLocalizedText(lockContentionMonitoringCheckbox, Bundle.MonitorSettingsBasicPanel_EnableLockContentionCheckboxText());
+        lockContentionMonitoringCheckbox.setToolTipText(Bundle.StpLockContentionTooltip());
+        lockContentionMonitoringCheckbox.setOpaque(false);
+        constraints = new GridBagConstraints();
+        constraints.gridx = 0;
+        constraints.gridy = 2;
+        constraints.gridwidth = GridBagConstraints.REMAINDER;
+        constraints.fill = GridBagConstraints.NONE;
+        constraints.anchor = GridBagConstraints.WEST;
+        constraints.insets = new Insets(20, 30, 0, 0);
+        add(lockContentionMonitoringCheckbox, constraints);
+        lockContentionMonitoringCheckbox.addActionListener(getSettingsChangeListener());
 
         // fillerPanel
         constraints = new GridBagConstraints();
         constraints.gridx = 0;
-        constraints.gridy = 2;
+        constraints.gridy = 3;
         constraints.weightx = 1;
         constraints.weighty = 1;
         constraints.gridwidth = GridBagConstraints.REMAINDER;

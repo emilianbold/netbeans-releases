@@ -43,9 +43,11 @@
 package org.netbeans.modules.remote.spi;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -327,16 +329,20 @@ public final class FileSystemProvider {
     }
     
     public static void addRecursiveListener(FileChangeListener listener,  FileSystem fileSystem, String absPath) {
+        addRecursiveListener(listener, fileSystem, absPath, null, null);
+    }
+
+    public static void addRecursiveListener(FileChangeListener listener,  FileSystem fileSystem, String absPath, FileFilter recurseInto, Callable<Boolean> interrupter) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(fileSystem)) {
                 absPath = provider.normalizeAbsolutePath(absPath, fileSystem);
-                provider.addRecursiveListener(listener, fileSystem, absPath);
+                provider.addRecursiveListener(listener, fileSystem, absPath, recurseInto, interrupter);
                 return;
             }
         }
         noProvidersWarning(fileSystem);
     }
-
+    
     public static void removeRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(fileSystem)) {

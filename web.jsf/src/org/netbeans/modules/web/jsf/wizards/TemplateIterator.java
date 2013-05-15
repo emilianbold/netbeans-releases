@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.web.jsf.wizards;
 
 import java.awt.Component;
@@ -55,14 +54,14 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.netbeans.modules.web.jsf.JSFUtils;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.palette.JSFPaletteUtilities;
+import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -80,21 +79,23 @@ import org.openide.util.NbBundle;
  */
 public class TemplateIterator implements TemplateWizard.Iterator {
 
+    private static final long serialVersionUID = 458897855L;
     private int index;
     private transient WizardDescriptor.Panel[] panels;
-
     private TemplatePanel templatePanel;
-    private transient SourceGroup[] sourceGroups;
-    private static final String CSS_FOLDER = "css"; //NOI18N
+    /*package*/ static final String CSS_FOLDER = "css"; //NOI18N
     private static final String CSS_FOLDER2 = "resources/css"; //NOI18N
     private static final String CSS_EXT = "css"; //NOI18N
     private static final String XHTML_EXT = "xhtml";    //NOI18N
     private static final String ENCODING = "UTF-8"; //NOI18N
-    private static String TEMPLATE_XHTML = "template.xhtml"; //NOI18N
-    private static String TEMPLATE_XHTML2 = "template-jsf2.xhtml"; //NOI18N
+    private static String TEMPLATE_XHTML = "template.template"; //NOI18N
+    private static String TEMPLATE_XHTML2 = "template-jsf2.template"; //NOI18N
+    private static String TEMPLATE_XHTML22 = "template-jsf22.template"; //NOI18N
     private static String FL_RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/facelets/resources/templates/"; //NOI18N
 
-    /** Creates a new instance of TemplateIterator */
+    /**
+     * Creates a new instance of TemplateIterator
+     */
     public TemplateIterator() {
     }
 
@@ -110,9 +111,11 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                 JSFConfigUtilities.extendJsfFramework(dir, false);
             }
 
-            boolean isJSF20 = JSFUtils.isJSF20Plus(wm);
+            JSFVersion version = JSFVersion.forWebModule(wm);
             String templateFile = TEMPLATE_XHTML;
-            if (isJSF20) {
+            if (version != null && version.isAtLeast(JSFVersion.JSF_2_2)) {
+                templateFile = TEMPLATE_XHTML22;
+            } else if (version != null && version.isAtLeast(JSFVersion.JSF_2_2)) {
                 templateFile = TEMPLATE_XHTML2;
             }
             String content = JSFFrameworkProvider.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(FL_RESOURCE_FOLDER + templateFile), ENCODING);
@@ -126,10 +129,11 @@ public class TemplateIterator implements TemplateWizard.Iterator {
         return result;
     }
 
+    @Override
     public Set instantiate(TemplateWizard wiz) throws IOException {
-        final org.openide.filesystems.FileObject dir = Templates.getTargetFolder( wiz );
-        final String targetName =  Templates.getTargetName(wiz);
-        final DataFolder df = DataFolder.findFolder( dir );
+        final org.openide.filesystems.FileObject dir = Templates.getTargetFolder(wiz);
+        final String targetName = Templates.getTargetName(wiz);
+        final DataFolder df = DataFolder.findFolder(dir);
         if (df != null) {
             WebModule wm = WebModule.getWebModule(df.getPrimaryFile());
             if (wm != null) {
@@ -137,53 +141,20 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                 if (!JSFConfigUtilities.hasJsfFramework(docBase)) {
                     JSFConfigUtilities.extendJsfFramework(dir, false);
                 }
-                final boolean isJSF20 = JSFUtils.isJSF20Plus(wm);
+                final JSFVersion jsfVersion = JSFVersion.forWebModule(wm) != null ? JSFVersion.forWebModule(wm) : JSFVersion.JSF_2_2;
+                String folderName = jsfVersion.isAtLeast(JSFVersion.JSF_2_0) ? CSS_FOLDER2 : CSS_FOLDER;
+                FileObject cssFolder = docBase.getFileObject(folderName);
+                if (cssFolder == null) {
+                    cssFolder = FileUtil.createFolder(docBase, folderName);
+                }
 
-                df.getPrimaryFile().getFileSystem().runAtomicAction(new FileSystem.AtomicAction(){
-                    public void run() throws IOException {
-                        InputStream is;
-                        FileObject target = df.getPrimaryFile().createData(targetName, XHTML_EXT);
-
-                        String folderName = isJSF20 ? CSS_FOLDER2 : CSS_FOLDER;
-                        FileObject cssFolder = docBase.getFileObject(folderName);
-                        if (cssFolder == null)
-//                            cssFolder = docBase.createFolder(folderName);
-                            cssFolder = FileUtil.createFolder(docBase, folderName);
-                        // name of the layout file
-                        String layoutName = templatePanel.getLayoutFileName();
-                        FileObject cssFile = cssFolder.getFileObject(layoutName, CSS_EXT); //NOI18N
-                        if (cssFile == null){
-                            cssFile = cssFolder.createData(layoutName, CSS_EXT);
-                            is = templatePanel.getLayoutCSS();
-                            JSFFrameworkProvider.createFile(cssFile, JSFFrameworkProvider.readResource(is, ENCODING), ENCODING);
-                        }
-                        String layoutPath = JSFUtils.getRelativePath(target, cssFile);
-                        cssFile = cssFolder.getFileObject("default", CSS_EXT);  //NOI18N
-                        if (cssFile == null){
-                            cssFile = cssFolder.createData("default", CSS_EXT); //NOI18N
-                            is = templatePanel.getDefaultCSS();
-                            JSFFrameworkProvider.createFile(cssFile, JSFFrameworkProvider.readResource(is, ENCODING), ENCODING);
-                        }
-                        String defaultPath = JSFUtils.getRelativePath(target, cssFile);
-
-                        is = templatePanel.getTemplate();
-                        String content = JSFFrameworkProvider.readResource(is, ENCODING);
-                        if (!isJSF20) {
-                            content = content.replaceAll("h:head", "head").replaceAll("h:body", "body"); //NOI18N
-                        }
-
-                        HashMap args = new HashMap();
-                        args.put("LAYOUT_CSS_PATH", layoutPath);    //NOI18N
-                        args.put("DEFAULT_CSS_PATH", defaultPath);  //NOI18N
-                        MapFormat formater = new MapFormat(args);
-                        formater.setLeftBrace("__");    //NOI18N
-                        formater.setRightBrace("__");   //NOI18N
-                        formater.setExactMatch(false);
-                        content = formater.format(content);
-
-                        JSFFrameworkProvider.createFile(target, content, ENCODING);
-                    }
-                });
+                CreateTemplateAction createTemplateAction = new CreateTemplateAction(
+                        templatePanel.getComponent(),
+                        Templates.getTargetName(wiz),
+                        Templates.getTargetFolder(wiz),
+                        cssFolder,
+                        jsfVersion);
+                df.getPrimaryFile().getFileSystem().runAtomicAction(createTemplateAction);
 
                 FileObject target = df.getPrimaryFile().getFileObject(targetName, XHTML_EXT);
                 DataObject dob = DataObject.find(target);
@@ -194,17 +165,18 @@ public class TemplateIterator implements TemplateWizard.Iterator {
         return Collections.EMPTY_SET;
     }
 
+    @Override
     public void initialize(TemplateWizard wiz) {
         //this.wiz = wiz;
         index = 0;
-        Project project = Templates.getProject( wiz );
+        Project project = Templates.getProject(wiz);
         panels = createPanels(project, wiz);
 
         // Creating steps.
         Object prop = wiz.getProperty(WizardDescriptor.PROP_CONTENT_DATA);
         String[] beforeSteps = null;
         if (prop != null && prop instanceof String[]) {
-            beforeSteps = (String[])prop;
+            beforeSteps = (String[]) prop;
         }
         String[] steps = createSteps(beforeSteps, panels);
 
@@ -226,40 +198,53 @@ public class TemplateIterator implements TemplateWizard.Iterator {
         }
     }
 
+    @Override
     public void uninitialize(TemplateWizard wiz) {
         panels = null;
     }
 
+    @Override
     public WizardDescriptor.Panel current() {
         return panels[index];
     }
 
+    @Override
     public String name() {
         return NbBundle.getMessage(TemplateIterator.class, "TITLE_x_of_y",
                 new Integer(index + 1), new Integer(panels.length));
     }
 
+    @Override
     public void previousPanel() {
-        if (! hasPrevious()) throw new NoSuchElementException();
+        if (!hasPrevious()) {
+            throw new NoSuchElementException();
+        }
         index--;
     }
 
+    @Override
     public void nextPanel() {
-        if (! hasNext()) throw new NoSuchElementException();
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
         index++;
     }
 
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
 
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
     }
 
@@ -267,20 +252,21 @@ public class TemplateIterator implements TemplateWizard.Iterator {
         Sources sources = (Sources) project.getLookup().lookup(org.netbeans.api.project.Sources.class);
         SourceGroup[] sourceGroups1 = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
         SourceGroup[] sourceGroups;
-        if (sourceGroups1.length < 2)
+        if (sourceGroups1.length < 2) {
             sourceGroups = new SourceGroup[]{sourceGroups1[0], sourceGroups1[0]};
-        else
+        } else {
             sourceGroups = sourceGroups1;
+        }
 
         templatePanel = new TemplatePanel(wiz);
         // creates simple wizard panel with bottom panel
         WizardDescriptor.Panel firstPanel = new JSFValidationPanel(
-                Templates.createSimpleTargetChooser(project,sourceGroups,templatePanel));
-        JComponent c = (JComponent)firstPanel.getComponent();
-        Dimension d  = c.getPreferredSize();
-        d.setSize(d.getWidth(), d.getHeight()+65);
+                Templates.createSimpleTargetChooser(project, sourceGroups, templatePanel));
+        JComponent c = (JComponent) firstPanel.getComponent();
+        Dimension d = c.getPreferredSize();
+        d.setSize(d.getWidth(), d.getHeight() + 65);
         c.setPreferredSize(d);
-        return new WizardDescriptor.Panel[] {
+        return new WizardDescriptor.Panel[]{
             firstPanel
         };
     }
@@ -292,7 +278,7 @@ public class TemplateIterator implements TemplateWizard.Iterator {
         } else if (before.length > 0) {
             diff = ("...".equals(before[before.length - 1])) ? 1 : 0; // NOI18N
         }
-        String[] res = new String[ (before.length - diff) + panels.length];
+        String[] res = new String[(before.length - diff) + panels.length];
         for (int i = 0; i < res.length; i++) {
             if (i < (before.length - diff)) {
                 res[i] = before[i];
@@ -301,5 +287,71 @@ public class TemplateIterator implements TemplateWizard.Iterator {
             }
         }
         return res;
+    }
+
+    /*package*/ static class CreateTemplateAction implements FileSystem.AtomicAction {
+
+        private final TemplatePanelVisual templatePanel;
+        private final String templateName;
+        private final FileObject targetFolder;
+        private final FileObject cssTargetFolder;
+        private final JSFVersion jsfVersion;
+        private FileObject result;
+
+        public CreateTemplateAction(TemplatePanelVisual templatePanel, String templateName, FileObject targetFolder,
+                FileObject cssTargetFolder, JSFVersion jsfVersion) {
+            this.templatePanel = templatePanel;
+            this.templateName = templateName;
+            this.targetFolder = targetFolder;
+            this.cssTargetFolder = cssTargetFolder;
+            this.jsfVersion = jsfVersion;
+        }
+
+        @Override
+        public void run() throws IOException {
+            InputStream is;
+            FileObject target = targetFolder.createData(templateName, XHTML_EXT); //NOI18N
+
+            // name of the layout file
+            String layoutName = templatePanel.getLayoutFileName();
+            FileObject cssFile = cssTargetFolder.getFileObject(layoutName, CSS_EXT); //NOI18N
+            if (cssFile == null) {
+                cssFile = cssTargetFolder.createData(layoutName, CSS_EXT);
+                is = templatePanel.getLayoutCSS();
+                JSFFrameworkProvider.createFile(cssFile, JSFFrameworkProvider.readResource(is, ENCODING), ENCODING);
+            }
+            String layoutPath = JSFUtils.getRelativePath(target, cssFile);
+            cssFile = cssTargetFolder.getFileObject("default", CSS_EXT);  //NOI18N
+            if (cssFile == null) {
+                cssFile = cssTargetFolder.createData("default", CSS_EXT); //NOI18N
+                is = templatePanel.getDefaultCSS();
+                JSFFrameworkProvider.createFile(cssFile, JSFFrameworkProvider.readResource(is, ENCODING), ENCODING);
+            }
+            String defaultPath = JSFUtils.getRelativePath(target, cssFile);
+
+            is = templatePanel.getTemplate();
+            String content = JSFFrameworkProvider.readResource(is, ENCODING);
+            if (!jsfVersion.isAtLeast(JSFVersion.JSF_2_0)) {
+                content = content.replaceAll("h:head", "head").replaceAll("h:body", "body"); //NOI18N
+            }
+            String namespaceLocation = jsfVersion.isAtLeast(JSFVersion.JSF_2_2) ? NamespaceUtils.JCP_ORG_LOCATION : NamespaceUtils.SUN_COM_LOCATION;
+
+            HashMap args = new HashMap();
+            args.put("LAYOUT_CSS_PATH", layoutPath);    //NOI18N
+            args.put("DEFAULT_CSS_PATH", defaultPath);  //NOI18N
+            args.put("NS_LOCATION", namespaceLocation); //NOI18N
+            MapFormat formater = new MapFormat(args);
+            formater.setLeftBrace("__");    //NOI18N
+            formater.setRightBrace("__");   //NOI18N
+            formater.setExactMatch(false);
+            content = formater.format(content);
+
+            JSFFrameworkProvider.createFile(target, content, ENCODING);
+            result = target;
+        }
+
+        public FileObject getResult() {
+            return result;
+        }
     }
 }

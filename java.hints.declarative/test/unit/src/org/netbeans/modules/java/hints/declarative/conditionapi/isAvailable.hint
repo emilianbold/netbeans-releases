@@ -1,0 +1,7 @@
+1 + 1 :: isAvailable("java.lang.ThreadLocal.initialValue()")
+=> 2
+;;
+    
+2 + 2 :: isAvailable("unknown.Class")
+=> 2
+;;

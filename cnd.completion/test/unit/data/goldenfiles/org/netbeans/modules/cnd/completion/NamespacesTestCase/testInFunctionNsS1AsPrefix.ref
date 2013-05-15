@@ -1,5 +1,5 @@
-str
-i1 int
-q str
-f1() void
-S2
+str	$	    S1::str
+i1 int	$	    S1::i1
+q str	$	    S1::q
+f1() void	$	    S1::f1()
+S2	$	    S1::S2
