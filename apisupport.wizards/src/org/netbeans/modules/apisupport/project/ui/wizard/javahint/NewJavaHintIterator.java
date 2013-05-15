@@ -95,69 +95,71 @@ public class NewJavaHintIterator extends BasicWizardIterator {
         cmf.add(cmf.addTestModuleDependency("org.netbeans.libs.junit4", "extra"));
         cmf.add(cmf.addTestModuleDependency("org.netbeans.modules.nbjunit", "harness")); // NOI18N
         
+        NbProjectProvider nbProjectProvider = getProjectProvider(model.getProject());
 
-        //add module to target platform
-        
-        //java cluster
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.classfile", "java")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.libs.javacimpl", "java")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.spi.java.hints", "java")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.java.hints.test", "java")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.java.lexer", "java")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.java.platform", "java")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.java.project", "java")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.api.java", "java")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.lib.nbjavac", "java")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.java.preprocessorbridge", "java")); // NOI18N
-        
-        //extide cluster
-        cmf.add(cmf.addModuleToTargetPlatform("org.apache.tools.ant.module", "extide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.options.java", "extide")); // NOI18N
-        
-        //harness cluster
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.insane", "harness")); // NOI18N
-        
-        //ide cluster
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.project.ant", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.apache.xml.resolver", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.api.java.classpath", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.diff", "ide")); // NOI18N ?
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.actions", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.fold", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.fold.nbui", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.errorstripe.api", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.errorstripe", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.guards", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.indent", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.indent.project", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.lib", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.lib2", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.options.editor", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.settings", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.settings.storage", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.util", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.project.libraries", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.libs.freemarker", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.lexer", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.libs.lucene", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.spi.navigator", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.parsing.api", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.parsing.lucene", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.projectapi", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.project.indexingbridge", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.projectuiapi", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.refactoring.api", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.code.analysis", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.spi.tasklist", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.xml.catalog", "ide")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.api.xml", "ide")); // NOI18N
-        
-        //platform cluster
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.autoupdate.services", "platform")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.autoupdate.ui", "platform")); // NOI18N
-        cmf.add(cmf.addModuleToTargetPlatform("org.openide.execution", "platform")); // NOI18N
-        
+        if(nbProjectProvider.isSuiteComponent()) {
+            //add module to target platform
+
+            //java cluster
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.classfile", "java")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.libs.javacimpl", "java")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.spi.java.hints", "java")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.java.hints.test", "java")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.java.lexer", "java")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.java.platform", "java")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.java.project", "java")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.api.java", "java")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.lib.nbjavac", "java")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.java.preprocessorbridge", "java")); // NOI18N
+
+            //extide cluster
+            cmf.add(cmf.addModuleToTargetPlatform("org.apache.tools.ant.module", "extide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.options.java", "extide")); // NOI18N
+
+            //harness cluster
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.insane", "harness")); // NOI18N
+
+            //ide cluster
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.project.ant", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.apache.xml.resolver", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.api.java.classpath", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.diff", "ide")); // NOI18N ?
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.actions", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.fold", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.fold.nbui", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.errorstripe.api", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.errorstripe", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.guards", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.indent", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.indent.project", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.lib", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.lib2", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.options.editor", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.settings", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.settings.storage", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.editor.util", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.project.libraries", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.libs.freemarker", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.lexer", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.libs.lucene", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.spi.navigator", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.parsing.api", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.parsing.lucene", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.projectapi", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.project.indexingbridge", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.projectuiapi", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.refactoring.api", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.code.analysis", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.spi.tasklist", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.xml.catalog", "ide")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.api.xml", "ide")); // NOI18N
+
+            //platform cluster
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.autoupdate.services", "platform")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.netbeans.modules.autoupdate.ui", "platform")); // NOI18N
+            cmf.add(cmf.addModuleToTargetPlatform("org.openide.execution", "platform")); // NOI18N
+        }
         
         String className = model.getClassName();
         FileObject hintTemplate = CreatedModifiedFiles.getTemplate("javaHint.java"); // NOI18N
@@ -180,7 +182,7 @@ public class NewJavaHintIterator extends BasicWizardIterator {
 
         String testPath = model.getDefaultPackagePath(className + "Test.java", false, true); // NOI18N
         FileObject testTemplate = null;
-        if(getProjectProvider(model.getProject()).isNbPlatformApplication()) {
+        if(nbProjectProvider.isNbPlatformApplication()) {
             testTemplate = CreatedModifiedFiles.getTemplate("javaHintTestApp.java"); // NOI18N
         } else {
             testTemplate = CreatedModifiedFiles.getTemplate("javaHintTest.java"); // NOI18N

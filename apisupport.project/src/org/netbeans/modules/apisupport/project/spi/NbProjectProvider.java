@@ -43,10 +43,22 @@
 package org.netbeans.modules.apisupport.project.spi;
 
 /**
+ * Interface to be implemented by NetBeans module projects. 
  *
- * @author mkozeny
+ * @author Martin Kozeny
+ * @since org.netbeans.modules.apisupport.project 1.64
  */
 public interface NbProjectProvider {
     
+    /**
+     * Returns whether given project is Nb Platform Application
+     * @return 
+     */
     boolean isNbPlatformApplication();
+    
+    /**
+     * Returns whether given project is Suite Component
+     * @return 
+     */
+    boolean isSuiteComponent();
 }

@@ -127,16 +127,18 @@ class NbModuleProviderImpl implements NbModuleProvider {
     }
 
     @Override public void addModulesToTargetPlatform(NbModuleProvider.ModuleDependency[] dependencies) throws IOException {
-        final Project suiteProject = ApisupportAntUtils.getSuiteProject(prj);
-        if(suiteProject!=null) {
-            final SuiteProperties suiteProps = ApisupportAntUtils.getSuiteProperties((SuiteProject)suiteProject);
-            for (NbModuleProvider.ModuleDependency dep : dependencies) {
-                boolean isClusterIncludedInTargetPlatform;
-                if((isClusterIncludedInTargetPlatform = ApisupportAntUtils.isClusterIncludedInTargetPlatform(suiteProps, dep.getClusterName()))
-                    && !ApisupportAntUtils.isModuleIncludedInTargetPlatform(suiteProps, dep.getCodeNameBase())) {
-                    ApisupportAntUtils.addModuleToTargetPlatform(suiteProject, suiteProps, dep.getCodeNameBase());
-                } else if(!isClusterIncludedInTargetPlatform) {
-                    ApisupportAntUtils.addClusterToTargetPlatform(suiteProject, suiteProps, dep.getClusterName(), dep.getCodeNameBase());
+        if(prj.getModuleType() == NbModuleType.SUITE_COMPONENT) {
+            final Project suiteProject = ApisupportAntUtils.getSuiteProject(prj);
+            if(suiteProject!=null) {
+                final SuiteProperties suiteProps = ApisupportAntUtils.getSuiteProperties((SuiteProject)suiteProject);
+                for (NbModuleProvider.ModuleDependency dep : dependencies) {
+                    boolean isClusterIncludedInTargetPlatform;
+                    if((isClusterIncludedInTargetPlatform = ApisupportAntUtils.isClusterIncludedInTargetPlatform(suiteProps, dep.getClusterName()))
+                        && !ApisupportAntUtils.isModuleIncludedInTargetPlatform(suiteProps, dep.getCodeNameBase())) {
+                        ApisupportAntUtils.addModuleToTargetPlatform(suiteProject, suiteProps, dep.getCodeNameBase());
+                    } else if(!isClusterIncludedInTargetPlatform) {
+                        ApisupportAntUtils.addClusterToTargetPlatform(suiteProject, suiteProps, dep.getClusterName(), dep.getCodeNameBase());
+                    }
                 }
             }
         }
