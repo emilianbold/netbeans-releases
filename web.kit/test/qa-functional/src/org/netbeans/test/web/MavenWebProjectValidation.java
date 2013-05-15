@@ -41,16 +41,20 @@ import java.awt.Component;
 import java.awt.Container;
 import java.io.IOException;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JTextField;
 import junit.framework.Test;
 import org.netbeans.jellytools.*;
 import org.netbeans.jellytools.actions.Action;
+import org.netbeans.jellytools.actions.ActionNoBlock;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.JButtonOperator;
+import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JLabelOperator;
 import org.netbeans.jemmy.operators.JTextFieldOperator;
+import org.netbeans.jemmy.operators.JTreeOperator;
 
 /**
  *
@@ -126,6 +130,17 @@ public class MavenWebProjectValidation extends WebProjectValidation {
         } finally {
             JemmyProperties.setCurrentTimeout("ComponentOperator.WaitComponentTimeout", oldTimeout);
         }
+        // disable copy on save
+        new ActionNoBlock(null, "Properties").perform(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME));
+        // "Project Properties"
+        NbDialogOperator propertiesDialogOper = new NbDialogOperator("Project Properties");
+        // select "Build|Compile" category
+        new Node(new JTreeOperator(propertiesDialogOper), "Build|Compile").select();
+        // choose Disable in combo box
+        JLabelOperator cosLabel = new JLabelOperator(propertiesDialogOper, "Compile On Save:");
+        new JComboBoxOperator((JComboBox) cosLabel.getLabelFor()).selectItem("Disable");
+        // confirm properties dialog
+        propertiesDialogOper.ok();
         waitScanFinished();
     }
 
