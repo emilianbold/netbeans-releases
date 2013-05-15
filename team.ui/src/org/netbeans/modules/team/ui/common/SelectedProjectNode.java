@@ -1,5 +1,3 @@
-package org.netbeans.modules.team.ui.common;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -42,57 +40,77 @@ package org.netbeans.modules.team.ui.common;
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-
+package org.netbeans.modules.team.ui.common;
 
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.team.ui.spi.DashboardProvider;
-import org.netbeans.modules.team.ui.spi.SourceHandle;
-import org.netbeans.modules.team.ui.spi.TeamServer;
+import javax.swing.UIManager;
 import org.netbeans.modules.team.ui.util.treelist.LeafNode;
-import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.openide.util.NbBundle;
 
 /**
- * Node to open a directory in the favorites tab
+ * The one and only one selected project
  *
- * @author Jan Becicka
+ * @author Tomas Stupka
  */
-public class OpenFavoritesNode<P> extends LeafNode {
+public class SelectedProjectNode extends LeafNode {
 
-    private final SourceHandle src;
-
-    private JPanel panel;
-    private LinkButton btn;
-    private final DashboardProvider<P> dashboard;
-
-    public OpenFavoritesNode(SourceHandle src, TreeListNode parent, DashboardProvider<P> dashboard ) {
-        super( parent );
-        this.src=src;
-        this.dashboard = dashboard;
+    private JPanel component;
+    private String categoryName;
+    private Icon icon;
+    private JLabel lbl = null;
+    private LinkButton btnPick;
+    private final Action switchAction;
+    
+    public SelectedProjectNode( String name, Icon icon, Action switchAction) {
+        super( null );
+        this.categoryName = name;
+        this.icon = icon;
+        this.switchAction = switchAction;
     }
 
     @Override
     protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
-        if( null == panel ) {
-            panel = new JPanel(new GridBagLayout());
-            panel.setOpaque(false);
-            btn = new LinkButton(NbBundle.getMessage(QueryListNode.class, "LBL_OpenFavorites"), getDefaultAction()); //NOI18N
-            panel.add( btn, new GridBagConstraints(0, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,45,0,0), 0, 0));
-            panel.add( new JLabel(), new GridBagConstraints(1, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0));
+        if( null == component ) {
+            component = new JPanel( new GridBagLayout() );
+            component.setOpaque(false);
+            lbl = new TreeLabel(categoryName);
+            lbl.setIcon(icon);
+            component.add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,3), 0,0) );
+
+            btnPick = new LinkButton(getExpandedIcon(), switchAction); 
+            btnPick.setToolTipText((String) switchAction.getValue(Action.NAME));
+            btnPick.setRolloverEnabled(true);
+            component.add( btnPick, new GridBagConstraints(1,0,1,1,1.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
         }
-        btn.setForeground(foreground, isSelected);
-        return panel;
+        lbl.setForeground(foreground);
+        return component;
+    }
+    
+    @Override
+    protected Type getType() {
+        return Type.NORMAL;
     }
 
-    @Override
-    public Action getDefaultAction() {
-        return dashboard.getSourceAccessor().getOpenFavoritesAction(src);
-    }
+    /**
+     * Get the icon displayed by a expanded set. Typically this is just the
+     * icon the look and feel supplies for trees
+     */
+    private static final org.netbeans.modules.team.ui.util.treelist.ColorManager colorManager = org.netbeans.modules.team.ui.util.treelist.ColorManager.getDefault();
+    static Icon getExpandedIcon() {
+        Icon expandedIcon = UIManager.getIcon(colorManager.isGtk() ? "Tree.gtk_expandedIcon" : "Tree.expandedIcon"); //NOI18N
+        assert expandedIcon != null : "no Tree.expandedIcon found"; //NOI18N
+        return expandedIcon;
+    }    
+    
 }
