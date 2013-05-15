@@ -72,7 +72,6 @@ public class CustomizerProvider3Test {
          assertFalse(mockProvider.customizerOpen());
          
          provider.showCustomizer();
-         
          assertTrue(mockProvider.customizerOpen());
     }
     
@@ -81,10 +80,11 @@ public class CustomizerProvider3Test {
          CustomizerProvider3 provider = Lookup.getDefault().lookup(CustomizerProvider3.class);
          assertNotNull(provider);
          MockCustomizerProvider mockProvider = (MockCustomizerProvider)provider;
+         
+         provider.showCustomizer();
          assertTrue(mockProvider.customizerOpen());
 
          MockCustomizer.invokeProjectModifyingAction();
-         
          assertFalse(mockProvider.customizerOpen());
     }
 
