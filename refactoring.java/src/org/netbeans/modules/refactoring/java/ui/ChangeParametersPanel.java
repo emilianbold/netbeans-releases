@@ -1192,7 +1192,15 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         @Override
         public Object getCellEditorValue() {
             if(editorPane != null) {
-                return editorPane.getText().substring(startOffset).replace(System.getProperty("line.separator"), "").trim(); //NOI18N
+                String text = editorPane.getText();
+                String substring;
+                if(text.length() < startOffset) {
+                    // try to recover from not fully implemented document-view-start-position #204788
+                    substring = text;
+                } else {
+                    substring = text.substring(startOffset);
+                }
+                return substring.replace(System.getProperty("line.separator"), "").trim(); //NOI18N
             }
             return original.getCellEditorValue();
         }
