@@ -147,8 +147,7 @@ public class AsynchronousGenerator extends AsyncConverter implements CodeGenerat
         int position = textComponent.getCaret().getDot();
         TreePath tp = controller.getTreeUtilities().pathFor(position);
         Element contextElement = controller.getTrees().getElement(tp );
-        Element enclosingElement = contextElement.getEnclosingElement();
-        if ( !isApplicable(contextElement)){
+        if (contextElement == null || !isApplicable(contextElement)){
             Toolkit.getDefaultToolkit().beep();
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(AsynchronousGenerator.class, 
@@ -156,6 +155,7 @@ public class AsynchronousGenerator extends AsyncConverter implements CodeGenerat
             return;
         }        
         
+        Element enclosingElement = contextElement.getEnclosingElement();
         TypeElement clazz = (TypeElement)enclosingElement;
         final String fqn = clazz.getQualifiedName().toString();
         
@@ -167,7 +167,7 @@ public class AsynchronousGenerator extends AsyncConverter implements CodeGenerat
             return;
         }
         
-        if ( !checkRestMethod(fqn,contextElement, controller.getFileObject()) ){
+        if (isAsync(contextElement)) {
             Toolkit.getDefaultToolkit().beep();
             StatusDisplayer.getDefault().setStatusText(
                     NbBundle.getMessage(AsynchronousGenerator.class, 
@@ -203,7 +203,14 @@ public class AsynchronousGenerator extends AsyncConverter implements CodeGenerat
                     FileObject targetSource = controller.getFileObject();
                     if (targetSource != null) {
                         JTextComponent targetComponent = context.lookup(JTextComponent.class);
-                        ret.add(new AsynchronousGenerator(controller, targetComponent));
+                        AsynchronousGenerator gen = new AsynchronousGenerator(controller, targetComponent);
+
+                        int position = targetComponent.getCaret().getDot();
+                        TreePath tp = controller.getTreeUtilities().pathFor(position);
+                        Element contextElement = controller.getTrees().getElement(tp );
+                        if (contextElement != null && gen.isApplicable(contextElement)) {
+                            ret.add(gen);
+                        }
                     }
                 } catch (IOException ex) {
                     ex.printStackTrace();
