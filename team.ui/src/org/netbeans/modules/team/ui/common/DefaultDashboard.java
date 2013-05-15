@@ -650,7 +650,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
             }
             Collections.sort(openProjects);
             otherProjectsLoaded = true;
-            addProjectsToModel( -1, openProjects );
+            addProjectsToModel( -1, openProjects ); 
             userNode.set(login, !openProjects.isEmpty());
             storeAllProjects();
 
@@ -658,7 +658,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
             
             if( isOpened() ) {
                 switchContent();
-            }
+            }        
         }
         changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
     }
@@ -778,10 +778,20 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
         changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
     }
 
-    private void addProjectsToModel( int index, List<ProjectHandle> projects ) {
-        int counter = 2;
-        for( ProjectHandle p : projects ) {
-            model.addRoot(counter++, new ProjectNode(p, this));
+    private void addProjectsToModel( int index, final List<ProjectHandle> projects ) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                int counter = 2;
+                for( ProjectHandle p : projects ) {
+                    model.addRoot(counter++, new ProjectNode(p, DefaultDashboard.this));
+                }
+            }
+        };
+        if(SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
         }
     }
 
