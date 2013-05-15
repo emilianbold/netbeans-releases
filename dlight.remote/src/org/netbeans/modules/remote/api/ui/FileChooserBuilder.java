@@ -117,36 +117,23 @@ public final class FileChooserBuilder {
 
         @Override
         public File getCurrentDirectory() {
-            if (curFile == null) {
-                if (currentDirectoryPath != null) {
-                    curFile = getFileSystemView().createFileObject(currentDirectoryPath);
-                } else {
-                    curFile =getFileSystemView().getDefaultDirectory();
-                }
-            }
             return curFile;
+        }
+        
+        
+        public void  clearCurrentDirectoryPath() {
+            currentDirectoryPath = null;
+        }
+        public String getCurrentDirectoryPath() {
+            return currentDirectoryPath;
         }
 
         @Override
-        public void setCurrentDirectory(File dir) {            
-            File oldValue = curFile;
-
-            if (curFile != null) {
-                /* Verify the toString of object */
-                if (this.curFile.equals(dir)) {
-                    return;
-                }
-            }
-
-            File prev = null;
-            while (!isTraversable(dir) && prev != dir) {
-                prev = dir;
-                dir = getFileSystemView().getParentDirectory(dir);
-            }
+        public void setCurrentDirectory(File dir) {                        
             curFile = dir;
-
-            firePropertyChange(DIRECTORY_CHANGED_PROPERTY, oldValue, curFile);            
+            getUI().rescanCurrentDirectory(this);
         }
+
         
         @Override
         public final void updateUI() {

@@ -56,7 +56,7 @@ import javax.swing.event.*;
  *
  * @author Soot Phengsy
  */
-public class InputBlocker extends JComponent implements MouseInputListener {
+class InputBlocker extends JComponent implements MouseInputListener {
     
     public InputBlocker() {
     }

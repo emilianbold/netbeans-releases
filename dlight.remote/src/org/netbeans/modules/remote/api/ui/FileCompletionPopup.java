@@ -77,7 +77,7 @@ import javax.swing.text.JTextComponent;
  *
  * @author Soot Phengsy
  */
-public class FileCompletionPopup extends JPopupMenu implements KeyListener {
+class FileCompletionPopup extends JPopupMenu implements KeyListener {
     
     private JList list;
     private JTextField textField;
@@ -258,7 +258,7 @@ public class FileCompletionPopup extends JPopupMenu implements KeyListener {
                         doc.insertString(doc.getLength(), File.separator, null);
                     } catch (BadLocationException ex) {
                         Logger.getLogger(getClass().getName()).log(
-                                Level.FINE, "Cannot append directory separator.", ex);
+                                Level.FINE, "Cannot append directory separator.", ex);//NOI18N
                     }
                 }
             }

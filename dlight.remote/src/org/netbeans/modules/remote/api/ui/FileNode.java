@@ -60,7 +60,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
  *
  * @author Soot Phengsy
  */
-public class FileNode extends DefaultMutableTreeNode {
+class FileNode extends DefaultMutableTreeNode {
     
     public final static int SINGLE_SELECTION = 0;
     

@@ -925,9 +925,13 @@ final class DebugCorePanel extends javax.swing.JPanel {
                 ValidationWorkerCheckState curStatus = lastCheck;
                 currentState = curStatus;
 
-                ValidationResult validationResult = curStatus.validationResult;
+                ValidationResult validationResult = curStatus == null ? null : curStatus.validationResult;
                 if (curStatus == null || curStatus.checking == null) {
-                    validationResult = new ValidationResult(Boolean.TRUE, validationResult.msgError, validationResult.disable);
+                    if (validationResult == null) {
+                        validationResult = new ValidationResult(Boolean.TRUE, "DebugCorePanel.Validating", true);//NOI18N
+                    } else {
+                        validationResult = new ValidationResult(Boolean.TRUE, validationResult.msgError, validationResult.disable);
+                    }
                     currentState = new ValidationWorkerCheckState(null, validationResult);
                 }
                 //TODO: show error
@@ -967,7 +971,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
             }
             //check hostname    
             if (!CndRemote.syncValidate(hostName)) {
-                return new ValidationResult(Boolean.FALSE, "DebugCorePanel.HOST_IS_NOT_VALID", true);
+                return new ValidationResult(Boolean.FALSE, "DebugCorePanel.HOST_IS_NOT_VALID", true);//NOI18N
             }
             
             if (Thread.interrupted()) {
@@ -1009,8 +1013,8 @@ final class DebugCorePanel extends javax.swing.JPanel {
                 validationParams.setRequestID(++lastEventID);
             }
             ValidationResult validationResult = new ValidationResult(Boolean.FALSE, 
-                    "DebugCorePanel.Validating", false);
-            currentState = new ValidationWorkerCheckState(Boolean.TRUE, validationResult);//NOI18N
+                    "DebugCorePanel.Validating", false);//NOI18N
+            currentState = new ValidationWorkerCheckState(Boolean.TRUE, validationResult);
             setError();
             synchronized (validationExecutorLock) {
                 if (validationTask != null) {

@@ -43,6 +43,7 @@ package org.netbeans.modules.remote.api.ui;
 
 import java.awt.AWTKeyStroke;
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.ComponentOrientation;
@@ -84,6 +85,10 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -133,12 +138,14 @@ import javax.swing.plaf.ActionMapUIResource;
 import javax.swing.plaf.ComponentUI;
 import javax.swing.plaf.UIResource;
 import javax.swing.plaf.basic.BasicFileChooserUI;
+import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellEditor;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.modules.remote.api.ui.FileChooserBuilder.JFileChooserEx;
 import org.openide.awt.HtmlRenderer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -155,12 +162,12 @@ import org.openide.util.Utilities;
  */
 class FileChooserUIImpl extends BasicFileChooserUI{
     
-    static final String USE_SHELL_FOLDER = "FileChooser.useShellFolder";
-    static final String NB_USE_SHELL_FOLDER = "nb.FileChooser.useShellFolder";
-    static final String START_TIME = "cnd.start.time";
+    static final String USE_SHELL_FOLDER = "FileChooser.useShellFolder";//NOI18N
+    static final String NB_USE_SHELL_FOLDER = "nb.FileChooser.useShellFolder";//NOI18N
+    static final String START_TIME = "cnd.start.time";//NOI18N
     
     
-    private static final String DIALOG_IS_CLOSING = "JFileChooserDialogIsClosingProperty";
+    private static final String DIALOG_IS_CLOSING = "JFileChooserDialogIsClosingProperty";//NOI18N
     private static final Dimension horizontalStrut1 = new Dimension(25, 1);
     private static final Dimension verticalStrut1  = new Dimension(1, 4);
     private static final Dimension verticalStrut2  = new Dimension(1, 6);
@@ -172,7 +179,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     
     private static final Logger LOG = Logger.getLogger(FileChooserUIImpl.class.getName());
 
-    private static final RequestProcessor RP = new RequestProcessor("DirChooser Update Worker"); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor("Cnd File Chooser Update Worker"); // NOI18N
 
     private static final String TIMEOUT_KEY="nb.fileChooser.timeout"; // NOI18N
 
@@ -228,13 +235,15 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     
     private DirectoryTreeModel model;
     
+    private LoadingTreeModel loadingModel;
+    
     private FileNode newFolderNode;
     
     private JComponent treeViewPanel;
     
     private InputBlocker blocker;
     
-    private JFileChooser fileChooser;
+    private JFileChooserEx fileChooser;
     
     private boolean changeDirectory = true;
     
@@ -248,6 +257,9 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     
     private final UpdateWorker updateWorker = new UpdateWorker();
     
+    private volatile ValidationWorkerCheckState currentState = new ValidationWorkerCheckState(Boolean.TRUE, 
+            new ValidationResult(Boolean.FALSE, null, false, null));//NOI18N        
+    
     private boolean useShellFolder = false;
     
     private JButton upFolderButton;
@@ -258,13 +270,13 @@ class FileChooserUIImpl extends BasicFileChooserUI{
 
     private final ListFilesWorker listFilesWorker = new ListFilesWorker();
     private final RequestProcessor.Task listFilesTask = RP.create(listFilesWorker);
-    private File curDir;
+    private volatile File curDir;
 
     public static ComponentUI createUI(JComponent c) {
-        return new FileChooserUIImpl((JFileChooser) c);
+        return new FileChooserUIImpl((JFileChooserEx) c);
     }
 
-    public FileChooserUIImpl(JFileChooser filechooser) {
+    public FileChooserUIImpl(FileChooserBuilder.JFileChooserEx filechooser) {
         super(filechooser);
     }
     
@@ -281,7 +293,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     
     @Override
     public void installComponents(JFileChooser fc) {
-        fileChooser = fc;
+        fileChooser = (JFileChooserEx)fc;
         
         fc.setFocusCycleRoot(true);
         fc.setBorder(new EmptyBorder(4, 10, 10, 10));
@@ -364,14 +376,14 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             return null;
         }
         try {
-            Class<?> clazz = Class.forName("sun.swing.WindowsPlacesBar");
+            Class<?> clazz = Class.forName("sun.swing.WindowsPlacesBar");//NOI18N
             Class[] params = new Class[] { JFileChooser.class, Boolean.TYPE };
             Constructor<?> constr = clazz.getConstructor(params);
             return (JComponent)constr.newInstance(fileChooser, isXPStyle().booleanValue());
         } catch (Exception exc) {
             // reflection not succesfull, just log the exception and return null
             Logger.getLogger(FileChooserUIImpl.class.getName()).log(
-                    Level.FINE, "WindowsPlacesBar class can't be instantiated.", exc);
+                    Level.FINE, "WindowsPlacesBar class can't be instantiated.", exc);//NOI18N
             placesBarFailed = true;
             return null;
         }
@@ -382,12 +394,12 @@ class FileChooserUIImpl extends BasicFileChooserUI{
      */
     private File getShellFolderForFile (File file) {
         try {
-            Class<?> clazz = Class.forName("sun.awt.shell.ShellFolder");
-            return (File) clazz.getMethod("getShellFolder", File.class).invoke(null, file);
+            Class<?> clazz = Class.forName("sun.awt.shell.ShellFolder");//NOI18N
+            return (File) clazz.getMethod("getShellFolder", File.class).invoke(null, file);//NOI18N
         } catch (Exception exc) {
             // reflection not succesfull, just log the exception and return null
             Logger.getLogger(FileChooserUIImpl.class.getName()).log(
-                    Level.FINE, "ShellFolder can't be used.", exc);
+                    Level.FINE, "ShellFolder can't be used.", exc);//NOI18N
             return null;
         }
     }
@@ -397,13 +409,13 @@ class FileChooserUIImpl extends BasicFileChooserUI{
      */
     private File getShellFolderForFileLinkLoc (File file) {
         try {
-            Class<?> clazz = Class.forName("sun.awt.shell.ShellFolder");
-            Object sf = clazz.getMethod("getShellFolder", File.class).invoke(null, file);
-            return (File) clazz.getMethod("getLinkLocation").invoke(sf);
+            Class<?> clazz = Class.forName("sun.awt.shell.ShellFolder");//NOI18N
+            Object sf = clazz.getMethod("getShellFolder", File.class).invoke(null, file);//NOI18N
+            return (File) clazz.getMethod("getLinkLocation").invoke(sf);//NOI18N
         } catch (Exception exc) {
             // reflection not succesfull, just log the exception and return null
             Logger.getLogger(FileChooserUIImpl.class.getName()).log(
-                    Level.FINE, "ShellFolder can't be used.", exc);
+                    Level.FINE, "ShellFolder can't be used.", exc);//NOI18N
             return null;
         }
         
@@ -414,12 +426,12 @@ class FileChooserUIImpl extends BasicFileChooserUI{
      */ 
     private File[] getShellFolderRoots () {
         try {
-            Class<?> clazz = Class.forName("sun.awt.shell.ShellFolder");
-            return (File[]) clazz.getMethod("get", String.class).invoke(null, "fileChooserComboBoxFolders");
+            Class<?> clazz = Class.forName("sun.awt.shell.ShellFolder");//NOI18N
+            return (File[]) clazz.getMethod("get", String.class).invoke(null, "fileChooserComboBoxFolders");//NOI18N
         } catch (Exception exc) {
             // reflection not succesfull, just log the exception and return null
             Logger.getLogger(FileChooserUIImpl.class.getName()).log(
-                    Level.FINE, "ShellFolder can't be used.", exc);
+                    Level.FINE, "ShellFolder can't be used.", exc);//NOI18N
             return null;
         }
     }
@@ -576,7 +588,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             public Dimension getPreferredSize () {
                 if (fc.getAccessory() != null) {
                     Dimension origPref = getAccessoryPanel().getPreferredSize();
-                    LOG.fine("AccessoryWrapper.getPreferredSize: orig pref size: " + origPref);
+                    LOG.fine("AccessoryWrapper.getPreferredSize: orig pref size: " + origPref);//NOI18N
                     
                     prefSize.height = origPref.height;
                     
@@ -585,7 +597,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                     if (centerW != 0 && prefSize.width > centerW / 2) {
                         prefSize.width = centerW / 2;
                     }
-                    LOG.fine("AccessoryWrapper.getPreferredSize: resulting pref size: " + prefSize);
+                    LOG.fine("AccessoryWrapper.getPreferredSize: resulting pref size: " + prefSize);//NOI18N
                     
                     return prefSize;
                 }
@@ -644,7 +656,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                 return d;
             }
         };
-        directoryComboBox.putClientProperty( "JComboBox.lightweightKeyboardNavigation", "Lightweight" );
+        directoryComboBox.putClientProperty( "JComboBox.lightweightKeyboardNavigation", "Lightweight" );//NOI18N
         lookInComboBoxLabel.setLabelFor(directoryComboBox);
         directoryComboBoxModel = createDirectoryComboBoxModel(fc);
         directoryComboBox.setModel(directoryComboBoxModel);
@@ -665,7 +677,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         topPanel.setFloatable(false);
         
         if (Utilities.isWindows()) {
-            topPanel.putClientProperty("JToolBar.isRollover", Boolean.TRUE);
+            topPanel.putClientProperty("JToolBar.isRollover", Boolean.TRUE);//NOI18N
         }
         
         upFolderButton = new JButton(getChangeToParentDirectoryAction());
@@ -674,15 +686,15 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         final boolean isMac = Utilities.isMac();
         Icon upOneLevelIcon = null;
         if (!isMac) {
-            upOneLevelIcon = UIManager.getIcon("FileChooser.upFolderIcon");
+            upOneLevelIcon = UIManager.getIcon("FileChooser.upFolderIcon");//NOI18N
         }
         // on Mac all icons from UIManager are the same, some default, so load our own.
         // it's also fallback if icon from UIManager not found, may happen
         if (isMac || upOneLevelIcon == null || jdkBug6840086Workaround() ) {
             if (isMac) {
-                upOneLevelIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/upFolderIcon_mac.png", false);
+                upOneLevelIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/upFolderIcon_mac.png", false);//NOI18N
             } else {
-                upOneLevelIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/upFolderIcon.gif", false);
+                upOneLevelIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/upFolderIcon.gif", false);//NOI18N
             }
         }
         upFolderButton.setIcon(upOneLevelIcon);
@@ -703,13 +715,13 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             JButton homeButton = new JButton(getGoHomeAction());
             Icon homeIcon = null;
             if (!isMac) {
-                homeIcon = UIManager.getIcon("FileChooser.homeFolderIcon");
+                homeIcon = UIManager.getIcon("FileChooser.homeFolderIcon");//NOI18N
             }
             if (isMac || homeIcon == null) {
                 if (isMac) {
-                    homeIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/homeIcon_mac.png", false);
+                    homeIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/homeIcon_mac.png", false);//NOI18N
                 } else {
-                    homeIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/homeIcon.gif", false);
+                    homeIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/homeIcon.gif", false);//NOI18N
                 }
             }
             homeButton.setIcon(homeIcon);
@@ -720,7 +732,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                 tooltip = homeFolderTooltipText;
                 if (tooltip == null) {
                     tooltip = NbBundle.getMessage(FileChooserUIImpl.class,
-                            "TLTP_HomeFolder");
+                            "TLTP_HomeFolder");//NOI18N
                 }
                 homeButton.setToolTipText( tooltip );
             }
@@ -734,15 +746,15 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         // fixed bug #97049
         Icon newFoldIcon = null;
         if (!isMac) {
-            newFoldIcon = UIManager.getIcon("FileChooser.newFolderIcon");
+            newFoldIcon = UIManager.getIcon("FileChooser.newFolderIcon");//NOI18N
         }
         // on Mac all icons from UIManager are the same, some default, so load our own.
         // it's also fallback if icon from UIManager not found, may happen
         if (isMac || newFoldIcon == null || jdkBug6840086Workaround()) {
             if (isMac) {
-                newFoldIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/newFolderIcon_mac.png", false);
+                newFoldIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/newFolderIcon_mac.png", false);//NOI18N
             } else {
-                newFoldIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/newFolderIcon.gif", false);
+                newFoldIcon = ImageUtilities.loadImageIcon("org/netbeans/swing/dirchooser/resources/newFolderIcon.gif", false);//NOI18N
             }
         }
         newFolderButton.setIcon(newFoldIcon);
@@ -846,8 +858,8 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     private boolean jdkBug6840086Workaround() {
         //see issue #167080
         return Utilities.isWindows()
-                && "Windows 7".equals(System.getProperty("os.name"))
-                && "1.6.0_16".compareTo(System.getProperty("java.version")) >=0;
+                && "Windows 7".equals(System.getProperty("os.name"))//NOI18N
+                && "1.6.0_16".compareTo(System.getProperty("java.version")) >=0;//NOI18N
     }
 
     /** 
@@ -974,10 +986,10 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     
     private void createPopup() {
         popupMenu = new JPopupMenu();
-        JMenuItem item1 = new JMenuItem(getBundle().getString("LBL_NewFolder"));
+        JMenuItem item1 = new JMenuItem(getBundle().getString("LBL_NewFolder"));//NOI18N
         item1.addActionListener(newFolderAction);
         
-        JMenuItem item2 = new JMenuItem(getBundle().getString("LBL_Rename"));
+        JMenuItem item2 = new JMenuItem(getBundle().getString("LBL_Rename"));//NOI18N
         item2.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -986,7 +998,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             }
         });
         
-        JMenuItem item3 = new JMenuItem(getBundle().getString("LBL_Delete"));
+        JMenuItem item3 = new JMenuItem(getBundle().getString("LBL_Delete"));//NOI18N
         item3.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -1016,12 +1028,12 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             if(!canWrite(file)) {
                 return;
             }
-            message = MessageFormat.format(getBundle().getString("MSG_Delete"), file.getName());
+            message = MessageFormat.format(getBundle().getString("MSG_Delete"), file.getName());//NOI18N
         } else {
-            message = MessageFormat.format(getBundle().getString("MSG_Delete_Multiple"), nodePath.length);
+            message = MessageFormat.format(getBundle().getString("MSG_Delete_Multiple"), nodePath.length);//NOI18N
         }
         
-        int answer = JOptionPane.showConfirmDialog(fileChooser, message , getBundle().getString("MSG_Confirm"), JOptionPane.YES_NO_OPTION);
+        int answer = JOptionPane.showConfirmDialog(fileChooser, message , getBundle().getString("MSG_Confirm"), JOptionPane.YES_NO_OPTION);//NOI18N
         
         if (answer == JOptionPane.YES_OPTION) {
             
@@ -1063,14 +1075,14 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                             String message = "";
                             
                             if(cannotDelete == 1) {
-                                message = cannotDelete + " " + getBundle().getString("MSG_Sing_Delete");
+                                message = cannotDelete + " " + getBundle().getString("MSG_Sing_Delete");//NOI18N
                             } else {
-                                message = cannotDelete + " " + getBundle().getString("MSG_Plur_Delete");
+                                message = cannotDelete + " " + getBundle().getString("MSG_Plur_Delete");//NOI18N
                             }
                             
                             setSelected((File[])list.toArray(new File[list.size()]));
                             
-                            JOptionPane.showConfirmDialog(fileChooser, message , getBundle().getString("MSG_Confirm"), JOptionPane.OK_OPTION);
+                            JOptionPane.showConfirmDialog(fileChooser, message , getBundle().getString("MSG_Confirm"), JOptionPane.OK_OPTION);//NOI18N
                         } else {
                             setSelected(new File[] {null});
                             setFileName("");
@@ -1205,7 +1217,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         // XXX what are legal chars for var names? bash manual says only:
         // "The braces are required when PARAMETER [...] is followed by a
         // character that is not to be interpreted as part of its name."
-        Pattern p = Pattern.compile("(^|[^\\\\])\\$([a-zA-Z_0-9.]+)");
+        Pattern p = Pattern.compile("(^|[^\\\\])\\$([a-zA-Z_0-9.]+)");//NOI18N
         Matcher m;
         while ((m = p.matcher(text)).find()) {
             // Have an env var to subst...
@@ -1213,26 +1225,26 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             String var = System.getenv(m.group(2));
             if (var == null) {
                 // Try Java system props too, and fall back to "".
-                var = System.getProperty(m.group(2), "");
+                var = System.getProperty(m.group(2), "");//NOI18N
             }
             // XXX full readline compat would mean vars were also completed with TAB...
             text = text.substring(0, m.end(1)) + var + text.substring(m.end(2));
         }
-        if (text.equals("~")) {
-            return System.getProperty("user.home");
-        } else if (text.startsWith("~" + File.separatorChar)) {
-            return System.getProperty("user.home") + text.substring(1);
+        if (text.equals("~")) {//NOI18N
+            return System.getProperty("user.home");//NOI18N
+        } else if (text.startsWith("~" + File.separatorChar)) {//NOI18N
+            return System.getProperty("user.home") + text.substring(1);//NOI18N
         } else {
-            int i = text.lastIndexOf("//");
+            int i = text.lastIndexOf("//");//NOI18N
             if (i != -1) {
                 // Treat /home/me//usr/local as /usr/local
                 // (so that you can use "//" to start a new path, without selecting & deleting)
                 return text.substring(i + 1);
             }
-            i = text.lastIndexOf(File.separatorChar + "~" + File.separatorChar);
+            i = text.lastIndexOf(File.separatorChar + "~" + File.separatorChar);//NOI18N
             if (i != -1) {
                 // Treat /usr/local/~/stuff as /home/me/stuff
-                return System.getProperty("user.home") + text.substring(i + 2);
+                return System.getProperty("user.home") + text.substring(i + 2);//NOI18N
             }
             return text;
         }
@@ -1253,17 +1265,8 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                 return;
             }
         }
-
-        File prev = null;
-        while (!fileChooser.isTraversable(dir) && prev != dir) {
-            prev = dir;
-            dir = fileChooser.getFileSystemView().getParentDirectory(dir);
-        }
         curDir = dir;        
-        if (curDir == null) {
-            curDir = fc.getFileSystemView().getRoots()[0];
-        }
-        updateWorker.updateTree(curDir);
+        updateWorker.updateTree(curDir);        
         fireDirectoryChanged(null);
     }
 
@@ -1289,11 +1292,11 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                     getLong(TIMEOUT_KEY, 10000);
             if (timeOut > 0 && elapsed > timeOut && slownessPanel == null) {
                 JLabel slownessNote = new JLabel(
-                        NbBundle.getMessage(FileChooserUIImpl.class, "MSG_SlownessNote"));
+                        NbBundle.getMessage(FileChooserUIImpl.class, "MSG_SlownessNote"));//NOI18N
                 slownessNote.setForeground(Color.RED);
                 slownessPanel = new JPanel();
                 JButton notShow = new JButton(
-                        NbBundle.getMessage(FileChooserUIImpl.class, "BTN_NotShow"));
+                        NbBundle.getMessage(FileChooserUIImpl.class, "BTN_NotShow"));//NOI18N
                 notShow.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
@@ -1316,10 +1319,10 @@ class FileChooserUIImpl extends BasicFileChooserUI{
 
     private Boolean isXPStyle() {
         Toolkit toolkit = Toolkit.getDefaultToolkit();
-        Boolean themeActive = (Boolean)toolkit.getDesktopProperty("win.xpstyle.themeActive");
+        Boolean themeActive = (Boolean)toolkit.getDesktopProperty("win.xpstyle.themeActive");//NOI18N
         if(themeActive == null)
             themeActive = Boolean.FALSE;
-        if (themeActive.booleanValue() && System.getProperty("swing.noxp") == null) {
+        if (themeActive.booleanValue() && System.getProperty("swing.noxp") == null) {//NOI18N
             themeActive = Boolean.TRUE;
         }
         return themeActive;
@@ -1331,29 +1334,29 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         
         Locale l = fc.getLocale();
         
-        lookInLabelMnemonic = UIManager.getInt("FileChooser.lookInLabelMnemonic");
-        lookInLabelText = UIManager.getString("FileChooser.lookInLabelText",l);
-        saveInLabelText = UIManager.getString("FileChooser.saveInLabelText",l);
+        lookInLabelMnemonic = UIManager.getInt("FileChooser.lookInLabelMnemonic");//NOI18N
+        lookInLabelText = UIManager.getString("FileChooser.lookInLabelText",l);//NOI18N
+        saveInLabelText = UIManager.getString("FileChooser.saveInLabelText",l);//NOI18N
         
-        fileNameLabelMnemonic = UIManager.getInt("FileChooser.fileNameLabelMnemonic");
-        fileNameLabelText = UIManager.getString("FileChooser.fileNameLabelText",l);
+        fileNameLabelMnemonic = UIManager.getInt("FileChooser.fileNameLabelMnemonic");//NOI18N
+        fileNameLabelText = UIManager.getString("FileChooser.fileNameLabelText",l);//NOI18N
         
-        filesOfTypeLabelMnemonic = UIManager.getInt("FileChooser.filesOfTypeLabelMnemonic");
-        filesOfTypeLabelText = UIManager.getString("FileChooser.filesOfTypeLabelText",l);
+        filesOfTypeLabelMnemonic = UIManager.getInt("FileChooser.filesOfTypeLabelMnemonic");//NOI18N
+        filesOfTypeLabelText = UIManager.getString("FileChooser.filesOfTypeLabelText",l);//NOI18N
         
-        upFolderToolTipText =  UIManager.getString("FileChooser.upFolderToolTipText",l);
+        upFolderToolTipText =  UIManager.getString("FileChooser.upFolderToolTipText",l);//NOI18N
         if( null == upFolderToolTipText )
             upFolderToolTipText = NbBundle.getMessage(FileChooserUIImpl.class, "TLTP_UpFolder"); //NOI18N
-        upFolderAccessibleName = UIManager.getString("FileChooser.upFolderAccessibleName",l);
+        upFolderAccessibleName = UIManager.getString("FileChooser.upFolderAccessibleName",l);//NOI18N
         if( null == upFolderAccessibleName )
             upFolderAccessibleName = NbBundle.getMessage(FileChooserUIImpl.class, "ACN_UpFolder"); //NOI18N
         
-        newFolderToolTipText = UIManager.getString("FileChooser.newFolderToolTipText",l);
+        newFolderToolTipText = UIManager.getString("FileChooser.newFolderToolTipText",l);//NOI18N
         if( null == newFolderToolTipText )
             newFolderToolTipText = NbBundle.getMessage(FileChooserUIImpl.class, "TLTP_NewFolder"); //NOI18N
         newFolderAccessibleName = NbBundle.getMessage(FileChooserUIImpl.class, "ACN_NewFolder"); //NOI18N
 
-        homeFolderTooltipText = UIManager.getString("FileChooser.homeFolderToolTipText",l);
+        homeFolderTooltipText = UIManager.getString("FileChooser.homeFolderToolTipText",l);//NOI18N
         if( null == homeFolderTooltipText )
             homeFolderTooltipText = NbBundle.getMessage(FileChooserUIImpl.class, "TLTP_HomeFolder"); //NOI18N
         homeFolderAccessibleName = NbBundle.getMessage(FileChooserUIImpl.class, "ACN_HomeFolder"); //NOI18N
@@ -1386,6 +1389,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             @Override
             public void actionPerformed(ActionEvent e) {
                 getFileChooser().cancelSelection();
+                updateWorker.cancel();
             }
             @Override
             public boolean isEnabled(){
@@ -1393,9 +1397,9 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             }
         };
         ActionMap map = new ActionMapUIResource();
-        map.put("approveSelection", getApproveSelectionAction());
-        map.put("cancelSelection", escAction);
-        map.put("Go Up", getChangeToParentDirectoryAction());
+        map.put("approveSelection", getApproveSelectionAction());//NOI18N
+        map.put("cancelSelection", escAction);//NOI18N
+        map.put("Go Up", getChangeToParentDirectoryAction());//NOI18N
         return map;
     }
     
@@ -1482,14 +1486,14 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         StringBuilder buf = new StringBuilder();
         for (int i = 0; files != null && i < files.length; i++) {
             if (i > 0) {
-                buf.append(" ");
+                buf.append(" ");//NOI18N
             }
             if (files.length > 1) {
-                buf.append("\"");
+                buf.append("\"");//NOI18N
             }
             buf.append(getStringOfFileName(files[i]));
             if (files.length > 1) {
-                buf.append("\"");
+                buf.append("\"");//NOI18N
             }
         }
         return buf.toString();
@@ -1528,8 +1532,10 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         if(currentDirectory != null) {
             directoryComboBoxModel.addItem(currentDirectory);
             newFolderAction.enable(currentDirectory);
-            getChangeToParentDirectoryAction().setEnabled(!fsv.isRoot(currentDirectory));
-            updateWorker.updateTree(currentDirectory);
+            getChangeToParentDirectoryAction().setEnabled(!fsv.isRoot(currentDirectory));            
+            if (e != null) {
+                updateWorker.updateTree(currentDirectory);
+            }
             if (fc.isDirectorySelectionEnabled() && !fc.isFileSelectionEnabled()) {
                 if (fsv.isFileSystem(currentDirectory)) {
                     setFileName(getStringOfFileName(currentDirectory));
@@ -1673,13 +1679,13 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                 } else if (s.equals(USE_SHELL_FOLDER)) {
                     updateUseShellFolder();
                     fireDirectoryChanged(e);
-                } else if (s.equals("componentOrientation")) {
+                } else if (s.equals("componentOrientation")) {//NOI18N
                     ComponentOrientation o = (ComponentOrientation)e.getNewValue();
                     JFileChooser cc = (JFileChooser)e.getSource();
                     if (o != (ComponentOrientation)e.getOldValue()) {
                         cc.applyComponentOrientation(o);
                     }
-                } else if (s.equals("ancestor")) {
+                } else if (s.equals("ancestor")) {//NOI18N
                     if (e.getOldValue() == null && e.getNewValue() != null) {
                         filenameTextField.selectAll();
                         filenameTextField.requestFocus();
@@ -2374,7 +2380,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         private void handleDblClick (FileNode node) {
             cancelRename();
             cancelDblClick();
-            if (node.getFile().isFile() && !node.getFile().getPath().endsWith(".lnk")){
+            if (node.getFile().isFile() && !node.getFile().getPath().endsWith(".lnk")){//NOI18N
                 fileChooser.approveSelection();
             } else {
                 changeTreeDirectory(node.getFile());
@@ -2422,7 +2428,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         }
         
         private void changeTreeDirectory(File dir) {
-            if (File.separatorChar == '\\' && dir.getPath().endsWith(".lnk")) {
+            if (File.separatorChar == '\\' && dir.getPath().endsWith(".lnk")) {//NOI18N
                 File linkLocation = getShellFolderForFileLinkLoc(dir);
                 if (linkLocation != null && fileChooser.isTraversable(linkLocation)) {
                     dir = linkLocation;
@@ -2554,7 +2560,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         }
         
     }
-
+    
     // Fix for IZ#123815 : Cannot refresh the tree content
     private void refreshNode( final TreePath path, final FileNode node ){
         final File folder = node.getFile();
@@ -2703,6 +2709,11 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                 FileNode node = (FileNode)value;
                 ((JLabel)stringDisplayer).setIcon(getNodeIcon(node));
                 ((JLabel)stringDisplayer).setText(getNodeText(node));
+            } else if (value instanceof LoadingNode) {
+                tree.setShowsRootHandles(true);
+                LoadingNode node = (LoadingNode)value;
+                ((JLabel)stringDisplayer).setIcon(node.getIcon());
+                ((JLabel)stringDisplayer).setText(node.getUserObject() + ""); //NOI18N
             }
                 Font f = stringDisplayer.getFont();
                 stringDisplayer.setPreferredSize(new Dimension(stringDisplayer.getPreferredSize().width, 30));
@@ -2723,6 +2734,27 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         }
     }
     
+    private class LoadingTreeModel extends DefaultTreeModel {
+        LoadingTreeModel(){
+            super(new LoadingNode());
+        }
+        
+    }
+    
+    
+    private class LoadingNode extends DefaultMutableTreeNode {
+        LoadingNode() {
+            super();
+            final DefaultMutableTreeNode defaultMutableTreeNode = new DefaultMutableTreeNode(NbBundle.getMessage(FileChooserUIImpl.class, "LOADING"), false);            
+            add(defaultMutableTreeNode);
+        }
+        
+        Icon getIcon() {
+            return UIManager.getIcon("FileView.directoryIcon");//NOI18N
+        }
+        
+        
+    }
     private class DirectoryTreeModel extends DefaultTreeModel {
         
         public DirectoryTreeModel(TreeNode root) {
@@ -2753,52 +2785,207 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             }
         }
     }
+    
+    private void updateTree() {
+        ValidationResult validationResult = this.currentState.validationResult;
+        if (validationResult.isValid && validationResult.node != null) {
+            this.curDir = validationResult.currentFile;
+            model = new DirectoryTreeModel(validationResult.node);
+            tree.setModel(model);
+            tree.repaint();
+            checkUpdate();
+            if (validationResult.isDirectoryChanged) {
+                fireDirectoryChanged(null);
+            }
+            setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
+            return;
+        }
+        if (loadingModel == null) {
+            loadingModel = new LoadingTreeModel();
+        }
+        setCursor(fileChooser, Cursor.WAIT_CURSOR);
+        markStartTime();
+        tree.setModel(loadingModel);
+        tree.repaint();
+        checkUpdate();
+        if (validationResult.isDirectoryChanged) {
+            fireDirectoryChanged(null);
+        }
+
+    }    
+    
+    private static class ValidationResult {
+
+        private final Boolean isValid;
+        private final TreeNode node;
+        private final boolean isDirectoryChanged;
+        private final File currentFile;
+
+        ValidationResult(Boolean isValid, TreeNode rootNode, boolean isDirectoryChanged, File file) {
+            this.isValid = isValid;
+            this.node = rootNode;
+            this.isDirectoryChanged = isDirectoryChanged;
+            this.currentFile = file;
+        }
+    }    
+    
+    private static final class ValidationWorkerCheckState {
+        // null - all is fine
+        // TRUE - check in progress
+        // FALSE - check failed
+
+        private final Boolean checking;
+        private final ValidationResult validationResult;
+
+        private ValidationWorkerCheckState(Boolean checking, ValidationResult validationResult) {
+            this.checking = checking;
+            this.validationResult = validationResult;
+        }
+    }    
+    
+    private static final class ValidationParams {
+
+        private File file;
+        private long eventID;
+
+        ValidationParams(File file) {
+            this.file = file;
+        }
+
+        void setRequestID(long eventID) {
+            this.eventID = eventID;
+        }
+    }
 
     private class UpdateWorker implements Runnable {
-        private volatile String lastUpdatePathName = null;
         private FileChooserUIImpl ui;
-        private volatile File work;
+        private ValidationParams validationParams;
+        private final ScheduledExecutorService executor;
+        private ScheduledFuture<?> updateTask;
+        private long lastEventID = 0;        
+        private final Object updateTaskLock = new Object();
+        static final int VALIDATION_DELAY = 300;    
+        private ValidationWorkerCheckState lastCheck = null;
+        
+        UpdateWorker() {
+            executor = Executors.newScheduledThreadPool(1);
+        }
 
+        
+        private void handleValidationParamasChanges() {
+            
+            if (validationParams != null) {
+                validationParams.setRequestID(++lastEventID);
+            }           
+            ValidationResult validationResult = new ValidationResult(Boolean.FALSE, 
+                    null, false, null);//NOI18N
+            currentState = new ValidationWorkerCheckState(Boolean.TRUE, validationResult);
+            ui.updateTree();
+            
+            synchronized (updateTaskLock) {
+                if (updateTask != null) {
+                    updateTask.cancel(true);
+                }
+                updateTask = executor.schedule(this,
+                        VALIDATION_DELAY, TimeUnit.MILLISECONDS);
+            }            
+        }
         public void updateTree(final File file) {
-            work = file;
-            RP.post(this);
+            validationParams = new ValidationParams(file);
+            handleValidationParamasChanges();
+                        
         }
 
         public void attachFileChooser(final FileChooserUIImpl ui) {
             this.ui = ui;
-            this.lastUpdatePathName = null;
+
         }
+        
+        public ValidationResult validate() {
+            if (validationParams.eventID < lastEventID) {
+                return new ValidationResult(Boolean.FALSE, null, false, curDir);
+            }
+            File oldValue = curDir;
+            File file = validationParams.file;
+            File prev = null;
+
+            if (Thread.interrupted()) {
+                return new ValidationResult(Boolean.FALSE, null, false, curDir);
+            }
+            
+            while (!fileChooser.isTraversable(file) && prev != file) {
+                prev = file;
+                file = fileChooser.getFileSystemView().getParentDirectory(file);
+            }
+            if (Thread.interrupted()) {
+                return new ValidationResult(Boolean.FALSE, null, false, curDir);
+            }
+            
+            if (file == null) {
+                if (fileChooser.getCurrentDirectoryPath() != null) {
+                    file = fileChooser.getFileSystemView().createFileObject(fileChooser.getCurrentDirectoryPath());
+                    if (Thread.interrupted()) {
+                        return new ValidationResult(Boolean.FALSE, null, false, curDir);
+                    }
+                    
+                    fileChooser.clearCurrentDirectoryPath();
+                } else {
+                    file = fileChooser.getFileSystemView().getDefaultDirectory();
+                }
+            }
+            final boolean directoryChanged = !file.equals(oldValue);
+            if (directoryChanged) {
+                fileChooser.setCurrentDirectory(file);
+                
+            }
+            final FileNode node = new FileNode(file);
+            node.loadChildren(fileChooser, true);
+            return new ValidationResult(Boolean.TRUE, node, true, file);
+        }
+        
 
         @Override
         public void run() {
-            assert !EventQueue.isDispatchThread();
-            File file = work;
-            if (file == null) {
-                return;
-            }
-            if (lastUpdatePathName != null && lastUpdatePathName.equals(file.getPath())) {
-                restoreCursor();
-                return;
-            }
-            lastUpdatePathName = file.getPath();
-            ui.markStartTime();
-            ui.setCursor(fileChooser, Cursor.WAIT_CURSOR);
-            final FileNode node = new FileNode(file);
-            node.loadChildren(fileChooser, true);
+            if (SwingUtilities.isEventDispatchThread()) {
+                ValidationWorkerCheckState curStatus = lastCheck;
+                currentState = curStatus;
 
-            // update UI in EQ thread
-            SwingUtilities.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    ui.model = new DirectoryTreeModel(node);
-                    tree.setModel(ui.model);
-                    tree.repaint();
-                    ui.checkUpdate();
-                    restoreCursor();
+                ValidationResult validationResult = curStatus == null ? null : curStatus.validationResult;
+                if (curStatus == null || curStatus.checking == null) {
+                    if (validationResult  == null) {
+                        validationResult = new ValidationResult(Boolean.FALSE, null, false, null);
+                    } else {
+                        validationResult = new ValidationResult(Boolean.TRUE, validationResult.node, validationResult.isDirectoryChanged,  validationResult.currentFile);                    }
+                    
+                    currentState = new ValidationWorkerCheckState(null, validationResult);
+                } 
+                //TODO: show error
+                ui.updateTree();
+            } else {
+                //check if we are not cancelled already
+                try {
+                    Thread.sleep(1);
+                } catch (InterruptedException e) {
+                    //log.log(Level.FINEST, "Interrupted (1) check for {0}", path);
                 }
-            });
+                ValidationResult result = validate();
+                if (Thread.interrupted()) {
+                    return;
+                }
+                lastCheck = new ValidationWorkerCheckState(result.isValid ? null : Boolean.FALSE, result);
+                SwingUtilities.invokeLater(this);
+
+            }                        
         }
 
+        
+        void cancel() {
+            synchronized (updateTaskLock) {
+                if (updateTask != null) {
+                    updateTask.cancel(true);
+                }
+            }
+        }        
         private void restoreCursor () {
             ui.setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
         }
