@@ -59,10 +59,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
+import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressUtils;
@@ -82,6 +84,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  * Manager for project JS library files.
@@ -95,9 +98,11 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
 
     private static final long serialVersionUID = 8973245611032L;
 
-    private static final Logger LOGGER = Logger.getLogger(JavaScriptLibraryCustomizerPanel.class.getName());
+    static final Logger LOGGER = Logger.getLogger(JavaScriptLibraryCustomizerPanel.class.getName());
 
     static final String JS_MIME_TYPE = "text/javascript"; // NOI18N
+
+    private static final RequestProcessor RP = new RequestProcessor(JavaScriptLibraryCustomizerPanel.class);
 
     private final ProjectCustomizer.Category category;
     final JavaScriptLibraries.CustomizerSupport customizerSupport;
@@ -226,11 +231,16 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
 
     void storeData() {
         assert !EventQueue.isDispatchThread();
-        try {
-            addNewJsLibraries(javaScriptLibrarySelection.getLibrariesFolder(), javaScriptLibrarySelection.getSelectedLibraries());
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    addNewJsLibraries(javaScriptLibrarySelection.getLibrariesFolder(), javaScriptLibrarySelection.getSelectedLibraries());
+                } catch (IOException ex) {
+                    LOGGER.log(Level.WARNING, null, ex);
+                }
+            }
+        });
     }
 
     @NbBundle.Messages({
@@ -259,8 +269,18 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
         }
     }
 
+    @NbBundle.Messages("JavaScriptLibraryCustomizerPanel.errorDialog.configureProxy=Configure Proxy...")
     private static void errorOccured(String message) {
-        DialogDisplayer.getDefault().notifyLater(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+        NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE);
+        JButton configureProxyButton = new JButton(Bundle.JavaScriptLibraryCustomizerPanel_errorDialog_configureProxy());
+        configureProxyButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                OptionsDisplayer.getDefault().open(OptionsDisplayer.GENERAL);
+            }
+        });
+        descriptor.setAdditionalOptions(new Object[] {configureProxyButton});
+        DialogDisplayer.getDefault().notifyLater(descriptor);
     }
 
     private List<String> getLibraryNames(List<JavaScriptLibrarySelectionPanel.SelectedLibrary> libraries) {
