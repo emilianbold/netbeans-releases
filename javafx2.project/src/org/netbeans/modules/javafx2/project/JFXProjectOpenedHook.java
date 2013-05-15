@@ -47,11 +47,9 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -64,7 +62,6 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 /**
@@ -136,13 +133,7 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
 
             if(runUpdateJFXImpl != null) {
                 switchBusy();
-                final ProjectInformation info = ProjectUtils.getInformation(prj);
-                final String projName = info != null ? info.getName() : null;
-                final RequestProcessor RP = new RequestProcessor(JFXProjectOpenedHook.class.getName() + projName, 2);
-                final RequestProcessor.Task taskJfxImpl = RP.post(runUpdateJFXImpl);
-                if(taskJfxImpl != null) {
-                    taskJfxImpl.waitFinished();
-                }
+                runUpdateJFXImpl.run();
                 switchDefault();
             }
         }
@@ -161,10 +152,6 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
         }
     }
 
-
-    private boolean missingJFXPlatform() {
-        return !JavaFXPlatformUtils.isThereAnyJavaFXPlatform();
-    }
 
     private boolean isEnabledJFXUpdate() {
         final PropertyEvaluator evaluator = eval.evaluator();

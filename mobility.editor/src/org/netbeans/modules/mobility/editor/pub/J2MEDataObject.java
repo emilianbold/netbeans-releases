@@ -50,12 +50,26 @@
 package org.netbeans.modules.mobility.editor.pub;
 
 import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
+import java.beans.BeanInfo;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.*;
 import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JEditorPane;
+import javax.swing.JPanel;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
@@ -76,6 +90,10 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.core.spi.multiview.CloseOperationState;
+import org.netbeans.core.spi.multiview.MultiViewElement;
+import org.netbeans.core.spi.multiview.MultiViewElementCallback;
+import org.netbeans.core.spi.multiview.MultiViewFactory;
 import org.netbeans.mobility.antext.preprocessor.CommentingPreProcessor;
 import org.netbeans.mobility.antext.preprocessor.PreprocessorException;
 import org.netbeans.modules.mobility.editor.DocumentPreprocessor;
@@ -88,18 +106,32 @@ import org.openide.cookies.OpenCookie;
 import org.openide.cookies.PrintCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileLock;
+import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileStatusEvent;
+import org.openide.filesystems.FileStatusListener;
+import org.openide.filesystems.FileSystem;
+import org.openide.loaders.DataObject;
 import org.openide.loaders.MultiDataObject;
 import org.openide.loaders.SaveAsCapable;
 import org.openide.nodes.Node.Cookie;
+import org.openide.nodes.NodeAdapter;
+import org.openide.nodes.NodeListener;
+import org.openide.text.CloneableEditor;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
+import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupListener;
+import org.openide.util.Mutex;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 import org.openide.windows.Mode;
+import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
+import org.openide.xml.XMLUtil;
 
 /**
  *
@@ -109,8 +141,10 @@ public class J2MEDataObject extends MultiDataObject {
     static final long serialVersionUID = 8090017233591568305L;
 
     private static final String MIME_TYPE = "text/x-java"; // NOI18N
+    private static final String MIME_TYPE_J2ME = "text/x-j2me"; // NOI18N
+    private static final String MV_JAVA_ID = "j2me.source"; // NOI18N
     static final String ATTR_FILE_ENCODING = "Content-Encoding"; // NOI18N
-    
+
     private J2MEEditorSupport jes;
 
     public J2MEDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException {
@@ -188,18 +222,6 @@ public class J2MEDataObject extends MultiDataObject {
         return super.getCookie(type);
     }
 
-//    @Messages("Source=&Source") // NOI18N
-//    @MultiViewElement.Registration(displayName = "#Source", // NOI18N
-//            iconBase = "org/netbeans/modules/mobility/editor/resources/class.gif", // NOI18N
-//            persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
-//            mimeType = MIME_TYPE,
-//            preferredID = "javame.source", // NOI18N
-//            position = 1
-//    )
-//    public static MultiViewEditorElement createMultiViewEditorElement(Lookup context) {
-//        return new MultiViewEditorElement(context);
-//    }
-
     protected synchronized J2MEEditorSupport createJavaEditorSupport() {
         if (jes == null) {
             jes = new J2MEEditorSupport(this);
@@ -212,6 +234,17 @@ public class J2MEDataObject extends MultiDataObject {
         private ProjectConfigurationsHelper pch;
         private static Method setAlreadyModified = null;
         private static DocumentPreprocessor documentPreprocessor;
+        
+        /** MultiView TopComponent*/
+        private CloneableTopComponent topComponent;
+        private NodeListener nodeListener;
+        private J2MEDataObject j2MEdataObject;
+        
+        private static PropertyChangeListener topcompsListener;        
+        private static Map<FileSystem, FileStatusListener> fsToStatusListener = new HashMap<FileSystem, FileStatusListener>();
+        
+        /** Set of opened J2MEEditorSupport instances */
+        private static final Set<J2MEEditorSupport> opened = Collections.synchronizedSet(new HashSet<J2MEEditorSupport>());
 
         static {
             try {
@@ -280,6 +313,7 @@ public class J2MEDataObject extends MultiDataObject {
         public J2MEEditorSupport(J2MEDataObject dataObject, CloneableEditorSupport.Env env) {
             super(dataObject, env);
             setMIMEType(MIME_TYPE);
+            this.j2MEdataObject = dataObject;
         }
 
         @Override
@@ -407,8 +441,9 @@ public class J2MEDataObject extends MultiDataObject {
             }
             if (!super.notifyModified()) {
                 return false;
-            }
+            }            
             ((Environment) this.env).addSaveCookie();
+            updateMVTCDisplayName();
             return true;
         }
 
@@ -416,6 +451,18 @@ public class J2MEDataObject extends MultiDataObject {
         void notifyUnmodified() {
             super.notifyUnmodified();
             ((Environment) this.env).removeSaveCookie();
+            updateMVTCDisplayName();
+        }
+
+        @Override
+        protected void notifyClosed() {
+            opened.remove(this);
+            if (opened.isEmpty() || TopComponent.getRegistry().getOpened().isEmpty()) {
+                removeStatusListeners();
+            }
+            super.notifyClosed();
+            topComponent = null;
+            nodeListener = null;
         }
 
         public @Override
@@ -443,9 +490,13 @@ public class J2MEDataObject extends MultiDataObject {
         }
 
         private void openInAWT() {
+            if (!j2MEdataObject.isValid()) {
+                return;
+            }
             super.open();
-            CloneableTopComponent topComponent = openCloneableTopComponent();
+            topComponent = openCloneableTopComponent();
             topComponent.requestActive();
+            registerNodeListener();
             MultiViewHandler handler = MultiViews.findMultiViewHandler(topComponent);
             if (handler != null) {
                 handler.requestActive(handler.getPerspectives()[0]);
@@ -454,13 +505,347 @@ public class J2MEDataObject extends MultiDataObject {
 
         @Override
         protected CloneableEditorSupport.Pane createPane() {
-            CloneableTopComponent mvtc = MultiViews.createCloneableMultiView(MIME_TYPE, getDataObject());
+            if (!j2MEdataObject.isValid()) {
+                return super.createPane();
+            }
+            CloneableTopComponent mvtc = MultiViews.createCloneableMultiView(MIME_TYPE_J2ME, getDataObject());
 
             Mode editorMode = WindowManager.getDefault().findMode(CloneableEditorSupport.EDITOR_MODE);
             if (editorMode != null) {
                 editorMode.dockInto(mvtc);
             }
             return (CloneableEditorSupport.Pane) mvtc;
+        }
+
+        private void registerNodeListener() {
+            if (j2MEdataObject.isValid()) {
+                Node node = j2MEdataObject.getNodeDelegate();
+                topComponent.setIcon(node.getIcon(BeanInfo.ICON_COLOR_16x16));
+                if (nodeListener == null) {
+                    NodeListener listener = new NodeAdapter() {
+                        @Override
+                        public void propertyChange(final PropertyChangeEvent ev) {
+                            Mutex.EVENT.writeAccess(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if (Node.PROP_ICON.equals(ev.getPropertyName())) {
+                                        if (j2MEdataObject.isValid() && (topComponent != null)) {
+                                            topComponent.setIcon(j2MEdataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    };
+                    node.addNodeListener(org.openide.nodes.NodeOp.weakNodeListener(listener, node));
+                    nodeListener = listener;
+                }
+            }
+        }
+
+        private void addStatusListener(FileSystem fs) {
+            FileStatusListener fsl = fsToStatusListener.get(fs);
+            if (fsl == null) {
+                fsl = new FileStatusListener() {
+                    @Override
+                    public void annotationChanged(FileStatusEvent ev) {
+                        synchronized (opened) {
+                            Iterator<J2MEEditorSupport> iterator = opened.iterator();
+                            while (iterator.hasNext()) {
+                                J2MEEditorSupport editorSupport = iterator.next();
+                                if (ev.hasChanged(editorSupport.getDataObject().getPrimaryFile())) {
+                                    editorSupport.updateMVTCDisplayName();
+                                }
+                            }
+                        }
+                    }
+                };
+                fs.addFileStatusListener(fsl);
+                fsToStatusListener.put(fs, fsl);
+            }
+        }
+
+        private static void removeStatusListeners() {
+            for (Map.Entry entry : fsToStatusListener.entrySet()) {
+                FileSystem fs = (FileSystem) entry.getKey();
+                FileStatusListener fsl = (FileStatusListener) entry.getValue();
+                fs.removeFileStatusListener(fsl);
+            }
+            fsToStatusListener.clear();
+        }
+
+        @Messages("MSG_MODIFIED=File {0} is modified. Save?")
+        final CloseOperationState canCloseElement(TopComponent tc) {
+            // if this is not the last cloned java editor component, closing is OK
+            if (!J2MEEditorSupport.isLastView(tc)) {
+                return CloseOperationState.STATE_OK;
+            }
+
+            if (!isModified()) {
+                return CloseOperationState.STATE_OK;
+            }
+
+            AbstractAction save = new AbstractAction() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    try {
+                        saveDocument();
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            };
+            save.putValue(Action.LONG_DESCRIPTION, Bundle.MSG_MODIFIED(
+                    getDataObject().getPrimaryFile().getNameExt()));
+
+            return MultiViewFactory.createUnsafeCloseState(
+                    "ID_J2MEFILE_CLOSING", // NOI18N
+                    save,
+                    MultiViewFactory.NOOP_CLOSE_ACTION);
+        }
+
+        private static boolean isLastView(TopComponent tc) {
+            if (!(tc instanceof CloneableTopComponent)) {
+                return false;
+            }
+
+            boolean oneOrLess = true;
+            Enumeration en = ((CloneableTopComponent) tc).getReference().getComponents();
+            if (en.hasMoreElements()) {
+                en.nextElement();
+                if (en.hasMoreElements()) {
+                    oneOrLess = false;
+                }
+            }
+            return oneOrLess;
+        }
+
+        private void updateMVTCDisplayName() {
+            if (java.awt.EventQueue.isDispatchThread()) {
+                updateMVTCDisplayNameInAWT();
+            } else {
+                java.awt.EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        updateMVTCDisplayNameInAWT();
+                    }
+                });
+            }
+        }
+
+        private void updateMVTCDisplayNameInAWT() {
+            if ((topComponent == null) || (!j2MEdataObject.isValid())) {
+                return;
+            }
+
+            String[] titles = getMVTCDisplayName(j2MEdataObject);
+            Enumeration en = topComponent.getReference().getComponents();
+            while (en.hasMoreElements()) {
+                TopComponent tc = (TopComponent) en.nextElement();
+                tc.setDisplayName(titles[0]);
+                tc.setHtmlDisplayName(titles[1]);
+            }
+        }
+
+        private static String[] getMVTCDisplayName(J2MEDataObject j2meDataObject) {
+            if (!j2meDataObject.isValid()) {
+                return new String[]{j2meDataObject.getName(), j2meDataObject.getName()};
+            }
+            Node node = j2meDataObject.getNodeDelegate();
+            String title = node.getDisplayName();
+            String htmlTitle = node.getHtmlDisplayName();
+            if (htmlTitle == null) {
+                try {
+                    htmlTitle = XMLUtil.toElementContent(title);
+                } catch (CharConversionException x) {
+                    htmlTitle = "???"; // NOI18N 
+                }
+            }
+            boolean modified = j2meDataObject.isModified();
+            boolean readOnly = readOnly(j2meDataObject);
+            return new String[]{
+                DataEditorSupport.annotateName(title, false, modified, readOnly),
+                DataEditorSupport.annotateName(htmlTitle, true, modified, readOnly)
+            };
+        }
+
+        private static boolean readOnly(J2MEDataObject j2meDataObject) {
+            if (!j2meDataObject.getPrimaryFile().canWrite()) {
+                return true;
+            }
+            return false;
+        }
+
+        void setTopComponent(TopComponent topComp) {
+            topComponent = (CloneableTopComponent) topComp;
+            String[] titles = getMVTCDisplayName(j2MEdataObject);
+            topComponent.setDisplayName(titles[0]);
+            topComponent.setHtmlDisplayName(titles[1]);
+            opened.add(this);
+            registerNodeListener();
+            try {
+                addStatusListener(j2MEdataObject.getPrimaryFile().getFileSystem());
+            } catch (FileStateInvalidException fsiex) {
+                fsiex.printStackTrace();
+            }
+        }
+    }
+
+    @Messages("Source=&Source") // NOI18N    
+    @MultiViewElement.Registration(
+            displayName = "#Source", // NOI18N
+            iconBase = "org/netbeans/modules/mobility/editor/resources/class.gif", // NOI18N
+            persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
+            preferredID = MV_JAVA_ID,
+            mimeType = MIME_TYPE_J2ME,
+            position = 1000)
+    public static class J2MEEditorTopComponent
+            extends CloneableEditor
+            implements MultiViewElement {
+
+        private static final long serialVersionUID = -3326744316624172414L;
+        private transient JComponent toolbar;
+        private J2MEEditorSupport javaEditor;
+        private transient MultiViewElementCallback multiViewCallback;
+
+        public J2MEEditorTopComponent(Lookup context) {
+            super(context.lookup(DataEditorSupport.class));
+            javaEditor = context.lookup(J2MEEditorSupport.class);
+            DataObject dataObject = context.lookup(DataObject.class);
+            if (javaEditor != null) {
+                javaEditor.prepareDocument();
+            }
+            if (dataObject != null) {
+                Node[] nodes = getActivatedNodes();
+                if ((nodes == null) || (nodes.length == 0)) {
+                    setActivatedNodes(new Node[]{dataObject.getNodeDelegate()});
+                }
+            }
+            this.setIcon(dataObject.getNodeDelegate().getIcon(BeanInfo.ICON_COLOR_16x16));
+        }
+
+        J2MEEditorTopComponent() {
+            super();
+        }
+
+        J2MEEditorTopComponent(DataEditorSupport s) {
+            super(s);
+        }
+
+        @Override
+        public JComponent getToolbarRepresentation() {
+            if (toolbar == null) {
+                JEditorPane pane = getEditorPane();
+                if (pane != null) {
+                    Document doc = pane.getDocument();
+                    if (doc instanceof NbDocument.CustomToolbar) {
+                        toolbar = ((NbDocument.CustomToolbar) doc).createToolbar(pane);
+                    }
+                }
+                if (toolbar == null) {
+                    toolbar = new JPanel();
+                }
+            }
+            return toolbar;
+        }
+
+        @Override
+        public JComponent getVisualRepresentation() {
+            return this;
+        }
+
+        @Override
+        public void componentDeactivated() {
+            super.componentDeactivated();
+        }
+
+        @Override
+        public void componentActivated() {
+            super.componentActivated();
+        }
+
+        @Override
+        public void setMultiViewCallback(MultiViewElementCallback callback) {
+            multiViewCallback = callback;
+            // Deserialization
+            if (((DataEditorSupport) cloneableEditorSupport()).getDataObject() instanceof J2MEDataObject) {
+                DataEditorSupport des = (DataEditorSupport) cloneableEditorSupport();
+                J2MEDataObject j2meDataObject = (J2MEDataObject) des.getDataObject();
+                J2MEEditorSupport jes = (J2MEEditorSupport) j2meDataObject.createJavaEditorSupport();
+                jes.setTopComponent(callback.getTopComponent());
+            }
+        }
+
+        @Override
+        public void requestVisible() {
+            if (multiViewCallback != null) {
+                multiViewCallback.requestVisible();
+            } else {
+                super.requestVisible();
+            }
+        }
+
+        @Override
+        public void requestActive() {
+            if (multiViewCallback != null) {
+                multiViewCallback.requestActive();
+            } else {
+                super.requestActive();
+            }
+        }
+
+        @Override
+        public void componentClosed() {
+            super.canClose(null, true);
+            super.componentClosed();
+        }
+
+        @Override
+        public void componentShowing() {
+            super.componentShowing();
+        }
+
+        @Override
+        public void componentHidden() {
+            super.componentHidden();
+        }
+
+        @Override
+        public void componentOpened() {
+            super.componentOpened();
+            DataObject dob = ((DataEditorSupport) cloneableEditorSupport()).getDataObject();
+            if ((multiViewCallback != null) && !(dob instanceof J2MEDataObject)) {
+                multiViewCallback.getTopComponent().close();
+                EditorCookie ec = dob.getCookie(EditorCookie.class);
+                ec.open();
+            }
+        }
+
+        @Override
+        public void updateName() {
+            super.updateName();
+            if (multiViewCallback != null) {
+                J2MEDataObject j2meDataObject = (J2MEDataObject) ((DataEditorSupport) cloneableEditorSupport()).getDataObject();
+                if (!j2meDataObject.isValid()) {
+                    return;
+                }
+                String[] titles = J2MEEditorSupport.getMVTCDisplayName(j2meDataObject);
+                setDisplayName(titles[0]);
+                setHtmlDisplayName(titles[1]);
+            }
+        }
+
+        @Override
+        protected boolean closeLast() {
+            return true;
+        }
+
+        @Override
+        public CloseOperationState canCloseElement() {
+            if (javaEditor == null) {
+                return CloseOperationState.STATE_OK;
+            }
+            return javaEditor.canCloseElement(multiViewCallback.getTopComponent());
         }
     }
 }

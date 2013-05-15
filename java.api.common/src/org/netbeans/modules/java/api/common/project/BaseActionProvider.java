@@ -111,7 +111,7 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.applet.AppletSupport;
 import org.netbeans.modules.java.api.common.classpath.ClassPathProviderImpl;
 import static org.netbeans.modules.java.api.common.project.Bundle.*;
-import org.netbeans.modules.java.api.common.project.ui.customizer.CustomizerProvider2;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassChooser;
 import org.netbeans.modules.java.api.common.project.ui.customizer.MainClassWarning;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;

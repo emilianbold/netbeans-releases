@@ -117,6 +117,7 @@ public final class JFXProjectProperties {
     public static final String JAVAFX_DISABLE_CONCURRENT_RUNS = "javafx.disable.concurrent.runs"; // NOI18N
     public static final String JAVAFX_ENABLE_CONCURRENT_EXTERNAL_RUNS = "javafx.enable.concurrent.external.runs"; // NOI18N
     public static final String JAVAFX_ENDORSED_ANT_CLASSPATH = "endorsed.javafx.ant.classpath"; // NOI18N
+    public static final String PLATFORM_ACTIVE = "platform.active"; // NOI18N
     
     /** The standard extension for FXML source files. */
     public static final String FXML_EXTENSION = "fxml"; // NOI18N    
@@ -660,7 +661,7 @@ public final class JFXProjectProperties {
     
     public String getFXRunTimePath() {
         assert evaluator != null;
-        String active = evaluator.getProperty("platform.active"); // NOI18N
+        String active = evaluator.getProperty(PLATFORM_ACTIVE);
         String path = JavaFXPlatformUtils.getJavaFXRuntimePath(active);
         return path;
     }
@@ -1302,6 +1303,7 @@ public final class JFXProjectProperties {
         storeRest(ep, pep);
         CONFIGS.store(ep, pep);
         updatePreloaderComment(ep);
+        //JFXProjectUtils.updateClassPathExtensionProperties(ep);
         logProps(ep);
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
@@ -1364,6 +1366,7 @@ public final class JFXProjectProperties {
         }
         setOrRemove(ep, JAVASE_NATIVE_BUNDLING_ENABLED, nativeBundlingEnabled ? "true" : null); //NOI18N
         setOrRemove(ep, JAVASE_KEEP_JFXRT_ON_CLASSPATH, keepJFXRTonCP ? "true" : null); //NOI18N
+        //JFXProjectUtils.updateClassPathExtensionProperties(ep);
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 @Override
@@ -1588,7 +1591,7 @@ public final class JFXProjectProperties {
     }
 
     private void initJSCallbacks (final PropertyEvaluator eval) {
-        String platformName = eval.getProperty("platform.active");
+        String platformName = eval.getProperty(PLATFORM_ACTIVE);
         Map<String,List<String>/*|null*/> callbacks = JFXProjectUtils.getJSCallbacks(platformName);
         Map<String,String/*|null*/> result = new LinkedHashMap<String,String/*|null*/>();
         for(Map.Entry<String,List<String>/*|null*/> entry : callbacks.entrySet()) {
@@ -1614,7 +1617,7 @@ public final class JFXProjectProperties {
     }
 
     private void storePlatform(EditableProperties editableProps) {
-        String activePlatform = editableProps.getProperty("platform.active"); // NOI18N
+        String activePlatform = editableProps.getProperty(PLATFORM_ACTIVE);
         JavaPlatform[] installedPlatforms = JavaPlatformManager.getDefault().getInstalledPlatforms();
         for (JavaPlatform javaPlatform : installedPlatforms) {
             String platformName = javaPlatform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);

@@ -167,7 +167,8 @@ public class PullUpTransformer extends RefactoringVisitor {
 
     private ClassTree addAbstractMemberToTarget(ClassTree njuClass, Element methodElm, Element classElement, GeneratorUtilities genUtils) {
         MethodTree method = (MethodTree) workingCopy.getTrees().getTree(methodElm);
-        Set<Modifier> mod = EnumSet.copyOf(method.getModifiers().getFlags());
+        Set<Modifier> flags = method.getModifiers().getFlags();
+        Set<Modifier> mod = flags.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(flags);
         mod.add(Modifier.ABSTRACT);
         mod.remove(Modifier.FINAL);
         // abstract method cannot be synchronized
