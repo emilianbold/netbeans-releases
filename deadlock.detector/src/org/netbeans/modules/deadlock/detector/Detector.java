@@ -45,7 +45,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.Thread.State;
 import java.lang.management.LockInfo;
 import static java.lang.management.ManagementFactory.*;
 import java.lang.management.MonitorInfo;
@@ -54,7 +53,6 @@ import java.lang.management.ThreadMXBean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.util.Exceptions;
-
 
 /**
  * Detects deadlocks using ThreadMXBean.
@@ -135,7 +133,9 @@ class Detector implements Runnable {
                 if (LOG.isLoggable(Level.FINE)) {
                     LOG.log(Level.FINE, "Deadlock detection took: {0} ms.", System.currentTimeMillis() - time); // NOI18N
                 }
-                Thread.sleep(PAUSE);
+                if (isRunning()) {
+                    Thread.sleep(PAUSE);
+                }
             }
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
@@ -155,8 +155,11 @@ class Detector implements Runnable {
             return;
         }
         
+        // Report deadlock just once
+        stop();
+        
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "Deadlock detected");
+            LOG.log(Level.FINE, "Deadlock detected"); // NOI18N
         }
         PrintStream out = null;
         File file = null;
@@ -164,7 +167,7 @@ class Detector implements Runnable {
             file = File.createTempFile("deadlock", ".txt"); // NOI18N
             out = new PrintStream(new FileOutputStream(file));
             if (LOG.isLoggable(Level.FINE)) {
-                LOG.log(Level.FINE, "Temporrary file created: {0}" , file);
+                LOG.log(Level.FINE, "Temporrary file created: {0}" , file); // NOI18N
             }            
         } catch (IOException iOException) {
             out = System.out;            
@@ -189,7 +192,6 @@ class Detector implements Runnable {
         if (out != System.out) {
             out.close();
         }
-        stop();
         
         reportStackTrace(deadlocked, file);
     }
@@ -265,5 +267,3 @@ class Detector implements Runnable {
     private static class DeadlockDetectedException extends RuntimeException {
     }
 }
-
-// o.n.core
