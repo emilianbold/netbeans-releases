@@ -101,7 +101,8 @@ public class EjbFacadeWizardIteratorTest extends TestBase {
 
         String golden =
         "/*\n"+
-        " * To change this template, choose Tools | Templates\n"+
+        " * To change this license header, choose License Headers in Project Properties.\n"+
+        " * To change this template file, choose Tools | Templates\n"+
         " * and open the template in the editor.\n"+
         " */\n"+
         "\n"+

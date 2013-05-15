@@ -3111,7 +3111,13 @@ widthcheck:  {
      * @since 8.25
      */
     public static URI toURI(File f) {
-        final URI u = f.toPath().toUri();
+        URI u;
+        try {
+            u = f.toPath().toUri();
+        } catch (java.nio.file.InvalidPathException ex) {
+            u = f.toURI();
+            LOG.log(Level.FINE, "can't convert " + f + " falling back to " + u, ex);
+        }
         if (u.toString().startsWith("file:///")) { 
             try {
                 // #214131 workaround
