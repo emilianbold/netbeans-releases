@@ -55,12 +55,14 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.xml.namespace.QName;
 
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.AnnotationModelHelper;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigComponent;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModelFactory;
+import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.Behavior;
 import org.netbeans.modules.web.jsf.api.metamodel.Component;
@@ -73,8 +75,11 @@ import org.netbeans.modules.web.jsf.api.metamodel.SystemEventListener;
 import org.netbeans.modules.web.jsf.api.metamodel.Validator;
 import org.netbeans.modules.web.jsf.impl.facesmodel.AnnotationBehaviorRenderer;
 import org.netbeans.modules.web.jsf.impl.facesmodel.AnnotationRenderer;
+import org.netbeans.modules.web.jsf.impl.facesmodel.FacesConfigImpl;
+import org.netbeans.modules.web.jsf.impl.facesmodel.JSFConfigQNames;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -82,6 +87,8 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 /**
  *
@@ -303,7 +310,10 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
         return facesConfigModel;
     }
 
-    private JSFConfigModel createModel(FileObject fo) {
+    /**
+     * Can return null if the created model is not faces-config model.
+     */
+    protected JSFConfigModel createModel(FileObject fo) {
         JSFConfigModel model = getCachedModel(fo);
         if (model == null) {
             try {
@@ -312,7 +322,12 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
                 lookup = new ProxyLookup(lookup, Lookups.singleton(this));
                 source = new ModelSource(lookup, true);
                 model = JSFConfigModelFactory.getInstance().getModel(source);
-                putCachedModel(fo, model);
+                Node rootElement = model.getDocument().getDocumentElement();
+                if (rootElement == null || !JSFConfigQNames.areSameQName(JSFConfigQNames.FACES_CONFIG, (Element) rootElement)) {
+                    return null;
+                } else {
+                    putCachedModel(fo, model);
+                }
             } catch (CatalogModelException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -338,10 +353,15 @@ public class JsfModelImpl extends JsfModelManagers implements JsfModel {
         FileObject facesConfig = getUnit().getApplicationFacesConfig();
         if (facesConfig != null) {
             facesConfigMod = createModel(facesConfig);
-            mods.add(facesConfigMod);
+            if (facesConfigMod != null) {
+                mods.add(facesConfigMod);
+            }
         }
         for (FileObject fo : getUnit().getApplicationConfigurationResources()) {
-            mods.add(createModel(fo));
+            JSFConfigModel model = createModel(fo);
+            if (model != null) {
+                mods.add(model);
+            }
         }
         setModelsVariable(mods, facesConfigMod);
         // TODO: nobody seems to be listening and there is not property defined in JsfModel api class
