@@ -51,6 +51,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -411,6 +412,10 @@ public final class WebClientLibraryManager {
                     result.add(fileObject);
                 }
             }
+            // possible cleanup
+            if (libRoot.getChildren().length == 0) {
+                libRoot.delete();
+            }
         }
         if (missingFiles) {
             throw new MissingLibResourceException(result);
@@ -421,10 +426,13 @@ public final class WebClientLibraryManager {
     private static FileObject copySingleFile(URL url, String name, FileObject
             libRoot) throws IOException
     {
-        FileObject fo = libRoot.createData(name);
         InputStream is;
         try {
-            is = url.openStream();
+            int timeout = 15000; // default timeout
+            URLConnection connection = url.openConnection();
+            connection.setConnectTimeout(timeout);
+            connection.setReadTimeout(timeout);
+            is = connection.getInputStream();
         }
         catch (FileNotFoundException ex) {
             LOGGER.log(Level.INFO, "could not open stream for " + url, ex); // NOI18N
@@ -434,6 +442,7 @@ public final class WebClientLibraryManager {
             LOGGER.log(Level.INFO, "could not open stream for " + url, ex); // NOI18N
             return null;
         }
+        FileObject fo = libRoot.createData(name);
         OutputStream os = null;
         try {
             os = fo.getOutputStream();
