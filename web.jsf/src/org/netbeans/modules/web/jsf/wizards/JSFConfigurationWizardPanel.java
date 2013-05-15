@@ -73,42 +73,50 @@ final class JSFConfigurationWizardPanel implements WizardDescriptor.Panel, Wizar
         this.wme = wme;
         this.controller = extenderController;
     }
-    
+
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
 
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new JSFConfigurationWizardPanelVisual(this, controller, wme);
         }
         return component;
     }
-    
+
+    @Override
     public HelpCtx getHelp() {
         HelpCtx helpCtx = null;
         if (component != null && (helpCtx = component.getHelpCtx())!=null)
             return helpCtx;
-        return new HelpCtx(JSFConfigurationWizardPanel.class);
+        return new HelpCtx("org.netbeans.modules.web.jsf.wizards.JSFConfigurationWizardPanel");
     }
-    
+
+    @Override
     public boolean isValid() {
         getComponent();
         return component.valid(wizardDescriptor);
     }
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    
+
+    @Override
     public void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
+
+    @Override
     public void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
     protected void fireChangeEvent() {
         changeSupport.fireChange();
     }
-    
+
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
         component.read(wizardDescriptor);
@@ -119,7 +127,8 @@ final class JSFConfigurationWizardPanel implements WizardDescriptor.Panel, Wizar
         if (substitute != null)
             wizardDescriptor.putProperty("NewProjectWizard_Title", substitute); // NOI18N
     }
-    
+
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);

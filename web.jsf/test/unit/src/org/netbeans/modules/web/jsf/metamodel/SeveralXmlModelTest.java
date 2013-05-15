@@ -161,6 +161,28 @@ public class SeveralXmlModelTest extends CommonTestCase {
         });
     }
 
+    public void testPrettyFacesModel() throws IOException, InterruptedException {
+        TestUtilities.copyStringToFileObject(srcFO, "META-INF/faces-config-prettyFaces.xml", getFileContent("data/faces-config-prettyFaces.xml"));
+        createJsfModel().runReadAction(new MetadataModelAction<JsfModel, Void>() {
+            @Override
+            public Void run(JsfModel model) throws Exception {
+                assertEquals(0, model.getModels().size());
+
+                PropListener l = new PropListener();
+                model.addPropertyChangeListener(l);
+                TestUtilities.copyStringToFileObject(srcFO, "WEB-INF/faces-config.xml", getFileContent("data/faces-config.xml"));
+                l.waitForModelUpdate();
+
+                assertEquals(1, model.getModels().size());
+                assertEquals(1, model.getFacesConfigs().size());
+
+                List<Application> applications = model.getElements(Application.class);
+                assertEquals(1, applications.size());
+                return null;
+            }
+        });
+    }
+
     public void testModelBeanCompletion() throws Exception {
         FileObject fileObject = srcFO.getFileObject("META-INF/one.faces-config.xml");
         if (fileObject != null) {

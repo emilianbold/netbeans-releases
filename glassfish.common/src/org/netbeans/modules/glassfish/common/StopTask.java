@@ -135,7 +135,7 @@ public class StopTask extends BasicTask<TaskState> {
                     Thread.sleep(1000); // flush the process
                 } catch (InterruptedException e) {
                 }
-                LogViewMgr.removeServerLogStream(instance);
+                LogViewMgr.removeLog(instance);
                 LogViewMgr logger = LogViewMgr.getInstance(instance.getProperty(GlassfishModule.URL_ATTR));
                 logger.stopReaders();                
 

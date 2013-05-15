@@ -52,10 +52,13 @@ import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.nio.file.attribute.FileTime;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -297,9 +300,43 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     }
 
     private void initLibraries() {
+        setLibrariesUpdateLabel();
         initLibrariesTable();
         initLibrariesList();
         initLibrariesButtons();
+    }
+
+    @NbBundle.Messages({
+        "# {0} - date or n/a",
+        "JavaScriptLibrarySelectionPanel.update.default=<html><a href=\"#\">Updated: {0}</a>",
+        "# {0} - date with time",
+        "JavaScriptLibrarySelectionPanel.update.default.tooltip=Updated: {0}",
+        "JavaScriptLibrarySelectionPanel.update.never=never",
+        "JavaScriptLibrarySelectionPanel.update.running=Updating...",
+    })
+    private void setLibrariesUpdateLabel() {
+        String text;
+        String tooltip = null;
+        if (isUpdateRunning()) {
+            text = Bundle.JavaScriptLibrarySelectionPanel_update_running();
+        } else {
+            FileTime lastUpdateTime = WebClientLibraryManager.getDefault().getLibrariesLastUpdatedTime();
+            String when;
+            if (lastUpdateTime == null) {
+                when = Bundle.JavaScriptLibrarySelectionPanel_update_never();
+            } else {
+                Date updateDate = new Date(lastUpdateTime.toMillis());
+                when = DateFormat.getDateInstance()
+                        .format(updateDate);
+                tooltip = Bundle.JavaScriptLibrarySelectionPanel_update_default_tooltip(DateFormat.getDateTimeInstance()
+                        .format(updateDate));
+            }
+            text = Bundle.JavaScriptLibrarySelectionPanel_update_default(when);
+        }
+        updateLibrariesLabel.setText(text);
+        updateLibrariesLabel.setToolTipText(tooltip);
+        // fix ui
+        updateLibrariesLabel.setMaximumSize(updateLibrariesLabel.getPreferredSize());
     }
 
     private void initLibrariesTable() {
@@ -449,6 +486,20 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
     void fireChangeEvent() {
         changeSupport.fireChange();
+    }
+
+    private boolean isUpdateRunning() {
+        return !panelEnabled;
+    }
+
+    private void startUpdate() {
+        lockPanel();
+        setLibrariesUpdateLabel();
+    }
+
+    void finishUpdate() {
+        unlockPanel();
+        setLibrariesUpdateLabel();
     }
 
     private void enablePanel(boolean enabled) {
@@ -617,7 +668,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
         librariesScrollPane.setViewportView(librariesTable);
 
-        org.openide.awt.Mnemonics.setLocalizedText(updateLibrariesLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelectionPanel.class, "JavaScriptLibrarySelectionPanel.updateLibrariesLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(updateLibrariesLabel, "UPDATE"); // NOI18N
         updateLibrariesLabel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 updateLibrariesLabelMouseEntered(evt);
@@ -658,7 +709,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(updateLibrariesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(updateLibrariesLabel))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(librariesLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -671,7 +722,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(selectedLabel)
-                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)))
+                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)))
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {deselectSelectedButton, selectSelectedButton});
@@ -697,7 +748,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                         .addComponent(deselectSelectedButton)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(updateLibrariesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(updateLibrariesLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(librariesFolderLabel)
@@ -706,16 +757,16 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void updateLibrariesLabelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_updateLibrariesLabelMouseEntered
-        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        int cursor = isUpdateRunning() ? Cursor.DEFAULT_CURSOR : Cursor.HAND_CURSOR;
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(cursor));
     }//GEN-LAST:event_updateLibrariesLabelMouseEntered
 
     @NbBundle.Messages("JavaScriptLibrarySelectionPanel.error.jsLibs.update=Available libraries not updated, see IDE log for more details.")
     private void updateLibrariesLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_updateLibrariesLabelMousePressed
-        if (!panelEnabled) {
-            // panel not enabled
+        if (isUpdateRunning()) {
             return;
         }
-        lockPanel();
+        startUpdate();
         RP.post(new Runnable() {
             @Override
             public void run() {
@@ -730,7 +781,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            unlockPanel();
+                            finishUpdate();
                         }
                     });
                 }
