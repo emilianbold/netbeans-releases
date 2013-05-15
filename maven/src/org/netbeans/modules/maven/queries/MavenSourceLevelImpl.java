@@ -128,7 +128,7 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
         File file = FileUtil.toFile(javaFile);
         if (file == null) {
             //#128609 something in jar?
-            return null;
+            return SourceLevelQuery.Profile.DEFAULT;
         }
         URI uri = Utilities.toURI(file);
         assert "file".equals(uri.getScheme());
