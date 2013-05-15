@@ -46,6 +46,7 @@ import java.io.File;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.openide.modules.Places;
 
 public class Utils {
 
@@ -72,7 +73,7 @@ public class Utils {
 
     /** Tries to set permissions on preferences storage file to -rw------- */
     public static void goMinusR(Preferences p) {
-        File props = new File(System.getProperty("netbeans.user"), ("config/Preferences" + p.absolutePath()).replace('/', File.separatorChar) + ".properties");
+        File props = new File(Places.getUserDirectory(), ("config/Preferences" + p.absolutePath()).replace('/', File.separatorChar) + ".properties");
         if (props.isFile()) {
             props.setReadable(false, false); // seems to be necessary, not sure why
             props.setReadable(true, true);

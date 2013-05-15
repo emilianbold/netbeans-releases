@@ -46,6 +46,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.net.URI;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -173,10 +175,11 @@ public class MavenSourceLevelImpl implements SourceLevelQueryImplementation2 {
                          Constants.PLUGIN_COMPILER, //NOI18N
                          "compilerArgs", "arg", goal);
         if (compilerArgs != null) {
-            for (String s : compilerArgs) {
-                Matcher match = PROFILE.matcher(s);
-                if (match.find()) {
-                    String prof = match.group(1);
+            Iterator<String> it = Arrays.asList(compilerArgs).iterator();
+            while (it.hasNext()) {
+                String p = it.next();
+                if ("-profile".equals(p) && it.hasNext()) {               
+                    String prof = it.next();
                     SourceLevelQuery.Profile toRet = SourceLevelQuery.Profile.forName(prof);
                     return toRet != null ? toRet : SourceLevelQuery.Profile.DEFAULT;
                 }
