@@ -76,6 +76,10 @@ public final class APTLanguageSupport {
         return singleton;
     }
     
+    public boolean isLanguageC(String language) {
+        return STD_C.equals(language) || GNU_C.equals(language);
+    }
+    
     public APTLanguageFilter getFilter(String lang) {
         return getFilter(lang, null);
     }

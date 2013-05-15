@@ -440,6 +440,16 @@ public final class FileImpl implements CsmFile,
             return APTLanguageSupport.getInstance().getFilter(getFileLanguage(), getFileLanguageFlavor());
         }
     }
+    
+    // Returns language for current context (compilation unit)
+    public String getContextLanguage(APTPreprocHandler.State ppState) {
+        FileImpl startFile = ppState == null ? null : Utils.getStartFile(ppState);
+        if (startFile != null && startFile != this) {
+            return startFile.getFileLanguage();
+        } else {
+            return getFileLanguage();
+        }
+    }
 
     public String getFileLanguage() {
         return Utils.getLanguage(fileType, getAbsolutePath().toString());
@@ -622,6 +632,7 @@ public final class FileImpl implements CsmFile,
                                 ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, null, false, triggerParsingActivity);
                                 for (APTPreprocHandler preprocHandler : handlers) {
                                     parseParams.setCurrentPreprocHandler(preprocHandler);
+                                    parseParams.setLanguage(getContextLanguage(preprocHandler.getState()));
                                     _parse(parseParams);
                                     if (parsingState == ParsingState.MODIFIED_WHILE_BEING_PARSED) {
                                         break; // does not make sense parsing old data
@@ -656,6 +667,7 @@ public final class FileImpl implements CsmFile,
                                 }
                                 for (APTPreprocHandler preprocHandler : handlers) {
                                     parseParams.setCurrentPreprocHandler(preprocHandler);
+                                    parseParams.setLanguage(getContextLanguage(preprocHandler.getState()));
                                     if (first) {
                                         _reparse(parseParams);
                                         first = false;
@@ -957,6 +969,7 @@ public final class FileImpl implements CsmFile,
         // FIXME: it's worth to remember states before parse and reuse after
         private final long lastParsed;
         private final long lastParsedCRC;
+        private String language = APTLanguageSupport.GNU_CPP;
 
         public ParseDescriptor(FileImpl fileImpl, APTFile fullAPT, CsmParserProvider.CsmParseCallback callback, boolean emptyFileContent, boolean triggerParsingActivity) {
             this(fileImpl, fullAPT, callback, TraceFlags.EXCLUDE_COMPOUND, emptyFileContent, triggerParsingActivity);
@@ -982,6 +995,11 @@ public final class FileImpl implements CsmFile,
             this.curPreprocHandler = preprocHandler;
         }
         
+        private void setLanguage(String language) {
+            assert language != null : "null language is not allowed";
+            this.language = language;
+        }
+        
         private APTPreprocHandler getCurrentPreprocHandler() {
             assert curPreprocHandler != null : "null preprocHandler is not allowed";
             return curPreprocHandler;
@@ -990,6 +1008,11 @@ public final class FileImpl implements CsmFile,
         public FileContent getFileContent() {
             return content;
         }
+        
+        @Override
+        public String getLanguage() {
+            return language;
+        }        
 
         @Override
         public CsmFile getMainFile() {
