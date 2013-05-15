@@ -66,6 +66,7 @@ import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEProjectPlatform;
@@ -77,6 +78,8 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.cookies.CloseCookie;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileLock;
@@ -85,6 +88,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -795,11 +799,11 @@ public final class JFXProjectUtils {
                                     }
                                 }
                             } finally {
-                                if (lock != null) {
-                                    lock.releaseLock();
-                                }
                                 if (os != null) {
                                     os.close();
+                                }
+                                if (lock != null) {
+                                    lock.releaseLock();
                                 }
                             }
                         } catch (IOException ioe) {
@@ -874,6 +878,18 @@ public final class JFXProjectUtils {
         return _currentJfxImplCRC.equals(crc);
     }
 
+    public static boolean isProjectOpen(@NonNull Project project) {
+        Project[] projects = OpenProjects.getDefault().getOpenProjects();
+        if(projects != null) {
+            for(Project p : Arrays.asList(projects)) {
+                if(p.getProjectDirectory().getPath().equals(project.getProjectDirectory().getPath())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     /**
      * Updates project.properties so that if JFXRT artifacts are explicitly added to
      * compile classpath if they are not on classpath by default. This is a workaround
@@ -887,24 +903,26 @@ public final class JFXProjectUtils {
      * @param prj the project to update
      */
     public static void updateClassPathExtension(@NonNull final Project project) throws IOException {
-        final Lookup lookup = project.getLookup();
-        final J2SEPropertyEvaluator eval = lookup.lookup(J2SEPropertyEvaluator.class);;
-        if (eval != null) {
-            // if project has Default_JavaFX_Platform, change it to default Java Platform
-            String platformName = eval.evaluator().getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
-            if(JFXProjectProperties.isEqual(platformName, JavaFXPlatformUtils.DEFAULT_JAVAFX_PLATFORM)) {
-                final J2SEProjectPlatform platformSetter = lookup.lookup(J2SEProjectPlatform.class);
-                if(platformSetter != null) {
-                    platformSetter.setProjectPlatform(JavaPlatformManager.getDefault().getDefaultPlatform());
-                }
-            }
-        }
+        final boolean hasDefaultJavaFXPlatform[] = new boolean[1];
         final EditableProperties ep = new EditableProperties(true);
         final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 @Override
                 public Void run() throws Exception {
+                    final Lookup lookup = project.getLookup();
+                    final J2SEPropertyEvaluator eval = lookup.lookup(J2SEPropertyEvaluator.class);
+                    if (eval != null) {
+                        // if project has Default_JavaFX_Platform, change it to default Java Platform
+                        String platformName = eval.evaluator().getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
+                        hasDefaultJavaFXPlatform[0] = JFXProjectProperties.isEqual(platformName, JavaFXPlatformUtils.DEFAULT_JAVAFX_PLATFORM);
+                    }
+                    if(hasDefaultJavaFXPlatform[0]) {
+                        final J2SEProjectPlatform platformSetter = lookup.lookup(J2SEProjectPlatform.class);
+                        if(platformSetter != null) {
+                            platformSetter.setProjectPlatform(JavaPlatformManager.getDefault().getDefaultPlatform());
+                        }
+                    }
                     final InputStream is = projPropsFO.getInputStream();
                     try {
                         ep.load(is);
@@ -933,6 +951,19 @@ public final class JFXProjectUtils {
             });
         } catch (MutexException mux) {
             throw (IOException) mux.getException();
+        }
+        if(hasDefaultJavaFXPlatform[0]) {
+            final String headerTemplate = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_DEFAULT_PLATFORM_HEADER"); //NOI18N
+            final String header = MessageFormat.format(headerTemplate, new Object[] {ProjectUtils.getInformation(project).getDisplayName()});
+            final String content = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_DEFAULT_PLATFORM_CONTENT"); //NOI18N
+            Notification notePlatformChange = NotificationDisplayer.getDefault().notify(
+                    header, 
+                    ImageUtilities.loadImageIcon("org/netbeans/modules/javafx2/project/ui/resources/jfx_project.png", true), //NOI18N
+                    content, 
+                    null, 
+                    NotificationDisplayer.Priority.LOW, 
+                    NotificationDisplayer.Category.INFO);
+            JFXProjectOpenedHook.addNotification(project, notePlatformChange);
         }
     }
 
@@ -1107,23 +1138,25 @@ public final class JFXProjectUtils {
      * 
      * @param ep EditableProperties containing properties to be updated
      */
-    public static void updateClassPathExtensionProperties(@NonNull final EditableProperties ep) {
-        ep.remove(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME);
-        ep.remove(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK);
+    public static boolean updateClassPathExtensionProperties(@NonNull final EditableProperties ep) {
+        boolean changed = false;
+        changed = ep.remove(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME) != null ? true : changed;
+        changed = ep.remove(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK) != null ? true : changed;
         Collection<String> extendExtProp = getUpdatedExtensionProperty(ep);
         if(extendExtProp != null && !extendExtProp.isEmpty()) {
             ep.setProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION, getPaths(extendExtProp));
+            changed = true;
         } else {
-            ep.remove(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION);
+            changed = ep.remove(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION) != null ? true : changed;
             //ep.remove(JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH);
         }
         Collection<String> extendCPProp = getUpdatedCPProperty(ep, extendExtProp == null || extendExtProp.isEmpty());
         // JAVAC_CLASSPATH to be preserved even if empty (create new project creates it empty by default)
         if(extendCPProp != null) {
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, getPaths(extendCPProp));
-        } else {
-            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, ""); // NOI18N
+            changed = true;
         }
+        return changed;
     }
 
     /**

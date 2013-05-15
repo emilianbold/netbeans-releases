@@ -53,7 +53,6 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -77,8 +76,6 @@ import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
-import org.openide.util.TaskListener;
 
 /**
  * Problem resolver specific to JavaFX Application project type
@@ -94,12 +91,13 @@ public class JFXProjectProblems implements ProjectProblemsProvider, PropertyChan
     private final ProjectProblemsProviderSupport problemsProviderSupport = new ProjectProblemsProviderSupport(this);
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(JFXProjectProblems.class);
-    private volatile Task updateClassPathExtensionTask = null;
     private final Project prj;
     private final J2SEPropertyEvaluator eval;
     private final J2SEProjectPlatform platformSetter;
+    private JFXPlatformUpdater updater;
 
     public JFXProjectProblems(final Lookup lkp) {
+        this.updater = null;
         Parameters.notNull("lkp", lkp); //NOI18N
         this.prj = lkp.lookup(Project.class);
         Parameters.notNull("prj", prj); //NOI18N
@@ -129,40 +127,23 @@ public class JFXProjectProblems implements ProjectProblemsProvider, PropertyChan
         "HINT_FX_Not_Supported_By_JDK=The active project platform is not JavaFX-enabled."
     })
     public Collection<? extends ProjectProblem> getProblems() {
-        try {
-            if(//needsJFXRT(eval) && 
-                    !JFXProjectUtils.hasCorrectClassPathExtension(prj)) {
-                if (updateClassPathExtensionTask == null || updateClassPathExtensionTask.isFinished()) {
-                    updateClassPathExtensionTask = RP.create(new Runnable() { // NOI18N
-                        @Override
-                        public void run() {
-                            try {
-                                JFXProjectUtils.updateClassPathExtension(prj);
-                            } catch(IllegalArgumentException ex) {
-                                // missing platform; ignore here, will be detected in collectProblems() below
-                            } catch (IOException ex) {
-                                LOGGER.log(Level.WARNING, "Can't update project properties: {0}", ex); // NOI18N
-                            }
-                        }
-                    });
-                    updateClassPathExtensionTask.addTaskListener(new TaskListener() {
-                        @Override
-                        public void taskFinished(org.openide.util.Task task) {
-                            problemsProviderSupport.fireProblemsChange();
-                            //updateClassPathExtensionTask = null;
-                        }
-                    });
-                    updateClassPathExtensionTask.schedule(0);
-                }
+        if(!isFXProject(eval)) {
+            return Collections.<ProjectProblem>emptySet();
+        }
+        if(updater == null) {
+            updater = prj.getLookup().lookup(JFXPlatformUpdater.class);
+            if(updater != null) {
+                updater.addListener(this);
+            }
+        }
+        if(updater != null) {
+            if(!updater.hasUpdated()) {
                 return Collections.<ProjectProblem>emptySet();
             }
-        } catch(IllegalArgumentException ex) {
-            // missing platform; ignore here, will be detected in collectProblems() below
-        } catch(Exception ex) {
-            LOGGER.log(Level.WARNING, "Can't read project properties: {0}", ex); // NOI18N
+        } else {
+            return Collections.<ProjectProblem>emptySet();
         }
-        return !isFXProject(eval) ? Collections.<ProjectProblem>emptySet() :
-               problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
+        return problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
             @Override
             public Collection<? extends ProjectProblemsProvider.ProjectProblem> collectProblems() {
                 Collection<? extends ProjectProblemsProvider.ProjectProblem> currentProblems = ProjectManager.mutex().readAccess(
