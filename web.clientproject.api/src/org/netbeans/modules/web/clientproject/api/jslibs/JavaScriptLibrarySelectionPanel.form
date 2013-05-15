@@ -50,7 +50,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="selectedLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="selectedLibrariesScrollPane" pref="215" max="32767" attributes="0"/>
+                  <Component id="selectedLibrariesScrollPane" pref="216" max="32767" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -130,9 +130,7 @@
     </Container>
     <Component class="javax.swing.JLabel" name="updateLibrariesLabel">
       <Properties>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/web/clientproject/api/jslibs/Bundle.properties" key="JavaScriptLibrarySelectionPanel.updateLibrariesLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
+        <Property name="text" type="java.lang.String" value="UPDATE" noResource="true"/>
       </Properties>
       <Events>
         <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="updateLibrariesLabelMouseEntered"/>

@@ -53,6 +53,7 @@ import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -229,14 +230,12 @@ public class TemplateClientIterator implements TemplateWizard.Iterator {
     }
     
     protected WizardDescriptor.Panel[] createPanels(Project project, TemplateWizard wiz) {
-        Sources sources = (Sources) project.getLookup().lookup(org.netbeans.api.project.Sources.class);
+        Sources sources = (Sources) ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_DOC_ROOT);
-        templateClientPanel=new TemplateClientPanel(wiz);
+        templateClientPanel = new TemplateClientPanel(wiz);
         // creates simple wizard panel with bottom panel
-        WizardDescriptor.Panel firstPanel = Templates.createSimpleTargetChooser(project,sourceGroups,templateClientPanel);
-        
         return new WizardDescriptor.Panel[] {
-            firstPanel
+            Templates.buildSimpleTargetChooser(project, sourceGroups).bottomPanel(templateClientPanel).create()
         };
     }
     

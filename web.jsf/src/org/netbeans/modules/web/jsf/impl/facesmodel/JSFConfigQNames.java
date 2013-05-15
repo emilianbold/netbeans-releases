@@ -51,6 +51,8 @@ import java.util.Set;
 import javax.xml.namespace.QName;
 
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
+import org.w3c.dom.Element;
 
 /**
  *
@@ -271,6 +273,20 @@ public enum JSFConfigQNames {
             value = qname_1_2.getPrefix() + ":" + qname_1_2.getLocalPart();
         }
         return value;
+    }
+
+    public static boolean areSameQName(JSFConfigQNames jsfqname, Element element) {
+        QName qname = AbstractDocumentComponent.getQName(element);
+        if (JSFConfigQNames.JSF_1_2_NS.equals(element.getNamespaceURI())) {
+            return jsfqname.getQName(JSFVersion.JSF_1_2).equals(qname);
+        } else if (JSFConfigQNames.JSF_2_0_NS.equals(element.getNamespaceURI())) {
+            return jsfqname.getQName(JSFVersion.JSF_2_0).equals(qname);
+        } else if (JSFConfigQNames.JSF_2_1_NS.equals(element.getNamespaceURI())) {
+            return jsfqname.getQName(JSFVersion.JSF_2_1).equals(qname);
+        } else if (JSFConfigQNames.JSF_2_2_NS.equals(element.getNamespaceURI())) {
+            return jsfqname.getQName(JSFVersion.JSF_2_2).equals(qname);
+        }
+        return jsfqname.getLocalName().equals(qname.getLocalPart());
     }
 
     private static final Set<QName> mappedQNames_1_1 = new HashSet<QName>();
