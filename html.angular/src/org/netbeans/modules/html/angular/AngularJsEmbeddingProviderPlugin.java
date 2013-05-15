@@ -49,6 +49,8 @@ import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.html.angular.model.AngularModel;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
@@ -104,16 +106,15 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     }
 
     @Override
-//    public boolean startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence, List<Embedding> embeddings) {
-    public boolean startProcessing(Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence, List<Embedding> embeddings) {
+    public boolean startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence, List<Embedding> embeddings) {
         this.snapshot = snapshot;
         this.tokenSequence = tokenSequence;
         this.embeddings = embeddings;
         this.stack.clear();
-//        AngularModel model = AngularModel.getModel(parserResult);
-//        if(!model.isAngularPage()) {
-//            return false;
-//        }
+        AngularModel model = AngularModel.getModel(parserResult);
+        if(!model.isAngularPage()) {
+            return false;
+        }
         
         FileObject file = snapshot.getSource().getFileObject();
         if (file == null) {
