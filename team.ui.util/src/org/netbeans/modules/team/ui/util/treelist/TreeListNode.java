@@ -60,7 +60,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author S. Aubrecht
  */
-public abstract class TreeListNode {
+public abstract class TreeListNode extends ListNode {
 
     /**
      * Time in milliseconds to wait for children creation to finish. When the
@@ -110,13 +110,6 @@ public abstract class TreeListNode {
             }
             return new ArrayList<TreeListNode>(children);
         }
-    }
-
-    /**
-     * @return Actions for popup menu, or null to disable popup menu.
-     */
-    public Action[] getPopupActions() {
-        return null;
     }
 
     /**
@@ -170,27 +163,6 @@ public abstract class TreeListNode {
         res.configure(foreground, background, isSelected, hasFocus, getNestingDepth(), rowHeight, rowWidth);
 
         return res;
-    }
-
-    /**
-     * Creates component that will render this node in TreeList. The component
-     * will be wrapped in another component to add proper background, border and
-     * expansion button.
-     *
-     * @param foreground
-     * @param background
-     * @param isSelected
-     * @param hasFocus
-     * @return Component to render this node.
-     */
-    protected abstract JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth);
-
-    /**
-     * @return Action to invoke when Enter key is pressed on selected node in
-     * TreeList.
-     */
-    protected Action getDefaultAction() {
-        return null;
     }
 
     /**

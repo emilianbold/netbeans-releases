@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,27 +37,78 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.team.ui.util.treelist;
 
-import java.awt.Point;
+import java.awt.Color;
+import javax.swing.Action;
+import javax.swing.JComponent;
 
 /**
- * UI for tree-like list which forwards mouse events to renderer component under
- * mouse cursor.
- *
+ * List model item which provides custom renderer.
+ * 
  * @author S. Aubrecht
+ * @see SelectionList
+ * @see TreeList
  */
-public class TreeListUI extends AbstractListUI {
+public abstract class ListNode {
 
-    @Override
-    boolean showPopupAt( int rowIndex, Point location ) {
-        if (!(list instanceof TreeList)) {
-            return false;
+    private ListRendererPanel renderer;
+
+    private int lastRowWidth = -1;
+
+    /**
+     * @return Actions for popup menu, or null to disable popup menu.
+     */
+    public Action[] getPopupActions() {
+        return null;
+    }
+
+    final JComponent getListRenderer(Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowHeight, int rowWidth) {
+        ListRendererPanel res = null;
+        synchronized (this) {
+            //hack - in case of resizing TC fire content changed to repaint
+            if (lastRowWidth > rowWidth) {
+                renderer = null;
+            }
+            this.lastRowWidth = rowWidth;
+            if (null == renderer) {
+                renderer = new ListRendererPanel(this);
+            }
+            res = renderer;
         }
 
-        ((TreeList) list).showPopupMenuAt(rowIndex, location);
-        return true;
+        res.configure(foreground, background, isSelected, hasFocus, rowHeight, rowWidth);
+
+        return res;
+    }
+
+    /**
+     * Creates component that will render this node in TreeList. The component
+     * will be wrapped in another component to add proper background, border and
+     * expansion button.
+     *
+     * @param foreground
+     * @param background
+     * @param isSelected
+     * @param hasFocus
+     * @return Component to render this node.
+     */
+    protected abstract JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowWidth);
+
+    /**
+     * @return Action to invoke when Enter key is pressed on selected node in
+     * TreeList.
+     */
+    protected Action getDefaultAction() {
+        return null;
+    }
+
+    /**
+     * Invoked when the node is added to the model. All listeners should be
+     * added here.
+     */
+    protected void attach() {
     }
 }

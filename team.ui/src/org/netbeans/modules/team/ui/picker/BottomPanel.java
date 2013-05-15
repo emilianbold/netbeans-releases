@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,27 +37,48 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.team.ui.util.treelist;
+package org.netbeans.modules.team.ui.picker;
 
-import java.awt.Point;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JSeparator;
+import org.netbeans.modules.team.ui.common.AddInstanceAction;
+import org.openide.util.NbBundle;
 
 /**
- * UI for tree-like list which forwards mouse events to renderer component under
- * mouse cursor.
- *
+ * The bottom part of team mega-menu.
+ * 
  * @author S. Aubrecht
  */
-public class TreeListUI extends AbstractListUI {
+class BottomPanel extends JPanel {
 
-    @Override
-    boolean showPopupAt( int rowIndex, Point location ) {
-        if (!(list instanceof TreeList)) {
-            return false;
-        }
+    public BottomPanel() {
+        setLayout( new GridBagLayout() );
+        setBorder( BorderFactory.createEmptyBorder( 10, 10, 10, 10 ) );
+        setOpaque( false );
 
-        ((TreeList) list).showPopupMenuAt(rowIndex, location);
-        return true;
+        add( new JSeparator(JSeparator.HORIZONTAL), new GridBagConstraints( 0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0,0,10,0), 0, 0) );
+
+        JButton newConnection = new JButton( NbBundle.getMessage(BottomPanel.class, "Ctl_NewConnection") );
+        newConnection.addActionListener( new ActionListener() {
+
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                MegaMenu menu = MegaMenu.getCurrent();
+                new AddInstanceAction().actionPerformed(e);
+                menu.showAgain();
+            }
+        } );
+        add( newConnection, new GridBagConstraints( 1, 1, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,5), 0, 0) );
+        add( new JLabel(), new GridBagConstraints( 2, 1, 1, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0) );
     }
 }

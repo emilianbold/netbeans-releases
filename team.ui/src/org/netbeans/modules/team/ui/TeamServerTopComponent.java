@@ -55,6 +55,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import org.netbeans.modules.team.ui.common.AddInstanceAction;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
@@ -63,6 +65,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 import static org.netbeans.modules.team.ui.Bundle.*;
+import org.netbeans.modules.team.ui.picker.MegaMenu;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -173,6 +176,29 @@ public final class TeamServerTopComponent extends TopComponent {
             }
         });
 
+        combo.addPopupMenuListener( new PopupMenuListener() {
+
+            @Override
+            public void popupMenuWillBecomeVisible( PopupMenuEvent e ) {
+//                SwingUtilities.invokeLater( new Runnable() {
+//
+//                    @Override
+//                    public void run() {
+//                        combo.hidePopup();
+//                        showMegaMenu();
+//                    }
+//                });
+            }
+
+            @Override
+            public void popupMenuWillBecomeInvisible( PopupMenuEvent e ) {
+            }
+
+            @Override
+            public void popupMenuCanceled( PopupMenuEvent e ) {
+            }
+        });
+
         final JPanel panel = new JPanel();
         java.awt.GridBagConstraints gridBagConstraints;
 
@@ -279,5 +305,10 @@ public final class TeamServerTopComponent extends TopComponent {
         public Object readResolve() {
             return TeamServerTopComponent.getDefault();
         }
+    }
+
+    private void showMegaMenu() {
+        MegaMenu menu = MegaMenu.create();
+        menu.show( combo );
     }
 }

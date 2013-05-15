@@ -44,8 +44,11 @@ package org.netbeans.modules.team.ui.spi;
 import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
 import java.net.URL;
+import java.util.List;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import org.netbeans.modules.team.ui.util.treelist.SelectionList;
 
 /**
  *
@@ -90,6 +93,23 @@ public interface TeamServer {
     public JComponent getDashboardComponent ();
 
     public LoginPanelSupport createLoginSupport ();
+
+    /**
+     * Creates a list component with all server's projects. The method blocks
+     * until all projects are loaded so do not call from EDT.
+     *
+     * @param forceRefresh True to clear cache and reload from server, false if
+     * cached values are allowed.
+     * @return Selection list to be displayed in mega menu or null if there was
+     * any error while retrieving the projects.
+     */
+    public SelectionList getProjects( boolean forceRefresh );
+
+    /**
+     * @return Action's for server's toolbar in mega menu. Null value represents 
+     * toolbar separator.
+     */
+    public List<Action> getActions();
     
     /**
      * user status on team
