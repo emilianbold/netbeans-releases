@@ -131,7 +131,7 @@ public class SourceForBinaryImplTest extends TestBase {
                 null,
                 new File[] { FileUtil.toFile(yyJar)} );
         
-        ApisupportAntUtils.addDependency(project, "yy", null, null, true);
+        ApisupportAntUtils.addDependency(project, "yy", null, null, true, null);
         ProjectManager.getDefault().saveProject(project);
         
         URL wrappedJar = FileUtil.urlForArchiveOrDir(new File(wrapperDirF, "release/modules/ext/yy.jar"));

@@ -55,13 +55,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import static org.netbeans.modules.apisupport.project.NbModuleType.NETBEANS_ORG;
+import static org.netbeans.modules.apisupport.project.NbModuleType.STANDALONE;
+import static org.netbeans.modules.apisupport.project.NbModuleType.SUITE_COMPONENT;
 import org.netbeans.modules.apisupport.project.api.LayerHandle;
 import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import org.netbeans.modules.apisupport.project.spi.LayerUtil;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.spi.PlatformJarProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.ClusterUtils;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -114,9 +119,25 @@ class NbModuleProviderImpl implements NbModuleProvider {
     @Override public void addDependencies(NbModuleProvider.ModuleDependency[] dependencies) throws IOException {
         for (NbModuleProvider.ModuleDependency dep : dependencies) {
             if (dep.isTestDependency()) {
-                ApisupportAntUtils.addTestDependency(prj, dep.getCodeNameBase());
+                ApisupportAntUtils.addTestDependency(prj, dep.getCodeNameBase(), dep.getClusterName());
             } else {
-                ApisupportAntUtils.addDependency(prj, dep.getCodeNameBase(), dep.getReleaseVersion(), dep.getVersion(), dep.isUseInCompiler());
+                ApisupportAntUtils.addDependency(prj, dep.getCodeNameBase(), dep.getReleaseVersion(), dep.getVersion(), dep.isUseInCompiler(), dep.getClusterName());
+            }
+        }
+    }
+
+    @Override public void addModulesToTargetPlatform(NbModuleProvider.ModuleDependency[] dependencies) throws IOException {
+        final Project suiteProject = ApisupportAntUtils.getSuiteProject(prj);
+        if(suiteProject!=null) {
+            final SuiteProperties suiteProps = ApisupportAntUtils.getSuiteProperties((SuiteProject)suiteProject);
+            for (NbModuleProvider.ModuleDependency dep : dependencies) {
+                boolean isClusterIncludedInTargetPlatform;
+                if((isClusterIncludedInTargetPlatform = ApisupportAntUtils.isClusterIncludedInTargetPlatform(suiteProps, dep.getClusterName()))
+                    && !ApisupportAntUtils.isModuleIncludedInTargetPlatform(suiteProps, dep.getCodeNameBase())) {
+                    ApisupportAntUtils.addModuleToTargetPlatform(suiteProject, suiteProps, dep.getCodeNameBase());
+                } else if(!isClusterIncludedInTargetPlatform) {
+                    ApisupportAntUtils.addClusterToTargetPlatform(suiteProject, suiteProps, dep.getClusterName(), dep.getCodeNameBase());
+                }
             }
         }
     }

@@ -110,6 +110,19 @@ is the proper place.
     <changes>
         <change>
             <api name="apisupport_spi"/>
+            <summary>Modified NB module provider for aadding modules to target platform</summary>
+            <version major="1" minor="64"/>
+            <date day="14" month="5" year="2013"/>
+            <author login="mkozeny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <code>NbModuleProvider</code> interface now contains method <code>addModulesToTargetPlatform</code>
+                for adding modules to target platform also with its clusters if necessary.
+            </description>
+            <class package="org.netbeans.modules.apisupport.project.spi" name="NbModuleProvider"/>
+        </change>
+        <change>
+            <api name="apisupport_spi"/>
             <summary>Modified branding for internationalization</summary>
             <version major="1" minor="63"/>
             <date day="1" month="5" year="2013"/>
