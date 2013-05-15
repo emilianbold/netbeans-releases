@@ -54,7 +54,6 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.border.LineBorder;
 
 /**
  * Wrapper for node renderers. Defines appropriate foreground/background colors,
@@ -71,8 +70,6 @@ final class ListRendererPanel extends JPanel {
 
         this.node = node;
         setOpaque(true);
-        if (node.isExpandable() && node.showExpander()) {
-    
     }
 
     public void configure( Color foreground, Color background, boolean isSelected, boolean hasFocus, int rowHeight, int rowWidth ) {
@@ -111,7 +108,6 @@ final class ListRendererPanel extends JPanel {
     }
 
     @Override
-    
     public String getToolTipText(MouseEvent event) {
         Component c = SwingUtilities.getDeepestComponentAt(this, event.getX(), event.getY());
         if (c instanceof JComponent) {
