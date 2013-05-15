@@ -43,6 +43,7 @@ package org.netbeans.modules.php.latte.completion;
 
 import java.util.List;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.php.latte.spi.completion.VariableCompletionProvider;
 
 /**
  *
@@ -161,12 +162,22 @@ public enum LatteCompletionContext {
 
     protected void completeVariables(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
         completeDefaultVariables(completionProposals, request);
+        completeProvidedVariables(completionProposals, request);
     }
 
     private void completeDefaultVariables(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
         for (LatteElement variable : LatteCompletionHandler.DEFAULT_VARIABLES) {
             if (startsWith(variable.getName(), request.prefix)) {
                 completionProposals.add(new LatteCompletionProposal.VariableCompletionProposal(variable, request));
+            }
+        }
+    }
+
+    private void completeProvidedVariables(List<CompletionProposal> completionProposals, LatteCompletionProposal.CompletionRequest request) {
+        List<VariableCompletionProvider> variableProviders = CompletionProviders.getVariableProviders();
+        for (VariableCompletionProvider variableProvider : variableProviders) {
+            for (String variable : variableProvider.getVariables(request.parserResult.getSnapshot().getSource().getFileObject())) {
+                completionProposals.add(new LatteCompletionProposal.VariableCompletionProposal(LatteElement.VariableFactory.create(variable), request));
             }
         }
     }
