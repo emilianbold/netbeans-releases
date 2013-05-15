@@ -380,4 +380,9 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
         // Bug 206234 - Code Completation in constructor
         performTest("bug206234.cpp", 13, 37);
     }
+    
+    public void testBug214650() throws Exception {
+        // Bug 214650 - Function declaration code completion messes up with const arguments
+        performTest("bug214650.cpp", 5, 1, "void te");
+    }   
 }
