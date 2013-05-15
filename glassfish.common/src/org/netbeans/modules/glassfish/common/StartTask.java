@@ -438,7 +438,7 @@ public class StartTask extends BasicTask<TaskState> {
                     LOGGER.log(Level.INFO,
                             "{0} is not responding, killing the process.",
                             new Object[] {instance.getName()});
-                    LogViewMgr.removeServerLogStream(instance);
+                    LogViewMgr.removeLog(instance);
                     serverProcess.destroy();
                     logger.stopReaders();
                     return fireOperationStateChanged(TaskState.FAILED,
@@ -492,7 +492,7 @@ public class StartTask extends BasicTask<TaskState> {
                 "{0} Failed to start, killing process {1} after {2} ms",
                 new Object[]{instance.getName(), serverProcess,
                 System.currentTimeMillis() - start});
-        LogViewMgr.removeServerLogStream(instance);
+        LogViewMgr.removeLog(instance);
         serverProcess.destroy();
         logger.stopReaders();
         return fireOperationStateChanged(
