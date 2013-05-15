@@ -383,6 +383,6 @@ public class CCBasicCompletionTestCase extends CompletionBaseTestCase {
     
     public void testBug214650() throws Exception {
         // Bug 214650 - Function declaration code completion messes up with const arguments
-        performTest("bug214650.cpp", 5, 1, "void te");
+        performTest("bug214650.cpp", 6, 5, "void te");
     }   
 }
