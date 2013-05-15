@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "CUnit/Basic.h"
+#include <CUnit/Basic.h>
 <#if testIncludes?? && testIncludes != "">${testIncludes}</#if>
 /*
  * CUnit Test Suite
