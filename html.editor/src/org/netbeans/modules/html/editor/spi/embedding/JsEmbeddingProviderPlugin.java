@@ -71,11 +71,10 @@ public abstract class JsEmbeddingProviderPlugin {
      * @param snapshot
      * @param ts
      * @param embeddings 
-     * @since 2.28
+     * @since 2.32
      * @return true if this plugin is interested in processing the token sequence, false otherwise.
      */
-//    public abstract boolean startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings);
-    public abstract boolean startProcessing(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings);
+    public abstract boolean startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings);
     
     /**
      * Called after the last call to {@link #processToken(org.netbeans.modules.parsing.api.Snapshot, org.netbeans.api.lexer.TokenSequence, java.util.List)}.
