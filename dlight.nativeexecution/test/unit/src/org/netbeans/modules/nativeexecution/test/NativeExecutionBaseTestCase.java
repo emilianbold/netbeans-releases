@@ -97,6 +97,7 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
     static {
         // Setting netbeans.dirs makes installedFileLocator work properly
         System.setProperty("netbeans.dirs", NbClustersInfoProvider.getClusters());
+        System.setProperty("remote.user.password.keep_in_memory", "true");
     }
 
     protected static class TestLogHandler extends Handler {
