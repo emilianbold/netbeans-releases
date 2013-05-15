@@ -277,14 +277,6 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
                 TokenSequence<? extends LatteMarkupTokenId> ts = LatteLexerUtils.getLatteMarkupTokenSequence(document, offset);
                 if (ts == null) {
                     result = QueryType.STOP;
-                } else {
-                    ts.move(offset);
-                    if (ts.moveNext() || ts.movePrevious()) {
-                        Token<? extends LatteMarkupTokenId> token = ts.token();
-                        if (token != null && token.id() == LatteMarkupTokenId.T_VARIABLE) {
-                            result = QueryType.STOP;
-                        }
-                    }
                 }
             }
         }

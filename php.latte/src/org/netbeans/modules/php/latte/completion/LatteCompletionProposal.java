@@ -263,20 +263,50 @@ public abstract class LatteCompletionProposal implements CompletionProposal {
 
     }
 
-    static class VariableCompletionProposal extends LatteCompletionProposal {
+    abstract static class VariableCompletionProposal extends LatteCompletionProposal {
         public VariableCompletionProposal(LatteElement element, CompletionRequest request) {
             super(element, request);
         }
 
         @Override
-        @NbBundle.Messages("VariableRhs=Variable")
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return Bundle.VariableRhs();
+        public ElementKind getKind() {
+            return ElementKind.VARIABLE;
+        }
+
+    }
+
+    static class DefaultVariableCompletionProposal extends VariableCompletionProposal {
+        public DefaultVariableCompletionProposal(LatteElement element, CompletionRequest request) {
+            super(element, request);
         }
 
         @Override
-        public ElementKind getKind() {
-            return ElementKind.VARIABLE;
+        @NbBundle.Messages("DefaultVariableRhs=Default Variable")
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return Bundle.DefaultVariableRhs();
+        }
+
+        @Override
+        public int getSortPrioOverride() {
+            return 40;
+        }
+
+    }
+
+    static class UserVariableCompletionProposal extends VariableCompletionProposal {
+        public UserVariableCompletionProposal(LatteElement element, CompletionRequest request) {
+            super(element, request);
+        }
+
+        @Override
+        @NbBundle.Messages("UserVariableRhs=User Variable")
+        public String getRhsHtml(HtmlFormatter formatter) {
+            return Bundle.UserVariableRhs();
+        }
+
+        @Override
+        public int getSortPrioOverride() {
+            return 15;
         }
 
     }
