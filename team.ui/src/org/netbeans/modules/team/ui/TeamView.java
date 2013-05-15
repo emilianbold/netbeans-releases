@@ -118,19 +118,16 @@ public final class TeamView {
      * @return
      */
     public synchronized TeamServer getTeamServer() {
-        System.out.println("getTeamServer " + teamServer.getDisplayName());
         return teamServer;
     }
 
     public synchronized void setSelectedServer(TeamServer server) {
-        System.out.println("setSelectedServer " + server.getDisplayName());
         if (combo!=null) {
             combo.setSelectedItem(server);
         }
     }
     
     private synchronized void setTeamServer (TeamServer server) {
-        System.out.println("setTeamServer " + server.getDisplayName());
         Utilities.setLastTeamServer(server);
         teamServer = server;
         switchContent();
@@ -152,7 +149,6 @@ public final class TeamView {
             @Override
             public void actionPerformed(final ActionEvent e) {
                 if (combo.getSelectedItem() instanceof TeamServer) {
-                    System.out.println("actionPerformed 1 " + ((TeamServer) combo.getSelectedItem()).getDisplayName());
                     setTeamServer((TeamServer) combo.getSelectedItem());
                 } else if (combo.getSelectedItem() instanceof String) {
                     SwingUtilities.invokeLater(new Runnable() {
@@ -160,11 +156,9 @@ public final class TeamView {
                         public void run() {
                             new AddInstanceAction().actionPerformed(e);
                             setTeamServer((TeamServer) combo.getSelectedItem());
-                            System.out.println("actionPerformed 2 " + ((TeamServer) combo.getSelectedItem()).getDisplayName());
                         }
                     });
                 } else {
-                    System.out.println("actionPerformed 3 NULL");
                     setTeamServer(null);
                 }
             }
