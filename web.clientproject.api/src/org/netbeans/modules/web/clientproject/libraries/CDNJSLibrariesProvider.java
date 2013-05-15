@@ -54,6 +54,8 @@ import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -66,6 +68,7 @@ import java.util.zip.ZipInputStream;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.json.simple.parser.ParseException;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
@@ -177,6 +180,20 @@ public class CDNJSLibrariesProvider implements LibraryProvider<LibraryImplementa
         tmpZip.renameTo(cachedZip);
         // fire property change
         propertyChangeSupport.firePropertyChange(PROP_LIBRARIES, null, null);
+    }
+
+    @CheckForNull
+    public FileTime getLibrariesLastUpdatedTime() {
+        File cachedZip = getCachedZip(false);
+        if (!cachedZip.isFile()) {
+            return null;
+        }
+        try {
+            return Files.getLastModifiedTime(cachedZip.toPath());
+        } catch (IOException ex) {
+            LOGGER.log(Level.INFO, "Cannot get last modified time of " + cachedZip, ex);
+        }
+        return null;
     }
 
     @Override
