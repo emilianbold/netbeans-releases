@@ -2470,6 +2470,7 @@ conversion_function_decl_or_def returns [boolean definition = false]
                 (LESSTHAN template_parameter_list GREATERTHAN)?
 		LPAREN (parameter_list[false])? RPAREN	
 		(tq = cv_qualifier)*
+                (LITERAL_override | LITERAL_final | LITERAL_new)?
 		(exception_specification)?
 		(	compound_statement { definition = true; }
 		|	SEMICOLON! //{end_of_stmt();}

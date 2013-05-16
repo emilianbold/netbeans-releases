@@ -37,53 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.debugger.common2;
 
-package org.netbeans.modules.cnd.modelimpl.trace;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
+
 
 /**
- * Just a continuation of the FileModelTest
- * (which became too large)
- * @author Vladimir Kvashin
+ *
+ * @author as204739
  */
-public class FileModelCpp11Test extends TraceModelTestBase {
+public abstract class APIAccessor {
 
-    public FileModelCpp11Test(String testName) {
-        super(testName);
+    private static APIAccessor INSTANCE;
+
+    public static synchronized APIAccessor get() {
+        if (INSTANCE == null) {
+            Class<?> c = CndRemote.class;
+            try {
+                Class.forName(c.getName(), true, c.getClassLoader());
+            } catch (ClassNotFoundException e) {
+                // ignore
+            }
+        }
+
+        assert INSTANCE != null : "There is no API package accessor available!"; //NOI18N
+        return INSTANCE;
     }
 
-    @Override
-    protected void setUp() throws Exception {
-        System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
-        System.setProperty("parser.report.errors", "true");
-        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
-        System.setProperty("cnd.language.flavor.cpp11", "true"); 
-        super.setUp();
+    /**
+     * Register the accessor. The method can only be called once
+     * - otherwise it throws IllegalStateException.
+     *
+     * @param accessor instance.
+     */
+    public static void register(APIAccessor accessor) {
+        if (INSTANCE != null) {
+            throw new IllegalStateException("Already registered"); // NOI18N
+        }
+        INSTANCE = accessor;
     }
 
-    @Override
-    protected void postSetUp() {
-        // init flags needed for file model tests
-        getTraceModel().setDumpModel(true);
-        getTraceModel().setDumpPPState(true);
-    }
+    public abstract boolean syncValidate(final String name);
 
-    @Override
-    protected void postTest(String[] args, Object... params) throws Exception {
-        System.setProperty("cnd.language.flavor.cpp11", "false"); 
-    }
     
-    public void testCpp11() throws Exception {
-        performTest("cpp11.cpp");
-    }
-
-    public void testClassMemberFwdEnums() throws Exception {
-        performTest("classMemberFwdEnum.cpp");
-    }
-    
-    public void testClassMemberOperator() throws Exception {
-        // #225102 - [73cat] virtual operator double() const override brokes the parser.
-        performTest("bug225102.cpp");
-    }
 }
