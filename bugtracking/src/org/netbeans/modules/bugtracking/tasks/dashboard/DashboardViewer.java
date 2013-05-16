@@ -407,11 +407,11 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    public List<Category> getCategories(boolean openedOnly) {
+    public List<Category> getCategories(boolean openedOnly, boolean includeUnsubmitted) {
         synchronized (LOCK_CATEGORIES) {
             List<Category> list = new ArrayList<Category>(categoryNodes.size());
             for (CategoryNode categoryNode : categoryNodes) {
-                if (!(openedOnly && !categoryNode.isOpened())) {
+                if (!(openedOnly && !categoryNode.isOpened()) && !(!includeUnsubmitted && !categoryNode.getCategory().persist())) {
                     list.add(categoryNode.getCategory());
                 }
             }
