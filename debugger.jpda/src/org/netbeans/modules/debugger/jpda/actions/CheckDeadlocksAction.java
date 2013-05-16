@@ -182,15 +182,15 @@ public class CheckDeadlocksAction extends AbstractAction
         
     private static class EnableListener extends DebuggerManagerAdapter {
         
-        private Reference actionRef;
+        private Reference<CheckDeadlocksAction> actionRef;
         
         public EnableListener(CheckDeadlocksAction action) {
-            actionRef = new WeakReference(action);
+            actionRef = new WeakReference<CheckDeadlocksAction>(action);
         }
         
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            CheckDeadlocksAction action = (CheckDeadlocksAction) actionRef.get();
+            CheckDeadlocksAction action = actionRef.get();
             if (action != null) {
                 action.checkEnabled();
             }
