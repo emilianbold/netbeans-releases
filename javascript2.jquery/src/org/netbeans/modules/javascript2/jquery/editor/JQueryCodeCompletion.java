@@ -246,8 +246,8 @@ public class JQueryCodeCompletion implements CompletionProvider {
         
         String fqn = sb.toString();
         Map<String, Collection<PropertyNameDataItem>> data = getPropertyNameData();
-        if (fqn.startsWith("$")) {
-            fqn = fqn.replace("$", "jQuery");
+        if (fqn.startsWith("$")) { // NOI18N
+            fqn = fqn.replace("$", "jQuery"); //NOI18N
         }
         Collection<PropertyNameDataItem> items = data.get(fqn);
         int anchorOffset = ccContext.getParserResult().getSnapshot().getOriginalOffset(eOffset) - ccContext.getPrefix().length();
