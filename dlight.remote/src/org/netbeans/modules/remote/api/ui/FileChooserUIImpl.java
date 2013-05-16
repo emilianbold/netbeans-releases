@@ -157,8 +157,9 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
+ * An implementation of a customized filechooser.
  *
- * @author mtishkov
+ * @author Soot Phengsy, inspired by Jeff Dinkins' Swing version
  */
 class FileChooserUIImpl extends BasicFileChooserUI{
     
