@@ -166,6 +166,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         panel.keywordsButton.addActionListener(this);
         panel.saveChangesButton.addActionListener(this);
         panel.cancelChangesButton.addActionListener(this);
+        panel.gotoIssueButton.addActionListener(this);
         panel.webButton.addActionListener(this);
         panel.saveButton.addActionListener(this);
         panel.urlToggleButton.addActionListener(this);
@@ -177,6 +178,7 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         panel.cloneQueryButton.addActionListener(this);
         panel.changedFromTextField.addFocusListener(this);
 
+        panel.idTextField.addActionListener(this);
         panel.productList.addKeyListener(this);
         panel.componentList.addKeyListener(this);
         panel.versionList.addKeyListener(this);
@@ -501,6 +503,8 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == panel.searchButton) {
             onRefresh();
+        } else if (e.getSource() == panel.gotoIssueButton) {
+            onGotoIssue();
         } else if (e.getSource() == panel.keywordsButton) {
             onKeywords();
         } else if (e.getSource() == panel.searchButton) {
@@ -527,7 +531,11 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
             onRefreshConfiguration();
         } else if (e.getSource() == panel.cloneQueryButton) {
             onCloneQuery();
-        } else if (e.getSource() == panel.summaryTextField ||
+        } else if (e.getSource() == panel.idTextField) {
+            if(!panel.idTextField.getText().trim().equals("")) {                // NOI18N
+                onGotoIssue();
+            }
+        }else if (e.getSource() == panel.summaryTextField ||
                    e.getSource() == panel.commentTextField ||
                    e.getSource() == panel.keywordsTextField ||
                    e.getSource() == panel.peopleTextField ||
@@ -676,6 +684,39 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         return l > 0 ?
             dateFormat.format(new Date(l)) :
             NbBundle.getMessage(QueryController.class, "LBL_Never"); // NOI18N
+    }
+
+    private void onGotoIssue() {
+        String idText = panel.idTextField.getText().trim();
+        if(idText == null || idText.trim().equals("") ) {                       // NOI18N
+            return;
+        }
+
+        final String id = idText.replaceAll("\\s", "");                         // NOI18N
+        
+        final Task[] t = new Task[1];
+        Cancellable c = new Cancellable() {
+            @Override
+            public boolean cancel() {
+                if(t[0] != null) {
+                    return t[0].cancel();
+                }
+                return true;
+            }
+        };
+        final ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(QueryController.class, "MSG_Opening", new Object[] {id}), c); // NOI18N
+        t[0] = Bugzilla.getInstance().getRequestProcessor().create(new Runnable() {
+            @Override
+            public void run() {
+                handle.start();
+                try {
+                    openIssue((BugzillaIssue)repository.getIssue(id));
+                } finally {
+                    handle.finish();
+                }
+            }
+        });
+        t[0].schedule(0);
     }
 
     protected void openIssue(BugzillaIssue issue) {
