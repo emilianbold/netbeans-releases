@@ -61,6 +61,7 @@ import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.ui.util.treelist.SelectionList;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeList;
 import org.netbeans.modules.team.ui.util.treelist.TreeListModel;
@@ -797,7 +798,7 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
 
     private void addMemberProjectsToModel( int index, List<ProjectHandle> projects ) {
         for( ProjectHandle p : projects ) {
-            model.addRoot(index, dashboardProvider.createMyProjectNode(p) );
+            model.addRoot(index, dashboardProvider.createMyProjectNode(p, true, false, null) );
         }
     }
 
@@ -865,6 +866,11 @@ final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
 
     Collection<ProjectHandle<P>> getMyProjects() {
         return dashboardProvider.getMyProjects();
+    }
+
+    @Override
+    public SelectionList getProjectsList(boolean forceRefresh) {
+        throw new IllegalStateException("Projects list shouldn't be requested when having multiple projects dashboard mode"); // NOI18N
     }
 
     private class OtherProjectsLoader implements Runnable, Cancellable {

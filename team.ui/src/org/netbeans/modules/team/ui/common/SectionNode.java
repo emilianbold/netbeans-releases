@@ -45,6 +45,7 @@ package org.netbeans.modules.team.ui.common;
 
 
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -56,6 +57,7 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 import org.netbeans.modules.team.ui.Utilities;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -102,6 +104,10 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
             panel.setOpaque(false);
 
             lblName = new TreeLabel(displayName);
+            if(!Utilities.isMoreProjectsDashboard()) {
+                lblName.setFont(lblName.getFont().deriveFont(Font.BOLD));
+            }
+            
             lblStatus = createProgressLabel(NbBundle.getMessage(SectionNode.class, "LBL_LoadingInProgress"));
             lblError = new TreeLabel();
             lblStatus.setVisible(false);
@@ -167,4 +173,10 @@ public abstract class SectionNode extends TreeListNode implements PropertyChange
         super.dispose();
         project.removePropertyChangeListener(this);
     }
+
+    @Override
+    protected Type getType() {
+        return Utilities.isMoreProjectsDashboard() ? super.getType() : Type.TITLE; 
+    }
+    
 }

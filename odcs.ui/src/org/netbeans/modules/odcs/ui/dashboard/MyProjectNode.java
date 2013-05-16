@@ -113,8 +113,9 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     private TreeLabel delim;
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
     private final DashboardSupport<ODCSProject> dashboard;
+    private final boolean canOpen;
 
-    public MyProjectNode( final ProjectHandle<ODCSProject> project, final DashboardSupport<ODCSProject> dashboard) {
+    public MyProjectNode( final ProjectHandle<ODCSProject> project, final DashboardSupport<ODCSProject> dashboard, boolean canOpen) {
         super( null );
         if (project==null) {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
@@ -143,6 +144,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
             }
         };
         this.project = project;
+        this.canOpen = canOpen;
         this.accessor = dashboard.getDashboardProvider().getProjectAccessor();
         this.qaccessor = dashboard.getDashboardProvider().getQueryAccessor();
         this.buildAccessor = dashboard.getDashboardProvider()
@@ -200,12 +202,14 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                 scheduleUpdateBuilds();
 
                 component.add( new JLabel(), new GridBagConstraints(7,0,1,1,1.0,0.0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(0,0,0,0), 0,0) );
-                btnOpen = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/open.png", true), getOpenAction()); //NOI18N
-                btnOpen.setText(null);
-                btnOpen.setToolTipText(NbBundle.getMessage(MyProjectNode.class, "LBL_Open"));
-                btnOpen.setRolloverEnabled(true);
-                btnOpen.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/open_over.png", true)); // NOI18N
-                component.add( btnOpen, new GridBagConstraints(8,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                if(canOpen) {
+                    btnOpen = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/open.png", true), getOpenAction()); //NOI18N
+                    btnOpen.setText(null);
+                    btnOpen.setToolTipText(NbBundle.getMessage(MyProjectNode.class, "LBL_Open"));
+                    btnOpen.setRolloverEnabled(true);
+                    btnOpen.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/odcs/ui/resources/open_over.png", true)); // NOI18N
+                    component.add( btnOpen, new GridBagConstraints(8,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                }
             }
             lbl.setForeground(foreground);
             return component;
