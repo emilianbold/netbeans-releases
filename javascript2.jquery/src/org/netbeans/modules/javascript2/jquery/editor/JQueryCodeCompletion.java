@@ -250,7 +250,7 @@ public class JQueryCodeCompletion implements CompletionProvider {
             fqn = fqn.replace("$", "jQuery");
         }
         Collection<PropertyNameDataItem> items = data.get(fqn);
-        int anchorOffset = eOffset - ccContext.getPrefix().length();
+        int anchorOffset = ccContext.getParserResult().getSnapshot().getOriginalOffset(eOffset) - ccContext.getPrefix().length();
         if (items != null) {
             for (PropertyNameDataItem item : items) {
                 if (item.getName().startsWith(prefix)) {
