@@ -1373,7 +1373,7 @@ public final class OpenProjectList {
             // do not mix them with the recent templates, but use only the privileged ones.
             // eg. on Webservices node, one is not interested in a recent "jsp" file template..
             
-            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() { //#201355 changed from writeMutex to readMutex no apparent data modification going on.                
                 public @Override Void run() {
                 String[] rtNames = getRecommendedTypes(project);
                 Iterator<String> it = getRecentTemplates().iterator();
