@@ -43,6 +43,7 @@
 package org.netbeans.modules.team.ui.picker;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -67,7 +68,6 @@ final class ScrollButton extends JButton implements ActionListener {
     private final static int INSET = 2;
     private Timer timer = null;
     private int count = 0;
-    private boolean invisible = false;
 
     public ScrollButton( Action action, int orientation ) {
         super( action );
@@ -79,6 +79,7 @@ final class ScrollButton extends JButton implements ActionListener {
         setContentAreaFilled( false );
         setOpaque( false );
         setDefaultCapable( false );
+        setRolloverEnabled( true );
 
         String imgName = null;
         switch( orientation ) {
@@ -104,23 +105,7 @@ final class ScrollButton extends JButton implements ActionListener {
     }
 
     @Override
-    protected void paintComponent( Graphics g ) {
-        if( invisible )
-            return;
-        super.paintComponent( g ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    protected void paintChildren( Graphics g ) {
-        if( invisible )
-            return;
-        super.paintChildren( g ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void paint( Graphics g ) {
-        if( invisible )
-            return;
         if( isEnabled() ) {
             Color color = null;
             if( getModel().isPressed()) {
@@ -132,15 +117,17 @@ final class ScrollButton extends JButton implements ActionListener {
                 g.setColor( color );
                 g.fillRect( 0, 0, getWidth(), getHeight() );
             }
+            super.paint( g );
         }
-        super.paint( g );
     }
 
-    void setInVisible( boolean invisible ) {
-        this.invisible = invisible;
-        getParent().repaint();
+    @Override
+    public Icon getIcon() {
+        if( isEnabled() )
+            return super.getIcon();
+        return EMPTY_ICON;
     }
-
+    
     private Timer getTimer() {
         if( timer == null ) {
             timer = new Timer( 400, this );
@@ -207,4 +194,22 @@ final class ScrollButton extends JButton implements ActionListener {
             stopTimer();
         }
     }
+    
+    private static final Icon EMPTY_ICON = new Icon() {
+
+        @Override
+        public void paintIcon( Component c, Graphics g, int x, int y ) {
+        }
+
+        @Override
+        public int getIconWidth() {
+            return 10;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return 10;
+        }
+        
+    };
 }

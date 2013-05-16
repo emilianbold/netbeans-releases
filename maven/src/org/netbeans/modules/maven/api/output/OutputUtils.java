@@ -65,7 +65,7 @@ import static org.netbeans.modules.maven.api.output.Bundle.*;
  * @author mkleint
  */
 public final class OutputUtils {
-    public static final Pattern linePattern = Pattern.compile("(?:\\[catch\\])?\\sat (.*)\\((Native Method|(.*)\\.java\\:(\\d+))\\)"); //NOI18N
+    public static final Pattern linePattern = Pattern.compile("(?:\\[catch\\])?\\sat (.*)\\((?:Native Method|(.*)\\.java\\:(\\d+))\\)"); //NOI18N
  
     /** Creates a new instance of OutputUtils */
     private OutputUtils() {
@@ -74,11 +74,11 @@ public final class OutputUtils {
     public static OutputListener matchStackTraceLine(String line, ClassPath classPath) {
         Matcher match = linePattern.matcher(line);
         OutputListener list = null;
-        if (match.matches() && match.groupCount() == 4) {
+        if (match.matches() && match.groupCount() == 3) {
             String method = match.group(1);
             String file = match.group(2);
             String lineNum = match.group(3);
-            int index = method.indexOf(file);
+            int index = file == null || file.isEmpty() ? -1 : method.indexOf(file);
             if (index > -1) {
                 return new StacktraceOutputListener(method, file, lineNum, classPath);
             }

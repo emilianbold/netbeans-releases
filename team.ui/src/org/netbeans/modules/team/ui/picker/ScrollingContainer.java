@@ -43,9 +43,6 @@
 package org.netbeans.modules.team.ui.picker;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 import javax.swing.BorderFactory;
@@ -74,7 +71,8 @@ final class ScrollingContainer extends JPanel implements MouseWheelListener  {
 
     public ScrollingContainer( JComponent content, boolean horizontalScrolling ) {
         super( new BorderLayout( 1, 1 ) );
-
+        setOpaque( false );
+        
         this.content = content;
         this.sc = ( Scrollable ) content;
         this.horizontalOrientation = horizontalScrolling;
@@ -101,39 +99,6 @@ final class ScrollingContainer extends JPanel implements MouseWheelListener  {
         content.addMouseWheelListener( this );
         btnScrollLeft.addMouseWheelListener( this );
         btnScrollRight.addMouseWheelListener( this );
-
-        scrollPane.addComponentListener( new ComponentListener() {
-
-            @Override
-            public void componentResized( ComponentEvent e ) {
-                toggleScrollButtons();
-            }
-
-            @Override
-            public void componentMoved( ComponentEvent e ) {
-            }
-
-            @Override
-            public void componentShown( ComponentEvent e ) {
-            }
-
-            @Override
-            public void componentHidden( ComponentEvent e ) {
-            }
-        });
-        toggleScrollButtons();
-    }
-
-    private void toggleScrollButtons() {
-        Dimension size = content.getPreferredSize();
-        boolean invisible = false;
-        if( horizontalOrientation ) {
-            invisible = size.width <= scrollPane.getViewport().getViewSize().width;
-        } else {
-            invisible = size.height <= scrollPane.getViewport().getViewSize().height;
-        }
-        btnScrollLeft.setInVisible( invisible );
-        btnScrollRight.setInVisible( invisible );
     }
 
     @Override

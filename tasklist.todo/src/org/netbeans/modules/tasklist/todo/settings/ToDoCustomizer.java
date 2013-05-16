@@ -46,17 +46,14 @@ package org.netbeans.modules.tasklist.todo.settings;
 
 import java.awt.Component;
 import java.awt.Graphics;
-import java.beans.PropertyChangeEvent;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.MissingResourceException;
 import javax.swing.AbstractListModel;
-import javax.swing.BorderFactory;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
-import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTable;
@@ -700,6 +697,7 @@ private void btnChangeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
         DefaultTableModel model = (DefaultTableModel)table.getModel();
         model.addRow( new Object[] { getDummyPattern( ) } ); //NOI18N
         table.getSelectionModel().setSelectionInterval( model.getRowCount()-1, model.getRowCount()-1 );
+        table.scrollRectToVisible(new Rectangle(table.getCellRect(model.getRowCount()-1, 0, true)));
         final boolean wasChanged = changed;
         table.editCellAt( model.getRowCount()-1, 0 );
         final TableCellEditor editor = table.getCellEditor();
