@@ -1,101 +1,5 @@
-[|, "http://netbeans.org" foo, foo, 84]
+[f|, "http://netbeans.org" foo, foo, 85]
 "http://netbeans.org" foo
-*
-a
-abbr
-abs
-address
-and
-animate
-animateColor
-animateMotion
-animateTransform
-animation
-annotation
-annotation-xml
-apply
-approx
-arccos
-arccosh
-arccot
-arccoth
-arccsc
-arccsch
-arcsec
-arcsech
-arcsin
-arcsinh
-arctan
-arctanh
-area
-arg
-article
-aside
-audio
-b
-base
-bdo
-blockquote
-body
-br
-button
-bvar
-canvas
-caption
-card
-cartesianproduct
-ceiling
-ci
-circle
-cite
-cn
-code
-codomain
-col
-colgroup
-command
-complexes
-compose
-condition
-conjugate
-cos
-cosh
-cot
-coth
-csc
-csch
-csymbol
-curl
-datalist
-dd
-declare
-defs
-degree
-del
-desc
-details
-determinant
-dfn
-diff
-discard
-div
-divergence
-divide
-dl
-domain
-domainofapplication
-dt
-ellipse
-em
-embed
-emptyset
-encoding
-eq
-equivalent
-eulergamma
-exists
-exp
-exponentiale
 factorial
 factorof
 false
@@ -345,8 +249,8 @@ xor
 @media
 @namespace
 @page
-End cursor position = 88
-[color: |, color blue, color: blue, 136]
+End cursor position = 89
+[color: |, color blue, color: blue, 137]
 color color chooser
 color hash_color_code
 color activeborder
@@ -532,4 +436,4 @@ color windowframe
 color windowtext
 color yellow
 color yellowgreen
-End cursor position = 148
+End cursor position = 149
