@@ -49,6 +49,7 @@ import org.netbeans.modules.team.ui.common.DashboardSupport.DashboardImpl;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.ui.util.treelist.SelectionList;
 import org.openide.util.NbBundle;
 
 /**
@@ -154,6 +155,9 @@ public final class DashboardSupport<P> {
         impl.xmppStarted();
     }
     
+    public SelectionList getProjectsList( boolean forceRefresh ) {
+        return impl.getProjectsList( forceRefresh );
+    }
     
     interface DashboardImpl<P> {
 
@@ -193,5 +197,7 @@ public final class DashboardSupport<P> {
 
         void xmppStarted();
 
+        SelectionList getProjectsList( boolean forceRefresh );
+        
     }
 }
