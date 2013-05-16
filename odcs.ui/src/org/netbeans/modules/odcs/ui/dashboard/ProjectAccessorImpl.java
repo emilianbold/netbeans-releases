@@ -67,7 +67,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 import static org.netbeans.modules.odcs.ui.dashboard.Bundle.*;
 import org.netbeans.modules.odcs.ui.utils.Utils;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.DashboardSupport;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
@@ -77,7 +77,7 @@ import org.openide.util.NbBundle.Messages;
  * @author Jan Becicka
  */
 // XXX not properly implemented yet
-public class ProjectAccessorImpl extends ProjectAccessor<ODCSUiServer, ODCSProject> {
+public class ProjectAccessorImpl extends ProjectAccessor<ODCSProject> {
     
     private final ODCSUiServer uiServer;
 
@@ -86,9 +86,10 @@ public class ProjectAccessorImpl extends ProjectAccessor<ODCSUiServer, ODCSProje
     }
     
     @Override
-    public List<ProjectHandle<ODCSProject>> getMemberProjects(ODCSUiServer uiServer, LoginHandle login, boolean force) {
+    public List<ProjectHandle<ODCSProject>> getMemberProjects(TeamServer uiServer, LoginHandle login, boolean force) {
+        assert uiServer instanceof TeamServer;
         try {
-             return Utilities.getMyProjects(uiServer, force);
+             return Utilities.getMyProjects((ODCSUiServer) uiServer, force);
         } catch (ODCSException ex) {
             Utils.logException(ex, false);
             return null;
@@ -96,13 +97,14 @@ public class ProjectAccessorImpl extends ProjectAccessor<ODCSUiServer, ODCSProje
     }
 
     @Override
-    public ProjectHandleImpl getNonMemberProject(ODCSUiServer server, String projectId, boolean force) {
+    public ProjectHandleImpl getNonMemberProject(TeamServer server, String projectId, boolean force) {
+        assert uiServer instanceof TeamServer;
         try {
-            ODCSServer odcsServer = server.getServer();
+            ODCSServer odcsServer = ((ODCSUiServer)server).getServer();
             if (odcsServer != null) {
                 ODCSProject proj = odcsServer.getProject(projectId, false);
                 if (proj != null) {
-                    return new ProjectHandleImpl(server, proj);
+                    return new ProjectHandleImpl((ODCSUiServer)server, proj);
                 }
             }
         } catch (ODCSException ex) {
@@ -199,7 +201,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<ODCSUiServer, ODCSProje
                 } catch (ODCSException ex) {
                     Exceptions.printStackTrace(ex);
                 }
-                final DefaultDashboard<ODCSUiServer, ODCSProject> dashboard = ODCSUiServer.forServer(server).getDashboard();
+                final DashboardSupport<ODCSProject> dashboard = ODCSUiServer.forServer(server).getDashboard();
                 dashboard.bookmarkingStarted();
                 RequestProcessor.getDefault().post(new Runnable() {
                     @Override

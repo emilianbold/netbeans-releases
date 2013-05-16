@@ -190,7 +190,8 @@ public class ConnectAction extends BaseAction {
             // Note that we don't have to show the dialog if the password is 
             // null and remember is true; null is often a valid password
             // (and is the default password for MySQL and PostgreSQL).
-            if (user == null || !remember || showDialog) {
+            if (((!supportsConnectWithoutUsername(dbcon))
+                    && (user == null || !remember)) || showDialog) {
                 final ConnectPanel basePanel = new ConnectPanel(this, dbcon);
 
                 final PropertyChangeListener connectionListener = new PropertyChangeListener() {
@@ -389,6 +390,10 @@ public class ConnectAction extends BaseAction {
             }
 
             return schemaPanel.setSchemas(schemas, defaultSchema);
+        }
+
+        private boolean supportsConnectWithoutUsername(DatabaseConnection dc) {
+            return dc.findJDBCDriver().getClassName().equals("org.sqlite.JDBC"); //NOI18N
         }
     }
 

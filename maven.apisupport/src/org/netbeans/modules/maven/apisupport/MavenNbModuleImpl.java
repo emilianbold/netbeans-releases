@@ -347,6 +347,10 @@ public class MavenNbModuleImpl implements NbModuleProvider {
         dependencyAdder.run();
     }
 
+    @Override public void addModulesToTargetPlatform(NbModuleProvider.ModuleDependency[] dependencies) throws IOException {
+        
+    }
+
     /**
      * 6.7 and higher apisupport uses this to add projects to Libraries for suite.
      *

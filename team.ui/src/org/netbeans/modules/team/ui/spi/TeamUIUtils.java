@@ -60,7 +60,7 @@ import org.netbeans.modules.team.ui.TeamServerCombo;
 import org.netbeans.modules.team.ui.TeamServerTopComponent;
 import org.netbeans.modules.team.ui.LoginPanel;
 import org.netbeans.modules.team.ui.Utilities;
-import org.netbeans.modules.team.ui.Dashboard;
+import org.netbeans.modules.team.ui.TeamView;
 import org.netbeans.modules.team.ui.TeamServerManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -176,13 +176,13 @@ public final class TeamUIUtils {
     }
     
     public static void setSelectedServer (TeamServer teamServer) {
-        if (Dashboard.getInstance().getTeamServer() != teamServer) {
-            TeamServerTopComponent.getDefault().setSelectedServer(teamServer);
+        if (TeamView.getInstance().getTeamServer() != teamServer) {
+            TeamView.getInstance().setSelectedServer(teamServer);
         }
     }
     
     public static TeamServer getSelectedServer () {
-        return Dashboard.getInstance().getTeamServer();
+        return TeamView.getInstance().getTeamServer();
     }
 
     public static File getDefaultRepoFolder() {

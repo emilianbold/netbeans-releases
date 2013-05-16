@@ -115,7 +115,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
             @Override
             public void run() {
                 if (toSelect != null) {
-                    DashboardViewer.getInstance().setSelection(toSelect);
+                    DashboardViewer.getInstance().select(toSelect);
                     toSelect = null;
                 }
             }
