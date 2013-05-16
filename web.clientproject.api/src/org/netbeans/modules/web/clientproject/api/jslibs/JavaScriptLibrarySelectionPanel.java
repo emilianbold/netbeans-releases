@@ -201,6 +201,11 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         return librariesFolder;
     }
 
+    void setLibrariesFolder(String folder) {
+        checkUiThread();
+        librariesFolderTextField.setText(folder);
+    }
+
     /**
      * Add listener to changes in the selected libraries or libraries folder.
      * @param listener listener to be added, can be {@code null}

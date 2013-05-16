@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
@@ -69,6 +70,8 @@ import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.api.util.JsLibUtilities;
@@ -102,10 +105,12 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
     static final Logger LOGGER = Logger.getLogger(JavaScriptLibraryCustomizerPanel.class.getName());
 
     static final String JS_MIME_TYPE = "text/javascript"; // NOI18N
+    private static final String JS_LIBS_FOLDER = "js.libs.folder"; // NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(JavaScriptLibraryCustomizerPanel.class);
 
     private final ProjectCustomizer.Category category;
+    private final Project project;
     final JavaScriptLibraries.CustomizerSupport customizerSupport;
     // @GuardedBy("EDT")
     private final JavaScriptLibrarySelectionPanel javaScriptLibrarySelection;
@@ -127,6 +132,8 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
         this.category = category;
         this.customizerSupport = customizerSupport;
         this.context = context;
+        project = context.lookup(Project.class);
+        assert project != null : "No project found in lookup: " + context;
         javaScriptLibrarySelection = new JavaScriptLibrarySelectionPanel(new LibraryValidator(customizerSupport, context));
 
         initComponents();
@@ -157,6 +164,11 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
                 validateAndSetData();
             }
         });
+        // set initial data
+        String storedJsLibsFolder = getProjectPreferences().get(JS_LIBS_FOLDER, null);
+        if (storedJsLibsFolder != null) {
+            javaScriptLibrarySelection.setLibrariesFolder(storedJsLibsFolder);
+        }
         // add to placeholder
         placeholderPanel.add(javaScriptLibrarySelection, BorderLayout.CENTER);
         // set store listener
@@ -250,16 +262,23 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
 
     void storeData() {
         assert !EventQueue.isDispatchThread();
+        final String librariesFolder = javaScriptLibrarySelection.getLibrariesFolder();
+        getProjectPreferences()
+                .put(JS_LIBS_FOLDER, librariesFolder);
         RP.post(new Runnable() {
             @Override
             public void run() {
                 try {
-                    addNewJsLibraries(javaScriptLibrarySelection.getLibrariesFolder(), javaScriptLibrarySelection.getSelectedLibraries());
+                    addNewJsLibraries(librariesFolder, javaScriptLibrarySelection.getSelectedLibraries());
                 } catch (IOException ex) {
                     LOGGER.log(Level.WARNING, null, ex);
                 }
             }
         });
+    }
+
+    private Preferences getProjectPreferences() {
+        return ProjectUtils.getPreferences(project, JavaScriptLibraryCustomizerPanel.class, true);
     }
 
     @NbBundle.Messages({
