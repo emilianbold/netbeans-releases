@@ -173,6 +173,7 @@ public class JQueryCodeCompletion implements CompletionProvider {
     
     
 
+    @Override
     public String getHelpDocumentation(ParserResult info, ElementHandle element) {
         if (element != null && element instanceof DocSimpleElement) {
             return ((DocSimpleElement)element).getDocumentation();
