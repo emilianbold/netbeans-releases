@@ -59,7 +59,7 @@ import org.openide.util.NbBundle;
  * @author Petr Somol
  * @author Tomas Zezula
  */
-@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-java-j2seproject", category="BuildCategory", position=250)
+@ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-java-j2seproject", category="BuildCategory", position=225)
 public final class JSEDeploymentCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
     private static final String CAT_DEPLOYMENT = "Deployment"; // NOI18N
