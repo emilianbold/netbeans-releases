@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.28</specification-version>
+                        <specification-version>1.31</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -97,15 +97,15 @@ made subject to such option by the copyright holder.
             <public-packages/>
             <class-path-extension>
                 <runtime-relative-path>ext/svnClientAdapter-svnkit.jar</runtime-relative-path>
-                <binary-origin>external/svnClientAdapter-svnkit-1.8.16.jar</binary-origin>
+                <binary-origin>external/svnClientAdapter-svnkit-1.8.18.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/svnkit.jar</runtime-relative-path>
-                <binary-origin>external/org.tmatesoft.svnkit_1.7.6.r9487_v20121029_2008.jar</binary-origin>
+                <binary-origin>external/svnkit_1.7.8.r9538_v20130107_2001.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/sqljet.jar</runtime-relative-path>
-                <binary-origin>external/sqljet-1.1.5.jar</binary-origin>
+                <binary-origin>external/sqljet-1.1.6.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/trilead.ssh2.jar</runtime-relative-path>

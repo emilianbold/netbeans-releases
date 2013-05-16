@@ -49,7 +49,7 @@ import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.DashboardSupport;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import org.netbeans.modules.team.ui.common.ProjectProvider;
 import org.netbeans.modules.team.ui.spi.BuildHandle.Status;
@@ -112,9 +112,9 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
     private TreeLabel leftPar;
     private TreeLabel delim;
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
-    private final DefaultDashboard<ODCSUiServer, ODCSProject> dashboard;
+    private final DashboardSupport<ODCSProject> dashboard;
 
-    public MyProjectNode( final ProjectHandle<ODCSProject> project, final DefaultDashboard<ODCSUiServer, ODCSProject> dashboard) {
+    public MyProjectNode( final ProjectHandle<ODCSProject> project, final DashboardSupport<ODCSProject> dashboard) {
         super( null );
         if (project==null) {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
@@ -232,7 +232,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
                         rightPar.setVisible(b);
                     }
                 }
-                dashboard.dashboardComponent.repaint();
+                dashboard.getComponent().repaint();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -429,7 +429,7 @@ public class MyProjectNode extends LeafNode implements ProjectProvider {
         delim.setVisible(bugsVisible && buildsVisible);
         component.validate();
         dashboard.myProjectsProgressFinished();
-        dashboard.dashboardComponent.repaint();
+        dashboard.getComponent().repaint();
     }
 
     @Override

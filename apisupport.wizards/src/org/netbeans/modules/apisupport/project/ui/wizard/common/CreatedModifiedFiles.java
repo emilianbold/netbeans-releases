@@ -107,7 +107,6 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Parameters;
 import org.openide.util.lookup.ServiceProvider;
@@ -344,6 +343,20 @@ public final class CreatedModifiedFiles {
                     } else {
                         depOp.addDependencies(((AddModuleDependency) oper).getDependencies());
                         it.remove();
+                    }
+                }
+            }
+            //aggregate all Add Module To Target Platform operations into a single operation..
+            AddModuleToTargetPlatform targetPlatfOp = null;
+            Iterator<Operation> it2 = operations.iterator();
+            while (it2.hasNext()) {
+                Operation oper = it2.next();
+                if (oper instanceof AddModuleToTargetPlatform) {
+                    if (targetPlatfOp == null) {
+                        targetPlatfOp = (AddModuleToTargetPlatform) oper;
+                    } else {
+                        targetPlatfOp.addDependencies(((AddModuleToTargetPlatform) oper).getDependencies());
+                        it2.remove();
                     }
                 }
             }
@@ -707,6 +720,36 @@ public final class CreatedModifiedFiles {
     }
 
     /**
+     * Add a dependency to a list of module dependencies of this project. This
+     * means editing of project's <em>nbproject/project.xml</em>. All parameters
+     * refers to a module this module will depend on. If a project already has a
+     * given dependency it will not be added.
+     *
+     * @param codeNameBase codename base
+     * @param releaseVersion release version, if <code>null</code> will be taken
+     * from the entry found in platform
+     * @param version specification version (see {@link SpecificationVersion}),
+     * if null will be taken from the entry found in platform
+     * @param useInCompiler do this module needs a module beeing added at a
+     * compile time?
+     * @param clusterName module's cluster name
+     */
+    public Operation addModuleDependency(String codeNameBase, String releaseVersion, SpecificationVersion version, boolean useInCompiler, String clusterName) {
+        return new AddModuleDependency(project, codeNameBase, releaseVersion, version, useInCompiler, false, clusterName);
+    }
+
+    /**
+     * Delegates to {@link #addModuleDependency(String, String,
+     * SpecificationVersion, boolean, String)} passing a given code name base and cluster name,
+     * <code>null</code> as release version,
+     * <code>null</code> as version and
+     * <code>true</code> as useInCompiler arguments.
+     */
+    public Operation addModuleDependency(String codeNameBase, String clusterName) {
+        return addModuleDependency(codeNameBase, null, null, true, clusterName);
+    }
+
+    /**
      * Adds a test dependency to list of test dependencies.
      *
      * @param codeNameBase
@@ -716,17 +759,58 @@ public final class CreatedModifiedFiles {
         return new AddModuleDependency(project, codeNameBase, null, null, true, true);
     }
 
-    private static final class AddModuleDependency extends AbstractOperation {
+    /**
+     * Adds a test dependency to list of test dependencies.
+     *
+     * @param codeNameBase
+     * @param clusterName
+     * @return
+     */
+    public Operation addTestModuleDependency(String codeNameBase, String clusterName) {
+        return new AddModuleDependency(project, codeNameBase, null, null, true, true, clusterName);
+    }
 
-        private List<NbModuleProvider.ModuleDependency> dependencies;
+    /**
+     * Add a module to a list of module in target platform of this project. This
+     * means editing of project's <em>nbproject/project.xml</em>. All parameters
+     * refers to a module this module will depend on. If a project already has a
+     * given dependency it will not be added.
+     *
+     * @param codeNameBase codename base
+     * @param releaseVersion release version, if <code>null</code> will be taken
+     * from the entry found in platform
+     * @param version specification version (see {@link SpecificationVersion}),
+     * if null will be taken from the entry found in platform
+     * @param useInCompiler do this module needs a module beeing added at a
+     * compile time?
+     * @param clusterName module's cluster name
+     */
+    public Operation addModuleToTargetPlatform(String codeNameBase, String releaseVersion, SpecificationVersion version, boolean useInCompiler, String clusterName) {
+        return new AddModuleToTargetPlatform(project, codeNameBase, releaseVersion, version, useInCompiler, false, clusterName);
+    }
+
+    /**
+     * Delegates to {@link #addModuleToTargetPlatform(String, String,
+     * SpecificationVersion, boolean, String)} passing a given code name base,
+     * <code>null</code> as release version,
+     * <code>null</code> as version and
+     * <code>true</code> as useInCompiler arguments.
+     */
+    public Operation addModuleToTargetPlatform(String codeNameBase, String clusterName) {
+        return addModuleToTargetPlatform(codeNameBase, null, null, true, clusterName);
+    }
+    
+    private static abstract class AddOperation extends AbstractOperation {
+
+        protected List<NbModuleProvider.ModuleDependency> dependencies;
         private Map<String, ModuleDependency> codenamebaseMap;
 
-        public AddModuleDependency(Project project, String codeNameBase,
-                String releaseVersion, SpecificationVersion specVersion, boolean useInCompiler, boolean test) {
+        public AddOperation(Project project, String codeNameBase,
+                String releaseVersion, SpecificationVersion specVersion, boolean useInCompiler, boolean test, String clusterName) {
             super(project);
             this.dependencies = new ArrayList<ModuleDependency>();
             this.codenamebaseMap = new HashMap<String, ModuleDependency>();
-            ModuleDependency module = new ModuleDependency(codeNameBase, releaseVersion, specVersion, useInCompiler);
+            ModuleDependency module = new ModuleDependency(codeNameBase, releaseVersion, specVersion, useInCompiler, clusterName);
             if (test) {
                 module.setTestDependency(true);
             }
@@ -734,18 +818,16 @@ public final class CreatedModifiedFiles {
             getModifiedPathsSet().add(getModuleInfo().getProjectFilePath()); // NOI18N
         }
 
+        public AddOperation(Project project, String codeNameBase,
+                String releaseVersion, SpecificationVersion specVersion, boolean useInCompiler, boolean test) {
+            this(project, codeNameBase, releaseVersion, specVersion, useInCompiler, test, null);
+        }
+
         public List<ModuleDependency> getDependencies() {
             return dependencies;
         }
 
-        @Override
-        public void run() throws IOException {
-            getModuleInfo().addDependencies(dependencies.toArray(new NbModuleProvider.ModuleDependency[0]));
-            // XXX consider this carefully
-            ProjectManager.getDefault().saveProject(getProject());
-        }
-
-        private void addDependencies(List<ModuleDependency> list) {
+        protected void addDependencies(List<ModuleDependency> list) {
             for (ModuleDependency md : list) {
                 ModuleDependency res = codenamebaseMap.get(md.getCodeNameBase());
                 if (res != null) {
@@ -756,6 +838,46 @@ public final class CreatedModifiedFiles {
                 }
             }
         }
+    }
+
+    private static final class AddModuleDependency extends AddOperation {
+
+        public AddModuleDependency(Project project, String codeNameBase, String releaseVersion, SpecificationVersion specVersion, boolean useInCompiler, boolean test, String clusterName) {
+            super(project, codeNameBase, releaseVersion, specVersion, useInCompiler, test, clusterName);
+        }
+
+        public AddModuleDependency(Project project, String codeNameBase, String releaseVersion, SpecificationVersion specVersion, boolean useInCompiler, boolean test) {
+            super(project, codeNameBase, releaseVersion, specVersion, useInCompiler, test);
+        }
+        
+        @Override
+        public void run() throws IOException {
+            getModuleInfo().addDependencies(dependencies.toArray(new NbModuleProvider.ModuleDependency[0]));
+            // XXX consider this carefully
+            ProjectManager.getDefault().saveProject(getProject());
+        }
+
+        
+    }
+
+    private static final class AddModuleToTargetPlatform extends AddOperation {
+
+        public AddModuleToTargetPlatform(Project project, String codeNameBase, String releaseVersion, SpecificationVersion specVersion, boolean useInCompiler, boolean test, String clusterName) {
+            super(project, codeNameBase, releaseVersion, specVersion, useInCompiler, test, clusterName);
+        }
+        
+        public AddModuleToTargetPlatform(Project project, String codeNameBase, String releaseVersion, SpecificationVersion specVersion, boolean useInCompiler, boolean test) {
+            super(project, codeNameBase, releaseVersion, specVersion, useInCompiler, test);
+        }
+
+        
+        @Override
+        public void run() throws IOException {
+            getModuleInfo().addModulesToTargetPlatform(dependencies.toArray(new NbModuleProvider.ModuleDependency[0]));
+            // XXX consider this carefully
+            ProjectManager.getDefault().saveProject(getProject());
+        }
+
     }
 
     /**
