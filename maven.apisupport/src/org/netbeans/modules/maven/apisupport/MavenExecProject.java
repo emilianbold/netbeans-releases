@@ -48,6 +48,8 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Task;
@@ -66,7 +68,11 @@ public class MavenExecProject implements ExecProject {
         Project app = MavenNbModuleImpl.findAppProject(p);
         if (app == null) {
             NbMavenProject prj = p.getLookup().lookup(NbMavenProject.class);
-            throw new IOException("No open nbm-application project found to contain " + prj.getMavenProject().getId() + ". Please open the aplication project and try again.");
+            NotifyDescriptor.Message msg = new NotifyDescriptor.Message("No open nbm-application project found to contain " + prj.getMavenProject().getId() + ". Please open the aplication project and try again.",
+                    NotifyDescriptor.WARNING_MESSAGE);
+                            DialogDisplayer.getDefault().notify(msg);
+            return null;
+            //throw new IOException("No open nbm-application project found to contain " + prj.getMavenProject().getId() + ". Please open the aplication project and try again.");
         }
         // XXX build w/ deps first? to do so, RP.post a Runnable which does both actions and calls result()
         RunConfig cfg = RunUtils.createRunConfig(FileUtil.toFile(app.getProjectDirectory()), app,
