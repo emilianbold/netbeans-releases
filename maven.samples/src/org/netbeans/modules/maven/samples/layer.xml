@@ -95,7 +95,7 @@
                     <!--
                         Connectors subsection:
                     -->
-                    <file name="MailConnector" url="MailConnector.zip">
+<!--                    <file name="MailConnector" url="MailConnector.zip">
                         <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/MailConnector"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
@@ -103,7 +103,7 @@
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/Maven2SamplesIcon.gif"/>
                         <attr name="template" boolvalue="true"/>
                         <attr name="position" intvalue="250"/>
-                    </file>
+                    </file>-->
                        
                     <!--
                         EJB subsection:
