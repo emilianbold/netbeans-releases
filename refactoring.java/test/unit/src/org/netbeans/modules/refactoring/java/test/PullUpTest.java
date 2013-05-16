@@ -69,6 +69,16 @@ public class PullUpTest extends RefactoringTestBase {
     public PullUpTest(String name) {
         super(name);
     }
+    
+    public void test229061() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pullup/A.java", "package pullup; public interface A { void x(); }"),
+                new File("pullup/B.java", "package pullup; public interface B extends A { void y(); }"));
+        performPullUpIface(src.getFileObject("pullup/B.java"), 0, 0);
+        verifyContent(src,
+                new File("pullup/A.java", "package pullup; public interface A { void x(); void y(); }"),
+                new File("pullup/B.java", "package pullup; public interface B extends A {}"));
+    }
 
     public void test134034() throws Exception {
         writeFilesAndWaitForScan(src,
@@ -631,7 +641,7 @@ public class PullUpTest extends RefactoringTestBase {
                 + "\n"
                 + "public interface PullUpSuperIface {\n"
                 + "}"));
-        performPullUpIface(src.getFileObject("pullup/PullUpBaseClass.java"), 2, 0, Boolean.TRUE);
+        performPullUpIface(src.getFileObject("pullup/PullUpBaseClass.java"), 2, 0);
         verifyContent(src,
                 new File("pullup/PullUpBaseClass.java", "package pullup;\n"
                 + "\n"
@@ -897,7 +907,7 @@ public class PullUpTest extends RefactoringTestBase {
                 + "\n"
                 + "public interface PullUpSuperIface {\n"
                 + "}"));
-        performPullUpIface(src.getFileObject("pullup/PullUpBaseClass.java"), 2, 0, Boolean.TRUE);
+        performPullUpIface(src.getFileObject("pullup/PullUpBaseClass.java"), 2, 0);
         verifyContent(src,
                 new File("pullup/PullUpBaseClass.java", "package pullup;\n"
                 + "\n"
@@ -1013,7 +1023,7 @@ public class PullUpTest extends RefactoringTestBase {
         assertProblems(Arrays.asList(expectedProblems), problems);
     }
 
-    private void performPullUpIface(FileObject source, final int position, final int iface, final Boolean makeAbstract, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
+    private void performPullUpIface(FileObject source, final int position, final int iface, Problem... expectedProblems) throws IOException, IllegalArgumentException, InterruptedException {
         final PullUpRefactoring[] r = new PullUpRefactoring[1];
         JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
             @Override
@@ -1032,7 +1042,7 @@ public class PullUpTest extends RefactoringTestBase {
                 Tree member = classTree.getMembers().get(position);
                 Element el = info.getTrees().getElement(new TreePath(classPath, member));
                 members[0] = MemberInfo.create(el, info);
-                members[0].setMakeAbstract(makeAbstract);
+                members[0].setMakeAbstract(Boolean.TRUE);
 
                 r[0] = new PullUpRefactoring(TreePathHandle.create(classEl, info));
                 r[0].setTargetType(ElementHandle.create(superEl));

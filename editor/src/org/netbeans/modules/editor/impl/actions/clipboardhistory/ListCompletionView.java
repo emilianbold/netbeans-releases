@@ -63,6 +63,7 @@ import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.JViewport;
 import javax.swing.ListCellRenderer;
+import org.netbeans.lib.editor.util.StringEscapeUtils;
 import org.openide.awt.HtmlRenderer;
 import org.openide.util.ImageUtilities;
 
@@ -311,7 +312,7 @@ public class ListCompletionView extends JList {
 
     private static int getPreferredWidth(ClipboardHistoryElement f, Graphics g, Font defaultFont) {
         int width = BEFORE_ICON_GAP + icon.getIconWidth() + AFTER_ICON_GAP + AFTER_TEXT_GAP;
-        width += (int)HtmlRenderer.renderHTML(f.getShortenText(), g, 0, 0, Integer.MAX_VALUE, 0,
+        width += (int)HtmlRenderer.renderHTML(StringEscapeUtils.escapeHtml(f.getShortenText()), g, 0, 0, Integer.MAX_VALUE, 0,
                 defaultFont, Color.black, HtmlRenderer.STYLE_CLIP, false);
         return width;
     }
@@ -322,7 +323,7 @@ public class ListCompletionView extends JList {
         FontMetrics fm = g.getFontMetrics(defaultFont);
         int textY = (height - fm.getHeight())/2 + fm.getHeight() - fm.getDescent();
 
-        HtmlRenderer.renderHTML(f.getNumber() + " " + f.getShortenText(), g, 1, textY, textEnd, textY, //NOI18N
+        HtmlRenderer.renderHTML(f.getNumber() + " " + StringEscapeUtils.escapeHtml(f.getShortenText()), g, 1, textY, textEnd, textY, //NOI18N
                 defaultFont, defaultColor, HtmlRenderer.STYLE_TRUNCATE, true);//, selected);
     }
 }

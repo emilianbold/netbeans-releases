@@ -42,7 +42,7 @@
 package org.netbeans.modules.maven.j2ee.web;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.api.common.project.ui.customizer.CustomizerProvider2;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.modules.web.common.api.CssPreprocessors;

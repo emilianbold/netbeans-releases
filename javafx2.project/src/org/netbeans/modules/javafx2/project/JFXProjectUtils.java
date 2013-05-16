@@ -58,17 +58,28 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
 import org.netbeans.api.java.source.ClassIndex.SearchScope;
 import org.netbeans.api.project.*;
 import org.netbeans.api.project.ant.AntBuildExtender;
+import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.extbrowser.ExtWebBrowser;
+import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.java.j2seproject.api.J2SEProjectPlatform;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
+import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
+import org.netbeans.modules.javafx2.platform.api.JavaFxRuntimeInclusion;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.cookies.CloseCookie;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileLock;
@@ -77,6 +88,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -787,11 +799,11 @@ public final class JFXProjectUtils {
                                     }
                                 }
                             } finally {
-                                if (lock != null) {
-                                    lock.releaseLock();
-                                }
                                 if (os != null) {
                                     os.close();
+                                }
+                                if (lock != null) {
+                                    lock.releaseLock();
                                 }
                             }
                         } catch (IOException ioe) {
@@ -864,6 +876,287 @@ public final class JFXProjectUtils {
             }
         }
         return _currentJfxImplCRC.equals(crc);
+    }
+
+    public static boolean isProjectOpen(@NonNull Project project) {
+        Project[] projects = OpenProjects.getDefault().getOpenProjects();
+        if(projects != null) {
+            for(Project p : Arrays.asList(projects)) {
+                if(p.getProjectDirectory().getPath().equals(project.getProjectDirectory().getPath())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    /**
+     * Updates project.properties so that if JFXRT artifacts are explicitly added to
+     * compile classpath if they are not on classpath by default. This is a workaround
+     * of the fact that JDK1.7 does contain FX RT but does not provide it on classpath.
+     * JDK1.8 has FX RT on classpath, but still may not include all relevant artifacts by default
+     * and may need this extension.
+     * Note that this extension is relevant not only for FX Application projects, but also
+     * for SE projects that have the property "keep.javafx.runtime.on.classpath" set 
+     * (see SE Deployment category in Project Properties dialog).
+     * 
+     * @param prj the project to update
+     */
+    public static void updateClassPathExtension(@NonNull final Project project) throws IOException {
+        final boolean hasDefaultJavaFXPlatform[] = new boolean[1];
+        final EditableProperties ep = new EditableProperties(true);
+        final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    final Lookup lookup = project.getLookup();
+                    final J2SEPropertyEvaluator eval = lookup.lookup(J2SEPropertyEvaluator.class);
+                    if (eval != null) {
+                        // if project has Default_JavaFX_Platform, change it to default Java Platform
+                        String platformName = eval.evaluator().getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
+                        hasDefaultJavaFXPlatform[0] = JFXProjectProperties.isEqual(platformName, JavaFXPlatformUtils.DEFAULT_JAVAFX_PLATFORM);
+                    }
+                    if(hasDefaultJavaFXPlatform[0]) {
+                        final J2SEProjectPlatform platformSetter = lookup.lookup(J2SEProjectPlatform.class);
+                        if(platformSetter != null) {
+                            platformSetter.setProjectPlatform(JavaPlatformManager.getDefault().getDefaultPlatform());
+                        }
+                    }
+                    final InputStream is = projPropsFO.getInputStream();
+                    try {
+                        ep.load(is);
+                    } finally {
+                        if (is != null) {
+                            is.close();
+                        }
+                    }
+                    updateClassPathExtensionProperties(ep);
+                    OutputStream os = null;
+                    FileLock lock = null;
+                    try {
+                        lock = projPropsFO.lock();
+                        os = projPropsFO.getOutputStream(lock);
+                        ep.store(os);
+                    } finally {
+                        if (os != null) {
+                            os.close();
+                        }
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (MutexException mux) {
+            throw (IOException) mux.getException();
+        }
+        if(hasDefaultJavaFXPlatform[0]) {
+            final String headerTemplate = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_DEFAULT_PLATFORM_HEADER"); //NOI18N
+            final String header = MessageFormat.format(headerTemplate, new Object[] {ProjectUtils.getInformation(project).getDisplayName()});
+            final String content = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_DEFAULT_PLATFORM_CONTENT"); //NOI18N
+            Notification notePlatformChange = NotificationDisplayer.getDefault().notify(
+                    header, 
+                    ImageUtilities.loadImageIcon("org/netbeans/modules/javafx2/project/ui/resources/jfx_project.png", true), //NOI18N
+                    content, 
+                    null, 
+                    NotificationDisplayer.Priority.LOW, 
+                    NotificationDisplayer.Category.INFO);
+            JFXProjectOpenedHook.addNotification(project, notePlatformChange);
+        }
+    }
+
+    /**
+     * Create array of Strings representing path artifacts that can be set to path property;
+     * all but the last String gets : appended.
+     * @param artifacts
+     * @return array of artifacts
+     */
+    public static String[] getPaths(@NonNull final Collection<String> artifacts) {
+        List<String> l = new ArrayList<String>();
+        Iterator<String> i = artifacts.iterator();
+        while(i.hasNext()) {
+            String s = i.next();
+            if(i.hasNext()) {
+                if(s.endsWith(":")) { //NOI18N
+                    l.add(s);
+                } else {
+                    l.add(s + ":"); //NOI18N
+                }
+            } else {
+                if(s.endsWith(":")) { //NOI18N
+                    l.add(s.substring(0, s.length()-1));
+                } else {
+                    l.add(s);
+                }
+            }
+        }
+        return l.toArray(new String[0]);
+    }
+    
+    /**
+     * Remove trailing : from array of path artifacts and return the array as collection
+     * @param artifacts
+     * @return 
+     */
+    public static Set<String> getPaths(@NonNull final String[] artifacts) {
+        if(artifacts != null) {
+            Set<String> l = new TreeSet<String>();
+            for(int i = 0 ; i < artifacts.length; i++) {
+                if(artifacts[i].endsWith(":")) { //NOI18N
+                    l.add(artifacts[i].substring(0, artifacts[i].length()-1));
+                } else {
+                    l.add(artifacts[i]);
+                }
+            }
+            return l;
+        }
+        return null;
+    }
+    
+    /**
+     * Filter out artifacts that contain subString
+     * @param artifacts
+     * @return set without artifacts that contain subString
+     */
+    private static Set<String> filterOutArtifacts(@NonNull final Collection<String> artifacts, @NonNull String subString) {
+        Set<String> result = new LinkedHashSet<String>();
+        for(String artifact : artifacts) {
+            if(!artifact.contains(subString)) {
+                result.add(artifact);
+            }
+        }
+        return result;
+    }
+    
+    /**
+     * Returns existing value of a path property, null if it does not exist
+     * @param ep EditableProperties
+     * @return collection of artifacts or null
+     */
+    public static Set<String> getExistingProperty(@NonNull final EditableProperties ep, @NonNull String propName) {
+        // existing 
+        String currentPropVal = ep.getProperty(propName);
+        if(currentPropVal != null) {
+            String[] existingArray = PropertyUtils.tokenizePath(currentPropVal);
+            Set<String> existing = existingArray == null ? new TreeSet<String>() : getPaths(existingArray);
+            return Collections.unmodifiableSet(existing);
+        }
+        return null;
+    }
+    
+    /**
+     * Returns updated value of classpath property, null if it should not exist
+     * @param ep EditableProperties
+     * @return collection of artifacts or null
+     */
+    public static Set<String> getUpdatedCPProperty(@NonNull final EditableProperties ep, boolean extensionPropertyEmpty) {
+        boolean extensionNeeded = JFXProjectProperties.isTrue(ep.getProperty(JFXProjectProperties.JAVAFX_ENABLED)) ||
+                JFXProjectProperties.isTrue(ep.getProperty(JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH));
+        // existing
+        Set<String> existing = getExistingProperty(ep, ProjectProperties.JAVAC_CLASSPATH);
+        Set<String> updated = new LinkedHashSet<String>();
+        if(existing != null) {
+            updated = filterOutArtifacts(existing, "${javafx.runtime}"); // NOI18N
+            updated = filterOutArtifacts(updated, JavaFXPlatformUtils.getClassPathExtensionProperty());
+        }
+        if(extensionNeeded && !extensionPropertyEmpty) {
+            updated.add(JavaFXPlatformUtils.getClassPathExtensionProperty());
+        }
+        return Collections.unmodifiableSet(updated);
+    }
+
+    /**
+     * Returns new value of FX artifacts extension property if it needs to be updated, null otherwise
+     * @param ep EditableProperties
+     * @return collection of artifacts or null
+     */
+    public static Set<String> getUpdatedExtensionProperty(@NonNull final EditableProperties ep) throws IllegalArgumentException {
+        boolean propertyNeeded = JFXProjectProperties.isTrue(ep.getProperty(JFXProjectProperties.JAVAFX_ENABLED)) ||
+                JFXProjectProperties.isTrue(ep.getProperty(JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH));
+        // expected
+        Set<String> updated = null;
+        if(propertyNeeded) {
+            String platformName = ep.getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
+            JavaPlatform platform = JavaFXPlatformUtils.findJavaPlatform(platformName);
+            if(platform == null) {
+                throw new IllegalArgumentException(platformName);
+            }
+            updated = JavaFxRuntimeInclusion.getProjectClassPathExtension(platform);
+        }
+        return updated == null ? null : Collections.unmodifiableSet(updated);
+    }
+
+    /**
+     * Compares two Set representations of a path property
+     * @param set1
+     * @param set2
+     * @return true if the two sets represent equal existence and values of path properties
+     */
+    public static boolean pathPropertiesEqual(Set<String> set1, Set<String> set2) {
+        if(set1 == null && set2 == null) {
+            return true;
+        }
+        if(set1 == null || set2 == null) {
+            return false;
+        }
+        return set1.containsAll(set2) && set2.containsAll(set1);
+    }
+    
+    /**
+     * Checks whether JFXRT artifacts are properly added to classpath and represented 
+     * in project.properties if the current Java Platform needs this workaround
+     * @param prj the project to check
+     * @return true if project properties correctly represent JFXRT artifacts
+     */
+    public static boolean hasCorrectClassPathExtension(@NonNull final Project project) throws IOException, IllegalArgumentException  {
+        final EditableProperties ep = readFromFile(
+            project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH)
+                );
+        String platformName = ep.getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
+        if(JFXProjectProperties.isEqual(platformName, JavaFXPlatformUtils.DEFAULT_JAVAFX_PLATFORM)) {
+            // request auto-replace of Default_JavaFX_Platform by default platform
+            return false;
+        }
+        Set<String> existingExt = getExistingProperty(ep, JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION);
+        Set<String> updatedExt = getUpdatedExtensionProperty(ep);
+        Set<String> existingCP = getExistingProperty(ep, ProjectProperties.JAVAC_CLASSPATH);
+        Set<String> updatedCP = getUpdatedCPProperty(ep, updatedExt == null || updatedExt.isEmpty());
+        return pathPropertiesEqual(existingExt, updatedExt) && pathPropertiesEqual(existingCP, updatedCP);
+    }
+    
+    /**
+     * Updates EditableProperties so that JFXRT artifacts are explicitly added to
+     * compile classpath if they are not on classpath by default. This is a workaround
+     * of the fact that JDK1.7 does contain FX RT but does not provide it on classpath.
+     * JDK1.8 has FX RT on classpath, but still may not include all relevant artifacts by default
+     * and may need this extension.
+     * Note that this extension is relevant not only for FX Application projects, but also
+     * for SE projects that have the property "keep.javafx.runtime.on.classpath" set 
+     * (see SE Deployment category in Project Properties dialog).
+     * 
+     * @param ep EditableProperties containing properties to be updated
+     */
+    public static boolean updateClassPathExtensionProperties(@NonNull final EditableProperties ep) {
+        boolean changed = false;
+        changed = ep.remove(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME) != null ? true : changed;
+        changed = ep.remove(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK) != null ? true : changed;
+        Collection<String> extendExtProp = getUpdatedExtensionProperty(ep);
+        if(extendExtProp != null && !extendExtProp.isEmpty()) {
+            ep.setProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION, getPaths(extendExtProp));
+            changed = true;
+        } else {
+            changed = ep.remove(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION) != null ? true : changed;
+            //ep.remove(JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH);
+        }
+        Collection<String> extendCPProp = getUpdatedCPProperty(ep, extendExtProp == null || extendExtProp.isEmpty());
+        // JAVAC_CLASSPATH to be preserved even if empty (create new project creates it empty by default)
+        if(extendCPProp != null) {
+            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, getPaths(extendCPProp));
+            changed = true;
+        }
+        return changed;
     }
 
     /**
@@ -997,10 +1290,10 @@ public final class JFXProjectUtils {
         if(propsFO != null) {
             assert propsFO.isData();
             try {
-                final InputStream is = propsFO.getInputStream();
                 ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
                     @Override
                     public Void run() throws Exception {
+                        final InputStream is = propsFO.getInputStream();
                         try {
                             ep.load(is);
                         } finally {
@@ -1077,11 +1370,11 @@ public final class JFXProjectUtils {
                             os = propsFO.getOutputStream(lock);
                             ep.store(os);
                         } finally {
-                            if (lock != null) {
-                                lock.releaseLock();
-                            }
                             if (os != null) {
                                 os.close();
+                            }
+                            if (lock != null) {
+                                lock.releaseLock();
                             }
                         }
                         return null;
