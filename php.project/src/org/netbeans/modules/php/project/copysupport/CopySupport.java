@@ -165,6 +165,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
                     }
                     operation = OPERATIONS_QUEUE.poll();
                 }
+                LOGGER.finest("COPY_TASK_FINISHED");
             }
         }, true);
     }
