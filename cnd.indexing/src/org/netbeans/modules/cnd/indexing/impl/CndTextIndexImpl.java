@@ -41,14 +41,19 @@
  */
 package org.netbeans.modules.cnd.indexing.impl;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
+import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.repository.api.RepositoryException;
 import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
+import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
@@ -61,11 +66,11 @@ import org.openide.util.RequestProcessor;
  * @author Egor Ushakov <gorrus@netbeans.org>
  * @author Vladimir Voskresensky
  */
-public final class CndTextIndexImpl {
+public final class CndTextIndexImpl implements RepositoryListener {
     private final static Logger LOG = Logger.getLogger("CndTextIndexImpl"); // NOI18N
     private final DocumentIndex index;
     private final ConcurrentLinkedQueue<StoreQueueEntry> unsavedQueue = new ConcurrentLinkedQueue<StoreQueueEntry>();
-    
+
     private static final RequestProcessor RP = new RequestProcessor("CndTextIndexImpl saver", 1); //NOI18N
     private final RequestProcessor.Task storeTask = RP.create(new Runnable() {
         @Override
@@ -76,7 +81,13 @@ public final class CndTextIndexImpl {
     private static final int STORE_DELAY = 3000;
     private final UnitCodec unitCodec;
 
-    public CndTextIndexImpl(DocumentIndex index, UnitCodec unitCodec) {
+    public static CndTextIndexImpl create(DocumentIndex index, UnitCodec unitCodec) {
+        CndTextIndexImpl impl = new CndTextIndexImpl(index, unitCodec);
+        RepositoryAccessor.getRepository().registerRepositoryListener(impl);
+        return impl;
+    }
+
+    private CndTextIndexImpl(DocumentIndex index, UnitCodec unitCodec) {
         this.index = index;
         assert unitCodec != null;
         this.unitCodec = unitCodec;
@@ -93,7 +104,42 @@ public final class CndTextIndexImpl {
         unsavedQueue.add(new StoreQueueEntry(key, values));
         storeTask.schedule(STORE_DELAY);
     }
-    
+
+    @Override
+    public boolean unitOpened(int unitId, CharSequence unitName) {
+        return true;
+    }
+
+    @Override
+    public void unitClosed(int unitId, CharSequence unitName) {
+    }
+
+    @Override
+    public void anExceptionHappened(int unitId, CharSequence unitName, RepositoryException exc) {
+    }
+
+    @Override
+    public void unitRemoved(int unitId, CharSequence unitName) {
+        if (unitId < 0) {
+            return;
+        }
+        try {
+            String unitPrefix = toPrimaryKeyPrefix(unitId);
+            Collection<? extends IndexDocument> queryRes = index.query(CndTextIndexManager.FIELD_UNIT_ID, unitPrefix, Queries.QueryKind.EXACT, "_sn"); // NOI18N
+            TreeSet<String> keys = new TreeSet<String>();
+            for (IndexDocument doc : queryRes) {
+                keys.add(doc.getPrimaryKey());
+            }
+            for (String pk : keys) {
+                index.removeDocument(pk);
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace(System.err);
+        } catch (InterruptedException ex) {
+            // don't report interrupted exception
+        }
+    }
+
     private static class StoreQueueEntry {
         private final CndTextIndexKey key;
         private final Collection<CharSequence> ids;
@@ -114,6 +160,7 @@ public final class CndTextIndexImpl {
             final CndTextIndexKey key = entry.key;
             // use unitID+fileID for primary key, otherwise indexed files from different projects overwrite each others
             IndexDocument doc = IndexManager.createDocument(toPrimaryKey(key));
+            doc.addPair(CndTextIndexManager.FIELD_UNIT_ID, toPrimaryKeyPrefix(key.getUnitId()), true, false);
             for (CharSequence id : entry.ids) {
                 doc.addPair(CndTextIndexManager.FIELD_IDS, id.toString(), true, false);
             }
@@ -147,7 +194,11 @@ public final class CndTextIndexImpl {
         }
         return Collections.emptySet();
     }
-    
+
+    private String toPrimaryKeyPrefix(int unitId) {
+        return String.valueOf(unitCodec.unmaskRepositoryID(unitId));
+    }
+
     private String toPrimaryKey(CndTextIndexKey key) {
         return String.valueOf(((long) unitCodec.unmaskRepositoryID(key.getUnitId()) << 32) + (long) key.getFileNameIndex());
     }

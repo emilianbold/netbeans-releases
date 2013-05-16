@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui;
 
-import java.awt.Dialog;
+package org.netbeans.modules.bugtracking.tasks;
+
+import java.util.ArrayList;
 import java.util.List;
-import javax.swing.AbstractAction;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks.BrokenLink;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.openide.util.NbBundle;
 
-/**
- *
- * @author Alexander Simon
- */
-public class ResolveReferenceAction extends AbstractAction {
+public class UnsubmittedCategory extends Category {
 
-    private Project project;
+    private RepositoryImpl repository;
 
-    /** Creates a new instance of BrowserAction */
-    public ResolveReferenceAction(Project project) {
-        super(NbBundle.getBundle(ResolveReferenceAction.class).getString("CTL_ResolveReferenceAction"), // NOI18N
-                null);
-        this.project = project;
+    public UnsubmittedCategory(List<IssueImpl> tasks, RepositoryImpl repository) {
+        super(NbBundle.getMessage(UnsubmittedCategory.class, "LBL_Unsubmitted") + " [" + repository.getDisplayName() + "]", tasks, true);
+        this.repository = repository;
+    }
+
+    public UnsubmittedCategory(RepositoryImpl repository) {
+        this(new ArrayList<IssueImpl>(0), repository);
     }
 
     @Override
-    public void actionPerformed(java.awt.event.ActionEvent ev) {
-        List<BrokenLink> brokenLinks = BrokenLinks.getBrokenLinks(project);
-        ResolveReferencePanel panel = new ResolveReferencePanel(brokenLinks);
-        DialogDescriptor dd = new DialogDescriptor(panel,
-                NbBundle.getMessage(ResolveReferenceAction.class, "Link_Dialog_Title"), true,
-                new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
-                DialogDescriptor.DEFAULT_ALIGN, null, null);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        dialog.dispose();
-        return;
+    public boolean persist() {
+        return false;
     }
+
+    @Override
+    public List<IssueImpl> getTasks() {
+        return new ArrayList<IssueImpl>(repository.getUnsubmittedIssues());
+    }
+
 }

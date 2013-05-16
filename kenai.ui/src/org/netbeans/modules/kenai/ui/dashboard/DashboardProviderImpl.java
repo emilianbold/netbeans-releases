@@ -122,8 +122,8 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiProject> {
     }
 
     @Override
-    public TreeListNode createMyProjectNode(ProjectHandle p) {
-        return new MyProjectNode(p);
+    public TreeListNode createMyProjectNode(ProjectHandle p, boolean canOpen, boolean canBookmark, Action closeAction) {
+        return new MyProjectNode(p, canOpen, canBookmark, closeAction);
     }
 
     @Override

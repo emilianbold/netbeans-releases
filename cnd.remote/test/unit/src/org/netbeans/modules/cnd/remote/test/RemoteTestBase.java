@@ -157,6 +157,7 @@ public abstract class RemoteTestBase extends CndBaseTestCase {
         System.setProperty("sftp.put.retries", "5");
         System.setProperty("rfs.instable.sleep", "100");
         System.setProperty("remote.throw.assertions", "true");
+        System.setProperty("remote.user.password.keep_in_memory", "true");
     }
 
     static {

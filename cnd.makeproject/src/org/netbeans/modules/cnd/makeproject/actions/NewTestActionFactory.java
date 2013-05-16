@@ -205,12 +205,23 @@ public final class NewTestActionFactory {
         }
         
         private String getName(FileObject test) {
-            return NbBundle.getBundle((String) test.getAttribute("SystemFileSystem.localizingBundle")).getString(test.getPath());
+            String bundleName = (String)test.getAttribute("SystemFileSystem.localizingBundle"); //NOI18N
+            // User templates do not have bundles
+            if (bundleName != null) {
+                return NbBundle.getBundle(bundleName).getString(test.getPath());
+            } else {
+                return test.getName();
+            }
         }
 
         private Icon getIcon(FileObject test) {
             URL url = (URL) test.getAttribute("SystemFileSystem.icon"); // NOI18N
-            return ImageUtilities.loadImageIcon(url.getPath().substring(1), true);
+            // User templates do not have icons
+            if (url != null) {
+                return ImageUtilities.loadImageIcon(url.getPath().substring(1), true);
+            } else {
+                return null;
+            }
         }
     }
 

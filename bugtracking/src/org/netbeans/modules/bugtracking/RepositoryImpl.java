@@ -68,6 +68,8 @@ public final class RepositoryImpl<R, Q, I> {
     
     public final static String EVENT_QUERY_LIST_CHANGED = RepositoryProvider.EVENT_QUERY_LIST_CHANGED;
     
+    public final static String EVENT_UNSUBMITTED_ISSUES_CHANGED = RepositoryProvider.EVENT_UNSUBMITTED_ISSUES_CHANGED;
+        
     /**
      * RepositoryProvider's attributes have changed, e.g. name, url, etc.
      * Old and new value are maps of changed doubles: attribute-name / attribute-value.
@@ -103,6 +105,12 @@ public final class RepositoryImpl<R, Q, I> {
                         LOG.log(Level.FINE, "firing query list change {0} - rImpl: {1} - r: {2}", new Object[]{getDisplayName(), this, r}); // NOI18N
                     }
                     fireQueryListChanged();
+                } else if (RepositoryProvider.EVENT_UNSUBMITTED_ISSUES_CHANGED.equals(evt.getPropertyName())) {
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.log(Level.FINE, "firing unsubmitted issues change {0} - rImpl: {1} - r: {2}", //NOI18N
+                                new Object[] { getDisplayName(), this, r } );
+                    }
+                    fireUnsubmittedIssuesChanged();
                 }
             }
         });
@@ -346,6 +354,28 @@ public final class RepositoryImpl<R, Q, I> {
     public RepositoryController getController() {
         return repositoryProvider.getController(r);
     }
+    
+    //////////////////////
+    // Unsubmitted issues
+    //////////////////////
+    
+    public Collection<IssueImpl> getUnsubmittedIssues () {
+        Collection<I> issues = repositoryProvider.getUnsubmittedIssues(r);
+        if (issues == null || issues.isEmpty()) {
+            return Collections.<IssueImpl>emptyList();
+        }
+        List<IssueImpl> ret = new ArrayList<IssueImpl>(issues.size());
+        for (I i : issues) {
+            IssueImpl impl = getIssue(i);
+            if(impl != null) {
+                ret.add(impl);
+            }
+        }
+        return ret;
+    }
 
+    private void fireUnsubmittedIssuesChanged() {
+        support.firePropertyChange(EVENT_UNSUBMITTED_ISSUES_CHANGED, null, null);
+    }
 }
 

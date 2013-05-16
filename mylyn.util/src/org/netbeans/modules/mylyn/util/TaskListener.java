@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui;
 
-import javax.swing.AbstractAction;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.mylyn.util;
 
-final class ResolveIncorrectVersionAction extends AbstractAction {
+import java.util.EventListener;
+import java.util.EventObject;
+import org.eclipse.mylyn.internal.tasks.core.TaskContainerDelta;
+import org.eclipse.mylyn.tasks.core.ITask;
+
+/**
+ *
+ * @author Ondrej Vrabec
+ */
+public interface TaskListener extends EventListener {
     
-    private MakeLogicalViewRootNode node;
-    private Runnable negativeAction;
-
-    ResolveIncorrectVersionAction(MakeLogicalViewRootNode node, Runnable negativeAction) {
-        super(NbBundle.getMessage(ResolveIncorrectVersionAction.class, "MSG_version_resolve"), null); //NOI18N
-        this.node = node;
-        this.negativeAction = negativeAction;
-    }
-
-    @Override
-    public void actionPerformed(java.awt.event.ActionEvent ev) {
-            String title = NbBundle.getMessage(ResolveIncorrectVersionAction.class, "MSG_version_ignore_title"); //NOI18N
-            String message = NbBundle.getMessage(ResolveIncorrectVersionAction.class, "MSG_version_ignore"); //NOI18N
-            NotifyDescriptor nd = new NotifyDescriptor(message,
-                    title, NotifyDescriptor.YES_NO_OPTION,
-                    NotifyDescriptor.QUESTION_MESSAGE,
-                    null, NotifyDescriptor.YES_OPTION);
-            Object ret = DialogDisplayer.getDefault().notify(nd);
-            if (ret == NotifyDescriptor.YES_OPTION) {
-                node.reInitWithUnsupportedVersion();
-            } else {
-                if (negativeAction != null) {
-                    negativeAction.run();
-                }
+    public void taskModified (TaskEvent event);
+    
+    public static final class TaskEvent extends EventObject {
+        private final ITask task;
+        private final Kind kind;
+        
+        TaskEvent (ITask task, TaskContainerDelta delta) {
+            super(task);
+            this.task = task;
+            switch (delta.getKind()) {
+                case DELETED:
+                    this.kind = Kind.DELETED;
+                    break;
+                default:
+                    this.kind = Kind.MODIFIED;
             }
-    }    
+        }
+        
+        public ITask getTask () {
+            return task;
+        }
+
+        public Kind getKind () {
+            return kind;
+        }
+        
+        public static enum Kind {
+            DELETED,
+            MODIFIED
+        }
+    }
     
 }

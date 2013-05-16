@@ -97,6 +97,7 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
      */
     public static final String EVENT_ANNOTATIONS_CHANGED = org.netbeans.modules.versioning.core.util.Utils.EVENT_ANNOTATIONS_CHANGED;
 
+    public static final String ATTRIBUTE_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";
 
     /**
      * Priority defining the order of versioning systems used when determining the owner of a file. I.e. what versioning system should handle the file.

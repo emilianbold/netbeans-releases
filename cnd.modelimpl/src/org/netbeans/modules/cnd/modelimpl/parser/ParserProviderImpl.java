@@ -111,6 +111,8 @@ public final class ParserProviderImpl extends CsmParserProvider {
         private long parseTime;
         private long renderTime;
         private int numTokens;
+        private final String language;
+//        private 
         
         private Map<Integer, CsmObject> objects = null;
         private final CsmParserProvider.CsmParserParameters params;
@@ -123,6 +125,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                 aFlags |= CPPParserEx.CPP_SUPPRESS_ERRORS;
             }
             this.flags = aFlags;
+            this.language = params.getLanguage();
         }
 
         @Override
@@ -209,7 +212,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     if (ast != null) {
                         CsmParserProvider.CsmParserParameters descr = (CsmParserProvider.CsmParserParameters) context[0];
                         FileContent parseFileContent = CsmCorePackageAccessor.get().getFileContent(descr);
-                        new AstRenderer(file, parseFileContent, objects).render(ast);
+                        new AstRenderer(file, parseFileContent, language, objects).render(ast);
                     }            
                     break;
                 case NAMESPACE_DEFINITION_BODY:
@@ -219,7 +222,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     NamespaceDefinitionImpl nsDef = (NamespaceDefinitionImpl) context[1];
                     CsmNamespace ns = nsDef.getNamespace();
                     if (ast != null && ns instanceof NamespaceImpl) {
-                        new AstRenderer(nsBodyFile, fileContent, objects).render(ast, (NamespaceImpl) ns, nsDef);
+                        new AstRenderer(nsBodyFile, fileContent, language, objects).render(ast, (NamespaceImpl) ns, nsDef);
                     }     
                     RepositoryUtils.put(ns);
                     break;
@@ -230,7 +233,7 @@ public final class ParserProviderImpl extends CsmParserProvider {
                     ClassImpl cls = (ClassImpl) context[1];
                     CsmVisibility visibility = (CsmVisibility) context[2];
                     boolean localClass = (Boolean) context[3];
-                    cls.fixFakeRender(fileContent, visibility, ast, localClass);
+                    cls.fixFakeRender(language, fileContent, visibility, ast, localClass);
                     if (!localClass) {
                         RepositoryUtils.put(cls);
                     }

@@ -52,6 +52,7 @@ import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl.InheritanceBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.SpecializationDescriptor.SpecializationDescriptorBuilder;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -87,14 +88,14 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
     }
     
     @Override
-    public final void init(CsmScope scope, AST ast, CsmFile file, FileContent fileContent, boolean register) throws AstRendererException {
+    public final void init(CsmScope scope, AST ast, CsmFile file, FileContent fileContent, String language, boolean register) throws AstRendererException {
         // does not call super.init(), but copies super.init() with some changes:
         // it needs to initialize qualifiedNameSuffix
         // after rendering, but before calling initQualifiedName() and register()
 
         initScope(scope);
         temporaryRepositoryRegistration(register, this);
-        render(ast, file, fileContent, !register);
+        render(ast, file, fileContent, language, !register);
 
         initQualifiedName(ast, scope, register, file);
 
@@ -130,7 +131,9 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
         specializationDesctiptor = SpecializationDescriptor.createIfNeeded(ast, getContainingFile(), scope, register);
     }
 
-    public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file, FileContent fileContent, boolean register, DeclarationsContainer container) throws AstRendererException {
+    public static ClassImplSpecialization create(AST ast, CsmScope scope, CsmFile file, String language, FileContent fileContent, boolean register, DeclarationsContainer container) throws AstRendererException {
+        assert !APTLanguageSupport.getInstance().isLanguageC(language) : "Class specialization is not allowed in C"; // NOI18N
+        
         ClassImpl clsImpl = findExistingClassImplInContainer(container, ast);
         ClassImplSpecialization impl = null;
         if (clsImpl instanceof ClassImplSpecialization) {
@@ -142,7 +145,7 @@ public class ClassImplSpecialization extends ClassImpl implements CsmTemplate {
             nameHolder = NameHolder.createClassName(ast);
             impl = new ClassImplSpecialization(ast, nameHolder, file);
         }
-        impl.init(scope, ast, file, fileContent, register);
+        impl.init(scope, ast, file, fileContent, language, register); 
         if (nameHolder != null) {
             nameHolder.addReference(fileContent, impl);
         }

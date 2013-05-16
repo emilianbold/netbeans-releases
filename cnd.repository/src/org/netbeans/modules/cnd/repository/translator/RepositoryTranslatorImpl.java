@@ -145,7 +145,7 @@ public class RepositoryTranslatorImpl {
         if (!unitNamesCache.containsValue(unitName)) {
             // NB: this unit can't be open (since there is no such unit in unitNamesCache)
             // so we are just removing some ocassionally existing in persisntence files
-            storageAllocator.deleteUnitFiles(unitName, false);
+            storageAllocator.deleteUnitFiles(-1, unitName, false);
         }
         int unitId = unitNamesCache.getId(unitName);
         unitId = repository.maskByRepositoryID(unitId);

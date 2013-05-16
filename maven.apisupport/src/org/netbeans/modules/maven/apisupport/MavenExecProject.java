@@ -48,6 +48,8 @@ import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Task;

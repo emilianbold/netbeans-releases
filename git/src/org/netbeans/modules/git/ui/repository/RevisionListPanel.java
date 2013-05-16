@@ -291,13 +291,13 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
     private void updateHistory (File repository, File[] roots, Revision revision, int limit, Boolean addition) {
         synchronized (LOCK) {
             if (addition == null && (repository == lastHWRepository || lastHWRepository != null && lastHWRepository.equals(repository))
-                    && (revision == null && lastHWRevision == null || lastHWRevision != null && revision != null && lastHWRevision.equals(revision.getRevision()))) {
+                    && (revision == null && lastHWRevision == null || lastHWRevision != null && revision != null && lastHWRevision.equals(revision.getCommitId()))) {
                 // no change made (selected repository i the same and selected revision is the same)
                 return;
             }
             this.addition = Boolean.TRUE.equals(addition);
             lastHWRepository = repository;
-            lastHWRevision = revision == null ? null : revision.getRevision();
+            lastHWRevision = revision == null ? null : revision.getCommitId();
             currRepository = repository;
             currRevision = revision;
             currRoots = roots;
@@ -365,7 +365,7 @@ public class RevisionListPanel extends javax.swing.JPanel implements ActionListe
                         criteria.setLimit(limit + 1); // get one extra revision to be able to enable/disable buttons
                     }
                     if (rev != null) {
-                        criteria.setRevisionTo(rev.getRevision());
+                        criteria.setRevisionTo(rev.getCommitId());
                     }
                     final GitRevisionInfo[] revs = client.log(criteria, listHistoryMonitor);
                     if (!isCanceled()) {

@@ -65,8 +65,8 @@ public class VcsCollocationQueryImplementation implements CollocationQueryImplem
 
     @Override
     public boolean areCollocated(URI file1, URI file2) {
-        VCSFileProxy proxy1 = toFileProxy(file1);
-        VCSFileProxy proxy2 = toFileProxy(file2);
+        VCSFileProxy proxy1 = Utils.toFileProxy(file1);
+        VCSFileProxy proxy2 = Utils.toFileProxy(file2);
         
         if(proxy1 == null || proxy2 == null) return false;
         VersioningSystem vsa = VersioningManager.getInstance().getOwner(proxy1);
@@ -79,7 +79,7 @@ public class VcsCollocationQueryImplementation implements CollocationQueryImplem
 
     @Override
     public URI findRoot(URI file) {
-        VCSFileProxy proxy = toFileProxy(file);
+        VCSFileProxy proxy = Utils.toFileProxy(file);
         if(proxy != null) {
             VersioningSystem system = VersioningManager.getInstance().getOwner(proxy);
             CollocationQueryImplementation2 cqi = system != null ? system.getCollocationQueryImplementation() : null;
@@ -88,33 +88,4 @@ public class VcsCollocationQueryImplementation implements CollocationQueryImplem
         return null;
     }
     
-    private static VCSFileProxy toFileProxy(URI uri) {
-        FileObject fo = getFileObject(uri);
-        return fo != null ? VCSFileProxy.createFileProxy(fo) : null;
-    }        
-    
-    private static FileObject getFileObject(URI uri) {
-        FileObject fo = null;
-        try {
-            fo = URLMapper.findFileObject(uri.toURL());
-        } catch (MalformedURLException ex) {
-            VersioningManager.LOG.log(Level.WARNING, uri != null ? uri.toString() : null, ex);
-        }
-        if(fo == null) {
-            // file doesn't exists? use parent for the query then.
-            // By the means of VCS it has to be collocated in the same way.
-            String path = uri.getPath();
-            URI parent;
-            try {
-                parent = path.endsWith("/") ? uri.resolve("..") : new URI(uri + "/").resolve(".."); // NOI18N
-                path = parent.getPath();
-                uri = new URI(uri.getScheme(), uri.getUserInfo(), uri.getHost(), uri.getPort(), path, uri.getQuery(), uri.getFragment());
-            } catch (URISyntaxException ex) {
-                VersioningManager.LOG.log(Level.WARNING, path, ex);
-                return null;
-            }
-            fo = getFileObject(uri);
-        }
-        return fo;
-    }
-}
+}        

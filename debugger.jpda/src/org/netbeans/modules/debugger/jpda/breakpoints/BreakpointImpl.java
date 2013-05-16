@@ -173,9 +173,15 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
              (getDebugger ().getState () == JPDADebugger.STATE_DISCONNECTED)
         ) return;
         removeAllEventRequests ();
-        if (breakpoint.isEnabled () && isEnabled() && debugger.getBreakpointsActive()) {
+        if (canSetRequests()) {
             setRequests ();
         }
+    }
+    
+    protected final boolean canSetRequests() {
+        return breakpoint.isEnabled () &&
+               isEnabled() &&
+               debugger.getBreakpointsActive();
     }
 
     protected boolean isApplicable() {

@@ -108,12 +108,14 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
 
     @Override
     void updateCounts() {
-        if (panel != null) {
-            lblTotal.setText(getTotalString());
-            lblChanged.setText(getChangedString());
-            boolean showChanged = getChangedTaskCount() > 0;
-            lblSeparator.setVisible(showChanged);
-            lblChanged.setVisible(showChanged);
+        synchronized (LOCK) {
+            if (panel != null) {
+                lblTotal.setText(getTotalString());
+                lblChanged.setText(getChangedString());
+                boolean showChanged = getChangedTaskCount() > 0;
+                lblSeparator.setVisible(showChanged);
+                lblChanged.setVisible(showChanged);
+            }
         }
     }
 
@@ -182,7 +184,30 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
         return panel;
     }
 
-    private Action getCategoryAction(CategoryNode... categoryNodes) {
+    List<Action> getCategoryActions(List<TreeListNode> selectedNodes) {
+        boolean justCategories = true;
+        List<Action> actions = new ArrayList<Action>();
+        CategoryNode[] categoryNodes = new CategoryNode[selectedNodes.size()];
+        for (int i = 0; i < selectedNodes.size(); i++) {
+            TreeListNode treeListNode = selectedNodes.get(i);
+            if (treeListNode instanceof CategoryNode) {
+                categoryNodes[i] = (CategoryNode) treeListNode;
+            } else {
+                justCategories = false;
+                break;
+            }
+        }
+        if (justCategories) {
+            Action categoryAction = getOpenCloseAction(categoryNodes);
+            if (categoryAction != null) {
+                actions.add(categoryAction);
+            }
+            actions.addAll(Actions.getCategoryPopupActions(categoryNodes));
+        }
+        return actions;
+    }
+
+    private Action getOpenCloseAction(CategoryNode... categoryNodes) {
         boolean allOpened = true;
         boolean allClosed = true;
         for (CategoryNode categoryNode : categoryNodes) {
@@ -217,25 +242,7 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     @Override
     public final Action[] getPopupActions() {
         List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
-        boolean justCategories = true;
-        CategoryNode[] categoryNodes = new CategoryNode[selectedNodes.size()];
-        for (int i = 0; i < selectedNodes.size(); i++) {
-            TreeListNode treeListNode = selectedNodes.get(i);
-            if (treeListNode instanceof CategoryNode) {
-                categoryNodes[i] = (CategoryNode) treeListNode;
-            } else {
-                justCategories = false;
-                break;
-            }
-        }
-        List<Action> actions = new ArrayList<Action>();
-        if (justCategories) {
-            Action categoryAction = getCategoryAction(categoryNodes);
-            if (categoryAction != null) {
-                actions.add(categoryAction);
-            }
-            actions.addAll(Actions.getCategoryPopupActions(categoryNodes));
-        }
+        List<Action> actions = new ArrayList<Action>(getCategoryActions(selectedNodes));
         actions.addAll(Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
         return actions.toArray(new Action[actions.size()]);
     }
