@@ -106,25 +106,8 @@ public class CompletionContextFinder {
         
         ts.move(offset); 
         if (ts.moveNext()) {
-            List<JsTokenId> listIds = Arrays.asList(JsTokenId.OPERATOR_COMMA, JsTokenId.OPERATOR_COLON, JsTokenId.BRACKET_LEFT_CURLY,
-                    JsTokenId.OPERATOR_SEMICOLON);
-            token = LexUtilities.findPreviousToken(ts, listIds);
-            tokenId = token.id();
-            if (tokenId == JsTokenId.OPERATOR_COMMA && ts.movePrevious()) {
-                token = LexUtilities.findPreviousToken(ts, listIds);
-                tokenId = token.id();
-                if (tokenId == JsTokenId.OPERATOR_COLON) {
-                    // we are in the previous property definition
-                    return CompletionContext.OBJECT_PROPERTY_NAME;
-                } 
-            } 
-            if (tokenId == JsTokenId.BRACKET_LEFT_CURLY && ts.movePrevious()) {
-                // check whether it's the first property in the object literal definion
-                token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL));
-                tokenId = token.id();
-                if (tokenId == JsTokenId.BRACKET_LEFT_PAREN || tokenId == JsTokenId.OPERATOR_COMMA || tokenId == JsTokenId.OPERATOR_EQUALS) {
-                    return CompletionContext.OBJECT_PROPERTY_NAME;
-                }
+            if (isPropertyNameContext(ts)) {
+                return CompletionContext.OBJECT_PROPERTY_NAME;
             }
         }
         
@@ -153,6 +136,61 @@ public class CompletionContextFinder {
         }
         
         return CompletionContext.EXPRESSION;
+    }
+    
+    private static boolean isPropertyNameContext(TokenSequence<JsTokenId> ts) {
+        
+        //find the begining of the object literal
+        Token<? extends JsTokenId> token = null;
+        JsTokenId tokenId;
+        
+        List<JsTokenId> listIds = Arrays.asList(JsTokenId.OPERATOR_COMMA, JsTokenId.OPERATOR_COLON, JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.OPERATOR_SEMICOLON);
+        // find previous , or : or { or ;
+        token = LexUtilities.findPreviousToken(ts, listIds);
+        tokenId = token.id();
+        if (tokenId == JsTokenId.OPERATOR_COMMA && ts.movePrevious()) {
+            token = LexUtilities.findPreviousToken(ts, listIds);
+            tokenId = token.id();
+            if (tokenId == JsTokenId.OPERATOR_COLON) {
+                // we are in the previous property definition
+                return true;
+            } 
+        } 
+        if (tokenId == JsTokenId.BRACKET_LEFT_CURLY && ts.movePrevious()) {
+            List<JsTokenId> emptyIds = Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT);
+            // check whether it's the first property in the object literal definion
+            token = LexUtilities.findPrevious(ts, emptyIds);
+            tokenId = token.id();
+            if (tokenId == JsTokenId.BRACKET_LEFT_PAREN || tokenId == JsTokenId.OPERATOR_COMMA || tokenId == JsTokenId.OPERATOR_EQUALS || tokenId == JsTokenId.OPERATOR_COLON) {
+                return true;
+            } else if (tokenId == JsTokenId.BRACKET_RIGHT_PAREN) {
+                // it can be a method definition
+                int balance = 1;
+                while (ts.movePrevious() && balance > 0) {
+                    token = ts.token();
+                    tokenId = token.id();
+                    if (tokenId == JsTokenId.BRACKET_RIGHT_PAREN) {
+                        balance++;
+                    } else if (tokenId == JsTokenId.BRACKET_LEFT_PAREN) {
+                        balance--;
+                    }
+                }
+                if (balance == 0) {
+                    token = LexUtilities.findPrevious(ts, emptyIds);
+                    tokenId = token.id();
+                    if (tokenId == JsTokenId.KEYWORD_FUNCTION && ts.movePrevious()) {
+                        // we found a method definition, now we need to check, whether its in an object literal
+                        token = LexUtilities.findPrevious(ts, emptyIds);
+                        tokenId = token.id();
+                        if (tokenId == JsTokenId.OPERATOR_COLON) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+            
+        return false;
     }
     
     private static boolean acceptTokenChains(TokenSequence tokenSequence, List<Object[]> tokenIdChains, boolean movePrevious) {

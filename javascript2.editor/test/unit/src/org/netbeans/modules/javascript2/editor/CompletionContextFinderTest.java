@@ -83,11 +83,23 @@ public class CompletionContextFinderTest extends JsTestBase {
     }
     
     public void testObjectPropertyName01() throws Exception {
-        checkCompletionContext("testfiles/completion/objectPropertyNameContext.js", "autoCr^ea : \"sranda\"", CompletionContext.OBJECT_PROPERTY_NAME);
+        checkCompletionContext("testfiles/completion/objectPropertyNameContext.js", "    autoCr^ea: \"sranda\"", CompletionContext.OBJECT_PROPERTY_NAME);
     }
 
     public void testObjectPropertyName02() throws Exception {
         checkCompletionContext("testfiles/completion/objectPropertyNameContext.js", "   nam^e: 'Panda',", CompletionContext.OBJECT_PROPERTY_NAME);
+    }
+    
+    public void testObjectPropertyName03() throws Exception {
+        checkCompletionContext("testfiles/completion/objectPropertyNameContext.js", "    ^context: document.body,", CompletionContext.OBJECT_PROPERTY_NAME);
+    }
+    
+    public void testObjectPropertyName04() throws Exception {
+        checkCompletionContext("testfiles/completion/objectPropertyNameContext.js", "    ^crossDomain: false,", CompletionContext.OBJECT_PROPERTY_NAME);
+    }
+    
+    public void testObjectPropertyName05() throws Exception {
+        checkCompletionContext("testfiles/completion/objectPropertyNameContext.js", "    ^complete: function(jqXHR, textStatus) {", CompletionContext.OBJECT_PROPERTY_NAME);
     }
     
     public void testString01() throws Exception {
