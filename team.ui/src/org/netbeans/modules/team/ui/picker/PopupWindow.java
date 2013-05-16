@@ -225,6 +225,8 @@ final class PopupWindow  {
                         return;
                     if( null != invokerComponent && SwingUtilities.isDescendingFrom( comp, invokerComponent) )
                         return;
+                    if( popupWindow == comp )
+                        return;
                     Container par = SwingUtilities.getAncestorNamed(POPUP_NAME, comp); //NOI18N
                     // Container barpar = SwingUtilities.getAncestorOfClass(PopupUtil.class, comp);
                     // if (par == null && barpar == null) {
