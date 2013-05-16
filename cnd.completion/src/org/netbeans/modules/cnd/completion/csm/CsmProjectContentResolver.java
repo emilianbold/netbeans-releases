@@ -955,7 +955,19 @@ public final class CsmProjectContentResolver {
             CsmDeclaration.Kind.ENUM_FORWARD_DECLARATION,
             CsmDeclaration.Kind.TYPEDEF
         };
-        List enumsAndTypedefs = getNamespaceMembers(ns, classKinds, "", false, searchNestedUnnamedNamespaces, true);
+        
+        List enumsAndTypedefs = getNamespaceMembers(
+                ns, 
+                classKinds, 
+                "", 
+                false, 
+                new HashSet<CsmNamespace>(),
+                searchNestedUnnamedNamespaces, 
+                true,
+                searchNestedUnnamedNamespaces,
+                searchNestedUnnamedNamespaces
+        );
+        
         Collection used = CsmUsingResolver.getDefault().findUsedDeclarations(ns);
         CsmDeclaration.Kind classAndEnumeratorKinds[] = {
             CsmDeclaration.Kind.ENUM,
@@ -966,7 +978,7 @@ public final class CsmProjectContentResolver {
         filterDeclarations(used.iterator(), enumsAndTypedefs, classAndEnumeratorKinds, "", false, true);
         List res = getEnumeratorsFromEnumsEnumeratorsAndTypedefs(enumsAndTypedefs, match, strPrefix, sort);
         return res;
-    }
+    }    
 
     @SuppressWarnings("unchecked")
     public List<CsmClassifier> getNestedClassifiers(CsmClass clazz, CsmOffsetableDeclaration contextDeclaration, String strPrefix, boolean match, boolean inspectParentClasses, boolean inspectOuterClasses) {
@@ -1335,8 +1347,21 @@ public final class CsmProjectContentResolver {
         List<CsmDeclaration> res = getNamespaceMembers(ns, kinds, strPrefix, match, new HashSet<CsmNamespace>(), searchNestedUnnamedNamespaces, returnUnnamedMembers);
         return res;
     }
-
+    
     private List<CsmDeclaration> getNamespaceMembers(CsmNamespace ns, CsmDeclaration.Kind kinds[], String strPrefix, boolean match, Set<CsmNamespace> handledNS, boolean searchNestedUnnamedNamespaces, boolean returnUnnamedMembers) {
+        return getNamespaceMembers(ns, kinds, strPrefix, match, handledNS, searchNestedUnnamedNamespaces, returnUnnamedMembers, returnUnnamedMembers, returnUnnamedMembers);
+    }    
+
+    private List<CsmDeclaration> getNamespaceMembers(CsmNamespace ns,
+                                                     CsmDeclaration.Kind kinds[], 
+                                                     String strPrefix,
+                                                     boolean match, 
+                                                     Set<CsmNamespace> handledNS,
+                                                     boolean searchNestedUnnamedNamespaces,
+                                                     boolean returnUnnamedInCurrentNs, 
+                                                     boolean returnUnnamedInNestedNs, 
+                                                     boolean returnUnnamedInParentNs) 
+    {
         if (handledNS.contains(ns)) {
             return Collections.<CsmDeclaration>emptyList();
         }
@@ -1346,12 +1371,12 @@ public final class CsmProjectContentResolver {
         Iterator it;
         //it = ns.getDeclarations().iterator();
         //filterDeclarations(it, res, kinds, strPrefix, match, returnUnnamedMembers);
-        filterDeclarations(ns, res, kinds, strPrefix, match, returnUnnamedMembers);
+        filterDeclarations(ns, res, kinds, strPrefix, match, returnUnnamedInCurrentNs);
         if (!ns.isGlobal()) {
             for (CsmProject lib : ns.getProject().getLibraries()) {
                 CsmNamespace n = lib.findNamespace(ns.getQualifiedName());
                 if (n != null && !handledNS.contains(n)) {
-                    filterDeclarations(n, res, kinds, strPrefix, match, returnUnnamedMembers);
+                    filterDeclarations(n, res, kinds, strPrefix, match, returnUnnamedInCurrentNs);
                     handledNS.add(n);
                 }
             }
@@ -1370,7 +1395,7 @@ public final class CsmProjectContentResolver {
 //                    res.add(nestedNs);
 //                }
 //            }
-                    res.addAll(getNamespaceMembers(nestedNs, kinds, strPrefix, match, handledNS, true, returnUnnamedMembers));
+                    res.addAll(getNamespaceMembers(nestedNs, kinds, strPrefix, match, handledNS, true, returnUnnamedInNestedNs));
                 }
             }
         }
@@ -1380,7 +1405,7 @@ public final class CsmProjectContentResolver {
             handledNS.add(parentNS);
 
             strPrefix = ns.getName() + "::" + strPrefix; // NOI18N
-            filterDeclarations(parentNS, res, kinds, strPrefix, match, returnUnnamedMembers);
+            filterDeclarations(parentNS, res, kinds, strPrefix, match, returnUnnamedInParentNs);
 
             ns  = parentNS;
             parentNS = parentNS.getParent();

@@ -83,12 +83,16 @@ public class PhpVariableCompletionProvider implements VariableCompletionProvider
     private static final String PRESENTER_FILE_SUFFIX = PRESENTER_CLASS_SUFFIX + ".php"; //NOI18N
     private static final String LATTE_EXTENSION = "latte"; //NOI18N
     private static final String ACTION_METHOD_PREFIX = "action"; //NOI18N
+    private static final String RENDER_METHOD_PREFIX = "render"; //NOI18N
+    private static final String STARTUP_METHOD = "startup"; //NOI18N
+    private static final String BEFORE_RENDER_METHOD = "beforeRender"; //NOI18N
 
-    private final Set<String> result = new HashSet<>();
+    private Set<String> result;
     private FileObject templateFile;
 
     @Override
     public Set<String> getVariables(FileObject templateFile) {
+        result = new HashSet<>();
         if (isView(templateFile)) {
             this.templateFile = templateFile;
             processTemplateFile(templateFile);
@@ -115,8 +119,7 @@ public class PhpVariableCompletionProvider implements VariableCompletionProvider
                 PHPParseResult parseResult = (PHPParseResult) resultIterator.getParserResult();
                 PresenterVisitor presenterVisitor = new PresenterVisitor(templateFile);
                 presenterVisitor.scan(parseResult.getProgram());
-                MethodDeclaration action = presenterVisitor.getAction();
-                if (action != null) {
+                for (MethodDeclaration action : presenterVisitor.getActions()) {
                     VariableVisitor variableVisitor = new VariableVisitor(parseResult.getModel());
                     action.accept(variableVisitor);
                     result.addAll(variableVisitor.getVariables());
@@ -158,7 +161,7 @@ public class PhpVariableCompletionProvider implements VariableCompletionProvider
 
     private static final class PresenterVisitor extends DefaultVisitor {
         private final String actionName;
-        private MethodDeclaration action;
+        private Set<MethodDeclaration> actions = new HashSet<>();
 
         public PresenterVisitor(FileObject templateFile) {
             actionName = extractActionName(templateFile);
@@ -173,13 +176,29 @@ public class PhpVariableCompletionProvider implements VariableCompletionProvider
 
         @Override
         public void visit(MethodDeclaration node) {
-            if (CodeUtils.extractMethodName(node).toLowerCase().equalsIgnoreCase(ACTION_METHOD_PREFIX + actionName)) {
-                action = node;
+            if (isProperActionMethod(node, actionName) || isProperRenderMethod(node, actionName) || isStartupMethod(node) || isBeforeRenderMethod(node)) {
+                actions.add(node);
             }
         }
 
-        public MethodDeclaration getAction() {
-            return action;
+        private static boolean isProperActionMethod(MethodDeclaration node, String actionName) {
+            return CodeUtils.extractMethodName(node).toLowerCase().equalsIgnoreCase(ACTION_METHOD_PREFIX + actionName);
+        }
+
+        private static boolean isProperRenderMethod(MethodDeclaration node, String actionName) {
+            return CodeUtils.extractMethodName(node).toLowerCase().equalsIgnoreCase(RENDER_METHOD_PREFIX + actionName);
+        }
+
+        private static boolean isStartupMethod(MethodDeclaration node) {
+            return CodeUtils.extractMethodName(node).toLowerCase().equalsIgnoreCase(STARTUP_METHOD);
+        }
+
+        private static boolean isBeforeRenderMethod(MethodDeclaration node) {
+            return CodeUtils.extractMethodName(node).toLowerCase().equalsIgnoreCase(BEFORE_RENDER_METHOD);
+        }
+
+        public Set<MethodDeclaration> getActions() {
+            return new HashSet<>(actions);
         }
 
     }

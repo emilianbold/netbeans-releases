@@ -44,8 +44,7 @@
 
 package org.netbeans.modules.cnd.repository.util;
 
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.CopyOnWriteArrayList;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 
@@ -55,8 +54,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
  */
 public class RepositoryListenersManager {
     private static final RepositoryListenersManager instance = new RepositoryListenersManager();
-    private RepositoryListener  theListener = null;
-    private final ReadWriteLock rwLock = new ReentrantReadWriteLock();
+    private CopyOnWriteArrayList<RepositoryListener>  listeners = new CopyOnWriteArrayList<RepositoryListener>();
 
     /** Creates a new instance of RepositoryListenersManager */
     private RepositoryListenersManager() {
@@ -67,51 +65,35 @@ public class RepositoryListenersManager {
     }
     
     public void registerListener (final RepositoryListener listener){
-        try{
-            rwLock.writeLock().lock();
-            theListener = listener;
-        } finally {
-            rwLock.writeLock().unlock();
-        }
+        listeners.add(listener);
     }
     
     public void unregisterListener(final RepositoryListener listener){
-        try {
-            rwLock.writeLock().lock();
-            theListener = null;
-        } finally {
-            rwLock.writeLock().unlock();
-        }
+        listeners.remove(listener);
     }
     
     public boolean fireUnitOpenedEvent(final int unitId, final CharSequence unitName){
         boolean toOpen = true;
-        try {
-            rwLock.readLock().lock();
-            if (theListener != null) {
-                toOpen =  theListener.unitOpened(unitId, unitName);
-            }
-        } finally {
-            rwLock.readLock().unlock();
-        }
-        
+        for (RepositoryListener theListener : listeners) {
+            toOpen &= theListener.unitOpened(unitId, unitName);
+        }        
         return toOpen;
     }
     
     public void fireUnitClosedEvent(final int unitId, final CharSequence unitName) {
-        try {
-            rwLock.readLock().lock();
-            if (theListener != null) {
-                theListener.unitClosed(unitId, unitName);
-            }
-        } finally {
-            rwLock.readLock().unlock();
+        for (RepositoryListener theListener : listeners) {
+            theListener.unitClosed(unitId, unitName);
         }
     }
-    
+
+    public void fireUnitRemovedEvent(final int unitId, final CharSequence unitName) {
+        for (RepositoryListener theListener : listeners) {
+            theListener.unitRemoved(unitId, unitName);
+        }
+    }
+
     public void fireAnException(int unitId, final CharSequence unitName, final RepositoryException exception) {
-        try {
-            rwLock.readLock().lock();
+        for (RepositoryListener theListener : listeners) {
             if (theListener != null) {
                 theListener.anExceptionHappened(unitId, unitName, exception);
             } else {
@@ -119,8 +101,6 @@ public class RepositoryListenersManager {
                     exception.getCause().printStackTrace(System.err);
                 }
             }
-        } finally {
-            rwLock.readLock().unlock();
-        }        
+        }
     }
 }

@@ -104,4 +104,8 @@ public class Utilities {
         return RP;
     }
 
+    public static boolean isMoreProjectsDashboard() {
+        return !Boolean.getBoolean("team.dashboard.stripped");
+    }
+    
 }

@@ -61,6 +61,8 @@ import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.actions.JPDADebuggerActionProvider;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
@@ -71,7 +73,7 @@ import org.netbeans.spi.debugger.ActionsProviderSupport;
  * @author  Jan Jancura
  */
 @ActionsProvider.Registration(path="netbeans-JPDASession", actions="runToCursor")
-public class RunToCursorActionProvider extends ActionsProviderSupport
+public class RunToCursorActionProvider extends JPDADebuggerActionProvider
                                        implements PropertyChangeListener,
                                                   ActionsManagerListener {
 
@@ -82,9 +84,9 @@ public class RunToCursorActionProvider extends ActionsProviderSupport
     
     
     public RunToCursorActionProvider (ContextProvider lookupProvider) {
+        super((JPDADebuggerImpl) lookupProvider.lookupFirst(null, JPDADebugger.class));
         debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
         session = lookupProvider.lookupFirst(null, Session.class);
-        debugger.addPropertyChangeListener (JPDADebugger.PROP_STATE, this);
         EditorContextBridge.getContext().addPropertyChangeListener (this);
     }
     
@@ -115,23 +117,23 @@ public class RunToCursorActionProvider extends ActionsProviderSupport
         return current;
     }
 
-    public void propertyChange (PropertyChangeEvent evt) {
+    @Override
+    protected void checkEnabled(int debuggerState) {
         setEnabled (
             ActionsManager.ACTION_RUN_TO_CURSOR,
             getActionsManager().isEnabled(ActionsManager.ACTION_CONTINUE) &&
-            (debugger.getState () == debugger.STATE_STOPPED) &&
+            (debuggerState== JPDADebugger.STATE_STOPPED) &&
             (EditorContextBridge.getContext().getCurrentLineNumber () >= 0) && 
             (EditorContextBridge.getContext().getCurrentURL ().endsWith (".java") || 
              EditorContextBridge.getContext().getCurrentURL ().endsWith (".scala"))
         );
-        if ( (debugger.getState () != debugger.STATE_RUNNING) &&
-             (breakpoint != null)
-        ) {
+        if (debuggerState != JPDADebugger.STATE_RUNNING && breakpoint != null) {
             DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
             breakpoint = null;
         }
-        if (debugger.getState () == debugger.STATE_DISCONNECTED) 
+        if (debuggerState == JPDADebugger.STATE_DISCONNECTED) {
             destroy ();
+        }
     }
     
     public Set getActions () {
@@ -139,6 +141,22 @@ public class RunToCursorActionProvider extends ActionsProviderSupport
     }
     
     public void doAction (Object action) {
+        runToCursor();
+    }
+    
+    public void postAction(Object action, final Runnable actionPerformedNotifier) {
+        doLazyAction(action, new Runnable() {
+            public void run() {
+                try {
+                    runToCursor();
+                } finally {
+                    actionPerformedNotifier.run();
+                }
+            }
+        });
+    }
+    
+    public void runToCursor() {
         if (breakpoint != null) {
             DebuggerManager.getDebuggerManager ().removeBreakpoint (breakpoint);
             breakpoint = null;

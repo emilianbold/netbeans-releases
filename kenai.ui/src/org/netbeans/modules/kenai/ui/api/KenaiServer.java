@@ -53,6 +53,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -63,12 +64,16 @@ import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardProviderImpl;
 import org.netbeans.modules.kenai.ui.impl.LoginPanelSupportImpl;
 import org.netbeans.modules.kenai.ui.impl.TeamServerProviderImpl;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.DashboardSupport;
+import org.netbeans.modules.team.ui.common.UserNode;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
+import org.netbeans.modules.team.ui.util.treelist.SelectionList;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -83,11 +88,11 @@ public final class KenaiServer implements TeamServer {
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
     private final PropertyChangeListener kenaiListener;
 
-    private DefaultDashboard<KenaiServer, KenaiProject> dashboard;
+    private DashboardSupport<KenaiProject> dashboard;
     
     private KenaiServer (Kenai kenai) {
         this.kenai = kenai;
-        dashboard = new DefaultDashboard<KenaiServer, KenaiProject>(this, new DashboardProviderImpl(this));
+        dashboard = new DashboardSupport<KenaiProject>(this, new DashboardProviderImpl(this));
         kenai.addPropertyChangeListener(WeakListeners.propertyChange(l=new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
@@ -129,7 +134,7 @@ public final class KenaiServer implements TeamServer {
         });        
     }
 
-    public DefaultDashboard<KenaiServer, KenaiProject> getDashboard() {
+    public DashboardSupport<KenaiProject> getDashboard() {
         return dashboard;
     }
     
@@ -145,11 +150,11 @@ public final class KenaiServer implements TeamServer {
         return serverUi;
     }
     
-    public static DefaultDashboard<KenaiServer, KenaiProject> getDashboard(ProjectHandle<KenaiProject> pHandle) {
+    public static DashboardSupport<KenaiProject> getDashboard(ProjectHandle<KenaiProject> pHandle) {
         return getDashboard(pHandle.getTeamProject().getKenai());
     }
     
-    public static DefaultDashboard<KenaiServer, KenaiProject> getDashboard(Kenai kenai) {
+    public static DashboardSupport<KenaiProject> getDashboard(Kenai kenai) {
         KenaiServer server = forKenai(kenai);
         return server.getDashboard();
     }
@@ -240,6 +245,29 @@ public final class KenaiServer implements TeamServer {
             Exceptions.printStackTrace(ex);
         }
         return Collections.emptyList();
+    }
+
+    @Override
+    public SelectionList getProjects( boolean forceRefresh ) {
+        return getDashboard().getProjectsList(forceRefresh);
+    }
+
+    @Override
+    public List<Action> getActions() {
+        ArrayList<Action> res = new ArrayList<Action>( 3 );
+        final DashboardProviderImpl dashboardImpl = new DashboardProviderImpl( this );
+
+        Action newProjectAction = dashboardImpl.getProjectAccessor().getNewTeamProjectAction();
+        newProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true));
+        newProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_NewProject") );
+        res.add( newProjectAction );
+
+        Action openProjectAction = dashboardImpl.getProjectAccessor().getOpenNonMemberProjectAction();
+        openProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/open_team_project.png", true));
+        openProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_OpenProject") );
+        res.add( openProjectAction );
+
+        return res;
     }
     
 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,38 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui;
 
-import javax.swing.AbstractAction;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
+package org.netbeans.modules.bugtracking.tasks;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.openide.util.NbBundle;
 
-final class ResolveIncorrectVersionAction extends AbstractAction {
-    
-    private MakeLogicalViewRootNode node;
-    private Runnable negativeAction;
+public class UnsubmittedCategory extends Category {
 
-    ResolveIncorrectVersionAction(MakeLogicalViewRootNode node, Runnable negativeAction) {
-        super(NbBundle.getMessage(ResolveIncorrectVersionAction.class, "MSG_version_resolve"), null); //NOI18N
-        this.node = node;
-        this.negativeAction = negativeAction;
+    private RepositoryImpl repository;
+
+    public UnsubmittedCategory(List<IssueImpl> tasks, RepositoryImpl repository) {
+        super(NbBundle.getMessage(UnsubmittedCategory.class, "LBL_Unsubmitted") + " [" + repository.getDisplayName() + "]", tasks, true);
+        this.repository = repository;
+    }
+
+    public UnsubmittedCategory(RepositoryImpl repository) {
+        this(new ArrayList<IssueImpl>(0), repository);
     }
 
     @Override
-    public void actionPerformed(java.awt.event.ActionEvent ev) {
-            String title = NbBundle.getMessage(ResolveIncorrectVersionAction.class, "MSG_version_ignore_title"); //NOI18N
-            String message = NbBundle.getMessage(ResolveIncorrectVersionAction.class, "MSG_version_ignore"); //NOI18N
-            NotifyDescriptor nd = new NotifyDescriptor(message,
-                    title, NotifyDescriptor.YES_NO_OPTION,
-                    NotifyDescriptor.QUESTION_MESSAGE,
-                    null, NotifyDescriptor.YES_OPTION);
-            Object ret = DialogDisplayer.getDefault().notify(nd);
-            if (ret == NotifyDescriptor.YES_OPTION) {
-                node.reInitWithUnsupportedVersion();
-            } else {
-                if (negativeAction != null) {
-                    negativeAction.run();
-                }
-            }
-    }    
-    
+    public boolean persist() {
+        return false;
+    }
+
+    @Override
+    public List<IssueImpl> getTasks() {
+        return new ArrayList<IssueImpl>(repository.getUnsubmittedIssues());
+    }
+
 }

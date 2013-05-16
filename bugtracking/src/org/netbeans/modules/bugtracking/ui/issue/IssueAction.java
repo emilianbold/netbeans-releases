@@ -159,7 +159,7 @@ public class IssueAction extends SystemAction {
         openIssueIntern(repository, null, issueId);
     }
 
-    public static void openIssueIntern(final RepositoryImpl repositoryParam, final File file, final String issueId) {
+    private static void openIssueIntern(final RepositoryImpl repositoryParam, final File file, final String issueId) {
         assert issueId != null;
         assert file == null || repositoryParam == null && file != null;
 

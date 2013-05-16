@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,59 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.ui;
 
-import java.awt.Dialog;
-import java.util.List;
-import javax.swing.AbstractAction;
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks.BrokenLink;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
+package org.netbeans.modules.team.ui;
+
+import java.awt.Component;
+import java.awt.Font;
+import javax.swing.JLabel;
+import javax.swing.JList;
+import javax.swing.ListCellRenderer;
+import javax.swing.border.EmptyBorder;
+import org.netbeans.modules.team.ui.common.ColorManager;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.TeamServer;
 
 /**
  *
- * @author Alexander Simon
+ * @author Tomas Stupka
  */
-public class ResolveReferenceAction extends AbstractAction {
+public class ProjectListRenderer implements ListCellRenderer {
 
-    private Project project;
-
-    /** Creates a new instance of BrowserAction */
-    public ResolveReferenceAction(Project project) {
-        super(NbBundle.getBundle(ResolveReferenceAction.class).getString("CTL_ResolveReferenceAction"), // NOI18N
-                null);
-        this.project = project;
+    public ProjectListRenderer() {
     }
 
     @Override
-    public void actionPerformed(java.awt.event.ActionEvent ev) {
-        List<BrokenLink> brokenLinks = BrokenLinks.getBrokenLinks(project);
-        ResolveReferencePanel panel = new ResolveReferencePanel(brokenLinks);
-        DialogDescriptor dd = new DialogDescriptor(panel,
-                NbBundle.getMessage(ResolveReferenceAction.class, "Link_Dialog_Title"), true,
-                new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
-                DialogDescriptor.DEFAULT_ALIGN, null, null);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        dialog.dispose();
-        return;
+    public Component getListCellRendererComponent(
+                                       JList list,
+                                       Object value,
+                                       int index,
+                                       boolean isSelected,
+                                       boolean cellHasFocus) {
+
+        JLabel ret = new JLabel();
+        ret.setBorder(new EmptyBorder(1,1,1,1));
+        ret.setOpaque(true);
+
+        if (value instanceof ProjectHandle) {
+            ret.setFont(ret.getFont().deriveFont(Font.BOLD));
+            final ProjectHandle project = (ProjectHandle) value;
+            ret.setText(project.getDisplayName());
+            ret.setToolTipText(project.getDisplayName().toString());
+        } else {
+            ret.setIcon(null);
+            ret.setText(value==null?null:value.toString());
+        }
+
+        if (isSelected) {
+            ret.setBackground(list.getSelectionBackground());
+            ret.setForeground(list.getSelectionForeground());
+        } else {
+            ret.setBackground(ColorManager.getDefault().getDefaultBackground());
+            ret.setForeground(list.getForeground());
+        }
+        return ret;
     }
 }

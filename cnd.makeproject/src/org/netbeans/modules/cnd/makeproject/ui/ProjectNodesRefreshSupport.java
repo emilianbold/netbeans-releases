@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,37 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.makeproject.ui;
 
-import javax.swing.AbstractAction;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
+import java.util.EventListener;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.api.project.Project;
 
+/**
+ *
+ * @author akrasny
+ */
+final class ProjectNodesRefreshSupport {
 
-public class ResolveIncorrectPlatformAction extends AbstractAction {
-    
-    private MakeLogicalViewRootNode node;
+    private static final ProjectNodesRefreshSupport inst = new ProjectNodesRefreshSupport();
+    private final Set<ProjectNodeRefreshListener> listeners = new HashSet<ProjectNodeRefreshListener>();
 
-    ResolveIncorrectPlatformAction(MakeLogicalViewRootNode node) {
-        super(NbBundle.getMessage(ResolveIncorrectPlatformAction.class, "MSG_platform_resolve"), null); //NOI18N
-        this.node = node;
+    private ProjectNodesRefreshSupport() {
     }
 
-    @Override
-    public void actionPerformed(java.awt.event.ActionEvent ev) {            
-        String title = NbBundle.getMessage(ResolveIncorrectVersionAction.class, "MSG_platform_fix_title"); //NOI18N
-        String message = NbBundle.getMessage(ResolveIncorrectVersionAction.class, "MSG_platform_fix"); //NOI18N
-        NotifyDescriptor nd = new NotifyDescriptor(message,
-                title, NotifyDescriptor.YES_NO_OPTION,
-                NotifyDescriptor.QUESTION_MESSAGE,
-                null, NotifyDescriptor.YES_OPTION);
-        Object ret = DialogDisplayer.getDefault().notify(nd);
-        if (ret == NotifyDescriptor.YES_OPTION) {        
-            node.reInitWithRemovedPrivate();
+    public static void addProjectNodeRefreshListener(ProjectNodeRefreshListener listener) {
+        synchronized (inst) {
+            inst.listeners.add(listener);
         }
     }
-    
+
+    public static void removeProjectNodeRefreshListener(ProjectNodeRefreshListener listener) {
+        synchronized (inst) {
+            inst.listeners.remove(listener);
+        }
+    }
+
+    static void refreshProjectNodes(Project project) {
+        ProjectNodeRefreshListener[] copy;
+        synchronized (inst) {
+            copy = inst.listeners.toArray(new ProjectNodeRefreshListener[inst.listeners.size()]);
+        }
+        for (ProjectNodeRefreshListener listener : copy) {
+            listener.refresh(project);
+        }
+    }
+
+    public interface ProjectNodeRefreshListener extends EventListener {
+
+        public void refresh(Project project);
+    }
 }

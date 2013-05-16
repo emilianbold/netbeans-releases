@@ -121,7 +121,9 @@ public class ELJavaCompletion {
             // java.lang package is imported by default
             packages.add(DEFAULT_PACKAGE);
         }
-        packages.add(new PackageEntry(packName, false));
+        if (!packName.isEmpty()) {
+            packages.add(new PackageEntry(packName, false));
+        }
 
         // adds types to the CC
         addTypesFromPackages(cc, typedPrefix, packages, offset + dotIndex + 1, proposals);

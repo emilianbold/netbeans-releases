@@ -169,6 +169,10 @@ public class RepositoryListenerImpl implements RepositoryListener {
         }
     }
 
+    @Override
+    public void unitRemoved(int unitId, CharSequence unitName) {
+    }
+
     /** RepositoryListener implementation */
     @Override
     public void anExceptionHappened(final int unitId, final CharSequence unitName, RepositoryException exc) {

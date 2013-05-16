@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
+import org.netbeans.modules.cnd.repository.util.RepositoryListenersManager;
 import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
@@ -105,18 +106,19 @@ public class StorageAllocator {
         unit2path.remove(unitName);
     }
     
-    public boolean renameUnitDirectory (CharSequence oldUnitName, CharSequence newUnitName) {
-        deleteUnitFiles(newUnitName, true);
+    public boolean renameUnitDirectory (int unitId, CharSequence oldUnitName, CharSequence newUnitName) {
+        deleteUnitFiles(unitId, newUnitName, true);
         File newUnitStorage = new File(getUnitStorageName(newUnitName));
         File oldUnitStorage = new File(getUnitStorageName(oldUnitName));
         return oldUnitStorage.renameTo(newUnitStorage);
     }
 
-    public void deleteUnitFiles (CharSequence unitName, boolean removeUnitFolder) {
+    public void deleteUnitFiles (int unitId, CharSequence unitName, boolean removeUnitFolder) {
 	if( Stats.TRACE_UNIT_DELETION ) { System.err.printf("Deleting unit files for %s\n", unitName); }
         String path = getUnitStorageName(unitName);
         File pathFile = new File (path);
         deleteDirectory(pathFile, removeUnitFolder);
+        RepositoryListenersManager.getInstance().fireUnitRemovedEvent(unitId, unitName);
     }
     
     private void deleteDirectory(File path, boolean deleteDir) {

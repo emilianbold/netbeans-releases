@@ -54,6 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.api.PhpLanguageProperties.PhpVersion;
+import org.netbeans.modules.php.project.copysupport.CopySupport;
 import org.netbeans.modules.project.ui.test.ProjectSupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
@@ -65,8 +66,12 @@ import org.openide.filesystems.FileUtil;
 public final class TestUtils {
 
     private static final Logger PHP_PROJECT_LOGGER = Logger.getLogger(PhpProject.class.getName());
+    private static final Logger COPY_SUPPORT_LOGGER = Logger.getLogger(CopySupport.class.getName());
     private static final TestLogHandler TEST_LOG_HANDLER = new TestLogHandler();
 
+
+    private TestUtils() {
+    }
 
     public static PhpProject createPhpProject(File workDir) throws IOException {
         String projectName;
@@ -111,11 +116,15 @@ public final class TestUtils {
         return closed;
     }
 
+    public static void waitCopySupportFinished() throws Exception {
+        waitForMessage(COPY_SUPPORT_LOGGER, "COPY_TASK_FINISHED", null);
+    }
+
     /**
      * Open project and wait for ProjectOpenedHook to finish.
      */
     private static Object waitProjectOpened(final FileObject projectDir) throws Exception {
-        return waitForMessage("PROJECT_OPENED_FINISHED", new Callable<Object>() {
+        return waitForMessage(PHP_PROJECT_LOGGER, "PROJECT_OPENED_FINISHED", new Callable<Object>() {
             @Override
             public Object call() throws Exception {
                 return ProjectSupport.openProject(FileUtil.toFile(projectDir));
@@ -127,7 +136,7 @@ public final class TestUtils {
      * Close project and wait for ProjectClosedHook to finish.
      */
     private static boolean waitProjectClosed(final PhpProject project) throws Exception {
-        return waitForMessage("PROJECT_CLOSED_FINISHED", new Callable<Boolean>() {
+        return waitForMessage(PHP_PROJECT_LOGGER, "PROJECT_CLOSED_FINISHED", new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
                 return ProjectSupport.closeProject(project.getName());
@@ -135,18 +144,20 @@ public final class TestUtils {
         });
     }
 
-    private static <T> T waitForMessage(String message, Callable<T> action) throws Exception {
+    private static <T> T waitForMessage(Logger logger, String message, Callable<T> action) throws Exception {
         T result = null;
-        final Level level = PHP_PROJECT_LOGGER.getLevel();
-        PHP_PROJECT_LOGGER.addHandler(TEST_LOG_HANDLER);
+        final Level level = logger.getLevel();
+        logger.addHandler(TEST_LOG_HANDLER);
         try {
-            PHP_PROJECT_LOGGER.setLevel(Level.FINEST);
+            logger.setLevel(Level.FINEST);
             TEST_LOG_HANDLER.expect(message);
-            result = action.call();
+            if (action != null) {
+                result = action.call();
+            }
             TEST_LOG_HANDLER.await(5000);
         } finally {
-            PHP_PROJECT_LOGGER.setLevel(level);
-            PHP_PROJECT_LOGGER.removeHandler(TEST_LOG_HANDLER);
+            logger.setLevel(level);
+            logger.removeHandler(TEST_LOG_HANDLER);
         }
         return result;
     }

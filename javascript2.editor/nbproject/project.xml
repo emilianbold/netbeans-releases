@@ -367,6 +367,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.html.angular</friend>
+                <friend>org.netbeans.modules.html.knockout</friend>
                 <friend>org.netbeans.modules.javascript2.extjs</friend>
                 <friend>org.netbeans.modules.javascript2.jquery</friend>
                 <friend>org.netbeans.modules.javascript2.knockout</friend>

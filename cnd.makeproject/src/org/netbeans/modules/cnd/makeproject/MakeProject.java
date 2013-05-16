@@ -320,6 +320,7 @@ public final class MakeProject implements Project, MakeProjectListener {
     private Lookup createLookup(AuxiliaryConfiguration aux) {
         SubprojectProvider spp = new MakeSubprojectProvider(this); //refHelper.createSubprojectProvider();
         Info info = new Info(this);
+        MakeProjectConfigurationProvider makeProjectConfigurationProvider = new MakeProjectConfigurationProvider(this, projectDescriptorProvider, info);
         Object[] lookups = new Object[] {
                     info,
                     aux,
@@ -332,8 +333,8 @@ public final class MakeProject implements Project, MakeProjectListener {
                     new MakeSharabilityQuery(projectDescriptorProvider, getProjectDirectory()),
                     sources,
                     helper,
-                    projectDescriptorProvider,
-                    new MakeProjectConfigurationProvider(this, projectDescriptorProvider, info),
+                    projectDescriptorProvider, 
+                    makeProjectConfigurationProvider,
                     new NativeProjectSettingsImpl(this, this.kind.getPrimaryConfigurationDataElementNamespace(false), false),
                     new RecommendedTemplatesImpl(projectDescriptorProvider),
                     new MakeProjectOperations(this),
@@ -344,6 +345,7 @@ public final class MakeProject implements Project, MakeProjectListener {
                     new ToolchainProjectImpl(this),
                     new CPPImpl(sources, openStateAndLock),
                     new CacheDirectoryProviderImpl(helper.getProjectDirectory()),
+                    BrokenReferencesSupport.createPlatformVersionProblemProvider(this, helper, projectDescriptorProvider, makeProjectConfigurationProvider),
                     this
                 };
         
@@ -1058,9 +1060,9 @@ public final class MakeProject implements Project, MakeProjectListener {
                         fo = CndFileUtils.getCanonicalFileObject(fo);
                     }
                     if (fo != null && fo.isValid()) {
-                        Project project = ProjectManager.getDefault().findProject(fo);
-                        if (project != null) {
-                            subProjects.add(project);
+                        Project subProject = ProjectManager.getDefault().findProject(fo);
+                        if (subProject != null) {
+                            subProjects.add(subProject);
                         }
                     }
                 } catch (Exception e) {

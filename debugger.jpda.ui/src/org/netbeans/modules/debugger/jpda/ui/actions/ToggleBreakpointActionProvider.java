@@ -78,10 +78,12 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.debugger.jpda.actions.ActionsSynchronizer;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.JavaUtils;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
+import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
@@ -91,6 +93,7 @@ import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 
 /** 
@@ -104,8 +107,10 @@ import org.openide.util.NbBundle;
 public class ToggleBreakpointActionProvider extends ActionsProviderSupport 
 implements PropertyChangeListener {
     
+    private RequestProcessor RP = new RequestProcessor(ToggleBreakpointActionProvider.class.getName());
     private JPDADebugger debugger;
-
+    private volatile int postedLineNumber = -1;
+    private volatile String postedUrl = null;
     
     public ToggleBreakpointActionProvider () {
         EditorContextBridge.getContext().addPropertyChangeListener (this);
@@ -147,11 +152,37 @@ implements PropertyChangeListener {
     }
     
     public void doAction (Object action) {
+        JPDADebugger dbg = debugger;
+        if (dbg == null) {
+            dbg = ToggleMethodFieldBreakpointAction.getCurrentDebugger();
+        }
+        ActionsSynchronizer as = (dbg != null) ? ActionsSynchronizer.get(dbg) : null;
+        if (as != null) {
+            as.actionStarts(action);
+        }
+        try {
+            doTheAction(action);
+        } finally {
+            if (as != null) {
+                as.actionEnds(action);
+            }
+        }
+    }
+    
+    private void doTheAction (Object action) {
         DebuggerManager d = DebuggerManager.getDebuggerManager ();
         
         // 1) get source name & line number
-        int lineNumber = EditorContextBridge.getContext().getCurrentLineNumber ();
-        String url = EditorContextBridge.getContext().getCurrentURL ();
+        int lineNumber;
+        String url;
+        url = postedUrl;
+        if (url == null) {
+            url = EditorContextBridge.getContext().getCurrentURL ();
+        }
+        lineNumber = postedLineNumber;
+        if (lineNumber == -1) {
+            lineNumber = EditorContextBridge.getContext().getCurrentLineNumber ();
+        }
         if ("".equals (url.trim ())) return;
 
         // 2) find and remove existing line breakpoint
@@ -208,10 +239,25 @@ implements PropertyChangeListener {
 
     @Override
     public void postAction(final Object action, final Runnable actionPerformedNotifier) {
-        SwingUtilities.invokeLater(new Runnable() {
+        EditorContext context = EditorContextBridge.getContext();
+        postedLineNumber = context.getCurrentLineNumber ();
+        postedUrl = context.getCurrentURL ();
+        JPDADebugger dbg = debugger;
+        if (dbg == null) {
+            dbg = ToggleMethodFieldBreakpointAction.getCurrentDebugger();
+        }
+        if (dbg != null) {
+            ActionsSynchronizer.get(dbg).actionScheduled(action);
+        }
+        RP.post(new Runnable() {
             public void run() {
-                doAction(action);
-                actionPerformedNotifier.run();
+                try {
+                    doAction(action);
+                } finally {
+                    postedLineNumber = -1;
+                    postedUrl = null;
+                    actionPerformedNotifier.run();
+                }
             }
         });
     }
