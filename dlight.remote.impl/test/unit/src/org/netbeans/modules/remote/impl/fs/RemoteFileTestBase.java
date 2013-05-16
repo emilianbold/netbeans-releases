@@ -73,6 +73,7 @@ public class RemoteFileTestBase extends NativeExecutionBaseTestCase {
         System.setProperty("jsch.connection.timeout", "30000");
         System.setProperty("socket.connection.timeout", "30000");
         System.setProperty("remote.throw.assertions", "true");
+        System.setProperty("remote.user.password.keep_in_memory", "true");
     }
     
     protected RemoteFileSystem fs;

@@ -81,7 +81,7 @@ public class CndTextIndexManager {
 
             try {
                 UnitCodec unitCodec = RelocationSupport.get(location);
-                index = new CndTextIndexImpl(IndexManager.createDocumentIndex(indexRoot), unitCodec);
+                index = CndTextIndexImpl.create(IndexManager.createDocumentIndex(indexRoot), unitCodec);
             } catch (IOException ex) {
                 Logger.getLogger(CndTextIndexManager.class.getName()).log(Level.SEVERE, null, ex);
             }

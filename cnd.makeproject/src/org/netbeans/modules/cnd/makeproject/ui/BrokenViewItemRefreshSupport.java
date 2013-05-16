@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,31 +34,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.ui;
 
+import java.util.EventListener;
+import java.util.HashSet;
+import java.util.Set;
+import org.netbeans.api.project.Project;
 
-package org.netbeans.modules.cnd.repository.spi;
-
-import org.netbeans.modules.cnd.repository.api.RepositoryException;
 /**
  *
- * @author Nickolay Dalmatov
+ * @author akrasny
  */
-public interface RepositoryListener {
-    /**
-     * invoked once an access to not yet opened unit happens
-     * @param unitName String the name of the unit
-     */
-    boolean unitOpened(int unitId, CharSequence unitName);
+final class BrokenViewItemRefreshSupport {
 
-    /**
-     * invoked once a unit is closed
-     * @param unitName String the name of the unit
-     */    
-    void unitClosed(int unitId, CharSequence unitName);
+    private static final BrokenViewItemRefreshSupport inst = new BrokenViewItemRefreshSupport();
+    private final Set<BrokenViewItemListener> listeners = new HashSet<BrokenViewItemListener>();
 
-    void unitRemoved(int unitId, CharSequence unitName);
-    
-    void anExceptionHappened(int unitId, CharSequence unitName, RepositoryException exc);
+    private BrokenViewItemRefreshSupport() {
+    }
 
+    public static void addBrokenViewItemListener(BrokenViewItemListener listener) {
+        synchronized (inst) {
+            inst.listeners.add(listener);
+        }
+    }
+
+    public static void removeBrokenViewItemListener(BrokenViewItemListener listener) {
+        synchronized (inst) {
+            inst.listeners.remove(listener);
+        }
+    }
+
+    static void refreshBrokenItems(Project project) {
+        BrokenViewItemListener[] copy;
+        synchronized (inst) {
+            copy = inst.listeners.toArray(new BrokenViewItemListener[inst.listeners.size()]);
+        }
+        for (BrokenViewItemListener listener : copy) {
+            listener.revalidate(project);
+        }
+    }
+
+    public interface BrokenViewItemListener extends EventListener {
+
+        public void revalidate(Project project);
+    }
 }

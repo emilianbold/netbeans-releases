@@ -397,6 +397,12 @@ public final class RepositoryUtils {
         public void unitClosed(int unitId, CharSequence unitName) {
             parent.unitClosed(unitId, unitName);
         }
+
+        @Override
+        public void unitRemoved(int unitId, CharSequence unitName) {
+            parent.unitRemoved(unitId, unitName);
+        }
+
         @Override
         public void anExceptionHappened(final int unitId, CharSequence unitName, RepositoryException exc) {
             primitiveErrorStrategy(unitId, exc);
