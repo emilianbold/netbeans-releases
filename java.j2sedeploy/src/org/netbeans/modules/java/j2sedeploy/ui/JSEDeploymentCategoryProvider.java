@@ -151,7 +151,6 @@ public final class JSEDeploymentCategoryProvider implements ProjectCustomizer.Co
         JSEDeploymentPanel panel = new JSEDeploymentPanel(J2SEDeployProperties.getInstance(context));
         panelRef = new WeakReference<JSEDeploymentPanel>(panel);
         return panel;
-        // keep weak ref to panel, extract from it listeners in the above listeners
     }
 
 }

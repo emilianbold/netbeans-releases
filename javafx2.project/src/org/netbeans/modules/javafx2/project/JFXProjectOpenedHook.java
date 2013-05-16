@@ -82,7 +82,7 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
     private final Project prj;
     private final J2SEPropertyEvaluator eval;
     private ConfigChangeListener chl = null;
-    private static Map<String, List<Notification>> projectNotifications = new HashMap<String, List<Notification>>();
+    private static final Map<String, List<Notification>> projectNotifications = new HashMap<String, List<Notification>>();
 
     public JFXProjectOpenedHook(final Lookup lkp) {
         Parameters.notNull("lkp", lkp); //NOI18N
@@ -210,16 +210,6 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
         if(updater != null) {
             updater.resetUpdated();
         }
-    }
-
-    private boolean isSEKeepJFXRTOnClassPath() {
-        final PropertyEvaluator evaluator = eval.evaluator();
-        if(evaluator != null) {
-            return !JFXProjectProperties.isTrue(evaluator.getProperty(JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH));
-        } else {
-            LOGGER.log(Level.WARNING, "PropertyEvaluator instantiation failed, disabling keep FX RT on classpath."); // NOI18N
-        }
-        return false;
     }
 
     private boolean isEnabledJFXUpdate() {

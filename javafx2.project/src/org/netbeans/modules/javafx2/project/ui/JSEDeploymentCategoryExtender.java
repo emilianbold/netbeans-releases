@@ -54,7 +54,6 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2sedeploy.J2SEDeployProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-import org.netbeans.modules.javafx2.project.JFXPlatformUpdater;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.Exceptions;
@@ -90,12 +89,10 @@ public class JSEDeploymentCategoryExtender implements J2SECategoryExtensionProvi
                 comp.putClientProperty(J2SEDeployProperties.PASS_OK_LISTENER, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        System.out.println("DEBUG pre OK");
                         if(project != null) {
                             JFXProjectProperties prop = JFXProjectProperties.getInstanceIfExists(project.getLookup());
                             if(prop != null) {
                                 projectProperties.put(project.getProjectDirectory().getPath(), prop);
-                                System.out.println("DEBUG OK");
                             }
                         }
                     }
@@ -103,13 +100,11 @@ public class JSEDeploymentCategoryExtender implements J2SECategoryExtensionProvi
                 comp.putClientProperty(J2SEDeployProperties.PASS_STORE_LISTENER, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        System.out.println("DEBUG pre store");
                         if(project != null) {
                             JFXProjectProperties prop = projectProperties.get(project.getProjectDirectory().getPath());
                             if(prop != null) {
                                 try {
                                     prop.store();
-                                    System.out.println("DEBUG store");
                                 } catch (IOException ex) {
                                     Exceptions.printStackTrace(ex);
                                 }
@@ -121,10 +116,8 @@ public class JSEDeploymentCategoryExtender implements J2SECategoryExtensionProvi
                 comp.putClientProperty(J2SEDeployProperties.PASS_CLOSE_LISTENER, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        System.out.println("DEBUG pre clean");
                         if(project != null) {
                             JFXProjectProperties.cleanup(project.getLookup());
-                            System.out.println("DEBUG clean");
                         }
                     }
                 });

@@ -1081,7 +1081,8 @@ public final class JFXProjectUtils {
             String platformName = ep.getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
             JavaPlatform platform = JavaFXPlatformUtils.findJavaPlatform(platformName);
             if(platform == null) {
-                throw new IllegalArgumentException(platformName);
+                // platform does not exist, thus no extension property update is to take place
+                return null;
             }
             updated = JavaFxRuntimeInclusion.getProjectClassPathExtension(platform);
         }

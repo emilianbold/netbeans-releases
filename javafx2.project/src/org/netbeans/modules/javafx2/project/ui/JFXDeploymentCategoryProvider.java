@@ -45,7 +45,6 @@ import java.util.Map;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-import org.netbeans.modules.javafx2.project.JFXPlatformUpdater;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
