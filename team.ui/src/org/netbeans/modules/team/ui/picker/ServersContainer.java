@@ -83,10 +83,6 @@ class ServersContainer extends JPanel implements Scrollable {
     static JComponent create( List<JComponent> serverComponents ) {
         ServersContainer container = new ServersContainer( serverComponents );
 
-        if( serverComponents.size() <= MAX_VISIBLE_COLUMNS ) {
-            container.setBorder( BorderFactory.createEmptyBorder( 10, 10, 10, 10) );
-            return container;
-        }
         ScrollingContainer res = new ScrollingContainer( container, true );
         res.setBorder( BorderFactory.createEmptyBorder( 10, 10, 10, 10));
         return res;
