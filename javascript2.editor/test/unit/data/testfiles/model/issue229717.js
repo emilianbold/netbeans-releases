@@ -5,6 +5,7 @@ function ExpensesModel() {
 
         self.addType = function(type) {
             self.types.push(type);
+            this.types;
         };
         
         function privateFun() {};
@@ -13,3 +14,5 @@ function ExpensesModel() {
 ExpensesModel.prototype.publicFnc = function () {};
 
 var test = new ExpensesModel();
+
+test.types;
