@@ -270,6 +270,8 @@ public class TestMethodNode extends AbstractNode {
             result.put(Status.FAILED, "MSG_TestMethodFailed_HTML"); //NOI18N
             result.put(Status.PENDING, "MSG_TestMethodPending_HTML"); //NOI18N
             result.put(Status.SKIPPED, "MSG_TestMethodSkipped_HTML"); //NOI18N
+            result.put(Status.ABORTED, "MSG_TestMethodAborted_HTML"); //NOI18N
+            result.put(Status.IGNORED, "MSG_TestMethodIgnored_HTML"); //NOI18N
             return result;
         }
 
@@ -281,6 +283,8 @@ public class TestMethodNode extends AbstractNode {
             result.put(Status.FAILED, "MSG_TestMethodFailed_HTML_time"); //NOI18N
             result.put(Status.PENDING, "MSG_TestMethodPending_HTML_time"); //NOI18N
             result.put(Status.SKIPPED, "MSG_TestMethodSkipped_HTML_time"); //NOI18N
+            result.put(Status.ABORTED, "MSG_TestMethodAborted_HTML_time"); //NOI18N
+            result.put(Status.IGNORED, "MSG_TestMethodIgnored_HTML_time"); //NOI18N
             return result;
         }
 
@@ -293,6 +297,7 @@ public class TestMethodNode extends AbstractNode {
             result.put(Status.PENDING, "MSG_TestMethodPending_HTML_cause"); //NOI18N
             result.put(Status.SKIPPED, "MSG_TestMethodSkipped_HTML_cause"); //NOI18N
             result.put(Status.ABORTED, "MSG_TestMethodAborted_HTML_cause"); //NOI18N
+            result.put(Status.IGNORED, "MSG_TestMethodIgnored_HTML_cause"); //NOI18N
             return result;
         }
 
