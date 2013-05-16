@@ -80,7 +80,7 @@ public final class FileChooserBuilder {
 
     // TODO: think of a better name
     public abstract static class JFileChooserEx extends JFileChooser {
-        protected File curFile;
+        private File curFile;
         private final   AtomicReference<Callable<String>> defaultDirectoryRef= new AtomicReference<Callable<String>>();
 
         protected JFileChooserEx(Callable<String> currentDirectoryPath) {
