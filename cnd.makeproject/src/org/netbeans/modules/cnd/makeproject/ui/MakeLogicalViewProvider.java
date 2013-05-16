@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostCo
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks.BrokenLink;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -94,6 +95,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     private final RequestProcessor annotationRP;
     private final MakeProject project;
     private MakeLogicalViewRootNode projectRootNode;
+    private boolean checkVersion = true;
 
     public MakeLogicalViewProvider(MakeProject project) {
         this.project = project;
@@ -107,7 +109,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     public Node createLogicalView() {
         if (gotMakeConfigurationDescriptor()) {
             MakeConfigurationDescriptor configurationDescriptor = getMakeConfigurationDescriptor();
-            if (configurationDescriptor == null || configurationDescriptor.getState() == State.BROKEN || configurationDescriptor.getConfs().size() == 0) {
+            if (configurationDescriptor == null) {
                 return new MakeLogicalViewRootNodeBroken(project);
             } else {
                 createRoot(configurationDescriptor);
@@ -135,6 +137,23 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         InstanceContent ic = new InstanceContent();
         addLookup(ic);
         projectRootNode = new MakeLogicalViewRootNode(null, this, ic);
+    }
+    
+    public void reInit(MakeConfigurationDescriptor configurationDescriptor, boolean ignoreFutureVersion) {
+        if (ignoreFutureVersion) {
+            checkVersion = false;
+        }
+        projectRootNode.reInit(configurationDescriptor);
+    }
+    
+    public boolean isIncorectVersion() {
+        if (checkVersion) {
+            if (gotMakeConfigurationDescriptor()) {
+                int version = getMakeConfigurationDescriptor().getVersion();
+                return version > CommonConfigurationXMLCodec.CURRENT_VERSION;
+            }
+        }
+        return false;
     }
     
     private void addLookup(InstanceContent ic) {
