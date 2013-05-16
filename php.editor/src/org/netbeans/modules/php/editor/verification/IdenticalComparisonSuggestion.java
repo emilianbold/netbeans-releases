@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
@@ -97,8 +97,8 @@ public class IdenticalComparisonSuggestion extends SuggestionRule {
     private class CheckVisitor extends DefaultVisitor {
         private final FileObject fileObject;
         private final Model model;
-        private final List<FixInfo> fixInfos = new LinkedList<FixInfo>();
-        private final List<Hint> hints = new LinkedList<Hint>();
+        private final List<FixInfo> fixInfos = new ArrayList<>();
+        private final List<Hint> hints = new ArrayList<>();
         private final BaseDocument doc;
         private final OffsetRange lineRange;
 
@@ -118,7 +118,7 @@ public class IdenticalComparisonSuggestion extends SuggestionRule {
         }
 
         private List<HintFix> createFixes(FixInfo fixInfo) {
-            List<HintFix> hintFixes = new LinkedList<HintFix>();
+            List<HintFix> hintFixes = new ArrayList<>();
             hintFixes.add(new WithoutTypeFix(fixInfo, doc));
             if (!fixInfo.getTypeName().isEmpty()) {
                 hintFixes.add(new WithRightTypeFix(fixInfo, doc));
@@ -201,12 +201,20 @@ public class IdenticalComparisonSuggestion extends SuggestionRule {
 
         private String resolveCastableType(String typeName) {
             String retval = ""; //NOI18N
-            if (typeName.equals(Type.INT) || typeName.equals(Type.INTEGER) || typeName.equals(Type.DOUBLE)
-                    || typeName.equals(Type.FLOAT) || typeName.equals(Type.BOOL) || typeName.equals(Type.BOOLEAN)
-                    || typeName.equals(Type.STRING) || typeName.equals(Type.ARRAY)) {
-                retval = typeName;
-            } else if (typeName.equals(Type.REAL)) {
-                retval = Type.FLOAT;
+            switch (typeName) {
+                case Type.INT:
+                case Type.INTEGER:
+                case Type.DOUBLE:
+                case Type.FLOAT:
+                case Type.BOOL:
+                case Type.BOOLEAN:
+                case Type.STRING:
+                case Type.ARRAY:
+                    retval = typeName;
+                    break;
+                case Type.REAL:
+                    retval = Type.FLOAT;
+                    break;
             }
             return retval;
         }

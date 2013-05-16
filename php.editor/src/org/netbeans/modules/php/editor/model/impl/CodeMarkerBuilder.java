@@ -72,9 +72,9 @@ class CodeMarkerBuilder {
     private HashMap<FunctionDeclarationInfo, Scope> fncDeclarations;
 
     CodeMarkerBuilder() {
-        this.returnStatements = new HashMap<ASTNodeInfo<ReturnStatement>, Scope>();
-        this.methodDeclarations = new HashMap<MethodDeclarationInfo, Scope>();
-        this.fncDeclarations = new HashMap<FunctionDeclarationInfo, Scope>();
+        this.returnStatements = new HashMap<>();
+        this.methodDeclarations = new HashMap<>();
+        this.fncDeclarations = new HashMap<>();
     }
 
     void prepare(FunctionDeclaration node, Scope scope) {
@@ -101,7 +101,7 @@ class CodeMarkerBuilder {
     }
 
     void setCurrentContextInfo(final int offset) {
-        final Collection<LazyBuild> scopesToScan = new ArrayList<LazyBuild>();
+        final Collection<LazyBuild> scopesToScan = new ArrayList<>();
         for (Entry<MethodDeclarationInfo, Scope> entry : methodDeclarations.entrySet()) {
             if (entry.getValue() instanceof LazyBuild) {
                 LazyBuild scope = (LazyBuild) entry.getValue();

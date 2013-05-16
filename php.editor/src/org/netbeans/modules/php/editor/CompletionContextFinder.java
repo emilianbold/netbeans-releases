@@ -524,7 +524,7 @@ final class CompletionContextFinder {
 
     private static Token[] getPreceedingTokens(TokenSequence tokenSequence) {
         int orgOffset = tokenSequence.offset();
-        LinkedList<Token> tokens = new LinkedList<Token>();
+        LinkedList<Token> tokens = new LinkedList<>();
 
         boolean success = true;
 
@@ -755,7 +755,7 @@ final class CompletionContextFinder {
      */
     private static List<? extends Token<PHPTokenId>> getPreceedingLineTokens(Token<PHPTokenId> token, int tokenOffset, TokenSequence<PHPTokenId> tokenSequence) {
         int orgOffset = tokenSequence.offset();
-        LinkedList<Token<PHPTokenId>> tokens = new LinkedList<Token<PHPTokenId>>();
+        LinkedList<Token<PHPTokenId>> tokens = new LinkedList<>();
         if (token.id() != PHPTokenId.WHITESPACE
                 || token.text().subSequence(0,
                 Math.min(token.text().length(), tokenOffset)).toString().indexOf("\n") == -1) { //NOI18N

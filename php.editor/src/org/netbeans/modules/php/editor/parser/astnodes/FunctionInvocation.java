@@ -55,7 +55,7 @@ import java.util.List;
 public class FunctionInvocation extends VariableBase {
 
     private FunctionName functionName;
-    private final ArrayList<Expression> parameters = new ArrayList<Expression>();
+    private final ArrayList<Expression> parameters = new ArrayList<>();
 
     private FunctionInvocation(int start, int end, FunctionName functionName, Expression[] parameters) {
         super(start, end);

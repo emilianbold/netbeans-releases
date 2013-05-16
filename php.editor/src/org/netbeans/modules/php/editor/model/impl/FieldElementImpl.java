@@ -161,7 +161,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
     }
 
     public Collection<? extends TypeScope> getDefaultTypes() {
-        Collection<TypeScope> typeScopes = new HashSet<TypeScope>();
+        Collection<TypeScope> typeScopes = new HashSet<>();
         if (defaultFQType != null && defaultFQType.length() > 0) {
             String[] allTypeNames = defaultFQType.split("\\|");
             for (String typeName : allTypeNames) {
@@ -197,7 +197,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
         return retval;
     }
 
-    private static Set<String> recursionDetection = new HashSet<String>(); //#168868
+    private static Set<String> recursionDetection = new HashSet<>(); //#168868
     @Override
     public Collection<? extends TypeScope> getArrayAccessTypes(int offset) {
         return getTypes(offset);
@@ -233,7 +233,7 @@ class FieldElementImpl extends ScopeImpl implements FieldElement {
     public Collection<? extends String> getDefaultTypeNames() {
         Collection<String> retval = Collections.<String>emptyList();
         if (defaultType != null && defaultType.length() > 0) {
-            retval = new ArrayList<String>();
+            retval = new ArrayList<>();
             for (String typeName : defaultType.split("\\|")) { //NOI18N
                 if (!VariousUtils.isSemiType(typeName)) {
                     retval.add(typeName);

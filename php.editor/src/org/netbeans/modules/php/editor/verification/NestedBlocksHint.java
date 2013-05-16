@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -104,8 +104,8 @@ public class NestedBlocksHint extends HintRule implements CustomisableRule {
         private CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
-            unallowedNestedBlocks = new LinkedList<ASTNode>();
-            hints = new LinkedList<Hint>();
+            unallowedNestedBlocks = new ArrayList<>();
+            hints = new ArrayList<>();
         }
 
         @NbBundle.Messages(

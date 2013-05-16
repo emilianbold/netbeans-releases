@@ -109,10 +109,10 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
 
     @Override
     public Collection<? extends MethodScope> getInheritedMethods() {
-        Set<MethodScope> allMethods = new HashSet<MethodScope>();
+        Set<MethodScope> allMethods = new HashSet<>();
         IndexScope indexScope = ModelUtils.getIndexScope(this);
         ElementQuery.Index index = indexScope.getIndex();
-        Set<InterfaceScope> interfaceScopes = new HashSet<InterfaceScope>();
+        Set<InterfaceScope> interfaceScopes = new HashSet<>();
         interfaceScopes.addAll(getSuperInterfaceScopes());
         for (InterfaceScope iface : interfaceScopes) {
             Set<MethodElement> indexedFunctions =
@@ -132,10 +132,10 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
 
     @Override
     public final Collection<? extends ClassConstantElement> getInheritedConstants() {
-        Set<ClassConstantElement> allConstants = new HashSet<ClassConstantElement>();
+        Set<ClassConstantElement> allConstants = new HashSet<>();
         IndexScope indexScope = ModelUtils.getIndexScope(this);
         ElementQuery.Index index = indexScope.getIndex();
-        Set<InterfaceScope> interfaceScopes = new HashSet<InterfaceScope>();
+        Set<InterfaceScope> interfaceScopes = new HashSet<>();
         interfaceScopes.addAll(getSuperInterfaceScopes());
         for (InterfaceScope iface : interfaceScopes) {
             Collection<TypeConstantElement> indexedConstants = index.getInheritedTypeConstants(iface);
@@ -149,7 +149,7 @@ class InterfaceScopeImpl extends TypeScopeImpl implements InterfaceScope {
 
     @Override
     public final Collection<? extends MethodScope> getMethods() {
-        Set<MethodScope> allMethods = new HashSet<MethodScope>();
+        Set<MethodScope> allMethods = new HashSet<>();
         allMethods.addAll(getDeclaredMethods());
         allMethods.addAll(getInheritedMethods());
         return allMethods;

@@ -90,10 +90,10 @@ public class MethodRedeclarationHintError extends HintErrorRule {
     }
 
     private static final class CheckVisitor extends DefaultVisitor {
-        private final Set<Statement> conditionStatements = new HashSet<Statement>();
+        private final Set<Statement> conditionStatements = new HashSet<>();
 
         public Set<Statement> getConditionStatements() {
-            return new HashSet<Statement>(conditionStatements);
+            return new HashSet<>(conditionStatements);
         }
 
         @Override
@@ -126,7 +126,7 @@ public class MethodRedeclarationHintError extends HintErrorRule {
         "MethodRedeclarationCustom=Method or function \"{0}\" has already been declared"
     })
     private void checkDeclaredFunctions(Collection<? extends FunctionScope> declaredFunctions) {
-        Set<String> declaredMethodNames = new HashSet<String>();
+        Set<String> declaredMethodNames = new HashSet<>();
         for (FunctionScope functionScope : declaredFunctions) {
             if (!isInConditionStatament(functionScope)) {
                 String fullyQualifiedFunctionName = functionScope.getFullyQualifiedName().toString();

@@ -126,7 +126,7 @@ public class FixUsesPerformer {
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), importData.caretPosition);
         assert namespaceScope != null;
         int startOffset = getOffset(baseDocument, namespaceScope);
-        List<String> useParts = new ArrayList<String>();
+        List<String> useParts = new ArrayList<>();
         Collection<? extends UseScope> declaredUses = namespaceScope.getDeclaredUses();
         for (UseScope useElement : declaredUses) {
             processUseElement(useElement, useParts);
@@ -400,7 +400,7 @@ public class FixUsesPerformer {
 
     private static class ExistingUseStatementVisitor extends DefaultVisitor {
 
-        private final List<OffsetRange> usedRanges = new LinkedList<OffsetRange>();
+        private final List<OffsetRange> usedRanges = new LinkedList<>();
 
         public List<OffsetRange> getUsedRanges() {
             return Collections.unmodifiableList(usedRanges);
