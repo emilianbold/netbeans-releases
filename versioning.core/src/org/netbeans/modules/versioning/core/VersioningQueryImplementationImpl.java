@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,52 +34,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.versioning.core;
 
-import java.net.MalformedURLException;
-import org.netbeans.modules.versioning.core.util.VCSSystemProvider.VersioningSystem;
-
 import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.logging.Level;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.netbeans.spi.queries.CollocationQueryImplementation2;
+import org.netbeans.modules.versioning.core.filesystems.VCSFileProxyOperations;
+import org.netbeans.modules.versioning.core.filesystems.VCSFilesystemInterceptor;
+import org.netbeans.spi.queries.VersioningQueryImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.URLMapper;
 
 /**
- * Delegates the work to the owner of files in query.
- * 
- * @author Maros Sandor
+ *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.CollocationQueryImplementation2.class, position=50)
-public class VcsCollocationQueryImplementation implements CollocationQueryImplementation2 {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.queries.VersioningQueryImplementation.class)
+public class VersioningQueryImplementationImpl implements VersioningQueryImplementation{
 
     @Override
-    public boolean areCollocated(URI file1, URI file2) {
-        VCSFileProxy proxy1 = Utils.toFileProxy(file1);
-        VCSFileProxy proxy2 = Utils.toFileProxy(file2);
-        
-        if(proxy1 == null || proxy2 == null) return false;
-        VersioningSystem vsa = VersioningManager.getInstance().getOwner(proxy1);
-        VersioningSystem vsb = VersioningManager.getInstance().getOwner(proxy2);
-        if (vsa == null || vsa != vsb) return false;
-        
-        CollocationQueryImplementation2 cqi = vsa.getCollocationQueryImplementation();
-        return cqi != null && cqi.areCollocated(file1, file2);
+    public boolean isManaged(URI uri) {
+        VCSFileProxy proxy = Utils.toFileProxy(uri);
+        return proxy != null ? 
+                VersioningManager.getInstance().getOwner(proxy) != null : 
+                false;
     }
 
     @Override
-    public URI findRoot(URI file) {
-        VCSFileProxy proxy = Utils.toFileProxy(file);
-        if(proxy != null) {
-            VersioningSystem system = VersioningManager.getInstance().getOwner(proxy);
-            CollocationQueryImplementation2 cqi = system != null ? system.getCollocationQueryImplementation() : null;
-            return cqi != null ? cqi.findRoot(file) : null;
-        }
-        return null;
+    public String getRemoteLocation(URI uri) {
+        VCSFileProxy proxy = Utils.toFileProxy(uri);
+        return (String) VCSFilesystemInterceptor.getAttribute(proxy, VersioningManager.ATTRIBUTE_REMOTE_LOCATION);
     }
     
-}        
+}
