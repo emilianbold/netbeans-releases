@@ -68,13 +68,14 @@ public final class LoginAction extends AbstractAction {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        TeamServer k = (TeamServer) TeamUIUtils.showLogin();
-        if (k==null) {
+        TeamServer teamServer = (TeamServer) TeamUIUtils.showLogin();
+        if (teamServer==null) {
             return;
         }
         TeamServerTopComponent ktc = TeamServerTopComponent.findInstance();
         ktc.open();
         ktc.requestActive();
-        ktc.setSelectedServer(k);
+        
+        TeamView.getInstance().setSelectedServer(teamServer);
     }
 }

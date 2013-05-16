@@ -146,10 +146,14 @@ final class DataViewTableUI extends ResultSetJXTable {
 
     @Override
     public TableCellRenderer getCellRenderer(int row, int column) {
-        if (getModel().hasUpdates(
-                convertRowIndexToModel(row),
-                convertColumnIndexToModel(column))) {
-            return new UpdatedResultSetCellRenderer();
+        try {
+            if (getModel().hasUpdates(
+                    convertRowIndexToModel(row),
+                    convertColumnIndexToModel(column))) {
+                return new UpdatedResultSetCellRenderer();
+            }
+        } catch (IndexOutOfBoundsException ex) {
+            // Swallow it, caused by pack from JXTable - Bug #228753
         }
         return super.getCellRenderer(row, column);
     }

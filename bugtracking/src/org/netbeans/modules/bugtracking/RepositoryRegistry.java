@@ -204,10 +204,10 @@ public class RepositoryRegistry {
     public Collection<RepositoryImpl> getKnownRepositories(boolean pingOpenProjects, boolean onlyDashboardOpenProjects) {
         Collection<RepositoryImpl> otherRepos = getRepositories();
         Collection<RepositoryImpl> teamRepos = TeamRepositories.getInstance().getRepositories(pingOpenProjects, onlyDashboardOpenProjects);
-        
         List<RepositoryImpl> ret = new ArrayList<RepositoryImpl>(teamRepos.size() + otherRepos.size());
         
         ret.addAll(otherRepos);
+        ret.addAll(teamRepos);
         
         return ret;
     }
