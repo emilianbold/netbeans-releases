@@ -229,4 +229,8 @@ public final class IssueImpl<I> {
         }
         sp.setSeen(data, isUptodate);
     }
+    
+    public boolean submit () {
+        return issueProvider.submit(data);
+    }
 }

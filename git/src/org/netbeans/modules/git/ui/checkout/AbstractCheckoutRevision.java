@@ -87,7 +87,7 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
     }
 
     String getRevision () {
-        return revisionPicker.getRevision();
+        return revisionPicker.getRevision().getRevision();
     }
     
     String getBranchName () {
@@ -189,7 +189,7 @@ public abstract class AbstractCheckoutRevision implements DocumentListener, Acti
     }
 
     private void validateBranchCB () {
-        String rev = revisionPicker.getRevision();
+        String rev = revisionPicker.getRevision().getRevision();
         if (rev.startsWith(GitUtils.PREFIX_R_HEADS)) {
             rev = rev.substring(GitUtils.PREFIX_R_HEADS.length());
         }

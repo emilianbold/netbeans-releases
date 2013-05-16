@@ -25,7 +25,7 @@ public abstract class DashboardProvider<P> {
     public abstract LeafNode createMemberNode(MemberHandle user, TreeListNode parent);
     public abstract TreeListNode createProjectLinksNode(ProjectNode pn, ProjectHandle<P> project);
     public abstract TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<P> project);
-    public abstract TreeListNode createMyProjectNode(ProjectHandle<P> project);   
+    public abstract TreeListNode createMyProjectNode(ProjectHandle<P> project, boolean canOpen, boolean canBookmark, Action closeAction);   
     public abstract TreeListNode createSourceNode(SourceHandle s, SourceListNode sln);    
 
     public abstract ProjectAccessor<P> getProjectAccessor();

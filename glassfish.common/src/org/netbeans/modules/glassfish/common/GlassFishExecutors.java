@@ -153,8 +153,9 @@ public class GlassFishExecutors {
     public static ExecutorService fetchLogExecutor() {
         synchronized(fetchLogExecutor) {
             int currentMaxSize = fetchLogExecutor.getMaximumPoolSize();
-            if (currentMaxSize + FETCH_LOG_EXECUTOR_POOL_SIZE_LIMIT
-                    > FETCH_LOG_EXECUTOR_POOL_MAX_SIZE) {
+            int currentSize = fetchLogExecutor.getPoolSize();
+            if (currentSize + FETCH_LOG_EXECUTOR_POOL_SIZE_LIMIT
+                    > currentMaxSize) {
                 fetchLogExecutor.setMaximumPoolSize(
                         currentMaxSize + FETCH_LOG_EXECUTOR_POOL_RESIZE);
             }

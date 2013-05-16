@@ -91,6 +91,7 @@ import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.StringReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.TypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.UnsupportedOperationExceptionWrapper;
@@ -121,7 +122,7 @@ class VariableMirrorTranslator {
                 try {
                     Class clazz = Class.forName(typeStr);
                     if (String.class.equals(clazz)) {
-                        return ((StringReference) value).value();
+                        return StringReferenceWrapper.value((StringReference) value);
                     }
                     return createMirrorObject((ObjectReference) value, (ReferenceType) type, clazz);
                 } catch (ClassNotFoundException ex) {

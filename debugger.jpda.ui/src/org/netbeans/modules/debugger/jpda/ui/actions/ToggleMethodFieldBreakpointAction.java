@@ -51,11 +51,14 @@ import javax.swing.Action;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
 import org.netbeans.api.debugger.jpda.FieldBreakpoint;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.modules.debugger.jpda.actions.ActionsSynchronizer;
 
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.ui.breakpoints.ClassBreakpointPanel;
@@ -140,7 +143,23 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
     public void actionPerformed (ActionEvent evt) {
         if (!submitFieldOrMethodOrClassBreakpoint()) {
             // Do the toggle BP action directly in this AWT so that it gets the correct current line number.
-            DebuggerManager.getDebuggerManager().getActionsManager().doAction(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
+            DebuggerManager.getDebuggerManager().getActionsManager().postAction(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
+        }
+    }
+    
+    private synchronized RequestProcessor getPostponedToggleRP() {
+        if (postponedToggleRP == null) {
+            postponedToggleRP = new RequestProcessor("Postponed ToggleMethodFieldBreakpointAction", 1);
+        }
+        return postponedToggleRP;
+    }
+    
+    static JPDADebugger getCurrentDebugger() {
+        Session session = DebuggerManager.getDebuggerManager().getCurrentSession();
+        if (session != null) {
+            return session.lookupFirst(null, JPDADebugger.class);
+        } else {
+            return null;
         }
     }
     
@@ -210,33 +229,41 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
             final String url = EditorContextBridge.getContext().getCurrentURL ();
             final java.awt.IllegalComponentStateException[] exs = new java.awt.IllegalComponentStateException[]
                     { cdex, cex, fex, mex };
-            synchronized (this) {
-                if (postponedToggleRP == null) {
-                    postponedToggleRP = new RequestProcessor("Postponed ToggleMethodFieldBreakpointAction", 1);
-                }
+            final JPDADebugger debugger = getCurrentDebugger();
+            if (debugger != null) {
+                ActionsSynchronizer.get(debugger).actionScheduled(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
             }
-            postponedToggleRP.post(new Runnable() {
+            getPostponedToggleRP().post(new Runnable() {
                 public void run() {
                     // Re-try to submit the field or method breakpoint again
-                    String cdn = (exs[0] != null) ? exs[0].getMessage() : classDeclaration[0];
-                    String cn = (exs[1] != null) ? exs[1].getMessage() : className[0];
-                    String fn = (exs[2] != null) ? exs[2].getMessage() : fieldName[0];
-                    String mn = (exs[3] != null) ? exs[3].getMessage() : methodName;
-                    String ms = (exs[3] != null) ? exs[3].getLocalizedMessage() : methodSignature;
-                    if (fn != null && fn.length() == 0) fn = null;
-                    if (cdn != null) {
-                        cn = cdn;
-                        fn = mn = ms = null;
-                    } else if (fn == null && mn == null) {
-                        return ; // line breakpoint only, which was submitted already.
-                    }
-                    if (submitFieldOrMethodOrClassBreakpoint(cn, fn, mn, ms, null, ln)) {
-                        // We've submitted a field or method breakpoint, so delete the line one:
-                        LineBreakpoint lb = ToggleBreakpointActionProvider.findBreakpoint (
-                            url, ln
-                        );
-                        if (lb != null) {
-                            DebuggerManager.getDebuggerManager().removeBreakpoint (lb);
+                    try {
+                        if (debugger != null) {
+                            ActionsSynchronizer.get(debugger).actionStarts(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
+                        }
+                        String cdn = (exs[0] != null) ? exs[0].getMessage() : classDeclaration[0];
+                        String cn = (exs[1] != null) ? exs[1].getMessage() : className[0];
+                        String fn = (exs[2] != null) ? exs[2].getMessage() : fieldName[0];
+                        String mn = (exs[3] != null) ? exs[3].getMessage() : methodName;
+                        String ms = (exs[3] != null) ? exs[3].getLocalizedMessage() : methodSignature;
+                        if (fn != null && fn.length() == 0) fn = null;
+                        if (cdn != null) {
+                            cn = cdn;
+                            fn = mn = ms = null;
+                        } else if (fn == null && mn == null) {
+                            return ; // line breakpoint only, which was submitted already.
+                        }
+                        if (submitFieldOrMethodOrClassBreakpoint(cn, fn, mn, ms, null, ln)) {
+                            // We've submitted a field or method breakpoint, so delete the line one:
+                            LineBreakpoint lb = ToggleBreakpointActionProvider.findBreakpoint (
+                                url, ln
+                            );
+                            if (lb != null) {
+                                DebuggerManager.getDebuggerManager().removeBreakpoint (lb);
+                            }
+                        }
+                    } finally {
+                        if (debugger != null) {
+                            ActionsSynchronizer.get(debugger).actionEnds(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
                         }
                     }
                 }
@@ -285,8 +312,8 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
          */
     }
         
-    private boolean submitFieldOrMethodOrClassBreakpoint(String className, String fieldName,
-                                                         String methodName, String methodSignature,
+    private boolean submitFieldOrMethodOrClassBreakpoint(final String className, final String fieldName,
+                                                         final String methodName, final String methodSignature,
                                                          String url, int line) {
         if (className == null) {
             return false;   // Can not do anything without the class name
@@ -312,18 +339,38 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
         }
         
         // 3) create a new breakpoint
-        if (fieldName != null) {
-            b = FieldBreakpoint.create(className, fieldName, FieldBreakpoint.TYPE_MODIFICATION | FieldBreakpoint.TYPE_ACCESS);
-            b.setPrintText(NbBundle.getMessage(FieldBreakpointPanel.class, "CTL_Field_Breakpoint_Print_Text"));
-        } else if (methodName != null) {
-            b = MethodBreakpoint.create(className, methodName);
-            ((MethodBreakpoint) b).setMethodSignature(methodSignature);
-            b.setPrintText(NbBundle.getMessage(MethodBreakpointPanel.class, "CTL_Method_Breakpoint_Print_Text"));
-        } else {
-            b = ClassLoadUnloadBreakpoint.create(className, false, ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED_UNLOADED);
-            b.setPrintText (NbBundle.getMessage(ClassBreakpointPanel.class, "CTL_Class_Breakpoint_Print_Text"));
+        final JPDADebugger debugger = getCurrentDebugger();
+        if (debugger != null) {
+            ActionsSynchronizer.get(debugger).actionScheduled(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
         }
-        d.addBreakpoint(b);
+        getPostponedToggleRP().post(new Runnable() {
+            public void run() {
+                // Re-try to submit the field or method breakpoint again
+                try {
+                    if (debugger != null) {
+                        ActionsSynchronizer.get(debugger).actionStarts(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
+                    }
+                    JPDABreakpoint b;
+                    if (fieldName != null) {
+                        b = FieldBreakpoint.create(className, fieldName, FieldBreakpoint.TYPE_MODIFICATION | FieldBreakpoint.TYPE_ACCESS);
+                        b.setPrintText(NbBundle.getMessage(FieldBreakpointPanel.class, "CTL_Field_Breakpoint_Print_Text"));
+                    } else if (methodName != null) {
+                        b = MethodBreakpoint.create(className, methodName);
+                        ((MethodBreakpoint) b).setMethodSignature(methodSignature);
+                        b.setPrintText(NbBundle.getMessage(MethodBreakpointPanel.class, "CTL_Method_Breakpoint_Print_Text"));
+                    } else {
+                        b = ClassLoadUnloadBreakpoint.create(className, false, ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED_UNLOADED);
+                        b.setPrintText (NbBundle.getMessage(ClassBreakpointPanel.class, "CTL_Class_Breakpoint_Print_Text"));
+                    }
+                    DebuggerManager d = DebuggerManager.getDebuggerManager();
+                    d.addBreakpoint(b);
+                } finally {
+                    if (debugger != null) {
+                        ActionsSynchronizer.get(debugger).actionEnds(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
+                    }
+                }
+            }
+        });
         return true;
     }
     

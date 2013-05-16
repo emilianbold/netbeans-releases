@@ -124,6 +124,8 @@ public final class TeamView {
     public synchronized void setSelectedServer(TeamServer server) {
         if (combo!=null) {
             combo.setSelectedItem(server);
+        } else {
+            setTeamServer(server);
         }
     }
     

@@ -249,10 +249,7 @@ public final class KenaiServer implements TeamServer {
 
     @Override
     public SelectionList getProjects( boolean forceRefresh ) {
-        SelectionList res = new SelectionList();
-        //TODO load projects
-        return res;
-
+        return getDashboard().getProjectsList(forceRefresh);
     }
 
     @Override

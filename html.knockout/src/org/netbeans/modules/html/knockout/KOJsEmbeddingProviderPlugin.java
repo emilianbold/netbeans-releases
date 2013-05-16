@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.knockout;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -51,8 +52,11 @@ import static org.netbeans.api.html.lexer.HTMLTokenId.VALUE;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
+import org.netbeans.modules.javascript2.editor.index.IndexedElement;
+import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.filesystems.FileObject;
 
 /**
  * Knockout javascript virtual source extension
@@ -69,6 +73,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     private final LinkedList<StackItem> stack;
     private String lastTagOpen = null;
     private boolean hasKnockout = false;
+    private JsIndex index;
 
     public KOJsEmbeddingProviderPlugin() {
         JS_LANGUAGE = Language.find(KOUtils.JAVASCRIPT_MIMETYPE); //NOI18N
@@ -81,6 +86,13 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         this.snapshot = snapshot;
         this.tokenSequence = tokenSequence;
         this.embeddings = embeddings;
+
+        FileObject file = snapshot.getSource().getFileObject();
+        if (file == null) {
+            return false;
+        }
+
+        this.index = JsIndex.get(file);
         return true;
     }
 
@@ -92,6 +104,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         hasKnockout = false;
         stack.clear();
         lastTagOpen = null;
+        index = null;
     }
 
     @Override
@@ -177,6 +190,11 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
             embeddings.add(snapshot.create("var $root = ko.$bindings;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
             embeddings.add(snapshot.create("var $data = $root;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
             embeddings.add(snapshot.create("var $parent = undefined;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+
+            Collection<IndexedElement> properties = index.getProperties("ko.$bindings"); // NOI18N
+            for (IndexedElement indexedElement : properties) {
+                embeddings.add(snapshot.create("var " + indexedElement.getName() + " = ko.$bindings." + indexedElement.getName() + ";\n", KOUtils.JAVASCRIPT_MIMETYPE));
+            }
         }
         hasKnockout = true;
         embeddings.add(snapshot.create(value, KOUtils.JAVASCRIPT_MIMETYPE));

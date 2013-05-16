@@ -12,7 +12,7 @@
 
     <fontcolor name="mod-regexp" foreColor="9933CC" default="regexp" />
 
-    <fontcolor name="mod-method">
+    <fontcolor name="mod-method" foreColor="000000">
         <font style="bold" />
     </fontcolor>
     <fontcolor name="mod-class" foreColor="000000">
