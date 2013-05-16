@@ -46,10 +46,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -102,8 +100,8 @@ public class Category {
         this.tasks = tasks;
     }
 
-    public boolean isLoaded() {
-        return loaded;
+    public boolean persist() {
+        return true;
     }
 
     @Override
@@ -130,7 +128,7 @@ public class Category {
         return hash;
     }
 
-    public void refresh(){
+    public void refresh() {
         if (loaded) {
             refreshTasks();
         } else {
