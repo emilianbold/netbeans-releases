@@ -103,7 +103,7 @@ public class CompilationDependencyTest extends TestBase {
         et.waitFinished();
         assertEquals("Error during ant ...",0,et.result());
         SpecificationVersion invalid = new SpecificationVersion("1000");
-        ApisupportAntUtils.addDependency(testingProject, WINDOWS, null, invalid, true);
+        ApisupportAntUtils.addDependency(testingProject, WINDOWS, null, invalid, true, null);
         ProjectManager.getDefault().saveProject(testingProject);
         et = ActionUtils.runTarget(buildScript, new String[]{"clean","jar"}, null);
         et.waitFinished();
@@ -120,7 +120,7 @@ public class CompilationDependencyTest extends TestBase {
         FileObject buildScript = findBuildXml(testingProject);
         assertNotNull(buildScript);
         
-        ApisupportAntUtils.addDependency(testingProject, WINDOWS, null, null, true);
+        ApisupportAntUtils.addDependency(testingProject, WINDOWS, null, null, true, null);
         ProjectManager.getDefault().saveProject(testingProject);
         
         FileObject javaFo = testingProject.getSourceDirectory().getFileObject("org/example/testing").createData("JavaFile.java");
@@ -160,7 +160,7 @@ public class CompilationDependencyTest extends TestBase {
         SuiteProject suite = TestBase.generateSuite(new File(getWorkDir(), "projects"), "suite");
         NbModuleProject proj = TestBase.generateSuiteComponent(suite, "mod1");
         suite.open();
-        ApisupportAntUtils.addDependency(proj, WINDOWS, null, null, true);
+        ApisupportAntUtils.addDependency(proj, WINDOWS, null, null, true, null);
         
         // remove WINDOWS from platform
         EditableProperties ep = suite.getHelper().getProperties("nbproject/platform.properties");

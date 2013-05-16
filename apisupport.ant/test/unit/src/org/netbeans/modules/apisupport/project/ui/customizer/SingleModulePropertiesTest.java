@@ -190,7 +190,7 @@ public class SingleModulePropertiesTest extends TestBase {
         }
         
         // modify project.xml
-        ApisupportAntUtils.addDependency(p, "org.netbeans.modules.java.project", "1", null, false);
+        ApisupportAntUtils.addDependency(p, "org.netbeans.modules.java.project", "1", null, false, null);
         ProjectManager.getDefault().saveProject(p);
         
         simulatePropertiesOpening(props, p);
