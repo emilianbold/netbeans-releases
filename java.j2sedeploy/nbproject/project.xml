@@ -6,6 +6,15 @@
             <code-name-base>org.netbeans.modules.java.j2sedeploy</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.apache.tools.ant.module</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>3</release-version>
+                        <specification-version>3.67</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.annotations.common</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -47,6 +56,30 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>7.58</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.dialogs</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>7.31</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.execution</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.32</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.filesystems</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>8.7</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
