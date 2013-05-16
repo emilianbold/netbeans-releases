@@ -43,6 +43,7 @@ package org.netbeans.modules.team.ui.picker;
 
 import javax.swing.BorderFactory;
 import javax.swing.JToolBar;
+import javax.swing.UIManager;
 import javax.swing.plaf.ToolBarUI;
 
 /**
@@ -53,7 +54,11 @@ class ServerToolbar extends JToolBar {
 
     @Override
     public String getUIClassID() {
-        return "Nb.Toolbar.ui"; //NOI18N
+        if (UIManager.get("Nb.Toolbar.ui") != null) { //NOI18N
+            return "Nb.Toolbar.ui"; //NOI18N
+        } else {
+            return super.getUIClassID();
+        }
     }
 
     @Override
