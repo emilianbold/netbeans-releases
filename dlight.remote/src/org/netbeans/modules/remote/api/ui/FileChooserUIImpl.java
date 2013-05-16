@@ -85,6 +85,7 @@ import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.Vector;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -2923,18 +2924,25 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             }
             
             if (file == null) {
-                if (fileChooser.getCurrentDirectoryPath() != null) {
-                    file = fileChooser.getFileSystemView().createFileObject(fileChooser.getCurrentDirectoryPath());
-                    if (Thread.interrupted()) {
-                        return new ValidationResult(Boolean.FALSE, null, false, curDir);
+                final Callable<String> currentDirectoryPath = fileChooser.getAndClearDefaultDirectory();
+                if (currentDirectoryPath != null) {
+                    try{
+                        String currentDir = currentDirectoryPath.call();
+                        if (Thread.interrupted()) {
+                            return new ValidationResult(Boolean.FALSE, null, false, curDir);
+                        }                        
+                        file = fileChooser.getFileSystemView().createFileObject(currentDir);
+                        if (Thread.interrupted()) {
+                            return new ValidationResult(Boolean.FALSE, null, false, curDir);
+                        }
+                    }catch(Exception ex) {
+                     return new ValidationResult(Boolean.FALSE, null, false, curDir);   
                     }
-                    
-                    fileChooser.clearCurrentDirectoryPath();
                 } else {
                     file = fileChooser.getFileSystemView().getDefaultDirectory();
                 }
             }
-            final boolean directoryChanged = !file.equals(oldValue);
+            final boolean directoryChanged = file != null && !file.equals(oldValue);
             if (directoryChanged) {
                 fileChooser.setCurrentDirectory(file);
                 

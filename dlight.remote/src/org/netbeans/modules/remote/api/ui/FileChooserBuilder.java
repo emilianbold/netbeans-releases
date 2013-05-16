@@ -41,29 +41,22 @@
  */
 package org.netbeans.modules.remote.api.ui;
 
-import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.Dialog;
 import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.HeadlessException;
-import java.awt.Window;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.prefs.Preferences;
-import javax.accessibility.AccessibleContext;
 import javax.swing.Icon;
-import javax.swing.JDialog;
 import javax.swing.JFileChooser;
-import static javax.swing.JFileChooser.DIRECTORY_CHANGED_PROPERTY;
-import javax.swing.JOptionPane;
-import javax.swing.JRootPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.filechooser.FileFilter;
@@ -88,18 +81,16 @@ public final class FileChooserBuilder {
     // TODO: think of a better name
     public abstract static class JFileChooserEx extends JFileChooser {
         protected File curFile;
-        protected String currentDirectoryPath;
+        private final   AtomicReference<Callable<String>> defaultDirectoryRef= new AtomicReference<Callable<String>>();
 
-        protected JFileChooserEx(String currentDirectoryPath) {
+        protected JFileChooserEx(Callable<String> currentDirectoryPath) {
             super((String)null);
-//            super(currentDirectoryPath);
-            this.currentDirectoryPath = currentDirectoryPath;// == null ? getFileSystemView().getDefaultDirectory() : getFileSystemView().createFileObject(currentDirectoryPath);
+            defaultDirectoryRef.set(currentDirectoryPath);
         }
 
-        public JFileChooserEx(String currentDirectoryPath, FileSystemView fsv) {
+        public JFileChooserEx(Callable<String> currentDirectoryPath, FileSystemView fsv) {
             super((String)null, fsv);
-            //super(currentDirectoryPath, fsv);
-            this.currentDirectoryPath = currentDirectoryPath;// == null ?  getFileSystemView().getDefaultDirectory() : getFileSystemView().createFileObject(currentDirectoryPath);
+            defaultDirectoryRef.set(currentDirectoryPath);
         }
         
         public void setFileFilters(FileFilter[] filters) {
@@ -118,14 +109,10 @@ public final class FileChooserBuilder {
         @Override
         public File getCurrentDirectory() {
             return curFile;
-        }
+        }        
         
-        
-        public void  clearCurrentDirectoryPath() {
-            currentDirectoryPath = null;
-        }
-        public String getCurrentDirectoryPath() {
-            return currentDirectoryPath;
+        /*package*/  Callable<String> getAndClearDefaultDirectory() {
+            return defaultDirectoryRef.getAndSet(null);
         }
 
         @Override
@@ -165,18 +152,11 @@ public final class FileChooserBuilder {
     public FileChooserBuilder(ExecutionEnvironment env) {
         this.env = env;
     }
-
-    public JFileChooserEx createFileChooser() {
-        return createFileChooser(null);
-    }
-
-    public JFileChooserEx createFileChooser(String selectedPath) {
+    
+    public JFileChooserEx createFileChooser(Callable<String> selectedPath) {
         if (env.isLocal()) {
             return new LocalFileChooserImpl(selectedPath);
         } else {
-            if (selectedPath == null || selectedPath.trim().length() == 0) {
-                selectedPath = "/"; //NOI18N
-            }
             String currentOpenTitle = UIManager.getString(openDialogTitleTextKey);
             String currentSaveTitle = UIManager.getString(saveDialogTitleTextKey);
             Boolean currentReadOnly = UIManager.getBoolean(readOnlyKey);
@@ -195,7 +175,21 @@ public final class FileChooserBuilder {
             UIManager.put(readOnlyKey, currentReadOnly);
 
             return chooser;
-        }
+        }        
+    }
+
+    public JFileChooserEx createFileChooser() {
+        return createFileChooser((String)null);
+    }
+
+    public JFileChooserEx createFileChooser(final String selectedPath) {
+        return createFileChooser(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                 return selectedPath;
+            }
+        });
+
     }
 
     public FileChooserBuilder setPreferences(Preferences forModule) {
@@ -209,7 +203,7 @@ public final class FileChooserBuilder {
 
     private static class LocalFileChooserImpl extends JFileChooserEx {
 
-        public LocalFileChooserImpl(String selectedPath) {
+        public LocalFileChooserImpl(Callable<String> selectedPath) {
             super(selectedPath);
         }
 
@@ -308,7 +302,7 @@ public final class FileChooserBuilder {
         private final Preferences forModule;
         private final ExecutionEnvironment env;
 
-        public RemoteFileChooserImpl(String currentDirectory, RemoteFileSystemView fsv, ExecutionEnvironment env, Preferences forModule) {
+        public RemoteFileChooserImpl(Callable<String> currentDirectory, RemoteFileSystemView fsv, ExecutionEnvironment env, Preferences forModule) {
             super(currentDirectory, fsv);
             this.env = env;
             this.forModule = forModule;

@@ -41,12 +41,8 @@
  */
 package org.netbeans.modules.cnd.debugger.common2;
 
-import java.nio.charset.Charset;
-import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.api.toolchain.Tool;
-import org.netbeans.modules.cnd.api.toolchain.ToolKind;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.cnd.debugger.common2.debugger.remote.CndRemote;
+
 
 /**
  *
@@ -58,9 +54,9 @@ public abstract class APIAccessor {
 
     public static synchronized APIAccessor get() {
         if (INSTANCE == null) {
-            Class<?> c = Tool.class;
+            Class<?> c = CndRemote.class;
             try {
-            Class.forName(c.getName(), true, c.getClassLoader());
+                Class.forName(c.getName(), true, c.getClassLoader());
             } catch (ClassNotFoundException e) {
                 // ignore
             }
