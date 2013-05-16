@@ -1086,11 +1086,12 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         private Icon icon;
         private JLabel lbl = null;
         private LinkButton btnPick;
-
+        
         public ProjectSwitcher() {
             setLayout( new GridBagLayout() );
             setOpaque(false);
             lbl = new JLabel();
+            lbl.setFont( lbl.getFont().deriveFont( Font.BOLD, lbl.getFont().getSize2D() + 1 ) );
             setProjectLabel(categoryName, icon);
             add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
             final MouseAdapter mouseAdapter = new MouseAdapter() {
