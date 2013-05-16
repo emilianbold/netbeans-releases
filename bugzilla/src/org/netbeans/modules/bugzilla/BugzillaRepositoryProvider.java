@@ -40,7 +40,6 @@ package org.netbeans.modules.bugzilla;
 import java.awt.Image;
 import java.beans.PropertyChangeListener;
 import java.util.Collection;
-import java.util.List;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.TeamRepositoryProvider;
 import org.netbeans.modules.bugtracking.spi.RepositoryController;
@@ -49,7 +48,6 @@ import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.kenai.KenaiRepository;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.openide.util.Lookup;
 
 /**
  *
@@ -110,6 +108,11 @@ public class BugzillaRepositoryProvider extends TeamRepositoryProvider<BugzillaR
     @Override
     public void addPropertyChangeListener(BugzillaRepository r, PropertyChangeListener listener) {
         r.addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public Collection<BugzillaIssue> getUnsubmittedIssues (BugzillaRepository r) {
+        return r.getUnsubmittedIssues();
     }
     
     /********************************************************************************

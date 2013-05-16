@@ -151,5 +151,18 @@ public abstract class IssueProvider<I> {
     public abstract void removePropertyChangeListener(I data, PropertyChangeListener listener);
 
     public abstract void addPropertyChangeListener(I data, PropertyChangeListener listener);
+    
+    /**
+     * Submits the issue. Override and implement if you support issue
+     * submitting.
+     *
+     * @param data issue data
+     * @return <code>true</code> if the task was successfully
+     * submitted,<code>false</code> if the task was not submitted for any
+     * reason.
+     */
+    public boolean submit (I data) {
+        return false;
+    }
 
 }

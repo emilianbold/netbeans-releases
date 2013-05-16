@@ -1139,7 +1139,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     @NbBundle.Messages({
         "# {0} - task id and summary", "MSG_BugzillaIssue.statusBar.submitted=Task {0} submitted."
     })
-    boolean submitAndRefresh() {
+    public boolean submitAndRefresh() {
         final boolean[] result = new boolean[1];
         runWithModelLoaded(new Runnable() {
 

@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.bugzilla;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -52,6 +54,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import static junit.framework.Assert.assertEquals;
@@ -201,7 +204,7 @@ public class MylynStorageTest extends NbTestCase {
         };
         ITask task = supp.getMylynFactory().createTask(btr, mapping);
         Collection<ITask> allLocalTasks = supp.getTasks(supp.getLocalTaskRepository());
-        Collection<ITask> allUnsubmittedTasks = supp.getUnsubmittedTasks(btr);
+        Collection<ITask> allUnsubmittedTasks = supp.getUnsubmittedTasksContainer(btr).getTasks();
 
         /*************** TEST *******************/
         // is it really in the tasklist
@@ -215,7 +218,7 @@ public class MylynStorageTest extends NbTestCase {
     
     public void testSubmitTemporaryTask () throws Exception {
         MylynSupport supp = MylynSupport.getInstance();
-        ITask task = supp.getUnsubmittedTasks(btr).iterator().next();
+        ITask task = supp.getUnsubmittedTasksContainer(btr).getTasks().iterator().next();
         // edit the task
         TaskDataModel model = supp.getTaskDataModel(task);
         
@@ -248,7 +251,7 @@ public class MylynStorageTest extends NbTestCase {
         ITask submittedTask = submitTask(task, model);
         
         assertNotSame(task, submittedTask); // they difer, the new task is a persistent, not local one
-        assertEquals(0, supp.getUnsubmittedTasks(btr).size());
+        assertEquals(0, supp.getUnsubmittedTasksContainer(btr).getTasks().size());
         assertSame(submittedTask, supp.getTask(btr.getUrl(), submittedTask.getTaskId()));
         
         assertEquals(newSummary, task.getSummary());
@@ -328,8 +331,23 @@ public class MylynStorageTest extends NbTestCase {
             assertFalse(model.hasOutgoingChanges(attr));
         }
         
+        // unsubmitted tasks should be empty
+        assertEquals(0, br.getUnsubmittedIssues().size());
+        final CountDownLatch l = new CountDownLatch(1);
+        PropertyChangeListener list = new PropertyChangeListener() {
+            @Override
+            public void propertyChange (PropertyChangeEvent evt) {
+                l.countDown();
+            }
+        };
+        br.addPropertyChangeListener(list);
+        
         // save
         model.save(new NullProgressMonitor());
+        l.await();
+        assertEquals(1, br.getUnsubmittedIssues().size());
+        br.removePropertyChangeListener(list);
+        
         // task is clean (saved) - and has modifications
         assertFalse(model.isDirty());
         assertEquals(1, model.getChangedAttributes().size());
@@ -358,8 +376,22 @@ public class MylynStorageTest extends NbTestCase {
         assertTrue(model.hasOutgoingChanges(summaryAttr));
         assertFalse(oldSummary.equals(newSummary));
         
+        // unsubmitted tasks should contain the task
+        assertEquals(1, br.getUnsubmittedIssues().size());
+        final CountDownLatch l = new CountDownLatch(1);
+        PropertyChangeListener list = new PropertyChangeListener() {
+            @Override
+            public void propertyChange (PropertyChangeEvent evt) {
+                l.countDown();
+            }
+        };
+        br.addPropertyChangeListener(list);
+        
         // submit
         task = submitTask(task, model);
+        l.await();
+        assertEquals(0, br.getUnsubmittedIssues().size());
+        br.removePropertyChangeListener(list);
         
         // test
         assertFalse(model.isDirty());

@@ -42,12 +42,13 @@
 package org.netbeans.modules.mylyn.util;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -114,6 +115,7 @@ public class MylynSupport {
     private static final RequestProcessor RP = new RequestProcessor("MylynSupport", 1, true); //NOI18N
     private final Task saveTask;
     private boolean dirty;
+    private final Map<TaskRepository, UnsubmittedTasksContainer> unsubmittedTaskContainers;
 
     public static synchronized MylynSupport getInstance () {
         if (instance == null) {
@@ -157,6 +159,7 @@ public class MylynSupport {
                 }
             }
         });
+        unsubmittedTaskContainers = new WeakHashMap<TaskRepository, UnsubmittedTasksContainer>();
         attachListeners();
     }
 
@@ -165,7 +168,7 @@ public class MylynSupport {
      *
      * @param taskRepository repository tasks are stored in
      * @return tasks from the requested repository
-     * @throws IOException when the tasklist is inaccessible.
+     * @throws CoreException when the tasklist is inaccessible.
      */
     public Collection<ITask> getTasks (TaskRepository taskRepository) throws CoreException {
         ensureTaskListLoaded();
@@ -187,9 +190,17 @@ public class MylynSupport {
         return taskList.getTask(repositoryUrl, taskId);
     }
 
-    public Collection<ITask> getUnsubmittedTasks (TaskRepository taskRepository) throws CoreException {
-        ensureTaskListLoaded();
-        return taskList.getUnsubmittedContainer(taskRepository.getUrl()).getChildren();
+    public UnsubmittedTasksContainer getUnsubmittedTasksContainer (TaskRepository taskRepository) throws CoreException {
+        UnsubmittedTasksContainer cont;
+        synchronized (unsubmittedTaskContainers) {
+            cont = unsubmittedTaskContainers.get(taskRepository);
+            if (cont == null) {
+                ensureTaskListLoaded();
+                cont = new UnsubmittedTasksContainer(taskRepository, taskList);
+                unsubmittedTaskContainers.put(taskRepository, cont);
+            }
+        }
+        return cont;
     }
 
     public TaskRepository getLocalTaskRepository () {
@@ -328,6 +339,7 @@ public class MylynSupport {
      *
      * @param repositoryConnector connector handling the given repository
      * @param repositoryUrl  task repository URL
+     * @return registered repository
      */
     public TaskRepository getTaskRepository (AbstractRepositoryConnector repositoryConnector, String repositoryUrl) {
         TaskRepository repository = taskRepositoryManager.getRepository(repositoryConnector.getConnectorKind(), repositoryUrl);
