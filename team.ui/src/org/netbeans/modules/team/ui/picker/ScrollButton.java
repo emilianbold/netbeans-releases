@@ -67,7 +67,6 @@ final class ScrollButton extends JButton implements ActionListener {
     private final static int INSET = 2;
     private Timer timer = null;
     private int count = 0;
-    private boolean invisible = false;
 
     public ScrollButton( Action action, int orientation ) {
         super( action );
@@ -104,23 +103,7 @@ final class ScrollButton extends JButton implements ActionListener {
     }
 
     @Override
-    protected void paintComponent( Graphics g ) {
-        if( invisible )
-            return;
-        super.paintComponent( g ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    protected void paintChildren( Graphics g ) {
-        if( invisible )
-            return;
-        super.paintChildren( g ); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
     public void paint( Graphics g ) {
-        if( invisible )
-            return;
         if( isEnabled() ) {
             Color color = null;
             if( getModel().isPressed()) {
@@ -132,15 +115,17 @@ final class ScrollButton extends JButton implements ActionListener {
                 g.setColor( color );
                 g.fillRect( 0, 0, getWidth(), getHeight() );
             }
+            super.paint( g );
         }
-        super.paint( g );
     }
 
-    void setInVisible( boolean invisible ) {
-        this.invisible = invisible;
-        getParent().repaint();
+    @Override
+    public Icon getIcon() {
+        if( isEnabled() )
+            return super.getIcon();
+        return null;
     }
-
+    
     private Timer getTimer() {
         if( timer == null ) {
             timer = new Timer( 400, this );
