@@ -30,4 +30,3 @@ METHOD     valueOf(): Object               [PUBLIC]   JS Platform
 FIELD      constructor: Function           [PUBLIC]   JS Platform
 FIELD      length: Number                  [PUBLIC]   JS Platform
 FIELD      state: Object                   [PUBLIC]   JS Platform
-FIELD      var                             [PUBLIC]   issue218361_2.js
