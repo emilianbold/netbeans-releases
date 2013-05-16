@@ -487,7 +487,9 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
             if (preferredType != null) {
                 loadedClasses = Collections.singletonList(preferredType);
             }
-            classLoaded(loadedClasses);
+            if (canSetRequests()) { // Ignore when the breakpoint is disabled in the mean time
+                classLoaded(loadedClasses);
+            }
         }
         return matched;
     }
@@ -498,7 +500,9 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
             if (event instanceof ClassPrepareEvent) {
                 if (logger.isLoggable(Level.FINE))
                     logger.fine(" Class loaded: " + ClassPrepareEventWrapper.referenceType((ClassPrepareEvent) event));
-                classLoaded(Collections.singletonList(ClassPrepareEventWrapper.referenceType((ClassPrepareEvent) event)));
+                if (canSetRequests()) { // Ignore when the breakpoint is disabled in the mean time
+                    classLoaded(Collections.singletonList(ClassPrepareEventWrapper.referenceType((ClassPrepareEvent) event)));
+                }
             } else if (event instanceof ClassUnloadEvent) {
                 if (logger.isLoggable(Level.FINE))
                     logger.fine(" Class unloaded: " + ClassUnloadEventWrapper.className((ClassUnloadEvent) event));

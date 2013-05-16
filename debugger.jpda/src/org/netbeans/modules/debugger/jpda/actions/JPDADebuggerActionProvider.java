@@ -81,7 +81,7 @@ import org.openide.util.WeakSet;
 * @author   Jan Jancura
 * @author  Marian Petras
 */
-abstract class JPDADebuggerActionProvider extends ActionsProviderSupport 
+public abstract class JPDADebuggerActionProvider extends ActionsProviderSupport 
 implements PropertyChangeListener {
     
     protected JPDADebuggerImpl debugger;
@@ -90,7 +90,7 @@ implements PropertyChangeListener {
     
     private volatile boolean disabled;
     
-    JPDADebuggerActionProvider (JPDADebuggerImpl debugger) {
+    protected JPDADebuggerActionProvider (JPDADebuggerImpl debugger) {
         this.debugger = debugger;
         debugger.addPropertyChangeListener (debugger.PROP_STATE, this);
     }
@@ -161,10 +161,12 @@ implements PropertyChangeListener {
      * Do the action lazily in a RequestProcessor.
      * @param run The action to perform.
      */
-    protected final void doLazyAction(Object action, final Runnable run) {
+    protected final void doLazyAction(final Object action, final Runnable run) {
         //System.err.println("doLazyAction() in "+this);
         //Logger.getLogger(JPDADebuggerActionProvider.class.getName()).fine("doLazyAction() in "+this);
         //final long start = System.nanoTime();
+        final ActionsSynchronizer as = ActionsSynchronizer.get(debugger);
+        as.actionScheduled(action);
         final JPDAThreadImpl threadWithActionsPending;
         JPDAThread ct = debugger.getCurrentThread();
         if (ct instanceof JPDAThreadImpl && action != ActionsManager.ACTION_PAUSE) {
@@ -193,6 +195,7 @@ implements PropertyChangeListener {
                     //long end = System.nanoTime();
                     //System.err.println("  run in RP after "+(end - start)+" ns ("+((end - start)/1000000)+" ms) in "+this);
                     //Logger.getLogger(JPDADebuggerActionProvider.class.getName()).fine("  run in RP after "+(end - start)+" ns ("+((end - start)/1000000)+" ms) in "+this);
+                    as.actionStarts(action);
                     run.run();
                     if (threadWithActionsPending != null) {
                         threadWithActionsPending.setPendingAction(null);
@@ -205,6 +208,8 @@ implements PropertyChangeListener {
                     }
                 } catch (com.sun.jdi.VMDisconnectedException e) {
                     // Causes kill action when something is being evaluated
+                } finally {
+                    as.actionEnds(action);
                 }
             }
         });
