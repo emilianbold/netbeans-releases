@@ -6,4 +6,3 @@ METHOD     isExtensible(O: Object): Boole  [PUBLIC,   JS Platform
 METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   JS Platform
 METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   JS Platform
 METHOD     isSealed(O: Object): Boolean    [PUBLIC,   JS Platform
-FIELD      id                              [PUBLIC]   issue224453.js
