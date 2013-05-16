@@ -64,7 +64,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JTable;
 import org.eclipse.core.runtime.CoreException;
@@ -72,12 +71,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaAttribute;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaOperation;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaTaskDataHandler;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
-import org.eclipse.mylyn.internal.tasks.core.ITaskListChangeListener;
-import org.eclipse.mylyn.internal.tasks.core.TaskContainerDelta;
 import org.eclipse.mylyn.internal.tasks.core.data.FileTaskAttachmentSource;
-import org.eclipse.mylyn.internal.tasks.core.data.ITaskDataManagerListener;
-import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManagerEvent;
-import org.eclipse.mylyn.internal.tasks.core.data.TaskDataState;
 import org.eclipse.mylyn.tasks.core.ITask;
 import org.eclipse.mylyn.tasks.core.RepositoryResponse;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
@@ -109,8 +103,12 @@ import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.NetBeansTaskDataModel;
+import org.netbeans.modules.mylyn.util.NetBeansTaskDataState;
 import org.netbeans.modules.mylyn.util.SubmitTaskCommand;
 import org.netbeans.modules.mylyn.util.SynchronizeTasksCommand;
+import org.netbeans.modules.mylyn.util.TaskDataListener;
+import org.netbeans.modules.mylyn.util.TaskListener;
+import org.netbeans.modules.mylyn.util.TaskListener.TaskEvent.Kind;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.OpenCookie;
@@ -121,13 +119,14 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.WeakListeners;
 
 /**
  *
  * @author Tomas Stupka
  * @author Jan Stola
  */
-public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeListener {
+public class BugzillaIssue {
 
     public static final String RESOLVE_FIXED = "FIXED";                                                         // NOI18N
     public static final String RESOLVE_DUPLICATE = "DUPLICATE";                                                 // NOI18N
@@ -199,6 +198,8 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
     private TaskDataModelListener list;
     private final Task repositoryTaskDataLoaderTask;
     private boolean readPending;
+    private final TaskDataListenerImpl taskDataListener;
+    private final TaskListenerImpl taskListener;
 
     public BugzillaIssue (ITask task, BugzillaRepository repo) {
         this.task = task;
@@ -214,9 +215,10 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         });
         updateRecentChanges();
         MylynSupport mylynSupp = MylynSupport.getInstance();
-        // should be a weak listener
-        mylynSupp.addTaskDataListener(this);
-        mylynSupp.addTaskListListener(this);
+        taskDataListener = new TaskDataListenerImpl();
+        mylynSupp.addTaskDataListener(WeakListeners.create(TaskDataListener.class, taskDataListener, mylynSupp));
+        taskListener = new TaskListenerImpl();
+        mylynSupp.addTaskListener(WeakListeners.create(TaskListener.class, taskListener, mylynSupp));
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -243,8 +245,8 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
             model = null;
         }
         MylynSupport mylynSupp = MylynSupport.getInstance();
-        mylynSupp.removeTaskDataListener(this);
-        mylynSupp.removeTaskListListener(this);
+        mylynSupp.removeTaskDataListener(taskDataListener);
+        mylynSupp.removeTaskListener(taskListener);
         getRepository().deleteTask(task);
     }
 
@@ -572,64 +574,9 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         return task.getSummary();
     }
 
-    @Override
-    public void taskDataUpdated (TaskDataManagerEvent event) {
-        if (event.getTask() == task) {
-            if (!event.getTaskData().isPartial()) {
-                this.repositoryDataRef = new SoftReference<TaskData>(event.getTaskData());
-            }
-            if (event.getTaskDataUpdated()) {
-                availableOperations = null;
-                ensureConfigurationUptodate();
-                TaskDataModel m = model;
-                if (m != null) {
-                    try {
-                        m.refresh(null);
-                    } catch (CoreException ex) {
-                        Bugzilla.LOG.log(Level.INFO, null, ex);
-                    }
-                }
-                Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (node != null) {
-                            node.fireDataChanged();
-                        }
-                        fireDataChanged();
-                        refreshViewData(false);
-                    }
-                });
-            }
-        }
-    }
-
-    @Override
-    public void editsDiscarded (TaskDataManagerEvent tdme) {
-        // what here?
-    }
-
-    @Override
-    public void containersChanged (Set<TaskContainerDelta> deltas) {
-        for (TaskContainerDelta delta : deltas) {
-            if (delta.getElement() == task && delta.getKind() == TaskContainerDelta.Kind.CONTENT) {
-                boolean syncStateChanged = syncState != task.getSynchronizationState();
-                boolean seen = wasSeen();
-                if (syncStateChanged) {
-                    syncState = task.getSynchronizationState();
-                }
-                if (updateRecentChanges()) {
-                    fireDataChanged();
-                }
-                if (syncStateChanged) {
-                    fireSeenChanged(seen, wasSeen());
-                }
-            }
-        }
-    }
-
     private void ensureConfigurationUptodate () {
         BugzillaConfiguration conf = getRepository().getConfiguration();
-        TaskDataState taskDataState = null;
+        NetBeansTaskDataState taskDataState = null;
         try {
             taskDataState = MylynSupport.getInstance().getTaskDataState(task);
         } catch (CoreException ex) {
@@ -638,7 +585,6 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         boolean needsRefresh = false;
         if (taskDataState != null && !isNew()) {
             for (TaskData taskData : new TaskData[] { 
-                taskDataState.getEditsData(),
                 taskDataState.getLastReadData(),
                 taskDataState.getLocalData(),
                 taskDataState.getRepositoryData()
@@ -697,7 +643,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         }
         try {
             MylynSupport mylynSupp = MylynSupport.getInstance();
-            TaskDataState taskDataState = mylynSupp.getTaskDataState(task);
+            NetBeansTaskDataState taskDataState = mylynSupp.getTaskDataState(task);
             if (taskDataState != null) {
                 td = taskDataState.getRepositoryData();
                 repositoryDataRef = new SoftReference<TaskData>(td);
@@ -1349,7 +1295,7 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
         } else if (syncState == ITask.SynchronizationState.INCOMING
                 || syncState == ITask.SynchronizationState.CONFLICT) {
             try {
-                TaskDataState taskDataState = MylynSupport.getInstance().getTaskDataState(task);
+                NetBeansTaskDataState taskDataState = MylynSupport.getInstance().getTaskDataState(task);
                 TaskData repositoryData = taskDataState.getRepositoryData();
                 TaskData lastReadData = taskDataState.getLastReadData();
                 List<IssueField> changedFields = new ArrayList<IssueField>();
@@ -1795,6 +1741,61 @@ public class BugzillaIssue implements ITaskDataManagerListener, ITaskListChangeL
             }
             return file;
         }
+    }
+    
+    private class TaskDataListenerImpl implements TaskDataListener {
+        
+        @Override
+        public void taskDataUpdated (TaskDataEvent event) {
+            if (event.getTask() == task) {
+                if (event.getTaskData() != null && !event.getTaskData().isPartial()) {
+                    repositoryDataRef = new SoftReference<TaskData>(event.getTaskData());
+                }
+                if (event.getTaskDataUpdated()) {
+                    availableOperations = null;
+                    ensureConfigurationUptodate();
+                    TaskDataModel m = model;
+                    if (m != null) {
+                        try {
+                            m.refresh(null);
+                        } catch (CoreException ex) {
+                            Bugzilla.LOG.log(Level.INFO, null, ex);
+                        }
+                    }
+                    Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (node != null) {
+                                node.fireDataChanged();
+                            }
+                            fireDataChanged();
+                            refreshViewData(false);
+                        }
+                    });
+                }
+            }
+        }
+    }
+    
+    private class TaskListenerImpl implements TaskListener {
+
+        @Override
+        public void taskModified (TaskEvent event) {
+            if (event.getTask() == task && event.getKind() == Kind.MODIFIED) {
+                boolean syncStateChanged = syncState != task.getSynchronizationState();
+                boolean seen = wasSeen();
+                if (syncStateChanged) {
+                    syncState = task.getSynchronizationState();
+                }
+                if (updateRecentChanges()) {
+                    fireDataChanged();
+                }
+                if (syncStateChanged) {
+                    fireSeenChanged(seen, wasSeen());
+                }
+            }
+        }
+        
     }
 
 }

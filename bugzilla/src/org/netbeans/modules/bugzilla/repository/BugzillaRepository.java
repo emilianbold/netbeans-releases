@@ -250,11 +250,7 @@ public class BugzillaRepository {
                 : "Only new local tasks can be deleted: " + task.getSynchronizationState();
         if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
             String id = BugzillaIssue.getID(task);
-            try {
-                MylynSupport.getInstance().deleteTask(task);
-            } catch (CoreException ex) {
-                Bugzilla.LOG.log(Level.INFO, null, ex);
-            }
+            MylynSupport.getInstance().deleteTask(task);
             getCache().removeIssue(id);
         }
     }

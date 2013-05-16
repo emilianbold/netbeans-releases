@@ -105,7 +105,7 @@ public final class UnsubmittedTasksContainer {
             taskList.run(new ITaskListRunnable() {
                 @Override
                 public void execute (IProgressMonitor monitor) throws CoreException {
-                    supp.addTaskListListener(list = new TaskListListener());
+                    taskList.addChangeListener(list = new TaskListListener());
                     tasks.addAll(taskList.getUnsubmittedContainer(repository.getRepositoryUrl()).getChildren());
                     for (ITask task : supp.getTasks(repository)) {
                         if (isOutgoing(task)) {
