@@ -172,10 +172,14 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
         TaskNode[] taskNodes = new TaskNode[selectedNodes.size()];
         boolean justTasks = true;
+        boolean containsNewTask = false;
         for (int i = 0; i < selectedNodes.size(); i++) {
             TreeListNode treeListNode = selectedNodes.get(i);
             if (treeListNode instanceof TaskNode) {
                 taskNodes[i] = (TaskNode) treeListNode;
+                if (!containsNewTask &&((TaskNode) treeListNode).getTask().isNew()) {
+                    containsNewTask = true;
+                }
             } else {
                 justTasks = false;
                 break;
@@ -186,7 +190,13 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
             actions.addAll(Actions.getTaskPopupActions(taskNodes));
         }
         actions.addAll(Actions.getSubmitablePopupActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
-        actions.addAll(Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()])));
+        List<Action> defaultActions = Actions.getDefaultActions(selectedNodes.toArray(new TreeListNode[selectedNodes.size()]));
+        if (containsNewTask) {
+            for (Action action : defaultActions) {
+                action.setEnabled(false);
+            }
+        }
+        actions.addAll(defaultActions);
         return actions.toArray(new Action[actions.size()]);
     }
 
