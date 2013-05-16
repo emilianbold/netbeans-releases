@@ -96,7 +96,7 @@ public class TraitDeclarationInfo extends ASTNodeInfo<TraitDeclaration>  {
     }
 
     private static class UsedTraitsVisitor extends DefaultVisitor {
-        private List<UseTraitStatementPart> useParts = new LinkedList<UseTraitStatementPart>();
+        private List<UseTraitStatementPart> useParts = new LinkedList<>();
 
         @Override
         public void visit(UseTraitStatement node) {
@@ -104,7 +104,7 @@ public class TraitDeclarationInfo extends ASTNodeInfo<TraitDeclaration>  {
         }
 
         public Collection<QualifiedName> getUsedTraits() {
-            Collection<QualifiedName> retval = new HashSet<QualifiedName>();
+            Collection<QualifiedName> retval = new HashSet<>();
             for (UseTraitStatementPart useTraitStatementPart : useParts) {
                 retval.add(QualifiedName.create(useTraitStatementPart.getName()));
             }

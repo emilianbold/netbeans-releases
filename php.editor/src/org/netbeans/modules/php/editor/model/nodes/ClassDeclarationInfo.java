@@ -55,7 +55,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
-import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 
@@ -109,7 +108,7 @@ public class ClassDeclarationInfo extends ASTNodeInfo<ClassDeclaration> {
     }
 
     public Set<QualifiedName> getInterfaceNames() {
-        final Set<QualifiedName> retval = new HashSet<QualifiedName>();
+        final Set<QualifiedName> retval = new HashSet<>();
         final List<Expression> interfaes = getOriginalNode().getInterfaes();
         for (Expression iface : interfaes) {
             QualifiedName ifaceName = QualifiedName.create(iface);
@@ -138,7 +137,7 @@ public class ClassDeclarationInfo extends ASTNodeInfo<ClassDeclaration> {
     }
 
     private static class UsedTraitsVisitor extends DefaultVisitor {
-        private List<UseTraitStatementPart> useParts = new LinkedList<UseTraitStatementPart>();
+        private List<UseTraitStatementPart> useParts = new LinkedList<>();
 
         @Override
         public void visit(UseTraitStatementPart node) {
@@ -146,7 +145,7 @@ public class ClassDeclarationInfo extends ASTNodeInfo<ClassDeclaration> {
         }
 
         public Collection<QualifiedName> getUsedTraits() {
-            Collection<QualifiedName> retval = new HashSet<QualifiedName>();
+            Collection<QualifiedName> retval = new HashSet<>();
             for (UseTraitStatementPart useTraitStatementPart : useParts) {
                 retval.add(QualifiedName.create(useTraitStatementPart.getName()));
             }

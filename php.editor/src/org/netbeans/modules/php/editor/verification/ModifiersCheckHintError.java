@@ -43,7 +43,7 @@ package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
@@ -151,7 +151,7 @@ public class ModifiersCheckHintError extends HintErrorRule {
         PhpModifiers phpModifiers = methodScope.getPhpModifiers();
         List<HintFix> fixes;
         if (phpModifiers.isAbstract() && phpModifiers.isFinal()) {
-            fixes = new LinkedList<HintFix>();
+            fixes = new ArrayList<>();
             fixes.add(new RemoveModifierFix(doc, "abstract", methodScope.getOffset())); //NOI18N
             fixes.add(new RemoveModifierFix(doc, "final", methodScope.getOffset())); //NOI18N
             hints.add(new SimpleHint(Bundle.AbstractFinalMethod(methodScope.getName()), methodScope.getNameRange(), fixes));

@@ -82,7 +82,7 @@ public final class NavUtils {
         }
         try {
             new DefaultVisitor() {
-                private Stack<ASTNode> s = new Stack<ASTNode>();
+                private Stack<ASTNode> s = new Stack<>();
                 @Override
                 public void scan(ASTNode node) {
                     if (node == null) {
@@ -97,7 +97,7 @@ public final class NavUtils {
                 }
             }.scan(Utils.getRoot(info));
         } catch (Result r) {
-            return new LinkedList<ASTNode>(r.result);
+            return new LinkedList<>(r.result);
         }
 
         return Collections.emptyList();

@@ -116,7 +116,7 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
         Parameters.notNull("node", node);
         Parameters.notNull("fileQuery", fileQuery);
         final List<? extends ConstantDeclarationInfo> constants = ConstantDeclarationInfo.create(node);
-        final Set<ConstantElement> retval = new HashSet<ConstantElement>();
+        final Set<ConstantElement> retval = new HashSet<>();
         for (ConstantDeclarationInfo info : constants) {
             final QualifiedName fullyQualifiedName = namespace != null
                     ? namespace.getFullyQualifiedName() : QualifiedName.createForDefaultNamespaceName();

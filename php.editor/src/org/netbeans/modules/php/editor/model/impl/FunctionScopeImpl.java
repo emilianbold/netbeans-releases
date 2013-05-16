@@ -136,7 +136,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         if (!StringUtils.hasText(returnType)) {
             returnType = type;
         } else {
-            Set<String> distinctTypes = new HashSet<String>();
+            Set<String> distinctTypes = new HashSet<>();
             distinctTypes.addAll(Arrays.asList(returnType.split(TYPE_SEPARATOR_REGEXP)));
             distinctTypes.add(type);
             returnType = StringUtils.implode(distinctTypes, TYPE_SEPARATOR);
@@ -157,7 +157,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         Collection<String> retval = Collections.<String>emptyList();
         String type = getReturnType();
         if (type != null && type.length() > 0) {
-            retval = new ArrayList<String>();
+            retval = new ArrayList<>();
             for (String typeName : type.split(TYPE_SEPARATOR_REGEXP)) {
                 if (!VariousUtils.isSemiType(typeName)) {
                     retval.add(typeName);
@@ -176,7 +176,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
         return result;
     }
 
-    private static Set<String> recursionDetection = new HashSet<String>(); //#168868
+    private static Set<String> recursionDetection = new HashSet<>(); //#168868
 
     private ReturnTypesDescriptor getReturnTypesDescriptor(String types, boolean resolveSemiTypes) {
         ReturnTypesDescriptor result = ReturnTypesDescriptor.NONE;
@@ -187,7 +187,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
             } else if (getInScope() instanceof ClassScope && containsSelfDependentType(typeNames)) {
                 result = new CommonTypesDescriptor(Collections.singleton((TypeScope) getInScope()));
             } else {
-                Collection<TypeScope> retval = new HashSet<TypeScope>();
+                Collection<TypeScope> retval = new HashSet<>();
                 for (String typeName : typeNames) {
                     if (typeName.trim().length() > 0) {
                         boolean added = false;
@@ -280,7 +280,7 @@ class FunctionScopeImpl extends ScopeImpl implements FunctionScope, VariableName
     @Override
     public List<? extends String> getParameterNames() {
         assert paremeters != null;
-        List<String> parameterNames = new ArrayList<String>();
+        List<String> parameterNames = new ArrayList<>();
         for (ParameterElement parameter : paremeters) {
             parameterNames.add(parameter.getName());
         }

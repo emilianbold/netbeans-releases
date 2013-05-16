@@ -131,16 +131,16 @@ public class FormatVisitor extends DefaultVisitor {
     public FormatVisitor(BaseDocument document, final int caretOffset, final int startOffset, final int endOffset) {
         this.document = document;
         ts = LexUtilities.getPHPTokenSequence(document, 0);
-        path = new LinkedList<ASTNode>();
+        path = new LinkedList<>();
         options = new DocumentOptions(document);
         includeWSBeforePHPDoc = true;
-        formatTokens = new ArrayList<FormatToken>(ts == null ? 1 : ts.tokenCount() * 2);
+        formatTokens = new ArrayList<>(ts == null ? 1 : ts.tokenCount() * 2);
         this.caretOffset = caretOffset;
         this.startOffset = startOffset;
         this.endOffset = endOffset;
         formatTokens.add(new FormatToken.InitToken());
         isMethodInvocationShifted = false;
-        groupAlignmentTokenHolders = new Stack<GroupAlignmentTokenHolder>();
+        groupAlignmentTokenHolders = new Stack<>();
     }
 
     public List<FormatToken> getFormatTokens() {
@@ -154,7 +154,7 @@ public class FormatVisitor extends DefaultVisitor {
         }
 
         // find comment before the node.
-        List<FormatToken> beforeTokens = new ArrayList<FormatToken>(30);
+        List<FormatToken> beforeTokens = new ArrayList<>(30);
         int indexBeforeLastComment = -1;  // remember last comment
         while (moveNext() && ts.offset() < node.getStartOffset()
                 && lastIndex < ts.index()
@@ -944,7 +944,7 @@ public class FormatVisitor extends DefaultVisitor {
             }
             processArguments(parameters);
             if (addIndentation) {
-                List<FormatToken> removed = new ArrayList<FormatToken>();
+                List<FormatToken> removed = new ArrayList<>();
                 FormatToken ftoken = formatTokens.get(formatTokens.size() - 1);
                 while (ftoken.getId() == FormatToken.Kind.UNBREAKABLE_SEQUENCE_END
                         || (ftoken.isWhitespace() && ftoken.getId() != FormatToken.Kind.WHITESPACE_INDENT)
@@ -1585,16 +1585,21 @@ public class FormatVisitor extends DefaultVisitor {
                 break;
             case PHP_OPERATOR:
                 text = ts.token().text().toString();
-                if ("=>".equals(text)) {
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_KEY_VALUE_OP, ts.offset()));
-                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_KEY_VALUE_OP, ts.offset() + ts.token().length()));
-                } else if ("++".equals(text) || "--".equals(text)) {
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset()));
-                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
-                    tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
-                } else {
-                    tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                switch (text) {
+                    case "=>": //NOI18N
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_KEY_VALUE_OP, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_KEY_VALUE_OP, ts.offset() + ts.token().length()));
+                        break;
+                    case "++": //NOI18N
+                    case "--": //NOI18N
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset()));
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
+                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
+                        break;
+                    default:
+                        tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                        break;
                 }
                 break;
             case PHP_WHILE:
@@ -1653,7 +1658,7 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     private List<FormatToken> resolveWhitespaceTokens() {
-        final List<FormatToken> result = new LinkedList<FormatToken>();
+        final List<FormatToken> result = new LinkedList<>();
         int countNewLines = countOfNewLines(ts.token().text());
         if (countNewLines > 1) {
             // reset group alignment, if there is an empty line

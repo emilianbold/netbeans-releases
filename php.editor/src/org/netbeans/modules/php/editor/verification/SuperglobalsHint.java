@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
@@ -182,7 +182,7 @@ public abstract class SuperglobalsHint extends HintRule {
         private final SuperglobalsHint superglobalsHint;
         private final FileObject fileObject;
         private final BaseDocument baseDocument;
-        private final LinkedList<Hint> hints;
+        private final List<Hint> hints;
 
         private CheckVisitor(SuperglobalsHint superglobalsHint, FileObject fileObject, BaseDocument baseDocument) {
             assert superglobalsHint != null;
@@ -190,7 +190,7 @@ public abstract class SuperglobalsHint extends HintRule {
             this.superglobalsHint = superglobalsHint;
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
-            this.hints = new LinkedList<Hint>();
+            this.hints = new ArrayList<>();
         }
 
         public List<Hint> getHints() {
@@ -226,7 +226,7 @@ public abstract class SuperglobalsHint extends HintRule {
     }
 
     private static final class AccessValidator {
-        private static final Collection<String> VALIDATOR_FUNCTIONS = new LinkedList<String>();
+        private static final Collection<String> VALIDATOR_FUNCTIONS = new ArrayList<>();
         static {
             VALIDATOR_FUNCTIONS.add("is_integer"); //NOI18N
             VALIDATOR_FUNCTIONS.add("is_long"); //NOI18N
@@ -241,7 +241,7 @@ public abstract class SuperglobalsHint extends HintRule {
             VALIDATOR_FUNCTIONS.add("is_infinite"); //NOI18N
         }
 
-        private static final Collection<String> FILTER_FUNCTIONS = new LinkedList<String>();
+        private static final Collection<String> FILTER_FUNCTIONS = new ArrayList<>();
         static {
             FILTER_FUNCTIONS.add("htmlspecialchars"); //NOI18N
         }

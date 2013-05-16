@@ -375,7 +375,7 @@ public final class FmtOptions {
             {ALIASES_CAPITALS_OF_NAMESPACES, FALSE}
         };
 
-        defaults = new HashMap<String, String>();
+        defaults = new HashMap<>();
 
         for (java.lang.String[] strings : defaultValues) {
             defaults.put(strings[0], strings[1]);
@@ -411,7 +411,7 @@ public final class FmtOptions {
         private final String previewText;
         private final String id;
         protected final JPanel panel;
-        private final List<JComponent> components = new LinkedList<JComponent>();
+        private final List<JComponent> components = new LinkedList<>();
         private JEditorPane previewPane;
         private final Preferences preferences;
         private final Preferences previewPrefs;
@@ -571,7 +571,7 @@ public final class FmtOptions {
             public PreferencesCustomizer create(Preferences preferences) {
                 try {
                     return new CategorySupport(preferences, id, panelClass.newInstance(), previewText, forcedOptions);
-                } catch (Exception e) {
+                } catch (InstantiationException | IllegalAccessException e) {
                     LOGGER.log(Level.WARNING, "Exception during creating formatter customiezer", e);
                     return null;
                 }
@@ -762,7 +762,7 @@ public final class FmtOptions {
 
     public static class PreviewPreferences extends AbstractPreferences {
 
-        private Map<String, Object> map = new HashMap<String, Object>();
+        private Map<String, Object> map = new HashMap<>();
 
         public PreviewPreferences() {
             super(null, ""); // NOI18N
@@ -853,7 +853,7 @@ public final class FmtOptions {
 
         @Override
         protected String[] keysSpi() throws BackingStoreException {
-            Set<String> keys = new HashSet<String>();
+            Set<String> keys = new HashSet<>();
             for (Preferences p : delegates) {
                 keys.addAll(Arrays.asList(p.keys()));
             }

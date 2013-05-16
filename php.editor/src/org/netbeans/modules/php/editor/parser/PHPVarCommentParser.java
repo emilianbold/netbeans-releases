@@ -73,7 +73,7 @@ public class PHPVarCommentParser {
                 //counting types
                 String[] types = parts[2].split("[|]"); //NOI18N
                 int typePosition = startOffset + comment.indexOf(parts[2]);
-                ArrayList<PHPDocTypeNode> typeNodes = new ArrayList<PHPDocTypeNode>();
+                ArrayList<PHPDocTypeNode> typeNodes = new ArrayList<>();
                 for (String type: types) {
                     startDocNode = typePosition + parts[2].indexOf(type);
                     index = type.indexOf("::"); //NOI18N

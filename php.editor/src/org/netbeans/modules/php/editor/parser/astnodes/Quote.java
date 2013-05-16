@@ -64,7 +64,7 @@ public class Quote extends Expression {
         HEREDOC
     }
 
-    private final ArrayList<Expression> expressions = new ArrayList<Expression>();
+    private final ArrayList<Expression> expressions = new ArrayList<>();
     private Quote.Type quoteType;
 
     public Quote(int start, int end, Expression[] expressions, Quote.Type type) {

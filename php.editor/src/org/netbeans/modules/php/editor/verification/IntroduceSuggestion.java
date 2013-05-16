@@ -338,8 +338,7 @@ public class IntroduceSuggestion extends SuggestionRule {
             ClassElement retval = null;
             ElementQuery.Index index = model.getIndexScope().getIndex();
             Collection<ClassElement> classes = Collections.emptyList();
-            if ("self".equals(name) || "parent".equals(name)) {
-                //NOI18N
+            if ("self".equals(name) || "parent".equals(name)) { //NOI18N
                 ClassDeclaration classDeclaration = null;
                 for (ASTNode aSTNode : getPath()) {
                     if (aSTNode instanceof ClassDeclaration) {
@@ -725,7 +724,7 @@ public class IntroduceSuggestion extends SuggestionRule {
 
     private static int getOffset(BaseDocument doc, TypeScope typeScope, PhpElementKind kind) throws BadLocationException {
         int offset = -1;
-        Collection<ModelElement> elements = new HashSet<ModelElement>();
+        Collection<ModelElement> elements = new HashSet<>();
         elements.addAll(typeScope.getDeclaredConstants());
         switch (kind) {
             case METHOD:

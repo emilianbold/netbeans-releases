@@ -99,9 +99,8 @@ public final class FileElementQuery extends AbstractElementQuery implements Elem
     private final FileObject fileObject;
     private final PHPParseResult result;
     private final URL url;
-    private final Map<PhpElement, Map<String, VariableElement>> varMap =
-            new HashMap<PhpElement, Map<String, VariableElement>>();
-    private final Set<FieldElement> fields = new HashSet<FieldElement>();
+    private final Map<PhpElement, Map<String, VariableElement>> varMap = new HashMap<>();
+    private final Set<FieldElement> fields = new HashSet<>();
 
     private FileElementQuery(final PHPParseResult result) {
         super(QueryScope.FILE_SCOPE);
@@ -190,7 +189,7 @@ public final class FileElementQuery extends AbstractElementQuery implements Elem
     public FieldElement create(final TypeElement type, final FieldAccess node) {
         Parameters.notNull("type", type); //NOI18N
         Parameters.notNull("node", node); //NOI18N
-        final Set<TypeResolver> resolvers = new HashSet<TypeResolver>();
+        final Set<TypeResolver> resolvers = new HashSet<>();
         resolvers.add(new VariableTypeResolver(node));
         VariableBase dispatcher = node.getDispatcher();
         final MethodElement method = getLast(MethodElement.class);
@@ -210,7 +209,7 @@ public final class FileElementQuery extends AbstractElementQuery implements Elem
 
     public VariableElement createTopLevelVariable(final Variable node) {
         Parameters.notNull("node", node); //NOI18N
-        final Set<TypeResolver> resolvers = new HashSet<TypeResolver>();
+        final Set<TypeResolver> resolvers = new HashSet<>();
         resolvers.add(new VariableTypeResolver(node));
         return addTopLevelVariable(VariableElementImpl.fromNode(node, resolvers, this));
     }
@@ -218,7 +217,7 @@ public final class FileElementQuery extends AbstractElementQuery implements Elem
     public VariableElement createMethodVariable(final MethodElement method, final Variable node) {
         Parameters.notNull("method", method); //NOI18N
         Parameters.notNull("node", node); //NOI18N
-        final Set<TypeResolver> resolvers = new HashSet<TypeResolver>();
+        final Set<TypeResolver> resolvers = new HashSet<>();
         resolvers.add(new VariableTypeResolver(node));
         return addMethodVariable(method, VariableElementImpl.fromNode(node, resolvers, this));
     }
@@ -226,7 +225,7 @@ public final class FileElementQuery extends AbstractElementQuery implements Elem
     public VariableElement createFunctionVariable(final FunctionElement function, final Variable node) {
         Parameters.notNull("method", function); //NOI18N
         Parameters.notNull("node", node); //NOI18N
-        final Set<TypeResolver> resolvers = new HashSet<TypeResolver>();
+        final Set<TypeResolver> resolvers = new HashSet<>();
         resolvers.add(new VariableTypeResolver(node));
         return addFunctionVariable(function, VariableElementImpl.fromNode(node, resolvers, this));
     }
@@ -279,7 +278,7 @@ public final class FileElementQuery extends AbstractElementQuery implements Elem
     private synchronized VariableElement addVariable(final PhpElement scope, final VariableElement variable) {
         Map<String, VariableElement> map = varMap.get(scope);
         if (map == null) {
-            map = new HashMap<String, VariableElement>();
+            map = new HashMap<>();
         }
         VariableElement old = map.put(variable.getName(), variable);
         if (old != null) {

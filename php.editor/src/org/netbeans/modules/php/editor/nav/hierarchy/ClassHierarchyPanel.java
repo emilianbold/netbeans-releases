@@ -376,8 +376,8 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
     protected TreeNode createRoot(final Model model, final boolean subDirection) {
         final FileRootNode retval = new FileRootNode(model);
         FileScope fileScope = model.getFileScope();
-        Set<TypeElement> types = new HashSet<TypeElement>();
-        Set<TypeElement> recursionDetection = new HashSet<TypeElement>();
+        Set<TypeElement> types = new HashSet<>();
+        Set<TypeElement> recursionDetection = new HashSet<>();
         types.addAll(ModelUtils.getDeclaredClasses(fileScope));
         types.addAll(ModelUtils.getDeclaredInterfaces(fileScope));
         TypeNode[] childernNodes = new TypeNode[types.size()];
@@ -403,7 +403,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         stackDepth++;
         final TypeNode retval = new TypeNode(parent, classElement);
         final Set<TreeElement<TypeElement>> children = classElement.children();
-        ArrayList<TypeNode> childernList = new ArrayList<TypeNode>();
+        ArrayList<TypeNode> childernList = new ArrayList<>();
         if (stackDepth <= MAX_STACK_DEPTH) {
             for (TreeElement<TypeElement> child : children) {
                 if (recursionDetection.add(child.getElement())) {
@@ -463,7 +463,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
             this.parent = parent;
             TypeElement type = classElement.getElement();
             this.name = type.getName();
-            this.superTypes = new ArrayList<String>();
+            this.superTypes = new ArrayList<>();
             this.fileObject = type.getFileObject();
             this.offset = type.getOffset();
             this.isClass = type.isClass();

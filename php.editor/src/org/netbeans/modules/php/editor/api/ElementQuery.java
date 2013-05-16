@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.editor.api;
 
 import java.net.URL;
-import java.util.LinkedHashSet;
 import java.util.Set;
 import org.netbeans.modules.php.editor.api.elements.AliasedElement;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;

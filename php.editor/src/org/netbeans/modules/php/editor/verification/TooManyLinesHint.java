@@ -423,7 +423,7 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
             this.linesHint = linesHint;
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
-            this.hints = new ArrayList<Hint>();
+            this.hints = new ArrayList<>();
         }
 
         protected int countLines(Block block) {

@@ -82,7 +82,7 @@ public final class FindUsageSupport {
 
     private FindUsageSupport(ElementQuery.Index index, ModelElement element) {
         this.element = element;
-        this.files = new LinkedHashSet<FileObject>();
+        this.files = new LinkedHashSet<>();
         this.index = index;
     }
 
@@ -90,7 +90,7 @@ public final class FindUsageSupport {
         if (element instanceof MethodElement) {
             MethodElement method = (MethodElement) element;
             TypeElement type = method.getType();
-            HashSet inheritedByMethods = new HashSet<MethodElement>();
+            HashSet inheritedByMethods = new HashSet<>();
             for (TypeElement nextType : index.getInheritedByTypes(type)) {
                 inheritedByMethods.addAll(index.getDeclaredMethods(nextType));
             }
@@ -98,7 +98,7 @@ public final class FindUsageSupport {
         } else if (element instanceof MethodScope) {
             MethodScope method = (MethodScope) element;
             TypeScope type = (TypeScope) method.getInScope();
-            HashSet inheritedByMethods = new HashSet<MethodElement>();
+            HashSet inheritedByMethods = new HashSet<>();
             for (TypeElement nextType : index.getInheritedByTypes(type)) {
                 inheritedByMethods.addAll(index.getDeclaredMethods(nextType));
             }
@@ -124,7 +124,7 @@ public final class FindUsageSupport {
 
     @CheckForNull
     public Collection<Occurence> occurences(FileObject fileObject) {
-        final Set<Occurence> retval = new TreeSet<Occurence>(new Comparator<Occurence>() {
+        final Set<Occurence> retval = new TreeSet<>(new Comparator<Occurence>() {
 
             @Override
             public int compare(Occurence o1, Occurence o2) {

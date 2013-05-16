@@ -195,7 +195,7 @@ public class MarkOccurencesPanel extends javax.swing.JPanel {
     // End of variables declaration
 
     private void fillBoxes() {
-        boxes = new ArrayList<JCheckBox>();
+        boxes = new ArrayList<>();
         boxes.add(onOffCheckBox);
         boxes.add(keepMarksCheckBox);
         onOffCheckBox.setActionCommand(MarkOccurencesSettings.ON_OFF);

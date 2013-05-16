@@ -131,7 +131,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 public class DefaultTreePathVisitor extends DefaultVisitor {
 
     // @GuardedBy(path)
-    private final List<ASTNode> path = new LinkedList<ASTNode>();
+    private final List<ASTNode> path = new LinkedList<>();
 
     /**
      * Reversed order.
@@ -140,7 +140,7 @@ public class DefaultTreePathVisitor extends DefaultVisitor {
      */
     public List<ASTNode> getPath() {
         synchronized (path) {
-            return new LinkedList<ASTNode>(path);
+            return new LinkedList<>(path);
         }
     }
 

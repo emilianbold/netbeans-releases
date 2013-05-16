@@ -242,7 +242,7 @@ public abstract class ElementFilter {
     }
 
     public static ElementFilter forSuperInterfaceNames(final Set<QualifiedName> supeIfaceNameQueries) {
-        final Set<ElementFilter> filters = new HashSet<ElementFilter>();
+        final Set<ElementFilter> filters = new HashSet<>();
         for (final QualifiedName qualifiedName : supeIfaceNameQueries) {
             filters.add(forSuperInterfaceName(qualifiedName));
         }
@@ -269,7 +269,7 @@ public abstract class ElementFilter {
     }
 
     public static ElementFilter forTypesFromNamespaces(final Set<QualifiedName> namespaces) {
-        Set<ElementFilter> filters = new HashSet<ElementFilter>();
+        Set<ElementFilter> filters = new HashSet<>();
         for (QualifiedName ns : namespaces) {
             filters.add(ElementFilter.forTypesFromNamespace(ns));
         }
@@ -300,7 +300,7 @@ public abstract class ElementFilter {
     }
 
     public static ElementFilter forMembersOfTypes(final Set<TypeElement> typeElements) {
-        List<ElementFilter> filters = new ArrayList<ElementFilter>();
+        List<ElementFilter> filters = new ArrayList<>();
         for (TypeElement typeElement : typeElements) {
             filters.add(ElementFilter.forMembersOfType(typeElement));
         }
@@ -466,7 +466,7 @@ public abstract class ElementFilter {
         return filter(Collections.<T>singleton(original));
     }
     public <T extends PhpElement> Set<T> filter(Set<T> original) {
-        Set<T> retval = new HashSet<T>();
+        Set<T> retval = new HashSet<>();
         for (T baseElement : original) {
             if (isAccepted(baseElement)) {
                 retval.add(baseElement);
@@ -475,7 +475,7 @@ public abstract class ElementFilter {
         return Collections.unmodifiableSet(retval);
     }
     public <T extends PhpElement> Set<T> reverseFilter(Set<T> original) {
-        Set<T> retval = new HashSet<T>();
+        Set<T> retval = new HashSet<>();
         for (T baseElement : original) {
             if (!isAccepted(baseElement)) {
                 retval.add(baseElement);
@@ -487,12 +487,12 @@ public abstract class ElementFilter {
     //slow impl.
     public <T extends PhpElement> Set<T> prefer(Set<T> original) {
         Set<T> retval = original;
-        Set<T> notAccepted = new HashSet<T>();
-        Map<T, ElementFilter>  accepted = new HashMap<T, ElementFilter>();
+        Set<T> notAccepted = new HashSet<>();
+        Map<T, ElementFilter>  accepted = new HashMap<>();
 
         for (T baseElement : original) {
             if (isAccepted(baseElement)) {
-                List<ElementFilter> filters = new ArrayList<ElementFilter>();
+                List<ElementFilter> filters = new ArrayList<>();
                 if (baseElement instanceof FullyQualifiedElement) {
                     FullyQualifiedElement fqnElement = (FullyQualifiedElement) baseElement;
                     filters.add(ElementFilter.forName(NameKind.exact(fqnElement.getFullyQualifiedName())));
@@ -509,7 +509,7 @@ public abstract class ElementFilter {
             }
         }
         if (accepted.size() > 0 && notAccepted.size() > 0) {
-            retval = new HashSet<T>(original);
+            retval = new HashSet<>(original);
             for (Entry<T, ElementFilter> entry : accepted.entrySet()) {
                 ElementFilter filter = entry.getValue();
                 retval.removeAll(filter.filter(notAccepted));
@@ -520,7 +520,7 @@ public abstract class ElementFilter {
     }
 
     private static Set<String> toNames(Collection<? extends PhpElement> elements) {
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
         for (PhpElement elem : elements) {
             names.add(elem.getName());
         }
