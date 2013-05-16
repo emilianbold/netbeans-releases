@@ -58,6 +58,7 @@ import javax.swing.JSeparator;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.builds.MakefileTargetProvider;
 import org.netbeans.modules.cnd.builds.TargetEditor;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -120,7 +121,8 @@ public class MakeTargetAction extends MakeBaseAction implements Presenter.Popup 
                         DataObject dao = activeNode.getLookup().lookup(DataObject.class);
                         if (dao != null) {
                             FileObject fo = dao.getPrimaryFile();
-                            if (fo != null && fo.isValid()) {
+                            // checking mime type, see bug 224915
+                            if (fo != null && fo.isValid() && MIMENames.MAKEFILE_MIME_TYPE.equals(fo.getMIMEType())) {
                                 List<String> targets = new ArrayList<String>(targetProvider.getPreferredTargets());
                                 Collections.sort(targets);
                                 for (String target : targets) {

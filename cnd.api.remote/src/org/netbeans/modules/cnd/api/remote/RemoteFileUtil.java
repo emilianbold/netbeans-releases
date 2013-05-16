@@ -269,47 +269,38 @@ public class RemoteFileUtil {
             String titleText, String buttonText, int mode, FileFilter[] filters,
             String initialPath, boolean useParent) {
 
-        JFileChooser fileChooser;
-        if (execEnv.isLocal()) {
-            fileChooser = new FileChooser(
-                    titleText,
-                    buttonText,
-                    mode,
-                    filters,
-                    initialPath,
-                    useParent);
-        } else {
-            // TODO support useParent or rework it
-            final FileChooserBuilder fileChooserBuilder = new FileChooserBuilder(execEnv).setPreferences(NbPreferences.forModule(RemoteFileUtil.class));
-            fileChooser = fileChooserBuilder.createFileChooser(initialPath);
-            fileChooser.setApproveButtonText(buttonText);
-            fileChooser.setDialogTitle(titleText);
-            fileChooser.setFileSelectionMode(mode);
-            if (filters != null) {
-                for (int i = 0; i < filters.length; i++) {
-                    fileChooser.addChoosableFileFilter(filters[i]);
-                }
-                fileChooser.setFileFilter(filters[0]);
+
+        // TODO support useParent or rework it
+        final FileChooserBuilder fileChooserBuilder = new FileChooserBuilder(execEnv).setPreferences(NbPreferences.forModule(RemoteFileUtil.class));
+        JFileChooserEx fileChooser = fileChooserBuilder.createFileChooser(initialPath);
+        fileChooser.setApproveButtonText(buttonText);
+        fileChooser.setDialogTitle(titleText);
+        fileChooser.setFileSelectionMode(mode);
+        if (filters != null) {
+            for (int i = 0; i < filters.length; i++) {
+                fileChooser.addChoosableFileFilter(filters[i]);
             }
+            fileChooser.setFileFilter(filters[0]);
         }
+        
         return fileChooser;
     }
     public static JFileChooser createProjectChooser(ExecutionEnvironment execEnv,
             String titleText, String description, String buttonText, String initialPath) {
         JFileChooser fileChooser;
-        if (execEnv.isLocal()) {
-            fileChooser = ProjectChooser.projectChooser();
-            fileChooser.getAccessibleContext().setAccessibleDescription(description);
-            fileChooser.setDialogTitle(titleText);
-            fileChooser.setApproveButtonText(buttonText);
-            if (initialPath != null) {
-                fileChooser.setCurrentDirectory(new File(initialPath));
-            }
-        } else {
+//        if (execEnv.isLocal()) {
+//            fileChooser = ProjectChooser.projectChooser();
+//            fileChooser.getAccessibleContext().setAccessibleDescription(description);
+//            fileChooser.setDialogTitle(titleText);
+//            fileChooser.setApproveButtonText(buttonText);
+//            if (initialPath != null) {
+//                fileChooser.setCurrentDirectory(new File(initialPath));
+//            }
+//        } else {
             fileChooser = (JFileChooserEx) createFileChooser(execEnv,
                           titleText, buttonText, JFileChooser.DIRECTORIES_ONLY, null, initialPath, true);
             fileChooser.setFileView(new ProjectSelectionFileView(fileChooser));
-        }
+        //}
         return fileChooser;
         
     }
@@ -357,9 +348,7 @@ public class RemoteFileUtil {
      */
     public static void setCurrentChooserFile(String path, ExecutionEnvironment env) {
         if (env.isLocal()) {
-            if (FileChooser.getCurrentChooserFile() != null) {
-                FileChooser.setCurrentChooserFile(new File(path));
-            }
+            FileChooser.setCurrentChooserFile(new File(path));
         } else {
             Preferences pref = NbPreferences.forModule(RemoteFileUtil.class);
             String envID = ExecutionEnvironmentFactory.toUniqueID(env);

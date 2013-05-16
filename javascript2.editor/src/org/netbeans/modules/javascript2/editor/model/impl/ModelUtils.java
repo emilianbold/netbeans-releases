@@ -712,13 +712,13 @@ public class ModelUtils {
                 }
             }
             for (JsObject jsObject : lastResolvedObjects) {
-//                if (jsObject.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
+                if (jsObject.isDeclared()) {
                     String fqn = jsObject.getFullyQualifiedName();
-                    if(!resultTypes.containsKey(fqn)) {
+                    if (!resultTypes.containsKey(fqn)) {
                         resultTypes.put(fqn, new TypeUsageImpl(fqn, offset));
                     }
-//                }
-             }
+                }
+            }
             return resultTypes.values();
     }
 
