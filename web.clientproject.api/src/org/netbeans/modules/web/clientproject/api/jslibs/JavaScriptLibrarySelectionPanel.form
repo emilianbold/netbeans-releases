@@ -183,9 +183,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="librariesFolderTextField">
-      <Properties>
-        <Property name="text" type="java.lang.String" value="js/libs" noResource="true"/>
-      </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="librariesFolderBrowseButton">
       <Properties>

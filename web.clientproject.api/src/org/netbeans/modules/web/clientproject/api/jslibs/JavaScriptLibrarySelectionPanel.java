@@ -124,6 +124,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     static final Logger LOGGER = Logger.getLogger(JavaScriptLibrarySelectionPanel.class.getName());
 
     private static final Pattern LIBRARIES_FOLDER_PATTERN = Pattern.compile("^[\\w-]+$", Pattern.CASE_INSENSITIVE); // NOI18N
+    private static final String DEFAULT_LIBRARIES_FOLDER = "js/libs"; // NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(JavaScriptLibrarySelectionPanel.class);
 
@@ -290,6 +291,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
             selectedLibraries.add(new SelectedLibrary(lib));
         }
         fireSelectedLibrariesChangeInEDT();
+        adjustLibrariesFolder();
     }
 
     /**
@@ -307,6 +309,46 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     private void checkUiThread() {
         if (!EventQueue.isDispatchThread()) {
             throw new IllegalStateException("Must be run in UI thread");
+        }
+    }
+
+    private void adjustLibrariesFolder() {
+        if (!DEFAULT_LIBRARIES_FOLDER.equals(librariesFolder)) {
+            return;
+        }
+        Map<String, Integer> paths = new HashMap<>();
+        for (SelectedLibrary selectedLibrary : selectedLibraries) {
+            for (String filePath : selectedLibrary.getFilePaths()) {
+                List<String> parts = new ArrayList<>(StringUtilities.explode(filePath, "/")); // NOI18N
+                if (parts.size() < 2) {
+                    continue;
+                }
+                // remove file name
+                parts.remove(parts.size() - 1);
+                String folderPath = StringUtilities.implode(parts, "/"); // NOI18N
+                Integer count = paths.get(folderPath);
+                if (count == null) {
+                    count = 0;
+                }
+                paths.put(folderPath, ++count);
+            }
+        }
+        Map.Entry<String, Integer> bestPath = null;
+        for (Map.Entry<String, Integer> entry : paths.entrySet()) {
+            if (bestPath == null) {
+                bestPath = entry;
+            } else if (bestPath.getValue() < entry.getValue()) {
+                bestPath = entry;
+            }
+        }
+        if (bestPath != null) {
+            final String path = bestPath.getKey();
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    librariesFolderTextField.setText(path);
+                }
+            });
         }
     }
 
@@ -475,6 +517,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
     private void initLibrariesFolder() {
         librariesFolderBrowseButton.setVisible(false);
+        librariesFolderTextField.setText(DEFAULT_LIBRARIES_FOLDER);
         librariesFolder = librariesFolderTextField.getText();
         librariesFolderTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -708,8 +751,6 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
         librariesFolderLabel.setLabelFor(librariesFolderTextField);
         org.openide.awt.Mnemonics.setLocalizedText(librariesFolderLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelectionPanel.class, "JavaScriptLibrarySelectionPanel.librariesFolderLabel.text")); // NOI18N
-
-        librariesFolderTextField.setText("js/libs"); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(librariesFolderBrowseButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelectionPanel.class, "JavaScriptLibrarySelectionPanel.librariesFolderBrowseButton.text")); // NOI18N
         librariesFolderBrowseButton.addActionListener(new java.awt.event.ActionListener() {
