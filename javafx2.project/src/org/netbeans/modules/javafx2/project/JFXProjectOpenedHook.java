@@ -94,7 +94,21 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
 
     @Override
     protected synchronized void projectOpened() {
-        if(isFXProject(eval)) {
+        if(!isFXProject(eval)) {
+            final JFXPlatformUpdater updater = prj.getLookup().lookup(JFXPlatformUpdater.class);            
+            // replace Default_JavaFX_Platform by default Java Platform (since NB7.4)
+            final Runnable runUpdateJFXPlatform = updater != null ? new Runnable() {
+                @Override
+                public void run() {
+                    updater.updateFXPlatform();
+                }
+            } : null;
+            if(runUpdateJFXPlatform != null) {
+                switchBusy();
+                runUpdateJFXPlatform.run();
+                switchDefault();
+            }
+        } else {
             JFXProjectGenerator.logUsage(JFXProjectGenerator.Action.OPEN);
 
             //hotfix for Bug 214819 - Completion list is corrupted after IDE upgrade 
@@ -198,6 +212,15 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
         }
     }
 
+    private boolean isSEKeepJFXRTOnClassPath() {
+        final PropertyEvaluator evaluator = eval.evaluator();
+        if(evaluator != null) {
+            return !JFXProjectProperties.isTrue(evaluator.getProperty(JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH));
+        } else {
+            LOGGER.log(Level.WARNING, "PropertyEvaluator instantiation failed, disabling keep FX RT on classpath."); // NOI18N
+        }
+        return false;
+    }
 
     private boolean isEnabledJFXUpdate() {
         final PropertyEvaluator evaluator = eval.evaluator();

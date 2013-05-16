@@ -89,6 +89,7 @@ import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.modules.javafx2.project.ui.JFXApplicationPanel;
 import org.netbeans.modules.javafx2.project.ui.JFXPackagingPanel;
+import org.netbeans.modules.javafx2.project.ui.JSEDeploymentPanel;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
@@ -199,7 +200,7 @@ public final class JFXProjectProperties {
     // Deployment - native packaging
     public static final String JAVAFX_NATIVE_BUNDLING_ENABLED = "javafx.native.bundling.enabled"; //NOI18N
     public static final String JAVAFX_NATIVE_BUNDLING_TYPE = "javafx.native.bundling.type"; //NOI18N
-    public static final String JAVASE_NATIVE_BUNDLING_ENABLED = "native.bundling.enabled"; //NOI18N
+    //public static final String JAVASE_NATIVE_BUNDLING_ENABLED = "native.bundling.enabled"; //NOI18N
 
     // Deployment - common and SE specific
     public static final String RUN_CP = "run.classpath";    //NOI18N
@@ -250,6 +251,14 @@ public final class JFXProjectProperties {
             applicationPanel = new JFXApplicationPanel(this);
         }
         return applicationPanel;
+    }
+
+    private JSEDeploymentPanel seDeploymentPanel = null;
+    public JSEDeploymentPanel getSEDeploymentPanel() {
+        if(seDeploymentPanel == null) {
+            seDeploymentPanel = new JSEDeploymentPanel(this);
+        }
+        return seDeploymentPanel;
     }
 
     // CustomizerRun
@@ -1274,11 +1283,11 @@ public final class JFXProjectProperties {
         final EditableProperties pep = new EditableProperties(true);
         final FileObject privPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PRIVATE_PROPERTIES_PATH);        
         try {
-            final InputStream is = projPropsFO.getInputStream();
-            final InputStream pis = privPropsFO.getInputStream();
-            ProjectManager.mutex().readAccess(new Mutex.ExceptionAction<Void>() {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 @Override
                 public Void run() throws Exception {
+                    final InputStream is = projPropsFO.getInputStream();
+                    final InputStream pis = privPropsFO.getInputStream();
                     try {
                         ep.load(is);
                     } finally {
@@ -1293,22 +1302,14 @@ public final class JFXProjectProperties {
                             pis.close();
                         }
                     }
-                    return null;
-                }
-            });
-        } catch (MutexException mux) {
-            throw (IOException) mux.getException();
-        }
-        fxPropGroup.store(ep);
-        storeRest(ep, pep);
-        CONFIGS.store(ep, pep);
-        updatePreloaderComment(ep);
-        //JFXProjectUtils.updateClassPathExtensionProperties(ep);
-        logProps(ep);
-        try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                @Override
-                public Void run() throws Exception {
+                    
+                    fxPropGroup.store(ep);
+                    storeRest(ep, pep);
+                    CONFIGS.store(ep, pep);
+                    updatePreloaderComment(ep);
+                    //JFXProjectUtils.updateClassPathExtensionProperties(ep);
+                    logProps(ep);
+
                     OutputStream os = null;
                     FileLock lock = null;
                     try {
@@ -1364,7 +1365,6 @@ public final class JFXProjectProperties {
         } catch (MutexException mux) {
             throw (IOException) mux.getException();
         }
-        setOrRemove(ep, JAVASE_NATIVE_BUNDLING_ENABLED, nativeBundlingEnabled ? "true" : null); //NOI18N
         setOrRemove(ep, JAVASE_KEEP_JFXRT_ON_CLASSPATH, keepJFXRTonCP ? "true" : null); //NOI18N
         //JFXProjectUtils.updateClassPathExtensionProperties(ep);
         try {
@@ -1486,9 +1486,9 @@ public final class JFXProjectProperties {
                     }
                 }
             }
-        } else {
-            String enabled = eval.getProperty(JAVASE_NATIVE_BUNDLING_ENABLED);
-            nativeBundlingEnabled = isTrue(enabled);
+//        } else {
+//            String enabled = eval.getProperty(JAVASE_NATIVE_BUNDLING_ENABLED);
+//            nativeBundlingEnabled = isTrue(enabled);
         }
     }
     

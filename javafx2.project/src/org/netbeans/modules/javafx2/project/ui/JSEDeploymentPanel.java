@@ -50,7 +50,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
-//import org.netbeans.modules.java.api.common.project.ui.customizer.CustomizerProvider3;
+import org.netbeans.modules.java.api.common.project.ui.customizer.CustomizerProvider3;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.DialogDescriptor;
@@ -79,7 +79,6 @@ public class JSEDeploymentPanel extends javax.swing.JPanel {
         //seCustomizer = project.getLookup().lookup(CustomizerProvider3.class);
         initComponents();
         buttonSwitchToJFX.addActionListener( new MainClassListener( project, evaluator ) );
-        checkBoxNativePackaging.setSelected(props.getNativeBundlingEnabled());
         checkBoxKeepJFXRT.setSelected(props.getKeepJFXRTonCP());
     }
 
@@ -93,50 +92,22 @@ public class JSEDeploymentPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        labelNativePackaging = new javax.swing.JLabel();
-        checkBoxNativePackaging = new javax.swing.JCheckBox();
         labelKeepJFXRT = new javax.swing.JLabel();
         checkBoxKeepJFXRT = new javax.swing.JCheckBox();
         labelSwitchToJFX = new javax.swing.JLabel();
         buttonSwitchToJFX = new javax.swing.JButton();
         filler1 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
+        filler2 = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(32767, 0));
 
         setLayout(new java.awt.GridBagLayout());
 
-        labelNativePackaging.setLabelFor(checkBoxNativePackaging);
-        org.openide.awt.Mnemonics.setLocalizedText(labelNativePackaging, org.openide.util.NbBundle.getMessage(JSEDeploymentPanel.class, "JSEDeploymentPanel.labelNativePackaging.text")); // NOI18N
-        labelNativePackaging.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        labelKeepJFXRT.setLabelFor(checkBoxKeepJFXRT);
+        org.openide.awt.Mnemonics.setLocalizedText(labelKeepJFXRT, org.openide.util.NbBundle.getMessage(JSEDeploymentPanel.class, "JSEDeploymentPanel.labelKeepJFXRT.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
-        gridBagConstraints.weightx = 0.1;
-        add(labelNativePackaging, gridBagConstraints);
-
-        org.openide.awt.Mnemonics.setLocalizedText(checkBoxNativePackaging, org.openide.util.NbBundle.getMessage(JSEDeploymentPanel.class, "JSEDeploymentPanel.checkBoxNativePackaging.text")); // NOI18N
-        checkBoxNativePackaging.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                checkBoxNativePackagingActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(7, 15, 0, 0);
-        add(checkBoxNativePackaging, gridBagConstraints);
-        checkBoxNativePackaging.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JSEDeploymentPanel.class, "AN_JSEDeploymentPanel.checkBoxNativePackaging")); // NOI18N
-        checkBoxNativePackaging.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JSEDeploymentPanel.class, "AD_JSEDeploymentPanel.checkBoxNativePackaging")); // NOI18N
-
-        labelKeepJFXRT.setLabelFor(checkBoxKeepJFXRT);
-        org.openide.awt.Mnemonics.setLocalizedText(labelKeepJFXRT, org.openide.util.NbBundle.getMessage(JSEDeploymentPanel.class, "JSEDeploymentPanel.labelKeepJFXRT.text")); // NOI18N
-        labelKeepJFXRT.setVerticalAlignment(javax.swing.SwingConstants.TOP);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(25, 0, 0, 0);
         add(labelKeepJFXRT, gridBagConstraints);
@@ -149,8 +120,8 @@ public class JSEDeploymentPanel extends javax.swing.JPanel {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(7, 15, 0, 0);
         add(checkBoxKeepJFXRT, gridBagConstraints);
         checkBoxKeepJFXRT.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JSEDeploymentPanel.class, "AN_JSEDeploymentPanel.checkBoxKeepJFXRT")); // NOI18N
@@ -160,9 +131,9 @@ public class JSEDeploymentPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(labelSwitchToJFX, org.openide.util.NbBundle.getMessage(JSEDeploymentPanel.class, "JSEDeploymentPanel.labelSwitchToJFX.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(25, 0, 0, 0);
         add(labelSwitchToJFX, gridBagConstraints);
@@ -170,8 +141,8 @@ public class JSEDeploymentPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(buttonSwitchToJFX, org.openide.util.NbBundle.getMessage(JSEDeploymentPanel.class, "JSEDeploymentPanel.buttonSwitchToJFX.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.ABOVE_BASELINE_LEADING;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(8, 15, 0, 0);
         add(buttonSwitchToJFX, gridBagConstraints);
         buttonSwitchToJFX.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JSEDeploymentPanel.class, "AN_JSEDeploymentPanel.buttonSwitchToJFX")); // NOI18N
@@ -179,15 +150,21 @@ public class JSEDeploymentPanel extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        gridBagConstraints.weighty = 0.1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
         add(filler1, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        add(filler2, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
-
-    private void checkBoxNativePackagingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBoxNativePackagingActionPerformed
-        boolean sel = checkBoxNativePackaging.isSelected();
-        props.setNativeBundlingEnabled(sel);
-    }//GEN-LAST:event_checkBoxNativePackagingActionPerformed
 
     private void checkBoxKeepJFXRTActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBoxKeepJFXRTActionPerformed
         boolean sel = checkBoxKeepJFXRT.isSelected();
@@ -197,10 +174,9 @@ public class JSEDeploymentPanel extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonSwitchToJFX;
     private javax.swing.JCheckBox checkBoxKeepJFXRT;
-    private javax.swing.JCheckBox checkBoxNativePackaging;
     private javax.swing.Box.Filler filler1;
+    private javax.swing.Box.Filler filler2;
     private javax.swing.JLabel labelKeepJFXRT;
-    private javax.swing.JLabel labelNativePackaging;
     private javax.swing.JLabel labelSwitchToJFX;
     // End of variables declaration//GEN-END:variables
 
@@ -258,13 +234,12 @@ public class JSEDeploymentPanel extends javax.swing.JPanel {
              Dialog dlg = DialogDisplayer.getDefault ().createDialog (desc);
              dlg.setVisible (true);
              if (desc.getValue() == options[0]) {
-                //textFieldAppClass.setText (panel.getSelectedClass ());
-
-                 // TODO
-//                 if(seCustomizer != null) {
-//                     seCustomizer.closeCustomizer();
-//                 }
-
+                 
+                 CustomizerProvider3 canceller = project.getLookup().lookup(CustomizerProvider3.class);
+                 if(canceller != null) {
+                     canceller.cancelCustomizer();
+                 }
+                 
              } 
              dlg.dispose();
          }

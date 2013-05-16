@@ -35,18 +35,19 @@
  *
  * Portions Copyrighted 2011 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javafx2.project.ui;
+package org.netbeans.modules.java.j2sedeploy.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.java.j2sedeploy.J2SEDeployProperties;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-import org.netbeans.modules.javafx2.project.JFXPlatformUpdater;
-import org.netbeans.modules.javafx2.project.JFXProjectProperties;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Exceptions;
@@ -59,32 +60,41 @@ import org.openide.util.NbBundle;
  * @author Tomas Zezula
  */
 @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-java-j2seproject", category="BuildCategory", position=250)
-public final class JFXDeploymentCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
+public final class JSEDeploymentCategoryProvider implements ProjectCustomizer.CompositeCategoryProvider {
 
     private static final String CAT_DEPLOYMENT = "Deployment"; // NOI18N
     
-    private static final Map<String, JFXProjectProperties> projectProperties = new HashMap<String, JFXProjectProperties>();
-       
+    private static final Map<String, J2SEDeployProperties> projectProperties = new HashMap<String, J2SEDeployProperties>();
+    private WeakReference<JSEDeploymentPanel> panelRef = null;
+
     @Override
     public Category createCategory(Lookup context) {
         boolean deploymentEnabled = true;
         final Project project = context.lookup(Project.class);
         if (project != null) {
             final J2SEPropertyEvaluator j2sepe = project.getLookup().lookup(J2SEPropertyEvaluator.class);
-            String fxEnabled = j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED);
-            String fxPreloader = j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_PRELOADER);
-            deploymentEnabled = JFXProjectProperties.isTrue(fxEnabled) && !JFXProjectProperties.isTrue(fxPreloader); 
+            String fxEnabled = j2sepe.evaluator().getProperty(J2SEDeployProperties.JAVAFX_ENABLED);
+            deploymentEnabled = !J2SEDeployProperties.isTrue(fxEnabled);
         }
         if(deploymentEnabled) {
             ProjectCustomizer.Category c = ProjectCustomizer.Category.create(CAT_DEPLOYMENT,
-                    NbBundle.getMessage(JFXDeploymentCategoryProvider.class, "LBL_Category_Deployment"), null); //NOI18N
+                    NbBundle.getMessage(JSEDeploymentCategoryProvider.class, "LBL_Category_Deployment"), null); //NOI18N
             c.setOkButtonListener(new ActionListener() {
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if(project != null) {
-                        JFXProjectProperties prop = JFXProjectProperties.getInstanceIfExists(project.getLookup());
+                        J2SEDeployProperties prop = J2SEDeployProperties.getInstanceIfExists(project.getLookup());
                         if(prop != null) {
                             projectProperties.put(project.getProjectDirectory().getPath(), prop);
+                        }
+                        if(panelRef != null) {
+                            JSEDeploymentPanel panel = panelRef.get();
+                            if(panel != null) {
+                                List<ActionListener> listeners = panel.getOKListeners();
+                                for(ActionListener listener : listeners) {
+                                    listener.actionPerformed(e);
+                                }
+                            }
                         }
                     }
                 }
@@ -93,7 +103,7 @@ public final class JFXDeploymentCategoryProvider implements ProjectCustomizer.Co
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if(project != null) {
-                        JFXProjectProperties prop = projectProperties.get(project.getProjectDirectory().getPath());
+                        J2SEDeployProperties prop = projectProperties.get(project.getProjectDirectory().getPath());
                         if(prop != null) {
                             try {
                                 prop.store();
@@ -102,6 +112,15 @@ public final class JFXDeploymentCategoryProvider implements ProjectCustomizer.Co
                             }
                         }
                         projectProperties.remove(project.getProjectDirectory().getPath());
+                        if(panelRef != null) {
+                            JSEDeploymentPanel panel = panelRef.get();
+                            if(panel != null) {
+                                List<ActionListener> listeners = panel.getStoreListeners();
+                                for(ActionListener listener : listeners) {
+                                    listener.actionPerformed(e);
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -109,7 +128,16 @@ public final class JFXDeploymentCategoryProvider implements ProjectCustomizer.Co
                 @Override
                 public void actionPerformed(ActionEvent e) {
                     if(project != null) {
-                        JFXProjectProperties.cleanup(project.getLookup());
+                        J2SEDeployProperties.cleanup(project.getLookup());
+                        if(panelRef != null) {
+                            JSEDeploymentPanel panel = panelRef.get();
+                            if(panel != null) {
+                                List<ActionListener> listeners = panel.getCloseListeners();
+                                for(ActionListener listener : listeners) {
+                                    listener.actionPerformed(e);
+                                }
+                            }
+                        }
                     }
                 }
             });
@@ -120,7 +148,10 @@ public final class JFXDeploymentCategoryProvider implements ProjectCustomizer.Co
 
     @Override
     public JComponent createComponent(Category category, Lookup context) {
-        return new JFXDeploymentPanel(JFXProjectProperties.getInstance(context));
+        JSEDeploymentPanel panel = new JSEDeploymentPanel(J2SEDeployProperties.getInstance(context));
+        panelRef = new WeakReference<JSEDeploymentPanel>(panel);
+        return panel;
+        // keep weak ref to panel, extract from it listeners in the above listeners
     }
 
 }
