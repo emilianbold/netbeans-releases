@@ -65,7 +65,7 @@ build_info.USE_HTML_ZIP_LISTING = 1;
 
 build_info.add_download_tabs = function() {
 	add_download_tab("7.3", "http://netbeans.org/downloads/");
-        add_download_tab("7.3.1 Dev");
+        add_download_tab("7.3.1 RC");
 	add_download_tab(DEVELOPMENT_TITLE ,DEVELOPMENT_BUILDS_LINK);
 	add_download_tab(ARCHIVE_TITLE,ARCHIVE_BUILDS_LINK);
 }
