@@ -84,6 +84,32 @@ public class CppLexerBatchTestCase extends TestCase {
         assertFalse("No more tokens", ts.moveNext());
     }
 
+    public void testAloneBackSlashInPP() {
+        doTestAloneBackSlashInPP(true);
+        doTestAloneBackSlashInPP(false);
+    }
+    
+    private void doTestAloneBackSlashInPP(boolean altStartToken) {
+        String startText = altStartToken ? "%:" : "#";
+        String text = startText + "include \"\\\n\n";
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, CppTokenId.languageCpp());
+        TokenSequence<?> ts = hi.tokenSequence();
+        
+        LexerTestUtilities.assertNextTokenEquals(ts, CppTokenId.PREPROCESSOR_DIRECTIVE, startText + "include \"\\\n\n");
+        TokenSequence<?> ep = ts.embedded();
+        if (altStartToken) {
+            LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.PREPROCESSOR_START_ALT, "%:");
+        } else {
+            LexerTestUtilities.assertNextTokenEquals(ep, CppTokenId.PREPROCESSOR_START, "#");
+        }
+        LexerTestUtilities.assertNextTokenEquals(ep, org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_INCLUDE, "include");
+        LexerTestUtilities.assertNextTokenEquals(ep, org.netbeans.cnd.api.lexer.CppTokenId.WHITESPACE, " ");
+        LexerTestUtilities.assertNextTokenEquals(ep, org.netbeans.cnd.api.lexer.CppTokenId.PREPROCESSOR_USER_INCLUDE, "\"\\\n\n");
+
+        assertFalse("No more tokens", ep.moveNext());
+        assertFalse("No more tokens", ts.moveNext());
+    }
+    
     public void testPreprocEmbedding() {
         doTestPreprocEmbedding(true);
         doTestPreprocEmbedding(false);

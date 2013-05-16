@@ -17,7 +17,7 @@ import javax.swing.Action;
  *
  * @author S. Aubrecht
  */
-public abstract class ProjectAccessor<S extends TeamServer, P> {
+public abstract class ProjectAccessor<P> {
 
     /**
      * Retrieve the list of projects the given user is member of.
@@ -26,7 +26,7 @@ public abstract class ProjectAccessor<S extends TeamServer, P> {
      * @return list of member projects or null, if member projects
      * are not accessible
      */
-    public abstract List<ProjectHandle<P>> getMemberProjects(S server, LoginHandle login, boolean forceRefresh );
+    public abstract List<ProjectHandle<P>> getMemberProjects(TeamServer server, LoginHandle login, boolean forceRefresh );
 
     /**
      * Load details for given project.
@@ -34,7 +34,7 @@ public abstract class ProjectAccessor<S extends TeamServer, P> {
      * @param forceRefresh force reload from server
      * @return projectHandle or null, if project handle not accessible
      */
-    public abstract ProjectHandle<P> getNonMemberProject(S server, String projectId, boolean forceRefresh);
+    public abstract ProjectHandle<P> getNonMemberProject(TeamServer server, String projectId, boolean forceRefresh);
 
     /**
      * @return Adds a Team project into given Dashboard window.

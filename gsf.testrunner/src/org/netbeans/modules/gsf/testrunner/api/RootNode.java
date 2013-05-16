@@ -207,6 +207,10 @@ final class RootNode extends AbstractNode {
     float getPassedPercentage() {
         return (float) detectedPassedTests / totalTests * 100;
     }
+    
+    float getSkippedPercentage() {
+        return (float) skipped / totalTests * 100;
+    }
 
     /**
      */

@@ -220,7 +220,7 @@ public class InjectCompositeComponent {
 	    //but since the library has just been created by adding an xhtml file
 	    //to the resources/xxx/ folder we need to wait until the files
 	    //get indexed and the library is created
-	    final String compositeLibURL = LibraryUtils.getCompositeLibraryURL(compFolder);
+	    final String compositeLibURL = LibraryUtils.getCompositeLibraryURL(compFolder, jsfs.isJsf22Plus());
 	    Source documentSource = Source.create(document);
 	    ParserManager.parseWhenScanFinished(Collections.singletonList(documentSource), new UserTask() { //NOI18N
 

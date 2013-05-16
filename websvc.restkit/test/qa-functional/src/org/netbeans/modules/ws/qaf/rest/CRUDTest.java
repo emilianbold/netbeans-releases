@@ -173,7 +173,7 @@ public class CRUDTest extends RestTestBase {
         allFiles.remove(appConfigFile);
         checkFiles(allFiles);
         //make sure all REST services nodes are visible in project log. view
-        assertEquals("missing nodes?", 7, getRestNode().getChildren().length);
+        waitRestNodeChildren(7);
     }
 
     /**
@@ -247,7 +247,7 @@ public class CRUDTest extends RestTestBase {
         }
         checkFiles(files);
         //make sure all REST services nodes are visible in project log. view
-        assertEquals("missing nodes?", 8, getRestNode().getChildren().length); //NOI18N
+        waitRestNodeChildren(8);
     }
 
     public void testCreateRestClient() throws IOException {

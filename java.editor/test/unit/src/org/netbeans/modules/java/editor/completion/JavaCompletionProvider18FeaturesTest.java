@@ -297,6 +297,18 @@ public class JavaCompletionProvider18FeaturesTest extends CompletionTestBase {
         performTest("SimpleLambdaExpression", 272, null, "lambdaBodyContent.pass", "1.8");
     }
     
+    public void testEmptyFileAfterLocalVarInLambdaBlock() throws Exception {
+        performTest("SimpleLambdaExpressionStart", 195, "t.test(s -> {int i; ", "lambdaBodyContentWithLocalVar.pass", "1.8");
+    }
+
+    public void testTypingAfterLocalVarInLambdaBlock() throws Exception {
+        performTest("SimpleLambdaExpressionEmptyMethodBody", 195, "t.test(s -> {int i; ", "lambdaBodyContentWithLocalVar.pass", "1.8");
+    }
+
+    public void testAfterLocalVarInLambdaBlock() throws Exception {
+        performTest("SimpleLambdaExpression", 272, "int i; ", "lambdaBodyContentWithLocalVar.pass", "1.8");
+    }
+
     public void testEmptyFileTypingReturnFromLambdaBlock() throws Exception {
         performTest("SimpleLambdaExpressionStart", 195, "t.test(s -> {return ", "lambdaSmartInt.pass", "1.8");
     }

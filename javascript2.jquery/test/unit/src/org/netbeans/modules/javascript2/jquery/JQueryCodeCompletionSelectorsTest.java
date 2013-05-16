@@ -162,6 +162,10 @@ public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
         checkAppliedCompletion("testfiles/completion/jQuery/selectors/basic/issue221481_2.js", "$(document).find('a #foo img[^');", "$(document).find('a #foo img[title^');", "title", false);
     }
 
+    public void testIssue229750() throws Exception {
+        checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$('[h^]')", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(

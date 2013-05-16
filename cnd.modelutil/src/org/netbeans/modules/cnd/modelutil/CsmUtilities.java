@@ -154,6 +154,7 @@ public class CsmUtilities {
     private static final RequestProcessor RP = new RequestProcessor(CsmUtilities.class.getName(), 1);
 
     public static int getModifiers(CsmObject obj) {
+        CndUtils.assertNonUiThread();
         int mod = 0;
         if (CsmKindUtilities.isClassMember(obj)) {
             mod |= CsmUtilities.getMemberModifiers((CsmMember) obj);
@@ -442,6 +443,9 @@ public class CsmUtilities {
     }
 
     public static CsmFile[] getCsmFiles(DataObject dobj, boolean waitParsing, boolean snapShot) {
+        if (waitParsing) { 
+            CndUtils.assertNonUiThread();
+        }
         if (dobj != null && dobj.isValid()) {
             try {
                 List<CsmFile> files = new ArrayList<CsmFile>();

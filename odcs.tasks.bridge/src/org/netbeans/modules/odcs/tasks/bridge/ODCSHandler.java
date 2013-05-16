@@ -66,7 +66,7 @@ import org.netbeans.modules.team.ui.spi.QueryHandle;
 import org.netbeans.modules.team.ui.spi.QueryResultHandle;
 import static org.netbeans.modules.odcs.tasks.bridge.Bundle.*;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.DashboardSupport;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.WeakListeners;
@@ -116,8 +116,8 @@ public class ODCSHandler {
         list = new PropertyChangeListener() {
             @Override
             public void propertyChange (PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(DefaultDashboard.PROP_REFRESH_REQUEST) && evt.getSource() instanceof DefaultDashboard) {
-                    if (ODCSHandler.this.server.getUrl().equals(((DefaultDashboard) evt.getSource()).getServer().getUrl())) {
+                if (evt.getPropertyName().equals(DashboardSupport.PROP_REFRESH_REQUEST) && evt.getSource() instanceof DashboardSupport) {
+                    if (ODCSHandler.this.server.getUrl().equals(((DashboardSupport) evt.getSource()).getServer().getUrl())) {
                         clear();
                     }
                 }

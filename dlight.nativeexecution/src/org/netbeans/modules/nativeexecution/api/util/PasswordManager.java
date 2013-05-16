@@ -67,7 +67,7 @@ public final class PasswordManager {
     private static PasswordManager instance = new PasswordManager();
     
     static {
-        keepPasswordsInMemory = !Boolean.getBoolean("remote.user.password.do_not_keep_in_memory"); // NOI18N
+        keepPasswordsInMemory = Boolean.getBoolean("remote.user.password.keep_in_memory"); // NOI18N
     }
 
     private PasswordManager() {

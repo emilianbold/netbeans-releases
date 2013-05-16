@@ -121,7 +121,7 @@ public final class ModuleProjectClassPathExtender extends ProjectClassPathModifi
                         ModuleEntry entry = project.getModuleList().getEntry(cnb);
                         if (entry != null) {
                             if (sourceGroup.getRootFolder() == project.getSourceDirectory()) {
-                                cpChanged |= ApisupportAntUtils.addDependency(project, cnb, null, null, true);
+                                cpChanged |= ApisupportAntUtils.addDependency(project, cnb, null, null, true, null);
                             } else if (sourceGroup.getRootFolder() == project.getTestSourceDirectory("unit")) { // NOI18N
                                 ProjectXMLManager pxm = new ProjectXMLManager(project);
                                 cpChanged |= pxm.addTestDependency("unit", new TestModuleDependency(entry, false, false, true)); // NOI18N

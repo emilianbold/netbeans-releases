@@ -113,7 +113,7 @@ public final class DiscoveryProjectGenerator {
             return false;
         }
         final CsmProject p = model.getProject(np);
-        if (p == null) {
+        if (p == null || !p.isValid()) {
             if (logger != null) {
                 logger.log(Level.INFO, "Not found model project for fixing of excluded header files for project {0}", np); // NOI18N
             }
@@ -133,11 +133,14 @@ public final class DiscoveryProjectGenerator {
                 }
             }
         };
-        NativeProjectRegistry.getDefault().addPropertyChangeListener(listener);
         if (!NativeProjectRegistry.getDefault().getOpenProjects().contains(np)) {
             return false;
         }
+        NativeProjectRegistry.getDefault().addPropertyChangeListener(listener);
         try {
+            if (!NativeProjectRegistry.getDefault().getOpenProjects().contains(np)) {
+                return false;
+            }
             ConfigurationDescriptorProvider pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
             SnapShot delta = pdp.startModifications();
             boolean isChanged = false;
@@ -164,27 +167,16 @@ public final class DiscoveryProjectGenerator {
                                 isLineDirective = true;
                             }
                         }
-                        if (item != null && np.equals(item.getNativeProject()) && item.isExcluded()) {
+                        if (item != null && np.equals(item.getNativeProject())) {
                             if (item instanceof Item) {
-                                if (logger != null) {
-                                    logger.log(Level.FINE, "#fix excluded->included header for file {0}", impl.getAbsolutePath()); // NOI18N
-                                }
-                                if (true || !ConfigurationDescriptorProvider.VCS_WRITE) {
-                                    ProjectBridge.setExclude((Item) item, false);
-                                }
-                                ProjectBridge.setHeaderTool((Item) item);
-                                isChanged = true;
-                                if (impl.isHeaderFile()) {
+                                if (isLineDirective || !impl.isSourceFile()) {
+                                    if (logger != null) {
+                                        logger.log(Level.FINE, "#fix excluded as header for file {0}", impl.getAbsolutePath()); // NOI18N
+                                    }
+                                    isChanged |= ProjectBridge.setHeaderTool((Item) item);
+                                    ProjectBridge.setExclude((Item) item, true);
                                     needCheck.add(item.getAbsolutePath());
                                 }
-                            }
-                        } else if (isLineDirective && item != null && np.equals(item.getNativeProject()) && !item.isExcluded()) {
-                            if (item instanceof Item) {
-                                if (logger != null) {
-                                    logger.log(Level.FINE, "#fix included->excluded for file {0}", impl.getAbsolutePath()); // NOI18N
-                                }
-                                ProjectBridge.setExclude((Item) item, true);
-                                isChanged = true;
                             }
                         } else if (item == null) {
                             // It should be in project?
@@ -250,11 +242,11 @@ public final class DiscoveryProjectGenerator {
                                             item = prefferedFolder.addItem(item);
                                         }
                                         if (item != null) {
-                                            ProjectBridge.setHeaderTool(item);
-                                            isChanged = true;
+                                            isChanged |= ProjectBridge.setHeaderTool(item);
                                             if (!MIMENames.isCppOrCOrFortran(item.getMIMEType())) {
                                                 needCheck.add(path);
                                             }
+                                            ProjectBridge.setExclude((Item) item, true);
                                             ProjectBridge.excludeItemFromOtherConfigurations(item);
                                         }
                                     }

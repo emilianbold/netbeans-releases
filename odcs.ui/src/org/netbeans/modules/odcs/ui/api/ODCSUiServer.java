@@ -49,23 +49,33 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.ui.dashboard.DashboardProviderImpl;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.DashboardSupport;
 import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
 import org.openide.util.WeakListeners;
 import java.util.prefs.Preferences;
+import javax.swing.Action;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.ODCSServerProviderImpl;
 import org.netbeans.modules.odcs.ui.LoginPanelSupportImpl;
 import org.netbeans.modules.odcs.ui.Utilities;
+import org.netbeans.modules.odcs.ui.dashboard.MyProjectNode;
+import org.netbeans.modules.team.ui.common.UserNode;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.util.treelist.ListNode;
+import org.netbeans.modules.team.ui.util.treelist.SelectionList;
+import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /**
@@ -78,11 +88,11 @@ public class ODCSUiServer implements TeamServer {
     private final WeakReference<ODCSServer> impl;
     private PropertyChangeListener l;
     private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
-    private final DefaultDashboard<ODCSUiServer, ODCSProject> dashboard;
+    private final DashboardSupport<ODCSProject> dashboard;
 
     private ODCSUiServer (ODCSServer server) {
         this.impl = new WeakReference<ODCSServer>(server);
-        dashboard = new DefaultDashboard<ODCSUiServer, ODCSProject>(this, new DashboardProviderImpl(this));
+        dashboard = new DashboardSupport<ODCSProject>(this, new DashboardProviderImpl(this));
         server.addPropertyChangeListener(WeakListeners.propertyChange(l=new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent pce) {
@@ -129,7 +139,7 @@ public class ODCSUiServer implements TeamServer {
         return ret.toArray(new ProjectHandle[ret.size()]);
     }
     
-    public DefaultDashboard<ODCSUiServer, ODCSProject> getDashboard() {
+    public DashboardSupport<ODCSProject> getDashboard() {
         return dashboard;
     }    
 
@@ -198,5 +208,28 @@ public class ODCSUiServer implements TeamServer {
     @Override
     public PasswordAuthentication getPasswordAuthentication() {
         return getServer().getPasswordAuthentication();
+    }
+
+    @Override
+    public SelectionList getProjects(boolean forceRefresh) {
+        return getDashboard().getProjectsList(forceRefresh);
+    }
+
+    @Override
+    public List<Action> getActions() {
+        ArrayList<Action> res = new ArrayList<Action>( 3 );
+        final DashboardProviderImpl dashboardImpl = new DashboardProviderImpl( this );
+
+        Action newProjectAction = dashboardImpl.getProjectAccessor().getNewTeamProjectAction();
+        newProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true));
+        newProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_NewProject") );
+        res.add( newProjectAction );
+
+        Action openProjectAction = dashboardImpl.getProjectAccessor().getOpenNonMemberProjectAction();
+        openProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/open_team_project.png", true));
+        openProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_OpenProject") );
+        res.add( openProjectAction );
+
+        return res;
     }
 }

@@ -890,7 +890,7 @@ public class CssCompletion implements CodeCompletionHandler {
             case combinator:
             case selector:
             case rule:
-                assert completionContext.getActiveTokenId() == CssTokenId.WS;
+                assert completionContext.getActiveTokenId() == CssTokenId.WS || completionContext.getActiveTokenId() == CssTokenId.NL;
                 //complete selector list without prefix in selector list e.g. BODY, | { ... }
                 
                 //filter out situation when the completion is invoked just after the left curly bracket

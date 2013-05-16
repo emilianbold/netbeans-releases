@@ -44,7 +44,9 @@ package org.netbeans.modules.web.inspect.ui;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.dnd.DnDConstants;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -62,6 +64,9 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
@@ -69,6 +74,7 @@ import org.openide.explorer.view.Visualizer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -86,6 +92,8 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
     private BeanTreeView treeView;
     /** Label used when no DOM tree is available. */
     private JLabel noDomLabel;
+    /** Label showing URL of the page. */
+    private JLabel urlLabel; 
     /** Page model used by this panel. */
     private final PageModel pageModel;
     /** Determines whether we are just updating view from the model. */
@@ -101,7 +109,9 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
         setLayout(new BorderLayout());
         initTreeView();
         initNoDOMLabel();
+        initURLLabel();
         add(noDomLabel);
+        add(urlLabel, BorderLayout.PAGE_START);
         if (pageModel != null) {
             pageModel.addPropertyChangeListener(createModelListener());
             manager.addPropertyChangeListener(createSelectedNodesListener());
@@ -268,6 +278,41 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
     }
 
     /**
+     * Initializes the label showing the URL.
+     */
+    private void initURLLabel() {
+        urlLabel = new JLabel() {
+            @Override
+            public Dimension getMinimumSize() {
+                // Allow horizontal shrinking of Browser DOM view below pref./min. size
+                Dimension dim = super.getMinimumSize();
+                return new Dimension(0, dim.height);
+            }
+        };
+        urlLabel.setBackground(treeView.getViewport().getView().getBackground());
+        urlLabel.setOpaque(true);
+        urlLabel.setVisible(false);
+        if (pageModel == null) {
+            urlLabel.setVisible(false);
+        } else {
+            Lookup lookup = pageModel.getPageContext();
+            BrowserFamilyId id = lookup.lookup(BrowserFamilyId.class);
+            if (id != null) {
+                for (WebBrowser browser : WebBrowsers.getInstance().getAll(true, true, true, false)) {
+                    if (browser.hasNetBeansIntegration() && (id == browser.getBrowserFamily())) {
+                        Image image = browser.getIconImage();
+                        if (image != null) {
+                            Icon icon = new ImageIcon(image);
+                            urlLabel.setIcon(icon);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Updates the content of the panel. It fetches the current data
      * from the model and updates the view accordingly.
      */
@@ -276,10 +321,11 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
             @Override
             public void run() {
                 final Node node = pageModel.getDocumentNode();
+                final String url = pageModel.getDocumentURL();
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        update(node);
+                        update(node, url);
                         updateSelection();
                         updateHighlight();
                     }
@@ -292,18 +338,22 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
      * Updates the content of the panel.
      * 
      * @param documentNode node that should be shown in the panel (can be {@code null}).
+     * @param url URL that corresponds to the given document node.
      */
-    private void update(Node documentNode) {
+    private void update(Node documentNode, String url) {
         assert EventQueue.isDispatchThread();
 
         updatingView  = true;
         try {
             if (documentNode == null) {
                 Node root = new AbstractNode(Children.LEAF);
+                urlLabel.setVisible(false);
                 replace(treeView, noDomLabel);
                 manager.setRootContext(root);
             } else {
                 manager.setRootContext(documentNode);
+                urlLabel.setText(url);
+                urlLabel.setVisible(true);
                 replace(noDomLabel, treeView);
                 RP.post(new Runnable() {
                     @Override

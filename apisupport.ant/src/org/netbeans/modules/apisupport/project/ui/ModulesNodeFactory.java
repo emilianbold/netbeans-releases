@@ -252,7 +252,7 @@ public class ModulesNodeFactory implements NodeFactory {
             NbModuleProject project = ApisupportAntUIUtils.runLibraryWrapperWizard(suiteProvider);
             if (project != null && target != null) {
                 try {
-                    ApisupportAntUtils.addDependency(target, project.getCodeNameBase(), null, null, true);
+                    ApisupportAntUtils.addDependency(target, project.getCodeNameBase(), null, null, true, null);
                     ProjectManager.getDefault().saveProject(target);
                 } catch (IOException e) {
                     LOG.log(Level.INFO, "could not add dependency on " + project.getCodeNameBase() + " to " + target, e);

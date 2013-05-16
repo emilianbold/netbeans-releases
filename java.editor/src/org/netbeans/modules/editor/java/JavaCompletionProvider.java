@@ -3578,7 +3578,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 }                
             } else {
                 String subwordsPattern = null;
-                if (!env.isCamelCasePrefix() && Utilities.isSubwordSensitive()) {
+                if (prefix != null && !env.isCamelCasePrefix() && Utilities.isSubwordSensitive()) {
                     subwordsPattern = Utilities.createSubwordsPattern(prefix);
                 }
                 ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
@@ -3606,7 +3606,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             Scope scope = env.getScope();
             if (prefix != null && prefix.length() > 2 && baseType.getTypeArguments().isEmpty()) {
                 String subwordsPattern = null;
-                if (!env.isCamelCasePrefix() && Utilities.isSubwordSensitive()) {
+                if (prefix != null && !env.isCamelCasePrefix() && Utilities.isSubwordSensitive()) {
                     subwordsPattern = Utilities.createSubwordsPattern(prefix);
                 }
                 ClassIndex.NameKind kind = env.isCamelCasePrefix() ?
@@ -5399,7 +5399,8 @@ public class JavaCompletionProvider implements CompletionProvider {
             if (upToOffset && TreeUtilities.CLASS_TREE_KINDS.contains(tree.getKind())) {
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
                 return new Env(offset, prefix, controller, orig, sourcePositions, null);
-            } else if (parent != null && tree.getKind() == Tree.Kind.BLOCK && (parent.getKind() == Tree.Kind.METHOD || TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()))) {
+            } else if (parent != null && tree.getKind() == Tree.Kind.BLOCK
+                    && (parent.getKind() == Tree.Kind.METHOD || parent.getKind() == Tree.Kind.LAMBDA_EXPRESSION || TreeUtilities.CLASS_TREE_KINDS.contains(parent.getKind()))) {
                 controller.toPhase(Utilities.inAnonymousOrLocalClass(path)? Phase.RESOLVED : Phase.ELEMENTS_RESOLVED);
                 int blockPos = (int)sourcePositions.getStartPosition(root, tree);
                 String blockText = controller.getText().substring(blockPos, upToOffset ? offset : (int)sourcePositions.getEndPosition(root, tree));

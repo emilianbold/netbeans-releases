@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.debugger.jpda.ui;
 
-import java.awt.event.KeyEvent;
 import java.io.IOException;
 import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
@@ -58,6 +57,7 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
+import org.openide.util.Exceptions;
 
 /**
  * Set of basic tests to make sure that debugging of Ant based Java projects is
@@ -137,12 +137,17 @@ public class AntSanityTest extends JellyTestCase {
     }
     
     /**
-     * Tests functionality of a line breakpoint and continue action.
+     * Sets line 278 breakpoint and continues with debugging.
      */
     public void testLineBreakpoint() {
         EditorOperator eo = new EditorOperator("MemoryView.java");
         eo.setCaretPositionToLine(278);
         new ToggleBreakpointAction().perform();
+        try {
+            Thread.sleep(3000); // Wait until debugger sets the line breakpoint properly.
+        } catch (InterruptedException ex) {
+            Exceptions.printStackTrace(ex);
+        }
         MainWindowOperator.StatusTextTracer stt = MainWindowOperator.getDefault().getStatusTextTracer();
         stt.start();
         new ContinueAction().perform();
@@ -152,7 +157,7 @@ public class AntSanityTest extends JellyTestCase {
     }
     
     /**
-     * Tests that disabled breakpoints are ignored with run to cursor action.
+     * Sets line 280 breakpoint, disables it and then continues to run to cursor at line 282.
      */
     public void runToCursor() {
         EditorOperator eo = new EditorOperator("MemoryView.java");

@@ -46,6 +46,9 @@ import org.netbeans.modules.team.ui.common.ColorManager;
 import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import javax.accessibility.AccessibleContext;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -55,20 +58,33 @@ import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 import static org.netbeans.modules.team.ui.Bundle.*;
+import org.netbeans.modules.team.ui.common.AddInstanceAction;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle.Messages;
 
-public final class Dashboard {
+public final class TeamView {
 
-    private final JScrollPane dashboardComponent;
+    private final JPanel dashboardPanel;
+    private final JScrollPane dashboardScrollPane;
     private JComponent emptyComponent;
+    private JComboBox combo;    
     private DummyUIComponent dummyUIComponent;
     private TeamServer teamServer;
 
     @Messages("A11Y_TeamProjects=Team Projects")
-    private Dashboard() {
+    private TeamView() {
         dummyUIComponent = new DummyUIComponent();
-        dashboardComponent = new JScrollPane() {
+        dashboardPanel = new JPanel();
+        dashboardPanel.setBackground(ColorManager.getDefault().getDefaultBackground());
+        dashboardPanel.setLayout(new java.awt.BorderLayout());
+        
+        Component serverSwitcher = getServerSwitcher();
+        if(serverSwitcher != null) {
+            dashboardPanel.add(serverSwitcher, BorderLayout.NORTH);
+        }
+        
+        dashboardScrollPane = new JScrollPane() {
             @Override
             public void requestFocus() {
                 Component view = getViewport().getView();
@@ -84,11 +100,12 @@ public final class Dashboard {
                 return view != null ? view.requestFocusInWindow() : super.requestFocusInWindow();
             }
         };
-        dashboardComponent.setBorder(BorderFactory.createEmptyBorder());
-        dashboardComponent.setBackground(ColorManager.getDefault().getDefaultBackground());
-        dashboardComponent.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
-
-        AccessibleContext accessibleContext = dashboardComponent.getAccessibleContext();
+        dashboardScrollPane.setBorder(BorderFactory.createEmptyBorder());
+        dashboardScrollPane.setBackground(ColorManager.getDefault().getDefaultBackground());
+        dashboardScrollPane.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
+        dashboardPanel.add(dashboardScrollPane, BorderLayout.CENTER);
+        
+        AccessibleContext accessibleContext = dashboardScrollPane.getAccessibleContext();
         String a11y = A11Y_TeamProjects();
         accessibleContext.setAccessibleName(a11y);
         accessibleContext.setAccessibleDescription(a11y);
@@ -100,31 +117,115 @@ public final class Dashboard {
      * currently visible team server instance
      * @return
      */
-    public TeamServer getTeamServer() {
+    public synchronized TeamServer getTeamServer() {
         return teamServer;
     }
 
-    public static Dashboard getInstance() {
-        return Holder.theInstance;
+    public synchronized void setSelectedServer(TeamServer server) {
+        if (combo!=null) {
+            combo.setSelectedItem(server);
+        } else {
+            setTeamServer(server);
+        }
     }
-
-    void setTeamServer (TeamServer server) {
+    
+    private synchronized void setTeamServer (TeamServer server) {
         Utilities.setLastTeamServer(server);
         teamServer = server;
         switchContent();
     }
 
+    @Messages("LBL_Server=Team Server:")
+    private Component getServerSwitcher() {
+        if(!Utilities.isMoreProjectsDashboard()) {
+            return null;
+        }
+        
+        combo = new TeamServerCombo(true);
+        Object k = Utilities.getLastTeamServer();
+        if (k!=null) {
+            combo.setSelectedItem(k);
+        }
+        combo.addActionListener(new ActionListener() {
+
+            @Override
+            public void actionPerformed(final ActionEvent e) {
+                if (combo.getSelectedItem() instanceof TeamServer) {
+                    setTeamServer((TeamServer) combo.getSelectedItem());
+                } else if (combo.getSelectedItem() instanceof String) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            new AddInstanceAction().actionPerformed(e);
+                            setTeamServer((TeamServer) combo.getSelectedItem());
+                        }
+                    });
+                } else {
+                    setTeamServer(null);
+                }
+            }
+        });
+
+        final JPanel panel = new JPanel();
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        JLabel serverLabel = new javax.swing.JLabel();
+        JSeparator jSeparator = new javax.swing.JSeparator();
+
+        panel.setBorder(javax.swing.BorderFactory.createEmptyBorder(3, 3, 0, 3));
+        panel.setLayout(new java.awt.GridBagLayout());
+
+        Mnemonics.setLocalizedText(serverLabel, LBL_Server());
+        serverLabel.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 3, 3));
+        panel.add(serverLabel, new java.awt.GridBagConstraints());
+
+        combo.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 3, 3));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        panel.add(combo, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        panel.add(jSeparator, gridBagConstraints);
+
+        panel.setBackground(dashboardPanel.getBackground());
+        combo.setOpaque(false);
+
+        combo.addComponentListener(new ComponentAdapter() {
+
+            @Override
+            public void componentShown(ComponentEvent e) {
+                panel.setVisible(true);
+            }
+
+            @Override
+            public void componentHidden(ComponentEvent e) {
+                panel.setVisible(false);
+            }
+        });
+
+        return panel;
+    }    
+
+    public static synchronized TeamView getInstance() {
+        return Holder.theInstance;
+    }
+    
     private static class Holder {
-        private static final Dashboard theInstance = new Dashboard();
+        private static final TeamView theInstance = new TeamView();
     }
 
     public void close() {
         //TODO OV probably delegate to DashboardComponent
     }
 
-    public JComponent getComponent() {
+    public synchronized JComponent getComponent() {
         switchContent();
-        return dashboardComponent;
+        return dashboardPanel;
     }
 
     private void switchContent() {
@@ -134,22 +235,22 @@ public final class Dashboard {
                 JComponent comp = teamServer == null ? emptyComponent = dummyUIComponent.getJComponent() : teamServer.getDashboardComponent();
                 boolean isEmpty = teamServer == null || comp == null;
                 if( isEmpty ) {
-                    if( dashboardComponent.getViewport().getView() == null 
-                            || dashboardComponent.getViewport().getView() != emptyComponent ) {
-                        dashboardComponent.setViewportView(emptyComponent = dummyUIComponent.getJComponent());
-                        dashboardComponent.invalidate();
-                        dashboardComponent.revalidate();
-                        dashboardComponent.repaint();
+                    if( dashboardScrollPane.getViewport().getView() == null 
+                            || dashboardScrollPane.getViewport().getView() != emptyComponent ) {
+                        dashboardScrollPane.setViewportView(emptyComponent = dummyUIComponent.getJComponent());
+                        dashboardScrollPane.invalidate();
+                        dashboardScrollPane.revalidate();
+                        dashboardScrollPane.repaint();
                     }
                 } else {
-                    if( comp != dashboardComponent.getViewport().getView() ) {
-                        dashboardComponent.setViewportView(comp);
-                        dashboardComponent.invalidate();
-                        dashboardComponent.revalidate();
-                        dashboardComponent.repaint();
+                    if( comp != dashboardScrollPane.getViewport().getView() ) {
+                        dashboardScrollPane.setViewportView(comp);
+                        dashboardScrollPane.invalidate();
+                        dashboardScrollPane.revalidate();
+                        dashboardScrollPane.repaint();
                         // hack: ensure the dashboard component has focus (when
                         // added to already visible and activated TopComponent)
-                        TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, dashboardComponent);
+                        TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, dashboardScrollPane);
                         if (tc != null && TopComponent.getRegistry().getActivated() == tc) {
                             comp.requestFocus();
                         }

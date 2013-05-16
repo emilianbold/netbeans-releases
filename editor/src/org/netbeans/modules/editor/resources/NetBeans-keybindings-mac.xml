@@ -100,7 +100,18 @@ made subject to such option by the copyright holder.
     <bind actionName="scroll-up" key="C-DOWN"/>
 
     <bind key="O-I" actionName="generate-code"/>
-    
+
+    <!-- Move 'copy lines' shortcuts, mac defines selection to begin/end of doc for them -->
+        
+    <bind actionName="copy-selection-else-line-up" key="AS-UP"/>
+    <bind actionName="copy-selection-else-line-up" key="AS-KP_UP"/>
+    <bind actionName="copy-selection-else-line-down" key="AS-DOWN"/>
+    <bind actionName="copy-selection-else-line-down" key="AS-KP_DOWN"/>
+    <bind actionName="selection-begin" key="DS-UP"/>
+    <bind actionName="selection-begin" key="DS-KP_UP"/>
+    <bind actionName="selection-end" key="DS-DOWN"/>
+    <bind actionName="selection-end" key="DS-KP_DOWN"/>
+
     <!-- Things we add only on the mac -->
     
     <bind actionName="selection-begin-line" key="MS-LEFT"/>
@@ -108,6 +119,9 @@ made subject to such option by the copyright holder.
     <bind actionName="caret-end-line" key="M-RIGHT"/>
     <bind actionName="caret-begin-line" key="M-LEFT"/>
     
+    <bind actionName="page-down" key="A-PAGE_DOWN"/>
+    <bind actionName="page-up" key="A-PAGE_UP"/>
+
     <!-- Things we remove on Mac -->
     
     <bind key="D-Y" remove="true"/>

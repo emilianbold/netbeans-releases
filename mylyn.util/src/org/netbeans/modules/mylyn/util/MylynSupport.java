@@ -42,12 +42,15 @@
 package org.netbeans.modules.mylyn.util;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -70,6 +73,7 @@ import org.eclipse.mylyn.internal.tasks.core.data.ITaskDataManagerListener;
 import org.eclipse.mylyn.internal.tasks.core.data.SynchronizationManger;
 import org.eclipse.mylyn.internal.tasks.core.data.TaskDataDiff;
 import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManager;
+import org.eclipse.mylyn.internal.tasks.core.data.TaskDataManagerEvent;
 import org.eclipse.mylyn.internal.tasks.core.data.TaskDataState;
 import org.eclipse.mylyn.internal.tasks.core.data.TaskDataStore;
 import org.eclipse.mylyn.internal.tasks.core.externalization.TaskListExternalizer;
@@ -114,6 +118,10 @@ public class MylynSupport {
     private static final RequestProcessor RP = new RequestProcessor("MylynSupport", 1, true); //NOI18N
     private final Task saveTask;
     private boolean dirty;
+    private final Map<TaskRepository, UnsubmittedTasksContainer> unsubmittedTaskContainers;
+    private ITaskDataManagerListener taskDataManagerListener;
+    private final List<TaskDataListener> taskDataListeners;
+    private final List<TaskListener> taskListeners;
 
     public static synchronized MylynSupport getInstance () {
         if (instance == null) {
@@ -157,6 +165,9 @@ public class MylynSupport {
                 }
             }
         });
+        unsubmittedTaskContainers = new WeakHashMap<TaskRepository, UnsubmittedTasksContainer>();
+        taskDataListeners = new CopyOnWriteArrayList<TaskDataListener>();
+        taskListeners = new CopyOnWriteArrayList<TaskListener>();
         attachListeners();
     }
 
@@ -165,7 +176,7 @@ public class MylynSupport {
      *
      * @param taskRepository repository tasks are stored in
      * @return tasks from the requested repository
-     * @throws IOException when the tasklist is inaccessible.
+     * @throws CoreException when the tasklist is inaccessible.
      */
     public Collection<ITask> getTasks (TaskRepository taskRepository) throws CoreException {
         ensureTaskListLoaded();
@@ -187,9 +198,17 @@ public class MylynSupport {
         return taskList.getTask(repositoryUrl, taskId);
     }
 
-    public Collection<ITask> getUnsubmittedTasks (TaskRepository taskRepository) throws CoreException {
-        ensureTaskListLoaded();
-        return taskList.getUnsubmittedContainer(taskRepository.getUrl()).getChildren();
+    public UnsubmittedTasksContainer getUnsubmittedTasksContainer (TaskRepository taskRepository) throws CoreException {
+        UnsubmittedTasksContainer cont;
+        synchronized (unsubmittedTaskContainers) {
+            cont = unsubmittedTaskContainers.get(taskRepository);
+            if (cont == null) {
+                ensureTaskListLoaded();
+                cont = new UnsubmittedTasksContainer(taskRepository, taskList);
+                unsubmittedTaskContainers.put(taskRepository, cont);
+            }
+        }
+        return cont;
     }
 
     public TaskRepository getLocalTaskRepository () {
@@ -221,17 +240,16 @@ public class MylynSupport {
     }
 
     /**
-     * Adds a listener notified when task is updated. Such listeners should be
-     * notifications, task editors or task wrappers.
+     * Adds a listener notified when a task data is updated ad modified.
      *
      * @param listener
      */
-    public void addTaskDataListener (ITaskDataManagerListener listener) {
-        taskDataManager.addListener(listener);
+    public void addTaskDataListener (TaskDataListener listener) {
+        taskDataListeners.add(listener);
     }
 
-    public void removeTaskDataListener (ITaskDataManagerListener listener) {
-        taskDataManager.removeListener(listener);
+    public void removeTaskDataListener (TaskDataListener listener) {
+        taskDataListeners.remove(listener);
     }
 
     public void addRepositoryListener (IRepositoryListener listener) {
@@ -239,18 +257,17 @@ public class MylynSupport {
     }
 
     /**
-     * Adds listener to the tasklist. The listener will be notified on a change
-     * in the tasklist, such as add or remove of items (queries, tasks) or
-     * change in a task's content (summary, description, etc.).
+     * Adds a listener to the tasklist. The listener will be notified on a change
+     * in tasks's content (summary, description, etc.).
      *
-     * @param listener
+     * @param listener listener
      */
-    public void addTaskListListener (ITaskListChangeListener listener) {
-        taskList.addChangeListener(listener);
+    public void addTaskListener (TaskListener listener) {
+       taskListeners.add(listener);
     }
 
-    public void removeTaskListListener (ITaskListChangeListener listener) {
-        taskList.removeChangeListener(listener);
+    public void removeTaskListener (TaskListener listener) {
+        taskListeners.remove(listener);
     }
 
     // for tests only
@@ -258,8 +275,11 @@ public class MylynSupport {
         instance = null;
     }
 
-    public TaskDataState getTaskDataState (ITask task) throws CoreException {
-        return taskDataManager.getTaskDataState(task);
+    public NetBeansTaskDataState getTaskDataState (ITask task) throws CoreException {
+        TaskDataState taskDataState = taskDataManager.getTaskDataState(task);
+        return taskDataState == null
+                ? null
+                : new NetBeansTaskDataState(taskDataState);
     }
 
     public Set<TaskAttribute> countDiff (TaskData newTaskData, TaskData oldTaskData) {
@@ -297,7 +317,7 @@ public class MylynSupport {
         return null;
     }
 
-    public void deleteTask (ITask task) throws CoreException {
+    public void deleteTask (ITask task) {
         assert taskListInitialized;
         taskList.deleteTask(task);
     }
@@ -328,6 +348,7 @@ public class MylynSupport {
      *
      * @param repositoryConnector connector handling the given repository
      * @param repositoryUrl  task repository URL
+     * @return registered repository
      */
     public TaskRepository getTaskRepository (AbstractRepositoryConnector repositoryConnector, String repositoryUrl) {
         TaskRepository repository = taskRepositoryManager.getRepository(repositoryConnector.getConnectorKind(), repositoryUrl);
@@ -527,8 +548,32 @@ public class MylynSupport {
                                 }
                             }
                         }
+                        notifyListeners(task, delta);
                     }
                 }
+            }
+
+            private void notifyListeners (ITask task, TaskContainerDelta delta) {
+                // notify listeners
+                TaskListener.TaskEvent ev = new TaskListener.TaskEvent(task, delta);
+                for (TaskListener list : taskListeners) {
+                    list.taskModified(ev);
+                }
+            }
+        });
+        taskDataManager.addListener(taskDataManagerListener = new ITaskDataManagerListener() {
+
+            @Override
+            public void taskDataUpdated (TaskDataManagerEvent event) {
+                TaskDataListener.TaskDataEvent e = new TaskDataListener.TaskDataEvent(event);
+                for (TaskDataListener l : taskDataListeners) {
+                    l.taskDataUpdated(e);
+                }
+            }
+
+            @Override
+            public void editsDiscarded (TaskDataManagerEvent event) {
+                taskDataUpdated(event);
             }
         });
     }

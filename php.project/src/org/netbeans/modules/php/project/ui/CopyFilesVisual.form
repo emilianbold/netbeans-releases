@@ -24,7 +24,6 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="copyFilesCheckBox" min="-2" max="-2" attributes="1"/>
           <Group type="102" alignment="0" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Component id="localServerLabel" min="-2" max="-2" attributes="0"/>
@@ -32,6 +31,11 @@
               <Component id="copyFilesComboBox" max="32767" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="copyFilesButton" min="-2" max="-2" attributes="0"/>
+          </Group>
+          <Component id="copyFilesCheckBox" min="-2" max="-2" attributes="1"/>
+          <Group type="102" alignment="0" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="copyOnOpenCheckBox" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -45,6 +49,8 @@
                   <Component id="copyFilesComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="localServerLabel" alignment="3" min="-2" max="-2" attributes="1"/>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="copyOnOpenCheckBox" min="-2" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -119,6 +125,15 @@
           <ResourceString bundle="org/netbeans/modules/php/project/ui/Bundle.properties" key="CopyFilesVisual.copyFilesButton.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JCheckBox" name="copyOnOpenCheckBox">
+      <Properties>
+        <Property name="selected" type="boolean" value="true"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/php/project/ui/Bundle.properties" key="CopyFilesVisual.copyOnOpenCheckBox.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="enabled" type="boolean" value="false"/>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

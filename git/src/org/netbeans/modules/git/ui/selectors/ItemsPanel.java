@@ -70,13 +70,23 @@ public class ItemsPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jScrollPane1 = new javax.swing.JScrollPane();
+        btnSelectNone = new javax.swing.JButton();
+        btnSelectAll = new javax.swing.JButton();
 
-        titleLabel.setText(org.openide.util.NbBundle.getMessage(ItemsPanel.class, "ItemsPanel.titleLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(titleLabel, org.openide.util.NbBundle.getMessage(ItemsPanel.class, "ItemsPanel.titleLabel.text")); // NOI18N
         titleLabel.setToolTipText(org.openide.util.NbBundle.getMessage(ItemsPanel.class, "ItemsPanel.titleLabel.toolTipText")); // NOI18N
 
         list.setModel(new DefaultListModel());
         list.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jScrollPane1.setViewportView(list);
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnSelectNone, org.openide.util.NbBundle.getMessage(ItemsPanel.class, "ItemsPanel.btnSelectNone.text")); // NOI18N
+        btnSelectNone.setToolTipText(org.openide.util.NbBundle.getMessage(ItemsPanel.class, "ItemsPanel.btnSelectNone.TTtext")); // NOI18N
+        btnSelectNone.setEnabled(false);
+
+        org.openide.awt.Mnemonics.setLocalizedText(btnSelectAll, org.openide.util.NbBundle.getMessage(ItemsPanel.class, "ItemsPanel.btnSelectAll.text")); // NOI18N
+        btnSelectAll.setToolTipText(org.openide.util.NbBundle.getMessage(ItemsPanel.class, "ItemsPanel.btnSelectAll.TTtext")); // NOI18N
+        btnSelectAll.setEnabled(false);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -86,7 +96,14 @@ public class ItemsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 360, Short.MAX_VALUE)
-                    .addComponent(titleLabel))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(titleLabel)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(btnSelectAll)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnSelectNone)))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -95,11 +112,17 @@ public class ItemsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(titleLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 236, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnSelectNone)
+                    .addComponent(btnSelectAll))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    javax.swing.JButton btnSelectAll;
+    javax.swing.JButton btnSelectNone;
     private javax.swing.JScrollPane jScrollPane1;
     final javax.swing.JList list = new javax.swing.JList();
     final javax.swing.JLabel titleLabel = new javax.swing.JLabel();

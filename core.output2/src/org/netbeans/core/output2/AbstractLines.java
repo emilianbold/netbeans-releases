@@ -815,7 +815,8 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         } else {
             foldOffsets.add(lineIndex - currentFoldStart);
         }
-        if (currentFoldStart != -1 && visibleList.get(currentFoldStart) == 0) {
+        if (currentFoldStart != -1 && (visibleList.get(currentFoldStart) == 0
+                || !isVisible(currentFoldStart))) {
             hiddenLines++;
             realToVisibleLine.add(-1);
         } else {

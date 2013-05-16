@@ -265,6 +265,20 @@ public final class CodeStyle {
     }
     
     /**
+     * @since 0.125 
+     */
+    public boolean keepGettersAndSettersTogether() {
+        return preferences.getBoolean(keepGettersAndSettersTogether, getDefaultAsBoolean(keepGettersAndSettersTogether));
+    }
+
+    /**
+     * @since 0.125 
+     */
+    public boolean sortMembersInGroupsAlphabetically() {
+        return preferences.getBoolean(sortMembersInGroups, getDefaultAsBoolean(sortMembersInGroups));
+    }
+
+    /**
      * Returns an information about the desired insertion point of a new class member.
      * @since 0.96
      */
@@ -272,7 +286,7 @@ public final class CodeStyle {
         String point = preferences.get(classMemberInsertionPoint, getDefaultAsString(classMemberInsertionPoint));
         return InsertionPoint.valueOf(point);
     }
-
+    
     // Alignment and braces ----------------------------------------------------
     
     public BracePlacement getClassDeclBracePlacement() {
@@ -1044,6 +1058,7 @@ public final class CodeStyle {
     public enum InsertionPoint {
         LAST_IN_CATEGORY,
         FIRST_IN_CATEGORY,
+        ORDERED_IN_CATEGORY,
         CARET_LOCATION
     }
     

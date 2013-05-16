@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.api.util;
 
 import java.awt.EventQueue;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -116,6 +117,18 @@ public final class JsLibUtilities {
             } catch (MissingLibResourceException e) {
                 LOGGER.log(Level.FINE, null, e);
                 failed.add(selectedLibrary);
+            }
+        }
+        // possible cleanup
+        if (!failed.isEmpty()) {
+            assert librariesRoot != null;
+            FileObject fo = librariesRoot;
+            while (!siteRootDir.equals(fo)) {
+                if (fo.getChildren().length == 0) {
+                    fo.delete();
+                }
+                fo = fo.getParent();
+                assert fo != null;
             }
         }
         return failed;

@@ -87,12 +87,13 @@ public class CoverageSideBar extends javax.swing.JPanel {
     private static final String COVERAGE_SIDEBAR_PROP = "coverageSideBar"; // NOI18N
     private static final String COVERAGE_SIDEBAR_FOCUS = "coverageSideBarFocus"; // NOI18N
     private static final String FOCUS_KEY_BINDING = "control shift F11";
-    private Document document;
+    private final FileObject fileForDocument;
     private boolean enabled;
 
     /** Creates new form CoverageSideBar */
     public CoverageSideBar(final JTextComponent target) {
-        document = target.getDocument();
+        Document document = target.getDocument();
+        fileForDocument = GsfUtilities.findFileObject(document);
 
         String mimeType = (String) document.getProperty("mimeType"); // NOI18N
         boolean on = false;
@@ -330,10 +331,9 @@ public class CoverageSideBar extends javax.swing.JPanel {
         Project project = getProject();
         if (project != null) {
             Lookup lookup = project.getLookup();
-            FileObject fo = GsfUtilities.findFileObject(document);
-            if (fo != null) {
+            if (fileForDocument != null) {
                 try {
-                    DataObject dobj = DataObject.find(fo);
+                    DataObject dobj = DataObject.find(fileForDocument);
                     lookup = dobj.getLookup();
                 } catch (DataObjectNotFoundException ex) {
                     Exceptions.printStackTrace(ex);
@@ -350,9 +350,8 @@ public class CoverageSideBar extends javax.swing.JPanel {
     }
 
     private Project getProject() {
-        FileObject fo = GsfUtilities.findFileObject(document);
-        if (fo != null) {
-            Project project = FileOwnerQuery.getOwner(fo);
+        if (fileForDocument != null) {
+            Project project = FileOwnerQuery.getOwner(fileForDocument);
             return project;
         }
 

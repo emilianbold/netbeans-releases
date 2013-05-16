@@ -39,18 +39,23 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms;
+package org.netbeans.lib.profiler.results.locks;
 
-import org.netbeans.api.project.Project;
+import org.netbeans.lib.profiler.results.ProfilingResultListener;
 
 /**
  *
- * @author Jan Becicka
+ * @author Tomas Hurka
  */
-public interface CordovaMapping {
+public interface LockProfilingResultListener extends ProfilingResultListener {
 
-    void setBaseUrl(String url);
+    void monitorEntry(final int threadId, final long timeStamp0, final long timeStamp1, final int monitorId);
 
-    void setProject(Project p);
-    
+    void monitorExit(final int threadId, final long timeStamp0, final long timeStamp1, final int monitorId);
+
+    void newThread(final int threadId, final String threadName, final String threadClassName);
+
+    void newMonitor(final int hash, final String className);
+
+    void timeAdjust(int threadId, long timeDiff0, long timeDiff1);
 }

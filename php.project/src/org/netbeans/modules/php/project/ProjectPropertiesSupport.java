@@ -233,6 +233,10 @@ public final class ProjectPropertiesSupport {
         return getBoolean(project, PhpProjectProperties.COPY_SRC_FILES, false);
     }
 
+    public static boolean isCopySourcesOnOpen(PhpProject project) {
+        return getBoolean(project, PhpProjectProperties.COPY_SRC_ON_OPEN, false);
+    }
+
     /**
      * @return file or <code>null</code>.
      */

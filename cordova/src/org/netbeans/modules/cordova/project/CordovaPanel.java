@@ -66,8 +66,6 @@ public class CordovaPanel extends javax.swing.JPanel {
         this.ext = ext;
         setName(NbBundle.getMessage(CordovaPanel.class, "LBL_CordovaSetup"));//NOI18N
         initComponents();
-        if (ext!=null)
-            ext.setEnabled(phoneGapCheckBox.isSelected());
         update();
         platformsPane.setVisible(false);
         platformSetup.setVisible(false);
@@ -441,8 +439,6 @@ public class CordovaPanel extends javax.swing.JPanel {
 
     private void phoneGapCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_phoneGapCheckBoxStateChanged
         setControlsEnabled(phoneGapCheckBox.isSelected());
-        if (ext!=null)
-            ext.setEnabled(phoneGapCheckBox.isSelected());
         firePropertyChange(PROP_EXT_ENABLED, !phoneGapCheckBox.isSelected(), phoneGapCheckBox.isSelected());
         
     }//GEN-LAST:event_phoneGapCheckBoxStateChanged

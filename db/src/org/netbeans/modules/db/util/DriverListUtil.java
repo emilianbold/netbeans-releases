@@ -328,6 +328,10 @@ public class DriverListUtil {
         add("Sybase Driver",
         "com.sun.sql.jdbc.sybase.SybaseDriver",
         "jdbc:sun:sybase://<HOST>[:<PORT]");          
+
+        add("SQLite",
+            "org.sqlite.JDBC",
+            "jdbc:sqlite:<FILE>");
     }
     
     public static Set<String> getDrivers() {

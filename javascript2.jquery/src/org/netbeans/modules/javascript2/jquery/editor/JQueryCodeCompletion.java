@@ -403,8 +403,8 @@ public class JQueryCodeCompletion implements CompletionProvider {
                 }
             } else {
                 Collection<HtmlTagAttribute> attributes = htmlTag.getAttributes();
-                if (tagName.isEmpty()) {
-                    attributes = allAttributes;
+                if (tagName.isEmpty() || htmlTag.getTagClass() == HtmlTagType.UNKNOWN) {
+                    attributes = getAllAttributes(htmlModel);
                 }
                 result = new ArrayList<HtmlTagAttribute>();
                 for (HtmlTagAttribute htmlTagAttribute : attributes) {

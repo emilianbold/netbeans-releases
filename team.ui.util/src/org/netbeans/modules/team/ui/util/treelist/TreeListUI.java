@@ -41,16 +41,7 @@
  */
 package org.netbeans.modules.team.ui.util.treelist;
 
-import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Point;
-import java.awt.Rectangle;
-import java.awt.event.MouseEvent;
-import javax.swing.AbstractButton;
-import javax.swing.ListCellRenderer;
-import javax.swing.SwingUtilities;
-import javax.swing.event.MouseInputListener;
-import javax.swing.plaf.basic.BasicListUI;
 
 /**
  * UI for tree-like list which forwards mouse events to renderer component under
@@ -58,129 +49,15 @@ import javax.swing.plaf.basic.BasicListUI;
  *
  * @author S. Aubrecht
  */
-public class TreeListUI extends BasicListUI {
+public class TreeListUI extends AbstractListUI {
 
     @Override
-    protected MouseInputListener createMouseInputListener() {
-
-        final MouseInputListener orig = super.createMouseInputListener();
-
-        return new MouseInputListener() {
-            public void mouseClicked(MouseEvent e) {
-                if (!redispatchComponent(e)) {
-                    orig.mouseClicked(e);
-                }
-            }
-
-            public void mousePressed(MouseEvent e) {
-                if (!redispatchComponent(e)) {
-                    if (showPopup(e)) {
-                        return;
-                    }
-                    orig.mousePressed(e);
-                }
-            }
-
-            public void mouseReleased(MouseEvent e) {
-                if (!redispatchComponent(e)) {
-                    if (showPopup(e)) {
-                        return;
-                    }
-                    orig.mouseReleased(e);
-                }
-            }
-
-            public void mouseEntered(MouseEvent e) {
-                if (!redispatchComponent(e)) {
-                    orig.mouseEntered(e);
-                }
-            }
-
-            public void mouseExited(MouseEvent e) {
-                if (!redispatchComponent(e)) {
-                    orig.mouseExited(e);
-                }
-            }
-
-            public void mouseDragged(MouseEvent e) {
-                if (!redispatchComponent(e)) {
-                    orig.mouseDragged(e);
-                }
-            }
-
-            public void mouseMoved(MouseEvent e) {
-                if (!redispatchComponent(e)) {
-                    list.setCursor(Cursor.getDefaultCursor());
-                    orig.mouseMoved(e);
-                } else {
-                    list.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                }
-            }
-        };
-    }
-
-    private boolean redispatchComponent(MouseEvent e) {
-        Point p = e.getPoint();
-        int index = list.locationToIndex(p);
-        if (index < 0 || index >= list.getModel().getSize()) {
-            return false;
-        }
-
-        ListCellRenderer renderer = list.getCellRenderer();
-        if (null == renderer) {
-            return false;
-        }
-        Component renComponent = renderer.getListCellRendererComponent(list, list.getModel().getElementAt(index), index, false, false);
-        if (null == renComponent) {
-            return false;
-        }
-        Rectangle rect = list.getCellBounds(index, index);
-        if (null == rect) {
-            return false;
-        }
-        renComponent.setBounds(0, 0, rect.width, rect.height);
-        renComponent.doLayout();
-        Point p3 = rect.getLocation();
-
-        Point p2 = new Point(p.x - p3.x, p.y - p3.y);
-        Component dispatchComponent =
-                SwingUtilities.getDeepestComponentAt(renComponent,
-                p2.x, p2.y);
-        if (dispatchComponent instanceof AbstractButton) {
-            if (!((AbstractButton) dispatchComponent).isEnabled()) {
-                return false;
-            }
-            Point p4 = SwingUtilities.convertPoint(renComponent, p2, dispatchComponent);
-            MouseEvent newEvent = new MouseEvent(dispatchComponent,
-                    e.getID(),
-                    e.getWhen(),
-                    e.getModifiers(),
-                    p4.x, p4.y,
-                    e.getClickCount(),
-                    e.isPopupTrigger(),
-                    MouseEvent.NOBUTTON);
-            dispatchComponent.dispatchEvent(newEvent);
-            list.repaint(rect);
-            e.consume();
-            return true;
-        }
-        return false;
-    }
-
-    private boolean showPopup(MouseEvent e) {
-        if (!e.isPopupTrigger()) {
-            return false;
-        }
+    boolean showPopupAt( int rowIndex, Point location ) {
         if (!(list instanceof TreeList)) {
             return false;
         }
 
-        int index = list.locationToIndex(e.getPoint());
-        Rectangle rect = list.getCellBounds(index, index);
-        if (!rect.contains(e.getPoint())) {
-            return false;
-        }
-        ((TreeList) list).showPopupMenuAt(index, e.getPoint());
+        ((TreeList) list).showPopupMenuAt(rowIndex, location);
         return true;
     }
 }

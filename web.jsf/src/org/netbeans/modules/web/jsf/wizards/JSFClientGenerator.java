@@ -242,10 +242,11 @@ public class JSFClientGenerator {
         final ClasspathInfo classpathInfo = ClasspathInfo.create(pkg);
         JavaSource javaSource = JavaSource.create(classpathInfo);
         javaSource.runUserActionTask(new Task<CompilationController>() {
+            @Override
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement jc = controller.getElements().getTypeElement(entityClass);
-                arrEntityClassFO[0] = org.netbeans.api.java.source.SourceUtils.getFile(jc, controller.getClasspathInfo());
+                arrEntityClassFO[0] = org.netbeans.api.java.source.SourceUtils.getFile(ElementHandle.create(jc), controller.getClasspathInfo());
                 fieldAccess[0] = JpaControllerUtil.isFieldAccess(jc);
                 for (ExecutableElement method : JpaControllerUtil.getEntityMethods(jc)) {
                     String methodName = method.getSimpleName().toString();
