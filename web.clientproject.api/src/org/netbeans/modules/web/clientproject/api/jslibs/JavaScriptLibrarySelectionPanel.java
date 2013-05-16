@@ -606,6 +606,9 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         "JavaScriptLibrarySelectionPanel.error.librariesFolder.invalid=Libraries folder can contain only alphanumeric characters, \"_\", \"-\" and \"/\"."
     })
     private String validateLibrariesFolder() {
+        if (librariesFolder.isEmpty()) {
+            return null;
+        }
         for (String segment : librariesFolder.split("/")) { // NOI18N
             if (!LIBRARIES_FOLDER_PATTERN.matcher(segment).matches()) {
                 return Bundle.JavaScriptLibrarySelectionPanel_error_librariesFolder_invalid();
