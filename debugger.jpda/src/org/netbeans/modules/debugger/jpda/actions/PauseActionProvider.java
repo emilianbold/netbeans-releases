@@ -56,7 +56,7 @@ import org.netbeans.spi.debugger.ActionsProvider;
 
 
 /**
-* Representation of a debugging session.
+* Pause action implementation.
 *
 * @author   Jan Jancura
 * @author  Marian Petras
@@ -76,10 +76,12 @@ public class PauseActionProvider extends JPDADebuggerActionProvider {
         setProviderToDisableOnLazyAction(this);
     }
     
+    @Override
     public Set getActions () {
         return Collections.singleton (ActionsManager.ACTION_PAUSE);
     }
 
+    @Override
     public void doAction (Object action) {
         ((JPDADebuggerImpl) getDebuggerImpl ()).suspend ();
     }
@@ -87,6 +89,7 @@ public class PauseActionProvider extends JPDADebuggerActionProvider {
     @Override
     public void postAction(Object action, final Runnable actionPerformedNotifier) {
         doLazyAction(action, new Runnable() {
+            @Override
             public void run() {
                 try {
                     ((JPDADebuggerImpl) getDebuggerImpl ()).suspend ();
@@ -97,6 +100,7 @@ public class PauseActionProvider extends JPDADebuggerActionProvider {
         });
     }
     
+    @Override
     protected void checkEnabled (int debuggerState) {
         setEnabled (
             ActionsManager.ACTION_PAUSE,

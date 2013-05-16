@@ -59,7 +59,7 @@ import org.netbeans.spi.debugger.ActionsProvider;
 
 
 /**
-* Representation of a debugging session.
+* Pop to Here action implementation.
 *
 * @author   Jan Jancura
 */
@@ -74,10 +74,12 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider {
         setProviderToDisableOnLazyAction(this);
     }
     
+    @Override
     public Set getActions () {
         return Collections.singleton (ActionsManager.ACTION_POP_TOPMOST_CALL);
     }
 
+    @Override
     public void doAction (Object action) {
         runAction();
     }
@@ -85,6 +87,7 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider {
     @Override
     public void postAction(Object action, final Runnable actionPerformedNotifier) {
         doLazyAction(action, new Runnable() {
+            @Override
             public void run() {
                 try {
                     runAction();
@@ -111,6 +114,7 @@ public class PopToHereActionProvider extends JPDADebuggerActionProvider {
         }
     }
     
+    @Override
     protected void checkEnabled (int debuggerState) {
         if (!getDebuggerImpl().canPopFrames()) {
             setEnabled (

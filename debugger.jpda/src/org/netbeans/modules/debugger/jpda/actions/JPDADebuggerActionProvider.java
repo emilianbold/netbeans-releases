@@ -56,8 +56,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
@@ -70,7 +70,6 @@ import org.netbeans.modules.debugger.jpda.jdi.request.EventRequestManagerWrapper
 import org.netbeans.modules.debugger.jpda.jdi.request.StepRequestWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
-import org.openide.util.Exceptions;
 
 import org.openide.util.WeakSet;
 
@@ -92,9 +91,10 @@ implements PropertyChangeListener {
     
     protected JPDADebuggerActionProvider (JPDADebuggerImpl debugger) {
         this.debugger = debugger;
-        debugger.addPropertyChangeListener (debugger.PROP_STATE, this);
+        debugger.addPropertyChangeListener (JPDADebugger.PROP_STATE, this);
     }
     
+    @Override
     public void propertyChange (PropertyChangeEvent evt) {
         if ("methodInvoke".equals(evt.getPropagationId())) {
             return ; // Ignore events associated with method invocations
@@ -190,6 +190,7 @@ implements PropertyChangeListener {
             }
         }
         debugger.getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     //long end = System.nanoTime();

@@ -167,7 +167,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
     
     @Override
     void fixed () {
-        logger.fine("LineBreakpoint fixed: "+this);
+        logger.log(Level.FINE, "LineBreakpoint fixed: {0}", this);
         updateLineNumber();
         super.fixed ();
     }
@@ -229,7 +229,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             }
         }
         if (className == null || className.length() == 0) {
-            logger.warning("Class name not defined for breakpoint "+breakpoint);
+            logger.log(Level.WARNING, "Class name not defined for breakpoint {0}", breakpoint);
             setValidity(Breakpoint.VALIDITY.INVALID, NbBundle.getMessage(LineBreakpointImpl.class, "MSG_NoBPClass"));
             return ;
         }
@@ -248,7 +248,9 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         }
         // Test if className exists in project sources:
         if (!isInSources && classExistsInSources(className, getDebugger().getEngineContext().getProjectSourceRoots())) {
-            logger.fine("LineBreakpoint "+breakpoint+" NOT submitted, URL "+breakpoint.getURL()+" not in sources, but class "+className+" exist in sources.");
+            logger.log(Level.FINE,
+                       "LineBreakpoint {0} NOT submitted, URL {1} not in sources, but class {2} exist in sources.",
+                       new Object[]{breakpoint, breakpoint.getURL(), className});
             return ;
         }
         if (isInSources && !isEnabled(sourcePath, preferredSourceRoot)) {
@@ -256,10 +258,14 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
                                                 "MSG_DifferentPrefferedSourceRoot",
                                                 preferredSourceRoot[0]);
             setInvalid(reason);
-            logger.fine("LineBreakpoint "+breakpoint+" NOT submitted, because of '"+reason+"'.");
+            logger.log(Level.FINE,
+                       "LineBreakpoint {0} NOT submitted, because of ''{1}''.",
+                       new Object[]{breakpoint, reason});
             return ;
         }
-        logger.fine("LineBreakpoint "+breakpoint+" - setting request for "+className);
+        logger.log(Level.FINE,
+                   "LineBreakpoint {0} - setting request for {1}",
+                   new Object[]{breakpoint, className});
         ClassNames classNames = getClassFilter().filterClassNames(
                 new ClassNames(
                     new String[] {
@@ -623,7 +629,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         } catch (DataObjectNotFoundException ex) {
         }
         if (dobj == null) return lineNumber;
-        final EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
         if (ec == null) return lineNumber;
         final BaseDocument doc;
         try {
@@ -641,6 +647,7 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
         final int[] result = new int[] {lineNumber};
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() {
                 }
                 @Override

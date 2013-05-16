@@ -274,7 +274,7 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
     }
     
     synchronized protected void addEventRequest (EventRequest r, boolean ignoreHitCount) throws InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper, InvalidRequestStateExceptionWrapper {
-        logger.fine("BreakpointImpl addEventRequest: " + r);
+        logger.log(Level.FINE, "BreakpointImpl addEventRequest: {0}", r);
         requests.add (r);
         getDebugger ().getOperator ().register (r, this);
        
@@ -329,7 +329,7 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
         try {
             for (i = 0; i < k; i++) { 
                 EventRequest r = requests.get (i);
-                logger.fine("BreakpointImpl removeEventRequest: " + r);
+                logger.log(Level.FINE, "BreakpointImpl removeEventRequest: {0}", r);
                 try {
                     EventRequestManagerWrapper.deleteEventRequest(
                             VirtualMachineWrapper.eventRequestManager(vm),
@@ -348,7 +348,7 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
         VirtualMachine vm = getDebugger().getVirtualMachine();
         if (vm == null) return; 
         try {
-            logger.fine("BreakpointImpl removeEventRequest: " + r);
+            logger.log(Level.FINE, "BreakpointImpl removeEventRequest: {0}", r);
             try {
                 EventRequestManagerWrapper.deleteEventRequest(
                         VirtualMachineWrapper.eventRequestManager(vm),
@@ -546,7 +546,7 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
             brkpSuspend = getBreakpoint().getSuspend();
         }
         resume = brkpSuspend.intValue() == JPDABreakpoint.SUSPEND_NONE || e.getResume ();
-        logger.fine("BreakpointImpl: perform breakpoint: " + this + " resume: " + resume);
+        logger.log(Level.FINE, "BreakpointImpl: perform breakpoint: {0} resume: {1}", new Object[]{this, resume});
         if (threadReference != null) {
             if (!resume) {
                 try {
@@ -794,11 +794,15 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
                 }
                 // condition true => stop here (do not resume)
                 // condition false => resume
-                logger.fine("BreakpointImpl: perform breakpoint (condition = " + success + "): " + this + " resume: " + (!success));
+                logger.log(Level.FINE,
+                           "BreakpointImpl: perform breakpoint (condition = {0}): {1} resume: {2}",
+                           new Object[]{success, this, !success});
                 return success;
             } catch (InvalidExpressionException ex) {
                 conditionException.put(event, ex);
-                logger.fine("BreakpointImpl: perform breakpoint (bad condition): '" + condition + "', got " + ex.getMessage());
+                logger.log(Level.FINE,
+                           "BreakpointImpl: perform breakpoint (bad condition): ''{0}'', got {1}",
+                           new Object[]{condition, ex.getMessage()});
                 return true; // Act as if the condition was satisfied when it's invalid
             }
         /*} catch (IncompatibleThreadStateException ex) {

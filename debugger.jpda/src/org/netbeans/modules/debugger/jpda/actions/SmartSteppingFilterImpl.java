@@ -79,6 +79,7 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
 
     {
         exclusionPatternsListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 setExclusionPatterns ();
             }
@@ -119,6 +120,7 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
      *
      * @param patterns a set of class exclusion filters to be added
      */
+    @Override
     public void addExclusionPatterns (Set<String> patterns) {
         Set<String> reallyNew = new HashSet<String>(patterns);
         reallyNew.removeAll (filter);
@@ -137,6 +139,7 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
      *
      * @param patterns a set of class exclusion filters to be added
      */
+    @Override
     public void removeExclusionPatterns (Set<String> patterns) {
         synchronized (filter) {
             filter.removeAll (patterns);
@@ -152,6 +155,7 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
     /**
      * Returns list of all exclusion patterns.
      */
+    @Override
     public String[] getExclusionPatterns () {
         synchronized (filter) {
             String[] ef = new String [filter.size ()];
@@ -182,6 +186,7 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
      *
      * @param l new listener.
      */
+    @Override
     public void addPropertyChangeListener (PropertyChangeListener l) {
         pcs.addPropertyChangeListener (l);
     }
@@ -191,6 +196,7 @@ public class SmartSteppingFilterImpl implements SmartSteppingFilter {
      *
      * @param l removed listener.
      */
+    @Override
     public void removePropertyChangeListener (
         PropertyChangeListener l
     ) {

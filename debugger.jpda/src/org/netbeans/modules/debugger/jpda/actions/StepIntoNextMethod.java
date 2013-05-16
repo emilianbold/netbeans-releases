@@ -79,7 +79,6 @@ import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.StackFrameWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.TypeComponentWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VirtualMachineWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.event.EventWrapper;
@@ -120,7 +119,7 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
         p = Properties.getDefault().getProperties("debugger.options.JPDA"); // NOI18N
     }
 
-    private final JPDADebuggerImpl getDebuggerImpl() {
+    private JPDADebuggerImpl getDebuggerImpl() {
         return debugger;
     }
 
@@ -540,7 +539,7 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                 // The request is gone - ignore
                 return ;
             }
-            smartLogger.finer("   add pattern: "+patterns[i]);
+            smartLogger.log(Level.FINER, "   add pattern: {0}", patterns[i]);
         }
     }
 
@@ -563,7 +562,7 @@ public class StepIntoNextMethod implements Executor, PropertyChangeListener {
                     StackFrameWrapper.location(f)));
                 for (String pattern : patterns) {
                     if (className.contentEquals(pattern)) {
-                        smartLogger.finer(" class '"+className+"' on stack.");
+                        smartLogger.log(Level.FINER, " class ''{0}'' on stack.", className);
                         return true;
                     }
                 }

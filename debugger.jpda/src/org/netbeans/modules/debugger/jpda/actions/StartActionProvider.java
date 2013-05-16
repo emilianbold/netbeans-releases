@@ -70,7 +70,6 @@ import org.netbeans.spi.debugger.ActionsProviderListener;
 
 import org.openide.ErrorManager;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 
 
 /**
@@ -109,10 +108,12 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
         this.lookupProvider = lookupProvider;
     }
     
+    @Override
     public Set getActions () {
         return Collections.singleton (ActionsManager.ACTION_START);
     }
     
+    @Override
     public void doAction (Object action) {
         logger.fine("S StartActionProvider.doAction ()");
         JPDADebuggerImpl debugger = (JPDADebuggerImpl) lookupProvider.
@@ -130,6 +131,7 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
                     "doAction () end");
     }
     
+    @Override
     public void postAction(Object action, final Runnable actionPerformedNotifier) {
         logger.fine("S StartActionProvider.postAction ()");
         JPDADebuggerImpl debugger = (JPDADebuggerImpl) lookupProvider.
@@ -153,6 +155,7 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
                     "postAction () setStarting end");
         
         debuggerImpl.getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 //debuggerImpl.setStartingThread(Thread.currentThread());
                 synchronized (startingThreadLock) {
@@ -227,12 +230,13 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
             ErrorManager.getDefault().notify(err);
         }
         if (throwable != null) {
-            logger.fine("S StartActionProvider." +
-                        "doAction ().thread end: threw " + throwable);
+            logger.log(Level.FINE,"S StartActionProvider.doAction ().thread end: threw {0}",
+                       throwable);
             debuggerImpl.setException (throwable);
             // kill the session that did not start properly
             final Session session = lookupProvider.lookupFirst(null, Session.class);
             debuggerImpl.getRequestProcessor().post(new Runnable() {
+                @Override
                 public void run() {
                     // Kill it in a separate thread so that the startup sequence can be finished.
                     session.kill();
@@ -241,11 +245,14 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
         }
     }
 
+    @Override
     public boolean isEnabled (Object action) {
         return true;
     }
 
+    @Override
     public void addActionsProviderListener (ActionsProviderListener l) {}
+    @Override
     public void removeActionsProviderListener (ActionsProviderListener l) {}
     
     private Operator createOperator (
@@ -256,6 +263,7 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
             virtualMachine,
             debuggerImpl,
             new Executor () {
+                @Override
                 public boolean exec(Event event) {
                     synchronized(startLock) {
                         startLock.notify();
@@ -263,10 +271,12 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
                     return false;
                 }
 
+                @Override
                 public void removed(EventRequest eventRequest) {}
                 
             },
             new Runnable () {
+                @Override
                 public void run () {
                     debuggerImpl.finish();
                 }
@@ -275,12 +285,14 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
         );
     }
 
+    @Override
     public boolean cancel() {
         synchronized (startingThreadLock) {
-            logger.fine("StartActionProvider.cancel(): startingThread = "+startingThread);
+            logger.log(Level.FINE, "StartActionProvider.cancel(): startingThread = {0}",
+                       startingThread);
             for (int i = 0; i < 10; i++) { // Repeat several times, it can be called too early
                 if (startingThread != null) {
-                    logger.fine("Interrupting "+startingThread);
+                    logger.log(Level.FINE, "Interrupting {0}", startingThread);
                     startingThread.interrupt();
                     boolean cancelInterrupted = false;
                     try {
@@ -289,7 +301,7 @@ public class StartActionProvider extends ActionsProvider implements Cancellable 
                         cancelInterrupted = true;
                     }
                     AbstractDICookie cookie = lookupProvider.lookupFirst(null, AbstractDICookie.class);
-                    logger.fine("Listening cookie = "+cookie+", is listening = "+(cookie instanceof ListeningDICookie));
+                    logger.log(Level.FINE, "Listening cookie = {0}, is listening = {1}", new Object[]{cookie, cookie instanceof ListeningDICookie});
                     if (cookie instanceof ListeningDICookie) {
                         ListeningDICookie lc = (ListeningDICookie) cookie;
                         try {

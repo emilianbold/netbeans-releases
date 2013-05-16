@@ -73,7 +73,6 @@ import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.ClassLoadUnloadBreakpoint;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
@@ -305,7 +304,8 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         } catch (AbsentInformationException aiex) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
         }
-        logger.fine("doAction("+url+", "+clazz+", "+methodLine+", "+methodName+") locations = "+locations);
+        logger.log(Level.FINE, "doAction({0}, {1}, {2}, {3}) locations = {4}",
+                   new Object[]{ url, clazz, methodLine, methodName, locations });
         if (locations.isEmpty()) {
             String message = NbBundle.getMessage(RunIntoMethodActionProvider.class,
                                                  "MSG_RunIntoMeth_absentInfo",
@@ -360,7 +360,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         try {
             topFramePtr = ct.getCallStack(0, 1);
         } catch (AbsentInformationException ex) {
-            logger.fine("doAction() = false, ex = "+ex);
+            logger.log(Level.FINE, "doAction() = false, ex = {0}", ex);
             return false;
         }
         if (topFramePtr.length < 1) {
@@ -381,7 +381,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
             return false; // No stepping without the correct functionality.
         }
         final boolean doFinishWhenMethodNotFound = setBoundaryStep;
-        logger.fine("doAction() areWeOnTheLocation = "+areWeOnTheLocation+", methodName = "+methodName);
+        logger.log(Level.FINE, "doAction() areWeOnTheLocation = {0}, methodName = {1}", new Object[]{areWeOnTheLocation, methodName});
         if (areWeOnTheLocation) {
             // We're on the line from which the method is called
             traceLineForMethod(debugger, ct.getThreadReference(), methodName, line, doFinishWhenMethodNotFound);
@@ -400,7 +400,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                         ThreadReference tr = ((BreakpointEvent) event).thread();
                         try {
                             if (!preferredThread.equals(tr)) {
-                                logger.fine("doAction: tracingExecutor.exec("+event+") called with non-preferred thread.");
+                                logger.log(Level.FINE, "doAction: tracingExecutor.exec({0}) called with non-preferred thread.", event);
                                 // Wait a while for the preferred thread to hit the breakpoint...
                                 int i = 20;
                                 while (!ThreadReferenceWrapper.isAtBreakpoint(preferredThread) && i > 0) {
@@ -417,7 +417,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                                         if (ThreadReferenceWrapper.frameCount(preferredThread) > 0) {
                                             Location prLoc = StackFrameWrapper.location(ThreadReferenceWrapper.frame(preferredThread, 0));
                                             if (trLoc.equals(prLoc)) {
-                                                logger.fine("doAction: tracingExecutor - preferredThread "+preferredThread+" is at breakpoint, resuming hit thread "+tr);
+                                                logger.log(Level.FINE, "doAction: tracingExecutor - preferredThread {0} is at breakpoint, resuming hit thread {1}", new Object[]{preferredThread, tr});
                                                 return true; // Resume this thread, the preferred thread has hit.
                                             }
                                         }
@@ -526,18 +526,19 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
         final int depth = jtr.getStackDepth();
         final JPDAStep step = debugger.createJPDAStep(JPDAStep.STEP_LINE, JPDAStep.STEP_INTO);
         step.setHidden(true);
-        logger.fine("Will traceLineForMethod("+method+", "+methodLine+", "+finishWhenNotFound+")");
+        logger.log(Level.FINE, "Will traceLineForMethod({0}, {1}, {2})",
+                   new Object[]{method, methodLine, finishWhenNotFound});
         step.addPropertyChangeListener(JPDAStep.PROP_STATE_EXEC, new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (Logger.getLogger(RunIntoMethodActionProvider.class.getName()).isLoggable(Level.FINE)) {
+                if (logger.isLoggable(Level.FINE)) {
                     logger.fine("traceLineForMethod("+method+") step is at "+debugger.getCurrentThread().getClassName()+":"+debugger.getCurrentThread().getMethodName());
                 }
                 //System.err.println("RunIntoMethodActionProvider: Step fired, at "+
                 //                   debugger.getCurrentThread().getMethodName()+"()");
                 //JPDAThread t = debugger.getCurrentThread();
                 int currentDepth = jtr.getStackDepth();
-                logger.fine("  depth = "+currentDepth+", target = "+depth);
+                logger.log(Level.FINE, "  depth = {0}, target = {1}", new Object[]{currentDepth, depth});
                 if (currentDepth == depth) { // We're in the outer expression
                     try {
                         if (jtr.getCallStack()[0].getLineNumber("Java") != methodLine) {
@@ -555,7 +556,8 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
                     }
                 } else {
                     String threadMethod = jtr.getMethodName();
-                    logger.fine("  threadMethod = '"+threadMethod+"', tracing method = '"+method+"', equals = "+threadMethod.equals(method));
+                    logger.log(Level.FINE, "  threadMethod = ''{0}'', tracing method = ''{1}'', equals = {2}",
+                               new Object[]{threadMethod, method, threadMethod.equals(method)});
                     if (threadMethod.equals(method)) {
                         // We've found it :-)
                         step.setHidden(false);
