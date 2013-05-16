@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.jquery.editor;
 
+import org.netbeans.modules.javascript2.jquery.PropertyNameDataItem;
 import org.netbeans.modules.javascript2.jquery.SelectorItem;
 import java.io.File;
 import java.io.IOException;
@@ -48,6 +49,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -63,8 +65,10 @@ import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
+import org.netbeans.modules.javascript2.jquery.PropertyNameDataLoader;
 import org.netbeans.modules.javascript2.jquery.model.JQueryUtils;
 import org.netbeans.modules.javascript2.jquery.SelectorsLoader;
+import org.netbeans.modules.javascript2.jquery.editor.JQueryCompletionItem.DocSimpleElement;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -80,6 +84,9 @@ public class JQueryCodeCompletion implements CompletionProvider {
 
     public static final String HELP_LOCATION = "docs/jquery-api.xml"; //NOI18N
     private static File jQueryApiFile;
+    
+    private static final String PROPERTY_NAME_FILE_LOCATION = "docs/jquery-propertyNames.xml"; //NOI18N
+    private static File propertyNameFile;
 
     private static Collection<HtmlTagAttribute> allAttributes;
 
@@ -99,6 +106,9 @@ public class JQueryCodeCompletion implements CompletionProvider {
                 if (JQueryUtils.isInJQuerySelector(parserResult, lastTsOffset)) {
                     addSelectors(result, parserResult, prefix, lastTsOffset);
                 }
+                break;
+            case OBJECT_PROPERTY_NAME:
+                completeObjectPropertyName(ccContext, result, prefix);
                 break;
             default:
                 break;
@@ -164,6 +174,9 @@ public class JQueryCodeCompletion implements CompletionProvider {
     
 
     public String getHelpDocumentation(ParserResult info, ElementHandle element) {
+        if (element != null && element instanceof DocSimpleElement) {
+            return ((DocSimpleElement)element).getDocumentation();
+        }
         if (element.getKind() == ElementKind.CALL) {
             String name = element.getName();
             name = name.substring(1); // remove :
@@ -180,6 +193,83 @@ public class JQueryCodeCompletion implements CompletionProvider {
         return null;
     }
 
+    private void completeObjectPropertyName(CodeCompletionContext ccContext, List<CompletionProposal> result, String prefix) {
+        
+        // find the object that can be configured
+        TokenHierarchy<?> th = ccContext.getParserResult().getSnapshot().getTokenHierarchy();
+        if (th == null) {
+            return;
+        }
+        int carretOffset  = ccContext.getCaretOffset();
+        int eOffset = ccContext.getParserResult().getSnapshot().getEmbeddedOffset(carretOffset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, eOffset);
+        if (ts == null) {
+            return;
+        }
+        
+        ts.move(eOffset);
+        
+        if (!ts.moveNext() && !ts.movePrevious()){
+            return;
+        }
+        
+        Token<? extends JsTokenId> token = null;
+        JsTokenId tokenId;
+        //find the begining of the object literal
+        int balance = 1;
+        while (ts.movePrevious() && balance > 0) {
+            token = ts.token();
+            tokenId = token.id();
+            if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY) {
+                balance++;
+            } else if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
+                balance--;
+            }
+        }
+        if (token == null || balance != 0) {
+            return;
+        }
+        
+        // now we should be at the beginning of the object literal. 
+        token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.IDENTIFIER));
+        tokenId = token.id();
+        StringBuilder sb = new StringBuilder(token.text());
+        while ((tokenId == JsTokenId.IDENTIFIER || tokenId == JsTokenId.OPERATOR_DOT) && ts.movePrevious()) {
+            token = ts.token(); tokenId = token.id();
+            if (tokenId == JsTokenId.OPERATOR_DOT) {
+                sb.insert(0, '.'); // NOI18N
+            } else if (tokenId == JsTokenId.IDENTIFIER) {
+                sb.insert(0, token.text());
+            }
+        }
+        
+        String fqn = sb.toString();
+        Map<String, Collection<PropertyNameDataItem>> data = getPropertyNameData();
+        if (fqn.startsWith("$")) {
+            fqn = fqn.replace("$", "jQuery");
+        }
+        Collection<PropertyNameDataItem> items = data.get(fqn);
+        int anchorOffset = eOffset - ccContext.getPrefix().length();
+        if (items != null) {
+            for (PropertyNameDataItem item : items) {
+                if (item.getName().startsWith(prefix)) {
+                    result.add(JQueryCompletionItem.createPropertyNameItem(item, anchorOffset));
+                }
+            }
+        }
+    }
+
+    private synchronized static Map<String, Collection<PropertyNameDataItem>> getPropertyNameData() {
+        return PropertyNameDataLoader.getData(getPropertyNameDataFile());
+    }
+    
+    private static synchronized File getPropertyNameDataFile() {
+        if (propertyNameFile == null) {
+            propertyNameFile = InstalledFileLocator.getDefault().locate(PROPERTY_NAME_FILE_LOCATION, "org.netbeans.modules.javascript2.jquery", false); //NOI18N
+        }
+        return propertyNameFile;
+    }
+    
     private enum SelectorKind {
         TAG, TAG_ATTRIBUTE, CLASS, ID, TAG_ATTRIBUTE_COMPARATION, AFTER_COLON
     }
