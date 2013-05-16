@@ -244,7 +244,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
         }
         projectItems.clear();
-        sourceRoots.clear();
+        synchronized (sourceRoots) {
+            sourceRoots.clear();
+        }
         testRoots.clear();
         rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N;
         sourceFileItems = null;
@@ -962,7 +964,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         setLogicalFolders(copyExtProjectDescriptor.getLogicalFolders());
         setProjectItemsMap(((MakeConfigurationDescriptor) copyProjectDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor) copyProjectDescriptor).getProjectItemsChangeListeners());
-        setSourceRoots(((MakeConfigurationDescriptor) copyProjectDescriptor).getSourceRootsRaw());
+        setSourceRoots(((MakeConfigurationDescriptor) copyProjectDescriptor).getSourceRoots());
     }
 
     @Override
@@ -985,7 +987,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         setLogicalFolders(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getLogicalFolders());
         setProjectItemsMap(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsChangeListeners());
-        setSourceRoots(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getSourceRootsRaw());
+        setSourceRoots(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getSourceRoots());
         setTestRoots(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getTestRootsRaw());
         setFolderVisibilityQuery(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getFolderVisibilityQuery().getRegEx());
     }
@@ -1000,7 +1002,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         clone.setLogicalFolders(getLogicalFolders());
         clone.setProjectItemsMap(getProjectItemsMap());
         clone.setProjectItemsChangeListeners(getProjectItemsChangeListeners());
-        clone.setSourceRoots(getSourceRootsRaw());
+        clone.setSourceRoots(getSourceRoots());
         clone.setTestRoots(getTestRootsRaw());
         clone.setFolderVisibilityQuery(getFolderVisibilityQuery().getRegEx());
         return clone;
@@ -1562,13 +1564,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (makeSources != null) {
             makeSources.sourceRootsChanged();
         }
-    }
-
-    /*
-     * Return real list
-     */
-    private List<String> getSourceRootsRaw() {
-        return sourceRoots;
     }
 
     private List<String> getTestRootsRaw() {

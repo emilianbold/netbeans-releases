@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,31 +40,85 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-
-package org.netbeans.modules.cnd.repository.spi;
-
-import org.netbeans.modules.cnd.repository.api.RepositoryException;
-/**
  *
- * @author Nickolay Dalmatov
+ * Contributor(s): Soot Phengsy
  */
-public interface RepositoryListener {
-    /**
-     * invoked once an access to not yet opened unit happens
-     * @param unitName String the name of the unit
-     */
-    boolean unitOpened(int unitId, CharSequence unitName);
 
-    /**
-     * invoked once a unit is closed
-     * @param unitName String the name of the unit
-     */    
-    void unitClosed(int unitId, CharSequence unitName);
+package org.netbeans.modules.remote.api.ui;
 
-    void unitRemoved(int unitId, CharSequence unitName);
+import java.awt.event.*;
+import java.awt.*;
+import javax.swing.*;
+import javax.swing.event.*;
+
+/**
+ * Blocks user's input when FileChooser is busy.
+ *
+ * @author Soot Phengsy
+ */
+class InputBlocker extends JComponent implements MouseInputListener {
     
-    void anExceptionHappened(int unitId, CharSequence unitName, RepositoryException exc);
+    public InputBlocker() {
+    }
 
+    private void addListeners(Component c) {
+        for( MouseListener ml : c.getMouseListeners() ) {
+            if( ml == this )
+                return;
+        }
+        c.addMouseListener(this);
+        c.addMouseMotionListener(this);
+    }
+
+    private void removeListeners(Component c) {
+        c.removeMouseListener(this);
+        c.removeMouseMotionListener(this);
+    }
+    
+    public void block(JRootPane rootPane) {
+        if( null == rootPane )
+            return;
+        Component glassPane = rootPane.getGlassPane();
+        if( null == glassPane ) {
+            rootPane.setGlassPane(this);
+            glassPane = this;
+        }
+        glassPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        addListeners(glassPane);
+        glassPane.setVisible(true);
+    }
+    
+    public void unBlock(JRootPane rootPane) {
+        if( null == rootPane )
+            return;
+        Component glassPane = rootPane.getGlassPane();
+        if( null == glassPane ) {
+            return;
+        }
+        removeListeners(glassPane);
+        glassPane.setCursor(null);
+        glassPane.setVisible(false);
+    }
+
+    public void mouseClicked(MouseEvent e) {
+        Toolkit.getDefaultToolkit().beep();
+    }
+
+    public void mousePressed(MouseEvent e) {
+    }
+
+    public void mouseReleased(MouseEvent e) {
+    }
+
+    public void mouseEntered(MouseEvent e) {
+    }
+
+    public void mouseExited(MouseEvent e) {
+    }
+
+    public void mouseDragged(MouseEvent e) {
+    }
+
+    public void mouseMoved(MouseEvent e) {
+    }
 }

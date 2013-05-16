@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,45 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.cnd.makeproject.ui;
 
-import java.awt.Dialog;
-import java.util.List;
-import javax.swing.AbstractAction;
+import java.util.EventListener;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks.BrokenLink;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.util.NbBundle;
 
 /**
  *
- * @author Alexander Simon
+ * @author akrasny
  */
-public class ResolveReferenceAction extends AbstractAction {
+final class BrokenViewItemRefreshSupport {
 
-    private Project project;
+    private static final BrokenViewItemRefreshSupport inst = new BrokenViewItemRefreshSupport();
+    private final Set<BrokenViewItemListener> listeners = new HashSet<BrokenViewItemListener>();
 
-    /** Creates a new instance of BrowserAction */
-    public ResolveReferenceAction(Project project) {
-        super(NbBundle.getBundle(ResolveReferenceAction.class).getString("CTL_ResolveReferenceAction"), // NOI18N
-                null);
-        this.project = project;
+    private BrokenViewItemRefreshSupport() {
     }
 
-    @Override
-    public void actionPerformed(java.awt.event.ActionEvent ev) {
-        List<BrokenLink> brokenLinks = BrokenLinks.getBrokenLinks(project);
-        ResolveReferencePanel panel = new ResolveReferencePanel(brokenLinks);
-        DialogDescriptor dd = new DialogDescriptor(panel,
-                NbBundle.getMessage(ResolveReferenceAction.class, "Link_Dialog_Title"), true,
-                new Object[]{DialogDescriptor.CLOSED_OPTION}, DialogDescriptor.CLOSED_OPTION,
-                DialogDescriptor.DEFAULT_ALIGN, null, null);
-        Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
-        dialog.setVisible(true);
-        dialog.dispose();
-        return;
+    public static void addBrokenViewItemListener(BrokenViewItemListener listener) {
+        synchronized (inst) {
+            inst.listeners.add(listener);
+        }
+    }
+
+    public static void removeBrokenViewItemListener(BrokenViewItemListener listener) {
+        synchronized (inst) {
+            inst.listeners.remove(listener);
+        }
+    }
+
+    static void refreshBrokenItems(Project project) {
+        BrokenViewItemListener[] copy;
+        synchronized (inst) {
+            copy = inst.listeners.toArray(new BrokenViewItemListener[inst.listeners.size()]);
+        }
+        for (BrokenViewItemListener listener : copy) {
+            listener.revalidate(project);
+        }
+    }
+
+    public interface BrokenViewItemListener extends EventListener {
+
+        public void revalidate(Project project);
     }
 }

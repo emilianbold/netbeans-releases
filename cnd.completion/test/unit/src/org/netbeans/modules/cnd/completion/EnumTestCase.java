@@ -78,6 +78,10 @@ public class EnumTestCase extends CompletionBaseTestCase {
         super.performTest("file.cc", 20, 5, "aa.");
     }
     
+    public void testBug228519() throws Exception {
+        super.performTest("bug228519.cpp", 34, 33);
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     

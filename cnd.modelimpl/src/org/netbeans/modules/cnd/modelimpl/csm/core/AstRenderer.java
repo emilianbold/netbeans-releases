@@ -78,10 +78,11 @@ public class AstRenderer {
     protected final FileContent fileContent;
     private boolean registeredFakeInclude = false;
     protected final Map<Integer, CsmObject> objects;
+    protected final String language;
 
     private static final boolean SKIP_AST_RENDERER_EXCEPTIONS = Boolean.getBoolean("cnd.skip.ast.renderer.exceptions"); //NOI18N
 
-    public AstRenderer(FileImpl fileImpl, FileContent fileContent, Map<Integer, CsmObject> objects) {
+    public AstRenderer(FileImpl fileImpl, FileContent fileContent, String language, Map<Integer, CsmObject> objects) {
         if (isBeingParsed(fileImpl)) {
             CndUtils.assertNotNullInConsole(fileContent, "null file content"); // NOI18N
             assert false;
@@ -90,10 +91,11 @@ public class AstRenderer {
         this.file = fileImpl;
         this.fileContent = fileContent;
         this.objects = objects;
+        this.language = language;
     }
 
     public AstRenderer(FileImpl fileImpl) {
-        this(fileImpl, null, null);
+        this(fileImpl, null, fileImpl.getFileLanguage(), null);
     }
     
     protected CsmFile getContainingFile() {
@@ -138,7 +140,7 @@ public class AstRenderer {
                             CsmObject o = objects.get(OffsetableBase.getStartOffset(token));
                             if(o instanceof ClassImpl) {
                                 ClassImpl cls = (ClassImpl)o;
-                                cls.render(token, getContainingFile(), fileContent, isRenderingLocalContext());
+                                cls.render(token, getContainingFile(), fileContent, language, isRenderingLocalContext());
                                 //container.addDeclaration(cls);
                                 addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
                                 renderVariableInClassifier(token, cls, currentNamespace, container);
@@ -150,8 +152,8 @@ public class AstRenderer {
                         }                    
                         if(planB) {
                             ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
-                                                ClassImplSpecialization.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container) :
-                                                ClassImpl.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container);
+                                                ClassImplSpecialization.create(token, currentNamespace, file, language, fileContent, !isRenderingLocalContext(), container) :
+                                                ClassImpl.create(token, currentNamespace, file, language, fileContent, !isRenderingLocalContext(), container);
                             container.addDeclaration(cls);
                             addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
                             renderVariableInClassifier(token, cls, currentNamespace, container);
@@ -245,14 +247,14 @@ public class AstRenderer {
                         break;
                     case CPPTokenTypes.CSM_TEMPLATE_EXPLICIT_SPECIALIZATION:
                         if (isClassSpecialization(token)) {
-                            ClassImpl spec = ClassImplSpecialization.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container);
+                            ClassImpl spec = ClassImplSpecialization.create(token, currentNamespace, file, language, fileContent, !isRenderingLocalContext(), container);
                             container.addDeclaration(spec);
                             addTypedefs(renderTypedef(token, spec, currentNamespace).typedefs, currentNamespace, container, spec);
                         } else {
                             if (isMemberDefinition(token)) {
                                 if(!isFunctionSpecialization(token)) {
                                     // this is a template method specialization declaration (without a definition)
-                                    ClassImplFunctionSpecialization spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container);
+                                    ClassImplFunctionSpecialization spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, language, fileContent, !isRenderingLocalContext(), container);
                                     container.addDeclaration(spec);
                                     MethodImplSpecialization explicitSpecializationDeclaration = MethodImplSpecialization.create(token, file, fileContent, spec, CsmVisibility.PUBLIC, !isRenderingLocalContext());
                                     spec.addMember(explicitSpecializationDeclaration, !isRenderingLocalContext());
@@ -288,7 +290,7 @@ public class AstRenderer {
                     case CPPTokenTypes.CSM_TEMPLATE_FUNCTION_DEFINITION_EXPLICIT_SPECIALIZATION:
                         if (isMemberDefinition(token)) {
                             if(!isFunctionSpecialization(token)) {
-                                ClassImpl spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext(), container);
+                                ClassImpl spec = ClassImplFunctionSpecialization.create(token, currentNamespace, file, language, fileContent, !isRenderingLocalContext(), container);
                                 container.addDeclaration(spec);
                             }
                             FunctionDefinitionImpl<Object> funcDef = FunctionDefinitionImpl.create(token, file, fileContent, currentNamespace, !isRenderingLocalContext(), objects);
@@ -1921,7 +1923,7 @@ public class AstRenderer {
         class AstRendererEx extends AstRenderer {
 
             public AstRendererEx(FileContent fileContent) {
-                super((FileImpl) file, fileContent, null);
+                super((FileImpl) file, fileContent, ((FileImpl) file).getFileLanguage(), null);
             }
 
             @Override
@@ -2108,7 +2110,7 @@ public class AstRenderer {
             case CPPTokenTypes.CSM_ENUM_FWD_DECLARATION:
             case CPPTokenTypes.CSM_DECLARATION_STATEMENT:
             case CPPTokenTypes.CSM_GENERIC_DECLARATION:
-                if(new AstRenderer((FileImpl) file, null, objects).isExpressionLikeDeclaration(ast, scope)) {
+                if(new AstRenderer((FileImpl) file, null, ((FileImpl) file).getFileLanguage(), objects).isExpressionLikeDeclaration(ast, scope)) {
                     return ExpressionStatementImpl.create(ast, file, scope);
                 } else {
                     return DeclarationStatementImpl.create(ast, file, scope);

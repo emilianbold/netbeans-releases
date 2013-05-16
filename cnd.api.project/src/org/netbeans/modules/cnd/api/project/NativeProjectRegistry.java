@@ -44,8 +44,10 @@ package org.netbeans.modules.cnd.api.project;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
@@ -158,13 +160,15 @@ public final class NativeProjectRegistry {
 
     private void notifyListeners(Collection<NativeProject> oldProjects, Collection<NativeProject> newProjects) {
         PropertyChangeEvent ev = new PropertyChangeEvent(this, PROPERTY_OPEN_NATIVE_PROJECTS, oldProjects, newProjects);
+        List<PropertyChangeListener> listeners_copy;
         listenersLock.readLock().lock();
         try {
-            for(PropertyChangeListener listener : listeners) {
-                listener.propertyChange(ev);
-            }
+            listeners_copy = new ArrayList<PropertyChangeListener>(listeners);
         } finally {
             listenersLock.readLock().unlock();
+        }
+        for (PropertyChangeListener listener : listeners_copy) {
+            listener.propertyChange(ev);
         }
     }
 }

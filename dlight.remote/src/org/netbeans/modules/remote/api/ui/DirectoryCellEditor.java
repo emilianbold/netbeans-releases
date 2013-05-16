@@ -27,7 +27,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -40,31 +40,59 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- */
-
-
-package org.netbeans.modules.cnd.repository.spi;
-
-import org.netbeans.modules.cnd.repository.api.RepositoryException;
-/**
  *
- * @author Nickolay Dalmatov
+ * Contributor(s): Soot Phengsy
  */
-public interface RepositoryListener {
-    /**
-     * invoked once an access to not yet opened unit happens
-     * @param unitName String the name of the unit
-     */
-    boolean unitOpened(int unitId, CharSequence unitName);
 
-    /**
-     * invoked once a unit is closed
-     * @param unitName String the name of the unit
-     */    
-    void unitClosed(int unitId, CharSequence unitName);
+package org.netbeans.modules.remote.api.ui;
 
-    void unitRemoved(int unitId, CharSequence unitName);
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.event.MouseEvent;
+import java.util.EventObject;
+import javax.swing.DefaultCellEditor;
+import javax.swing.JFileChooser;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.JTree;
+
+/**
+ * A simple tree cell editor helper used to properly display a node while in editing mode.
+ * @author Soot Phengsy
+ */
+class DirectoryCellEditor extends DefaultCellEditor {
     
-    void anExceptionHappened(int unitId, CharSequence unitName, RepositoryException exc);
-
+    private final JPanel editorPanel = new JPanel(new BorderLayout());
+    private static JTextField textField;
+    private static JTree tree;
+    private static JFileChooser fileChooser;
+    
+    public DirectoryCellEditor(JTree tree, JFileChooser fileChooser, final JTextField textField) {
+        super(textField);
+        this.tree = tree;
+        this.textField = textField;
+        this.fileChooser = fileChooser;
+    }
+    
+    public boolean isCellEditable(EventObject event) {
+        return ((event instanceof MouseEvent) ? false : true);
+    }
+    
+    public Component getTreeCellEditorComponent(JTree tree, Object value, boolean isSelected, boolean expanded, boolean leaf, int row) {
+        Component c = super.getTreeCellEditorComponent(tree, value, isSelected, expanded, leaf, row);
+        FileNode node = (FileNode)value;
+        editorPanel.setOpaque(false);
+        editorPanel.add(new JLabel(fileChooser.getIcon(node.getFile())), BorderLayout.CENTER);
+        editorPanel.add(c, BorderLayout.EAST);
+        textField = (JTextField)getComponent();
+        String text = fileChooser.getName(node.getFile());
+        textField.setText(text);
+        textField.setColumns(text.length());
+        return editorPanel;
+    }
+    
+    public static JTextField getTextField() {
+        return textField;
+    }
 }
