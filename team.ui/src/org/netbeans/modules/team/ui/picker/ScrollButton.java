@@ -43,6 +43,7 @@
 package org.netbeans.modules.team.ui.picker;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -124,7 +125,7 @@ final class ScrollButton extends JButton implements ActionListener {
     public Icon getIcon() {
         if( isEnabled() )
             return super.getIcon();
-        return null;
+        return EMPTY_ICON;
     }
     
     private Timer getTimer() {
@@ -193,4 +194,22 @@ final class ScrollButton extends JButton implements ActionListener {
             stopTimer();
         }
     }
+    
+    private static final Icon EMPTY_ICON = new Icon() {
+
+        @Override
+        public void paintIcon( Component c, Graphics g, int x, int y ) {
+        }
+
+        @Override
+        public int getIconWidth() {
+            return 10;
+        }
+
+        @Override
+        public int getIconHeight() {
+            return 10;
+        }
+        
+    };
 }

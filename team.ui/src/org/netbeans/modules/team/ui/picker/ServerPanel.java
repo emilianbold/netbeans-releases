@@ -42,7 +42,6 @@
 package org.netbeans.modules.team.ui.picker;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -124,28 +123,7 @@ class ServerPanel extends JPanel {
         super.removeNotify();
         server.removePropertyChangeListener( loginListener );
     }
-
-
-    @Override
-    public Dimension getMaximumSize() {
-        Dimension res = super.getMaximumSize();
-        res.width = Math.min( res.width, MAX_COLUMN_WIDTH );
-        return res;
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        Dimension res = super.getPreferredSize();
-        res.width = Math.min( res.width, MAX_COLUMN_WIDTH );
-        return res;
-    }
-
-    @Override
-    public void setBounds(int x, int y, int width, int height) {
-        width = Math.min( width, MAX_COLUMN_WIDTH);
-        super.setBounds( x, y, width, height );
-    }
-
+    
     private JComponent createHeader() {
         JPanel res = new JPanel( new BorderLayout(10,10) );
         res.setOpaque( false );
