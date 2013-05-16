@@ -88,7 +88,7 @@ abstract class ExportCommit extends ExportDiffSupport {
     }
 
     public String getSelectionRevision() {
-        return controller.getRevision();
+        return controller.getRevision().getRevision();
     }
 
     @Override

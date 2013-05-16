@@ -72,7 +72,7 @@ public class MergeRevision {
     }
 
     String getRevision() {
-        return revisionPicker.getRevision();
+        return revisionPicker.getRevision().getRevision();
     }
 
     boolean show() {
