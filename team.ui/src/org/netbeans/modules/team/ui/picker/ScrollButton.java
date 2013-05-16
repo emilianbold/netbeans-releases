@@ -78,6 +78,7 @@ final class ScrollButton extends JButton implements ActionListener {
         setContentAreaFilled( false );
         setOpaque( false );
         setDefaultCapable( false );
+        setRolloverEnabled( true );
 
         String imgName = null;
         switch( orientation ) {
