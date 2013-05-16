@@ -75,7 +75,7 @@ public class Reset implements ActionListener {
     }
 
     String getRevision () {
-        return revisionPicker.getRevision();
+        return revisionPicker.getRevision().getRevision();
     }
 
     boolean show () {
