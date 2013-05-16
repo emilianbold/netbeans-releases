@@ -56,6 +56,7 @@ import static org.netbeans.CLIHandlerTest.*;
  * Test the command-line-interface handler.
  * @author Jaroslav Tulach
  */
+@RandomlyFails
 public class CLIHandlerServerWaitsTest extends NbTestCase {
 
     final static ByteArrayInputStream nullInput = new ByteArrayInputStream(new byte[0]);
