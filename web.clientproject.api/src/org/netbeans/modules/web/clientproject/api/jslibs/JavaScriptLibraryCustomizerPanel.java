@@ -63,6 +63,7 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
@@ -170,20 +171,38 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
     @Override
     public void addNotify() {
         super.addNotify();
-        setJsFiles();
+        initPanel();
         validateData();
     }
 
-    private void setJsFiles() {
-        assert EventQueue.isDispatchThread();
-        // set js files
+    private void initPanel() {
+        File webRoot = getValidWebRoot();
+        setBrowseButtonVisible(webRoot);
+        setJsFiles(webRoot);
+    }
+
+    @CheckForNull
+    private File getValidWebRoot() {
         File webRoot = customizerSupport.getWebRoot(context);
         ValidationResult result = validateWebRoot(webRoot);
-        Collection<String> jsFiles;
         if (result.hasErrors()) {
+            return null;
+        }
+        return webRoot;
+    }
+
+    private void setBrowseButtonVisible(File webRoot) {
+        assert EventQueue.isDispatchThread();
+        javaScriptLibrarySelection.setBrowseButtonVisible(webRoot);
+    }
+
+    private void setJsFiles(File webRoot) {
+        assert EventQueue.isDispatchThread();
+        // set js files
+        Collection<String> jsFiles;
+        if (webRoot == null) {
             jsFiles = Collections.<String>emptyList();
         } else {
-            assert webRoot != null;
             jsFiles = findProjectJsFiles(FileUtil.toFileObject(webRoot));
         }
         javaScriptLibrarySelection.updateDefaultLibraries(jsFiles);

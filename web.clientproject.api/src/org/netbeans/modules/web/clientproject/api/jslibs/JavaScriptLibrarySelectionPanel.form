@@ -20,6 +20,8 @@
               <Component id="librariesFolderLabel" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="librariesFolderTextField" max="32767" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
+              <Component id="librariesFolderBrowseButton" min="-2" max="-2" attributes="0"/>
           </Group>
           <Group type="102" alignment="0" attributes="0">
               <Component id="generalInfoLabel" pref="0" max="32767" attributes="0"/>
@@ -84,6 +86,7 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="librariesFolderLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="librariesFolderTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="librariesFolderBrowseButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
           </Group>
       </Group>
@@ -183,6 +186,16 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="js/libs" noResource="true"/>
       </Properties>
+    </Component>
+    <Component class="javax.swing.JButton" name="librariesFolderBrowseButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/web/clientproject/api/jslibs/Bundle.properties" key="JavaScriptLibrarySelectionPanel.librariesFolderBrowseButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="librariesFolderBrowseButtonActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
