@@ -234,7 +234,7 @@ public final class OptionsChooserPanel extends JPanel {
     }
 
     @NbBundle.Messages({
-        "OPT_RestartAfterImport=false"
+        "OPT_RestartAfterImport=true"
     })
     /** Shows panel for import of options. */
     public static void showImportDialog() {
