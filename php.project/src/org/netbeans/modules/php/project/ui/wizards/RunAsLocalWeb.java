@@ -217,6 +217,14 @@ public class RunAsLocalWeb extends RunAsPanel.InsidePanel {
         copyFilesVisual.selectLocalServer(localServer);
     }
 
+    public boolean isCopyFilesOnOpen() {
+        return copyFilesVisual.isCopyOnOpen();
+    }
+
+    public void setCopyFilesOnOpen(boolean copyFilesOnOpen) {
+        copyFilesVisual.setCopyOnOpen(copyFilesOnOpen);
+    }
+
     public void setIndexFile(String indexFile) {
         indexFileTextField.setText(indexFile);
     }

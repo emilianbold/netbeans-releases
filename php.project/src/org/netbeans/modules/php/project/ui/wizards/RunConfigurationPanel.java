@@ -98,6 +98,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     static final String COPY_SRC_FILES = "copySrcFiles"; // NOI18N
     static final String COPY_SRC_TARGET = "copySrcTarget"; // NOI18N
     static final String COPY_SRC_TARGETS = "copySrcTargets"; // NOI18N
+    static final String COPY_SRC_ON_OPEN = "copySrcOnOpen"; // NOI18N
     static final String REMOTE_CONNECTION = "remoteConnection"; // NOI18N
     static final String REMOTE_DIRECTORY = "remoteDirectory"; // NOI18N
     static final String REMOTE_UPLOAD = "remoteUpload"; // NOI18N
@@ -266,6 +267,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             });
         }
         runAsLocalWeb.setCopyFiles(getCopyFiles());
+        runAsLocalWeb.setCopyFilesOnOpen(getCopyFilesOnOpen());
 
         runAsRemoteWeb.setUploadDirectory(getUploadDirectory());
 
@@ -286,6 +288,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         settings.putProperty(COPY_SRC_FILES, runAsLocalWeb.isCopyFiles());
         settings.putProperty(COPY_SRC_TARGET, runAsLocalWeb.getLocalServer());
         settings.putProperty(COPY_SRC_TARGETS, runAsLocalWeb.getLocalServerModel());
+        settings.putProperty(COPY_SRC_ON_OPEN, runAsLocalWeb.isCopyFilesOnOpen());
 
         switch (runAs) {
             case LOCAL:
@@ -344,6 +347,14 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         Boolean copyFiles = (Boolean) descriptor.getProperty(COPY_SRC_FILES);
         if (copyFiles != null) {
             return copyFiles;
+        }
+        return false;
+    }
+
+    private boolean getCopyFilesOnOpen() {
+        Boolean copyFilesOnOpen = (Boolean) descriptor.getProperty(COPY_SRC_ON_OPEN);
+        if (copyFilesOnOpen != null) {
+            return copyFilesOnOpen;
         }
         return false;
     }
