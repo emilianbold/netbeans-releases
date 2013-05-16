@@ -145,7 +145,10 @@ public class AddExistingItemAction extends NodeAction {
             return;
         }
 
-	File[] files = fileChooser.getSelectedFiles();
+        File[] files = fileChooser.getSelectedFiles();
+        if (files.length > 0) {
+            RemoteFileUtil.setCurrentChooserFile(files[0].getParent(), env);
+        }
         addFilesWorker(project, projectDescriptor, folder, files);
 //	boolean notifySources = false;
 //      ArrayList<Item> items = new ArrayList<Item>();

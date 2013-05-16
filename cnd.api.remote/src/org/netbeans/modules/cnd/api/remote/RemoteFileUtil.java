@@ -348,9 +348,7 @@ public class RemoteFileUtil {
      */
     public static void setCurrentChooserFile(String path, ExecutionEnvironment env) {
         if (env.isLocal()) {
-            if (FileChooser.getCurrentChooserFile() != null) {
-                FileChooser.setCurrentChooserFile(new File(path));
-            }
+            FileChooser.setCurrentChooserFile(new File(path));
         } else {
             Preferences pref = NbPreferences.forModule(RemoteFileUtil.class);
             String envID = ExecutionEnvironmentFactory.toUniqueID(env);
