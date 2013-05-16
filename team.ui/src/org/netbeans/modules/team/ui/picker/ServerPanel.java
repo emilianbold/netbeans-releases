@@ -191,6 +191,7 @@ class ServerPanel extends JPanel {
                 startLoadingProjects( true );
             }
         };
+        refresh.setEnabled( isOnline );
         refresh.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/refresh.png", true) ); // NOI18N
         refresh.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_Refresh")); //NOI18N
         toolbar.add( refresh );
