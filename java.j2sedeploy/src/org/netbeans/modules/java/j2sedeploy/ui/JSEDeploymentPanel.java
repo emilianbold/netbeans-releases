@@ -63,11 +63,11 @@ public class JSEDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
     private final J2SEDeployProperties props;
     private Project project;
-    private java.util.List<J2SECategoryExtensionProvider> compProviders = new LinkedList<J2SECategoryExtensionProvider>();
+    private java.util.List<J2SECategoryExtensionProvider> compProviders = new LinkedList<>();
     private int nextExtensionYPos;
-    private List<ActionListener> okListener = new ArrayList<ActionListener>();
-    private List<ActionListener> storeListener = new ArrayList<ActionListener>();
-    private List<ActionListener> closeListener = new ArrayList<ActionListener>();
+    private List<ActionListener> okListener = new ArrayList<>();
+    private List<ActionListener> storeListener = new ArrayList<>();
+    private List<ActionListener> closeListener = new ArrayList<>();
     
     /**
      * Creates new form JSEDeploymentPanel
@@ -121,17 +121,18 @@ public class JSEDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         setPreferredSize(new java.awt.Dimension(550, 400));
         setLayout(new java.awt.GridBagLayout());
 
+        mainPanel.setPreferredSize(new java.awt.Dimension(550, 60));
         mainPanel.setLayout(new java.awt.GridBagLayout());
 
         labelNativePackaging.setLabelFor(checkBoxNativePackaging);
         org.openide.awt.Mnemonics.setLocalizedText(labelNativePackaging, org.openide.util.NbBundle.getMessage(JSEDeploymentPanel.class, "JSEDeploymentPanel.labelNativePackaging.text")); // NOI18N
-        labelNativePackaging.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weightx = 0.1;
         mainPanel.add(labelNativePackaging, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(checkBoxNativePackaging, org.openide.util.NbBundle.getMessage(JSEDeploymentPanel.class, "JSEDeploymentPanel.checkBoxNativePackaging.text")); // NOI18N
@@ -143,7 +144,10 @@ public class JSEDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0.1;
         gridBagConstraints.insets = new java.awt.Insets(7, 15, 0, 0);
         mainPanel.add(checkBoxNativePackaging, gridBagConstraints);
         checkBoxNativePackaging.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JSEDeploymentPanel.class, "AN_JSEDeploymentPanel.checkBoxNativePackaging")); // NOI18N
@@ -152,9 +156,13 @@ public class JSEDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
         add(mainPanel, gridBagConstraints);
+
+        extPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -163,7 +171,7 @@ public class JSEDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.weighty = 0.1;
         add(extPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
