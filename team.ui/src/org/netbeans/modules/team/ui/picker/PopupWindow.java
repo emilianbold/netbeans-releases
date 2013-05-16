@@ -83,6 +83,7 @@ final class PopupWindow  {
         
     private static final String POPUP_NAME = "popupComponent"; //NOI18N
     private static JDialog popupWindow;
+    private static JComponent invokerComponent;
     private static Frame owner;
     private static HideAWTListener hideListener = new HideAWTListener();
     
@@ -109,6 +110,7 @@ final class PopupWindow  {
         popupWindow.getRootPane().getInputMap( JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT ).put( ESC_KEY_STROKE, CLOSE_KEY );
         popupWindow.getRootPane().getActionMap().put( CLOSE_KEY, CLOSE_ACTION );
 	
+        invokerComponent = invoker;
 	//set a11y
 	String a11yName = content.getAccessibleContext().getAccessibleName();
 	if(a11yName != null && !a11yName.equals(""))
@@ -153,6 +155,7 @@ final class PopupWindow  {
         getMainWindow().removeComponentListener(hideListener);
         popupWindow = null;
         owner = null;
+        invokerComponent = null;
     }
 
     
@@ -219,6 +222,8 @@ final class PopupWindow  {
                         return;
                     Window window = SwingUtilities.getWindowAncestor( comp );
                     if( window instanceof Dialog && ((Dialog)window).isModal() )
+                        return;
+                    if( null != invokerComponent && SwingUtilities.isDescendingFrom( comp, invokerComponent) )
                         return;
                     Container par = SwingUtilities.getAncestorNamed(POPUP_NAME, comp); //NOI18N
                     // Container barpar = SwingUtilities.getAncestorOfClass(PopupUtil.class, comp);
