@@ -180,10 +180,7 @@ class ServerPanel extends JPanel {
             }
         });
         btnLogInOut.setToolTipText( isOnline ? NbBundle.getMessage(ServerPanel.class, "Ctl_LOGOUT") : NbBundle.getMessage(ServerPanel.class, "Ctl_LOGIN") );
-        JToolBar toolbar = new JToolBar();
-        toolbar.setFloatable( false );
-        toolbar.setBorderPainted( false );
-        toolbar.setBorder( BorderFactory.createEmptyBorder() );
+        JToolBar toolbar = new ServerToolbar();
         
         Action refresh = new AbstractAction() {
             @Override
