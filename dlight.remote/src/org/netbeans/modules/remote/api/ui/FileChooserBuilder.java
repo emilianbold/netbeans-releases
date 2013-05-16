@@ -81,7 +81,7 @@ public final class FileChooserBuilder {
     // TODO: think of a better name
     public abstract static class JFileChooserEx extends JFileChooser {
         private File curFile;
-        private final   AtomicReference<Callable<String>> defaultDirectoryRef= new AtomicReference<Callable<String>>();
+        private final AtomicReference<Callable<String>> defaultDirectoryRef= new AtomicReference<Callable<String>>();
 
         protected JFileChooserEx(Callable<String> currentDirectoryPath) {
             super((String)null);
@@ -93,21 +93,13 @@ public final class FileChooserBuilder {
             defaultDirectoryRef.set(currentDirectoryPath);
         }
         
-        public void setFileFilters(FileFilter[] filters) {
-            if (filters != null) {
-                for (int i = 0; i < filters.length; i++) {
-                    addChoosableFileFilter(filters[i]);
-                }
-                setFileFilter(filters[0]);
-            }         
-        }
 
         public abstract void setCurrentDirectory(FileObject dir);
         public abstract FileObject getSelectedFileObject();
         public abstract FileObject[] getSelectedFileObjects();
 
         @Override
-        public File getCurrentDirectory() {
+        public final File getCurrentDirectory() {
             return curFile;
         }        
         
