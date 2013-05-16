@@ -84,11 +84,12 @@ public class PhpVariableCompletionProvider implements VariableCompletionProvider
     private static final String LATTE_EXTENSION = "latte"; //NOI18N
     private static final String ACTION_METHOD_PREFIX = "action"; //NOI18N
 
-    private final Set<String> result = new HashSet<>();
+    private Set<String> result;
     private FileObject templateFile;
 
     @Override
     public Set<String> getVariables(FileObject templateFile) {
+        result = new HashSet<>();
         if (isView(templateFile)) {
             this.templateFile = templateFile;
             processTemplateFile(templateFile);
