@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.html.knockout.model;
 
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
@@ -83,6 +85,17 @@ public enum Binding {
     private static final String DOC_URL_BASE = "http://knockoutjs.com/documentation/"; //NOI18N
     private static final String DOC_URL_POSTFIX = "-binding.html"; //NOI18N
 
+    private static final Map<String, Binding> NAMES2BINDINGS = new HashMap<>();
+    static {
+        for(Binding d : values()) {
+            NAMES2BINDINGS.put(d.getName(), d);
+        }
+    }
+    
+    public static Binding getBinding(String name) {
+        return NAMES2BINDINGS.get(name);
+    }
+    
     /**
      * Gets the binding name.
      *

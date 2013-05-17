@@ -433,7 +433,7 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         protected String getSubstituteText() {
-            return "<" + getItemText();
+            return new StringBuilder().append("<").append(getItemText()).toString();
         }
 
         @Override
@@ -443,9 +443,19 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         protected String getLeftHtmlText() {
-            return possible
-                    ? "<font color=#0000ff>&lt;" + getItemText() + "&gt;</font>" : //NOI18N
-                    "<font color=#" + GRAY_COLOR_CODE + ">&lt;" + getItemText() + "&gt;</font>"; //NOI18N
+            StringBuilder b = new StringBuilder();
+            if(possible) {
+                b.append("<font color=#0000ff>&lt;");
+                b.append(getItemText());
+                b.append("&gt;</font>");
+            } else {
+                b.append("<font color=#");
+                b.append(GRAY_COLOR_CODE);
+                b.append(">&lt;");
+                b.append(getItemText());
+                b.append("&gt;</font>");
+            }
+            return b.toString();
         }
 
         @Override
@@ -533,7 +543,7 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         protected String getSubstituteText() {
-            return "</" + getItemText() + ">"; //NOI18N
+            return new StringBuilder().append("</").append(getItemText()).append(">").toString(); //NOI18N
         }
 
         @Override
@@ -585,12 +595,15 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         protected String getSubstituteText() {
-            return "&" + getItemText() + ";"; //NOI18N
+            return new StringBuilder().append("&").append(getItemText()).append(';').toString();
         }
 
         @Override
         protected String getLeftHtmlText() {
-            return "<b>&amp;" + escape(getItemText()) + ";</b>"; //NOI18N
+            return new StringBuilder()
+                    .append("<b>&amp;")
+                    .append(escape(getItemText()))
+                    .append(";</b>").toString();
         }
 
         @Override
@@ -603,7 +616,10 @@ public class HtmlCompletionItem implements CompletionItem {
             } else {
                 strVal = Character.toString(value);
             }
-            return "<b><font color=#990000>" + strVal + "</font></b>"; //NOI18N
+            return new StringBuilder()
+                    .append("<b><font color=#990000>")
+                    .append(strVal)
+                    .append("</font></b>").toString(); //NOI18N
         }
     }
 
@@ -621,7 +637,15 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         protected String getSubstituteText() {
-            return addQuotation ? "\"" + super.getSubstituteText() + "\"" : super.getSubstituteText();
+            StringBuilder sb = new StringBuilder();
+            if(addQuotation) {
+                sb.append("\"");
+            }
+            sb.append(super.getSubstituteText());
+            if(addQuotation) {
+                sb.append("\"");
+            }
+            return sb.toString();
         }
     }
 
@@ -630,7 +654,7 @@ public class HtmlCompletionItem implements CompletionItem {
         private boolean required;
         private boolean autocompleteQuotes;
         private HtmlTagAttribute attr;
-        private final String ATTR_NAME_COLOR = hexColorCode(getAttributeColor());
+        private String attrNameColor;
 
         public Attribute(HtmlTagAttribute attr, String value, int offset, boolean required, String helpId) {
             super(attr != null ? attr.getHelp() : null, value, offset, helpId);
@@ -672,7 +696,12 @@ public class HtmlCompletionItem implements CompletionItem {
         
         @Override
         protected String getSubstituteText() {
-            return getItemText() + (autocompleteQuotes ? "=\"\"" : ""); //NOI18N
+            StringBuilder sb = new StringBuilder();
+            sb.append(getItemText());
+            if(autocompleteQuotes) {
+                sb.append("=\"\""); //NOI18N
+            }
+            return sb.toString();
         }
 
         @Override
@@ -685,11 +714,29 @@ public class HtmlCompletionItem implements CompletionItem {
             return super.getSortPriority() - (required ? 1 : 0);
         }
 
+        private String getAttributeNameColor() {
+            if(attrNameColor == null) {
+                attrNameColor = hexColorCode(getAttributeColor());
+            }
+            return attrNameColor;
+        }
+        
         @Override
         protected String getLeftHtmlText() {
-            return (required ? "<b>" : "") + //NOI18N
-                    "<font color=#" + ATTR_NAME_COLOR + ">" + getItemText() + "</font>" + //NOI18N
-                    (required ? "</b>" : ""); //NOI18N
+            StringBuilder sb = new StringBuilder();
+            if(required) {
+                sb.append("<b>"); //NOI18N
+            }
+            sb.append("<font color=#"); //NOI18N
+            sb.append(getAttributeNameColor());
+            sb.append(">"); //NOI18N
+            sb.append(getItemText());
+            sb.append("</font>"); //NOI18N
+            if(required) {
+                sb.append("</b>"); //NOI18N
+            }
+            
+            return sb.toString();
         }
 
         @Override
@@ -708,11 +755,22 @@ public class HtmlCompletionItem implements CompletionItem {
             this.required = required;
         }
 
-        @Override
+         @Override
         protected String getLeftHtmlText() {
-            return (required ? "<b>" : "") + //NOI18N
-                    "<font color=#" + ATTR_NAME_COLOR + ">" + getItemText() + "</font>" + //NOI18N
-                    (required ? "</b>" : ""); //NOI18N
+            StringBuilder sb = new StringBuilder();
+            if(required) {
+                sb.append("<b>"); //NOI18N
+            }
+            sb.append("<font color=#"); //NOI18N
+            sb.append(ATTR_NAME_COLOR);
+            sb.append(">"); //NOI18N
+            sb.append(getItemText());
+            sb.append("</font>"); //NOI18N
+            if(required) {
+                sb.append("</b>"); //NOI18N
+            }
+            
+            return sb.toString();
         }
     }
 
@@ -736,9 +794,15 @@ public class HtmlCompletionItem implements CompletionItem {
             return icon;
         }
 
-        @Override
+         @Override
         protected String getLeftHtmlText() {
-            return "<font color='" + hexColorCode(color) + "'>" + getItemText() + "</font>"; //NOI18N
+            StringBuilder sb = new StringBuilder();
+            sb.append("<font color=#"); //NOI18N
+            sb.append(hexColorCode(color));
+            sb.append(">"); //NOI18N
+            sb.append(getItemText());
+            sb.append("</font>"); //NOI18N
+            return sb.toString();
         }
 
         private void iconLoaded(ImageIcon icon) {
