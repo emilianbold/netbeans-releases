@@ -111,15 +111,8 @@ public class GlassFishExecutors {
 
     /** Default maximum number of GlassFish log fetchers executor threads
      *  in thread pool. */
-    private static final int FETCH_LOG_EXECUTOR_POOL_MAX_SIZE = 32;
-
-    /** Minimal number of free space in the pool of GlassFish log fetchers
-     *  executor threads.. Reaching this limit will trigger pool resizing. */
-    private static final int FETCH_LOG_EXECUTOR_POOL_SIZE_LIMIT = 4;
-
-    /** Number of threads to add to current maximum number of GlassFish log
-     *  fetchers executor threads in thread pool. */
-    private static final int FETCH_LOG_EXECUTOR_POOL_RESIZE = 8;
+    private static final int FETCH_LOG_EXECUTOR_POOL_MAX_SIZE
+            = Integer.MAX_VALUE;
 
     /** Inactive Threads keep alive time [ms] in GlassFish log fetchers executor
      *  thread pool. */
@@ -151,15 +144,6 @@ public class GlassFishExecutors {
      * @return {@see ExecutorService} class instance for running log fetchers.
      */
     public static ExecutorService fetchLogExecutor() {
-        synchronized(fetchLogExecutor) {
-            int currentMaxSize = fetchLogExecutor.getMaximumPoolSize();
-            int currentSize = fetchLogExecutor.getPoolSize();
-            if (currentSize + FETCH_LOG_EXECUTOR_POOL_SIZE_LIMIT
-                    > currentMaxSize) {
-                fetchLogExecutor.setMaximumPoolSize(
-                        currentMaxSize + FETCH_LOG_EXECUTOR_POOL_RESIZE);
-            }
-        }
         return fetchLogExecutor;
     }
 

@@ -72,7 +72,7 @@ public class UsedNamesComputer {
     private final PHPParseResult parserResult;
     private final int caretPosition;
     private Map<String, List<UsedNamespaceName>> possibleNames;
-    private static final List<String> SPECIAL_NAMES = new LinkedList<String>();
+    private static final List<String> SPECIAL_NAMES = new LinkedList<>();
 
     static {
         SPECIAL_NAMES.add("parent"); //NOI18N
@@ -97,7 +97,7 @@ public class UsedNamesComputer {
     }
 
     private Map<String, List<UsedNamespaceName>> filterNamesWithoutUses(final Collection<? extends UseScope> declaredUses) {
-        final Map<String, List<UsedNamespaceName>> result = new HashMap<String, List<UsedNamespaceName>>();
+        final Map<String, List<UsedNamespaceName>> result = new HashMap<>();
         for (String typeName : possibleNames.keySet()) {
             if (!existsUseForTypeName(declaredUses, QualifiedName.create(typeName))) {
                 result.put(typeName, possibleNames.get(typeName));
@@ -128,7 +128,7 @@ public class UsedNamesComputer {
 
     private static class NamespaceNameVisitor extends DefaultVisitor {
         private final OffsetRange offsetRange;
-        private final Map<String, List<UsedNamespaceName>> existingNames = new HashMap<String, List<UsedNamespaceName>>();
+        private final Map<String, List<UsedNamespaceName>> existingNames = new HashMap<>();
 
         public NamespaceNameVisitor(OffsetRange offsetRange) {
             this.offsetRange = offsetRange;
@@ -188,7 +188,7 @@ public class UsedNamesComputer {
         private void processUsedName(final UsedNamespaceName usedName) {
             List<UsedNamespaceName> usedNames = existingNames.get(usedName.getName());
             if (usedNames == null) {
-                usedNames = new LinkedList<UsedNamespaceName>();
+                usedNames = new LinkedList<>();
                 existingNames.put(usedName.getName(), usedNames);
             }
             usedNames.add(usedName);

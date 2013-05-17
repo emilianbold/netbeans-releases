@@ -105,9 +105,7 @@ public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilte
             }
             return accept;
 
-        } catch (TimeoutException ex) {
-        } catch (InterruptedException ex) {
-        } catch (ExecutionException ee) {
+        } catch (TimeoutException | InterruptedException | ExecutionException ex) {
         }
         return false;
     }

@@ -44,7 +44,7 @@ package org.netbeans.modules.php.editor.verification;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.editor.BaseDocument;
@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
  */
 public class ErrorControlOperatorHint extends HintRule {
     private static final String HINT_ID = "error.control.operator.hint"; //NOI18N
-    private static final Set<IgnoreErrorValidator> IGNORE_ERROR_VALIDATORS = new HashSet<IgnoreErrorValidator>();
+    private static final Set<IgnoreErrorValidator> IGNORE_ERROR_VALIDATORS = new HashSet<>();
     static {
         IGNORE_ERROR_VALIDATORS.add(new FunctionInvocationValidator("fopen")); //NOI18N
         IGNORE_ERROR_VALIDATORS.add(new FunctionInvocationValidator("unlink")); //NOI18N
@@ -108,7 +108,7 @@ public class ErrorControlOperatorHint extends HintRule {
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
             this.model = model;
-            this.hints = new LinkedList<Hint>();
+            this.hints = new ArrayList<>();
         }
 
         private Collection<? extends Hint> getHints() {

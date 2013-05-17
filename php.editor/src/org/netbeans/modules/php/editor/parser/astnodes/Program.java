@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -52,19 +53,16 @@ import java.util.List;
  */
 public class Program extends ASTNode {
 
-    private final ArrayList<Statement> statements = new ArrayList<Statement>();
+    private final ArrayList<Statement> statements = new ArrayList<>();
 
     /**
      * Comments array of the php program
      */
-    private final ArrayList<Comment> comments = new ArrayList<Comment>();
+    private final ArrayList<Comment> comments = new ArrayList<>();
 
     private Program(int start, int end, Statement[] statements, List<Comment> commentsList) {
         super(start, end);
-        for (Statement statement : statements) {
-//            statement.setParent(this);
-            this.statements.add(statement);
-        }
+        this.statements.addAll(Arrays.asList(statements));
         for (Comment comment : commentsList) {
 //            comment.setParent(this);
             this.comments.add((Comment) comment);

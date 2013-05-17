@@ -87,7 +87,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     };
 
     private TypeResolutionKind typeResolutionKind = TypeResolutionKind.LAST_ASSIGNMENT;
-    final List<LazyFieldAssignment> assignmentDatas = new ArrayList<LazyFieldAssignment>();
+    final List<LazyFieldAssignment> assignmentDatas = new ArrayList<>();
     private boolean globallyVisible;
 
     VariableNameImpl(Scope inScope, VariableElement indexedVariable) {
@@ -157,7 +157,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                 return element instanceof VarAssignmentImpl;
             }
         });
-        return new ArrayList<VarAssignmentImpl>(values);
+        return new ArrayList<>(values);
     }
     private List<? extends FieldAssignmentImpl> getFieldAssignments() {
         Collection<? extends FieldAssignmentImpl> values = filter(getElements(), new ElementFilter() {
@@ -167,7 +167,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
                 return element instanceof FieldAssignmentImpl;
             }
         });
-        return new ArrayList<FieldAssignmentImpl>(values);
+        return new ArrayList<>(values);
     }
     AssignmentImpl findVarAssignment(int offset) {
         return findAssignment(offset, true, null);
@@ -288,7 +288,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         return getTypesImpl(offset, false);
     }
     private Collection<? extends String> getTypeNamesImpl(int offset, boolean arrayAccess) {
-        Collection<String> retval = new ArrayList<String>();
+        Collection<String> retval = new ArrayList<>();
         if (!arrayAccess && getIndexedElement() instanceof TypedInstanceElement /*&& indexedElement.getFileObject() != getFileObject()*/) {
             TypedInstanceElement typedInstanceElement = (TypedInstanceElement) getIndexedElement();
             Set<TypeResolver> instanceTypes = typedInstanceElement.getInstanceTypes();
@@ -337,7 +337,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     }
 
     private Collection<? extends String> getMergedTypeNames() {
-        Collection<String> types = new HashSet<String>();
+        Collection<String> types = new HashSet<>();
         List<? extends VarAssignmentImpl> varAssignments = getVarAssignments();
         for (VarAssignmentImpl vAssignment : varAssignments) {
             types.addAll(vAssignment.getTypeNames());
@@ -374,7 +374,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
             return getMergedTypes();
         }
         if (getIndexedElement() instanceof TypedInstanceElement) {
-            Collection<TypeScope> retval = new HashSet<TypeScope>();
+            Collection<TypeScope> retval = new HashSet<>();
             Collection<? extends String> typeNamesImpl = getTypeNamesImpl(offset, arrayAccess);
             for (String tName : typeNamesImpl) {
                 retval.addAll(IndexScopeImpl.getTypes(QualifiedName.create(tName), getInScope()));
@@ -386,7 +386,7 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
     }
 
     private Collection<TypeScope> getMergedTypes() {
-        Collection<TypeScope> types = new HashSet<TypeScope>();
+        Collection<TypeScope> types = new HashSet<>();
         List<? extends VarAssignmentImpl> varAssignments = getVarAssignments();
         for (VarAssignmentImpl vAssignment : varAssignments) {
             types.addAll(vAssignment.getTypes());

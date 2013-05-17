@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -51,17 +52,14 @@ import java.util.List;
  */
 public class EchoStatement extends Statement {
 
-    private ArrayList<Expression> expressions = new ArrayList<Expression>();
+    private ArrayList<Expression> expressions = new ArrayList<>();
 
     private EchoStatement(int start, int end, Expression[] expressions) {
         super(start, end);
         if (expressions == null) {
             throw new IllegalArgumentException();
         }
-
-        for (Expression expression : expressions) {
-            this.expressions.add(expression);
-        }
+        this.expressions.addAll(Arrays.asList(expressions));
     }
 
     public EchoStatement(int start, int end, List<Exception> expressions) {

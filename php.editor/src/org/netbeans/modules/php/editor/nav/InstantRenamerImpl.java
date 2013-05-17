@@ -117,7 +117,7 @@ public class InstantRenamerImpl implements InstantRenamer {
 
     @Override
     public Set<OffsetRange> getRenameRegions(ParserResult info, int caretOffset) {
-        Set<OffsetRange> retval = new HashSet<OffsetRange>();
+        Set<OffsetRange> retval = new HashSet<>();
         for (Occurence occurence : allOccurences) {
             retval.add(occurence.getOccurenceRange());
         }
@@ -126,7 +126,7 @@ public class InstantRenamerImpl implements InstantRenamer {
     }
 
     private boolean checkAll(Occurence caretOccurence) {
-        List<Occurence> collected = new ArrayList<Occurence>();
+        List<Occurence> collected = new ArrayList<>();
         Collection<Occurence> all = caretOccurence.getAllOccurences();
         for (Occurence occurence : all) {
             if (IS_RENAME_REFACTORING_ENABLED) {

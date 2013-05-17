@@ -99,7 +99,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
     }
 
     public static Set<MethodElement> getMagicMethods(final TypeElement type) {
-        Set<MethodElement> retval = new HashSet<MethodElement>();
+        Set<MethodElement> retval = new HashSet<>();
         retval.add(createMagicMethod(type, "__callStatic", Modifier.PUBLIC | Modifier.STATIC, "$name", "$arguments")); //NOI18N
         retval.add(createMagicMethod(type, "__set_state", Modifier.PUBLIC | Modifier.STATIC, "$array")); //NOI18N
         retval.add(createMagicMethod(type, "__call",  Modifier.PUBLIC, "$name", "$arguments")); //NOI18N
@@ -133,7 +133,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
     }
 
     private static List<ParameterElement> fromParameterNames(String... names) {
-        List<ParameterElement> retval = new ArrayList<ParameterElement>();
+        List<ParameterElement> retval = new ArrayList<>();
         for (String parameterName : names) {
             retval.add(new ParameterElementImpl(parameterName, null, 0, Collections.<TypeResolver>emptySet(), true, true, false));
         }
@@ -201,7 +201,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
     public static Set<MethodElement> fromConstructorSignature(final TypeElement type,
             final IndexQueryImpl indexQuery, final IndexResult indexResult) {
         final String[] values = indexResult.getValues(MethodElementImpl.IDX_CONSTRUCTOR_FIELD);
-        final Set<MethodElement> retval = new HashSet<MethodElement>();
+        final Set<MethodElement> retval = new HashSet<>();
         for (String val : values) {
             retval.add(fromConstructorSignature(type, indexQuery, indexResult, Signature.get(val)));
         }

@@ -179,7 +179,7 @@ public class FixDuplicateImportStmts extends javax.swing.JPanel {
     }
 
     public List<ItemVariant> getSelections() {
-        List<ItemVariant> result = new ArrayList<ItemVariant>();
+        List<ItemVariant> result = new ArrayList<>();
         int numberOfCombos = combos == null ? 0 : combos.length;
         for (int i = 0; i < numberOfCombos; i++) {
             Object selectedItem = combos[i].getSelectedItem();

@@ -67,7 +67,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.libraries.CDNJSLibrariesProvider;
-import org.netbeans.modules.web.clientproject.libraries.GoogleLibrariesProvider;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryProvider;
@@ -198,10 +197,9 @@ public final class WebClientLibraryManager {
     public synchronized List<Library> getLibraries() {
         assert Thread.holdsLock(this);
         if (libraries == null) {
-            List<Library> libs2 = new ArrayList<Library>();
+            List<Library> libs2 = new ArrayList<>();
             addLibraries(libs2, CDNJSLibrariesProvider.getDefault());
-            addLibraries(libs2, new GoogleLibrariesProvider());
-            libraries = new CopyOnWriteArrayList<Library>(libs2);
+            libraries = new CopyOnWriteArrayList<>(libs2);
         }
         return libraries;
     }

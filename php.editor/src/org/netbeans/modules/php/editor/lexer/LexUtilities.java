@@ -84,7 +84,7 @@ public final class LexUtilities {
      * embedding, returns the top level sequence. The TokenSequence is not positioned!
      */
     public static TokenSequence<? extends TokenId> getMostEmbeddedTokenSequence(final Document doc, final int offset, boolean runUnderLock) {
-        final AtomicReference<TokenSequence<? extends TokenId>> ref = new AtomicReference<TokenSequence<? extends TokenId>>();
+        final AtomicReference<TokenSequence<? extends TokenId>> ref = new AtomicReference<>();
         Runnable r = new Runnable() {
             @Override
             public void run() {

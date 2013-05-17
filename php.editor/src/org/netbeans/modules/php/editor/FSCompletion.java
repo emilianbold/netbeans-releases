@@ -152,7 +152,7 @@ public class FSCompletion implements CompletionProvider {
                                     return;
                                 }
                                 final String prefix = parameter.getSnapshot().getText().subSequence(startOffset, caretOffset).toString();
-                                List<FileObject> relativeTo = new LinkedList<FileObject>();
+                                List<FileObject> relativeTo = new LinkedList<>();
                                 if (!prefix.startsWith("../")) { //NOI18N
                                     relativeTo.addAll(includePath);
                                 }
@@ -188,7 +188,7 @@ public class FSCompletion implements CompletionProvider {
         final String goUp = "../";
         assert relativeTo != null;
 
-        List<CompletionItem> result = new LinkedList<CompletionItem>();
+        List<CompletionItem> result = new LinkedList<>();
 
         int lastSlash = prefix.lastIndexOf('/');
         String pathPrefix;
@@ -202,7 +202,7 @@ public class FSCompletion implements CompletionProvider {
             filePrefix = prefix;
         }
 
-        Set<FileObject> directories = new HashSet<FileObject>();
+        Set<FileObject> directories = new HashSet<>();
         File prefixFile = null;
         if (pathPrefix != null && !pathPrefix.startsWith(".")) { //NOI18N
             if (pathPrefix.length() == 0 && prefix.startsWith("/")) {

@@ -100,7 +100,7 @@ public class FunctionDeclarationInfo extends ASTNodeInfo<FunctionDeclaration> {
     }
 
     public List<ParameterElement> getParameters() {
-        List<ParameterElement> retval = new ArrayList<ParameterElement>();
+        List<ParameterElement> retval = new ArrayList<>();
         List<FormalParameter> formalParameters = getOriginalNode().getFormalParameters();
         for (FormalParameter formalParameter : formalParameters) {
             FormalParameterInfo parameterInfo = FormalParameterInfo.create(formalParameter, paramDocTypes);

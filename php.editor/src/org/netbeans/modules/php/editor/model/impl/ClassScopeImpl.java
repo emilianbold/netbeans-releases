@@ -87,8 +87,8 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
     private Union2<String, List<ClassScopeImpl>> superClass;
     private Collection<QualifiedName> possibleFQSuperClassNames;
     private Collection<QualifiedName> usedTraits;
-    private Set<? super TypeScope> superRecursionDetection = new HashSet<TypeScope>();
-    private Set<? super TypeScope> subRecursionDetection = new HashSet<TypeScope>();
+    private Set<? super TypeScope> superRecursionDetection = new HashSet<>();
+    private Set<? super TypeScope> subRecursionDetection = new HashSet<>();
 
     @Override
     void addElement(ModelElementImpl element) {
@@ -158,7 +158,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         assert superClass.hasFirst();
         String superClasName = superClass.first();
         if (possibleFQSuperClassNames != null && possibleFQSuperClassNames.size() > 0) {
-            retval = new ArrayList<ClassScope>();
+            retval = new ArrayList<>();
             for (QualifiedName qualifiedName : possibleFQSuperClassNames) {
                 retval.addAll(IndexScopeImpl.getClasses(qualifiedName, this));
             }
@@ -223,7 +223,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
     @Override
     public Collection<? extends FieldElement> getFields() {
-        Set<FieldElement> allFields = new HashSet<FieldElement>();
+        Set<FieldElement> allFields = new HashSet<>();
         allFields.addAll(getDeclaredFields());
         allFields.addAll(getInheritedFields());
         return allFields;
@@ -231,10 +231,10 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
     @Override
     public Collection<? extends MethodScope> getInheritedMethods() {
-        Set<MethodScope> allMethods = new HashSet<MethodScope>();
+        Set<MethodScope> allMethods = new HashSet<>();
         IndexScope indexScope = ModelUtils.getIndexScope(this);
         ElementQuery.Index index = indexScope.getIndex();
-        Set<ClassScope> superClasses = new HashSet<ClassScope>(getSuperClasses());
+        Set<ClassScope> superClasses = new HashSet<>(getSuperClasses());
         for (ClassScope clz : superClasses) {
             Set<MethodElement> indexedFunctions =
                     org.netbeans.modules.php.editor.api.elements.ElementFilter.forPrivateModifiers(false).filter(index.getAllMethods(clz));
@@ -250,7 +250,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                 }
             }
         }
-        Set<InterfaceScope> interfaceScopes = new HashSet<InterfaceScope>(getSuperInterfaceScopes());
+        Set<InterfaceScope> interfaceScopes = new HashSet<>(getSuperInterfaceScopes());
         for (InterfaceScope iface : interfaceScopes) {
             Set<MethodElement> indexedFunctions =
                     org.netbeans.modules.php.editor.api.elements.ElementFilter.forPrivateModifiers(false).filter(index.getAllMethods(iface));
@@ -264,7 +264,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                 }
             }
         }
-        Set<TraitScope> traitScopes = new HashSet<TraitScope>(getTraits());
+        Set<TraitScope> traitScopes = new HashSet<>(getTraits());
         for (TraitScope traitScope : traitScopes) {
             Set<MethodElement> indexedMethods =
                     org.netbeans.modules.php.editor.api.elements.ElementFilter.forPrivateModifiers(false).filter(index.getAllMethods(traitScope));
@@ -282,10 +282,10 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
     @Override
     public Collection<? extends FieldElement> getInheritedFields() {
-        Set<FieldElement> allFields = new HashSet<FieldElement>();
+        Set<FieldElement> allFields = new HashSet<>();
         IndexScope indexScope = ModelUtils.getIndexScope(this);
         ElementQuery.Index index = indexScope.getIndex();
-        Set<ClassScope> superClasses = new HashSet<ClassScope>(getSuperClasses());
+        Set<ClassScope> superClasses = new HashSet<>(getSuperClasses());
         for (ClassScope classScope : superClasses) {
             Set<org.netbeans.modules.php.editor.api.elements.FieldElement> indexedFields =
                                         org.netbeans.modules.php.editor.api.elements.ElementFilter.forPrivateModifiers(false).filter(index.getAlllFields(classScope));
@@ -298,10 +298,10 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
     @Override
     public final Collection<? extends ClassConstantElement> getInheritedConstants() {
-        Set<ClassConstantElement> allConstants = new HashSet<ClassConstantElement>();
+        Set<ClassConstantElement> allConstants = new HashSet<>();
         IndexScope indexScope = ModelUtils.getIndexScope(this);
         ElementQuery.Index index = indexScope.getIndex();
-        Set<ClassScope> superClasses = new HashSet<ClassScope>(getSuperClasses());
+        Set<ClassScope> superClasses = new HashSet<>(getSuperClasses());
         for (ClassScope classScope : superClasses) {
             Set<TypeConstantElement> indexedConstants = index.getAllTypeConstants(classScope);
             for (TypeConstantElement classMember : indexedConstants) {
@@ -309,7 +309,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
                 allConstants.add(new ClassConstantElementImpl(classScope, constant));
             }
         }
-        Set<InterfaceScope> interfaceScopes = new HashSet<InterfaceScope>();
+        Set<InterfaceScope> interfaceScopes = new HashSet<>();
         interfaceScopes.addAll(getSuperInterfaceScopes());
         for (InterfaceScope iface : interfaceScopes) {
             Collection<TypeConstantElement> indexedConstants = index.getInheritedTypeConstants(iface);
@@ -323,7 +323,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
     @Override
     public Collection<? extends MethodScope> getMethods() {
-        Set<MethodScope> allMethods = new HashSet<MethodScope>();
+        Set<MethodScope> allMethods = new HashSet<>();
         allMethods.addAll(getDeclaredMethods());
         allMethods.addAll(getInheritedMethods());
         return allMethods;
@@ -460,7 +460,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
     @Override
     public Collection<? extends String> getSuperClassNames() {
-        List<String> retval =  new ArrayList<String>();
+        List<String> retval =  new ArrayList<>();
         if (superClass != null) {
             String supeClsName = superClass.hasFirst() ? superClass.first() : null;
             if (supeClsName != null) {
@@ -518,7 +518,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
 
     @Override
     public Collection<? extends TraitScope> getTraits() {
-        Collection<TraitScope> result = new ArrayList<TraitScope>();
+        Collection<TraitScope> result = new ArrayList<>();
         for (QualifiedName qualifiedName : getUsedTraits()) {
             result.addAll(IndexScopeImpl.getTraits(qualifiedName, this));
         }

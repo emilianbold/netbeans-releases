@@ -119,9 +119,9 @@ public class PhpVariableCompletionProvider implements VariableCompletionProvider
                 PHPParseResult parseResult = (PHPParseResult) resultIterator.getParserResult();
                 PresenterVisitor presenterVisitor = new PresenterVisitor(templateFile);
                 presenterVisitor.scan(parseResult.getProgram());
-                for (MethodDeclaration action : presenterVisitor.getActions()) {
+                for (MethodDeclaration methodToScan : presenterVisitor.getMethodsToScan()) {
                     VariableVisitor variableVisitor = new VariableVisitor(parseResult.getModel());
-                    action.accept(variableVisitor);
+                    methodToScan.accept(variableVisitor);
                     result.addAll(variableVisitor.getVariables());
                 }
             }
@@ -161,7 +161,7 @@ public class PhpVariableCompletionProvider implements VariableCompletionProvider
 
     private static final class PresenterVisitor extends DefaultVisitor {
         private final String actionName;
-        private Set<MethodDeclaration> actions = new HashSet<>();
+        private Set<MethodDeclaration> methodsToScan = new HashSet<>();
 
         public PresenterVisitor(FileObject templateFile) {
             actionName = extractActionName(templateFile);
@@ -177,7 +177,7 @@ public class PhpVariableCompletionProvider implements VariableCompletionProvider
         @Override
         public void visit(MethodDeclaration node) {
             if (isProperActionMethod(node, actionName) || isProperRenderMethod(node, actionName) || isStartupMethod(node) || isBeforeRenderMethod(node)) {
-                actions.add(node);
+                methodsToScan.add(node);
             }
         }
 
@@ -197,8 +197,8 @@ public class PhpVariableCompletionProvider implements VariableCompletionProvider
             return CodeUtils.extractMethodName(node).toLowerCase().equalsIgnoreCase(BEFORE_RENDER_METHOD);
         }
 
-        public Set<MethodDeclaration> getActions() {
-            return new HashSet<>(actions);
+        public Set<MethodDeclaration> getMethodsToScan() {
+            return new HashSet<>(methodsToScan);
         }
 
     }
