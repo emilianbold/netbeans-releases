@@ -62,11 +62,9 @@ import org.netbeans.modules.j2ee.jboss4.JBDeploymentManager;
 import org.netbeans.modules.j2ee.jboss4.JBRemoteAction;
 import org.netbeans.modules.j2ee.jboss4.JBoss5ProfileServiceProxy;
 import org.netbeans.modules.j2ee.jboss4.nodes.actions.Refreshable;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 
 /**
  * It describes children nodes of the EJB Modules node. Implements
@@ -74,7 +72,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Michal Mocnak
  */
-public class JBEarApplicationsChildren extends Children.Keys implements Refreshable {
+public class JBEarApplicationsChildren extends JBAsyncChildren implements Refreshable {
 
     private static final Logger LOGGER = Logger.getLogger(JBEarApplicationsChildren.class.getName());
 
@@ -90,7 +88,7 @@ public class JBEarApplicationsChildren extends Children.Keys implements Refresha
     @Override
     public void updateKeys() {
         setKeys(new Object[]{Util.WAIT_NODE});
-        RequestProcessor.getDefault().post(abilitiesSupport.isJB7x() ? new JBoss7EarApplicationNodeUpdater() : new JBossEarApplicationNodeUpdater(), 0);
+        getExecutorService().submit(abilitiesSupport.isJB7x() ? new JBoss7EarApplicationNodeUpdater() : new JBossEarApplicationNodeUpdater(), 0);
     }
 
     class JBossEarApplicationNodeUpdater implements Runnable {
