@@ -179,6 +179,8 @@ public final class QualifiedName {
                       name = superClsName;
                     }
                     break;
+                default:
+                    // no-op
             }
         }
         return createUnqualifiedName(name);

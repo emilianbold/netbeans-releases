@@ -48,13 +48,17 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.html.lexer.HTMLTokenId;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
 import org.netbeans.modules.html.editor.lib.api.elements.AttributeFilter;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.html.knockout.KODataBindTokenId;
 import org.netbeans.modules.html.knockout.KOUtils;
-import org.netbeans.modules.html.knockout.KOUtils;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
@@ -93,8 +97,7 @@ public class KOModel {
      */
     private Collection<Attribute> attributes = new ArrayList<>();
 
-    //do not hold the parser result!
-    private KOModel(HtmlParserResult result) {
+    private KOModel(final HtmlParserResult result) {
         Iterator<Element> elementsIterator = result.getSyntaxAnalyzerResult().getElementsIterator();
         while (elementsIterator.hasNext()) {
             Element element = elementsIterator.next();
@@ -104,7 +107,7 @@ public class KOModel {
                     for (Attribute ngAttr : ot.attributes(new AttributeFilter() {
                         @Override
                         public boolean accepts(Attribute attribute) {
-                            return isKODataBindingAttribute(attribute);
+                            return isKODataBindingAttribute(attribute) && containsKODirective(result.getSnapshot(), attribute);
                         }
                     })) {
                         Collection<Attribute> attrs = elements2attributes.get(ot);
@@ -121,6 +124,31 @@ public class KOModel {
     
     public static boolean isKODataBindingAttribute(Attribute attribute) {
         return LexerUtils.equals(KOUtils.KO_DATA_BIND_ATTR_NAME, attribute.unqualifiedName(), true, true);
+    }
+    
+    private static boolean containsKODirective(Snapshot snapshot, Attribute attribute) {
+        TokenHierarchy<?> tokenHierarchy = snapshot.getTokenHierarchy();
+        TokenSequence<HTMLTokenId> tokenSequence = tokenHierarchy.tokenSequence(HTMLTokenId.language());
+        if(tokenSequence != null) {
+            tokenSequence.move(attribute.valueOffset() + (attribute.isValueQuoted() ? 1 : 0));
+            if(tokenSequence.moveNext()) {
+                TokenSequence<KODataBindTokenId> embedded = tokenSequence.embedded(KODataBindTokenId.language());
+                if(embedded != null) {
+                    embedded.moveStart();
+                    while(embedded.moveNext()) {
+                        switch(embedded.token().id()) {
+                            case KEY:
+                                String img = embedded.token().text().toString();
+                                if(Binding.getBinding(img) != null) {
+                                    return true;
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
     
     /**

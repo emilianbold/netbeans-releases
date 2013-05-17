@@ -1228,6 +1228,8 @@ public final class VariousUtils {
                         }
                     }
                     break;
+                default:
+                    // no-op
             }
         }
         return clsName;

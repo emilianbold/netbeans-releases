@@ -208,9 +208,10 @@ public final class JSFPaletteUtilities {
     }
 
     public static void expandJSFTemplate(FileObject template, Map<String, Object> values, FileObject target) throws IOException {
-        Writer w = new OutputStreamWriter(target.getOutputStream());
+        Charset targetEncoding = FileEncodingQuery.getEncoding(target);
+        Writer w = new OutputStreamWriter(target.getOutputStream(), targetEncoding);
         try {
-            expandJSFTemplate(template, values, FileEncodingQuery.getEncoding(template), w);
+            expandJSFTemplate(template, values, targetEncoding, w);
         } finally {
             w.close();
         }

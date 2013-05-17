@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,22 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.dlight.util;
+package org.netbeans.modules.j2ee.jboss4.nodes;
 
-import org.openide.util.Mutex;
+import java.util.concurrent.ExecutorService;
+import org.openide.nodes.Children;
+import org.openide.util.RequestProcessor;
 
-public final class UIThread {
+/**
+ *
+ * @author Petr Hejl
+ */
+public abstract class JBAsyncChildren extends Children.Keys {
 
-    private UIThread() {
-    }
+    private static final ExecutorService EXECUTOR = new RequestProcessor(JBAsyncChildren.class);
 
-    public static final void invoke(Runnable r) {
-        Mutex.EVENT.postReadRequest(r);
-    }
-
-    public static final void invokeAndWait(Runnable r) throws InterruptedException {
-        Mutex.EVENT.readAccess(r);
+    public final ExecutorService getExecutorService() {
+        return EXECUTOR;
     }
 }

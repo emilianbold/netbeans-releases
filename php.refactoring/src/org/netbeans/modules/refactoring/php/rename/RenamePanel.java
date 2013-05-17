@@ -106,7 +106,7 @@ public class RenamePanel extends JPanel implements CustomRefactoringPanel {
         textCheckBox.setVisible(false);
         refactorAllCheckBox.setVisible(false);
         updateReferencesCheckBox.setVisible(false);
-        if (!phpKind.equals(PhpElementKind.CLASS) && !phpKind.equals(PhpElementKind.IFACE) && !phpKind.equals(PhpElementKind.TRAIT)) {
+        if (phpKind == null || (!phpKind.equals(PhpElementKind.CLASS) && !phpKind.equals(PhpElementKind.IFACE) && !phpKind.equals(PhpElementKind.TRAIT))) {
             renameFileCheckBox.setVisible(false);
             lowerCaseFileNameCheckBox.setVisible(false);
         }

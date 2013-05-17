@@ -175,6 +175,8 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
                     assert type == null : "type already set to " + type;
                     type = entry.getValue();
                     break;
+                default:
+                    // no-op
             }
         }
 

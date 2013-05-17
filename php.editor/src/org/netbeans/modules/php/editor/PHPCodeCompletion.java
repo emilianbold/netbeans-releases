@@ -848,6 +848,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     instanceContext = false;
                     staticLateBindingContext = true;
                     break;
+                default:
+                    // no-op
             }
 
             if (types != null) {
