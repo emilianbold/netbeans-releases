@@ -118,6 +118,9 @@
           <ResourceString bundle="org/netbeans/spi/editor/hints/projects/support/Bundle.properties" key="ProjectHintSettingPanel.globalSettings.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="globalSettingsActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>

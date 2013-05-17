@@ -108,6 +108,13 @@ public class Factory implements HighlightsLayerFactory {
             );
         }
         
+        layers.add(HighlightsLayer.create(
+            WhitespaceHighlighting.LAYER_TYPE_ID,
+            ZOrder.CARET_RACK.forPosition(-100), // Below CaretRowHighlighting
+            true, // fixed size
+            new WhitespaceHighlighting(context.getComponent()))
+        );
+
         return layers.toArray(new HighlightsLayer [layers.size()]);
     }
     

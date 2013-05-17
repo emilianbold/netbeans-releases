@@ -320,11 +320,21 @@ public final class FoldHierarchyTransactionImpl {
                         // the subsequent resetting of end-position produces a new position
                         // which could eventully swap with the original start position.
                         api.foldSetStartOffset(childFold, doc, insertOffset);
-                        api.foldStateChangeStartOffsetChanged(getFoldStateChange(childFold), childFoldStartOffset);
+                        FoldStateChange state = getFoldStateChange(childFold);
+                        if (state.getOriginalEndOffset() >= 0 && state.getOriginalEndOffset() < childFoldStartOffset) {
+                            LOG.warning("Original start offset > end offset, dumping fold hierarchy: " + execution);
+                            LOG.warning("Document event was: " + evt + " offset: " + insertOffset + ", len: " + evt.getLength());
+                        } 
+                        api.foldStateChangeStartOffsetChanged(state, childFoldStartOffset);
                     }
                     // Now correct the end offset to the one before insertion
                     api.foldSetEndOffset(childFold, doc, insertOffset);
-                    api.foldStateChangeEndOffsetChanged(getFoldStateChange(childFold), childFoldEndOffset);
+                    FoldStateChange state = getFoldStateChange(childFold);
+                    if (state.getOriginalStartOffset() >= 0 && state.getOriginalStartOffset() > childFoldEndOffset) {
+                        LOG.warning("Original start offset > end offset, dumping fold hierarchy: " + execution);
+                        LOG.warning("Document event was: " + evt + " offset: " + insertOffset + ", len: " + evt.getLength());
+                    }
+                    api.foldStateChangeEndOffsetChanged(state, childFoldEndOffset);
                     
                 } else { // not right at the end of the fold -> check damaged
                     int dmg = FoldUtilitiesImpl.isFoldDamagedByInsert(childFold, evt);

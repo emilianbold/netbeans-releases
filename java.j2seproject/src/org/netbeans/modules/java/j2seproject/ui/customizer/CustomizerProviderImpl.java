@@ -60,7 +60,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
-import org.netbeans.modules.java.api.common.project.ui.customizer.CustomizerProvider2;
+import org.netbeans.modules.java.api.common.project.ui.customizer.CustomizerProvider3;
 import org.netbeans.modules.java.j2seproject.J2SEProject;
 import org.netbeans.modules.java.api.common.project.ui.customizer.ProjectSharability;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -76,9 +76,9 @@ import org.openide.windows.WindowManager;
 
 /** Customization of J2SE project
  *
- * @author Petr Hrebejk
+ * @author Petr Hrebejk, Petr Somol
  */
-public class CustomizerProviderImpl implements CustomizerProvider2, ProjectSharability {
+public class CustomizerProviderImpl implements CustomizerProvider3, ProjectSharability {
     
     private final J2SEProject project;
     private final UpdateHelper updateHelper;
@@ -97,7 +97,8 @@ public class CustomizerProviderImpl implements CustomizerProvider2, ProjectShara
         this.refHelper = refHelper;
         this.genFileHelper = genFileHelper;
     }
-            
+    
+    @Override
     public void showCustomizer() {
         showCustomizer( null );
     }
@@ -107,6 +108,7 @@ public class CustomizerProviderImpl implements CustomizerProvider2, ProjectShara
         showCustomizer ( preselectedCategory, null );
     }
     
+    @Override
     public void showCustomizer( String preselectedCategory, String preselectedSubCategory ) {
         
         Dialog dialog = project2Dialog.get(project);
@@ -152,6 +154,16 @@ public class CustomizerProviderImpl implements CustomizerProvider2, ProjectShara
 
     public void makeSharable() {
         createJ2SEProjectProperties().makeSharable();
+    }
+
+    @Override
+    public void cancelCustomizer() {
+        Dialog dialog = project2Dialog.get(project);
+        if ( dialog != null ) {            
+            dialog.setVisible(false);
+            dialog.dispose();
+            project2Dialog.remove( project );
+        }
     }
 
     private class StoreListener implements ActionListener {
