@@ -744,7 +744,7 @@ public class ModelUtils {
                     }
                     resolvedAll = false;
                     String sexp = typeUsage.getType();
-                    if (sexp.startsWith("@exp;")) {
+                    if (sexp.startsWith("@exp;") && (sexp.length() < 5)) {
                         int start = sexp.charAt(5) == '@' ? 6 : 5;
                         sexp = sexp.substring(start);
                         List<String> nExp = new ArrayList<String>();
