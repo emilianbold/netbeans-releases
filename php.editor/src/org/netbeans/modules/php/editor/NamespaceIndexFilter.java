@@ -124,7 +124,7 @@ public class NamespaceIndexFilter<T extends ElementHandle> {
         if (getKind().isUnqualified()) {
             return originalElems;
         }
-        List<ModelElement> retval = new ArrayList<ModelElement>();
+        List<ModelElement> retval = new ArrayList<>();
         String namespaneNameLCase = getNamespaceName().toLowerCase();
         String namespaneNameLCaseSlashed = namespaneNameLCase;
         if (!namespaneNameLCaseSlashed.endsWith("\\")) { //NOI18N
@@ -160,7 +160,7 @@ public class NamespaceIndexFilter<T extends ElementHandle> {
         if (getKind().isUnqualified()) {
             return originalElems;
         }
-        Collection<T> retval = new ArrayList<T>();
+        Collection<T> retval = new ArrayList<>();
         String namespaneNameLCase = getNamespaceName().toLowerCase();
         String namespaneNameLCaseSlashed = namespaneNameLCase;
         if (!namespaneNameLCaseSlashed.endsWith("\\")) { //NOI18N

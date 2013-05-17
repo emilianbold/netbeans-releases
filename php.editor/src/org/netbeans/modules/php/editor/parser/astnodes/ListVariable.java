@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -53,7 +54,7 @@ import java.util.List;
  */
 public class ListVariable extends VariableBase {
 
-    private final ArrayList<VariableBase> variables = new ArrayList<VariableBase>();
+    private final ArrayList<VariableBase> variables = new ArrayList<>();
 
     private ListVariable(int start, int end, VariableBase[] variables) {
         super(start, end);
@@ -61,9 +62,7 @@ public class ListVariable extends VariableBase {
         if (variables == null) {
             throw new IllegalArgumentException();
         }
-        for (VariableBase variableBase : variables) {
-            this.variables.add(variableBase);
-        }
+        this.variables.addAll(Arrays.asList(variables));
     }
 
     public ListVariable(int start, int end, List<VariableBase> variables) {

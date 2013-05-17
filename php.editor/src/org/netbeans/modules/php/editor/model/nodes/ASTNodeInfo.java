@@ -194,49 +194,49 @@ public class ASTNodeInfo<T extends ASTNode> {
         return node;
     }
     public static ASTNodeInfo<FieldAccess> create(FieldAccess fieldAccess) {
-        return new ASTNodeInfo<FieldAccess>(fieldAccess);
+        return new ASTNodeInfo<>(fieldAccess);
     }
 
     public static ASTNodeInfo<UseStatementPart> create(UseStatementPart statementPart) {
-        return new ASTNodeInfo<UseStatementPart>(statementPart);
+        return new ASTNodeInfo<>(statementPart);
     }
 
     public static ASTNodeInfo<GotoStatement> create(GotoStatement statement) {
-        return new ASTNodeInfo<GotoStatement>(statement);
+        return new ASTNodeInfo<>(statement);
     }
     public static ASTNodeInfo<GotoLabel> create(GotoLabel label) {
-        return new ASTNodeInfo<GotoLabel>(label);
+        return new ASTNodeInfo<>(label);
     }
     public static ASTNodeInfo<FunctionInvocation> create(FunctionInvocation functionInvocation) {
-        return new ASTNodeInfo<FunctionInvocation>(functionInvocation);
+        return new ASTNodeInfo<>(functionInvocation);
     }
 
     public static ASTNodeInfo<Variable> create(Variable variable) {
-        return new ASTNodeInfo<Variable>(variable);
+        return new ASTNodeInfo<>(variable);
     }
 
     public static ASTNodeInfo<StaticDispatch> create(StaticDispatch staticDispatch) {
-        return new ASTNodeInfo<StaticDispatch>(staticDispatch);
+        return new ASTNodeInfo<>(staticDispatch);
     }
 
     public static ASTNodeInfo<StaticMethodInvocation> create(StaticMethodInvocation staticMethodInvocation) {
-        return new ASTNodeInfo<StaticMethodInvocation>(staticMethodInvocation);
+        return new ASTNodeInfo<>(staticMethodInvocation);
     }
 
     public static ASTNodeInfo<StaticFieldAccess> create(StaticFieldAccess staticFieldAccess) {
-        return new ASTNodeInfo<StaticFieldAccess>(staticFieldAccess);
+        return new ASTNodeInfo<>(staticFieldAccess);
     }
 
     public static ASTNodeInfo<StaticConstantAccess> create(StaticConstantAccess staticConstantAccess) {
-        return new ASTNodeInfo<StaticConstantAccess>(staticConstantAccess);
+        return new ASTNodeInfo<>(staticConstantAccess);
     }
 
     public static ASTNodeInfo<ClassInstanceCreation> create(ClassInstanceCreation instanceCreation) {
-        return new ASTNodeInfo<ClassInstanceCreation>(instanceCreation);
+        return new ASTNodeInfo<>(instanceCreation);
     }
 
     public static ASTNodeInfo<ClassName> create(ClassName className) {
-        return new ASTNodeInfo<ClassName>(className);
+        return new ASTNodeInfo<>(className);
     }
 
     public static ASTNodeInfo<Expression> create(Kind kind, NamespaceName namespaceName) {
@@ -248,15 +248,15 @@ public class ASTNodeInfo<T extends ASTNode> {
     }
 
     public static ASTNodeInfo<Scalar> create(Kind kind, Scalar scalar) {
-        return new ASTNodeInfo<Scalar>(kind, scalar);
+        return new ASTNodeInfo<>(kind, scalar);
     }
 
     public static ASTNodeInfo<MethodInvocation> create(MethodInvocation methodInvocation) {
-        return new ASTNodeInfo<MethodInvocation>(methodInvocation);
+        return new ASTNodeInfo<>(methodInvocation);
     }
 
     public static ASTNodeInfo<ReturnStatement> create(ReturnStatement returnStatement) {
-        return new ASTNodeInfo<ReturnStatement>(returnStatement);
+        return new ASTNodeInfo<>(returnStatement);
     }
 
     private static Kind toKind(ASTNode node) {

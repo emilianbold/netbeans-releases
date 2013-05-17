@@ -90,7 +90,7 @@ public class TypeRedeclarationHintError extends HintErrorRule {
             phpParseResult.getProgram().accept(checkVisitor);
             conditionStatements = checkVisitor.getConditionStatements();
             declaredTypes = ModelUtils.getDeclaredTypes(fileScope);
-            typeNames = new HashSet<String>();
+            typeNames = new HashSet<>();
             for (TypeScope typeScope : declaredTypes) {
                 if (!isInConditionStatament(typeScope)) {
                     checkDeclaredTypeScope(typeScope);
@@ -100,10 +100,10 @@ public class TypeRedeclarationHintError extends HintErrorRule {
     }
 
     private static final class CheckVisitor extends DefaultVisitor {
-        private final Set<Statement> conditionStatements = new HashSet<Statement>();
+        private final Set<Statement> conditionStatements = new HashSet<>();
 
         public Set<Statement> getConditionStatements() {
-            return new HashSet<Statement>(conditionStatements);
+            return new HashSet<>(conditionStatements);
         }
 
         @Override

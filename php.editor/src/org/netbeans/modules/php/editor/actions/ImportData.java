@@ -53,18 +53,18 @@ import javax.swing.Icon;
 public class ImportData {
     public volatile boolean shouldShowUsesPanel;
     public volatile int caretPosition;
-    private final List<DataItem> dataItems = new ArrayList<DataItem>();
+    private final List<DataItem> dataItems = new ArrayList<>();
 
     public void add(DataItem item) {
         dataItems.add(item);
     }
 
     public List<DataItem> getItems() {
-        return new ArrayList<DataItem>(dataItems);
+        return new ArrayList<>(dataItems);
     }
 
     public List<ItemVariant> getDefaultVariants() {
-        List<ItemVariant> result = new ArrayList<ItemVariant>();
+        List<ItemVariant> result = new ArrayList<>();
         for (DataItem dataItem : dataItems) {
             result.add(dataItem.getDefaultVariant());
         }
@@ -93,7 +93,7 @@ public class ImportData {
         }
 
         public List<ItemVariant> getVariants() {
-            return new ArrayList<ItemVariant>(variants);
+            return new ArrayList<>(variants);
         }
 
         public Icon[] getVariantIcons() {
@@ -110,7 +110,7 @@ public class ImportData {
         }
 
         public List<UsedNamespaceName> getUsedNamespaceNames() {
-            return new ArrayList<UsedNamespaceName>(usedNamespaceNames);
+            return new ArrayList<>(usedNamespaceNames);
         }
 
         @Override

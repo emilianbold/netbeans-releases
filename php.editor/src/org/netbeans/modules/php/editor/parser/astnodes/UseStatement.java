@@ -60,11 +60,11 @@ public class UseStatement extends Statement {
     public UseStatement(int start, int end, List parts) {
         super(start, end);
 
-        if (parts == null || parts.size() == 0) {
+        if (parts == null || parts.isEmpty()) {
             throw new IllegalArgumentException();
         }
 
-        this.parts = new ArrayList<UseStatementPart>(parts);
+        this.parts = new ArrayList<>(parts);
     }
 
     public UseStatement(int start, int end, UseStatementPart[] parts) {

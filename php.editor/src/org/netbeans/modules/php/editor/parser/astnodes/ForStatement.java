@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -57,9 +58,9 @@ import java.util.List;
  */
 public class ForStatement extends Statement {
 
-    private final ArrayList<Expression> initializers = new ArrayList<Expression>();
-    private final ArrayList<Expression> conditions = new ArrayList<Expression>();
-    private final ArrayList<Expression> updaters = new ArrayList<Expression>();
+    private final ArrayList<Expression> initializers = new ArrayList<>();
+    private final ArrayList<Expression> conditions = new ArrayList<>();
+    private final ArrayList<Expression> updaters = new ArrayList<>();
     private Statement body;
 
     private ForStatement(int start, int end, Expression[] initializations, Expression[] conditions, Expression[] increasements, Statement action) {
@@ -68,15 +69,9 @@ public class ForStatement extends Statement {
         if (initializations == null || conditions == null || increasements == null || action == null) {
             throw new IllegalArgumentException();
         }
-        for (Expression init : initializations) {
-            this.initializers.add(init);
-        }
-        for (Expression cond : conditions) {
-            this.conditions.add(cond);
-        }
-        for (Expression inc : increasements) {
-            this.updaters.add(inc);
-        }
+        this.initializers.addAll(Arrays.asList(initializations));
+        this.conditions.addAll(Arrays.asList(conditions));
+        this.updaters.addAll(Arrays.asList(increasements));
         this.body = action;
     }
 

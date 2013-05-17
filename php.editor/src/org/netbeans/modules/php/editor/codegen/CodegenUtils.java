@@ -78,7 +78,7 @@ public final class CodegenUtils {
         assert originalElement != null;
         assert currentModel != null;
         TypeNameResolver result = TypeNameResolverImpl.forNull();
-        final List<TypeNameResolver> typeNameResolvers = new LinkedList<TypeNameResolver>();
+        final List<TypeNameResolver> typeNameResolvers = new LinkedList<>();
         FileScope fileScope = ModelUtils.getFileScope(originalElement.getFileObject(), 300);
         if (fileScope != null) {
             FileObject fileObject = fileScope.getFileObject();

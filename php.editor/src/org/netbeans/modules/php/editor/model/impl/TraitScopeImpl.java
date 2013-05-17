@@ -69,8 +69,8 @@ import org.netbeans.modules.php.editor.model.nodes.TraitDeclarationInfo;
  */
 public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
     private final Collection<QualifiedName> usedTraits;
-    private Set<? super TypeScope> superRecursionDetection = new HashSet<TypeScope>();
-    private Set<? super TypeScope> subRecursionDetection = new HashSet<TypeScope>();
+    private Set<? super TypeScope> superRecursionDetection = new HashSet<>();
+    private Set<? super TypeScope> subRecursionDetection = new HashSet<>();
 
     TraitScopeImpl(Scope inScope, TraitElement indexedTrait) {
         super(inScope, indexedTrait);
@@ -157,7 +157,7 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
 
     @Override
     public Collection<? extends TraitScope> getTraits() {
-        Collection<TraitScope> result = new ArrayList<TraitScope>();
+        Collection<TraitScope> result = new ArrayList<>();
         for (QualifiedName qualifiedName : getUsedTraits()) {
             result.addAll(IndexScopeImpl.getTraits(qualifiedName, this));
         }

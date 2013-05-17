@@ -170,20 +170,20 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     //@GuardedBy("this")
     private boolean  askForEditorExtensions = true;
     private List<PhpBaseElement> baseElements;
-    private final Cache<Scope, Map<String, AssignmentImpl>> assignmentMapCache = new Cache<Scope, Map<String, AssignmentImpl>>();
+    private final Cache<Scope, Map<String, AssignmentImpl>> assignmentMapCache = new Cache<>();
 
     private boolean lazyScan = true;
     private volatile ScopeImpl previousScope;
-    private volatile List<String> currentLexicalVariables = new LinkedList<String>();
+    private volatile List<String> currentLexicalVariables = new LinkedList<>();
 
     public ModelVisitor(final PHPParseResult info) {
         this.fileScope = new FileScopeImpl(info);
-        varTypeComments = new HashMap<String, List<PhpDocTypeTagInfo>>();
+        varTypeComments = new HashMap<>();
         occurencesBuilder = new OccurenceBuilder();
         markerBuilder = new CodeMarkerBuilder();
         this.modelBuilder = new ModelBuilder(this.fileScope);
         this.info = info;
-        this.baseElements = new ArrayList<PhpBaseElement>();
+        this.baseElements = new ArrayList<>();
     }
 
     public ParserResult getCompilationInfo() {
@@ -198,7 +198,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     public List<PhpBaseElement> extendedElements() {
         synchronized (this) {
             if (!askForEditorExtensions) {
-                return new ArrayList<PhpBaseElement>(baseElements);
+                return new ArrayList<>(baseElements);
             }
             askForEditorExtensions = false;
         }
@@ -242,7 +242,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                 }
             }
         }
-        return new ArrayList<PhpBaseElement>(baseElements);
+        return new ArrayList<>(baseElements);
     }
 
     @Override
@@ -316,7 +316,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         lazyScan = true;
         modelBuilder.setProgram(program);
         fileScope.setBlockRange(program);
-        this.vars = new HashMap<Scope, Map<String, VariableNameImpl>>();
+        this.vars = new HashMap<>();
         prepareVarComments(program);
         super.visit(program);
         handleVarComments();
@@ -675,7 +675,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     }
 
     private Map<String, AssignmentImpl> getAssignmentMap(Scope scope, final VariableBase leftHandSide) {
-        Map<String, AssignmentImpl> allAssignments = new HashMap<String, AssignmentImpl>();
+        Map<String, AssignmentImpl> allAssignments = new HashMap<>();
         Map<String, AssignmentImpl> cachedMap = assignmentMapCache.get(scope);
         if (cachedMap == null || cachedMap.isEmpty()) {
             if (scope instanceof VariableScope) {
@@ -1064,7 +1064,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
                     String name = tagInfo.getName();
                     List<PhpDocTypeTagInfo> infos = varTypeComments.get(name);
                     if (infos == null) {
-                        infos = new ArrayList<PhpDocTypeTagInfo>();
+                        infos = new ArrayList<>();
                         varTypeComments.put(name, infos);
                     }
                     infos.add(tagInfo);
@@ -1103,7 +1103,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         VariableNameFactory varContainer = (VariableNameFactory) fncScope;
         Map<String, VariableNameImpl> map = vars.get(varContainer);
         if (map == null) {
-            map = new HashMap<String, VariableNameImpl>();
+            map = new HashMap<>();
             vars.put(varContainer, map);
         }
         String name = parameter.getName();
@@ -1121,7 +1121,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
     private VariableNameImpl createVariable(VariableNameFactory varContainer, Variable node) {
         Map<String, VariableNameImpl> map = vars.get(varContainer);
         if (map == null) {
-            map = new HashMap<String, VariableNameImpl>();
+            map = new HashMap<>();
             vars.put(varContainer, map);
         }
         String name = VariableNameImpl.toName(node);

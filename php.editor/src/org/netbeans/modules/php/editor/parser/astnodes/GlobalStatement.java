@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -53,7 +54,7 @@ import java.util.List;
  */
 public class GlobalStatement extends Statement {
 
-    private final ArrayList<Variable> variables = new ArrayList<Variable>();
+    private final ArrayList<Variable> variables = new ArrayList<>();
 
     private GlobalStatement(int start, int end, Variable[] variables) {
         super(start, end);
@@ -61,9 +62,7 @@ public class GlobalStatement extends Statement {
         if (variables == null) {
             throw new IllegalArgumentException();
         }
-        for (Variable variable : variables) {
-            this.variables.add(variable);
-        }
+        this.variables.addAll(Arrays.asList(variables));
     }
 
     public GlobalStatement(int start, int end, List<Variable> variables) {

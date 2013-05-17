@@ -73,10 +73,10 @@ public class ImportDataCreator {
     private final QualifiedName currentNamespace;
     private boolean shouldShowUsesPanel = false;
     private final Options options;
-    private final List<PossibleItem> possibleItems = new ArrayList<PossibleItem>();
+    private final List<PossibleItem> possibleItems = new ArrayList<>();
 
     private static Collection<TypeElement> sortTypeElements(final Collection<TypeElement> filteredTypeElements) {
-        final List<TypeElement> sortedTypeElements = new ArrayList<TypeElement>(filteredTypeElements);
+        final List<TypeElement> sortedTypeElements = new ArrayList<>(filteredTypeElements);
         Collections.sort(sortedTypeElements, new TypeElementsComparator());
         return sortedTypeElements;
     }
@@ -120,15 +120,15 @@ public class ImportDataCreator {
     private Collection<TypeElement> fetchPossibleTypes(final String typeName) {
         Collection<ClassElement> possibleClasses = phpIndex.getClasses(NameKind.prefix(typeName));
         Collection<InterfaceElement> possibleIfaces = phpIndex.getInterfaces(NameKind.prefix(typeName));
-        Collection<TypeElement> possibleTypes = new HashSet<TypeElement>();
+        Collection<TypeElement> possibleTypes = new HashSet<>();
         possibleTypes.addAll(possibleClasses);
         possibleTypes.addAll(possibleIfaces);
         return possibleTypes;
     }
 
     private Collection<TypeElement> filterDuplicates(final Collection<TypeElement> possibleTypes) {
-        Collection<TypeElement> result = new HashSet<TypeElement>();
-        Collection<String> filteredTypeElements = new HashSet<String>();
+        Collection<TypeElement> result = new HashSet<>();
+        Collection<String> filteredTypeElements = new HashSet<>();
         for (TypeElement typeElement : possibleTypes) {
             String typeElementName = typeElement.toString();
             if (!filteredTypeElements.contains(typeElementName)) {
@@ -140,7 +140,7 @@ public class ImportDataCreator {
     }
 
     private Collection<TypeElement> filterExactUnqualifiedName(final Collection<TypeElement> possibleTypes, final String typeName) {
-        Collection<TypeElement> result = new HashSet<TypeElement>();
+        Collection<TypeElement> result = new HashSet<>();
         for (TypeElement typeElement : possibleTypes) {
             if (typeElement.getFullyQualifiedName().toString().endsWith(typeName)) {
                 result.add(typeElement);
@@ -150,7 +150,7 @@ public class ImportDataCreator {
     }
 
     private Collection<TypeElement> filterTypesFromCurrentNamespace(final Collection<TypeElement> possibleTypes) {
-        Collection<TypeElement> result = new HashSet<TypeElement>();
+        Collection<TypeElement> result = new HashSet<>();
         for (TypeElement typeElement : possibleTypes) {
             if (!typeElement.getNamespaceName().equals(currentNamespace)) {
                 result.add(typeElement);
@@ -217,7 +217,7 @@ public class ImportDataCreator {
         @Override
         public void insertData(ImportData data) {
             Collection<TypeElement> sortedTypeElements = sortTypeElements(filteredTypeElements);
-            List<ItemVariant> variants = new ArrayList<ItemVariant>();
+            List<ItemVariant> variants = new ArrayList<>();
             ItemVariant defaultValue = null;
             boolean isFirst = true;
             for (TypeElement typeElement : sortedTypeElements) {
