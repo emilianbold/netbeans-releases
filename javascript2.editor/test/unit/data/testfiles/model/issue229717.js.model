@@ -35,3 +35,5 @@ ExpensesModel : FUNCTION ExpensesModel [ANONYMOUS: false, DECLARED: true - Expen
                               # PROPERTIES
                               arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
 test          : OBJECT test [ANONYMOUS: false, DECLARED: true - test, MODIFIERS: PUBLIC, VARIABLE]
+              # PROPERTIES
+              types : OBJECT types [ANONYMOUS: false, DECLARED: false - types, MODIFIERS: PUBLIC, PROPERTY]
