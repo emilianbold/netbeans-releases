@@ -287,7 +287,6 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
         r.putProperty("brkpSuspend", getBreakpoint().getSuspend()); // Remember the original breakpoint suspend property
         int hitCountFilter = getBreakpoint().getHitCountFilter();
         if (!ignoreHitCount && hitCountFilter > 0) {
-            EventRequestWrapper.addCountFilter(r, hitCountFilter);
             switch (getBreakpoint().getHitCountFilteringStyle()) {
                 case MULTIPLE:
                     this.hitCountFilter = hitCountFilter;
@@ -297,10 +296,12 @@ public abstract class BreakpointImpl implements ConditionedExecutor, PropertyCha
                     break;
                 case GREATER:
                     this.hitCountFilter = -1;
+                    hitCountFilter++;
                     break;
                 default:
                     throw new IllegalStateException(getBreakpoint().getHitCountFilteringStyle().name());
             }
+            EventRequestWrapper.addCountFilter(r, hitCountFilter);
         } else {
             this.hitCountFilter = 0;
         }
