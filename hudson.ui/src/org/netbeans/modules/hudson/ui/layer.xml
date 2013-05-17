@@ -29,9 +29,9 @@
     </folder>
     <folder name="QuickSearch">
         <folder name="Hudson">
-            <attr name="displayName" bundlevalue="org.netbeans.modules.hudson.ui.Bundle#quicksearch"/>
+            <attr name="displayName" bundlevalue="org.netbeans.modules.hudson.ui.impl.Bundle#quicksearch"/>
             <attr name="position" intvalue="700"/>
-            <file name="org-netbeans-modules-hudson-ui-SearchProviderImpl.instance"/>
+            <file name="org-netbeans-modules-hudson-ui-impl-SearchProviderImpl.instance"/>
         </folder>
     </folder>
 </filesystem>
