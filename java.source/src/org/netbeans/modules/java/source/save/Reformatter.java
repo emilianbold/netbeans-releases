@@ -3274,7 +3274,7 @@ public class Reformatter implements ReformatTask {
                             if (!indent.contentEquals(text.substring(lastIdx)))
                                 addDiff(new Diff(offset + lastIdx, tokens.offset(), indent));
                         } else {
-                            String text = after == 1 ? getIndent() : getNewlines(count) + getIndent();
+                            String text = getNewlines(count) + getIndent();
                             if (text.length() > 0)
                                 addDiff(new Diff(tokens.offset(), tokens.offset(), text));
                         }
