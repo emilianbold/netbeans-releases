@@ -61,6 +61,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
@@ -440,7 +441,7 @@ public class NewProjectWizardIterator implements WizardDescriptor.ProgressInstan
         for (Node node : nodes) {
             Project prj = node.getLookup().lookup(Project.class);
             if (prj != null) {
-                if (!Boolean.TRUE.equals(prj.getProjectDirectory().getAttribute("ProvidedExtensions.VCSManaged"))) { //NOI18N
+                if (!VersioningQuery.isManaged(prj.getProjectDirectory().toURI())) { 
                     File file = FileUtil.toFile(prj.getProjectDirectory());
                     items.add(new SharedItem(file));
                 }
