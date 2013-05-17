@@ -74,6 +74,7 @@ public class RemoteVCSTCKTest extends VCSFilesystemTestFactory {
         // Setting netbeans.dirs makes installedFileLocator work properly
         // Needed for native execution...
         System.setProperty("netbeans.dirs", NbClustersInfoProvider.getClusters()); // NOI18N
+        System.setProperty("remote.user.password.keep_in_memory", "true"); // NOI18N
     }
 
     private ExecutionEnvironment execEnv = null;

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,53 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.maven.api.output;
 
-package org.netbeans.modules.cnd.modelimpl.trace;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
- * Just a continuation of the FileModelTest
- * (which became too large)
- * @author Vladimir Kvashin
+ *
+ * @author jhavlin
  */
-public class FileModelCpp11Test extends TraceModelTestBase {
+public class OutputUtilsTest {
 
-    public FileModelCpp11Test(String testName) {
-        super(testName);
-    }
-
-    @Override
-    protected void setUp() throws Exception {
-        System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
-        System.setProperty("parser.report.errors", "true");
-        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
-        System.setProperty("cnd.language.flavor.cpp11", "true"); 
-        super.setUp();
+    @Test
+    public void testStackTraceLinePattern() {
+        assertTrue(isStackTraceLine("\tat x.y.Test.z(Test.java:123)"));
+        assertTrue(isStackTraceLine("\tat x.y.Test.native(Native Method)"));
+        assertTrue(isStackTraceLine("[catch]\tat x.y.z.Test.z(Test.java:789)"));
+        assertFalse(isStackTraceLine("\tat some.other.line(Example)"));
     }
 
-    @Override
-    protected void postSetUp() {
-        // init flags needed for file model tests
-        getTraceModel().setDumpModel(true);
-        getTraceModel().setDumpPPState(true);
-    }
-
-    @Override
-    protected void postTest(String[] args, Object... params) throws Exception {
-        System.setProperty("cnd.language.flavor.cpp11", "false"); 
-    }
-    
-    public void testCpp11() throws Exception {
-        performTest("cpp11.cpp");
-    }
-
-    public void testClassMemberFwdEnums() throws Exception {
-        performTest("classMemberFwdEnum.cpp");
-    }
-    
-    public void testClassMemberOperator() throws Exception {
-        // #225102 - [73cat] virtual operator double() const override brokes the parser.
-        performTest("bug225102.cpp");
+    private boolean isStackTraceLine(String line) {
+        return OutputUtils.linePattern.matcher(line).find();
     }
 }

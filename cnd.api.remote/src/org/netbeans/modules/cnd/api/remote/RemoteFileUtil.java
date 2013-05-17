@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.prefs.Preferences;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
@@ -62,7 +63,6 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder.JFileChooserEx;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
@@ -264,7 +264,7 @@ public class RemoteFileUtil {
         ExecutionEnvironment env = FileSystemProvider.getExecutionEnvironment(fs);
         return createFileChooser(env, titleText, buttonText, mode, filters, initialPath, useParent);
     }
-
+    
     public static JFileChooser createFileChooser(ExecutionEnvironment execEnv,
             String titleText, String buttonText, int mode, FileFilter[] filters,
             String initialPath, boolean useParent) {
@@ -285,6 +285,39 @@ public class RemoteFileUtil {
         
         return fileChooser;
     }
+    
+    /**
+     * Use this method when your initial path calculation can take a long time
+     * @param execEnv
+     * @param titleText
+     * @param buttonText
+     * @param mode
+     * @param filters
+     * @param initialPath callable which will be invoked in separate RP *after* dialog will be shown to the user
+     * @param useParent
+     * @return 
+     */
+    public static JFileChooser createFileChooser(ExecutionEnvironment execEnv,
+            String titleText, String buttonText, int mode, FileFilter[] filters,
+            Callable<String> initialPath, boolean useParent) {
+
+
+        // TODO support useParent or rework it
+        final FileChooserBuilder fileChooserBuilder = new FileChooserBuilder(execEnv).setPreferences(NbPreferences.forModule(RemoteFileUtil.class));
+        JFileChooserEx fileChooser = fileChooserBuilder.createFileChooser(initialPath);
+        fileChooser.setApproveButtonText(buttonText);
+        fileChooser.setDialogTitle(titleText);
+        fileChooser.setFileSelectionMode(mode);
+        if (filters != null) {
+            for (int i = 0; i < filters.length; i++) {
+                fileChooser.addChoosableFileFilter(filters[i]);
+            }
+            fileChooser.setFileFilter(filters[0]);
+        }
+        
+        return fileChooser;
+    }
+
     public static JFileChooser createProjectChooser(ExecutionEnvironment execEnv,
             String titleText, String description, String buttonText, String initialPath) {
         JFileChooser fileChooser;

@@ -123,7 +123,7 @@ public class TestCUnitIterator extends AbstractUnitTestIterator {
                 rootFolderFilePath,
                 fs));
         
-        DataObject formDataObject = NewTestCUnitPanel.getTemplateDataObject("cunittestfile.c"); // NOI18N
+        DataObject formDataObject = NewTestCUnitPanel.getTemplateDataObject("cunittest.c"); // NOI18N
         
         DataObject dataObject = formDataObject.createFromTemplate(targetFolder, getTestFileName(), params);
 

@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import javax.swing.Icon;
 import javax.swing.JFileChooser;
@@ -158,15 +159,18 @@ public class OpenRemoteProjectAction extends SingleHostAction {
         return isRemote(node);
     }
     
-    private void openRemoteProject(ExecutionEnvironment env) {            
-        String homeDir = RemoteFileUtil.getCurrentChooserFile(env);
-        if (homeDir == null) {
-            homeDir = getRemoteProjectDir(env);
-        }            
+    private void openRemoteProject(final ExecutionEnvironment env) {            
+        final String homeDir = RemoteFileUtil.getCurrentChooserFile(env);
+        final Callable<String> homeDirCallable = new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return homeDir == null ? getRemoteProjectDir(env) : homeDir;
+            }
+        };             
         JFileChooserEx fileChooser = (JFileChooserEx) RemoteFileUtil.createFileChooser(env,
             NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenProjectTitle", env.getDisplayName()),
             NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenProjectButtonText"),
-            JFileChooser.DIRECTORIES_ONLY, null, homeDir, true);
+            JFileChooser.DIRECTORIES_ONLY, null, homeDirCallable, true);
         fileChooser.setFileView(new ProjectSelectionFileView(fileChooser));
         int ret = fileChooser.showOpenDialog(WindowManager.getDefault().getMainWindow());
         if (ret == JFileChooser.CANCEL_OPTION) {
@@ -181,8 +185,8 @@ public class OpenRemoteProjectAction extends SingleHostAction {
             }
             return;
         }
-        homeDir = remoteProjectFO.getParent() == null ? remoteProjectFO.getPath() : remoteProjectFO.getParent().getPath();
-        RemoteFileUtil.setCurrentChooserFile(homeDir, env);
+        String currentChooserFile = remoteProjectFO.getParent() == null ? remoteProjectFO.getPath() : remoteProjectFO.getParent().getPath();
+        RemoteFileUtil.setCurrentChooserFile(currentChooserFile, env);
         Project project;
         try {
             project = ProjectManager.getDefault().findProject(remoteProjectFO);

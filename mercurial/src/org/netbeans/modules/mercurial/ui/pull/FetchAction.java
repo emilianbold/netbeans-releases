@@ -195,7 +195,7 @@ public class FetchAction extends ContextAction {
                     List<String> list = HgCommand.doFetch(root, from, revision, enableExtension, logger);
                     if (!supp.isCanceled() && list != null && !list.isEmpty()) {
                         logger.output(HgUtils.replaceHttpPassword(list));
-                        if (MergeAction.handleMergeOutput(root, list, logger) && topPatch != null) {
+                        if (MergeAction.handleMergeOutput(root, list, logger, true) && topPatch != null) {
                             logger.output(""); // NOI18N
                             supp.setDisplayName(Bundle.MSG_FetchAction_pushingPatches());
                             SystemAction.get(QGoToPatchAction.class).applyPatch(root, topPatch.getId(), logger);

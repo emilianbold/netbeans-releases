@@ -44,32 +44,46 @@ package org.netbeans.modules.cnd.makeproject;
 import java.awt.Dialog;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.makeproject.api.configurations.CodeAssistanceConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
+import org.netbeans.modules.cnd.makeproject.ui.ResolveEnvVarPanel;
 import org.netbeans.modules.cnd.makeproject.ui.ResolveReferencePanel;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.ProjectProblemsProviderSupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -79,6 +93,7 @@ import org.openide.util.Parameters;
  * @author Alexander Simon
  */
 public final class BrokenReferencesSupport {
+    private static final Map<ExecutionEnvironment, Map<String,String>> tempEnv = new WeakHashMap<ExecutionEnvironment, Map<String, String>>();
 
     private BrokenReferencesSupport() {
     }
@@ -108,10 +123,54 @@ public final class BrokenReferencesSupport {
         return false;
     }
 
+    public static Map<String,String> getTemporaryEnv(ExecutionEnvironment ee) {
+        return tempEnv.get(ee);
+    }
+
     private static boolean isIncorectVersion(@NonNull final MakeProject project) {
         MakeLogicalViewProvider view = project.getLookup().lookup(MakeLogicalViewProvider.class);
         return view.isIncorectVersion();
     }
+
+    private static UnsetEnvVar getUndefinedEnvVars(final MakeProject project) {
+        ConfigurationDescriptorProvider cdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (cdp.gotDescriptor()) {
+            MakeConfigurationDescriptor configurationDescriptor = cdp.getConfigurationDescriptor();
+            MakeConfiguration activeConfiguration = configurationDescriptor.getActiveConfiguration();
+            if (activeConfiguration != null) {
+                CodeAssistanceConfiguration codeAssistanceConfiguration = activeConfiguration.getCodeAssistanceConfiguration();
+                if (codeAssistanceConfiguration != null) {
+                    VectorConfiguration<String> environmentVariables = codeAssistanceConfiguration.getEnvironmentVariables();
+                    if (environmentVariables != null && !environmentVariables.getValue().isEmpty()) {
+                        ExecutionEnvironment ee = activeConfiguration.getDevelopmentHost().getExecutionEnvironment();
+                        if (ConnectionManager.getInstance().isConnectedTo(ee)) {
+                            try {
+                                List<String> res = new ArrayList<String>();
+                                HostInfo hostInfo = HostInfoUtils.getHostInfo(ee);
+                                Map<String, String> environment = hostInfo.getEnvironment();
+                                for(String var : environmentVariables.getValue()) {
+                                    String env = environment.get(var);
+                                    if (env == null) {
+                                        Map<String, String> temporaryEnv = getTemporaryEnv(ee);
+                                        if (temporaryEnv == null || !temporaryEnv.containsKey(var)) {
+                                            res.add(var);
+                                        }
+                                    }
+                                }
+                                return new UnsetEnvVar(res, ee, hostInfo);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            } catch (ConnectionManager.CancellationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
 
     @NonNull
     private static Set<? extends ProjectProblemsProvider.ProjectProblem> getReferenceProblems(@NonNull final MakeProject project) {
@@ -137,6 +196,21 @@ public final class BrokenReferencesSupport {
                     NbBundle.getMessage(ResolveReferencePanel.class, "MSG_platform_resolve_name"), //NOI18N
                     NbBundle.getMessage(ResolveReferencePanel.class, "MSG_platform_resolve_description"), //NOI18N
                     new PlatformResolverImpl(project));
+            set.add(error);
+        }
+        return set;
+    }
+
+    @NonNull
+    private static Set<? extends ProjectProblemsProvider.ProjectProblem> getEnvProblems(@NonNull final MakeProject project) {
+        Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<ProjectProblemsProvider.ProjectProblem>();
+        final UnsetEnvVar unset = getUndefinedEnvVars(project);
+        if (unset != null && !unset.getUndefinedEnvVars().isEmpty()) {
+            final ProjectProblemsProvider.ProjectProblem error =
+                    ProjectProblemsProvider.ProjectProblem.createError(
+                    NbBundle.getMessage(ResolveReferencePanel.class, "env_var_resolve_name"), //NOI18N
+                    NbBundle.getMessage(ResolveReferencePanel.class, "env_var_resolve_description"), //NOI18N
+                    new EnvResolverImpl(project, unset));
             set.add(error);
         }
         return set;
@@ -233,6 +307,7 @@ public final class BrokenReferencesSupport {
                             if (versionProblems.isEmpty()) {
                                 newProblems.addAll(getReferenceProblems(project));
                                 newProblems.addAll(getPlatformProblems(project));
+                                newProblems.addAll(getEnvProblems(project));
                             }
                             return Collections.unmodifiableSet(newProblems);
                         }
@@ -416,4 +491,101 @@ public final class BrokenReferencesSupport {
             return this.project.equals(other.project);
         }
     }
+
+    private static class EnvResolverImpl implements ProjectProblemResolver {
+
+        private final MakeProject project;
+        private final UnsetEnvVar unset;
+
+        public EnvResolverImpl(MakeProject project, UnsetEnvVar unset) {
+            this.project = project;
+            this.unset = unset;
+        }
+
+        @Override
+        public Future<ProjectProblemsProvider.Result> resolve() {
+            unset.edit.clear();
+            ResolveEnvVarPanel panel = new ResolveEnvVarPanel(unset);
+            DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ResolveEnvVarPanel.class, "env_var_fix_title"));
+            dd.setOptionType(NotifyDescriptor.OK_CANCEL_OPTION);
+            if (NotifyDescriptor.OK_OPTION.equals(DialogDisplayer.getDefault().notify(dd))) {
+                boolean success = true;
+                for(String var : unset.getUndefinedEnvVars()) {
+                    String val = unset.edit.get(var);
+                    if (val != null && !val.trim().isEmpty()) {
+                        Map<String, String> temporaryEnv = getTemporaryEnv(unset.getExecutionEnvironment());
+                        if (temporaryEnv == null) {
+                            temporaryEnv = new HashMap<String, String>();
+                            tempEnv.put(unset.getExecutionEnvironment(), temporaryEnv);
+                        }
+                        // TODO: HostInfo().getEnvironment() is not modifieble. There is no way to set additional env directly in the HostInfo.
+                        // It would be nice if native execution provides such service
+                        //unset.getHostInfo().getEnvironment().put(var, val.trim());
+                        // As work around keep env in temporary map.
+                        temporaryEnv.put(var, val.trim());
+                    } else {
+                        success = false;
+                    }
+                }
+                if (success) {
+                    ProjectProblemsProvider pp = project.getLookup().lookup(ProjectProblemsProvider.class);
+                    if(pp instanceof ProjectProblemsProviderImpl) {
+                            ((ProjectProblemsProviderImpl)pp).propertyChange(null);
+                    }
+                    NativeProject nativeProject = project.getLookup().lookup(NativeProject.class);
+                    if (nativeProject instanceof NativeProjectProvider) {
+                        ((NativeProjectProvider) nativeProject).fireFilesPropertiesChanged();
+                    }
+                    return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED));
+                }
+            }
+            return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED));
+        }
+        
+        @Override
+        public int hashCode() {
+            return this.project.hashCode() + EnvResolverImpl.class.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final EnvResolverImpl other = (EnvResolverImpl) obj;
+            return this.project.equals(other.project);
+        }
+    }
+    
+    public static final class UnsetEnvVar {
+        private final Collection<String> undefinedEnvVars;
+        private final Map<String, String> edit = new HashMap<String, String>();
+        private final ExecutionEnvironment ee;
+        private final HostInfo hostInfo;
+        private UnsetEnvVar(Collection<String> undefinedEnvVars, ExecutionEnvironment ee, HostInfo hostInfo) {
+            this.undefinedEnvVars = undefinedEnvVars;
+            this.ee = ee;
+            this.hostInfo = hostInfo;
+        }
+
+        public HostInfo getHostInfo() {
+            return hostInfo;
+        }
+
+        public Collection<String> getUndefinedEnvVars() {
+            return undefinedEnvVars;
+        }
+
+        public ExecutionEnvironment getExecutionEnvironment() {
+            return ee;
+        }
+
+        public void editValue(String key, String val) {
+            edit.put(key, val);
+        }
+    }
+    
 }

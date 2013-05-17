@@ -84,6 +84,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.debugger.common2.APIAccessor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ExecutableProjectPanel.ProjectCBItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
@@ -970,7 +971,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
                 return new ValidationResult(Boolean.FALSE, null, false);
             }
             //check hostname    
-            if (!CndRemote.syncValidate(hostName)) {
+            if (!APIAccessor.get().syncValidate(hostName)) {
                 return new ValidationResult(Boolean.FALSE, "DebugCorePanel.HOST_IS_NOT_VALID", true);//NOI18N
             }
             

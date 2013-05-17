@@ -340,7 +340,14 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
     }
 
     ImageIcon getIcon() {
-        return ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/remote_repo.png", true);
+        Image icon = repository.getIcon();
+        ImageIcon imageIcon;
+        if (icon == null) {
+            imageIcon = ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/remote_repo.png", true);
+        } else {
+            imageIcon = new ImageIcon(icon);
+        }
+        return imageIcon;
     }
 
     @Override

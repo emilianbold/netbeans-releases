@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,53 +37,40 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.team.ui.picker;
 
-package org.netbeans.modules.cnd.modelimpl.trace;
+import javax.swing.BorderFactory;
+import javax.swing.JToolBar;
+import javax.swing.UIManager;
+import javax.swing.plaf.ToolBarUI;
 
 /**
- * Just a continuation of the FileModelTest
- * (which became too large)
- * @author Vladimir Kvashin
+ *
+ * @author S. Aubrecht
  */
-public class FileModelCpp11Test extends TraceModelTestBase {
+class ServerToolbar extends JToolBar {
 
-    public FileModelCpp11Test(String testName) {
-        super(testName);
+    @Override
+    public String getUIClassID() {
+        if (UIManager.get("Nb.Toolbar.ui") != null) { //NOI18N
+            return "Nb.Toolbar.ui"; //NOI18N
+        } else {
+            return super.getUIClassID();
+        }
     }
 
     @Override
-    protected void setUp() throws Exception {
-        System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
-        System.setProperty("parser.report.errors", "true");
-        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
-        System.setProperty("cnd.language.flavor.cpp11", "true"); 
-        super.setUp();
+    public void setUI( ToolBarUI ui ) {
+        super.setUI( ui ); //To change body of generated methods, choose Tools | Templates.
+        configure();
     }
 
-    @Override
-    protected void postSetUp() {
-        // init flags needed for file model tests
-        getTraceModel().setDumpModel(true);
-        getTraceModel().setDumpPPState(true);
-    }
-
-    @Override
-    protected void postTest(String[] args, Object... params) throws Exception {
-        System.setProperty("cnd.language.flavor.cpp11", "false"); 
-    }
-    
-    public void testCpp11() throws Exception {
-        performTest("cpp11.cpp");
-    }
-
-    public void testClassMemberFwdEnums() throws Exception {
-        performTest("classMemberFwdEnum.cpp");
-    }
-    
-    public void testClassMemberOperator() throws Exception {
-        // #225102 - [73cat] virtual operator double() const override brokes the parser.
-        performTest("bug225102.cpp");
+    private void configure() {
+        setOpaque( false );
+        setFloatable( false );
+        setBorderPainted( false );
+        setBorder( BorderFactory.createEmptyBorder() );
     }
 }
