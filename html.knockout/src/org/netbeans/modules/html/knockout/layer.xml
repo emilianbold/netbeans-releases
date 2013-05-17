@@ -3,6 +3,18 @@
 <filesystem>
     <folder name="Editors">
         <folder name="text">
+            <folder name="html">
+                <folder name="FontsColors">
+                    <folder name="NetBeans">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-html-knockout-htmlcoloring.xml" url="htmlFontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.knockout.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                </folder>
+            </folder>
+            
             <folder name="ko-data-bind">
                 <folder name="FontsColors">
                     <folder name="NetBeans">
