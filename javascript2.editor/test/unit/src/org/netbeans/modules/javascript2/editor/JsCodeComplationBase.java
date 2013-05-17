@@ -109,8 +109,15 @@ public class JsCodeComplationBase extends JsTestBase {
                     return null;
                 }
                 return new File(path);
+            } else if (relativePath.equals("docs/jquery-propertyNames.xml")) {
+                String path = System.getProperty("test.jquery.propertyNames.file");
+                System.err.println(path);
+                //assertNotNull("must set test.jquery.api.file", path);
+                if (path == null) {
+                    return null;
+                }
+                return new File(path);
             }
-
             return null;
         }
     }
