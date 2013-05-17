@@ -371,6 +371,8 @@ public class SemiAttribute extends DefaultVisitor {
                             case "self": //NOI18N
                                 contextClassName = getContextClassName();
                                 break;
+                            default:
+                                // no-op
                         }
                         for (AttributedElement ell : nn) {
                             ClassElementAttribute ce = (ClassElementAttribute) ell;
@@ -593,6 +595,8 @@ public class SemiAttribute extends DefaultVisitor {
                 case "self": //NOI18N
                     contextClassName = getContextClassName();
                     break;
+                default:
+                    // no-op
             }
             for (AttributedElement ell : nn) {
                 ClassElementAttribute ce = (ClassElementAttribute) ell;
