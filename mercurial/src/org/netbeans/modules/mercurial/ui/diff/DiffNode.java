@@ -162,7 +162,7 @@ class DiffNode extends AbstractNode {
 
     @Override
     public Image getIcon (int type) {
-        if (dobj != null) {
+        if (dobj != null && dobj.isValid()) {
             return dobj.getNodeDelegate().getIcon(type);
         } else {
             return super.getIcon(type);
