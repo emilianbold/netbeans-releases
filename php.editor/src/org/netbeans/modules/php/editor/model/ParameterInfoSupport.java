@@ -275,6 +275,8 @@ public class ParameterInfoSupport {
                         staticClzName = clzScope.getName();
                     }
                     break;
+                default:
+                    // no-op
             }
         }
         return staticClzName;
