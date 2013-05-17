@@ -1121,6 +1121,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         case "catch": //NOI18N
                             appendSpace = codeStyle.spaceBeforeCatchParen();
                             break;
+                        default:
+                            // no-op
                     }
                     if (appendSpace) {
                         builder.append(" "); //NOI18N
