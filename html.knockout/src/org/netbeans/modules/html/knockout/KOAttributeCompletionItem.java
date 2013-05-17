@@ -67,7 +67,7 @@ public class KOAttributeCompletionItem extends HtmlCompletionItem.Attribute {
     private boolean isInKnockoutFile;
     
     public KOAttributeCompletionItem(CustomAttribute ca, int offset, boolean isInKnockoutFile) {
-        super(ca.getName(), offset, ca.isValueRequired(), ca.getHelp());
+        super(ca.getName(), offset, false, ca.getHelp());
         this.isInKnockoutFile = isInKnockoutFile;
     }
 
@@ -78,15 +78,15 @@ public class KOAttributeCompletionItem extends HtmlCompletionItem.Attribute {
 
     @Override
     protected Color getAttributeColor() {
-        return KOUtils.KO_COLOR;
+        return isInKnockoutFile ? KOUtils.KO_COLOR : super.getAttributeColor();
     }
 
-    //move the ko results to the top of the completion list if the page
-    //already contains ko stuff
-    @Override
-    public int getSortPriority() {
-        return super.getSortPriority() - (isInKnockoutFile ? 10 : 0);
-    }
+//    //move the ko results to the top of the completion list if the page
+//    //already contains ko stuff
+//    @Override
+//    public int getSortPriority() {
+//        return super.getSortPriority() - (isInKnockoutFile ? 10 : 0);
+//    }
 
     @Override
     public boolean hasHelp() {

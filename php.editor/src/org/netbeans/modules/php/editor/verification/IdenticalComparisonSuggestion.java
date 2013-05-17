@@ -215,6 +215,8 @@ public class IdenticalComparisonSuggestion extends SuggestionRule {
                 case Type.REAL:
                     retval = Type.FLOAT;
                     break;
+                default:
+                    // no-op
             }
             return retval;
         }

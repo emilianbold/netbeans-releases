@@ -252,9 +252,10 @@ public class JQueryCodeCompletion implements CompletionProvider {
         Collection<PropertyNameDataItem> items = data.get(fqn);
         int anchorOffset = ccContext.getParserResult().getSnapshot().getOriginalOffset(eOffset) - ccContext.getPrefix().length();
         if (items != null) {
+            boolean addComma = addComma(ts, eOffset);
             for (PropertyNameDataItem item : items) {
                 if (item.getName().startsWith(prefix)) {
-                    result.add(JQueryCompletionItem.createPropertyNameItem(item, anchorOffset));
+                    result.add(JQueryCompletionItem.createPropertyNameItem(item, anchorOffset, addComma));
                 }
             }
         }
@@ -269,6 +270,21 @@ public class JQueryCodeCompletion implements CompletionProvider {
             propertyNameFile = InstalledFileLocator.getDefault().locate(PROPERTY_NAME_FILE_LOCATION, "org.netbeans.modules.javascript2.jquery", false); //NOI18N
         }
         return propertyNameFile;
+    }
+
+    private boolean addComma(TokenSequence<? extends JsTokenId> ts, int eOffset) {
+        // we know that we are at the position, where the name of property is entered
+        ts.move(eOffset);
+        if (ts.moveNext()) {
+            // we are looking for ',' -> don't add comma, is already there
+            // ':' or an identifier -> need to add comma, next expression is new property definition
+            // '}' -> end of object literal object definition -> no need comma there
+            Token<? extends JsTokenId>token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+            if (token.id() == JsTokenId.IDENTIFIER || token.id() == JsTokenId.STRING_BEGIN) {
+                return true;
+            } 
+        }
+        return false;
     }
     
     private enum SelectorKind {

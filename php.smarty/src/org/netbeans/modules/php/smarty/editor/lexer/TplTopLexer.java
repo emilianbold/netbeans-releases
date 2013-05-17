@@ -38,6 +38,8 @@
  */
 package org.netbeans.modules.php.smarty.editor.lexer;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.LanguagePath;
 import org.netbeans.api.lexer.Token;
@@ -56,6 +58,8 @@ import org.netbeans.spi.lexer.TokenFactory;
  * @author Martin Fousek
  */
 public class TplTopLexer implements Lexer<TplTopTokenId> {
+
+    private static final Logger LOG = Logger.getLogger(TplTopLexer.class.getName());
 
     private final TplTopColoringLexer scanner;
     private TokenFactory<TplTopTokenId> tokenFactory;
@@ -231,15 +235,17 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                     case INIT:
                     case OUTER:
                         if (isSmartyOpenDelimiter(text)) {
-                            state = State.OPEN_DELIMITER;
-                            input.backup(openDelimiterLength);
-                            if (textLength > openDelimiterLength) {
-                                return TplTopTokenId.T_HTML;
+                            c = input.read();
+                            input.backup(1);
+                            if ((!LexerUtils.isWS(c) && getSmartyVersion() == SmartyFramework.Version.SMARTY3)
+                                    || getSmartyVersion() == SmartyFramework.Version.SMARTY2) {
+                                state = State.OPEN_DELIMITER;
+                                input.backup(openDelimiterLength);
+                                if (textLength > openDelimiterLength) {
+                                    return TplTopTokenId.T_HTML;
+                                }
                             }
                         }
-//                    if (cc == '\n') {
-//                        return TplTopTokenId.T_HTML;
-//                    }
                         break;
 
                     case OPEN_DELIMITER:

@@ -39,47 +39,21 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
+package org.netbeans.modules.j2ee.jboss4.nodes;
 
-import java.awt.Color;
-import javax.swing.ImageIcon;
-import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
-import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
+import java.util.concurrent.ExecutorService;
+import org.openide.nodes.Children;
+import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author marekfukala
+ * @author Petr Hejl
  */
-public class AngularAttributeCompletionItem extends HtmlCompletionItem.Attribute {
+public abstract class JBAsyncChildren extends Children.Keys {
 
-    private boolean isInAngularPage;
-    
-//    public AngularAttributeCompletionItem(String value, int offset, boolean required, String helpId, boolean autoCompleteValue, boolean isInAngularPage) {
-    public AngularAttributeCompletionItem(CustomAttribute ca, int offset, boolean isInAngularPage) {
-        super(ca.getName(), offset, false, ca.getHelp());
-        this.isInAngularPage = isInAngularPage;
+    private static final ExecutorService EXECUTOR = new RequestProcessor(JBAsyncChildren.class);
+
+    public final ExecutorService getExecutorService() {
+        return EXECUTOR;
     }
-
-//    @Override
-//    protected ImageIcon getIcon() {
-//        return Constants.ANGULAR_ICON;
-//    }
-
-    @Override
-    protected Color getAttributeColor() {
-        return Constants.ANGULAR_COLOR;
-    }
-
-    //move the angular results to the bottom of the completion list if the page
-    //doesn't contain angular stuff
-    @Override
-    public int getSortPriority() {
-        return super.getSortPriority() - (isInAngularPage ? 0 : -10);
-    }
-
-    @Override
-    public boolean hasHelp() {
-        return true;
-    }
-    
 }

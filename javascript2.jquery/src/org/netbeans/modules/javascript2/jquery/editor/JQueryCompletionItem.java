@@ -82,9 +82,9 @@ public abstract class JQueryCompletionItem implements CompletionProposal {
         return new JQuerySimpleItem(element, anchorOffset, surround, codeTemplate);
     }
     
-    static CompletionProposal createPropertyNameItem(PropertyNameDataItem item, int anchorOffset) {
+    static CompletionProposal createPropertyNameItem(PropertyNameDataItem item, int anchorOffset, boolean addComma) {
         ElementHandle element = new DocSimpleElement(item.getName(), item.getDocumentation(), ElementKind.PROPERTY);
-        return new PropertyNameCompletionItem(item, anchorOffset, element);
+        return new PropertyNameCompletionItem(item, anchorOffset, element, addComma);
     }
 
     public JQueryCompletionItem(final ElementHandle element, final int anchorOffset) {
@@ -243,11 +243,13 @@ public abstract class JQueryCompletionItem implements CompletionProposal {
         private final int anchorOffset;
         private final ElementHandle element;
         private final PropertyNameDataItem dataItem;
+        private final boolean addComma;
 
-        public PropertyNameCompletionItem(PropertyNameDataItem item, int anchorOffset, ElementHandle element) {
+        public PropertyNameCompletionItem(PropertyNameDataItem item, int anchorOffset, ElementHandle element, boolean addComma) {
             this.anchorOffset = anchorOffset;
             this.element = element;
             this.dataItem = item;
+            this.addComma = addComma;
         }
 
         @Override
@@ -321,10 +323,17 @@ public abstract class JQueryCompletionItem implements CompletionProposal {
 
         @Override
         public String getCustomInsertTemplate() {
+            StringBuilder sb = new StringBuilder();
+            sb.append(getName()).append(": "); //NOI18N
             if (dataItem.getTemplate() != null) {
-                return getName() + ": " + dataItem.getTemplate().trim(); //NOI18N
+                 sb.append(dataItem.getTemplate().trim()); 
+            } else {
+                sb.append("${cursor}"); //NOI18N
             }
-            return null;
+            if (addComma) {
+                sb.append(",");
+            }
+            return sb.toString();
         }
     }
     

@@ -189,6 +189,8 @@ public class WrongOrderOfArgsHint extends HintRule {
                             case ")": //NOI18N
                                 braceMatch--;
                                 break;
+                            default:
+                                // no-op
                         }
                         if (braceMatch == 0) {
                             end = ts.offset();

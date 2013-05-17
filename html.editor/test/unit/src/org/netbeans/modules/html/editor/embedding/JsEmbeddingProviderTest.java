@@ -83,7 +83,7 @@ public class JsEmbeddingProviderTest extends CslTestBase {
     public void testOnClick() throws ParseException {
         assertEmbedding("<div onclick='alert()'/>",
                 "(function(){\n"
-                + "alert()\n"
+                + "alert();\n"
                 + "});\n"
                 + "");
     }
@@ -91,7 +91,7 @@ public class JsEmbeddingProviderTest extends CslTestBase {
     public void testCustomJSEmbeddingOnAttributeValue() {
         assertEmbedding("<div controller='MyController'/>",
                 "(function(){\n"
-                + "MyController\n"
+                + "MyController;\n"
                 + "});\n"
                 + "");
     }
