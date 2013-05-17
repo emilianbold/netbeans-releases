@@ -228,9 +228,12 @@ public class CreateSubclass {
                                     }
                                 }
                                 List<TypeParameterTree> typeParameters = new ArrayList<>();
+                                TypeElement jlObjectElement = parameter.getElements().getTypeElement("java.lang.Object");
+                                TypeMirror  jlObjectType    = jlObjectElement != null ? jlObjectElement.asType() : null;
                                 for (TypeParameterElement origTP : superTypeElement.getTypeParameters()) {
                                     List<ExpressionTree> bounds = new ArrayList<>();
                                     for (TypeMirror b : origTP.getBounds()) {
+                                        if (jlObjectType != null && parameter.getTypes().isSameType(b, jlObjectType)) continue;
                                         bounds.add((ExpressionTree) make.Type(b));
                                     }
                                     typeParameters.add(make.TypeParameter(origTP.getSimpleName(), bounds));

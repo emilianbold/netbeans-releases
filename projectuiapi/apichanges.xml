@@ -107,6 +107,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+
+        <change id="CustomizerProvider2">
+            <api name="general"/>
+            <summary>Moved CustomizerProvider2 from java.api.common</summary>
+            <version major="1" minor="71"/>
+            <date day="13" month="5" year="2013"/>
+            <author login="psomol"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    <code>CustomizerProvider2</code> has been available so far in <code>java.api.common</code> but
+                    requests have been made to move it to <code>projectuiapi</code>, where its parent
+                    <code>CustomizerProvider</code> resides, before <code>CustomizerProvider3</code> is defined. 
+                    For reasoning see Issue 229161.
+                </p>
+            </description>
+            <issue number="229161"/>
+        </change>
+
         <change id="project.licensePath">
             <api name="general"/>
             <summary>Project system related file templates can include shared license header file</summary>

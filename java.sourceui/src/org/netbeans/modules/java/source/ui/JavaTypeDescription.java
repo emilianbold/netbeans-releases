@@ -45,6 +45,9 @@
 package org.netbeans.modules.java.source.ui;
 
 import java.awt.Toolkit;
+import java.io.File;
+import java.io.IOException;
+import java.net.URI;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.NonNull;
@@ -55,12 +58,16 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.modules.java.source.parsing.FileObjects;
+import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.ui.Icons;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  * 
@@ -78,6 +85,7 @@ public class JavaTypeDescription extends TypeDescriptor {
     private String simpleName;
     private String outerName;
     private String packageName;
+    private volatile String cachedPath;
 
     JavaTypeDescription(
             @NonNull final JavaTypeProvider.CacheItem cacheItem,
@@ -161,6 +169,39 @@ public class JavaTypeDescription extends TypeDescriptor {
     @Override
     public FileObject getFileObject() {
         return cacheItem.getRoot();
+    }
+
+    @Override
+    public String getFileDisplayPath() {
+        String path = cachedPath;
+        if (path == null) {
+            final URI uri = cacheItem.getRootURI();
+            assert uri != null : "Root null for created entry";    //NOI18N
+            try {
+                final File rootFile = Utilities.toFile(uri);
+                final ClassIndexImpl ci = cacheItem.getClassIndex();
+                assert ci != null : "ClassIndexImpl null for created entry";    //NOI18N
+                final String binaryName = handle.getBinaryName();
+                String relativePath = ci.getSourceName(binaryName);
+                if (relativePath == null) {
+                    relativePath = binaryName;
+                    int lastDot = relativePath.lastIndexOf('.');    //NOI18N
+                    int csIndex = relativePath.indexOf('$', lastDot);     //NOI18N
+                    if (csIndex > 0 && csIndex < relativePath.length()-1) {
+                        relativePath = binaryName.substring(0, csIndex);
+                    }
+                    relativePath = String.format(
+                        "%s.%s",    //NOI18N
+                        FileObjects.convertPackage2Folder(relativePath, File.separatorChar),
+                        FileObjects.JAVA);
+                }
+                path = new File(rootFile,relativePath).getAbsolutePath();
+            } catch (IllegalArgumentException | IOException | InterruptedException e) {
+                path = FileUtil.getFileDisplayName(getFileObject());
+            }
+            cachedPath = path;
+        }
+        return path;
     }
 
     @Override
