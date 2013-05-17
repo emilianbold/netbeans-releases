@@ -79,12 +79,15 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author marekfukala
  */
 public class FaceletsLibrarySupport {
+
+    private static final RequestProcessor RP = new RequestProcessor(FaceletsLibrarySupport.class);
 
     private JsfSupportImpl jsfSupport;
 
@@ -106,12 +109,15 @@ public class FaceletsLibrarySupport {
     private final ThreadLocal<Collection<? extends Library>> declaredFacesComponentsCache = new ThreadLocal<Collection<? extends Library>>();
 
     private FileChangeListener DDLISTENER = new FileChangeAdapter() {
-
         @Override
         public void fileChanged(FileEvent fe) {
-            invalidateLibrariesCache();
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    invalidateLibrariesCache();
+                }
+            });
         }
-
     };
     
     private static final String DD_FILE_NAME = "web.xml"; //NOI18N

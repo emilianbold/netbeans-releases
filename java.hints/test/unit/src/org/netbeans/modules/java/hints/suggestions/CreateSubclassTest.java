@@ -75,4 +75,26 @@ public class CreateSubclassTest {
                           "public class NewTest<F extends CharSequence, S extends Number & Runnable> extends Test<F, S> {}\n");
     }
     
+    @Test
+    public void testTypeParams226791b() throws Exception {
+        CreateSubclass.overrideNameAndPackage = new String[] {
+            "NewTest",
+            "test"
+        };
+        HintTest test = HintTest.create();
+        try (OutputStream out = FileUtil.createData(FileUtil.getConfigRoot(), "Templates/Classes/Class.java").getOutputStream()) {
+            out.write("public class New {}\n".getBytes("UTF-8"));
+        }
+        test.setCaretMarker('^')
+            .input("package test;\n" +
+                   "public class Te^st<F, S extends Object & CharSequence> {}\n")
+            .run(CreateSubclass.class)
+            .findWarning("1:15-1:15:hint:ERR_CreateSubclass")
+            .applyFix()
+            .assertCompilable("test/NewTest.java")
+            .assertOutput("test/NewTest.java",
+                          "package test;\n" +
+                          "public class NewTest<F, S extends CharSequence> extends Test<F, S> {}\n");
+    }
+    
 }

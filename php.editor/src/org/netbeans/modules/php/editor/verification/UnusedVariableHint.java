@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -120,7 +120,7 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
     private static final String HINT_ID = "Unused.Variable.Hint"; //NOI18N
     private static final String CHECK_UNUSED_FORMAL_PARAMETERS = "php.verification.check.unused.formal.parameters"; //NOI18N
-    private static final List<String> UNCHECKED_VARIABLES = new LinkedList<String>();
+    private static final List<String> UNCHECKED_VARIABLES = new ArrayList<>();
     private Preferences preferences;
 
     static {
@@ -152,9 +152,9 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
 
     private class CheckVisitor extends DefaultVisitor {
 
-        private final Stack<ASTNode> parentNodes = new Stack<ASTNode>();
-        private final Map<ASTNode, List<HintVariable>> unusedVariables = new HashMap<ASTNode, List<HintVariable>>();
-        private final Map<ASTNode, List<HintVariable>> usedVariables = new HashMap<ASTNode, List<HintVariable>>();
+        private final Stack<ASTNode> parentNodes = new Stack<>();
+        private final Map<ASTNode, List<HintVariable>> unusedVariables = new HashMap<>();
+        private final Map<ASTNode, List<HintVariable>> usedVariables = new HashMap<>();
         private final FileObject fileObject;
         private final BaseDocument baseDocument;
         private final List<Hint> hints;
@@ -164,7 +164,7 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
         public CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
-            hints = new LinkedList<Hint>();
+            hints = new ArrayList<>();
         }
 
         public List<Hint> getHints() {
@@ -204,7 +204,7 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
         private List<HintVariable> getUsedScopeVariables(ASTNode parentNode) {
             List<HintVariable> usedScopeVariables = usedVariables.get(parentNode);
             if (usedScopeVariables == null) {
-                usedScopeVariables = new LinkedList<HintVariable>();
+                usedScopeVariables = new ArrayList<>();
                 usedVariables.put(parentNode, usedScopeVariables);
             }
             return usedScopeVariables;
@@ -213,7 +213,7 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
         private List<HintVariable> getUnusedScopeVariables(ASTNode parentNode) {
             List<HintVariable> unusedScopeVariables = unusedVariables.get(parentNode);
             if (unusedScopeVariables == null) {
-                unusedScopeVariables = new LinkedList<HintVariable>();
+                unusedScopeVariables = new ArrayList<>();
                 unusedVariables.put(parentNode, unusedScopeVariables);
             }
             return unusedScopeVariables;

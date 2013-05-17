@@ -179,6 +179,8 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
         assertNotNull(dataFile);
         
         TestUtilities.copyStringToFile(dataFile, code);
+        
+        SourceUtilsTestUtil.setSourceLevel(data, sourceLevel);
 
         SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cacheFO, getExtraClassPathElements());
         
@@ -205,6 +207,7 @@ public abstract class ErrorHintsTestBase extends NbTestCase {
     }
     
     private FileObject sourceRoot;
+    protected String sourceLevel = "1.5";
     protected CompilationInfo info;
     private Document doc;
     

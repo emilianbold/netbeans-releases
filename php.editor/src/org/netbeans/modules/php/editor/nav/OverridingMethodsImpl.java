@@ -77,7 +77,7 @@ public class OverridingMethodsImpl implements OverridingMethods {
     /** just very simple implementation for now*/
     private Set<MethodElement> inheritedMethods = Collections.emptySet();
     private Set<MethodElement> inheritedByMethods = Collections.emptySet();
-    private Set<TypeElement> inheritedByTypes = new LinkedHashSet<TypeElement>();
+    private Set<TypeElement> inheritedByTypes = new LinkedHashSet<>();
     @Override
     public Collection<? extends AlternativeLocation> overrides(ParserResult info, ElementHandle handle) {
         assert handle instanceof ModelElement;
@@ -85,7 +85,7 @@ public class OverridingMethodsImpl implements OverridingMethods {
             MethodScope method = (MethodScope) handle;
             final ElementFilter methodNameFilter = ElementFilter.forName(NameKind.exact(method.getName()));
             final Set<MethodElement> overridenMethods = methodNameFilter.filter(getInheritedMethods(info, method));
-            List<AlternativeLocation> retval = new ArrayList<AlternativeLocation>();
+            List<AlternativeLocation> retval = new ArrayList<>();
             for (MethodElement methodElement : overridenMethods) {
                 retval.add(MethodLocation.newInstance(methodElement));
             }
@@ -101,13 +101,13 @@ public class OverridingMethodsImpl implements OverridingMethods {
             MethodScope method = (MethodScope) handle;
             final ElementFilter methodNameFilter = ElementFilter.forName(NameKind.exact(method.getName()));
             final Set<MethodElement> overridenByMethods = methodNameFilter.filter(getInheritedByMethods(info, method));
-            List<AlternativeLocation> retval = new ArrayList<AlternativeLocation>();
+            List<AlternativeLocation> retval = new ArrayList<>();
             for (MethodElement methodElement : overridenByMethods) {
                 retval.add(MethodLocation.newInstance(methodElement));
             }
             return retval;
         } else if (handle instanceof TypeScope) {
-            List<AlternativeLocation> retval = new ArrayList<AlternativeLocation>();
+            List<AlternativeLocation> retval = new ArrayList<>();
             for (TypeElement typeElement : getInheritedByTypes(info, (TypeScope) handle)) {
                 retval.add(TypeLocation.newInstance(typeElement));
             }
@@ -158,7 +158,7 @@ public class OverridingMethodsImpl implements OverridingMethods {
         if (signature != null && !signature.equals(classSignatureForInheritedByMethods)) {
             Index index = ElementQueryFactory.getIndexQuery(info);
             TypeScope type = (TypeScope) method.getInScope();
-            inheritedByMethods = new HashSet<MethodElement>();
+            inheritedByMethods = new HashSet<>();
             for (TypeElement nextType : getInheritedByTypes(info, type)) {
                 inheritedByMethods.addAll(index.getDeclaredMethods(nextType));
             }

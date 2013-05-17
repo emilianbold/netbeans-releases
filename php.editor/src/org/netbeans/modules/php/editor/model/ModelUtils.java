@@ -98,7 +98,7 @@ public final class ModelUtils {
     }
 
     public static Set<AliasedName> getAliasedNames(final Model model, final int offset) {
-        final Set<AliasedName> aliases = new HashSet<AliasedName>();
+        final Set<AliasedName> aliases = new HashSet<>();
         final NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
         if (namespaceScope != null) {
             Collection<? extends UseScope> declaredUses = namespaceScope.getDeclaredUses();
@@ -121,7 +121,7 @@ public final class ModelUtils {
     }
 
     public static Collection<? extends TypeScope> getDeclaredTypes(FileScope fileScope) {
-        List<TypeScope> retval = new ArrayList<TypeScope>();
+        List<TypeScope> retval = new ArrayList<>();
         Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
         for (NamespaceScope namespace : declaredNamespaces) {
             retval.addAll(namespace.getDeclaredTypes());
@@ -130,7 +130,7 @@ public final class ModelUtils {
     }
 
     public static Collection<? extends ClassScope> getDeclaredClasses(FileScope fileScope) {
-        List<ClassScope> retval = new ArrayList<ClassScope>();
+        List<ClassScope> retval = new ArrayList<>();
         Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
         for (NamespaceScope namespace : declaredNamespaces) {
             retval.addAll(namespace.getDeclaredClasses());
@@ -139,7 +139,7 @@ public final class ModelUtils {
     }
 
     public static Collection<? extends InterfaceScope> getDeclaredInterfaces(FileScope fileScope) {
-        List<InterfaceScope> retval = new ArrayList<InterfaceScope>();
+        List<InterfaceScope> retval = new ArrayList<>();
         Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
         for (NamespaceScope namespace : declaredNamespaces) {
             retval.addAll(namespace.getDeclaredInterfaces());
@@ -148,7 +148,7 @@ public final class ModelUtils {
     }
 
     public static Collection<? extends TraitScope> getDeclaredTraits(FileScope fileScope) {
-        List<TraitScope> retval = new ArrayList<TraitScope>();
+        List<TraitScope> retval = new ArrayList<>();
         Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
         for (NamespaceScope namespace : declaredNamespaces) {
             retval.addAll(namespace.getDeclaredTraits());
@@ -157,7 +157,7 @@ public final class ModelUtils {
     }
 
     public static Collection<? extends ConstantElement> getDeclaredConstants(FileScope fileScope) {
-        List<ConstantElement> retval = new ArrayList<ConstantElement>();
+        List<ConstantElement> retval = new ArrayList<>();
         Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
         for (NamespaceScope namespace : declaredNamespaces) {
             retval.addAll(namespace.getDeclaredConstants());
@@ -166,7 +166,7 @@ public final class ModelUtils {
     }
 
     public static Collection<? extends FunctionScope> getDeclaredFunctions(FileScope fileScope) {
-        List<FunctionScope> retval = new ArrayList<FunctionScope>();
+        List<FunctionScope> retval = new ArrayList<>();
         Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
         for (NamespaceScope namespace : declaredNamespaces) {
             retval.addAll(namespace.getDeclaredFunctions());
@@ -175,7 +175,7 @@ public final class ModelUtils {
     }
 
     public static Collection<? extends VariableName> getDeclaredVariables(FileScope fileScope) {
-        List<VariableName> retval = new ArrayList<VariableName>();
+        List<VariableName> retval = new ArrayList<>();
         Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
         for (NamespaceScope namespace : declaredNamespaces) {
             retval.addAll(namespace.getDeclaredVariables());
@@ -184,7 +184,7 @@ public final class ModelUtils {
     }
 
     public static List<? extends ModelElement> getElements(Scope scope, boolean resursively) {
-        List<ModelElement> retval = new ArrayList<ModelElement>();
+        List<ModelElement> retval = new ArrayList<>();
         List<? extends ModelElement> elements = scope.getElements();
         retval.addAll(elements);
         for (ModelElement modelElement : elements) {
@@ -341,7 +341,7 @@ public final class ModelUtils {
     @NonNull
     public static <T extends ModelElement> List<? extends T> filter(Collection<? extends T> allElements,
             FileObject fileObject) {
-        List<T> retval = new ArrayList<T>();
+        List<T> retval = new ArrayList<>();
         for (T element : allElements) {
             if (element.getFileObject() == fileObject) {
                 retval.add(element);
@@ -369,7 +369,7 @@ public final class ModelUtils {
     @CheckForNull
     public static <T extends ModelElement> T getFirst(Collection<? extends T> allElements,
             FileObject fileObject) {
-        List<T> retval = new ArrayList<T>();
+        List<T> retval = new ArrayList<>();
         for (T element : allElements) {
             if (element.getFileObject() == fileObject) {
                 retval.add(element);
@@ -381,7 +381,7 @@ public final class ModelUtils {
     @SuppressWarnings("unchecked")
     @NonNull
     public static <T extends ModelElement> Collection<? extends T> merge(Collection<? extends T>... all) {
-        List<T> retval = new ArrayList<T>();
+        List<T> retval = new ArrayList<>();
         for (Collection<? extends T> list : all) {
             retval.addAll(list);
         }
@@ -458,7 +458,7 @@ public final class ModelUtils {
     }
 
     public static <T extends ModelElement> List<? extends T> filter(final Collection<? extends T> instances, final ElementFilter<T> filter) {
-        List<T> retval = new ArrayList<T>();
+        List<T> retval = new ArrayList<>();
         for (T baseElement : instances) {
             boolean accepted = filter.isAccepted(baseElement);
             if (accepted) {
@@ -586,12 +586,10 @@ public final class ModelUtils {
         });
         try {
             result = futureResult.get(timeout, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException ex) {
+        } catch (InterruptedException | TimeoutException ex) {
             LOGGER.log(Level.FINE, null, ex);
         } catch (ExecutionException ex) {
             LOGGER.log(Level.WARNING, null, ex);
-        } catch (TimeoutException ex) {
-            LOGGER.log(Level.FINE, null, ex);
         }
         return result;
     }
@@ -635,12 +633,10 @@ public final class ModelUtils {
         });
         try {
             result = futureResult.get(timeout, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException ex) {
+        } catch (InterruptedException | TimeoutException ex) {
             LOGGER.log(Level.FINE, null, ex);
         } catch (ExecutionException ex) {
             LOGGER.log(Level.WARNING, null, ex);
-        } catch (TimeoutException ex) {
-            LOGGER.log(Level.FINE, null, ex);
         }
         return result;
     }

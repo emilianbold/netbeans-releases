@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -476,7 +477,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return indexName;
     }
 
-    @org.netbeans.api.annotations.common.SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "Null means that it is not set")
     private Boolean isCopyFiles() {
         PhpProjectProperties.RunAsType runAs = getRunAsType();
         if (runAs == null) {
@@ -508,6 +509,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return null;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "Null means that it is not set")
+    @CheckForNull
     private Boolean getCopySrcOnOpen() {
         if (getRunAsType() == null) {
             return null;

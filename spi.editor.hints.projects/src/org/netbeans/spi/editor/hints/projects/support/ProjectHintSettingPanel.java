@@ -48,9 +48,9 @@ import java.awt.Container;
 import java.io.IOException;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.editor.tools.storage.api.ToolPreferences;
 import org.netbeans.spi.editor.hints.projects.support.StandardProjectSettings.Standard;
-import org.netbeans.spi.editor.hints.settings.FileHintPreferences;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
@@ -176,6 +176,11 @@ class ProjectHintSettingPanel extends javax.swing.JPanel {
         );
 
         org.openide.awt.Mnemonics.setLocalizedText(globalSettings, org.openide.util.NbBundle.getMessage(ProjectHintSettingPanel.class, "ProjectHintSettingPanel.globalSettings.text")); // NOI18N
+        globalSettings.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                globalSettingsActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -230,6 +235,10 @@ class ProjectHintSettingPanel extends javax.swing.JPanel {
             settingsOriginChanged();
         }
     }//GEN-LAST:event_advancedActionPerformed
+
+    private void globalSettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_globalSettingsActionPerformed
+        OptionsDisplayer.getDefault().open("Editor/Hints");
+    }//GEN-LAST:event_globalSettingsActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton advanced;

@@ -1070,7 +1070,7 @@ public class Reformatter implements ReformatTask {
                 accept(LPAREN);
                 List<? extends VariableTree> params = node.getParameters();
                 if (params != null && !params.isEmpty()) {
-                    spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0, true);
+                    spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0);
                     wrapList(cs.wrapMethodParams(), cs.alignMultilineMethodParams(), false, COMMA, params);
                     spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0);
                 }

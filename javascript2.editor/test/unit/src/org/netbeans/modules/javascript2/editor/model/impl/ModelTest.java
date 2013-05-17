@@ -182,6 +182,10 @@ public class ModelTest extends ModelTestBase {
     public void testPerson() throws Exception {
         checkModel("testfiles/model/person.js");
     }
+    
+    public void testSelfPattern() throws Exception {
+        checkModel("testfiles/model/issue229717.js");
+    }
 
     public void testPersonRevert() throws Exception {
         FileObject fo = getTestFile("testfiles/model/person.js.model");

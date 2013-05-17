@@ -75,7 +75,7 @@ public class JFXPackagingCategoryProvider implements J2SECategoryExtensionProvid
             fxDisabled = !JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED))
                     || JFXProjectProperties.isTrue(j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_SWING));
         }
-        return fxDisabled ? null : JFXProjectProperties.getInstance(p.getLookup()).getPackagingPanel();
+        return fxDisabled ? null : JFXProjectProperties.getInstance(p.getLookup()).getSEDeploymentPanel();//.getPackagingPanel();
     }
     
     @Override

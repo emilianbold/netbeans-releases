@@ -253,7 +253,7 @@ public class ImportModulePanel extends javax.swing.JPanel {
 
     private void createModel(List<String> priviledged, List<String> denied) {
 
-        List<TypeDescription> l = new ArrayList<TypeDescription>(priviledged.size());
+        List<TypeDescription> l = new ArrayList<>(priviledged.size());
         for (String typeElement : priviledged) {
             l.add(new TypeDescription(typeElement, false));
         }

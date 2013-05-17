@@ -41,10 +41,10 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -101,7 +101,7 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
     private static final String HINT_ID = "Uninitialized.Variable.Hint"; //NOI18N
     private static final String CHECK_VARIABLES_INITIALIZED_BY_REFERENCE = "php.verification.check.variables.initialized.by.reference"; //NOI18N
-    private static final List<String> UNCHECKED_VARIABLES = new LinkedList<String>();
+    private static final List<String> UNCHECKED_VARIABLES = new ArrayList<>();
     private Preferences preferences;
 
     static {
@@ -140,12 +140,12 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
     private final class CheckVisitor extends DefaultVisitor {
 
         private final FileObject fileObject;
-        private final Stack<ASTNode> parentNodes = new Stack<ASTNode>();
-        private final Map<ASTNode, List<Variable>> initializedVariablesAll = new HashMap<ASTNode, List<Variable>>();
+        private final Stack<ASTNode> parentNodes = new Stack<>();
+        private final Map<ASTNode, List<Variable>> initializedVariablesAll = new HashMap<>();
         private final Map<ASTNode, List<Variable>> uninitializedVariablesAll = new HashMap<ASTNode, List<Variable>>();
-        private final List<Hint> hints = new LinkedList<Hint>();
+        private final List<Hint> hints = new ArrayList<>();
         private final Model model;
-        private final Map<String, Set<BaseFunctionElement>> invocationCache = new HashMap<String, Set<BaseFunctionElement>>();
+        private final Map<String, Set<BaseFunctionElement>> invocationCache = new HashMap<>();
         private final BaseDocument baseDocument;
 
         private CheckVisitor(FileObject fileObject, Model model, BaseDocument baseDocument) {
@@ -433,7 +433,7 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
         private List<Variable> getInitializedVariables(ASTNode parent) {
             List<Variable> scopeVariables = initializedVariablesAll.get(parent);
             if (scopeVariables == null) {
-                scopeVariables = new LinkedList<Variable>();
+                scopeVariables = new ArrayList<>();
                 initializedVariablesAll.put(parent, scopeVariables);
             }
             return scopeVariables;
@@ -442,7 +442,7 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
         private List<Variable> getUninitializedVariables(ASTNode parent) {
             List<Variable> scopeVariables = uninitializedVariablesAll.get(parent);
             if (scopeVariables == null) {
-                scopeVariables = new LinkedList<Variable>();
+                scopeVariables = new ArrayList<>();
                 uninitializedVariablesAll.put(parent, scopeVariables);
             }
             return scopeVariables;

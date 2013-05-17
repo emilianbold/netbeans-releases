@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
-import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,7 +52,6 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -71,7 +69,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
-public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor>,
+public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.ExtendedAsynchronousValidatingPanel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
     static final Logger LOGGER = Logger.getLogger(JavaScriptLibrarySelectionPanel.class.getName());
@@ -82,8 +80,6 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
     // @GuardedBy("EDT") - not possible, wizard support calls store() method in EDT as well as in a background thread
     private volatile org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel javaScriptLibrarySelection;
     private volatile WizardDescriptor wizardDescriptor;
-    // #202796
-    volatile boolean asynchError = false;
 
 
     public JavaScriptLibrarySelectionPanel() {
@@ -96,18 +92,6 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
         if (javaScriptLibrarySelection == null) {
             javaScriptLibrarySelection = new org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel(librariesValidator);
             javaScriptLibrarySelection.setAdditionalInfo(Bundle.JavaScriptLibrarySelectionPanel_jsLibs_info());
-            javaScriptLibrarySelection.addChangeListener(new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    // postpone it
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            asynchError = false;
-                        }
-                    });
-                }
-            });
         }
         return javaScriptLibrarySelection;
     }
@@ -119,7 +103,6 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
 
     @Override
     public void readSettings(WizardDescriptor settings) {
-        asynchError = false;
         wizardDescriptor = settings;
         SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE);
         // default libraries
@@ -155,7 +138,6 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
         List<SelectedLibrary> selectedLibraries = getComponent().getSelectedLibraries();
         try {
             for (;;) {
-                asynchError = false;
                 FileUtilities.cleanupFolder(librariesFolder);
                 if (selectedLibraries.isEmpty()) {
                     // clean up failed libraries
@@ -169,7 +151,6 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
                     // everything ok
                     return;
                 }
-                asynchError = true;
                 LOGGER.log(Level.INFO, "Failed download of JS libraries: {0}", failedLibs);
                 if (!NetworkSupport.showNetworkErrorDialog(convertToStrings(failedLibs))) {
                     throw new WizardValidationException(getComponent(), "ERROR_DOWNLOAD", Bundle.JavaScriptLibrarySelectionPanel_error_downloading(failedLibs.size())); // NOI18N
@@ -182,21 +163,16 @@ public class JavaScriptLibrarySelectionPanel implements WizardDescriptor.Asynchr
             throw new WizardValidationException(getComponent(), "ERROR_DOWNLOAD", ex.getLocalizedMessage()); // NOI18N
         } finally {
             progressHandle.finish();
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    getComponent().unlockPanel();
-                }
-            });
         }
     }
 
     @Override
+    public void finishValidation() {
+        getComponent().unlockPanel();
+    }
+
+    @Override
     public boolean isValid() {
-        // grrr
-        if (asynchError) {
-            return true;
-        }
         // error
         String error = getComponent().getErrorMessage();
         if (error != null && !error.isEmpty()) {

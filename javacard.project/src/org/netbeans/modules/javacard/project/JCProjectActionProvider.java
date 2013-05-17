@@ -65,6 +65,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.modules.javacard.JCUtil;
 import org.netbeans.modules.javacard.api.RunMode;
@@ -301,14 +303,14 @@ public class JCProjectActionProvider implements ActionProvider {
                                 }
                                 task.getInputOutput().select();
                             } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
+                                Logger.getLogger(JCProjectActionProvider.class.getName()).log(Level.FINE, ex.getMessage(), ex);
                             }
                         }
                     });
                 }
             }
         } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+            Logger.getLogger(JCProjectActionProvider.class.getName()).log(Level.FINE, e.getMessage(), e);
         }
     }
 

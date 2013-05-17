@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -51,7 +52,7 @@ import java.util.List;
  */
 public class BackTickExpression extends Expression {
 
-    private ArrayList<Expression> expressions = new ArrayList<Expression>();
+    private ArrayList<Expression> expressions = new ArrayList<>();
 
     public BackTickExpression(int start, int end, Expression[] expressions) {
         super(start, end);
@@ -59,10 +60,7 @@ public class BackTickExpression extends Expression {
         if (expressions == null) {
             throw new IllegalArgumentException();
         }
-        for (Expression expression : expressions) {
-//            expression.setParent(this);
-            this.expressions.add(expression);
-        }
+        this.expressions.addAll(Arrays.asList(expressions));
     }
 
     public BackTickExpression(int start, int end, List<Expression> expressions) {

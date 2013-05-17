@@ -66,6 +66,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.CatchClause;
 import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
@@ -78,10 +79,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.TryStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
-
 import org.openide.util.NbBundle;
-import static org.netbeans.modules.php.editor.nav.Bundle.*;
-import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
+
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
@@ -96,14 +95,14 @@ public final class FoldingScanner {
     @NbBundle.Messages("FT_Classes=Classes")
     public static final FoldType TYPE_CLASS = FoldType.NESTED.derive(
             "class",
-            FT_Classes(), FoldTemplate.DEFAULT_BLOCK);
+            Bundle.FT_Classes(), FoldTemplate.DEFAULT_BLOCK);
 
     /**
      * PHP documentation comments
      */
     @NbBundle.Messages("FT_PHPDoc=PHPDoc documentation")
     public static final FoldType TYPE_PHPDOC = FoldType.DOCUMENTATION.override(
-            FT_PHPDoc(),        // NOI18N
+            Bundle.FT_PHPDoc(),        // NOI18N
             new FoldTemplate(3, 2, "/**...*/")); // NOI18N
 
     public static final FoldType TYPE_COMMENT = FoldType.COMMENT.override(
@@ -115,7 +114,7 @@ public final class FoldingScanner {
      */
     @NbBundle.Messages("FT_Functions=Functions and methods")
     public static final FoldType TYPE_FUNCTION = FoldType.MEMBER.derive("function",
-            FT_Functions(),
+            Bundle.FT_Functions(),
             FoldTemplate.DEFAULT_BLOCK);
 
     private static final String LAST_CORRECT_FOLDING_PROPERTY = "LAST_CORRECT_FOLDING_PROPERY"; //NOI18N
@@ -128,7 +127,7 @@ public final class FoldingScanner {
     }
 
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
-        final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
+        final Map<String, List<OffsetRange>> folds = new HashMap<>();
         Program program = Utils.getRoot(info);
         if (program != null) {
             if (program.getStatements().size() == 1) {
@@ -199,7 +198,7 @@ public final class FoldingScanner {
     private List<OffsetRange> getRanges(Map<String, List<OffsetRange>> folds, FoldType kind) {
         List<OffsetRange> ranges = folds.get(kind.code());
         if (ranges == null) {
-            ranges = new ArrayList<OffsetRange>();
+            ranges = new ArrayList<>();
             folds.put(kind.code(), ranges);
         }
         return ranges;
@@ -207,7 +206,7 @@ public final class FoldingScanner {
 
     private List<Scope>  getEmbededScopes(Scope scope, List<Scope> collectedScopes) {
         if (collectedScopes == null) {
-            collectedScopes = new ArrayList<Scope>();
+            collectedScopes = new ArrayList<>();
         }
         List<? extends ModelElement> elements = scope.getElements();
         for (ModelElement element : elements) {

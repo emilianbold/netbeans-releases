@@ -289,6 +289,7 @@ java.hints.declarative = java/hints
 java.hints.declarative.test = java/hints
 java.hints.legacy.spi = java/hints
 java.hints.test = java/hints spi.java.hints
+java.j2sedeploy = java/project
 java.j2seplatform = java/project
 java.j2seproject = java/project
 java.j2seprofiles = java/project

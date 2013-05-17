@@ -55,7 +55,7 @@ import org.openide.util.NbBundle;
 public class UncaughtExceptionTest extends ErrorHintsTestBase {
 
     public UncaughtExceptionTest(String name) {
-        super(name);
+        super(name, UncaughtException.class);
     }
 
     public void test204029() throws Exception {
@@ -79,10 +79,21 @@ public class UncaughtExceptionTest extends ErrorHintsTestBase {
                             "Add throws clause for java.io.IOException",
                             "Surround Statement with try-catch");
     }
-
-    @Override
-    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
-        return new UncaughtException().run(info, null, pos, path, null);
+    
+    public void test228693() throws Exception {
+        sourceLevel = "1.7";
+        performAnalysisTest("test/Test.java",
+                            "package test;\n" +
+                            "import java.io.*;\n" +
+                            "public class Test {\n" +
+                            "    void t2() {\n" +
+                            "        try (InputStream in = new FileInputStream(\"\")) {\n" +
+                            "        }\n" +
+                            "    }\n" +
+                            "}\n",
+                            -1,
+                            "Add throws clause for java.io.FileNotFoundException",
+                            "LBL_AddCatchClauses");
     }
 
     @Override

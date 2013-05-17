@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 import org.netbeans.editor.BaseDocument;
@@ -96,9 +96,9 @@ public class UnreachableStatementHint extends HintRule {
         public CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
-            blocks = new Stack<CheckedBlock>();
-            processedBlocks = new LinkedList<CheckedBlock>();
-            hints = new LinkedList<Hint>();
+            blocks = new Stack<>();
+            processedBlocks = new ArrayList<>();
+            hints = new ArrayList<>();
         }
 
         public List<Hint> getHints() {

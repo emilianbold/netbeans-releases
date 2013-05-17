@@ -50,8 +50,10 @@ import org.netbeans.spi.project.ui.CustomizerProvider;
  * CustomizerProvider enhanced with ability to open customizer on given
  * category and/or subcategory.
  * 
+ * @deprecated since 1.51, use org.netbeans.spi.project.ui.CustomizerProvider2 instead
  * @since org.netbeans.modules.java.api.common/1 1.5
  */
+@Deprecated
 public interface CustomizerProvider2 extends CustomizerProvider {
 
     /**

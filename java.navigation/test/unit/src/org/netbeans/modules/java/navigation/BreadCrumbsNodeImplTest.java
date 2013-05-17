@@ -52,6 +52,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsElement;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
@@ -103,13 +104,13 @@ public class BreadCrumbsNodeImplTest extends NbTestCase {
         
         prepareTest("test/Test.java", code.replace("|", ""));
 
-        Node[] rootAndSelection = BreadCrumbsScanningTask.rootAndSelection(info, caret, new AtomicBoolean());
-        List<Node> toPrint = new ArrayList<Node>();
-        Node current = rootAndSelection[1];
+        BreadcrumbsElement[] rootAndSelection = BreadCrumbsScanningTask.rootAndSelection(info, caret, new AtomicBoolean());
+        List<BreadcrumbsElement> toPrint = new ArrayList<BreadcrumbsElement>();
+        BreadcrumbsElement current = rootAndSelection[1];
         
         while (current != null) {
             toPrint.add(current);
-            current = current.getParentNode();
+            current = current.getParent();
         }
         
         toPrint.remove(toPrint.size() - 1); //do not print the root node
@@ -118,7 +119,7 @@ public class BreadCrumbsNodeImplTest extends NbTestCase {
         
         StringBuilder output = new StringBuilder();
         
-        for (Node n : toPrint) {
+        for (BreadcrumbsElement n : toPrint) {
             output.append(n.getHtmlDisplayName());
             output.append(">>>>");
         }

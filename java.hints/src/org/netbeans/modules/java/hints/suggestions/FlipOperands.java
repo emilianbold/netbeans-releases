@@ -68,9 +68,9 @@ import org.openide.util.NbBundle.Messages;
     "DN_FlipOperands=Flip operands of the binary operator",
     "DESC_FlipOperands=Flip operands of the binary operator",
     "ERR_FlipOperands=",
-    "FIX_FlipOperands1=Flip operands of '{0}'",
-    "FIX_FlipOperands2=Flip '{0}' to '{1}'",
-    "FIX_FlipOperands3=Flip operands of '{0}' (may alter semantics)",
+    "FIX_FlipOperands1=Flip operands of ''{0}''",
+    "FIX_FlipOperands2=Flip ''{0}'' to ''{1}''",
+    "FIX_FlipOperands3=Flip operands of ''{0}'' (may alter semantics)",
 })
 @Hint(displayName = "#DN_FlipOperands", description = "#DESC_FlipOperands", category = "suggestion", hintKind = Kind.ACTION, severity = Severity.HINT)
 public class FlipOperands {
@@ -97,19 +97,19 @@ public class FlipOperands {
         OPERATOR_DN.put(Tree.Kind.REMAINDER, "%");
         OPERATOR_DN.put(Tree.Kind.PLUS, "+");
         OPERATOR_DN.put(Tree.Kind.MINUS, "-");
-        OPERATOR_DN.put(Tree.Kind.LEFT_SHIFT, "<<");
-        OPERATOR_DN.put(Tree.Kind.RIGHT_SHIFT, ">>");
-        OPERATOR_DN.put(Tree.Kind.UNSIGNED_RIGHT_SHIFT, ">>>");
-        OPERATOR_DN.put(Tree.Kind.LESS_THAN, "<");
-        OPERATOR_DN.put(Tree.Kind.GREATER_THAN, ">");
-        OPERATOR_DN.put(Tree.Kind.LESS_THAN_EQUAL, "<=");
-        OPERATOR_DN.put(Tree.Kind.GREATER_THAN_EQUAL, ">=");
+        OPERATOR_DN.put(Tree.Kind.LEFT_SHIFT, "&lt;&lt;");
+        OPERATOR_DN.put(Tree.Kind.RIGHT_SHIFT, "&gt;&gt;");
+        OPERATOR_DN.put(Tree.Kind.UNSIGNED_RIGHT_SHIFT, "&gt;&gt;&gt;");
+        OPERATOR_DN.put(Tree.Kind.LESS_THAN, "&lt;");
+        OPERATOR_DN.put(Tree.Kind.GREATER_THAN, "&gt;");
+        OPERATOR_DN.put(Tree.Kind.LESS_THAN_EQUAL, "&lt;=");
+        OPERATOR_DN.put(Tree.Kind.GREATER_THAN_EQUAL, "&gt;=");
         OPERATOR_DN.put(Tree.Kind.EQUAL_TO, "==");
         OPERATOR_DN.put(Tree.Kind.NOT_EQUAL_TO, "!=");
-        OPERATOR_DN.put(Tree.Kind.AND, "&");
+        OPERATOR_DN.put(Tree.Kind.AND, "&amp;");
         OPERATOR_DN.put(Tree.Kind.OR, "|");
         OPERATOR_DN.put(Tree.Kind.XOR, "^");
-        OPERATOR_DN.put(Tree.Kind.CONDITIONAL_AND, "&&");
+        OPERATOR_DN.put(Tree.Kind.CONDITIONAL_AND, "&amp;&amp;");
         OPERATOR_DN.put(Tree.Kind.CONDITIONAL_OR, "||");
     }
     

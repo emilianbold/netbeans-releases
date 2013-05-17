@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.mercurial.ui.pull;
 
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.util.ListIterator;
 import java.net.URISyntaxException;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -66,6 +68,7 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.queues.QGoToPatchAction;
 import org.netbeans.modules.mercurial.ui.queues.QPatch;
@@ -81,10 +84,14 @@ import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.DialogDescriptor;
 import org.openide.nodes.Node;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Pull action for mercurial:
@@ -511,6 +518,17 @@ public class PullAction extends ContextAction {
                     logger.outputInRed(Bundle.MSG_PULL_MERGE_DO());
                     supp.setDisplayName(Bundle.MSG_PullAction_progress_merging());
                     list = MergeAction.doMergeAction(root, null, logger);
+                    if (MergeAction.handleMergeOutput(root, list, logger, false)) {
+                        final Action commitAction = SystemActionBridge.createAction(
+                                SystemAction.get(CommitAction.class), "commit", Lookups.fixed(
+                                new AbstractNode(Children.LEAF, Lookups.fixed(root))));
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                commitAction.actionPerformed(new ActionEvent(root, ActionEvent.ACTION_PERFORMED, null));
+                            }
+                        });
+                    }
                 }
                 if (!supp.isCanceled() && finished && topPatch != null) {
                     logger.output(""); //NOI18N

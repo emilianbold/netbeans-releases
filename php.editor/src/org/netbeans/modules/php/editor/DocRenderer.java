@@ -230,7 +230,7 @@ class DocRenderer {
         private static final Pattern REPLACE_NEWLINE_PATTERN = Pattern.compile("(\r?\n){2,}"); // NOI18N
         // #183594
         private static final Pattern LIST_PATTERN = Pattern.compile("(\r?\n)(?=([-+#o]\\s|\\d\\.?\\s))"); // NOI18N
-        private static final ArrayList<String> LINK_TAGS = new ArrayList<String>();
+        private static final ArrayList<String> LINK_TAGS = new ArrayList<>();
 
         static {
             LINK_TAGS.add("@link");
