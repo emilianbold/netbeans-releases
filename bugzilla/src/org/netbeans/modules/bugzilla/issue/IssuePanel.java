@@ -1065,7 +1065,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             if (value.equals("DUPLICATE")) {
                 issue.duplicate(duplicateField.getText().trim());
                 unsavedFields.add(IssueField.DUPLICATE_ID);
-                issue.setFieldValue(IssueField.DUPLICATE_ID, resolutionCombo.getSelectedItem().toString());
+                issue.setFieldValue(IssueField.DUPLICATE_ID, duplicateField.getText().trim());
             } else {
                 issue.resolve(value);
             }
@@ -3250,7 +3250,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         statusCombo.addActionListener(new FieldChangeListener(statusCombo, IssueField.STATUS));
         
         resolutionCombo.addActionListener(new FieldChangeListener(resolutionCombo, IssueField.RESOLUTION));
-        duplicateField.addActionListener(new FieldChangeListener(duplicateField, IssueField.DUPLICATE_ID));
+        duplicateField.getDocument().addDocumentListener(new FieldChangeListener(duplicateField, IssueField.DUPLICATE_ID));
         
         priorityCombo.addActionListener(new FieldChangeListener(priorityCombo, IssueField.PRIORITY));
         issueTypeCombo.addActionListener(new FieldChangeListener(issueTypeCombo, IssueField.ISSUE_TYPE));

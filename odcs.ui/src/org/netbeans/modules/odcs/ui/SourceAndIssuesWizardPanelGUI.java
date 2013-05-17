@@ -72,6 +72,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
@@ -385,8 +386,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                         continue outter;
                     }
                 }
-                if (!Boolean.TRUE.equals(FileUtil.toFileObject(FileUtil.normalizeFile(file))
-                        .getAttribute("ProvidedExtensions.VCSManaged"))) { //NOI18N
+                if (!VersioningQuery.isManaged(org.openide.util.Utilities.toURI(FileUtil.normalizeFile(file)))) { 
                     SharedItem item = new SharedItem(file);
                     itemsToShare.add(item);
                 }

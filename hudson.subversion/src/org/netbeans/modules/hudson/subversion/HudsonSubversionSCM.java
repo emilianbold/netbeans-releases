@@ -59,8 +59,9 @@ import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
-import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
+import org.netbeans.modules.hudson.spi.HudsonSCM.ConfigurationStatus;
 import static org.netbeans.modules.hudson.subversion.Bundle.*;
+import org.netbeans.modules.hudson.ui.api.HudsonSCMHelper;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputListener;
@@ -99,7 +100,7 @@ public class HudsonSubversionSCM implements HudsonSCM {
                     loc.appendChild(doc.createElement("local")).appendChild(doc.createTextNode(".")); // NOI18N
                     // HUDSON-3390 would be a more attractive alternative:
                     configXmlSCM.appendChild(doc.createElement("useUpdate")).appendChild(doc.createTextNode("false")); // NOI18N
-                    Helper.addTrigger(doc);
+                    HudsonSCMHelper.addTrigger(doc);
                 }
                 public @Override ConfigurationStatus problems() {
                     return null;

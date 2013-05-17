@@ -2385,7 +2385,7 @@ public class HgCommand {
      * @throws org.netbeans.modules.mercurial.HgException
      */
     public static void doCommit(File repository, List<File> commitFiles, String commitMessage, OutputLogger logger)  throws HgException {
-        doCommit(repository, commitFiles, commitMessage, false, logger);
+        doCommit(repository, commitFiles, commitMessage, null, false, logger);
     }
 
     /**
@@ -2393,12 +2393,14 @@ public class HgCommand {
      *
      * @param File repository of the mercurial repository's root directory
      * @param List<files> of files to be committed to hg
-     * @param String for commitMessage
+     * @param commitMessage for commitMessage
+     * @param user author of the commit or <code>null</code> if to use the default committer
      * @param closeBranch runs commit with --close-branch option
      * @return void
      * @throws org.netbeans.modules.mercurial.HgException
      */
-    public static void doCommit(File repository, List<File> commitFiles, String commitMessage, boolean closeBranch, OutputLogger logger)  throws HgException {
+    public static void doCommit(File repository, List<File> commitFiles, String commitMessage, String user,
+            boolean closeBranch, OutputLogger logger)  throws HgException {
         List<String> command = new ArrayList<String>();
 
         command.add(getHgCommand());
@@ -2408,17 +2410,19 @@ public class HgCommand {
         command.add(HG_OPT_CWD_CMD);
         command.add(repository.getAbsolutePath());
 
-        String projectUserName = new HgConfigFiles(repository).getUserName(false);
-        String globalUsername = HgModuleConfig.getDefault().getSysUserName();
-        String username = null;
-        if(projectUserName != null && projectUserName.length() > 0)
-            username = projectUserName;
-        else if (globalUsername != null && globalUsername.length() > 0)
-           username = globalUsername;
+        if (user == null) {
+            String projectUserName = new HgConfigFiles(repository).getUserName(false);
+            String globalUsername = HgModuleConfig.getDefault().getSysUserName();
+            if (projectUserName != null && projectUserName.length() > 0) {
+                user = projectUserName;
+            } else if (globalUsername != null && globalUsername.length() > 0) {
+                user = globalUsername;
+            }
+        }
 
-        if(username != null ){
+        if(user != null ){
             command.add(HG_OPT_USERNAME);
-            command.add(username);
+            command.add(user);
         }
         
         if (closeBranch) {
@@ -3782,15 +3786,18 @@ public class HgCommand {
         return queues.toArray(new Queue[queues.size()]);
     }
 
-    public static void qCreatePatch (File repository, Collection<File> includedFiles, Collection<File> excludedFiles, String patchId, String commitMessage, OutputLogger logger) throws HgException {
-        qCreateRefreshPatch(repository, includedFiles, excludedFiles, patchId, commitMessage, logger);
+    public static void qCreatePatch (File repository, Collection<File> includedFiles, Collection<File> excludedFiles,
+            String patchId, String commitMessage, String user, OutputLogger logger) throws HgException {
+        qCreateRefreshPatch(repository, includedFiles, excludedFiles, patchId, commitMessage, user, logger);
     }
 
-    public static void qRefreshPatch (File repository, Collection<File> includedFiles, Collection<File> excludedFiles, String commitMessage, OutputLogger logger) throws HgException {
-        qCreateRefreshPatch(repository, includedFiles, excludedFiles, null, commitMessage, logger);
+    public static void qRefreshPatch (File repository, Collection<File> includedFiles, Collection<File> excludedFiles,
+            String commitMessage, String user, OutputLogger logger) throws HgException {
+        qCreateRefreshPatch(repository, includedFiles, excludedFiles, null, commitMessage, user, logger);
     }
 
-    private static void qCreateRefreshPatch (File repository, Collection<File> includedFiles, Collection<File> excludedFiles, String patchId, String commitMessage, OutputLogger logger) throws HgException {
+    private static void qCreateRefreshPatch (File repository, Collection<File> includedFiles, Collection<File> excludedFiles,
+            String patchId, String commitMessage, String user, OutputLogger logger) throws HgException {
         List<String> command = new ArrayList<String>();
         command.add(getHgCommand());
         command.add(patchId == null ? HG_QREFRESH_PATCH : HG_QCREATE_CMD);
@@ -3803,16 +3810,17 @@ public class HgCommand {
 
         String projectUserName = new HgConfigFiles(repository).getUserName(false);
         String globalUsername = HgModuleConfig.getDefault().getSysUserName();
-        String username = null;
-        if(projectUserName != null && projectUserName.length() > 0) {
-            username = projectUserName;
-        } else if (globalUsername != null && globalUsername.length() > 0) {
-            username = globalUsername;
+        if (user == null) {
+            if(projectUserName != null && projectUserName.length() > 0) {
+                user = projectUserName;
+            } else if (globalUsername != null && globalUsername.length() > 0) {
+                user = globalUsername;
+            }
         }
 
-        if (username != null){
+        if (user != null){
             command.add(HG_OPT_USERNAME);
-            command.add(username);
+            command.add(user);
         }
 
         File tempfile = null;

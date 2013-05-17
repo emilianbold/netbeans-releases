@@ -65,23 +65,23 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.hudson.ant.AntBasedJobCreator.ArchivePattern;
 import org.netbeans.modules.hudson.ant.AntBasedJobCreator.Configuration;
 import org.netbeans.modules.hudson.ant.AntBasedJobCreator.Target;
+import static org.netbeans.modules.hudson.ant.Bundle.*;
+import org.netbeans.modules.hudson.ui.spi.ProjectHudsonJobCreatorFactory;
+import org.netbeans.modules.hudson.ui.spi.ProjectHudsonJobCreatorFactory.Helper;
+import org.netbeans.modules.hudson.ui.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
-import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory;
-import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
-import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.Helper;
-import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ProjectHudsonJobCreator;
+import org.netbeans.modules.hudson.spi.HudsonSCM.ConfigurationStatus;
 import org.netbeans.modules.java.api.common.project.ui.customizer.ProjectSharability;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.InputSource;
-import static org.netbeans.modules.hudson.ant.Bundle.*;
-import org.openide.util.NbBundle.Messages;
 
 public class JobCreator extends JPanel implements ProjectHudsonJobCreator {
 

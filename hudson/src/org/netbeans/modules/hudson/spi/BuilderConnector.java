@@ -56,6 +56,8 @@ import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonJobBuild.Result;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.api.HudsonVersion;
+import org.netbeans.modules.hudson.api.ui.ConsoleDataDisplayer;
+import org.netbeans.modules.hudson.api.ui.FailureDataDisplayer;
 
 /**
  * Interface of Hudson connectors. It specifies how data should be accessed and
@@ -155,20 +157,20 @@ public abstract class BuilderConnector {
     public abstract void startJob(@NonNull HudsonJob job);
 
     /**
-     * Get displayer for build console output.
+     * Get provider of data for build console output.
      *
-     * @return Console displayer, or null if it is not available for this
+     * @return Console data provider, or null if it is not available for this
      * builder.
      */
-    public abstract @CheckForNull ConsoleDisplayer getConsoleDisplayer();
+    public abstract @CheckForNull ConsoleDataProvider getConsoleDataProvider();
 
     /**
-     * Get displayer for failed tests of builds.
+     * Get provider of data for failure displayer.
      *
-     * @return Failure displayer, or null if it is not available for this
+     * @return Failure data provider, or null if it is not available for this
      * builder.
      */
-    public abstract @CheckForNull FailureDisplayer getFailureDisplayer();
+    public abstract @CheckForNull FailureDataProvider getFailureDataProvider();
 
     /**
      * Get a collection of changes that have triggered the build.
@@ -176,39 +178,52 @@ public abstract class BuilderConnector {
     public abstract Collection<? extends HudsonJobChangeItem> getJobBuildChanges(HudsonJobBuild build);
 
     /**
-     * A displayer that can show console output of builds to the user. They can
+     * A provider of console output of builds. They can
      * be shown in output window, external browser, etc.
      */
-    public static abstract class ConsoleDisplayer {
+    public static abstract class ConsoleDataProvider {
 
         /**
-         * Show build console of a hudson job build.
+         * Show build console of a hudson job build using a displayer.
+         *
+         * @param build Hudson job build.
+         * @param displayer Displayer to which the data will be passed.
          */
-        public abstract void showConsole(@NonNull HudsonJobBuild build);
+        public abstract void showConsole(@NonNull HudsonJobBuild build, ConsoleDataDisplayer displayer);
 
         /**
          * Show build console of a hudson maven module build.
+         *
+         * @param modBuild Hudson Maven module build.
+         * @param displayer Displayer to which the data will be passed.
          */
         public abstract void showConsole(
-                @NonNull HudsonMavenModuleBuild modBuild);
+                @NonNull HudsonMavenModuleBuild modBuild, ConsoleDataDisplayer displayer);
     }
 
     /**
-     * A displayer that can visualize failures of builds. They can be displayer
+     * A provider of info about test failures. They can be displayer
      * in test results window, output window, external browser, etc.
      */
-    public static abstract class FailureDisplayer {
+    public static abstract class FailureDataProvider {
 
         /**
          * Show failures of a hudson job build.
+         * @param build Hudson job build.
+         * @param displayer Displayer to which the data will be passed.
          */
-        public abstract void showFailures(@NonNull HudsonJobBuild build);
+        public abstract void showFailures(@NonNull HudsonJobBuild build,
+                @NonNull FailureDataDisplayer displayer);
 
         /**
          * Show failures of a hudson maven module build.
+         *
+         * @param moduleBuild Hudson maven module build.
+         * @param displayer Displayer to which the data will be passed.
          */
         public abstract void showFailures(
-                @NonNull HudsonMavenModuleBuild moduleBuild);
+                @NonNull HudsonMavenModuleBuild moduleBuild,
+                @NonNull FailureDataDisplayer displayer);
     }
 
     /**

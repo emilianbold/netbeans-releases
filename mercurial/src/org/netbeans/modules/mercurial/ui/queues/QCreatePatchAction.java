@@ -52,8 +52,6 @@ import org.netbeans.modules.mercurial.util.HgCommand;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
-import org.openide.util.Mutex;
-import org.openide.util.Mutex.Action;
 
 /**
  *
@@ -75,25 +73,22 @@ public class QCreatePatchAction extends CreateRefreshAction {
     }
 
     @Override
-    CreateRefreshPatchCmd createHgCommand (File root, List<File> commitCandidates, OutputLogger logger, String message, String patchName, String bundleKeyPostfix, List<File> roots, Set<File> excludedFiles, Set<File> filesToRefresh) {
-        return new Cmd.CreateRefreshPatchCmd(root, commitCandidates, logger, message, patchName, bundleKeyPostfix, roots, excludedFiles, filesToRefresh) {
+    CreateRefreshPatchCmd createHgCommand (File root, List<File> commitCandidates, OutputLogger logger, String message,
+            String patchName, String user, String bundleKeyPostfix,
+            List<File> roots, Set<File> excludedFiles, Set<File> filesToRefresh) {
+        return new Cmd.CreateRefreshPatchCmd(root, commitCandidates, logger, message, patchName, user, bundleKeyPostfix,
+                roots, excludedFiles, filesToRefresh) {
             @Override
-            protected void runHgCommand (File repository, List<File> candidates, Set<File> excludedFiles, String patchId, String msg, OutputLogger logger) throws HgException {
-                HgCommand.qCreatePatch(repository, candidates, excludedFiles, patchId, msg, logger);
+            protected void runHgCommand (File repository, List<File> candidates, Set<File> excludedFiles,
+                    String patchId, String msg, String user, OutputLogger logger) throws HgException {
+                HgCommand.qCreatePatch(repository, candidates, excludedFiles, patchId, msg, user, logger);
             }
         };
     }
 
     @Override
-    QCommitPanel createPanel (final File root, final File[] roots) {
-        return Mutex.EVENT.readAccess(new Action<QCommitPanel>() {
-
-            @Override
-            public QCommitPanel run () {
-                return QCommitPanel.createNewPanel(roots, root, HgModuleConfig.getDefault().getLastCanceledCommitMessage(KEY_CANCELED_MESSAGE), QCreatePatchAction.class.getName());
-            }
-            
-        });
+    QCommitPanel createPanel (File root, File[] roots) {
+        return QCommitPanel.createNewPanel(roots, root, HgModuleConfig.getDefault().getLastCanceledCommitMessage(KEY_CANCELED_MESSAGE), QCreatePatchAction.class.getName());
     }
 
     @Override
