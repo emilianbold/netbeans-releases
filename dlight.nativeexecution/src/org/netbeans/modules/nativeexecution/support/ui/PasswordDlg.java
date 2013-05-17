@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
  *
  * @author vv159170
  */
-public class PasswordDlg extends javax.swing.JPanel {
+public class PasswordDlg extends javax.swing.JPanel implements PromptPasswordDialog {
 
     /** Creates new form PasswordPanel */
     public PasswordDlg() {
@@ -64,7 +64,8 @@ public class PasswordDlg extends javax.swing.JPanel {
 //        tfHost.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
     }
 
-    public boolean askPassword(ExecutionEnvironment execEnv) {
+    @Override
+    public boolean askPassword(ExecutionEnvironment execEnv, String prompt) {
         tfUser.setText(execEnv.getUser());
         String hostName = execEnv.getHost();
         if (execEnv.getSSHPort() != 22) {
@@ -98,14 +99,17 @@ public class PasswordDlg extends javax.swing.JPanel {
         return dd.getValue() == DialogDescriptor.OK_OPTION;
     }
 
+    @Override
     public void clearPassword() {
         tfPassword.setText(null);
     }
 
+    @Override
     public char[] getPassword() {
         return tfPassword.getPassword();
     }
 
+    @Override
     public boolean isRememberPassword() {
         return cbRememberPwd.isSelected();
     }

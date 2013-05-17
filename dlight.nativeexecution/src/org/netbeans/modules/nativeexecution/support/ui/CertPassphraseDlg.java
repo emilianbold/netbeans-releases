@@ -58,7 +58,7 @@ import org.openide.util.NbBundle;
  *
  * @author ak119685
  */
-public class CertPassphraseDlg extends javax.swing.JPanel {
+public class CertPassphraseDlg extends javax.swing.JPanel implements PromptPasswordDialog {
 
     /** Creates new form CertPassphraseDlg */
     public CertPassphraseDlg() {
@@ -152,6 +152,7 @@ public class CertPassphraseDlg extends javax.swing.JPanel {
         tfPassword.selectAll();
 }//GEN-LAST:event_tfPasswordonPwdFocus
 
+    @Override
     public boolean askPassword(ExecutionEnvironment execEnv, String key) {
         Mnemonics.setLocalizedText(promptLabel, NbBundle.getMessage(CertPassphraseDlg.class, "CertPassphraseDlg.promptLabel.text", key)); // NOI18N
 
@@ -197,11 +198,18 @@ public class CertPassphraseDlg extends javax.swing.JPanel {
     private javax.swing.JTextField tfUser;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public char[] getPassword() {
         return tfPassword.getPassword();
     }
 
+    @Override
     public void clearPassword() {
         tfPassword.setText(null);
+    }
+
+    @Override
+    public boolean isRememberPassword() {
+        return false;
     }
 }
