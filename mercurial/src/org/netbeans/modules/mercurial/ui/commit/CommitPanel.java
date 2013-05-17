@@ -114,9 +114,13 @@ import java.beans.PropertyChangeListener;
 import static javax.swing.BorderFactory.createEmptyBorder;
 import static javax.swing.BoxLayout.X_AXIS;
 import static javax.swing.BoxLayout.Y_AXIS;
+import javax.swing.JComboBox;
 import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.versioning.util.common.CommitMessageMouseAdapter;
 import org.openide.awt.TabbedPaneFactory;
 
@@ -125,7 +129,8 @@ import org.openide.awt.TabbedPaneFactory;
  * @author  pk97937
  * @author  Marian Petras
  */
-public class CommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener, ChangeListener, ActionListener, PropertyChangeListener {
+public class CommitPanel extends AutoResizingPanel implements PreferenceChangeListener, TableModelListener,
+        ChangeListener, ActionListener, PropertyChangeListener, DocumentListener {
 
     private final AutoResizingPanel basePanel = new AutoResizingPanel();
     static final Object EVENT_SETTINGS_CHANGED = new Object();
@@ -148,6 +153,8 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private final JLabel recentLink = new JLabel();
     private final JLabel templateLink = new JLabel();
     final JCheckBox cbAllFiles = new JCheckBox();
+    final JCheckBox cbAuthor = new JCheckBox();
+    final JComboBox cmbUser = new JComboBox();
     
     private CommitTable commitTable;
     private Collection<HgHook> hooks = Collections.emptyList();
@@ -156,6 +163,8 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
     private HashMap<File, MultiDiffPanel> displayedDiffs = new HashMap<File, MultiDiffPanel>();
     private UndoRedoSupport um;
     private String warningMessage;
+    private boolean userValid;
+    private String user;
 
     /** Creates new form CommitPanel */
     public CommitPanel() {
@@ -211,6 +220,14 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         for (Map.Entry<File, MultiDiffPanel> e : displayedDiffs.entrySet()) {
             e.getValue().componentClosed();
         }
+    }
+
+    boolean isUserValid () {
+        return userValid || !cbAuthor.isSelected();
+    }
+
+    String getUser () {
+        return cbAuthor.isSelected() && isUserValid() ? user: null;
     }
 
     private void initCollapsibleSections() {
@@ -390,6 +407,12 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         
         Mnemonics.setLocalizedText(cbAllFiles, getMessage("CTL_CommitForm_CommitAllFiles.text")); //NOI18N
         cbAllFiles.setToolTipText(getMessage("CTL_CommitForm_CommitAllFiles.TTtext")); // NOI18N
+        
+        Mnemonics.setLocalizedText(cbAuthor, getMessage("CTL_CommitForm_CommitAuthor.text")); //NOI18N
+        cbAuthor.setToolTipText(getMessage("CTL_CommitForm_CommitAuthor.TTtext")); // NOI18N
+        cbAuthor.setEnabled(false);
+        cmbUser.setEditable(true);
+        cmbUser.setEnabled(false);
 
         messageTextArea.setColumns(70);    //this determines the preferred width of the whole dialog
         messageTextArea.setLineWrap(true);
@@ -419,6 +442,18 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         jLabel1.setAlignmentY(BOTTOM_ALIGNMENT);
         recentLink.setAlignmentY(BOTTOM_ALIGNMENT);
         templateLink.setAlignmentY(BOTTOM_ALIGNMENT);
+        
+        JPanel userPanel = new JPanel() {
+            @Override
+            public Dimension getMaximumSize () {
+                return super.getPreferredSize();
+            }
+        };
+        userPanel.setLayout(new BoxLayout(userPanel, X_AXIS));
+        userPanel.add(cbAuthor);
+        userPanel.add(makeHorizontalStrut(cbAuthor, cmbUser, LayoutStyle.ComponentPlacement.RELATED));
+        userPanel.add(cmbUser);
+        cbAuthor.setAlignmentX(LEFT_ALIGNMENT);
 
         JPanel bottomPanel = new VerticallyNonResizingPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, X_AXIS));
@@ -432,21 +467,24 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         basePanel.add(topPanel);
         basePanel.add(makeVerticalStrut(jLabel1, jScrollPane1, LayoutStyle.ComponentPlacement.RELATED));
         basePanel.add(jScrollPane1);
-        basePanel.add(makeVerticalStrut(jScrollPane1, filesSectionButton, LayoutStyle.ComponentPlacement.RELATED));
+        basePanel.add(makeVerticalStrut(jScrollPane1, userPanel, LayoutStyle.ComponentPlacement.UNRELATED));
+        basePanel.add(userPanel);
+        basePanel.add(makeVerticalStrut(userPanel, filesSectionButton, LayoutStyle.ComponentPlacement.UNRELATED));
         filesSectionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, filesSectionButton.getMaximumSize().height));
         basePanel.add(filesSectionButton);
         basePanel.add(makeVerticalStrut(filesSectionButton, filesSectionPanel2, LayoutStyle.ComponentPlacement.RELATED));
         basePanel.add(filesSectionPanel2);
-        basePanel.add(makeVerticalStrut(filesSectionPanel2, hooksSectionButton, LayoutStyle.ComponentPlacement.RELATED));
+        basePanel.add(makeVerticalStrut(filesSectionPanel2, hooksSectionButton, LayoutStyle.ComponentPlacement.UNRELATED));
         hooksSectionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, hooksSectionButton.getMaximumSize().height));
         basePanel.add(hooksSectionButton);
         basePanel.add(makeVerticalStrut(hooksSectionButton, hookSectionPanel, LayoutStyle.ComponentPlacement.RELATED));
         basePanel.add(hookSectionPanel);
-        basePanel.add(makeVerticalStrut(hookSectionPanel, jLabel2, LayoutStyle.ComponentPlacement.RELATED));
+        basePanel.add(makeVerticalStrut(hookSectionPanel, jLabel2, LayoutStyle.ComponentPlacement.UNRELATED));
         basePanel.add(bottomPanel);
         setLayout(new BoxLayout(this, Y_AXIS));
         add(basePanel);
         topPanel.setAlignmentX(LEFT_ALIGNMENT);
+        userPanel.setAlignmentX(LEFT_ALIGNMENT);
         jScrollPane1.setAlignmentX(LEFT_ALIGNMENT);
         filesSectionButton.setAlignmentX(LEFT_ALIGNMENT);
         filesSectionPanel2.setAlignmentX(LEFT_ALIGNMENT);
@@ -480,6 +518,8 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         });
         Spellchecker.register (messageTextArea);
         cbAllFiles.addActionListener(this);
+        cbAuthor.addActionListener(this);
+        ((JTextComponent) cmbUser.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
     }
 
     private Component makeVerticalStrut(JComponent compA,
@@ -545,6 +585,31 @@ public class CommitPanel extends AutoResizingPanel implements PreferenceChangeLi
         if (e.getSource() == cbAllFiles) {
             commitTable.setChangesEnabled(!cbAllFiles.isSelected());
             listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
+        } else if (e.getSource() == cbAuthor) {
+            cmbUser.setEnabled(cbAuthor.isSelected());
+            listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
+        }
+    }
+
+    @Override
+    public void insertUpdate (DocumentEvent e) {
+        changedUpdate(e);
+    }
+
+    @Override
+    public void removeUpdate (DocumentEvent e) {
+        changedUpdate(e);
+    }
+
+    @Override
+    public void changedUpdate (DocumentEvent e) {
+        if (e.getDocument() == ((JTextComponent) cmbUser.getEditor().getEditorComponent()).getDocument()) {
+            boolean oldUserValid = userValid;
+            user = cmbUser.getEditor().getItem().toString().trim();
+            userValid = !user.isEmpty();
+            if (userValid != oldUserValid && cbAuthor.isSelected()) {
+                listenerSupport.fireVersioningEvent(EVENT_SETTINGS_CHANGED);
+            }
         }
     }
 

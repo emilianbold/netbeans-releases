@@ -311,13 +311,17 @@ public class CommitAction extends ContextAction {
             final Map<File, Set<File>> rootFiles = HgUtils.sortUnderRepository(ctx, true);
             final boolean commitAllFiles = panel.cbAllFiles.isSelected() || afterMerge.get();
             HgModuleConfig.getDefault().setLastCanceledCommitMessage(KEY_CANCELED_MESSAGE, ""); //NOI18N
-            org.netbeans.modules.versioning.util.Utils.insert(HgModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
+            Utils.insert(HgModuleConfig.getDefault().getPreferences(), RECENT_COMMIT_MESSAGES, message.trim(), 20);
+            final String user = panel.getUser();
+            if (user != null) {
+                HgModuleConfig.getDefault().putRecentCommitAuthors(user);
+            }
             RequestProcessor rp = Mercurial.getInstance().getRequestProcessor(repository);
             HgProgressSupport support = new HgProgressSupport() {
                 @Override
                 public void perform() {
                     OutputLogger logger = getLogger();
-                    performCommit(message, commitFiles, rootFiles, this, logger, hooks, commitAllFiles, closingBranch);
+                    performCommit(message, commitFiles, rootFiles, this, logger, hooks, user, commitAllFiles, closingBranch);
                 }
             };
             support.start(rp, repository, org.openide.util.NbBundle.getMessage(CommitAction.class, "LBL_Commit_Progress")); // NOI18N
@@ -336,6 +340,7 @@ public class CommitAction extends ContextAction {
                 try {
                     afterMerge.set(WorkingCopyInfo.getInstance(repository).getWorkingCopyParents().length > 1);
                     panel.progressPanel.setVisible(true);
+                    setupUsers();
                     // Ensure that cache is uptodate
                     StatusAction.executeStatus(ctx, this);
 
@@ -392,6 +397,28 @@ public class CommitAction extends ContextAction {
                     panel.progressPanel.setVisible(false);
                 }
             }
+
+            private void setupUsers () {
+                HgConfigFiles config = new HgConfigFiles(repository);
+                String userName = config.getUserName(false);
+                if (userName.isEmpty()) {
+                    config = HgConfigFiles.getSysInstance();
+                    userName = config.getUserName(false);
+                }
+                List<String> recentUsers = HgModuleConfig.getDefault().getRecentCommitAuthors();
+                if (!userName.isEmpty()) {
+                    recentUsers.remove(userName);
+                    recentUsers.add(0, userName);
+                }
+                final ComboBoxModel<String> model = new DefaultComboBoxModel<String>(recentUsers.toArray(new String[recentUsers.size()]));
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        panel.cmbUser.setModel(model);
+                        panel.cbAuthor.setEnabled(true);
+                    }
+                });
+            }
         };
         panel.progressPanel.add(support.getProgressComponent());
         panel.progressPanel.setVisible(true);
@@ -414,11 +441,14 @@ public class CommitAction extends ContextAction {
      * @param panel
      * @param commit
      */
+    @NbBundle.Messages({
+        "MSG_CommitForm_ErrorInvalidAuthor=Invalid author"
+    })
     private static void refreshCommitDialog(CommitPanel panel, CommitTable table, JButton commit, String branchToClose, AtomicBoolean afterMerge) {
         assert EventQueue.isDispatchThread();
         ResourceBundle loc = NbBundle.getBundle(CommitAction.class);
         Map<HgFileNode, CommitOptions> files = table.getCommitFiles();
-        boolean conflicts = false;
+        boolean errors = false;
 
         boolean enabled = commit.isEnabled();
 
@@ -436,10 +466,16 @@ public class CommitAction extends ContextAction {
                         loc.getString("MSG_CommitForm_ErrorConflicts") : // NOI18N
                         loc.getString("MSG_CommitForm_ErrorRemoteChanges"); // NOI18N
                 panel.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N
-                conflicts = true;
+                errors = true;
             }
             //stickyTags.add(HgUtils.getCopy(fileNode.getFile()));
 
+        }
+        
+        if (!errors && !panel.isUserValid()) {
+            String msg = Bundle.MSG_CommitForm_ErrorInvalidAuthor();
+            panel.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N
+            errors = true;
         }
 
         table.setColumns(new String [] { CommitTableModel.COLUMN_NAME_COMMIT, CommitTableModel.COLUMN_NAME_NAME, CommitTableModel.COLUMN_NAME_STATUS,
@@ -448,7 +484,7 @@ public class CommitAction extends ContextAction {
         String contentTitle = (String) panel.getClientProperty("contentTitle"); // NOI18N
         DialogDescriptor dd = (DialogDescriptor) panel.getClientProperty("DialogDescriptor"); // NOI18N
         dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle })); // NOI18N
-        if (!conflicts) {
+        if (!errors) {
             if (afterMerge.get()) {
                 panel.setErrorLabel(NbBundle.getMessage(CommitAction.class, "CommitPanel.info.merge.allFiles")); //NOI18N
             } else if (panel.cbAllFiles.isSelected()) {
@@ -463,11 +499,12 @@ public class CommitAction extends ContextAction {
 
     public static void performCommit (String message, Map<HgFileNode, CommitOptions> commitFiles,
             Map<File, Set<File>> rootFiles, HgProgressSupport support, OutputLogger logger, Collection<HgHook> hooks) {
-        performCommit(message, commitFiles, rootFiles, support, logger, hooks, false, false);
+        performCommit(message, commitFiles, rootFiles, support, logger, hooks, null, false, false);
     }
 
     private static void performCommit(String message, Map<HgFileNode, CommitOptions> commitFiles,
-            Map<File, Set<File>> rootFiles, HgProgressSupport support, OutputLogger logger, Collection<HgHook> hooks, boolean commitAllFiles, boolean closeBranch) {
+            Map<File, Set<File>> rootFiles, HgProgressSupport support, OutputLogger logger, Collection<HgHook> hooks,
+            String user, boolean commitAllFiles, boolean closeBranch) {
         FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
         Map<File, List<File>> addCandidates = new HashMap<File, List<File>>();
         Map<File, List<File>> deleteCandidates = new HashMap<File, List<File>>();
@@ -552,7 +589,8 @@ public class CommitAction extends ContextAction {
                     // XXX handle veto
                 }
             }
-            final Cmd.CommitCmd commitCmd = new Cmd.CommitCmd(commitCandidates, logger, message, support, rootFiles, locallyModifiedExcluded, filesToRefresh, closeBranch);
+            final Cmd.CommitCmd commitCmd = new Cmd.CommitCmd(commitCandidates, logger, message, support, rootFiles,
+                    locallyModifiedExcluded, filesToRefresh, user, closeBranch);
             commitCmd.setCommitHooks(context, hooks, hookFiles, originalMessage);
             commitCmd.handle();
         } catch (HgException.HgCommandCanceledException ex) {
@@ -712,14 +750,17 @@ public class CommitAction extends ContextAction {
             private final Map<File, Boolean> locallyModifiedExcluded;
             private final boolean closingBranch;
             private String originalMessage;
+            private final String user;
 
             public CommitCmd(Map<File, List<File>> m, OutputLogger logger, String commitMessage, HgProgressSupport support,
-                    Map<File, Set<File>> rootFilesPerRepository, Map<File, Boolean> locallyModifiedExcluded, Map<File, Set<File>> filesToRefresh, boolean closingBranch) {
+                    Map<File, Set<File>> rootFilesPerRepository, Map<File, Boolean> locallyModifiedExcluded, Map<File, Set<File>> filesToRefresh,
+                    String user, boolean closingBranch) {
                 super(m, logger, commitMessage, null);
                 this.support = support;
                 this.rootFilesPerRepository = rootFilesPerRepository;
                 this.locallyModifiedExcluded = locallyModifiedExcluded;
                 this.refreshFilesPerRepository = filesToRefresh;
+                this.user = user;
                 this.closingBranch = closingBranch;
             }
 
@@ -744,7 +785,7 @@ public class CommitAction extends ContextAction {
                 Set<File> refreshFiles = new HashSet<File>(candidates);
                 List<File> commitedFiles = null;
                 try {                    
-                    HgCommand.doCommit(repository, candidates, msg, closingBranch, logger);
+                    HgCommand.doCommit(repository, candidates, msg, user, closingBranch, logger);
                     commitedFiles = candidates;
                 } catch (HgException.HgTooLongArgListException e) {
                     Mercurial.LOG.log(Level.INFO, null, e);
@@ -772,7 +813,7 @@ public class CommitAction extends ContextAction {
                         return;
                     }
                     Mercurial.LOG.log(Level.INFO, "CommitAction: committing with a reduced set of files: {0}", reducedCommitCandidates.toString()); //NOI18N
-                    HgCommand.doCommit(repository, reducedCommitCandidates, msg, closingBranch, logger);
+                    HgCommand.doCommit(repository, reducedCommitCandidates, msg, user, closingBranch, logger);
                     commitedFiles = reducedCommitCandidates;
                 } catch (HgException ex) {
                     if (HgCommand.COMMIT_AFTER_MERGE.equals(ex.getMessage())) {
@@ -783,7 +824,7 @@ public class CommitAction extends ContextAction {
                         } else if(!commitAfterMerge(Boolean.TRUE.equals(locallyModifiedExcluded.get(repository)), repository)) {
                             return;
                         } else {
-                            HgCommand.doCommit(repository, Collections.<File>emptyList(), msg, closingBranch, logger);
+                            HgCommand.doCommit(repository, Collections.<File>emptyList(), msg, user, closingBranch, logger);
                             refreshFiles = new HashSet<File>(Mercurial.getInstance().getSeenRoots(repository));
                             commitAfterMerge = true;
                         }

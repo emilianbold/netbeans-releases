@@ -82,6 +82,8 @@ public class CommitPanel extends javax.swing.JPanel {
         
         Spellchecker.register (messageTextArea);  
         initCommitMessage(commitMessage);
+        
+        cmbAuthor.setModel(parameters.createRecentUsersModel());
     }
     
     private void initCommitMessage (String commitMessage) {
@@ -160,6 +162,12 @@ public class CommitPanel extends javax.swing.JPanel {
 
         txtPatchName.setText(org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.txtPatchName.text")); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(cbAuthor, org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.cbAuthor.text")); // NOI18N
+        cbAuthor.setToolTipText(org.openide.util.NbBundle.getMessage(CommitPanel.class, "CommitPanel.cbAuthor.TTtext")); // NOI18N
+
+        cmbAuthor.setEditable(true);
+        cmbAuthor.setEnabled(false);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -167,6 +175,11 @@ public class CommitPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(cbAuthor)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(cmbAuthor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -193,13 +206,19 @@ public class CommitPanel extends javax.swing.JPanel {
                     .addComponent(templatesLabel)
                     .addComponent(recentLabel))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 113, Short.MAX_VALUE)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 69, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(cbAuthor)
+                    .addComponent(cmbAuthor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    final javax.swing.JCheckBox cbAuthor = new javax.swing.JCheckBox();
+    final javax.swing.JComboBox cmbAuthor = new javax.swing.JComboBox();
     private javax.swing.JLabel jLabel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel messageLabel;
