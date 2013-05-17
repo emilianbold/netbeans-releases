@@ -52,8 +52,8 @@ import java.util.List;
  */
 public class ConstantDeclaration extends Statement {
 
-    private final ArrayList<Identifier> names = new ArrayList<Identifier>();
-    private final ArrayList<Expression> initializers = new ArrayList<Expression>();
+    private final ArrayList<Identifier> names = new ArrayList<>();
+    private final ArrayList<Expression> initializers = new ArrayList<>();
 
     private ConstantDeclaration(int start, int end, List<Identifier> names, List<Expression> initializers) {
         super(start, end);

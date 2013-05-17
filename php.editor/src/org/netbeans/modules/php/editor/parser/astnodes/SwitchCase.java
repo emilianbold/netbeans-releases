@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -58,7 +59,7 @@ import java.util.List;
 public class SwitchCase extends Statement {
 
     private Expression value;
-    private ArrayList<Statement> actions = new ArrayList<Statement>();
+    private ArrayList<Statement> actions = new ArrayList<>();
     private boolean isDefault;
 
     public SwitchCase(int start, int end, Expression value, Statement[] actions, boolean isDefault) {
@@ -69,10 +70,7 @@ public class SwitchCase extends Statement {
         }
 
         this.value = value;
-
-        for (Statement statement : actions) {
-            this.actions.add(statement);
-        }
+        this.actions.addAll(Arrays.asList(actions));
         this.isDefault = isDefault;
     }
 

@@ -82,7 +82,7 @@ public class LoopOnlyKeywordsUnhandledError extends UnhandledErrorRule {
         private final FileObject fileObject;
         private static final String CONTINUE = "continue"; //NOI18N
         private static final String BREAK = "break"; //NOI18N
-        private final List<VerificationError> errors = new ArrayList<VerificationError>();
+        private final List<VerificationError> errors = new ArrayList<>();
 
         public CheckVisitor(FileObject fileObject) {
             this.fileObject = fileObject;

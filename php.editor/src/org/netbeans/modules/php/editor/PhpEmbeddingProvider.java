@@ -83,7 +83,7 @@ public class PhpEmbeddingProvider extends EmbeddingProvider {
         //<<< end of the logging
 
         sequence.moveStart();
-        List<Embedding> embeddings = new ArrayList<Embedding>();
+        List<Embedding> embeddings = new ArrayList<>();
 
         //marek (workaround): there seems to be a bug in parsing api - if I create
         //the embedding for each PHPTokenId.T_INLINE_HTML token separatelly then the offsets

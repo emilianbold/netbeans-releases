@@ -52,7 +52,7 @@ final class PHPSQLStatement {
 
     private final String generatedStatement;
     private int statementOffset;
-    private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<CodeBlockData>();
+    private final ArrayList<CodeBlockData> codeBlocks = new ArrayList<>();
 
     /**
      * Given a caret offset into a PHP document, compute the SQL statement for that
@@ -245,13 +245,16 @@ final class PHPSQLStatement {
                 default:
                     switch (seq.token().id()) {
                         case PHP_TOKEN:
-                            if (text.equals("${") || text.equals("$")) {
-                                // this is the beginning of a variable
-                                inVariable = true;
-                            } else if (text.equals(".")) {
-                                concatenating = true;
-                                skip(seq);
-                                break outer;
+                            switch (text) {
+                                case "${":
+                                case "$":
+                                    // this is the beginning of a variable
+                                    inVariable = true;
+                                    break;
+                                case ".":
+                                    concatenating = true;
+                                    skip(seq);
+                                    break outer;
                             }
 
                             concatenating = false;

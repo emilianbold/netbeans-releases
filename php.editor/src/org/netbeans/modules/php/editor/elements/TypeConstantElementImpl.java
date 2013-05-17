@@ -121,7 +121,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
         Parameters.notNull("node", node);
         Parameters.notNull("fileQuery", fileQuery);
         final List<? extends ClassConstantDeclarationInfo> consts = ClassConstantDeclarationInfo.create(node);
-        final Set<TypeConstantElement> retval = new HashSet<TypeConstantElement>();
+        final Set<TypeConstantElement> retval = new HashSet<>();
         for (ClassConstantDeclarationInfo info : consts) {
             retval.add(new TypeConstantElementImpl(
                     type, info.getName(), info.getValue(), info.getRange().getStart(),

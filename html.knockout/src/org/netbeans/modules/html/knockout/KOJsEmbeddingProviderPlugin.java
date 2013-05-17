@@ -44,6 +44,7 @@ package org.netbeans.modules.html.knockout;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import static org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE;
@@ -51,6 +52,7 @@ import static org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN;
 import static org.netbeans.api.html.lexer.HTMLTokenId.VALUE;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
@@ -65,6 +67,8 @@ import org.openide.filesystems.FileObject;
  */
 @MimeRegistration(mimeType = "text/html", service = JsEmbeddingProviderPlugin.class)
 public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
+
+    private static final Pattern FUNCTION_PATTERN = Pattern.compile("\\s*function.*"); // NOI18N
 
     private TokenSequence<HTMLTokenId> tokenSequence;
     private Snapshot snapshot;
@@ -81,13 +85,12 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     }
 
     @Override
-    public boolean startProcessing(Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence,
-            List<Embedding> embeddings) {
+    public boolean startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence, List<Embedding> embeddings) {
         this.snapshot = snapshot;
         this.tokenSequence = tokenSequence;
         this.embeddings = embeddings;
 
-        FileObject file = snapshot.getSource().getFileObject();
+         FileObject file = snapshot.getSource().getFileObject();
         if (file == null) {
             return false;
         }
@@ -157,7 +160,12 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                         if (embedded.embedded(JS_LANGUAGE) != null) {
                             processed = true;
                             //has javascript embedding
-                            addEmbedding("(function(){\n"); // NOI18N
+                            addEmbedding("(");
+                            boolean addFunction = !FUNCTION_PATTERN.matcher(embedded.token().text()).matches();
+                                
+                            if (addFunction) {
+                                addEmbedding("function(){\n"); // NOI18N
+                            }
 
                             CharSequence seq = embedded.token().text();
                             int emptyLength = 0;
@@ -174,7 +182,10 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                                 embeddings.add(snapshot.create(embedded.offset(), embedded.token().length(), KOUtils.JAVASCRIPT_MIMETYPE));
                             }
 
-                            addEmbedding(";\n});\n"); // NOI18N
+                            if (addFunction) {
+                                addEmbedding(";\n}"); // NOI18N
+                            }
+                            addEmbedding(");\n"); // NOI18N
                         }
                     }
                     break;

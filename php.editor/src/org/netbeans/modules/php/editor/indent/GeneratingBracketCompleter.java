@@ -177,12 +177,12 @@ public final class GeneratingBracketCompleter {
     }
 
     private static class ScannerImpl extends DefaultVisitor {
-        private List<Pair<String, String>> globals = new LinkedList<Pair<String, String>>();
-        private List<Pair<String, String>> staticvars = new LinkedList<Pair<String, String>>();
-        private List<Pair<String, String>> params = new LinkedList<Pair<String, String>>();
-        private List<Pair<String, String>> throwsExceptions = new LinkedList<Pair<String, String>>();
-        private List<String> usedThrows = new LinkedList<String>();
-        final Set<VariableName> declaredVariables = new HashSet<VariableName>();
+        private List<Pair<String, String>> globals = new LinkedList<>();
+        private List<Pair<String, String>> staticvars = new LinkedList<>();
+        private List<Pair<String, String>> params = new LinkedList<>();
+        private List<Pair<String, String>> throwsExceptions = new LinkedList<>();
+        private List<String> usedThrows = new LinkedList<>();
+        final Set<VariableName> declaredVariables = new HashSet<>();
         private boolean hasReturn;
         private String returnType;
         private final FunctionDeclaration decl;
@@ -236,7 +236,7 @@ public final class GeneratingBracketCompleter {
                     if (VariousUtils.isSemiType(type)) {
                         type = null;
                     }
-                    params.add(new Pair<String, String>(variable.getName(), type));
+                    params.add(new Pair<>(variable.getName(), type));
                 }
             }
             super.visit(p);
@@ -255,7 +255,7 @@ public final class GeneratingBracketCompleter {
                         if (VariousUtils.isSemiType(type)) {
                             type = null;
                         }
-                        globals.add(new Pair<String, String>(variable.getName(), type));
+                        globals.add(new Pair<>(variable.getName(), type));
                     }
                 }
             }
@@ -290,7 +290,7 @@ public final class GeneratingBracketCompleter {
                         if (VariousUtils.isSemiType(type)) {
                             type = null;
                         }
-                        staticvars.add(new Pair<String, String>(variable.getName(), type));
+                        staticvars.add(new Pair<>(variable.getName(), type));
                     }
                 }
             }

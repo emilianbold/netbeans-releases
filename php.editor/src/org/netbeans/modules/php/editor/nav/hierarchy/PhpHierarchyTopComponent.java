@@ -220,7 +220,7 @@ final class PhpHierarchyTopComponent extends TopComponent implements PropertyCha
                         boolean indexing = IndexingManager.getDefault().isIndexing();
                         if (!indexing) {
                             try {
-                                final List<Union2<Document, FileObject>> fromNode = new ArrayList<Union2<Document, FileObject>>();
+                                final List<Union2<Document, FileObject>> fromNode = new ArrayList<>();
                                 SwingUtilities.invokeAndWait(new Runnable() {
 
                                     @Override
@@ -254,9 +254,7 @@ final class PhpHierarchyTopComponent extends TopComponent implements PropertyCha
                                         });
                                     }
                                 }
-                            } catch (InterruptedException ex) {
-                                Exceptions.printStackTrace(ex);
-                            } catch (InvocationTargetException ex) {
+                            } catch (InterruptedException | InvocationTargetException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
                         } else {

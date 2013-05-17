@@ -90,7 +90,7 @@ public class LambdaFunctionDeclarationInfo extends ASTNodeInfo<LambdaFunctionDec
     }
 
     public List<? extends ParameterElement> getParameters() {
-        List<ParameterElement> retval = new ArrayList<ParameterElement>();
+        List<ParameterElement> retval = new ArrayList<>();
         List<FormalParameter> formalParameters = getOriginalNode().getFormalParameters();
         for (FormalParameter formalParameter : formalParameters) {
             FormalParameterInfo parameterInfo = FormalParameterInfo.create(formalParameter, paramDocTypes);

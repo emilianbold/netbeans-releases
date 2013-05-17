@@ -265,4 +265,48 @@ public class NbIOFoldTest {
         nbIO.getOut().println("Y");
         assertEquals(9, lines.getVisibleLineCount());
     }
+
+    @Test
+    public void testExpandingOfNestedFoldExpandsParentFolds() {
+        NbIO nbIO = new NbIO("test");
+        AbstractLines lines = (AbstractLines) ((NbWriter) nbIO.getOut())
+                .out().getLines();
+        nbIO.getOut().println("FoldA");
+        FoldHandle foldA = IOFolding.startFold(nbIO, false);
+        nbIO.getOut().println("  FoldB");
+        FoldHandle foldB = foldA.startFold(false);
+        nbIO.getOut().println("    FoldC");
+        FoldHandle foldC = foldB.startFold(false);
+        nbIO.getOut().println("      FoldC1");
+        foldC.finish();
+        foldB.finish();
+        foldA.finish();
+        nbIO.getOut().close();
+        assertEquals(2, lines.getVisibleLineCount());
+        foldC.setExpanded(true);
+        assertEquals(5, lines.getVisibleLineCount());
+    }
+
+    @Test
+    public void testCollapsingOfFoldNestedInCollapsedFold() {
+        NbIO nbIO = new NbIO("test");
+        AbstractLines lines = (AbstractLines) ((NbWriter) nbIO.getOut())
+                .out().getLines();
+        nbIO.getOut().println("FoldA");
+        FoldHandle foldA = IOFolding.startFold(nbIO, false);
+        nbIO.getOut().println("  FoldB");
+        FoldHandle foldB = foldA.startFold(true);
+        nbIO.getOut().println("    FoldC");
+        FoldHandle foldC = foldB.startFold(true);
+        nbIO.getOut().println("      FoldC1");
+        foldC.finish();
+        foldB.finish();
+        foldA.finish();
+        nbIO.getOut().close();
+        assertEquals(2, lines.getVisibleLineCount());
+        foldC.setExpanded(false);
+        assertEquals(2, lines.getVisibleLineCount());
+        foldB.setExpanded(false);
+        assertEquals(2, lines.getVisibleLineCount());
+    }
 }

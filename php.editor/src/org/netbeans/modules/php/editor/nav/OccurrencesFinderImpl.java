@@ -110,7 +110,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
         }
 
         Preferences node = MarkOccurencesSettings.getCurrentNode();
-        Map<OffsetRange, ColoringAttributes> localRange2Attribs = new HashMap<OffsetRange, ColoringAttributes>();
+        Map<OffsetRange, ColoringAttributes> localRange2Attribs = new HashMap<>();
         if (node.getBoolean(MarkOccurencesSettings.ON_OFF, true)) {
             for (OffsetRange r : compute((ParserResult) result, caretPosition)) {
                 localRange2Attribs.put(r, ColoringAttributes.MARK_OCCURRENCES);
@@ -130,7 +130,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
 
     private Collection<OffsetRange> compute(final ParserResult parameter, final int offset) {
         final PHPParseResult parseResult = (PHPParseResult) parameter;
-        Set<OffsetRange> result = new TreeSet<OffsetRange>(new Comparator<OffsetRange>() {
+        Set<OffsetRange> result = new TreeSet<>(new Comparator<OffsetRange>() {
             @Override
             public int compare(OffsetRange o1, OffsetRange o2) {
                 return o1.compareTo(o2);
@@ -156,7 +156,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
     }
 
     private Collection<OffsetRange> getOccurrences(Model model, OffsetRange referenceSpan) {
-        Collection<OffsetRange> result = new TreeSet<OffsetRange>();
+        Collection<OffsetRange> result = new TreeSet<>();
         OccurencesSupport occurencesSupport = model.getOccurencesSupport(referenceSpan);
         if (cancelled) {
             return Collections.EMPTY_LIST;
@@ -226,7 +226,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
     }
 
     private static final class OccurrenceHighlighterImpl implements OccurrenceHighlighter {
-        private Set<OffsetRange> offsetRanges = new TreeSet<OffsetRange>();
+        private Set<OffsetRange> offsetRanges = new TreeSet<>();
 
         @Override
         public void add(OffsetRange offsetRange) {
@@ -235,7 +235,7 @@ public class OccurrencesFinderImpl extends OccurrencesFinder {
 
         @Override
         public Set<OffsetRange> getRanges() {
-            return new TreeSet<OffsetRange>(offsetRanges);
+            return new TreeSet<>(offsetRanges);
         }
     }
 }

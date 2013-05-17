@@ -481,7 +481,7 @@ public final class CGSGenerator implements CodeGenerator {
         @Override
         public List<? extends CodeGenerator> create(Lookup context) {
             JTextComponent textComp = context.lookup(JTextComponent.class);
-            ArrayList<CodeGenerator> ret = new ArrayList<CodeGenerator>();
+            ArrayList<CodeGenerator> ret = new ArrayList<>();
             CGSInfo info = CGSInfo.getCGSInfo(textComp);
 
             if (info.getClassName() != null) { // is the cursor in a class?

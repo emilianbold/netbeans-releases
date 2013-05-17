@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -58,7 +59,7 @@ import java.util.List;
 public class TryStatement extends Statement {
 
     private Block tryStatement;
-    private ArrayList<CatchClause> catchClauses = new ArrayList<CatchClause>();
+    private ArrayList<CatchClause> catchClauses = new ArrayList<>();
 
     private TryStatement(int start, int end, Block tryStatement, CatchClause[] catchClauses) {
         super(start, end);
@@ -67,9 +68,7 @@ public class TryStatement extends Statement {
             throw new IllegalArgumentException();
         }
         this.tryStatement = tryStatement;
-        for (int i = 0; i < catchClauses.length; i++) {
-            this.catchClauses.add(catchClauses[i]);
-        }
+        this.catchClauses.addAll(Arrays.asList(catchClauses));
     }
 
     public TryStatement(int start, int end, Block tryStatement, List<CatchClause> catchClauses) {
