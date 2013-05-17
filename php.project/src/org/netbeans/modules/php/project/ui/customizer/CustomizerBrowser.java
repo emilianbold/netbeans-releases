@@ -74,6 +74,12 @@ public final class CustomizerBrowser extends JPanel {
         init();
     }
 
+    private JComboBox<WebBrowser> createBrowserComboBox() {
+        return BrowserUISupport.createBrowserPickerComboBox(
+                browserModel.getSelectedBrowserId(), true, false,
+                browserModel);
+    }
+
     private void init() {
         // browser
         browserComboBox.setModel(browserModel);
@@ -114,7 +120,7 @@ public final class CustomizerBrowser extends JPanel {
     private void initComponents() {
 
         browserLabel = new JLabel();
-        browserComboBox = new JComboBox<WebBrowser>();
+        browserComboBox = createBrowserComboBox();
         reloadOnSaveCheckBox = new JCheckBox();
 
         Mnemonics.setLocalizedText(browserLabel, NbBundle.getMessage(CustomizerBrowser.class, "CustomizerBrowser.browserLabel.text")); // NOI18N
