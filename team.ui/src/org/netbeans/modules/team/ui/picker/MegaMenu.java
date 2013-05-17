@@ -116,6 +116,7 @@ public class MegaMenu {
 
     void showAgain() {
         if( null != invoker && invoker.isShowing() ) {
+            PopupWindow.hidePopup();
             show( invoker );
         }
     }

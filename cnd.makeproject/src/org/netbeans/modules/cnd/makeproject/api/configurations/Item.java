@@ -51,6 +51,7 @@ import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +67,7 @@ import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.makeproject.BrokenReferencesSupport;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.IncludePathExpansionProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
@@ -1079,6 +1081,12 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             try {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
                 this.envVariables = hostInfo.getEnvironment();
+                Map<String, String> temporaryEnv = BrokenReferencesSupport.getTemporaryEnv(env);
+                if (temporaryEnv != null) {
+                    Map<String, String> res = new HashMap<String, String>(temporaryEnv);
+                    res.putAll(envVariables);
+                    envVariables = res;
+                }
                 this.expander = MacroExpanderFactory.getExpander(env);
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);

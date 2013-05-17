@@ -166,14 +166,14 @@ public class MergeAction extends ContextAction {
         
         if (listMerge != null && !listMerge.isEmpty()) {
             logger.output(listMerge);
-            if (handleMergeOutput(root, listMerge, logger)) {
+            if (handleMergeOutput(root, listMerge, logger, true)) {
                 logger.outputInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_DONE")); //NOI18N
             }
         }
         return listMerge;
     }
 
-    public static boolean handleMergeOutput(File root, List<String> listMerge, OutputLogger logger) throws HgException {
+    public static boolean handleMergeOutput(File root, List<String> listMerge, OutputLogger logger, boolean interactive) {
         if (listMerge == null || listMerge.isEmpty()) return true;
 
         Boolean bConflicts = false;
@@ -182,19 +182,22 @@ public class MergeAction extends ContextAction {
         for (String line : listMerge) {
             if (HgCommand.isMergeAbortUncommittedMsg(line)) {
                 bMergeFailed = true;
-                logger.outputInRed(NbBundle.getMessage(MergeAction.class,
-                        "MSG_MERGE_FAILED")); // NOI18N
-                JOptionPane.showMessageDialog(null,
-                        NbBundle.getMessage(MergeAction.class, "MSG_MERGE_UNCOMMITTED"), // NOI18N
-                        NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE"), // NOI18N
-                        JOptionPane.WARNING_MESSAGE);
+                if (interactive) {
+                    logger.outputInRed(NbBundle.getMessage(MergeAction.class,
+                            "MSG_MERGE_FAILED")); // NOI18N
+                    JOptionPane.showMessageDialog(null,
+                            NbBundle.getMessage(MergeAction.class, "MSG_MERGE_UNCOMMITTED"), // NOI18N
+                            NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE"), // NOI18N
+                            JOptionPane.WARNING_MESSAGE);
+                }
                 break;
             }
 
             if (HgCommand.isMergeAbortMultipleHeadsMsg(line)) {
                 bMergeFailed = true;
-                logger.outputInRed(NbBundle.getMessage(MergeAction.class,
-                        "MSG_MERGE_FAILED")); // NOI18N
+                if (interactive) {
+                    logger.outputInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_FAILED")); // NOI18N
+                }
                 break;
             }
             String filepath = null;
@@ -203,7 +206,7 @@ public class MergeAction extends ContextAction {
                 if (line.contains(HgCommand.HG_MERGE_FAILED2_ERR)) {
                     filepath = line.substring(HgCommand.HG_MERGE_FAILED1_ERR.length(), line.length() - HgCommand.HG_MERGE_FAILED2_ERR.length()).trim().replace("/", File.separator); // NOI18N
                 } else if (line.contains(HgCommand.HG_MERGE_FAILED3_ERR)) {
-                    filepath = line.substring(HgCommand.HG_MERGE_FAILED1_ERR.length(), line.length() - HgCommand.HG_MERGE_FAILED3_ERR.length()).trim().replace("/", File.separator); // NOI18N
+                    filepath = line.substring(HgCommand.HG_MERGE_FAILED1_ERR.length(), line.lastIndexOf(HgCommand.HG_MERGE_FAILED3_ERR)).trim().replace("/", File.separator); // NOI18N
                 }
                 filepath = root.getAbsolutePath() + File.separator + filepath;
             } else if (HgCommand.isConflictDetectedInMsg(line)) {
@@ -212,25 +215,33 @@ public class MergeAction extends ContextAction {
             }
             if (filepath != null) {
                 LOG.log(Level.FINER, "File {0} in conflict", filepath);
-                logger.outputInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_CONFLICT", filepath)); // NOI18N
+                if (interactive) {
+                    logger.outputInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_CONFLICT", filepath)); // NOI18N
+                }
             }
 
+            
             if (HgCommand.isMergeUnavailableMsg(line)) {
-                JOptionPane.showMessageDialog(null,
-                        NbBundle.getMessage(MergeAction.class, "MSG_MERGE_UNAVAILABLE"), // NOI18N
-                        NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE"), // NOI18N
-                        JOptionPane.WARNING_MESSAGE);
-                logger.outputInRed(
-                        NbBundle.getMessage(MergeAction.class, "MSG_MERGE_INFO"));// NOI18N            
-                logger.outputLink(
-                        NbBundle.getMessage(MergeAction.class, "MSG_MERGE_INFO_URL")); // NOI18N 
+                bMergeFailed = true;
+                if (interactive) {
+                    JOptionPane.showMessageDialog(null,
+                            NbBundle.getMessage(MergeAction.class, "MSG_MERGE_UNAVAILABLE"), // NOI18N
+                            NbBundle.getMessage(MergeAction.class, "MSG_MERGE_TITLE"), // NOI18N
+                            JOptionPane.WARNING_MESSAGE);
+                    logger.outputInRed(
+                            NbBundle.getMessage(MergeAction.class, "MSG_MERGE_INFO"));// NOI18N            
+                    logger.outputLink(
+                            NbBundle.getMessage(MergeAction.class, "MSG_MERGE_INFO_URL")); // NOI18N 
+                }
             }
         }
 
         if (bConflicts) {
             LOG.log(Level.FINER, "Conflicts detected: {0}", root);
-            logger.outputInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_DONE_CONFLICTS")); // NOI18N
-            DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(NbBundle.getMessage(MergeAction.class, "MSG_Merge.ConflictsCreated"))); //NOI18N
+            if (interactive) {
+                logger.outputInRed(NbBundle.getMessage(MergeAction.class, "MSG_MERGE_DONE_CONFLICTS")); // NOI18N
+                DialogDisplayer.getDefault().notify(new DialogDescriptor.Message(NbBundle.getMessage(MergeAction.class, "MSG_Merge.ConflictsCreated"))); //NOI18N
+            }
         }
         return !bMergeFailed && !bConflicts;
     }

@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.xml.AttrValuePair;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
+import org.netbeans.modules.cnd.makeproject.BrokenReferencesSupport;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
@@ -1273,6 +1274,12 @@ public abstract class CommonConfigurationXMLCodec
             try {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(conf.getFileSystemHost());
                 environment = hostInfo.getEnvironment();
+                Map<String, String> temporaryEnv = BrokenReferencesSupport.getTemporaryEnv(conf.getDevelopmentHost().getExecutionEnvironment());
+                if (temporaryEnv != null) {
+                    Map<String, String> res = new HashMap<String, String>(temporaryEnv);
+                    res.putAll(environment);
+                    environment = res;
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (ConnectionManager.CancellationException ex) {

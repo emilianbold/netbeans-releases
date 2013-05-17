@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.api.toolchain.ToolchainManager.DebuggerDescriptor;
+import org.netbeans.modules.cnd.debugger.common2.APIAccessor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineType;
 import org.netbeans.modules.cnd.debugger.common2.debugger.api.EngineTypeManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
@@ -80,6 +81,10 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
  */
 
 public final class CndRemote {
+    
+    static {
+        APIAccessor.register(new APIAccessorImpl());
+    }    
 
     private CndRemote() {
     }
@@ -147,7 +152,7 @@ public final class CndRemote {
         validate(name, continuation, null);
     }
     
-    public static boolean syncValidate(final String name) {
+    /*package*/ static boolean syncValidate(final String name) {
 	if (name != null && name.equals("localhost")) { // NOI18N
 	    return true;
 	}
@@ -477,4 +482,15 @@ public final class CndRemote {
 	cs.setDirectory(base);
 	*/
     }
+    
+    
+    private static final class APIAccessorImpl extends APIAccessor {
+
+        @Override
+        public boolean syncValidate(String name) {
+            return CndRemote.syncValidate(name);
+        }
+
+    
+    }    
 }

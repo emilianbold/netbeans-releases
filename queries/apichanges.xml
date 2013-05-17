@@ -107,6 +107,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="VersioningQuery">
+            <api name="general"/>
+            <summary>added VersioningQuery</summary>
+            <version major="1" minor="35"/>
+            <date day="16" month="5" year="2013"/>
+            <author login="tstupka"/>
+            <compatibility addition="yes" binary="compatible" semantic="compatible" source="compatible">
+            </compatibility>
+            <description>
+                <p>
+                    Added a new query <code>VersioningQuery</code> which provides Versioning relevant info like 
+                    e.g. if a particular file is managed by a Versioning System.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.queries" name="VersioningQuery"/>
+            <issue number="229281"/>
+        </change>        
         <change id="VQChangeEvent">
             <api name="general"/>
             <summary>VisibilityQueryChangeEvent added</summary>

@@ -54,6 +54,7 @@ import org.openide.filesystems.FileUtil;
  * @author Maros Sandor
  */
 public class TestVCSInterceptor extends VCSInterceptor {
+    public static final String REMOTE_LOCATION_PREFIX = "http://a.repository.far.far.away/";
     private final TestVCSInterceptor instance;
     
     public DeleteHandler deleteHandler;
@@ -107,7 +108,7 @@ public class TestVCSInterceptor extends VCSInterceptor {
         if(attrName.equals("ProvidedExtensions.VCSManaged")) {
             return true;
         } else if (attrName.equals("ProvidedExtensions.RemoteLocation")) {
-            return "http://a.repository.far.far.away/" + file.getName();
+            return REMOTE_LOCATION_PREFIX + file.getName();
         }
         return null;
     }
