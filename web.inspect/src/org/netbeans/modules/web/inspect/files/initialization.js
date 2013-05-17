@@ -156,9 +156,12 @@ NetBeans.insertGlassPane = function() {
     canvas.style.left = 0;
     canvas.style.zIndex = zIndex;
     canvas.style.pointerEvents = 'none';
+    var iOS = (navigator.userAgent.match(/(iPad|iPhone|iPod)/g) ? true : false) ;
     var getElementForEvent = function(event) {
         canvas.style.visibility = 'hidden';
-        var element = document.elementFromPoint(event.clientX, event.clientY);
+        var element = iOS ? 
+            document.elementFromPoint(event.pageX, event.pageY) :
+            document.elementFromPoint(event.clientX, event.clientY);
         // Do not select helper elements introduced by page inspection
         while (element.getAttribute(self.ATTR_ARTIFICIAL)) { 
             element = element.parentNode;
@@ -167,8 +170,11 @@ NetBeans.insertGlassPane = function() {
         return element;
     };
 
+    //Click event does not work on iOS
+    var eventname = ( iOS ? 'touchstart' : 'click' );
+
     // Selection handler
-    canvas.addEventListener('click', function(event) {
+    canvas.addEventListener(eventname, function(event) {
         var element = getElementForEvent(event);
         var ctrl = event.ctrlKey;
         var meta = event.metaKey;
