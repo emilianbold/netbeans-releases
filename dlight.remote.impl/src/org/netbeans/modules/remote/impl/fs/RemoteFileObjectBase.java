@@ -61,6 +61,7 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider.StatInfo.FileType;
@@ -117,8 +118,8 @@ public abstract class RemoteFileObjectBase {
 
     public abstract boolean isFolder();
     public abstract boolean isData();
-    public abstract RemoteFileObject getFileObject(String name, String ext);
-    public abstract RemoteFileObject getFileObject(String relativePath);
+    public abstract RemoteFileObject getFileObject(String name, String ext, @NonNull Set<String> antiLoop);
+    public abstract RemoteFileObject getFileObject(String relativePath, @NonNull Set<String> antiLoop);
     public abstract InputStream getInputStream() throws FileNotFoundException;
     public abstract RemoteFileObject[] getChildren();
     public abstract FileType getType();
