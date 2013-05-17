@@ -105,6 +105,23 @@ is the proper place.
 
     <!-- ACTUAL CHANGES BEGIN HERE: -->
     <changes>
+        <change id="CustomizerProvider3">
+            <api name="java-api-common"/>
+            <summary>Enable programmatical closing of project customizer dialog.</summary>
+            <version major="1" minor="52"/>
+            <date day="13" month="5" year="2013"/>
+            <author login="psomol"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Addded interface <code>CustomizerProvider3</code> extending <code>CustomizerProvider2</code>
+                    that enables to close project's customizer if it is currently open using
+                    method <code>cancelCustomizer()</code>.
+                </p>
+            </description>
+            <class package="org.netbeans.modules.java.api.common.ui" name="PlatformUiSupport"/>
+            <issue number="229161"/>
+        </change>
         <change id="platform-filter">
             <api name="java-api-common"/>
             <summary>Added PlatformFilter interface.</summary>

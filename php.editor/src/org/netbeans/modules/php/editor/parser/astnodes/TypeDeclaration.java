@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -50,7 +51,7 @@ import java.util.List;
 public abstract class TypeDeclaration extends Statement {
 
     private Identifier name;
-    private ArrayList<Expression> interfaces = new ArrayList<Expression>();
+    private ArrayList<Expression> interfaces = new ArrayList<>();
     private Block body;
 
     public TypeDeclaration(int start, int end, final Identifier name, final Expression[] interfaces, final Block body) {
@@ -64,9 +65,7 @@ public abstract class TypeDeclaration extends Statement {
         this.body = body;
 
         if (interfaces != null) {
-            for (Expression identifier : interfaces) {
-                this.interfaces.add(identifier);
-            }
+            this.interfaces.addAll(Arrays.asList(interfaces));
         }
     }
 

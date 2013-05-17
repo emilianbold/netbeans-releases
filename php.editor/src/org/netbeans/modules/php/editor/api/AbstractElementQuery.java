@@ -66,7 +66,7 @@ import org.netbeans.modules.php.editor.api.elements.VariableElement;
  */
 public class AbstractElementQuery implements ElementQuery {
 
-    private final LinkedList<PhpElement> elements = new LinkedList<PhpElement>();
+    private final LinkedList<PhpElement> elements = new LinkedList<>();
     final QueryScope queryScope;
 
     public AbstractElementQuery(final QueryScope queryScope) {
@@ -175,7 +175,7 @@ public class AbstractElementQuery implements ElementQuery {
     }
 
     public final synchronized <T extends PhpElement> Set<T> getElements(Class<T> clz) {
-        Set<T> retval = new HashSet<T>();
+        Set<T> retval = new HashSet<>();
         final ElementFilter clsFilter = ElementFilter.forInstanceOf(clz);
         for (PhpElement phpElement : getElements()) {
             if (clsFilter.isAccepted(phpElement)) {
@@ -214,7 +214,7 @@ public class AbstractElementQuery implements ElementQuery {
     }
 
     public final synchronized PhpElement getAnyLast(Class... classes) {
-        final Set<ElementFilter> filters = new HashSet<ElementFilter>();
+        final Set<ElementFilter> filters = new HashSet<>();
         for (Class clz : classes) {
             filters.add(ElementFilter.forInstanceOf(clz));
         }

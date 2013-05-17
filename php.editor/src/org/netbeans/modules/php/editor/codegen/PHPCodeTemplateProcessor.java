@@ -154,22 +154,27 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
         for (Entry<String, String> entry : param.getHints().entrySet()) {
             String hintName = entry.getKey();
             // XXX constant anywhere?
-            if ("default".equals(hintName)) { // NOI18N
-                assert def == null : "default already set to " + def;
-                def = param.getValue();
-            } else if (NEW_VAR_NAME.equals(hintName)) {
-                assert !newVarName : "newVarName already set";
-                newVarName = true;
-            } else if (VARIABLE_FROM_NEXT_ASSIGNMENT_NAME.equals(hintName)) {
-                return getNextVariableName();
-            } else if (VARIABLE_FROM_NEXT_ASSIGNMENT_TYPE.equals(hintName)) {
-                return getNextVariableType();
-            } else if (VARIABLE_FROM_PREVIOUS_ASSIGNMENT.equals(hintName)) {
-                assert !previousVariable : "previousVariable already set";
-                previousVariable = true;
-            } else if (INSTANCE_OF.equals(hintName)) {
-                assert type == null : "type already set to " + type;
-                type = entry.getValue();
+            switch (hintName) {
+                case "default": // NOI18N
+                    assert def == null : "default already set to " + def;
+                    def = param.getValue();
+                    break;
+                case NEW_VAR_NAME:
+                    assert !newVarName : "newVarName already set";
+                    newVarName = true;
+                    break;
+                case VARIABLE_FROM_NEXT_ASSIGNMENT_NAME:
+                    return getNextVariableName();
+                case VARIABLE_FROM_NEXT_ASSIGNMENT_TYPE:
+                    return getNextVariableType();
+                case VARIABLE_FROM_PREVIOUS_ASSIGNMENT:
+                    assert !previousVariable : "previousVariable already set";
+                    previousVariable = true;
+                    break;
+                case INSTANCE_OF:
+                    assert type == null : "type already set to " + type;
+                    type = entry.getValue();
+                    break;
             }
         }
 
@@ -247,7 +252,7 @@ public class PHPCodeTemplateProcessor implements CodeTemplateProcessor {
     }
 
     private List<String> getUniqueTypeNames(VariableName variableName, int offset) {
-        List<String> uniqueTypeNames = new ArrayList<String>();
+        List<String> uniqueTypeNames = new ArrayList<>();
         for (TypeScope type : variableName.getTypes(offset)) {
             if (!uniqueTypeNames.contains(type.getName())) {
                 uniqueTypeNames.add(type.getName());

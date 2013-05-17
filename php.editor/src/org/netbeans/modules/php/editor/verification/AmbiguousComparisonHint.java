@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
@@ -94,8 +94,8 @@ public class AmbiguousComparisonHint extends HintRule {
     private class CheckVisitor extends DefaultTreePathVisitor {
         private final FileObject fileObject;
         private final BaseDocument doc;
-        private final List<InfixExpression> expressions = new LinkedList<InfixExpression>();
-        private final List<Hint> hints = new LinkedList<Hint>();
+        private final List<InfixExpression> expressions = new ArrayList<>();
+        private final List<Hint> hints = new ArrayList<>();
 
         public CheckVisitor(final FileObject fileObject, final BaseDocument doc) {
             this.fileObject = fileObject;

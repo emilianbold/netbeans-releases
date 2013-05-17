@@ -78,14 +78,14 @@ public class PHPHintsProvider implements HintsProvider {
     public void computeHints(HintsManager mgr, RuleContext context, List<Hint> hints) {
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(false, context);
         List<? extends AstRule> modelHints = allHints.get(DEFAULT_HINTS);
-        RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<Hint>(mgr, initializeContext(context), hints);
+        RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<>(mgr, initializeContext(context), hints);
         RuleAdjuster forAllAdjusters = new ForAllAdjusters(Arrays.asList(new PreferencesAdjuster(mgr), new ResetCaretOffsetAdjuster()));
         rulesRunner.run(modelHints, forAllAdjusters);
     }
 
     @Override
     public void computeSuggestions(HintsManager mgr, RuleContext context, List<Hint> suggestions, int caretOffset) {
-        RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<Hint>(mgr, initializeContext(context), suggestions);
+        RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<>(mgr, initializeContext(context), suggestions);
         RuleAdjuster forAllAdjusters = new ForAllAdjusters(Arrays.asList(new PreferencesAdjuster(mgr), new CaretOffsetAdjuster(caretOffset)));
         Map<?, List<? extends AstRule>> hintsOnLine = mgr.getHints(true, context);
         List<? extends AstRule> defaultHintsOnLine = hintsOnLine.get(DEFAULT_HINTS);
@@ -113,12 +113,12 @@ public class PHPHintsProvider implements HintsProvider {
         Map<?, List<? extends ErrorRule>> allErrors = manager.getErrors();
         List<? extends ErrorRule> unhandledErrors = allErrors.get(ErrorType.UNHANDLED_ERRORS);
         if (unhandledErrors != null) {
-            RulesRunner<Error> rulesRunner = new RulesRunnerImpl<Error>(manager, initializeContext(context), unhandled);
+            RulesRunner<Error> rulesRunner = new RulesRunnerImpl<>(manager, initializeContext(context), unhandled);
             rulesRunner.run(unhandledErrors, RuleAdjuster.NONE);
         }
         List<? extends ErrorRule> hintErrors = allErrors.get(ErrorType.HINT_ERRORS);
         if (hintErrors != null) {
-            RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<Hint>(manager, initializeContext(context), hints);
+            RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<>(manager, initializeContext(context), hints);
             rulesRunner.run(hintErrors, RuleAdjuster.NONE);
         }
     }

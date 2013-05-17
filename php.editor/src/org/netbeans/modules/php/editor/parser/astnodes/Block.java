@@ -59,7 +59,7 @@ import java.util.List;
  */
 public class Block extends Statement {
 
-    private final ArrayList<Statement> statements = new ArrayList<Statement>();
+    private final ArrayList<Statement> statements = new ArrayList<>();
     private boolean isCurly;
 
     private Block(int start, int end, Statement[] statements, boolean isCurly) {

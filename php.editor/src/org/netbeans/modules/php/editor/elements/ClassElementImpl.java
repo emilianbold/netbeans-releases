@@ -319,7 +319,7 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
                 int index = field.indexOf('|');
                 if (index > 0) {
                     field = field.substring(index + 1);
-                    retval = new ArrayList<QualifiedName>();
+                    retval = new ArrayList<>();
                     for (StringTokenizer st = new StringTokenizer(field, ","); st.hasMoreTokens();) {
                         String token = st.nextToken();
                         retval.add(QualifiedName.create(token));
@@ -336,7 +336,7 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
                 int index = separatedIfaces.indexOf('|');
                 if (index > 0) {
                     String field = separatedIfaces.substring(0, index);
-                    ifaces = new HashSet<QualifiedName>();
+                    ifaces = new HashSet<>();
                     final String[] ifaceNames = field.split(Separator.COMMA.toString());
                     for (String ifName : ifaceNames) {
                         ifaces.add(QualifiedName.create(ifName));
@@ -372,7 +372,7 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
         }
 
         public Collection<QualifiedName> getUsedTraits() {
-            Collection<QualifiedName> retval = new HashSet<QualifiedName>();
+            Collection<QualifiedName> retval = new HashSet<>();
             String traits = signature.string(7);
             final String[] traitNames = traits.split(Separator.COMMA.toString());
             for (String trait : traitNames) {

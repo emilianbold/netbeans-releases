@@ -74,7 +74,7 @@ public class PHPDocCommentParser {
     private static final Object LINE_PARSERS_LOCK = new Object();
 
     //@GuardedBy("LINE_PARSERS_LOCK")
-    private static final List<AnnotationLineParser> LINE_PARSERS = new CopyOnWriteArrayList<AnnotationLineParser>(PhpAnnotations.getLineParsers());
+    private static final List<AnnotationLineParser> LINE_PARSERS = new CopyOnWriteArrayList<>(PhpAnnotations.getLineParsers());
     static {
         PhpAnnotations.addLineParsersListener(new LineParsersListener());
     }
@@ -96,7 +96,7 @@ public class PHPDocCommentParser {
     /**
      * Tags that define something of a type
      */
-    private static final List<AnnotationParsedLine> PHP_DOC_VAR_TYPE_TAGS = new ArrayList<AnnotationParsedLine>();
+    private static final List<AnnotationParsedLine> PHP_DOC_VAR_TYPE_TAGS = new ArrayList<>();
     static {
         PHP_DOC_VAR_TYPE_TAGS.add(PHPDocTag.Type.PARAM);
         PHP_DOC_VAR_TYPE_TAGS.add(PHPDocTag.Type.PROPERTY);
@@ -117,7 +117,7 @@ public class PHPDocCommentParser {
      */
     public PHPDocBlock parse(final int startOffset, final int endOffset, final String comment) {
         assert startOffset <= endOffset;
-        List<PHPDocTag> tags = new ArrayList<PHPDocTag>(); // list of tags
+        List<PHPDocTag> tags = new ArrayList<>(); // list of tags
         String blockDescription = "";   // description of the block
         if (comment == null || comment.length() == 0) {
             // issue #142644
@@ -247,7 +247,7 @@ public class PHPDocCommentParser {
     }
 
     private List<PHPDocTypeNode> resolveTypes(final Map<OffsetRange, String> types, final int lineStart) {
-        final List<PHPDocTypeNode> result = new ArrayList<PHPDocTypeNode>();
+        final List<PHPDocTypeNode> result = new ArrayList<>();
         for (Map.Entry<OffsetRange, String> entry : types.entrySet()) {
             result.add(new PHPDocTypeNode(lineStart + entry.getKey().getStart(), lineStart + entry.getKey().getEnd(), entry.getValue(), false));
         }
@@ -255,7 +255,7 @@ public class PHPDocCommentParser {
     }
 
     private List<PHPDocTypeNode> findTypes(String description, int startDescription, String originalComment, int originalCommentStart) {
-        List<PHPDocTypeNode> result = new ArrayList<PHPDocTypeNode>();
+        List<PHPDocTypeNode> result = new ArrayList<>();
 
         for (String stype : getTypes(description)) {
             stype = removeHTMLTags(stype);
@@ -282,7 +282,7 @@ public class PHPDocCommentParser {
 
     private List<String> getTypes(String description) {
         String[] tokens = description.trim().split("[ ]+"); //NOI18N
-        ArrayList<String> types = new ArrayList<String>();
+        ArrayList<String> types = new ArrayList<>();
         if (tokens.length > 0 && !tokens[0].startsWith("$")) { //NOI18N
             if (tokens[0].indexOf('|') > -1) {
                 String[] ttokens = tokens[0].split("[|]"); //NOI18N

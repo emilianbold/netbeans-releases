@@ -390,6 +390,11 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
             // Box model
             var first = (j === 0) || !inline;
             var last = (j === rects.length-1) || !inline;
+            
+            var borderRect = rects[j];
+            if (borderRect.width === 0 || borderRect.height === 0) {
+                continue;
+            }
 
             var marginLeft = first ? parseInt(style.marginLeft) : 0;
             var marginRight = last ? parseInt(style.marginRight) : 0;
@@ -400,7 +405,6 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
             var paddingLeft = first ? parseInt(style.paddingLeft) : 0;
             var paddingRight = last ? parseInt(style.paddingRight) : 0;
 
-            var borderRect = rects[j];
             var marginRect = {
                 left: borderRect.left - marginLeft,
                 top: borderRect.top - marginTop,

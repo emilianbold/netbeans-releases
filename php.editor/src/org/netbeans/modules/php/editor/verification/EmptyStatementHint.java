@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.EditList;
@@ -83,7 +83,7 @@ public class EmptyStatementHint extends HintRule {
         public CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
-            this.hints = new LinkedList<Hint>();
+            this.hints = new ArrayList<>();
         }
 
         public List<Hint> getHints() {

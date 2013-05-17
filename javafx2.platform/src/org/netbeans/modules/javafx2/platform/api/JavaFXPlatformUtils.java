@@ -76,6 +76,16 @@ public final class JavaFXPlatformUtils {
     public static final String PLATFORM_ANT_NAME = "platform.ant.name"; // NOI18N
     
     /**
+     * Ant name of default Java Platform. Copy of constant from DefaultPlatformImpl (and J2SEProjectBuilder)
+     */
+    public static final String DEFAULT_PLATFORM = "default_platform"; // NOI18N
+    
+    /**
+     * Ant name of default JavaFX Platform. Copy of constant from JavaFX Platform Utils
+     */
+    public static final String DEFAULT_JAVAFX_PLATFORM = "Default_JavaFX_Platform"; // NOI18N
+    
+    /**
      * Property name for list of artifacts to be added to classpath
      */
     public static final String JAVAFX_CLASSPATH_EXTENSION = "javafx.classpath.extension"; // NOI18N

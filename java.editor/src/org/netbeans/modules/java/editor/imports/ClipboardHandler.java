@@ -274,7 +274,8 @@ public class ClipboardHandler {
                         if (el.equals(elm)) continue;
                     } else {
                         if (!cc.getTrees().isAccessible(context, el, (DeclaredType)el.getEnclosingElement().asType())
-                                || (context.getEnclosingClass() != null && cc.getElementUtilities().outermostTypeElement(el) == cc.getElementUtilities().outermostTypeElement(context.getEnclosingClass()))) continue;
+                                || (context.getEnclosingClass() != null && (cc.getElementUtilities().outermostTypeElement(el) == cc.getElementUtilities().outermostTypeElement(context.getEnclosingClass())
+                                || cc.getElements().getAllMembers(context.getEnclosingClass()).contains(el)))) continue;
                         for (ImportTree importTree : cc.getCompilationUnit().getImports()) {
                             if (importTree.isStatic() && importTree.getQualifiedIdentifier().getKind() == Tree.Kind.MEMBER_SELECT) {
                                 MemberSelectTree mst = (MemberSelectTree) importTree.getQualifiedIdentifier();

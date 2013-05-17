@@ -133,22 +133,22 @@ public final class LayeredDocumentIndex implements DocumentIndex2.Transactional 
     }
 
     @Override
+    public void rollback() throws IOException {
+        if (isTransientUpdate()) {
+            clearOverlay();
+        } else {
+            base.rollback();
+        }
+    }
+
+    @Override
     public void commit() throws IOException {
         if (isTransientUpdate()) {
             throw new UnsupportedOperationException("Transactions not supported for overlay."); //NOI18N
         } else {
             base.commit();
         }
-    }
-
-    @Override
-    public void rollback() throws IOException {
-        if (isTransientUpdate()) {
-            throw new UnsupportedOperationException("Transactions not supported for overlay."); //NOI18N
-        } else {
-            base.rollback();
-        }
-    }
+    }    
 
     @Override
     public void txStore() throws IOException {

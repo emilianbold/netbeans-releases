@@ -192,7 +192,7 @@ public final class TraitElementImpl extends TypeElementImpl implements TraitElem
         }
 
         private Collection<QualifiedName> getUsedTraits() {
-            Collection<QualifiedName> retval = new HashSet<QualifiedName>();
+            Collection<QualifiedName> retval = new HashSet<>();
             String traits = signature.string(4);
             final String[] traitNames = traits.split(Separator.COMMA.toString());
             for (String trait : traitNames) {

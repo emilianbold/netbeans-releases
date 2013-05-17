@@ -71,7 +71,7 @@ public final class JavaFXProjectUtils {
     }
 
     public static ComboBoxModel createPlatformComboBoxModel() {
-        return new PlatformsComboBoxModel(PlatformUiSupport.createPlatformComboBoxModel("default_platform",  // NOI18N
+        return new PlatformsComboBoxModel(PlatformUiSupport.createPlatformComboBoxModel(JavaFXPlatformUtils.DEFAULT_PLATFORM,  // NOI18N
                 Arrays.<PlatformFilter>asList(new PlatformFilter() {
                     @Override
                     public boolean accept(JavaPlatform platform) {

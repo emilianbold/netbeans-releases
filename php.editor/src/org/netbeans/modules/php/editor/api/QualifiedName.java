@@ -90,13 +90,13 @@ public final class QualifiedName {
 
     private static QualifiedName getRemainingName(final QualifiedName fullName, final QualifiedName fragmentName, boolean prefixRequired, boolean isOverlapingRequired) {
         QualifiedName retval;
-        List<String> fullSegments = new ArrayList<String>(fullName.getSegments());
-        List<String> fragmentSegments = new ArrayList<String>(fragmentName.getSegments());
+        List<String> fullSegments = new ArrayList<>(fullName.getSegments());
+        List<String> fragmentSegments = new ArrayList<>(fragmentName.getSegments());
         if (prefixRequired) {
             Collections.reverse(fullSegments);
             Collections.reverse(fragmentSegments);
         }
-        List<String> retvalSegments = new ArrayList<String>();
+        List<String> retvalSegments = new ArrayList<>();
         String lastEqualSegment = null;
         for (int i = 0; i < fullSegments.size(); i++) {
             String segment = fullSegments.get(i);
@@ -169,13 +169,16 @@ public final class QualifiedName {
     public static QualifiedName createUnqualifiedNameInClassContext(String name, ClassScope clsScope) {
         //TODO: everywhere should be used NameKindMatcher or something like this
         if (clsScope != null) {
-            if ("self".equals(name)) { //NOI18N
-                name = clsScope.getName();
-            } else if ("parent".equals(name)) { //NOI18N
-                String superClsName = ModelUtils.getFirst(clsScope.getSuperClassNames());
-                if (superClsName != null) {
-                  name = superClsName;
-                }
+            switch (name) {
+                case "self": //NOI18N
+                    name = clsScope.getName();
+                    break;
+                case "parent": //NOI18N
+                    String superClsName = ModelUtils.getFirst(clsScope.getSuperClassNames());
+                    if (superClsName != null) {
+                      name = superClsName;
+                    }
+                    break;
             }
         }
         return createUnqualifiedName(name);
@@ -190,7 +193,7 @@ public final class QualifiedName {
         return new QualifiedName(false, Collections.singletonList(name));
     }
     public static QualifiedName createFullyQualified(String name, String namespaceName) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         if (name.startsWith("\\") || name.endsWith("\\")) { //NOI18N
             throw new IllegalArgumentException();
         }
@@ -216,7 +219,7 @@ public final class QualifiedName {
         final String[] segments =  name.split("\\\\"); //NOI18N
         List<String> list;
         if (name.endsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR)) {
-            list = new ArrayList<String>(Arrays.asList(segments));
+            list = new ArrayList<>(Arrays.asList(segments));
             list.add(""); //NOI18N
         } else {
             list = Arrays.asList(segments);
@@ -225,18 +228,18 @@ public final class QualifiedName {
     }
     private QualifiedName(NamespaceName namespaceName) {
         this.kind = QualifiedNameKind.resolveKind(namespaceName);
-        segments = new LinkedList<String>();
+        segments = new LinkedList<>();
         for (Identifier identifier : namespaceName.getSegments()) {
             segments.add(identifier.getName());
         }
     }
     private QualifiedName(Identifier identifier) {
         this.kind = QualifiedNameKind.resolveKind(identifier);
-        segments = new LinkedList<String>(Collections.singleton(identifier.getName()));
+        segments = new LinkedList<>(Collections.singleton(identifier.getName()));
         assert kind.isUnqualified();
     }
     private QualifiedName(boolean isFullyQualified, List<String> segments) {
-        this.segments = new LinkedList<String>(segments.isEmpty() ? Collections.singleton(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME) : segments);
+        this.segments = new LinkedList<>(segments.isEmpty() ? Collections.singleton(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME) : segments);
         this.kind = isFullyQualified ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.resolveKind(this.segments);
     }
     public LinkedList<String> getSegments() {
@@ -280,7 +283,7 @@ public final class QualifiedName {
         return append(qualifiedName, getKind().isFullyQualified());
     }
     private  QualifiedName append(QualifiedName qualifiedName, boolean isFullyQualified) {
-        LinkedList<String> list = isDefaultNamespace() ? new LinkedList<String>() : new LinkedList<String>(getSegments());
+        LinkedList<String> list = isDefaultNamespace() ? new LinkedList<String>() : new LinkedList<>(getSegments());
         list.addAll(qualifiedName.getSegments());
         return new QualifiedName(isFullyQualified, list);
     }
@@ -304,7 +307,7 @@ public final class QualifiedName {
         return createUnqualifiedName(getSegments().getLast());
     }
     public QualifiedName toNamespaceName(boolean fullyQualified) {
-        LinkedList<String> list = new LinkedList<String>(getSegments());
+        LinkedList<String> list = new LinkedList<>(getSegments());
         list.removeLast();
         return new QualifiedName(fullyQualified, list);
     }

@@ -192,7 +192,7 @@ public class JFXJavaScriptCallbacksPanel extends javax.swing.JPanel {
     
     private Map<String,String/*|null*/> createResources() {
         PropertyEvaluator eval = props.getEvaluator();
-        String platformName = eval.getProperty("platform.active");
+        String platformName = eval.getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
         Map<String,List<String>/*|null*/> callbacks = JFXProjectUtils.getJSCallbacks(platformName);
         Map<String,String/*|null*/> jsCallbacks = props.getJSCallbacks();
         Map<String,String/*|null*/> result = new LinkedHashMap<String,String/*|null*/>();

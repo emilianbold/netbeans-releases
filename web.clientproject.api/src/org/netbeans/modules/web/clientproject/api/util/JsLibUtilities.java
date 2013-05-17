@@ -77,7 +77,7 @@ public final class JsLibUtilities {
      * <p>
      * This method must be run in a background thread and stops if the current thread is interrupted.
      * @param selectedLibraries JS libraries to be added
-     * @param jsLibFolder JS libraries folder
+     * @param jsLibFolder JS libraries folder, can be empty string
      * @param siteRootDir site root
      * @param handle progress handle, can be {@code null}
      * @return list of libraries that cannot be downloaded

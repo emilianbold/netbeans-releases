@@ -44,6 +44,7 @@ package org.netbeans.modules.remote.ui;
 import java.awt.Frame;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Callable;
 import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -59,7 +60,6 @@ import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.Cancellat
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.remote.api.ui.FileChooserBuilder.JFileChooserEx;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
-import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
@@ -326,12 +326,14 @@ public class AddToFavoritesAction extends SingleHostAction {
                             return;
                         }
 //Non UI Thread:
-                        final String curDir;
-                        String dir = RemoteFileUtil.getCurrentChooserFile(env);
-                        if (dir == null) {
-                            dir = getHomeDir(env);
-                        }
-                        curDir = dir;
+                        final String dir = RemoteFileUtil.getCurrentChooserFile(env);
+                        final Callable<String> homeDirCallable =  new Callable<String>() {
+                            @Override
+                            public String call() throws Exception {
+                                return dir == null ? getHomeDir(env) : dir;
+                            }
+                        };
+
                         Runnable openFavorites = new Runnable() {
                             @Override
                             public void run() {
@@ -344,7 +346,7 @@ public class AddToFavoritesAction extends SingleHostAction {
                                             env,
                                             title,
                                             btn,
-                                            JFileChooser.DIRECTORIES_ONLY, null, curDir, true);
+                                            JFileChooser.DIRECTORIES_ONLY, null, homeDirCallable, true);
                                     int ret = fileChooser.showOpenDialog(mainWindow);
                                     if (ret == JFileChooser.CANCEL_OPTION) {
                                         rootFO = null;
@@ -385,18 +387,23 @@ public class AddToFavoritesAction extends SingleHostAction {
         }
     }
 
-    static FileObject getRemoteFileObject(ExecutionEnvironment env, String title, String btn, Frame mainWindow) {
+    static FileObject getRemoteFileObject(final ExecutionEnvironment env, String title, String btn, Frame mainWindow) {
         //Non UI Thread:
-        String curDir = RemoteFileUtil.getCurrentChooserFile(env);
-        if (curDir == null) {
-            curDir = getHomeDir(env);
-        }
+        final String curDir = RemoteFileUtil.getCurrentChooserFile(env);
+        final Callable<String> homeDirCallable = new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return curDir == null ? getHomeDir(env) : curDir;
+            }
+        };      
+
+        
         //UI thread:
         JFileChooser fileChooser = RemoteFileUtil.createFileChooser(
                 env,
                 title,
                 btn,
-                JFileChooser.DIRECTORIES_ONLY, null, curDir, true);
+                JFileChooser.DIRECTORIES_ONLY, null, homeDirCallable, true);
         int ret = fileChooser.showOpenDialog(mainWindow);
         if (ret == JFileChooser.CANCEL_OPTION) {
             return null;

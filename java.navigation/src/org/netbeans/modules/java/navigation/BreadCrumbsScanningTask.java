@@ -44,6 +44,7 @@ package org.netbeans.modules.java.navigation;
 import com.sun.source.util.TreePath;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -53,6 +54,7 @@ import org.netbeans.api.java.source.JavaParserResultTask;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsController;
+import org.netbeans.modules.editor.breadcrumbs.spi.BreadcrumbsElement;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.CursorMovedSchedulerEvent;
 import org.netbeans.modules.parsing.spi.Parser.Result;
@@ -100,25 +102,25 @@ public final class BreadCrumbsScanningTask extends JavaParserResultTask {
             return;
         }
 
-        Node[] rootAndSelection = rootAndSelection(info, caretPosition, cancel);
+        BreadcrumbsElement[] rootAndSelection = rootAndSelection(info, caretPosition, cancel);
         
         if (cancel.get() || rootAndSelection == null) {
             return ;
         }
 
-        BreadcrumbsController.setBreadcrumbs(doc, rootAndSelection[0], rootAndSelection[1]);
+        BreadcrumbsController.setBreadcrumbs(doc, rootAndSelection[1]);
         
         info.putCachedValue(BreadCrumbsScanningTask.class, rootAndSelection[0], CacheClearPolicy.ON_CHANGE);
     }
 
-    static Node[] rootAndSelection(CompilationInfo info, int caretPosition, AtomicBoolean cancel) {
-        Node root;
-        Node lastNode;
+    static BreadcrumbsElement[] rootAndSelection(CompilationInfo info, int caretPosition, AtomicBoolean cancel) {
+        BreadcrumbsElement root;
+        BreadcrumbsElement lastNode;
 
-        root = (Node) info.getCachedValue(BreadCrumbsScanningTask.class);
+        root = (BreadCrumbsNodeImpl) info.getCachedValue(BreadCrumbsScanningTask.class);
         
         if (root == null) {
-            root = BreadCrumbsNodeImpl.createBreadcrumbs(info, new TreePath(info.getCompilationUnit()), false);
+            root = BreadCrumbsNodeImpl.createBreadcrumbs(null, info, new TreePath(info.getCompilationUnit()), false);
         }
         
         lastNode = root;
@@ -132,9 +134,9 @@ public final class BreadCrumbsScanningTask extends JavaParserResultTask {
 
             cont = false;
 
-            Node[] children = lastNode.getChildren().getNodes(true);
+            List<BreadcrumbsElement> children = lastNode.getChildren();
 
-            for (Node child : children) {
+            for (BreadcrumbsElement child : children) {
                 if (cancel.get()) {
                     return null;
                 }
@@ -149,7 +151,7 @@ public final class BreadCrumbsScanningTask extends JavaParserResultTask {
             }
         }
         
-        return new Node[] {root, lastNode};
+        return new BreadcrumbsElement[] {root, lastNode};
     }
     
     @Override
