@@ -72,7 +72,7 @@ public final class VCSFilesystemInterceptor {
     /**
      * A versioned files remote repository or origin.
      */
-    private static final String ATTRIBUTE_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";
+    private static final String ATTRIBUTE_REMOTE_LOCATION = VersioningManager.ATTRIBUTE_REMOTE_LOCATION;
 
     /**
      * A Runnable to refresh the file given in {@link #getAttribute()}.

@@ -256,16 +256,24 @@ public class Actions {
             action.setEnabled(false);
             actions.add(action);
         }
+        boolean enableSetCategory = true;
         boolean showRemoveTask = true;
         for (TaskNode taskNode : taskNodes) {
             if (!taskNode.isCategorized()) {
                 showRemoveTask = false;
             }
+            if (taskNode.getTask().isNew()) {
+                enableSetCategory = false;
+            }
         }
         if (showRemoveTask) {
             actions.add(new RemoveTaskAction(taskNodes));
         }
-        actions.add(new SetCategoryAction(taskNodes));
+        SetCategoryAction setCategoryAction = new SetCategoryAction(taskNodes);
+        actions.add(setCategoryAction);
+        if (!enableSetCategory) {
+            setCategoryAction.setEnabled(false);
+        }
         //actions.add(new ScheduleTaskAction(taskNodes));
         //actions.add(new NotificationTaskAction(taskNodes));
         return actions;

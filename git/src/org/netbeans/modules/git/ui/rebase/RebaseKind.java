@@ -207,7 +207,7 @@ abstract class RebaseKind {
 
         @Override
         public String getUpstream () {
-            return dest.getName();
+            return dest.getRevision();
         }
 
         @Override
@@ -217,7 +217,7 @@ abstract class RebaseKind {
 
         @Override
         public String getDest () {
-            return dest.getName();
+            return dest.getRevision();
         }
 
         @Override
@@ -239,7 +239,7 @@ abstract class RebaseKind {
                 dest = null;
                 panel.tfDestinationRevision.setText(Bundle.MSG_RebaseKind_Basic_unknownTrackedBranch());
             } else {
-                dest = new Revision(trackedBranch.getId(), trackedBranch.getName());
+                dest = new Revision.BranchReference(trackedBranch);
                 setRevision(panel.tfDestinationRevision, currentBranch.getTrackedBranch());
                 valid = !currentBranch.getId().equals(currentBranch.getTrackedBranch().getId());
             }
@@ -248,7 +248,7 @@ abstract class RebaseKind {
         
         private void updateLabels () {
             setRevision(panel.tfDestinationRevision, dest);
-            setValid(!currentBranch.getId().equals(dest.getRevision()));
+            setValid(!currentBranch.getId().equals(dest.getCommitId()));
         }
 
         private void attachListeners () {

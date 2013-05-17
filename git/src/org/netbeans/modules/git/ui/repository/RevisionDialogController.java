@@ -81,8 +81,9 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     private final Timer t;
     private boolean internally;
     private final File[] roots;
-    private String revision;
+    private String revisionString;
     private String mergingInto;
+    private Revision revisionInfo;
 
     public RevisionDialogController (File repository, File[] roots, String initialRevision) {
         this(repository, roots);
@@ -106,7 +107,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         this.support = new PropertyChangeSupport(this);
         this.t = new Timer(500, this);
         t.stop();
-        infoPanelController.loadInfo(revision = panel.revisionField.getText());
+        infoPanelController.loadInfo(revisionString = panel.revisionField.getText());
         attachListeners();
     }
     
@@ -119,8 +120,8 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         panel.revisionField.setEnabled(enabled);
     }
 
-    public String getRevision () {
-        return revision;
+    public Revision getRevision () {
+        return revisionInfo == null ? new Revision(revisionString, revisionString) : revisionInfo;
     }
     
     public void addPropertyChangeListener (PropertyChangeListener list) {
@@ -149,7 +150,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
             openRevisionPicker();
         } else if (e.getSource() == t) {
             t.stop();
-            infoPanelController.loadInfo(revision);
+            infoPanelController.loadInfo(revisionString);
         }
     }
 
@@ -167,13 +168,13 @@ public class RevisionDialogController implements ActionListener, DocumentListene
             Revision selectedRevision = picker.getRevision();
             internally = true;
             try {
-                panel.revisionField.setText(selectedRevision.toString());
+                panel.revisionField.setText(selectedRevision.getRevision());
                 panel.revisionField.setCaretPosition(0);
             } finally {
                 internally = false;
             }
-            if (!selectedRevision.getName().equals(revision)) {
-                revision = selectedRevision.getName();
+            if (!selectedRevision.getRevision().equals(revisionString)) {
+                revisionString = selectedRevision.getRevision();
                 updateRevision();
             }
         }
@@ -196,6 +197,11 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     private void setValid (boolean flag) {
         boolean oldValue = valid;
         valid = flag;
+        if (valid) {
+            revisionInfo = infoPanelController.getInfo();
+        } else {
+            revisionInfo = null;
+        }
         if (valid != oldValue) {
             support.firePropertyChange(PROP_VALID, oldValue, valid);
         }
@@ -203,7 +209,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
 
     private void revisionChanged () {
         if (!internally) {
-            revision = panel.revisionField.getText();
+            revisionString = panel.revisionField.getText();
             updateRevision();
         }
     }
@@ -236,15 +242,15 @@ public class RevisionDialogController implements ActionListener, DocumentListene
                 activeBranch = branch;
             }
             if (branch.isRemote()) {
-                remoteBranchList.add(new Revision(branch.getId(), branch.getName()));
+                remoteBranchList.add(new Revision.BranchReference(branch));
             } else if (branch.getName() != GitBranch.NO_BRANCH) {
-                branchList.add(new Revision(branch.getId(), branch.getName()));
+                branchList.add(new Revision.BranchReference(branch));
             }
         }
         Comparator<Revision> comp = new Comparator<Revision>() {
             @Override
             public int compare (Revision b1, Revision b2) {
-                return b1.getName().compareTo(b2.getName());
+                return b1.getRevision().compareTo(b2.getRevision());
             }
         };
         Collections.sort(branchList, comp);
@@ -259,7 +265,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
                 panel.cmbBranches.setRenderer(new DefaultListCellRenderer() {
                     @Override
                     public Component getListCellRendererComponent (JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                        return super.getListCellRendererComponent(list, value instanceof Revision ? ((Revision) value).getName() : value, index, isSelected, cellHasFocus);
+                        return super.getListCellRendererComponent(list, value instanceof Revision ? ((Revision) value).getRevision() : value, index, isSelected, cellHasFocus);
                     }
                 });
                 if (toSelect != null) {
@@ -272,7 +278,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
 
     private void selectedBranchChanged () {
         Object activeBranch = panel.cmbBranches.getSelectedItem();
-        revision = activeBranch instanceof Revision ? ((Revision) activeBranch).getName() : NbBundle.getMessage(RevisionDialogController.class, "MSG_RevisionDialog.selectBranch"); //NOI18N
+        revisionString = activeBranch instanceof Revision ? ((Revision) activeBranch).getRevision() : NbBundle.getMessage(RevisionDialogController.class, "MSG_RevisionDialog.selectBranch"); //NOI18N
         updateRevision();
     }
 }

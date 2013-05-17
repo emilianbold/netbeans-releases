@@ -42,12 +42,10 @@
 package org.netbeans.modules.team.ui.picker;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.Insets;
+import java.awt.LayoutManager;
 import java.awt.Rectangle;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
@@ -63,30 +61,30 @@ import javax.swing.Scrollable;
 class ServersContainer extends JPanel implements Scrollable {
 
     private static final int MAX_VISIBLE_COLUMNS = 3;
-    private final List<JComponent> columns;
+    private final JComponent[] servers;
+    private final JComponent[] separators;
 
     private ServersContainer( List<JComponent> columns ) {
-        super( new GridBagLayout() );
+        this.servers = columns.toArray( new JComponent[columns.size()] );
+        separators = new JComponent[Math.max(servers.length-1,0)];
+        for( int i=0; i<separators.length; i++ ) {
+            separators[i] = new JSeparator( JSeparator.VERTICAL );
+        }
+        setLayout( new SimpleyLayout() );
         setOpaque( false );
-        this.columns = new ArrayList<JComponent>( columns );
-
-        int index = 0;
-        for( int i=0; i<this.columns.size(); i++ ) {
-            JComponent col = this.columns.get( i );
-            add( col, new GridBagConstraints( index++, 0, 1, 1, 0.0, 1.0, GridBagConstraints.NORTHWEST, GridBagConstraints.VERTICAL, new Insets(5,5,5,5), 0,0 ) );
-            if( i < this.columns.size()-1 ) {
-                add( new JSeparator(JSeparator.VERTICAL), new GridBagConstraints( index++, 0, 1, 1, 0.0, 1.0, GridBagConstraints.NORTHWEST, GridBagConstraints.VERTICAL, new Insets(0,0,0,0), 0,0 ) );
-            }
+        
+        for( JComponent c : servers ) {
+            add( c );
+        }
+        
+        for( JComponent c : separators ) {
+            add( c );
         }
     }
 
     static JComponent create( List<JComponent> serverComponents ) {
         ServersContainer container = new ServersContainer( serverComponents );
 
-        if( serverComponents.size() <= MAX_VISIBLE_COLUMNS ) {
-            container.setBorder( BorderFactory.createEmptyBorder( 10, 10, 10, 10) );
-            return container;
-        }
         ScrollingContainer res = new ScrollingContainer( container, true );
         res.setBorder( BorderFactory.createEmptyBorder( 10, 10, 10, 10));
         return res;
@@ -95,23 +93,31 @@ class ServersContainer extends JPanel implements Scrollable {
     @Override
     public Dimension getPreferredScrollableViewportSize() {
         Dimension res = super.getPreferredSize();
-            int count = 0;
-            res.width = 0;
-            for( Component c : getComponents() ) {
-                if( c == null )
-                    continue;
-                res.width += c.getPreferredSize().width;
-                count++;
-                if( count == 2*MAX_VISIBLE_COLUMNS-1 )
-                    break;
+        if( servers.length <= MAX_VISIBLE_COLUMNS )
+            return res;
+        res.width = 0;
+        for( int i=0; i<servers.length && i<MAX_VISIBLE_COLUMNS; i++ ) {
+            JComponent c = servers[i];
+            Dimension size = c.getPreferredSize();
+            res.width += HORIZONTAL_INSET;
+            res.width += Math.min( size.width, MAX_COLUMN_WIDTH );
+
+            if( i < separators.length && i < MAX_VISIBLE_COLUMNS-1 ) {
+                c = separators[i];
+                size = c.getPreferredSize();
+                res.width += size.width;
             }
-            res.width += MAX_VISIBLE_COLUMNS * 5 + 5;
+        }
+        res.width += 2*HORIZONTAL_INSET;
         return res;
     }
 
     @Override
     public int getScrollableUnitIncrement( Rectangle visibleRect, int orientation, int direction ) {
-        return 10; //TODO calculate the increment from a single server panel size
+        int res = MAX_COLUMN_WIDTH;
+        if( separators.length > 0 )
+            res += separators[0].getSize().width + 3*HORIZONTAL_INSET; 
+        return res;
     }
 
     @Override
@@ -127,5 +133,72 @@ class ServersContainer extends JPanel implements Scrollable {
     @Override
     public boolean getScrollableTracksViewportHeight() {
         return true;
+    }
+    
+    private final static int HORIZONTAL_INSET = 10;
+    private final static int VERTICAL_INSET = 5;
+    private static final int MAX_COLUMN_WIDTH = 300;
+ 
+    private class SimpleyLayout implements LayoutManager {
+
+        @Override
+        public void addLayoutComponent( String name, Component comp ) {
+        }
+
+        @Override
+        public void removeLayoutComponent( Component comp ) {
+        }
+
+        @Override
+        public Dimension preferredLayoutSize( Container parent ) {
+            int width = 0;
+            int height = 0;
+            
+            for( int i=0; i<servers.length; i++ ) {
+                JComponent c = servers[i];
+                Dimension size = c.getPreferredSize();
+                width += HORIZONTAL_INSET;
+                width += Math.min( size.width, MAX_COLUMN_WIDTH );
+                height = Math.max( height, size.height );
+                
+                if( i < separators.length ) {
+                    c = separators[i];
+                    size = c.getPreferredSize();
+                    width += size.width;
+                    width += HORIZONTAL_INSET;
+                }
+            }
+            width += HORIZONTAL_INSET;
+            height += 2*VERTICAL_INSET;
+            return new Dimension(width, height);
+        }
+
+        @Override
+        public Dimension minimumLayoutSize( Container parent ) {
+            return preferredLayoutSize( parent );
+        }
+
+        @Override
+        public void layoutContainer( Container parent ) {
+            int x = 0;
+            int y = VERTICAL_INSET;
+            int height = parent.getHeight();
+            for( int i=0; i<servers.length; i++ ) {
+                x += HORIZONTAL_INSET;
+                JComponent server = servers[i];
+                Dimension size = server.getPreferredSize();
+                int width = Math.min( MAX_COLUMN_WIDTH, size.width );
+                server.setBounds( x, y, width, height - 2*VERTICAL_INSET );
+                
+                x += width;
+                
+                if( i < separators.length ) {
+                    x += HORIZONTAL_INSET;
+                    JComponent separator = separators[i];
+                    separator.setBounds( x, y, separator.getPreferredSize().width, height-2*VERTICAL_INSET );
+                }
+            }
+        }
+        
     }
 }

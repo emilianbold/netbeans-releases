@@ -687,7 +687,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             if (newSelection != null) {
                 revisionLeft = newSelection;
             }
-            boolean refresh = !oldSelection.getRevision().equals(revisionLeft.getRevision());
+            boolean refresh = !oldSelection.getCommitId().equals(revisionLeft.getCommitId());
             if (refresh) {
                 refreshNodes();
             }
@@ -697,7 +697,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             if (newSelection != null) {
                 revisionRight = newSelection;
             }
-            boolean refresh = !oldSelection.getRevision().equals(revisionRight.getRevision());
+            boolean refresh = !oldSelection.getCommitId().equals(revisionRight.getCommitId());
             if (refresh) {
                 refreshNodes();
             }
@@ -795,7 +795,8 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             RevisionPicker picker = new RevisionPicker(GitUtils.getRootFile(context), new File[0]);
             if (picker.open()) {
                 Revision selectedRevision = picker.getRevision();
-                selectedRevision = new Revision(selectedRevision.getName(), selectedRevision.getName());
+                selectedRevision = new Revision(selectedRevision.getRevision(), selectedRevision.getRevision(),
+                        selectedRevision.getShortMessage());
                 addToModel(selectedRevision, cmbDiffTree);
             }
         }
@@ -806,7 +807,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         DefaultComboBoxModel model = (DefaultComboBoxModel) cmbDiffTree.getModel();
         for (int i = 0; i < model.getSize(); ++i) {
             final Object item = model.getElementAt(i);
-            if (item instanceof Revision && ((Revision) item).getRevision().equals(newItem.getRevision())) {
+            if (item instanceof Revision && ((Revision) item).getCommitId().equals(newItem.getCommitId())) {
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run () {
@@ -997,12 +998,12 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                         case HEAD_VS_WORKING_TREE:
                             noContentLabel = revisionLeft == Revision.BASE
                                     ? Bundle.MSG_No_Changes_HeadWorking()
-                                    : Bundle.MSG_No_Changes_RevisionWorking(revisionLeft.getName());
+                                    : Bundle.MSG_No_Changes_RevisionWorking(revisionLeft.getRevision());
                             break;
                         case HEAD_VS_INDEX:
                             noContentLabel = revisionLeft == Revision.BASE
                                     ? Bundle.MSG_No_Changes_HeadIndex()
-                                    : Bundle.MSG_No_Changes_RevisionIndex(revisionLeft.getName());
+                                    : Bundle.MSG_No_Changes_RevisionIndex(revisionLeft.getRevision());
                             break;
                         case INDEX_VS_WORKING_TREE:
                             noContentLabel = Bundle.MSG_No_Changes_IndexWorking();
@@ -1091,7 +1092,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             try {
                 client = git.getClient(repository);
                 Map<File, GitStatus> statuses = client.getStatus(context.getRootFiles().toArray(new File[context.getRootFiles().size()]),
-                        revisionLeft.getRevision(), GitUtils.NULL_PROGRESS_MONITOR);
+                        revisionLeft.getCommitId(), GitUtils.NULL_PROGRESS_MONITOR);
                 statuses.keySet().retainAll(Utils.flattenFiles(context.getRootFiles().toArray(
                         new File[context.getRootFiles().size()]), statuses.keySet()));
                 final Map<File, Setup> localSetups = new HashMap<File, Setup>(statuses.size());
@@ -1135,7 +1136,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             try {
                 client = git.getClient(repository);
                 Map<File, GitRevisionInfo.GitFileInfo> statuses = client.getStatus(context.getRootFiles().toArray(new File[context.getRootFiles().size()]),
-                        revisionLeft.getRevision(), revisionRight.getRevision(), GitUtils.NULL_PROGRESS_MONITOR);
+                        revisionLeft.getCommitId(), revisionRight.getCommitId(), GitUtils.NULL_PROGRESS_MONITOR);
                 final Map<File, Setup> historySetups = new HashMap<File, Setup>();
                 for (Map.Entry<File, GitRevisionInfo.GitFileInfo> e : statuses.entrySet()) {
                     File f = e.getKey();
@@ -1277,7 +1278,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             for (Map.Entry<String, GitBranch> e : info.getBranches().entrySet()) {
                 String branchName = e.getValue().getName();
                 if (branchName != GitBranch.NO_BRANCH) {
-                    Revision revision = new Revision(branchName, branchName);
+                    Revision revision = new Revision.BranchReference(e.getValue());
                     modelLeft.add(revision);
                     modelRight.add(revision);
                     added = true;
