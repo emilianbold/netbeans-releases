@@ -121,7 +121,8 @@ is the proper place.
                     e.g. if a particular file is managed by a Versioning System.
                 </p>
             </description>
-            <class package="org.netbeans.spi.queries" name="VersioningQuery"/>
+            <class package="org.netbeans.spi.queries" name="VersioningQueryImplementation"/>
+            <class package="org.netbeans.api.queries" name="VersioningQuery"/>
             <issue number="229281"/>
         </change>        
         <change id="VQChangeEvent">

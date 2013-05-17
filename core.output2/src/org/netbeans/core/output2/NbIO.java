@@ -57,7 +57,6 @@ import org.netbeans.core.output2.options.OutputOptions;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
-import org.openide.windows.FoldHandle;
 import org.openide.windows.IOColorLines;
 import org.openide.windows.IOColorPrint;
 import org.openide.windows.IOColors;
@@ -581,7 +580,7 @@ class NbIO implements InputOutput, Lookup.Provider {
                 this.parent = parent;
                 this.start = start;
                 setCurrentFoldStart(start);
-                setExpanded(expanded);
+                setExpanded(expanded, false);
             }
 
             @Override
@@ -626,13 +625,43 @@ class NbIO implements InputOutput, Lookup.Provider {
 
             @Override
             public final void setExpanded(boolean expanded) {
+                setExpanded(expanded, true);
+            }
+
+            /**
+             * Expand or collapse a fold.
+             *
+             * @param expanded True to expand the fold, false to collapse it.
+             * @param expandParents If true, parent folds will be expanded if
+             * needed.
+             */
+            private void setExpanded(boolean expanded,
+                    boolean expandParents) {
                 synchronized (out()) {
                     if (expanded) {
-                        getLines().showFold(start);
+                        if (expandParents) {
+                            showFoldAndParentFolds(start);
+                        } else {
+                            getLines().showFold(start);
+                        }
                     } else {
                         getLines().hideFold(start);
                     }
                 }
+            }
+
+            /**
+             * Show all parent folds of the fold starting at line {@code start}.
+             */
+            private void showFoldAndParentFolds(int start) {
+                int foldOffset = getLines().getFoldOffsets().get(start);
+                if (foldOffset > 0) {
+                    int parentFoldStart = start - foldOffset;
+                    if (parentFoldStart >= 0) {
+                        showFoldAndParentFolds(parentFoldStart);
+                    }
+                }
+                getLines().showFold(start);
             }
 
             private void setCurrentFoldStart(int foldStartIndex) {

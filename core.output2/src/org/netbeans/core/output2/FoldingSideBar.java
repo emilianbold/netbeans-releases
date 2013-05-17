@@ -216,6 +216,9 @@ public class FoldingSideBar extends JComponent {
         if (lines.getFoldOffsets().get(line) > 0) {
             int visibleLine = lines.realToVisibleLine(line);
             int nextVisibleRealIndex = lines.visibleToRealLine(visibleLine + 1);
+            if (nextVisibleRealIndex >= lines.getFoldOffsets().size()) {
+                return true;
+            }
             return lines.getFoldOffsets().get(nextVisibleRealIndex) > 0;
         } else {
             return false;

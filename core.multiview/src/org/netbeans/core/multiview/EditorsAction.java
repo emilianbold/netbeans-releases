@@ -56,6 +56,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
+import org.netbeans.core.spi.multiview.MultiViewDescription;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.awt.Mnemonics;
@@ -142,7 +143,12 @@ implements Presenter.Menu, Presenter.Popup {
                         if (thisPers.getDisplayName().equals(handler.getSelectedPerspective().getDisplayName())) {
                             item.setSelected(true);
                         }
-			if (!((ContextAwareDescription) Accessor.DEFAULT.extractDescription(thisPers)).isSplitDescription()) {
+			boolean isSplitDescription = false;
+			MultiViewDescription desc = Accessor.DEFAULT.extractDescription(thisPers);
+			if (desc instanceof ContextAwareDescription) {
+			    isSplitDescription = ((ContextAwareDescription) desc).isSplitDescription();
+			}
+			if (!isSplitDescription) {
 			    group.add(item);
 			    add(item);
 			}

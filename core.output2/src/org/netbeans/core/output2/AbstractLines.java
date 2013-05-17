@@ -1294,6 +1294,9 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 return;
             }
             visibleList.set(foldStartIndex, expanded ? 1 : 0);
+            if (!isVisible(foldStartIndex)) {
+                return; // No need to recompute any mapping.
+            }
             int len = foldLength(foldStartIndex);
             if (len > 0) {
                 int changed = updateRealToVisibleIndexesInFold(foldStartIndex,
