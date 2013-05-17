@@ -570,6 +570,14 @@ public class ConfigurationMakefileWriter {
                     conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX || 
                     conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS)) {
                 qmakeSpec = CppUtils.getQmakeSpec(compilerSet, conf.getDevelopmentHost().getBuildPlatform());
+                if (qmakeSpec == null) {
+                    if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_MACOSX) {
+                        qmakeSpec = "macx-g++";  // NOI18N
+                    }
+                    if (conf.getDevelopmentHost().getBuildPlatform() == PlatformTypes.PLATFORM_WINDOWS) {
+                        qmakeSpec = "win32-g++";  // NOI18N
+                    }
+                }
             }
             
             // On Solaris with OSS toolchain installed and added to PATH we still should pass -spec to qmake
