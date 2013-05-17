@@ -47,17 +47,21 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.search.SearchScopeOptions;
+import org.netbeans.api.search.provider.SearchListener;
 import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
@@ -71,6 +75,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.spi.search.SearchInfoDefinition;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -144,7 +149,6 @@ class RemoteSyncActions {
             workingThread = Thread.currentThread();
             String title = getProgressTitle();
             tab.getOut().println(title);
-            long time = System.currentTimeMillis();
             int errCnt = 0;
             int okCnt = 0;
             ProgressHandle progressHandle = ProgressHandleFactory.createHandle(title, this);
@@ -153,14 +157,14 @@ class RemoteSyncActions {
                 if (!ConnectionManager.getInstance().isConnectedTo(execEnv)) {
                     ConnectionManager.getInstance().connectTo(execEnv);
                 }                
-                Map<Project, Collection<File>> filesMap = gatherFiles(nodes);
+                Map<Project, Set<File>> filesMap = gatherFiles(nodes);
                 int cnt = 0;
                 int total = 0;
-                for (Collection<File> files : filesMap.values()) {
+                for (Set<File> files : filesMap.values()) {
                     total += files.size();
                 }
                 progressHandle.switchToDeterminate(total);
-                for (Map.Entry<Project, Collection<File>> entry : filesMap.entrySet()) {
+                for (Map.Entry<Project, Set<File>> entry : filesMap.entrySet()) {
                     RemoteSyncSupport.Worker worker = createWorker(entry.getKey(), execEnv);
                     try {
                         for (File file : entry.getValue()) {
@@ -199,7 +203,6 @@ class RemoteSyncActions {
                 progressHandle.finish();
             }
             workingThread = null;
-            time = System.currentTimeMillis() - time;
             if (errCnt == 0) {
                 tab.getOut().println(NbBundle.getMessage(RemoteSyncActions.class, "SUMMARY_SUCCESS", okCnt));
             } else if (cancelled) {
@@ -477,13 +480,13 @@ class RemoteSyncActions {
         worker.work();
     }
 
-    private static Map<Project, Collection<File>> gatherFiles(Node[] nodes) {
-        Map<Project, Collection<File>> result = new HashMap<Project, Collection<File>>();
+    private static Map<Project, Set<File>> gatherFiles(Node[] nodes) {
+        Map<Project, Set<File>> result = new HashMap<Project, Set<File>>();
         for (Node node : nodes) {
             Project project = getNodeProject(node);
-            Collection<File> files = result.get(project);
+            Set<File> files = result.get(project);
             if (files == null) {
-                files = new ArrayList<File>();
+                files = new HashSet<File>();
                 result.put(project, files);
             }
             gatherFiles(files, node);
@@ -491,7 +494,7 @@ class RemoteSyncActions {
         return result;
     }
 
-    private static void gatherFiles(Collection<File> files, Node node) {
+    private static void gatherFiles(Set<File> files, Node node) {
         DataObject dataObject = node.getLookup().lookup(DataObject.class);
         if (dataObject != null) {
             FileObject fo = dataObject.getPrimaryFile();
@@ -499,16 +502,29 @@ class RemoteSyncActions {
                 File file = FileUtil.toFile(fo); // XXX:fullRemote
                 if (file != null && !file.isDirectory()) {
                     files.add(file);
+                    return;
                 }
             }
         }
         Folder folder = node.getLookup().lookup(Folder.class);
         if (folder != null) {
             gatherFiles(files, folder);
+            return;
+        }
+        SearchInfoDefinition searchInfo = node.getLookup().lookup(SearchInfoDefinition.class);
+        if (searchInfo != null && searchInfo.canSearch()) {
+            Iterator<FileObject> filesToSearch = searchInfo.filesToSearch(SearchScopeOptions.create(), new SearchListener() {}, new AtomicBoolean());
+            while (filesToSearch.hasNext()) {
+                FileObject fo = filesToSearch.next();
+                File file = FileUtil.toFile(fo);
+                if (file != null && !file.isDirectory()) {
+                    files.add(file);
+                }
+            }
         }
     }
 
-    private static void gatherFiles(Collection<File> files, Folder folder) {
+    private static void gatherFiles(Set<File> files, Folder folder) {
         for (Item item : folder.getItemsAsArray()) {
             FileObject fo = item.getFileObject();            
             File file = FileUtil.toFile(fo);
