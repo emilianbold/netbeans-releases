@@ -108,7 +108,7 @@ public class MakeTemplateListener implements OperationListener {
     @Override
     public void operationCreateFromTemplate(OperationEvent.Copy copy) {
         Folder folder = Utilities.actionsGlobalContext().lookup(Folder.class);
-        Project project = Utilities.actionsGlobalContext().lookup(Project.class);
+        Project project = folder.getProject();
 
         DataObject originalDataObject = copy.getOriginalDataObject();
         if(originalDataObject != null) {

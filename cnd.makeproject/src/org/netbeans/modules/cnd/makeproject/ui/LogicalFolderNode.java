@@ -128,7 +128,8 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
     private static Lookup createLFNLookup(Node folderNode, Folder folder, MakeLogicalViewProvider provider) {
         List<Object> elems = new ArrayList<Object>(3);
         elems.add(folder);
-        elems.add(provider.getProject());
+        //No need to have project here, see bug 229005
+        //elems.add(provider.getProject());
         elems.add(new FolderSearchInfo(folder));
         if (folder.isDiskFolder()) {
             MakeConfigurationDescriptor conf = folder.getConfigurationDescriptor();
