@@ -159,20 +159,19 @@ public class VariablesTableModel implements TableModel, Constants {
         if ( LOCALS_VALUE_COLUMN_ID.equals (columnID) ||
              WATCH_VALUE_COLUMN_ID.equals (columnID)
         ) {
-            if (VariablesViewButtons.isShowValuesAsString()) {
-                return getValueAt(row, LOCALS_TO_STRING_COLUMN_ID);
-            }
             if (row instanceof JPDAWatch) {
                 JPDAWatch w = (JPDAWatch) row;
                 String e = w.getExceptionDescription ();
                 if (e != null)
                     return BoldVariablesTableModelFilter.toHTML(">" + e + "<", false, false, Color.RED);
-                return getValueOf(w, row, columnID); // return  w.getValue ();
-            } else 
+            }
             if (row instanceof Variable) {
-                //return ((Variable) row).getValue ();
                 Variable var = (Variable) row;
-                return getValueOf(var, row, columnID);
+                if (VariablesViewButtons.isShowValuePropertyEditors()) {
+                    return getValueOf(var, row, columnID);
+                } else {
+                    return var.getValue();
+                }
             }
         }
         if (row instanceof JPDAClassType) {
