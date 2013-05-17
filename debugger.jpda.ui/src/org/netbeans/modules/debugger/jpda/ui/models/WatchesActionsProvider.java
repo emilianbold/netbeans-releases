@@ -196,7 +196,7 @@ public class WatchesActionsProvider implements NodeActionsProvider {
         w.setExpression (wp.getExpression ());
     }
 
-    private static void newWatch () {
+    public static void newWatch () {
         WatchPanel wp = new WatchPanel ("");
         JComponent panel = wp.getPanel ();
 
