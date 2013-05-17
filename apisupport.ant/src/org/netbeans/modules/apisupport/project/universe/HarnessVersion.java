@@ -70,7 +70,7 @@ public enum HarnessVersion {
     V70("1.23"),
     V71("1.27"),
     V72("1.30"),
-    V73("1.32");
+    V73("1.32"),
     V74("1.35");
 
     /** spec version of org-netbeans-modules-apisupport-harness.jar */
