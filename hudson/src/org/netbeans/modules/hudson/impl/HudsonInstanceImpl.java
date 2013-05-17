@@ -63,7 +63,6 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.ConnectionBuilder;
-import org.netbeans.modules.hudson.api.HudsonChangeAdapter;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonFolder;
 import org.netbeans.modules.hudson.api.HudsonInstance;
@@ -72,13 +71,12 @@ import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
 import org.netbeans.modules.hudson.api.HudsonVersion;
 import org.netbeans.modules.hudson.api.HudsonView;
+import org.netbeans.modules.hudson.api.ui.OpenableInBrowser;
 import org.netbeans.modules.hudson.constants.HudsonInstanceConstants;
 import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
 import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import org.netbeans.modules.hudson.spi.BuilderConnector;
 import org.netbeans.modules.hudson.spi.RemoteFileSystem;
-import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
-import org.netbeans.modules.hudson.ui.notification.ProblemNotificationController;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
@@ -113,7 +111,6 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     private Collection<HudsonView> views = new ArrayList<HudsonView>();
     private HudsonView primaryView;
     private final Collection<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
-    private ProblemNotificationController problemNotificationController;
     /**
      * Must be kept here, not in {@link HudsonJobImpl}, because that is transient
      * and this should persist across refreshes.
@@ -150,16 +147,6 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
                 if (evt.getPropertyName().equals(INSTANCE_SYNC)) {
                     synchronization.schedule(0);
                 }
-            }
-        });
-        
-        addHudsonChangeListener(new HudsonChangeAdapter() {
-            @Override
-            public void contentChanged() {
-                if (problemNotificationController == null) {
-                    problemNotificationController = new ProblemNotificationController(HudsonInstanceImpl.this);
-                }
-                problemNotificationController.updateNotifications();
             }
         });
     }
@@ -230,9 +217,6 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         // Fire changes
         fireStateChanges();
         fireContentChanges();
-        if (problemNotificationController != null) {
-            problemNotificationController.clearNotifications();
-        }
     }
     
     public BuilderConnector getBuilderConnector() {
@@ -332,6 +316,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
      * Will run asynchronously.
      * @param authentication to prompt for login if the anonymous user cannot even see the job list; set to true for explicit user gesture, false otherwise
      */
+    @Override
     public void synchronize(final boolean authentication) {
         if (terminated) {
             return;
@@ -592,5 +577,47 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
 
     public Persistence getPersistence() {
         return persistence;
+    }
+
+    @Override
+    public List<String> getPreferredJobs() {
+        String preferred = properties.get(INSTANCE_PREF_JOBS);
+        if (preferred == null) {
+            return null;
+        } else {
+            return HudsonInstanceProperties.split(preferred);
+        }
+    }
+
+    @Override
+    public void setPreferredJobs(List<String> preferredJobs) {
+        if (preferredJobs == null) {
+            properties.put(INSTANCE_PREF_JOBS, null);
+        } else {
+            properties.put(INSTANCE_PREF_JOBS,
+                    HudsonInstanceProperties.join(preferredJobs));
+        }
+    }
+
+    @Override
+    public int getSyncInterval() {
+        return Integer.parseInt(getProperties().get(
+                HudsonInstanceConstants.INSTANCE_SYNC));
+    }
+
+    @Override
+    public void setSyncInterval(int syncInterval) {
+        getProperties().put(HudsonInstanceConstants.INSTANCE_SYNC,
+                Integer.toString(syncInterval));
+    }
+
+    @Override
+    public void addPropertyChangeListener(PropertyChangeListener listener) {
+        getProperties().addPropertyChangeListener(listener);
+    }
+
+    @Override
+    public void removePropertyChangeListener(PropertyChangeListener listener) {
+        getProperties().removePropertyChangeListener(listener);
     }
 }

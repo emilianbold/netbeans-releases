@@ -44,25 +44,20 @@
 
 package org.netbeans.modules.hudson.impl;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
-import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.hudson.api.HudsonChangeListener;
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
-import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
+import org.netbeans.modules.hudson.spi.HudsonManagerAgent;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
@@ -80,22 +75,10 @@ public class HudsonManagerImpl {
     
     private Map<String, HudsonInstanceImpl> instances;
     private final List<HudsonChangeListener> listeners = new ArrayList<HudsonChangeListener>();
-    private PropertyChangeListener projectsListener;
-    private Map<Project, HudsonInstanceImpl> projectInstances = new HashMap<Project, HudsonInstanceImpl>();
-    private final RequestProcessor.Task checkOpenProjects = RP.create(new Runnable() {
-        public @Override void run() {
-            checkOpenProjects();
-        }
-    });
+    private final Collection<? extends HudsonManagerAgent> agents;
     
     private HudsonManagerImpl() {
-        projectsListener = new PropertyChangeListener() {
-            public void propertyChange(PropertyChangeEvent evt) {
-                if (OpenProjects.PROPERTY_OPEN_PROJECTS.equals(evt.getPropertyName())) {
-                    checkOpenProjects.schedule(0);
-                }
-            }
-        };
+        this.agents = Lookup.getDefault().lookupAll(HudsonManagerAgent.class);
     }
     
     /**
@@ -116,7 +99,9 @@ public class HudsonManagerImpl {
         
         if (null != getInstancesMap().put(instance.getUrl(), instance))
             return null;
-        
+        for (HudsonManagerAgent agent: agents) {
+            agent.instanceAdded(instance);
+        }
         fireChangeListeners();
         return instance;
     }
@@ -131,6 +116,9 @@ public class HudsonManagerImpl {
         // Stop autosynchronization if it's running
         instance.terminate();
         
+        for (HudsonManagerAgent agent : agents) {
+            agent.instanceRemoved(instance);
+        }
         // Fire changes into all listeners
         fireChangeListeners();
         
@@ -183,8 +171,9 @@ public class HudsonManagerImpl {
     public void terminate() {
         // Clear default instance
         defaultInstance = null;
-        OpenProjects.getDefault().removePropertyChangeListener(projectsListener);
-        projectInstances.clear();
+        for (HudsonManagerAgent agent: agents) {
+            agent.terminate();
+        }
         // Terminate instances
         for (HudsonInstance instance : getInstances())
             ((HudsonInstanceImpl) instance).terminate();
@@ -221,6 +210,7 @@ public class HudsonManagerImpl {
 
     private void init() {
         RP.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     try {
@@ -242,69 +232,13 @@ public class HudsonManagerImpl {
                         Exceptions.printStackTrace(ex);
                     }
                 } finally {
-                    checkOpenProjects();
-                    OpenProjects.getDefault().addPropertyChangeListener(projectsListener);
                     // Fire changes
                     fireChangeListeners();
                 }
             }
         });
-    }
-
-
-    private void checkOpenProjects() {
-        try {
-            Future<Project[]> fut = OpenProjects.getDefault().openProjects();
-            Project[] prjs = fut.get();
-            for (Project project : prjs) {
-                boolean exists = false;
-                if (projectInstances.containsKey(project)) {
-                    exists = true;
-                }
-                ProjectHudsonProvider.Association assoc = ProjectHudsonProvider.getDefault().findAssociation(project);
-                if (assoc != null && !exists) {
-                    String url = assoc.getServerUrl();
-                    HudsonInstanceImpl in = getInstance(url);
-                    if (in != null && in.getProperties() instanceof ProjectHIP) {
-                        ProjectHIP props = (ProjectHIP) in.getProperties();
-                        props.addProvider(project);
-                        projectInstances.put(project,in);
-                    } else if (in == null) {
-                        ProjectHIP props = new ProjectHIP();
-                        props.addProvider(project);
-                        addInstance(HudsonInstanceImpl.createHudsonInstance(props, false));
-                        HudsonInstanceImpl impl = getInstance(props.get(INSTANCE_URL));
-                        projectInstances.put(project, impl);
-                    }
-                } else if (assoc == null && exists) {
-                    HudsonInstanceImpl remove = projectInstances.remove(project);
-                    if (remove != null && remove.getProperties() instanceof ProjectHIP) {
-                        ProjectHIP props = (ProjectHIP)remove.getProperties();
-                        props.removeProvider(project);
-                        if (props.getProviders().isEmpty()) {
-                            removeInstance(remove);
-                        }
-                    }
-                }
-            }
-            ArrayList<Project> newprjs = new ArrayList<Project>(projectInstances.keySet());
-            newprjs.removeAll(Arrays.asList(prjs));
-            for (Project project : newprjs) {
-                HudsonInstanceImpl remove = projectInstances.remove(project);
-                if (remove != null && remove.getProperties() instanceof ProjectHIP
-                        && !remove.isPersisted()) {
-                    ProjectHIP props = (ProjectHIP)remove.getProperties();
-                    props.removeProvider(project);
-                    if (props.getProviders().isEmpty()) {
-                        removeInstance(remove);
-                    }
-                }
-            }
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (ExecutionException ex) {
-            Exceptions.printStackTrace(ex);
+        for (HudsonManagerAgent agent: agents) {
+            agent.start();
         }
     }
-
 }

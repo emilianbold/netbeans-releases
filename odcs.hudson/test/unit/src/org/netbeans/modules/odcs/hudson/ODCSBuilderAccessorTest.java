@@ -151,26 +151,6 @@ public class ODCSBuilderAccessorTest {
     }
 
     /**
-     * Check that mock instances work as expected.
-     */
-    @Test
-    public void testMocks() throws ODCSException, MalformedURLException,
-            MalformedURLException {
-
-        ODCSClient client = ODCSFactory.getInstance().createClient(
-                "http://test/", new PasswordAuthentication(
-                "mockUser", "password".toCharArray()));
-        assertNotNull(client);
-        Project project = client.getProjectById("mockProject");
-        assertEquals("Mock Test Project", project.getDescription());
-
-        ProjectHandle<ODCSProject> handle = TestUtils.createMockHandle(
-                "http://test/", "mockProject");
-        assertNotNull(handle);
-        assertEquals("Mock Project", handle.getDisplayName());
-    }
-
-    /**
      * Check that the job handle for mock job has correct name.
      */
     @Test
@@ -430,18 +410,18 @@ public class ODCSBuilderAccessorTest {
         }
 
         @Override
-        public ConsoleDisplayer getConsoleDisplayer() {
-            return null;
-        }
-
-        @Override
-        public FailureDisplayer getFailureDisplayer() {
-            return null;
-        }
-
-        @Override
         public Collection<? extends HudsonJobChangeItem> getJobBuildChanges(HudsonJobBuild build) {
             return Collections.emptyList();
+        }
+
+        @Override
+        public ConsoleDataProvider getConsoleDataProvider() {
+            return null;
+        }
+
+        @Override
+        public FailureDataProvider getFailureDataProvider() {
+            return null;
         }
     }
 
