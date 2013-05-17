@@ -72,8 +72,7 @@ public final class JFXDeploymentCategoryProvider implements ProjectCustomizer.Co
             final J2SEPropertyEvaluator j2sepe = project.getLookup().lookup(J2SEPropertyEvaluator.class);
             String fxEnabled = j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED);
             String fxPreloader = j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_PRELOADER);
-            deploymentEnabled = !JFXProjectProperties.isTrue(fxEnabled) ||
-                    (JFXProjectProperties.isTrue(fxEnabled) && !JFXProjectProperties.isTrue(fxPreloader)); 
+            deploymentEnabled = JFXProjectProperties.isTrue(fxEnabled) && !JFXProjectProperties.isTrue(fxPreloader); 
         }
         if(deploymentEnabled) {
             ProjectCustomizer.Category c = ProjectCustomizer.Category.create(CAT_DEPLOYMENT,
@@ -120,17 +119,7 @@ public final class JFXDeploymentCategoryProvider implements ProjectCustomizer.Co
 
     @Override
     public JComponent createComponent(Category category, Lookup context) {
-        boolean fxProjectEnabled = true;
-        final Project project = context.lookup(Project.class);
-        if (project != null) {
-            final J2SEPropertyEvaluator j2sepe = project.getLookup().lookup(J2SEPropertyEvaluator.class);
-            String fxEnabled = j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_ENABLED);
-            String fxPreloader = j2sepe.evaluator().getProperty(JFXProjectProperties.JAVAFX_PRELOADER);
-            fxProjectEnabled = JFXProjectProperties.isTrue(fxEnabled) && !JFXProjectProperties.isTrue(fxPreloader);
-        }
-        return fxProjectEnabled ?
-                new JFXDeploymentPanel(JFXProjectProperties.getInstance(context)) :
-                new JSEDeploymentPanel(JFXProjectProperties.getInstance(context));
+        return new JFXDeploymentPanel(JFXProjectProperties.getInstance(context));
     }
 
 }

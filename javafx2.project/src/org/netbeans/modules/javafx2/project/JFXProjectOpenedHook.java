@@ -40,6 +40,11 @@ package org.netbeans.modules.javafx2.project;
 import java.awt.Cursor;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
@@ -47,24 +52,21 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
-import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
-import org.openide.cookies.EditCookie;
-import org.openide.cookies.OpenCookie;
+import org.openide.awt.Notification;
+import org.openide.awt.NotificationDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
-import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
-import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
 
 /**
@@ -80,6 +82,7 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
     private final Project prj;
     private final J2SEPropertyEvaluator eval;
     private ConfigChangeListener chl = null;
+    private static final Map<String, List<Notification>> projectNotifications = new HashMap<String, List<Notification>>();
 
     public JFXProjectOpenedHook(final Lookup lkp) {
         Parameters.notNull("lkp", lkp); //NOI18N
@@ -91,7 +94,21 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
 
     @Override
     protected synchronized void projectOpened() {
-        if(isFXProject(eval)) {
+        if(!isFXProject(eval)) {
+            final JFXPlatformUpdater updater = prj.getLookup().lookup(JFXPlatformUpdater.class);            
+            // replace Default_JavaFX_Platform by default Java Platform (since NB7.4)
+            final Runnable runUpdateJFXPlatform = updater != null ? new Runnable() {
+                @Override
+                public void run() {
+                    updater.updateFXPlatform();
+                }
+            } : null;
+            if(runUpdateJFXPlatform != null) {
+                switchBusy();
+                runUpdateJFXPlatform.run();
+                switchDefault();
+            }
+        } else {
             JFXProjectGenerator.logUsage(JFXProjectGenerator.Action.OPEN);
 
             //hotfix for Bug 214819 - Completion list is corrupted after IDE upgrade 
@@ -105,46 +122,65 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
             chl = new ConfigChangeListener(prj);
             pcp.addPropertyChangeListener(chl);
 
+            final JFXPlatformUpdater updater = prj.getLookup().lookup(JFXPlatformUpdater.class);
+            
+            // replace Default_JavaFX_Platform by default Java Platform (since NB7.4)
+            final Runnable runUpdateJFXPlatform = updater != null ? new Runnable() {
+                @Override
+                public void run() {
+                    updater.updateFXPlatform();
+                }
+            } : null;
+            
             // and update FX build script file jfx-impl.xml if it is not in expected state
             // #204765
             // and create Default RunAs Configurations
             // #204760
-            final Runnable runUpdateJFXImpl = isEnabledJFXUpdate() ? new Runnable() {
-                @Override
-                public void run() {
-                    updateDefaultConfigs();
-                    FileObject readmeFO = updateJfxImpl();
-                    if(readmeFO != null && isEnabledJFXUpdateNotification()) {
-                        DataObject dobj;
-                        try {
-                            dobj = DataObject.find (readmeFO);
-                            EditCookie ec = dobj.getLookup().lookup(EditCookie.class);
-                            OpenCookie oc = dobj.getLookup().lookup(OpenCookie.class);
-                            if (ec != null) {
-                                ec.edit();
-                            } else if (oc != null) {
-                                oc.open();
-                            } else {
-                                LOGGER.log(Level.INFO, "No EditCookie nor OpenCookie for {0}", dobj);
-                            }
-                        } catch (DataObjectNotFoundException donf) {
-                            assert false : "DataObject must exist for " + readmeFO;
-                        }
-                    }
-                }
+            final Runnable runUpdateJFXImpl;
+            runUpdateJFXImpl = isEnabledJFXUpdate() ? new Runnable() {
+                 @Override
+                 public void run() {
+                     updateDefaultConfigs();
+                     FileObject readmeFO = updateJfxImpl();
+                     if(readmeFO != null && isEnabledJFXUpdateNotification()) {
+                         final String headerTemplate = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_README_FILE_CONTENT_HEADER"); //NOI18N
+                         final String header = MessageFormat.format(headerTemplate, new Object[] {ProjectUtils.getInformation(prj).getDisplayName()});
+                         final String content = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_NOTIFICATION_CONTENT"); //NOI18N
+                         Notification noteUpdate = NotificationDisplayer.getDefault().notify(
+                                 header, 
+                                 ImageUtilities.loadImageIcon("org/netbeans/modules/javafx2/project/ui/resources/jfx_project.png", true), //NOI18N
+                                 content, 
+                                 null, 
+                                 NotificationDisplayer.Priority.LOW, 
+                                 NotificationDisplayer.Category.INFO);
+                         addNotification(prj, noteUpdate);
+                     }
+                 }
             } : null;
 
-            if(runUpdateJFXImpl != null) {
+            if(runUpdateJFXPlatform != null || runUpdateJFXImpl != null) {
                 switchBusy();
-                final ProjectInformation info = ProjectUtils.getInformation(prj);
-                final String projName = info != null ? info.getName() : null;
-                final RequestProcessor RP = new RequestProcessor(JFXProjectOpenedHook.class.getName() + projName, 2);
-                final RequestProcessor.Task taskJfxImpl = RP.post(runUpdateJFXImpl);
-                if(taskJfxImpl != null) {
-                    taskJfxImpl.waitFinished();
+                if(runUpdateJFXPlatform != null) {
+                    runUpdateJFXPlatform.run();
+                }
+                if(runUpdateJFXImpl != null) {
+                    runUpdateJFXImpl.run();
                 }
                 switchDefault();
+           }
+
+        }
+    }
+    
+    public static void addNotification(@NonNull final Project project, @NonNull final Notification notification) {
+        synchronized(projectNotifications) {
+            final String path = project.getProjectDirectory().getPath();
+            List<Notification> notifications = projectNotifications.get(path);
+            if(notifications == null) {
+                notifications = new ArrayList<Notification>();
+                projectNotifications.put(path, notifications);
             }
+            notifications.add(notification);
         }
     }
 
@@ -159,11 +195,21 @@ public final class JFXProjectOpenedHook extends ProjectOpenedHook {
                 chl = null;
             }
         }
-    }
-
-
-    private boolean missingJFXPlatform() {
-        return !JavaFXPlatformUtils.isThereAnyJavaFXPlatform();
+        final String path = prj.getProjectDirectory().getPath();
+        List<Notification> notifications;
+        synchronized(projectNotifications) {
+            notifications = projectNotifications.get(path);
+            projectNotifications.remove(path);
+        }
+        if(notifications != null) {
+            for(Notification n : notifications) {
+                n.clear();
+            }
+        }
+        final JFXPlatformUpdater updater = prj.getLookup().lookup(JFXPlatformUpdater.class);
+        if(updater != null) {
+            updater.resetUpdated();
+        }
     }
 
     private boolean isEnabledJFXUpdate() {

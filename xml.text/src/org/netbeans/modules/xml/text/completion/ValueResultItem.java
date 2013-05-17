@@ -46,6 +46,7 @@ package org.netbeans.modules.xml.text.completion;
 import java.awt.Color;
 
 import java.beans.BeanInfo;
+import javax.swing.text.JTextComponent;
 import org.netbeans.modules.xml.api.model.*;
 import org.netbeans.spi.editor.completion.CompletionTask;
 
@@ -65,22 +66,31 @@ import org.netbeans.spi.editor.completion.CompletionTask;
  */
 class ValueResultItem extends XMLResultItem {
 
-    private final String replacementText;
+    private final String replText;
     
     private final GrammarResult res;
+    
+    private int curLen;
 
-    public ValueResultItem(int position, GrammarResult res) {
+    public ValueResultItem(int position, GrammarResult res, int curLen) {
         super(position, res.getDisplayName(), res.getDisplayName());
         this.res = res;
         foreground = Color.magenta;
         selectionForeground = Color.magenta.darker();
-        replacementText = res.getNodeValue();
+        replText = res.getNodeValue();
         icon = res.getIcon(BeanInfo.ICON_COLOR_16x16);
+        this.curLen = curLen;
+    }
+
+    @Override
+    int getDeleteLength(String currentText, String replaceToText, int len) {
+        int cutOff = super.getReplacementText(0).length() - replText.length();
+        return curLen - cutOff; 
     }
 
     @Override
     public String getReplacementText(int modifiers) {
-        return replacementText;
+        return replText;
     }
     
     @Override
