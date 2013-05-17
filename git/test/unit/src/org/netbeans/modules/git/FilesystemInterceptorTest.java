@@ -54,6 +54,7 @@ import java.util.Set;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.junit.MockServices;
 import org.netbeans.libs.git.jgit.Utils;
 import org.netbeans.modules.git.FileInformation.Status;
@@ -74,7 +75,6 @@ import org.openide.util.Utilities;
  */
 public class FilesystemInterceptorTest extends AbstractGitTestCase {
 
-    public static final String PROVIDED_EXTENSIONS_IS_VERSIONED = "ProvidedExtensions.VCSManaged";
     public static final String PROVIDED_EXTENSIONS_REMOTE_LOCATION = "ProvidedExtensions.RemoteLocation";
     private StatusRefreshLogHandler h;
 
@@ -258,40 +258,6 @@ public class FilesystemInterceptorTest extends AbstractGitTestCase {
         // TODO implement getRemoteRepositoryURL
 //        assertNotNull(str);
 //        assertEquals(repositoryLocation.getAbsolutePath().toString(), str);
-    }
-
-    public void testGetIsVersionedAttribute () throws Exception {
-        // unversioned file
-        File file = new File(getWorkDir(), "unversionedfile");
-        file.createNewFile();
-        FileObject fo = FileUtil.toFileObject(file);
-
-        Boolean versioned = (Boolean) fo.getAttribute(PROVIDED_EXTENSIONS_IS_VERSIONED);
-        assertFalse(versioned);
-
-        commit();
-
-        // metadata folder
-        file = new File(repositoryLocation, ".git");
-        fo = FileUtil.toFileObject(file);
-
-        versioned = (Boolean) fo.getAttribute(PROVIDED_EXTENSIONS_IS_VERSIONED);
-        assertTrue(versioned);
-
-        // metadata file
-        file = new File(new File(repositoryLocation, ".git"), "index");
-        fo = FileUtil.toFileObject(file);
-
-        versioned = (Boolean) fo.getAttribute(PROVIDED_EXTENSIONS_IS_VERSIONED);
-        assertTrue(versioned);
-
-        // versioned file
-        file = new File(repositoryLocation, "attrfile");
-        file.createNewFile();
-        fo = FileUtil.toFileObject(file);
-
-        versioned = (Boolean) fo.getAttribute(PROVIDED_EXTENSIONS_IS_VERSIONED);
-        assertTrue(versioned);
     }
 
     public void testModifyVersionedFile () throws Exception {

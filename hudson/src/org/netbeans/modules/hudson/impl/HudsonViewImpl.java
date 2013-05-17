@@ -46,7 +46,7 @@ package org.netbeans.modules.hudson.impl;
 
 import org.netbeans.modules.hudson.api.HudsonInstance;
 import org.netbeans.modules.hudson.api.HudsonView;
-import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
+import org.netbeans.modules.hudson.api.ui.OpenableInBrowser;
 import static org.netbeans.modules.hudson.constants.HudsonViewConstants.*;
 import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
 

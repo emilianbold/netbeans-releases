@@ -49,7 +49,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileSystem;
-import org.openide.nodes.AbstractNode;
 
 /**
  * Instance of the Hudson Job in specified instance
