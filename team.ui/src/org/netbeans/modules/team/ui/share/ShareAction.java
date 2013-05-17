@@ -57,6 +57,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.team.ui.TeamServerManager;
 import org.netbeans.modules.team.ui.Utilities;
 import org.netbeans.modules.team.ui.spi.TeamServer;
@@ -167,7 +168,7 @@ public final class ShareAction extends AbstractAction implements ContextAwareAct
                     Utilities.getRequestProcessor().post(new Runnable() {
                         @Override
                         public void run() {
-                            if (Boolean.TRUE.equals(prj.getProjectDirectory().getAttribute("ProvidedExtensions.VCSManaged"))) { //NOI18N
+                            if (VersioningQuery.isManaged(prj.getProjectDirectory().toURI())) { 
                                 versionedProjects.put(prj, Boolean.TRUE);
                                 SwingUtilities.invokeLater(new Runnable() {
                                     @Override
