@@ -41,25 +41,15 @@
  */
 package org.netbeans.modules.html.knockout;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.EnumMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
-import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
 import org.netbeans.modules.html.knockout.model.Binding;
-import org.openide.util.NbBundle;
-import org.netbeans.modules.html.editor.lib.api.HtmlSource;
-import org.netbeans.modules.html.editor.lib.api.elements.Element;
-import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
-import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**
  *
@@ -79,10 +69,19 @@ public class KOBindingCompletionItem extends HtmlCompletionItem {
         super(binding.getName(), substituteOffset);
         this.binding = binding;
     }
+    
+    @Override
+        protected String getLeftHtmlText() {
+            return new StringBuilder()
+                    .append("<font color=#628FB5>")
+                    .append(getItemText())
+                    .append("</font>").toString();  //NOI18N
+        }
+
 
     @Override
     protected String getSubstituteText() {
-        return new StringBuilder().append(binding.getName()).append(": ").toString();
+        return new StringBuilder().append(binding.getName()).append(": ").toString(); //NOI18N
     }
     
     @Override
