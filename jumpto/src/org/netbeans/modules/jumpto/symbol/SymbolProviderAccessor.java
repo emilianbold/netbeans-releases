@@ -43,6 +43,7 @@
 package org.netbeans.modules.jumpto.symbol;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
@@ -68,7 +69,11 @@ public abstract class SymbolProviderAccessor {
 
     public abstract SymbolProvider.Context createContext(Project p, String text, SearchType t);
 
-    public abstract SymbolProvider.Result createResult(List<? super SymbolDescriptor> result, String[] message);
+    @NonNull
+    public abstract SymbolProvider.Result createResult(@NonNull List<? super SymbolDescriptor> result, @NonNull String[] message, @NonNull Context context);
 
     public abstract int getRetry(Result result);
+
+    @NonNull
+    public abstract String getHighlightText(@NonNull SymbolDescriptor desc);
 }
