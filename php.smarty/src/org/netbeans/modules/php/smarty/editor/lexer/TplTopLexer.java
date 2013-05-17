@@ -138,7 +138,6 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         if (inputAttributes != null) {
             this.tplMetaData = (TplMetaData) inputAttributes.getValue(LanguagePath.get(TplTopTokenId.language()), TplMetaData.class);
         } else {
-            LOG.log(Level.WARNING, "TplTopLexer got empty inputAttirbutes: {0}", Thread.currentThread().toString());
             this.tplMetaData = TplUtils.getProjectPropertiesForFileObject(null);
         }
         scanner = new TplTopColoringLexer(info, state, tplMetaData);
