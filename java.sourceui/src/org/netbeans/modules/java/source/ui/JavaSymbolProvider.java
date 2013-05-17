@@ -57,6 +57,8 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.QualifiedNameable;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
@@ -88,6 +90,7 @@ import org.netbeans.modules.java.source.usages.ClasspathInfoAccessor;
 import org.netbeans.modules.java.source.usages.DocumentUtil;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.spi.jumpto.support.NameMatcher;
 import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
@@ -95,6 +98,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 /**
  *
@@ -108,7 +112,7 @@ public class JavaSymbolProvider implements SymbolProvider {
     private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
     private static final String UNKNOWN = "<unknown>"; //NOI18N
     private static final String INIT = "<init>"; //NOI18N
-    
+
     private volatile boolean canceled;
 
     public String name() {
@@ -118,11 +122,18 @@ public class JavaSymbolProvider implements SymbolProvider {
     public String getDisplayName() {
         return NbBundle.getMessage(JavaTypeProvider.class, "MSG_JavaSymbols");
     }
-    
+        
     public void computeSymbolNames(final Context context, final Result result) {
         try {
             final SearchType st = context.getSearchType();
-            String[] _ident = new String[] {context.getText()};
+            String textToSearch = context.getText();
+            String prefix = null;
+            final int dotIndex = textToSearch.lastIndexOf('.'); //NOI18N
+            if (dotIndex > 0 && dotIndex != textToSearch.length()-1) {
+                prefix = textToSearch.substring(0, dotIndex);
+                textToSearch = textToSearch.substring(dotIndex+1);
+            }
+            String[] _ident = new String[] {textToSearch};
             ClassIndex.NameKind _kind;
             boolean _caseSensitive;
             switch (st) {
@@ -161,10 +172,17 @@ public class JavaSymbolProvider implements SymbolProvider {
                     break;
                 default:
                     throw new IllegalArgumentException();
-            }            
+            }
             final String[] ident = _ident;
             final ClassIndex.NameKind kind = _kind;
             final boolean caseSensitive = _caseSensitive;
+            final Pair<NameMatcher,Boolean> restriction;
+            if (prefix != null) {
+                restriction = compileName(prefix,caseSensitive);
+                result.setHighlightText(textToSearch);
+            } else {
+                restriction = null;
+            }
             try {
                 final ClassIndexManager manager = ClassIndexManager.getDefault();
 
@@ -226,7 +244,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                                                     final TypeElement te = owner.resolve(controller);
                                                     final Set<String> idents = p.getValue();
                                                     if (te != null) {
-                                                        if (idents.contains(getSimpleName(te, null))) {
+                                                        if (idents.contains(getSimpleName(te, null)) && matchesRestrictions(te, restriction)) {
                                                             result.addResult(new JavaSymbolDescriptor(
                                                                     te.getSimpleName().toString(),
                                                                     te.getKind(),
@@ -238,7 +256,7 @@ public class JavaSymbolProvider implements SymbolProvider {
                                                                     impl));
                                                         }
                                                         for (Element ne : te.getEnclosedElements()) {
-                                                            if (idents.contains(getSimpleName(ne, te))) {
+                                                            if (idents.contains(getSimpleName(ne, te)) && matchesRestrictions(ne, restriction)) {
                                                                 result.addResult(new JavaSymbolDescriptor(
                                                                     getDisplayName(ne, te),
                                                                     ne.getKind(),
@@ -287,7 +305,46 @@ public class JavaSymbolProvider implements SymbolProvider {
             cleanup();
         }
     }
-    
+
+    private boolean matchesRestrictions(
+            @NonNull final Element e,
+            @NullAllowed Pair<NameMatcher,Boolean> restriction) {
+        if (restriction == null) {
+            return true;
+        }
+        final Element owner = e.getEnclosingElement();
+        if (owner == null) {
+            return false;
+        }                
+        final Name n;
+        if (restriction.second() && (owner instanceof QualifiedNameable)) {
+            n = ((QualifiedNameable)owner).getQualifiedName();
+        } else {
+            n = owner.getSimpleName();
+        }
+        return restriction.first().accept(n.toString());
+    }
+
+    private static Pair<NameMatcher,Boolean> compileName(
+            @NonNull final String prefix,
+            final boolean caseSensitive) {
+        final boolean fqn = prefix.indexOf('.') > 0;    //NOI18N
+        final SearchType searchType = containsWildCard(prefix)?
+            (caseSensitive ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP) :
+            (caseSensitive ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX);
+        return Pair.<NameMatcher,Boolean>of(
+            NameMatcherFactory.createNameMatcher(prefix, searchType),
+            fqn);
+    }
+
+    private static boolean containsWildCard(String text) {
+        for( int i = 0; i < text.length(); i++ ) {
+            if ( text.charAt( i ) == '?' || text.charAt( i ) == '*' ) { // NOI18N
+                return true;
+            }
+        }
+        return false;
+    }
     
     private static String getDisplayName (
             @NonNull final Element e,

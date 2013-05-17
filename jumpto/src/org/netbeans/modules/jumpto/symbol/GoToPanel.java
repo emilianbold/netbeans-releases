@@ -150,7 +150,6 @@ public class GoToPanel extends javax.swing.JPanel {
         matchesList.setCellRenderer(
                 contentProvider.getListCellRenderer(
                 matchesList,
-                nameField.getDocument(),
                 caseSensitive.getModel()));
         contentProvider.setListModel( this, null );
         
@@ -565,7 +564,7 @@ public class GoToPanel extends javax.swing.JPanel {
     
     public static interface ContentProvider {
         
-        public ListCellRenderer getListCellRenderer(JList list, Document nameDocument, ButtonModel caseSensitive);
+        public ListCellRenderer getListCellRenderer(JList list,  ButtonModel caseSensitive);
         
         public void setListModel( GoToPanel panel, String text  );
         

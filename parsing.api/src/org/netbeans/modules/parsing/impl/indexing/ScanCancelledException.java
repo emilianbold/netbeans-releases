@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,46 +34,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.jumpto.symbol;
-
-import java.util.List;
-import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
-import org.netbeans.spi.jumpto.symbol.SymbolProvider;
-import org.netbeans.spi.jumpto.type.SearchType;
-import org.openide.util.Exceptions;
-import static org.netbeans.spi.jumpto.symbol.SymbolProvider.*;
+package org.netbeans.modules.parsing.impl.indexing;
 
 /**
- *
- * @author Tomas Zezula
+ * Marker exception for the Error Reporter to recognize a 'scan cancelled' type of report.
+ * @author sdedic
  */
-public abstract class SymbolProviderAccessor {
-    
-    public static SymbolProviderAccessor DEFAULT;
+public class ScanCancelledException extends Exception {
 
-    static {
-        try {
-            Class.forName(SymbolProvider.Context.class.getName(), true, SymbolProviderAccessor.class.getClassLoader());
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    public ScanCancelledException(String message, StackTraceElement[] stack) {
+        super(message);
+        setStackTrace(stack);
+
     }
-
-    public abstract SymbolProvider.Context createContext(Project p, String text, SearchType t);
-
-    @NonNull
-    public abstract SymbolProvider.Result createResult(@NonNull List<? super SymbolDescriptor> result, @NonNull String[] message, @NonNull Context context);
-
-    public abstract int getRetry(Result result);
-
-    @NonNull
-    public abstract String getHighlightText(@NonNull SymbolDescriptor desc);
+    
+    public ScanCancelledException(String msg, Throwable orig, StackTraceElement[] stack) {
+        super(msg, orig);
+        setStackTrace(stack);
+    }
 }

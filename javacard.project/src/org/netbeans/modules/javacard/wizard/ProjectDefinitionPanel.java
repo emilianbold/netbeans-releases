@@ -122,7 +122,6 @@ public class ProjectDefinitionPanel extends JPanel implements DocumentListener, 
         platformRes.addLookupListener(this);
         serverRes.allInstances();
         platformRes.allInstances();
-        HelpCtx.setHelpIDString(this, "org.netbeans.modules.javacard.CreateProject"); //NOI18N
     }
 
     public String getProjectName() {

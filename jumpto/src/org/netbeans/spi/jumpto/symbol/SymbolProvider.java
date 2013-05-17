@@ -138,8 +138,12 @@ public interface SymbolProvider {
                 }
 
                 @Override
-                public Result createResult(List<? super SymbolDescriptor> result, String[] message) {
-                    return new Result(result, message);
+                @NonNull
+                public Result createResult(
+                    @NonNull final List<? super SymbolDescriptor> result,
+                    @NonNull final String[] message,
+                    @NonNull final Context context) {
+                    return new Result(result, message, context);
                 }
 
                 @Override
@@ -147,6 +151,11 @@ public interface SymbolProvider {
                     return result.retry;
                 }
 
+                @Override
+                @NonNull
+                public String getHighlightText(@NonNull final SymbolDescriptor desc) {
+                    return desc.getHighlightText();
+                }
 
             };
         }
@@ -189,20 +198,26 @@ public interface SymbolProvider {
      */
     public static final class Result extends Object {
         
-        private List<? super SymbolDescriptor> result;
-        private String[] message;
+        private final List<? super SymbolDescriptor> result;
+        private final String[] message;
+        private String highlightText;
+        private boolean dirty;
+        private boolean highlightTextAlreadySet;
         private int retry;
 
         Result(
                 @NonNull final List<? super SymbolDescriptor> result,
-                @NonNull final String[] message) {
+                @NonNull final String[] message,
+                @NonNull final Context context) {
             Parameters.notNull("result", result);    //NOI18N
             Parameters.notNull("message", message);  //NOI18N
+            Parameters.notNull("context", context);  //NOI18N
             if (message.length != 1) {
                 throw new IllegalArgumentException("message.length != 1");  //NOI18N
             }
             this.result = result;
             this.message = message;
+            this.highlightText = context.getText();
         }
         
         /**
@@ -221,6 +236,8 @@ public interface SymbolProvider {
           * @param  symbolDescriptor  symbol descriptor to be added to result
           */
         public void addResult(SymbolDescriptor symbolDescriptor) {
+            dirty = true;
+            symbolDescriptor.setHighlightText(highlightText);
             result.add(symbolDescriptor);
         }
 
@@ -230,8 +247,37 @@ public interface SymbolProvider {
           * @param  symbolDescriptor  symbol descriptor to be added to result
           */
         @SuppressWarnings("unchecked")
-        public void addResult(List<? extends SymbolDescriptor> symbolDescriptor) {
-            ((List)result).addAll(symbolDescriptor);    //workaround javac issue http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6507334 
+        public void addResult(List<? extends SymbolDescriptor> symbolDescriptors) {
+            for (SymbolDescriptor symbolDescriptor : symbolDescriptors) {
+                addResult(symbolDescriptor);
+            }
+        }
+
+        /**
+         * Sets a text to highlight in the Go To Symbol panel.
+         * By default the highlight text matches the text to search {@link Context#getText()}
+         * and {@link SymbolProvider} has no need to call this method. When the
+         * {@link SymbolProvider} changes the text to search and uses a part of it just as a
+         * restriction it has to call the method to specify the real search text.
+         * For example Java {@link SymbolProvider} splits the following text to search "*Util.toF"
+         * to restriction regexp for type "*Util" and a new search text "toF". In order to let
+         * the infrastructure correctly highlight found elements the Java {@link SymbolProvider}
+         * needs to call {@link Result#setHighlightText(java.lang.String)}.
+         * @param textToHighlight the text to highlight
+         * @throws IllegalStateException when some result was already added or the highlight text
+         * was already set.
+         * @since 1.37
+         */
+        public void setHighlightText(@NonNull final String textToHighlight) {
+            Parameters.notNull("textToHighlight", textToHighlight); //NOI18N
+            if (dirty) {
+                throw new IllegalStateException("Calling setHighlightText after addResult");    //NOI18N
+            }
+            if (highlightTextAlreadySet) {
+                throw new IllegalStateException("Highlight text already set");  //NOI18N
+            }
+            this.highlightText = textToHighlight;
+            this.highlightTextAlreadySet = true;
         }
 
         /**
@@ -247,5 +293,5 @@ public interface SymbolProvider {
             retry = 2000;
         }
     }
-
+    
 }
