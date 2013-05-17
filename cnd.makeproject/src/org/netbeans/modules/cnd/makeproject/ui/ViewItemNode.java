@@ -61,7 +61,11 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.actions.CreateProjectAction;
+import org.netbeans.modules.cnd.makeproject.actions.DebugDialogAction;
 import org.netbeans.modules.cnd.makeproject.actions.NewTestActionFactory;
+import org.netbeans.modules.cnd.makeproject.actions.RunDialogAction;
+import org.netbeans.modules.cnd.makeproject.actions.RunDialogAction.SimpleRunActionProxy;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -95,8 +99,9 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
     private Item item;
     private final MakeProject project;
     private final ProjectNodesRefreshSupport.ProjectNodeRefreshListener refreshListener;
+    private final boolean simpleRunDebug;
 
-    public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject, MakeProject project) {
+    public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject, MakeProject project, boolean simpleRunDebug) {
         super(dataObject.getNodeDelegate());//, null, Lookups.fixed(item));
         this.childrenKeys = childrenKeys;
         this.folder = folder;
@@ -117,6 +122,11 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
         ProjectNodesRefreshSupport.addProjectNodeRefreshListener(WeakListeners.create(
                 ProjectNodesRefreshSupport.ProjectNodeRefreshListener.class, refreshListener, ProjectNodesRefreshSupport.class));
 
+        this.simpleRunDebug = simpleRunDebug;
+    }
+    
+    public ViewItemNode(RefreshableItemsContainer childrenKeys, Folder folder, Item item, DataObject dataObject, MakeProject project) {
+        this(childrenKeys, folder, item, dataObject, project, false);
     }
 
     @Override
@@ -249,7 +259,7 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
                     newActions.add(NodeActionFactory.createRenameAction());
                     NodeActionFactory.addSyncActions(newActions);
                 } else if (key != null && key.equals("delete")) { // NOI18N
-                    newActions.add(NodeActionFactory.createDeleteAction());
+                    newActions.add(NodeActionFactory.createDeleteAction());               
                 } else if (oldActions[i] != null && oldActions[i] instanceof org.openide.actions.PropertiesAction && getFolder().isProjectFiles()) {
                     newActions.add(SystemAction.get(PropertiesItemAction.class));
                 } else if (key != null && ("CndCompileAction".equals(key)||"CndCompileRunAction".equals(key)||"CndCompileDebugAction".equals(key))) { // NOI18N
@@ -284,6 +294,14 @@ final class ViewItemNode extends FilterNode implements ChangeListener {
                 } else if (key != null && key.equals("delete")) { // NOI18N
                     newActions.add(SystemAction.get(RemoveItemAction.class));
                     newActions.add(NodeActionFactory.createDeleteAction());
+                } else if (simpleRunDebug && key != null && key.equals("CndDebugCorefileNodeAction")) { //NOI18N
+                    // not need this for binaries added to logical folders
+                } else if (simpleRunDebug && oldActions[i] != null && oldActions[i] instanceof CreateProjectAction) { 
+                    // not need this for binaries added to logical folders
+                } else if (simpleRunDebug && oldActions[i] != null && oldActions[i] instanceof RunDialogAction) { 
+                   newActions.add(((RunDialogAction) oldActions[i]).new SimpleRunActionProxy(project, item.getAbsolutePath()));
+                } else if (simpleRunDebug && oldActions[i] != null && oldActions[i] instanceof DebugDialogAction) { 
+                   newActions.add(((DebugDialogAction) oldActions[i]).new SimpleDebugActionProxy(project, item.getAbsolutePath()));
                 } else if (key != null && ("CndCompileAction".equals(key)||"CndCompileRunAction".equals(key)||"CndCompileDebugAction".equals(key))) { // NOI18N
                     // skip
                 } else {

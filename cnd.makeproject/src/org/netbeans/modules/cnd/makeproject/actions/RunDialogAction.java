@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.cnd.makeproject.actions;
 
+import java.awt.event.ActionEvent;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import org.netbeans.api.project.Project;
@@ -193,24 +195,28 @@ public class RunDialogAction extends NodeAction {
 
                 @Override
                 public void run(Project project) {
-                    MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
-                    if (conf != null && isRun) {
-                        RunProfile profile = conf.getProfile();
-                        String path = runDialogPanel.getExecutablePath();
-                        path = CndPathUtilitities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
-                        ProjectActionEvent projectActionEvent = new ProjectActionEvent(
-                                project,
-                                PredefinedType.RUN,
-                                path, conf,
-                                profile,
-                                false);
-                        ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
-                    }
+                    performRun(project, runDialogPanel.getExecutablePath(), isRun);
                 }
             });
         }
     }
 
+    private void performRun(Project project, String executable, boolean isRun) {
+        MakeConfiguration conf = ConfigurationSupport.getProjectActiveConfiguration(project);
+        if (conf != null && isRun) {
+            RunProfile profile = conf.getProfile();
+            String path = executable;
+            path = CndPathUtilitities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
+            ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                    project,
+                    PredefinedType.RUN,
+                    path, conf,
+                    profile,
+                    false);
+            ProjectActionSupport.getInstance().fireActionPerformed(new ProjectActionEvent[]{projectActionEvent});
+        }
+    }
+    
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx(RunDialogAction.class); // FIXUP ???
@@ -224,4 +230,30 @@ public class RunDialogAction extends NodeAction {
     protected boolean asynchronous() {
         return false;
     }
+    
+    public final class SimpleRunActionProxy extends AbstractAction {
+
+        private final Project project;
+        private final String executable;
+
+        public SimpleRunActionProxy(Project project, String executable) {
+            this.project = project;
+            this.executable = executable;
+        }
+               
+        @Override
+        public Object getValue(String key) {
+            if (NAME.equals(key)) {
+                return RunDialogAction.this.getName();
+            }
+            return super.getValue(key);
+        }        
+        
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            performRun(project, executable, true);
+        }
+        
+    }
+    
 }

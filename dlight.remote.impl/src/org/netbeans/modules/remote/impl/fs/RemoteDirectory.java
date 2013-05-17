@@ -1184,21 +1184,21 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         parent.fireFileDeletedEvent(parent.getImplementor().getListeners(), new FileEvent(parent, fo, expected));
     }
     
-    InputStream _getInputStream(RemotePlainFile child) throws
-            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-        Lock lock = RemoteFileSystem.getLock(child.getCache()).readLock();
-        lock.lock();
-        try {
-            if (child.getCache().exists()) {
-                return new FileInputStream(child.getCache());
-            }
-        } finally {
-            lock.unlock();
-        }
-        checkConnection(child, true);
-        DirectoryStorage storage = getDirectoryStorage(child.getNameExt()); // do we need this?
-        return new CachedRemoteInputStream(child, getExecutionEnvironment());
-    }
+//    InputStream _getInputStream(RemotePlainFile child) throws
+//            ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+//        Lock lock = RemoteFileSystem.getLock(child.getCache()).readLock();
+//        lock.lock();
+//        try {
+//            if (child.getCache().exists()) {
+//                return new FileInputStream(child.getCache());
+//            }
+//        } finally {
+//            lock.unlock();
+//        }
+//        checkConnection(child, true);
+//        DirectoryStorage storage = getDirectoryStorage(child.getNameExt()); // do we need this?
+//        return new CachedRemoteInputStream(child, getExecutionEnvironment());
+//    }
     
     void ensureChildSync(RemotePlainFile child) throws
             ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
