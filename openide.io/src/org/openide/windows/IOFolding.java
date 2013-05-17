@@ -176,6 +176,8 @@ public abstract class IOFolding {
         /**
          * Set state of the fold.
          *
+         * If a nested fold is expanded, expand all parent folds too.
+         *
          * @param expanded True to expand the fold, false to collapse it.
          */
         public abstract void setExpanded(boolean expanded);

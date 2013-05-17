@@ -72,7 +72,8 @@ public final class FoldHandle {
     /**
      * Start a nested fold at the current last line in output window.
      *
-     * @param expanded True to expand the new fold, false to collapse it.
+     * @param expanded True to expand the new fold, false to collapse it, parent
+     * folds will not be collapsed/expanded.
      * @return Handle for the newly created fold.
      * @throws IllegalStateException if the fold has been already finished.
      */
@@ -82,6 +83,8 @@ public final class FoldHandle {
 
     /**
      * Set state of the fold.
+     *
+     * If a nested fold is expanded, all parent folds will be expanded too.
      *
      * @param expanded True to expand the fold, false to collapse it.
      */
