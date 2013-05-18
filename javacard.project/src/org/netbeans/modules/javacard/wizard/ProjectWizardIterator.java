@@ -201,7 +201,6 @@ public class ProjectWizardIterator implements WizardDescriptor.ProgressInstantia
     @Override
     public void initialize(WizardDescriptor wiz) {
         this.wiz = wiz;
-        wiz.setHelpCtx(new HelpCtx("org.netbeans.modules.javacard.CreateProject")); //NOI18N
         firstPanel = new PlatformInstallerWizardPanel();
         firstPanel.addChangeListener(this);
         secondPanel = new ProjectDefinitionWizardPanel(kind);

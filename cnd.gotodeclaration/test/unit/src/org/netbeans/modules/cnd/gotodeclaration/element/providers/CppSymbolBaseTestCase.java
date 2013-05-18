@@ -88,7 +88,7 @@ public class CppSymbolBaseTestCase extends ProjectBasedTestCase {
 
         List<SymbolDescriptor> elems = new ArrayList<SymbolDescriptor>();
         SymbolProvider.Context context = SymbolProviderContextAndResultFactory.createContext(null, type, text);
-        SymbolProvider.Result result = SymbolProviderContextAndResultFactory.createResult(elems);
+        SymbolProvider.Result result = SymbolProviderContextAndResultFactory.createResult(elems, context);
         provider.computeSymbolNames(context, result);
         assertNotNull(elems);
 

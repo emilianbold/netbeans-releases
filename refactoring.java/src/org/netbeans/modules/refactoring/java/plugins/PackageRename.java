@@ -50,6 +50,7 @@ import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -288,16 +289,17 @@ public class PackageRename implements RefactoringPluginFactory{
             }
 
             private boolean isEmpty(FileObject folder) {
-                Boolean isVersioned = (Boolean) folder.getAttribute("ProvidedExtensions.VCSManaged");//NOI18N
-                if (Boolean.FALSE == isVersioned) {
+                boolean isVersioned = VersioningQuery.isManaged(folder.toURI());
+                if (isVersioned) {
+                    for (FileObject child:folder.getChildren()) {
+                        if (VisibilityQuery.getDefault().isVisible(child)) {
+                            return false;
+                        }
+                    }
+                    return true;
+                } else {
                     return folder.getChildren().length==0;
                 }
-                for (FileObject child:folder.getChildren()) {
-                    if (VisibilityQuery.getDefault().isVisible(child)) {
-                        return false;
-                    }
-                }
-                return true;
             }
 
             private void selectInProjectsView(final DataFolder destinationFolder) {
