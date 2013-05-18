@@ -164,7 +164,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                     @Override
                     public void run() {
                         HintsPanel.this.removeAll();
-                        HintsPanel.this.init(filter, false, overlay != null, true, false, true, true);
+                        HintsPanel.this.init(filter, false, overlay != null, true, true, true, true);
                         if (overlay != null) {
                             HintsPanel.this.setOverlayPreferences(overlay);
                         }

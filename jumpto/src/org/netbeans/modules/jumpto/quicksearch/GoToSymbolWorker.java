@@ -137,7 +137,7 @@ public class GoToSymbolWorker implements Runnable {
         items = new ArrayList<SymbolDescriptor>(128);
         String[] message = new String[1];
         SymbolProvider.Context context = SymbolProviderAccessor.DEFAULT.createContext(null, text, SearchType.CASE_INSENSITIVE_PREFIX);
-        SymbolProvider.Result result = SymbolProviderAccessor.DEFAULT.createResult(items, message);
+        SymbolProvider.Result result = SymbolProviderAccessor.DEFAULT.createResult(items, message, context);
         for (SymbolProvider provider : getTypeProviders()) {
             current = provider;
             if (isCanceled) {

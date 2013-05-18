@@ -55,12 +55,16 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
 import javax.lang.model.SourceVersion;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -70,6 +74,7 @@ import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TypeMirrorHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import static org.netbeans.modules.java.hints.jdk.UseSpecificCatch.SW_KEY;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.TriggerPattern;
 import org.netbeans.spi.java.hints.TriggerPatterns;
@@ -79,17 +84,20 @@ import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.hints.CustomizerProvider;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 
 /**
  *
  * @author lahvac
  */
 @Hint(displayName = "#DN_org.netbeans.modules.java.hints.jdk.UseSpecificCatch", description = "#DESC_org.netbeans.modules.java.hints.jdk.UseSpecificCatch", 
-        category="rules15", suppressWarnings="UseSpecificCatch", customizerProvider = UseSpecificCatch.class)
+        category="rules15", suppressWarnings=SW_KEY, customizerProvider = UseSpecificCatch.class)
 public class UseSpecificCatch implements CustomizerProvider {
     
     public static final String OPTION_EXCEPTION_LIST = "specificCatch.exceptions"; // NOI18N
     static final String DEFAULT_EXCEPTION_LIST = "java.lang.Throwable, java.lang.Exception"; // NOI18N
+    
+    public static final String SW_KEY = "UseSpecificCatch";
 
     @Override
     public JComponent getCustomizer(Preferences prefs) {
@@ -125,7 +133,7 @@ public class UseSpecificCatch implements CustomizerProvider {
         
         Collection<? extends TreePath> catchPaths = ctx.getMultiVariables().get("$catches$"); // NOI18N
         String displayName = NbBundle.getMessage(UseSpecificCatch.class, "ERR_UseSpecificCatch"); // NOI18N
-        for (TreePath p : catchPaths) {
+        OUTTER: for (TreePath p : catchPaths) {
             if (p.getLeaf().getKind() != Tree.Kind.CATCH) {
                 continue;
             }
@@ -136,12 +144,27 @@ public class UseSpecificCatch implements CustomizerProvider {
                 continue;
             }
             if (generics.contains(t)) {
+                TreePath parameterPath = new TreePath(p, kec.getParameter());
                 if (assignsTo(
-                        ctx, 
-                        new TreePath(p, kec.getParameter()),
+                        ctx, parameterPath,
                         Collections.singletonList(new TreePath(p, kec.getBlock())))) {
                     // cannot generate multi-catch and even no catch blocks with the assignment
                     continue;
+                }
+                TypeElement sw = ctx.getInfo().getElements().getTypeElement(SuppressWarnings.class.getName());
+                Element catchParamElement = ctx.getInfo().getTrees().getElement(parameterPath);
+                if (sw != null && catchParamElement != null) {
+                    for (AnnotationMirror am : catchParamElement.getAnnotationMirrors()) {
+                        if (!sw.equals(am.getAnnotationType().asElement())) continue;
+                        for (Entry<? extends ExecutableElement, ? extends AnnotationValue> attrEntry : am.getElementValues().entrySet()) {
+                            if (!attrEntry.getKey().getSimpleName().contentEquals("value")) continue;
+                            if (!(attrEntry.getValue().getValue() instanceof List<?>)) continue;
+                            for (AnnotationValue av : NbCollections.checkedListByCopy(((List<?>) attrEntry.getValue().getValue()), AnnotationValue.class, false)) {
+                                if (SW_KEY.equals(av.getValue()))
+                                    continue OUTTER;
+                            }
+                        }
+                    }
                 }
                 Set<TypeMirrorHandle<TypeMirror>> exceptionHandles = new LinkedHashSet<TypeMirrorHandle<TypeMirror>>();
                 for (TypeMirror tm : exceptions) {

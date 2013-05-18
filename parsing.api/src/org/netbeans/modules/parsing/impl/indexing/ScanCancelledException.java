@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,27 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 
-package org.netbeans.spi.jumpto.symbol;
-
-import java.util.List;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.jumpto.type.SearchType;
+package org.netbeans.modules.parsing.impl.indexing;
 
 /**
- * A factory to create SymbolProvider.Context
- * (for test purposes only)
- * @author Vladimir Kvashin
+ * Marker exception for the Error Reporter to recognize a 'scan cancelled' type of report.
+ * @author sdedic
  */
-public class SymbolProviderContextAndResultFactory {
+public class ScanCancelledException extends Exception {
 
-    public static SymbolProvider.Context createContext(Project project, SearchType searchType, String text) {
-        return new SymbolProvider.Context(project, text, searchType);
+    public ScanCancelledException(String message, StackTraceElement[] stack) {
+        super(message);
+        setStackTrace(stack);
+
     }
-
-    public static SymbolProvider.Result createResult(List<? super SymbolDescriptor> result, SymbolProvider.Context ctx) {
-        return new SymbolProvider.Result(result, new String[] {""}, ctx);
+    
+    public ScanCancelledException(String msg, Throwable orig, StackTraceElement[] stack) {
+        super(msg, orig);
+        setStackTrace(stack);
     }
 }

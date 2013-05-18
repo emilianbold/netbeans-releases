@@ -71,10 +71,6 @@ import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
 import org.netbeans.modules.jumpto.common.HighlightingNameFormatter;
@@ -83,8 +79,6 @@ import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.netbeans.spi.jumpto.symbol.SymbolProvider;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.openide.awt.HtmlRenderer;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -125,12 +119,10 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
     @Override
     public ListCellRenderer getListCellRenderer(
             @NonNull final JList list,
-            @NonNull final Document nameDocument,
             @NonNull final ButtonModel caseSensitive) {
         Parameters.notNull("list", list);   //NOI18N
-        Parameters.notNull("nameDocument", nameDocument);   //NOI18N
         Parameters.notNull("caseSensitive", caseSensitive); //NOI18N
-        return new Renderer(list, nameDocument, caseSensitive);
+        return new Renderer(list, caseSensitive);
     }
 
     @Override
@@ -157,33 +149,17 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             panel.setModel(new DefaultListModel());
             return;
         }
-        final boolean isCaseSensitive = panel.isCaseSensitive();
-        boolean exact = text.endsWith(" "); // NOI18N        
+        final boolean exact = text.endsWith(" "); // NOI18N
+        final boolean isCaseSensitive = panel.isCaseSensitive();        
         text = text.trim();        
         if ( text.length() == 0) {
             panel.setModel(new DefaultListModel());
             return;
-        }        
-        int wildcard = containsWildCard(text);
-        SearchType nameKind;
-        if (exact) {
-            //nameKind = isCaseSensitive ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
-            nameKind = SearchType.EXACT_NAME;
         }
-        else if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
-            nameKind = SearchType.CAMEL_CASE;
-        }
-        else if (wildcard != -1) {
-            nameKind = isCaseSensitive ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP;
-        }
-        else {            
-            nameKind = isCaseSensitive ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX;
-        }
-        
         // Compute in other thread
         
         synchronized( this ) {
-            running = new Worker(text, nameKind, panel);
+            running = new Worker(text, exact, isCaseSensitive, panel);
             task = rp.post( running, 220);
             if ( panel.time != -1 ) {
                 LOG.log(
@@ -216,30 +192,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             provider.cleanup();
         }
     }
-    
-    private static boolean isAllUpper( String text ) {
-        for( int i = 0; i < text.length(); i++ ) {
-            if ( !Character.isUpperCase( text.charAt( i ) ) ) {
-                return false;
-            }
-        }
-        
-        return true;
-    }
-    
-    private static int containsWildCard( String text ) {
-        for( int i = 0; i < text.length(); i++ ) {
-            if ( text.charAt( i ) == '?' || text.charAt( i ) == '*' ) { // NOI18N
-                return i;                
-            }
-        }        
-        return -1;
-    }
-    
-    private static boolean isCamelCase(String text) {
-         return camelCasePattern.matcher(text).matches();
-    }
-    
+            
     private Collection<? extends SymbolProvider> getTypeProviders() {
         Collection<? extends SymbolProvider> res = typeProviders.get();
         if (res == null) {                   
@@ -277,7 +230,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
 	}
     }
     
-    private static class Renderer extends EntitiesListCellRenderer implements ActionListener, DocumentListener {
+    private static class Renderer extends EntitiesListCellRenderer implements ActionListener {
 
         private final HighlightingNameFormatter symbolNameFormatter;
          
@@ -295,12 +248,10 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         private Color fgSelectionColor;
         
         private JList jList;
-        private String textToFind = "";
         private boolean caseSensitive;
         
         public Renderer(
                 @NonNull final JList list,
-                @NonNull final Document nameDocument,
                 @NonNull final ButtonModel caseSensitive) {
             
             jList = list;
@@ -372,7 +323,6 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             bgSelectionColor = list.getSelectionBackground();
             fgSelectionColor = list.getSelectionForeground();
             symbolNameFormatter = HighlightingNameFormatter.createBoldFormatter();
-            nameDocument.addDocumentListener(this);
             caseSensitive.addActionListener(this);
         }
         
@@ -414,7 +364,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                 jlName.setIcon(td.getIcon());
                 final String formattedSymbolName = symbolNameFormatter.formatName(
                         td.getSymbolName(),
-                        textToFind,
+                        SymbolProviderAccessor.DEFAULT.getHighlightText(td),
                         caseSensitive,
                         isSelected? fgSelectionColor : fgColor);
                 jlName.setText(formattedSymbolName);
@@ -448,25 +398,6 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             caseSensitive = ((ButtonModel)e.getSource()).isSelected();
         }
 
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-            changedUpdate(e);
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            changedUpdate(e);
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            try {
-                textToFind = e.getDocument().getText(0, e.getDocument().getLength());
-            } catch (BadLocationException ex) {
-                textToFind = "";    //NOI18N
-            }
-        }
-
         private void resetName() {
             ((HtmlRenderer.Renderer)jlName).reset();
             jlName.setFont(jList.getFont());
@@ -480,7 +411,8 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
     private class Worker implements Runnable {
         
         private final String text;
-        private final SearchType nameKind;        
+        private final boolean exact;
+        private final boolean isCaseSensitive;
         private final long createTime;
         private final GoToPanel panel;
         
@@ -489,11 +421,13 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
         
         
         public Worker(
-                final String text,
-                final SearchType nameKind,
-                final GoToPanel panel ) {
+                @NonNull final String text,
+                final boolean exact,
+                final boolean isCaseSensitive,
+                @NonNull final GoToPanel panel ) {
             this.text = text;
-            this.nameKind = nameKind;
+            this.exact = exact;
+            this.isCaseSensitive = isCaseSensitive;
             this.panel = panel;
             this.createTime = System.currentTimeMillis();
             LOG.log(
@@ -567,9 +501,7 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
             List<SymbolDescriptor> items;
             // Multiple providers: merge results
             items = new ArrayList<SymbolDescriptor>(128);
-            String[] message = new String[1];
-            SymbolProvider.Context context = SymbolProviderAccessor.DEFAULT.createContext(null, text, nameKind);
-            SymbolProvider.Result result = SymbolProviderAccessor.DEFAULT.createResult(items, message);
+            String[] message = new String[1];                        
             for (SymbolProvider provider : getTypeProviders()) {
                 current = provider;
                 if (isCanceled) {
@@ -578,7 +510,9 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                 LOG.log(
                     Level.FINE,
                     "Calling SymbolProvider: {0}", //NOI18N
-                    provider);
+                    provider);                
+                final SymbolProvider.Context context = SymbolProviderAccessor.DEFAULT.createContext(null, text, getSearchType(text, exact, isCaseSensitive));
+                final SymbolProvider.Result result = SymbolProviderAccessor.DEFAULT.createResult(items, message, context);
                 provider.computeSymbolNames(context, result);
                 current = null;
             }
@@ -591,5 +525,46 @@ final class ContentProviderImpl implements GoToPanel.ContentProvider {
                 return null;
             }
         }
+    }
+
+    @NonNull
+    private static SearchType getSearchType(
+            @NonNull final String text,
+            final boolean exact,
+            final boolean isCaseSensitive) {
+        int wildcard = containsWildCard(text);
+        if (exact) {
+            //nameKind = isCaseSensitive ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
+            return SearchType.EXACT_NAME;
+        } else if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
+            return SearchType.CAMEL_CASE;
+        } else if (wildcard != -1) {
+            return isCaseSensitive ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP;
+        } else {
+            return isCaseSensitive ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX;
+        }
+    }
+
+    private static boolean isAllUpper( String text ) {
+    for( int i = 0; i < text.length(); i++ ) {
+        if ( !Character.isUpperCase( text.charAt( i ) ) ) {
+            return false;
+        }
+    }
+
+    return true;
+    }
+
+    private static int containsWildCard( String text ) {
+        for( int i = 0; i < text.length(); i++ ) {
+            if ( text.charAt( i ) == '?' || text.charAt( i ) == '*' ) { // NOI18N
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static boolean isCamelCase(String text) {
+         return camelCasePattern.matcher(text).matches();
     }
 }
