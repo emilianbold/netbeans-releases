@@ -144,6 +144,11 @@ public class BugzillaIssueProvider extends TeamIssueProvider<BugzillaIssue> {
         }
         return statusProvider;
     }
+
+    @Override
+    public boolean submit (BugzillaIssue data) {
+        return data.submitAndRefresh();
+    }
     
     /************************************************************************************
      * Kenai

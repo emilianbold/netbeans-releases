@@ -26,7 +26,6 @@
             Batch subsection:
         -->
         <zip basedir="samples_src/javaee7/batch/joboperator-api" destfile="${examples}/JoboperatorAPI.zip"/>
-        <zip basedir="samples_src/javaee7/batch/partition" destfile="${examples}/Partition.zip"/>
         <zip basedir="samples_src/javaee7/batch/payroll" destfile="${examples}/Payroll.zip"/>
         
         <!--

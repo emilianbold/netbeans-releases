@@ -316,7 +316,6 @@ public final class CategoryModel implements LookupListener {
             categoriesValid = false;
             OptionsDisplayerImpl.lookupListener.resultChanged(ev);
             INSTANCE = new WeakReference<CategoryModel>(null);
-            result.removeLookupListener(this);
         }
     }
 

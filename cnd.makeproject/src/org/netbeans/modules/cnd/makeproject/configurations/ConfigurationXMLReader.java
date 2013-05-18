@@ -143,7 +143,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
                     String customizerId = configurationDescriptor.getActiveConfiguration() == null ? null : 
                             configurationDescriptor.getActiveConfiguration().getCustomizerId();
                     for (ProjectMetadataFactory f : Lookups.forPath(MakeProjectTypeImpl.projectMetadataFactoryPath(customizerId)).lookupAll(ProjectMetadataFactory.class)){
-                        f.read(project.getProjectDirectory());
+                        f.read(projectDirectory);
                     }
                 } catch (IOException ex) {
                     configurationDescriptor.setState(State.BROKEN);

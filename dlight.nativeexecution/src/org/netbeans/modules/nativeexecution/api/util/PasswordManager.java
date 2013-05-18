@@ -67,7 +67,7 @@ public final class PasswordManager {
     private static PasswordManager instance = new PasswordManager();
     
     static {
-        keepPasswordsInMemory = !Boolean.getBoolean("remote.user.password.do_not_keep_in_memory"); // NOI18N
+        keepPasswordsInMemory = Boolean.getBoolean("remote.user.password.keep_in_memory"); // NOI18N
     }
 
     private PasswordManager() {
@@ -138,8 +138,12 @@ public final class PasswordManager {
         boolean store = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
         if (store) {
             keyringIsActivated = true;
-            Keyring.save(KEY_PREFIX + key, password,
-            NbBundle.getMessage(PasswordManager.class, "PasswordManagerPasswordFor", execEnv.getDisplayName())); // NOI18N
+            if (password == null) {
+                Keyring.delete(KEY_PREFIX + key);
+            } else {
+                Keyring.save(KEY_PREFIX + key, password,
+                NbBundle.getMessage(PasswordManager.class, "PasswordManagerPasswordFor", execEnv.getDisplayName())); // NOI18N
+            }
             Logger.getInstance().log(Level.FINEST, "PasswordManager.put({0}, non-null) stored password in keyring", execEnv); // NOI18N
         }
     }

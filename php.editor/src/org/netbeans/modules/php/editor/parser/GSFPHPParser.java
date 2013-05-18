@@ -150,7 +150,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
             LOGGER.log(Level.FINE, "Exception during parsing: {0}", exception);
             int end = snapshot.getText().toString().length();
             ASTError error = new ASTError(0, end);
-            List<Statement> statements = new ArrayList<Statement>();
+            List<Statement> statements = new ArrayList<>();
             statements.add(error);
             Program emptyProgram = new Program(0, end, statements, Collections.<Comment>emptyList());
             result = new PHPParseResult(snapshot, emptyProgram);
@@ -655,7 +655,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                 // add the ast error, some features can recognized that there is something wrong.
                 // for example folding.
                 ASTError error = new ASTError(0, end);
-                List<Statement> statements = new ArrayList<Statement>();
+                List<Statement> statements = new ArrayList<>();
                 statements.add(error);
                 Program emptyProgram = new Program(0, end, statements, Collections.<Comment>emptyList());
 

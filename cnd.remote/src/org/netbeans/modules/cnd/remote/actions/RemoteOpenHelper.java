@@ -45,6 +45,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Icon;
@@ -136,34 +137,40 @@ public class RemoteOpenHelper {
         }
     }
 
-    private static String getCurrentDirectory(ExecutionEnvironment env) {
-        if (Boolean.getBoolean("netbeans.openfile.197063")) {
-            // Prefer to open from parent of active editor, if any.
-            TopComponent activated = TopComponent.getRegistry().getActivated();
-            if (activated != null && WindowManager.getDefault().isOpenedEditorTopComponent(activated)) {
-                DataObject d = activated.getLookup().lookup(DataObject.class);
-                if (d != null) {
-                    FileObject primaryFile = d.getPrimaryFile();
-                    if (primaryFile != null && primaryFile.isValid()) {
-                        try {
-                            if (primaryFile.getFileSystem().equals(FileSystemProvider.getFileSystem(env))) {
-                                FileObject parent = primaryFile.getParent();
-                                if (parent != null && parent.isValid()) {
-                                    return parent.getPath();
+    private static Callable<String> getCurrentDirectory(final ExecutionEnvironment env) {
+        return new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                if (Boolean.getBoolean("netbeans.openfile.197063")) {
+                    // Prefer to open from parent of active editor, if any.
+                    TopComponent activated = TopComponent.getRegistry().getActivated();
+                    if (activated != null && WindowManager.getDefault().isOpenedEditorTopComponent(activated)) {
+                        DataObject d = activated.getLookup().lookup(DataObject.class);
+                        if (d != null) {
+                            FileObject primaryFile = d.getPrimaryFile();
+                            if (primaryFile != null && primaryFile.isValid()) {
+                                try {
+                                    if (primaryFile.getFileSystem().equals(FileSystemProvider.getFileSystem(env))) {
+                                        FileObject parent = primaryFile.getParent();
+                                        if (parent != null && parent.isValid()) {
+                                            return parent.getPath();
+                                        }
+                                    }
+                                } catch (FileStateInvalidException ex) {
+                                    Exceptions.printStackTrace(ex);
                                 }
                             }
-                        } catch (FileStateInvalidException ex) {
-                            Exceptions.printStackTrace(ex);
                         }
                     }
                 }
+                String homeDir = lastUsedDirs.get(env);
+                if (homeDir == null) {
+                    homeDir = getRemoteHomeDir(env);
+                }
+                return homeDir;
             }
-        }
-        String homeDir = lastUsedDirs.get(env);
-        if (homeDir == null) {
-            homeDir = getRemoteHomeDir(env);
-        }
-        return homeDir;
+        };
+
     }
 
     /**
@@ -175,7 +182,7 @@ public class RemoteOpenHelper {
         Runnable worker = new Runnable() {
             @Override
             public void run() {
-                final String homeDir = getCurrentDirectory(env);
+                final Callable<String> homeDir = getCurrentDirectory(env);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
@@ -231,18 +238,21 @@ public class RemoteOpenHelper {
         Runnable worker = new Runnable() {
             @Override
             public void run() {
-                String home = lastUsedDirs.get(env);
-                if (home == null) {
-                    home = getRemoteProjectDir(env);
-                }
-                final String homeDir = home;
+                final String home = lastUsedDirs.get(env);
+                final Callable<String> homeDirCallable = home != null ? new Callable<String>() {
+
+                    @Override
+                    public String call() throws Exception {
+                        return home;
+                    }
+                } : getRemoteProjectDirCallable(env);
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
                         final JFileChooser fileChooser = RemoteFileUtil.createFileChooser(env,
                                 NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenProjectTitle"),
                                 NbBundle.getMessage(OpenRemoteProjectAction.class, "OpenProjectButtonText"),
-                                JFileChooser.DIRECTORIES_ONLY, null, homeDir, true);
+                                JFileChooser.DIRECTORIES_ONLY, null, homeDirCallable, true);
                         fileChooser.setFileView(new ProjectSelectionFileView(fileChooser));
                         int ret = fileChooser.showOpenDialog(WindowManager.getDefault().getMainWindow());
                         if (ret == JFileChooser.CANCEL_OPTION) {
@@ -284,6 +294,23 @@ public class RemoteOpenHelper {
         return worker;
     }
 
+    
+    private static Callable<String> getRemoteProjectDirCallable(final ExecutionEnvironment env) {
+        return new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                try {
+                    return HostInfoUtils.getHostInfo(env).getUserDir() + '/' + ProjectChooser.getProjectsFolder().getName() + '/';  //NOI18N
+                } catch (IOException ex) {
+                    ex.printStackTrace(System.err); // it doesn't make sense to disturb user
+                } catch (CancellationException ex) {
+                    ex.printStackTrace(System.err); // it doesn't make sense to disturb user
+                }
+                return null;
+            }
+        };
+
+    } 
 
     private static String getRemoteProjectDir(ExecutionEnvironment env) {
         try {

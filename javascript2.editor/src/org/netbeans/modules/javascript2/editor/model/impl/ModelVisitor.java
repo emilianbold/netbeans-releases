@@ -245,6 +245,10 @@ public class ModelVisitor extends PathNodeVisitor {
                 && (binaryNode.lhs() instanceof AccessNode || binaryNode.lhs() instanceof IdentNode)) {
             // TODO probably not only assign
             JsObjectImpl parent = modelBuilder.getCurrentDeclarationFunction();
+            if (parent == null) {
+                // should not happened
+                return super.enter(binaryNode);
+            }
             if (binaryNode.lhs() instanceof AccessNode) {
                 AccessNode aNode = (AccessNode)binaryNode.lhs();
                 JsObjectImpl property = null;

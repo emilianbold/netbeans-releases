@@ -53,8 +53,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import javax.swing.event.ListDataEvent;
-import javax.swing.event.ListDataListener;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -359,8 +357,9 @@ public class ManagedBeanPanelVisual extends javax.swing.JPanel implements HelpCt
     /** Help context where to find more about the paste type action.
      * @return the help context for this action
      */
+    @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(ManagedBeanPanelVisual.class);
+        return new HelpCtx("org.netbeans.modules.web.jsf.wizards.ManagedBeanPanelVisual");
     }
 
     private final Set<ChangeListener> listeners = new HashSet(1);

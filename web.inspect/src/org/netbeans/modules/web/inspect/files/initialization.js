@@ -156,9 +156,12 @@ NetBeans.insertGlassPane = function() {
     canvas.style.left = 0;
     canvas.style.zIndex = zIndex;
     canvas.style.pointerEvents = 'none';
+    var iOS = (navigator.userAgent.match(/(iPad|iPhone|iPod)/g) ? true : false) ;
     var getElementForEvent = function(event) {
         canvas.style.visibility = 'hidden';
-        var element = document.elementFromPoint(event.clientX, event.clientY);
+        var element = iOS ? 
+            document.elementFromPoint(event.pageX, event.pageY) :
+            document.elementFromPoint(event.clientX, event.clientY);
         // Do not select helper elements introduced by page inspection
         while (element.getAttribute(self.ATTR_ARTIFICIAL)) { 
             element = element.parentNode;
@@ -167,8 +170,11 @@ NetBeans.insertGlassPane = function() {
         return element;
     };
 
+    //Click event does not work on iOS
+    var eventname = ( iOS ? 'touchstart' : 'click' );
+
     // Selection handler
-    canvas.addEventListener('click', function(event) {
+    canvas.addEventListener(eventname, function(event) {
         var element = getElementForEvent(event);
         var ctrl = event.ctrlKey;
         var meta = event.metaKey;
@@ -390,6 +396,11 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
             // Box model
             var first = (j === 0) || !inline;
             var last = (j === rects.length-1) || !inline;
+            
+            var borderRect = rects[j];
+            if (borderRect.width === 0 || borderRect.height === 0) {
+                continue;
+            }
 
             var marginLeft = first ? parseInt(style.marginLeft) : 0;
             var marginRight = last ? parseInt(style.marginRight) : 0;
@@ -400,7 +411,6 @@ NetBeans.paintHighlightedElements = function(ctx, elements) {
             var paddingLeft = first ? parseInt(style.paddingLeft) : 0;
             var paddingRight = last ? parseInt(style.paddingRight) : 0;
 
-            var borderRect = rects[j];
             var marginRect = {
                 left: borderRect.left - marginLeft,
                 top: borderRect.top - marginTop,

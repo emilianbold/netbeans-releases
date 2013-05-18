@@ -83,9 +83,7 @@ class DiffToRevision  implements ActionListener, PropertyChangeListener {
     })
     public DiffToRevision (File repository, GitBranch currentBranch) {
         this.repository = repository;
-        Revision baseRevision = currentBranch.getName() == GitBranch.NO_BRANCH
-                ? new Revision(currentBranch.getId(), currentBranch.getId())
-                : new Revision(currentBranch.getName(), currentBranch.getName());
+        Revision baseRevision = new Revision.BranchReference(currentBranch);
         kinds = new DiffToRevisionKind[] {
             new DiffToRevisionKind.LocalToBaseKind(),
             new DiffToRevisionKind.LocalToRevisionKind(repository, baseRevision),

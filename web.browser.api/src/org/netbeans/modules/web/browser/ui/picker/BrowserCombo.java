@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.browser.ui.picker;
 
 import java.util.Collection;
+import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
@@ -60,7 +61,9 @@ public final class BrowserCombo extends JComboBox<WebBrowser> {
 
     private final BrowserMenu popup;
 
-    public BrowserCombo( @NullAllowed String selectedBrowserId, boolean showIDEGlobalBrowserOption, boolean includePhoneGap ) {
+    public BrowserCombo( @NullAllowed String selectedBrowserId, 
+            boolean showIDEGlobalBrowserOption, boolean includePhoneGap,
+            ComboBoxModel model) {
 
         Collection<WebBrowser> browsers = WebBrowsers.getInstance().getAll(false, showIDEGlobalBrowserOption, includePhoneGap, true);
         WebBrowser selectedBrowser = null;
@@ -71,7 +74,7 @@ public final class BrowserCombo extends JComboBox<WebBrowser> {
         setMaximumRowCount( 1 );
         setRenderer( BrowserUISupport.createBrowserRenderer() );
 
-        setModel( BrowserUISupport.createBrowserModel( selectedBrowserId, showIDEGlobalBrowserOption, includePhoneGap ) );
+        setModel( model );
 
         popup.addChangeListener( new ChangeListener() {
 

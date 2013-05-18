@@ -132,7 +132,7 @@ public final class VariousUtils {
     public static final String STATIC_FIELD_TYPE_PREFIX = "static.fld" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
     public static final String VAR_TYPE_PREFIX = "var" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
     public static final String ARRAY_TYPE_PREFIX = "array" + POST_OPERATION_TYPE_DELIMITER; //NOI18N
-    private static final Collection<String> SPECIAL_CLASS_NAMES = new LinkedList<String>();
+    private static final Collection<String> SPECIAL_CLASS_NAMES = new LinkedList<>();
     private static final String VAR_TYPE_COMMENT_PREFIX = "@var"; //NOI18N
     private static final String SPACES_AND_TYPE_DELIMITERS = "[| ]*"; //NOI18N
 
@@ -196,7 +196,7 @@ public final class VariousUtils {
     }
 
     static String extractTypeFroVariableBase(VariableBase varBase, Map<String, AssignmentImpl> allAssignments) {
-        Stack<VariableBase> stack = new Stack<VariableBase>();
+        Stack<VariableBase> stack = new Stack<>();
         String typeName = null;
         createVariableBaseChain(varBase, stack);
         while (!stack.isEmpty() && stack.peek() != null) {
@@ -235,7 +235,7 @@ public final class VariousUtils {
     }
 
     public static Map<String, List<QualifiedName>> getParamTypesFromPHPDoc(Program root, ASTNode node) {
-        Map<String, List<QualifiedName>> retval = new HashMap<String, List<QualifiedName>>();
+        Map<String, List<QualifiedName>> retval = new HashMap<>();
         Comment comment = Utils.getCommentForNode(root, node);
 
         if (comment instanceof PHPDocBlock) {
@@ -243,7 +243,7 @@ public final class VariousUtils {
 
             for (PHPDocTag tag : phpDoc.getTags()) {
                 if (tag.getKind().equals(PHPDocTag.Type.PARAM)) {
-                    List<QualifiedName> types = new ArrayList<QualifiedName>();
+                    List<QualifiedName> types = new ArrayList<>();
                     PHPDocVarTypeTag paramTag = (PHPDocVarTypeTag) tag;
                     for (PHPDocTypeNode type : paramTag.getTypes()) {
                         types.add(QualifiedName.create(type.getValue()));
@@ -382,7 +382,7 @@ public final class VariousUtils {
         return retval.toString();
     }
     public static Collection<? extends VariableName> getAllVariables(VariableScope varScope, String semiTypeName)  {
-        List<VariableName> retval = new ArrayList<VariableName>();
+        List<VariableName> retval = new ArrayList<>();
         String[] fragments = semiTypeName.split("[" + PRE_OPERATION_TYPE_DELIMITER + POST_OPERATION_TYPE_DELIMITER + "]"); //NOI18N
         for (int i = 0; i < fragments.length; i++) {
             String frag = fragments[i];
@@ -404,7 +404,7 @@ public final class VariousUtils {
         return retval;
     }
 
-    private static Set<String> recursionDetection = new HashSet<String>(); //#168868
+    private static Set<String> recursionDetection = new HashSet<>(); //#168868
     //TODO: needs to be improved to properly return more types
     public static Collection<? extends TypeScope> getType(
             final VariableScope varScope,
@@ -413,7 +413,7 @@ public final class VariousUtils {
             boolean justDispatcher) {
         Collection<? extends TypeScope> recentTypes = Collections.emptyList();
         Collection<? extends TypeScope> oldRecentTypes;
-        Stack<VariableName> fldVarStack = new Stack<VariableName>();
+        Stack<VariableName> fldVarStack = new Stack<>();
 
         if (semiTypeName != null && semiTypeName.contains(PRE_OPERATION_TYPE_DELIMITER)) {
             String operation = null;
@@ -448,13 +448,13 @@ public final class VariousUtils {
                         recentTypes = IndexScopeImpl.getTypes(QualifiedName.create(frag), varScope);
                     } else if (operation.startsWith(VariousUtils.CONSTRUCTOR_TYPE_PREFIX)) {
                         //new FooImpl()-> not allowed in php
-                        Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
+                        Set<TypeScope> newRecentTypes = new HashSet<>();
                         QualifiedName fullyQualifiedName = getFullyQualifiedName(createQuery(frag, varScope), offset, varScope);
                         newRecentTypes.addAll(IndexScopeImpl.getClasses(fullyQualifiedName, varScope));
                         recentTypes = newRecentTypes;
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.METHOD_TYPE_PREFIX)) {
-                        Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
+                        Set<TypeScope> newRecentTypes = new HashSet<>();
                         for (TypeScope tScope : oldRecentTypes) {
                             Collection<? extends MethodScope> inheritedMethods = IndexScopeImpl.getMethods(tScope, frag, varScope, PhpModifiers.ALL_FLAGS);
                             for (MethodScope meth : inheritedMethods) {
@@ -464,7 +464,7 @@ public final class VariousUtils {
                         recentTypes = filterSuperTypes(newRecentTypes);
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.FUNCTION_TYPE_PREFIX)) {
-                        Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
+                        Set<TypeScope> newRecentTypes = new HashSet<>();
                         FunctionScope fnc = ModelUtils.getFirst(IndexScopeImpl.getFunctions(QualifiedName.create(frag), varScope));
                         if (fnc != null) {
                             newRecentTypes.addAll(fnc.getReturnTypes(true, recentTypes));
@@ -472,7 +472,7 @@ public final class VariousUtils {
                         recentTypes = newRecentTypes;
                         operation = null;
                     } else if (operation.startsWith(STATIC_FIELD_TYPE_PREFIX)) {
-                        Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
+                        Set<TypeScope> newRecentTypes = new HashSet<>();
                         String[] frgs = frag.split("\\."); //NOI18N
                         assert frgs.length == 2 : semiTypeName;
                         String clsName = frgs[0];
@@ -489,7 +489,7 @@ public final class VariousUtils {
                         recentTypes = newRecentTypes;
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.STATIC_METHOD_TYPE_PREFIX)) {
-                        Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
+                        Set<TypeScope> newRecentTypes = new HashSet<>();
                         String[] frgs = frag.split("\\."); //NOI18N
                         assert frgs.length == 2;
                         String clsName = frgs[0];
@@ -507,7 +507,7 @@ public final class VariousUtils {
                         operation = null;
                     } else if (operation.startsWith(VariousUtils.VAR_TYPE_PREFIX)
                             || (operation.startsWith(VariousUtils.ARRAY_TYPE_PREFIX))) {
-                        Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
+                        Set<TypeScope> newRecentTypes = new HashSet<>();
                         String varName = frag;
                         VariableName var = ModelUtils.getFirst(varScope.getDeclaredVariables(), varName);
                         if (var != null) {
@@ -547,7 +547,7 @@ public final class VariousUtils {
 
                     } else if (operation.startsWith(VariousUtils.FIELD_TYPE_PREFIX)) {
                         VariableName var = fldVarStack.isEmpty() ? null : fldVarStack.pop();
-                        Set<TypeScope> newRecentTypes = new HashSet<TypeScope>();
+                        Set<TypeScope> newRecentTypes = new HashSet<>();
                         String fldName = frag;
                         if (!fldName.startsWith("$")) { //NOI18N
                             fldName = "$" + fldName; //NOI18N
@@ -597,7 +597,7 @@ public final class VariousUtils {
     }
 
     private static Collection<TypeScope> filterSuperTypes(final Collection<? extends TypeScope> typeScopes) {
-        final Collection<TypeScope> result = new HashSet<TypeScope>();
+        final Collection<TypeScope> result = new HashSet<>();
         if (typeScopes.size() > 1) {
             result.addAll(filterPossibleSuperTypes(typeScopes));
         } else {
@@ -607,7 +607,7 @@ public final class VariousUtils {
     }
 
     private static Collection<TypeScope> filterPossibleSuperTypes(final Collection<? extends TypeScope> typeScopes) {
-        final Collection<TypeScope> result = new HashSet<TypeScope>();
+        final Collection<TypeScope> result = new HashSet<>();
         for (TypeScope typeScope : typeScopes) {
             if (!isSuperTypeOf(typeScope, typeScopes)) {
                 result.add(typeScope);
@@ -644,9 +644,9 @@ public final class VariousUtils {
     }
 
     public static Stack<? extends ModelElement> getElemenst(FileScope topScope, final VariableScope varScope, String semiTypeName, int offset) {
-        Stack<ModelElement> emptyStack = new Stack<ModelElement>();
-        Stack<ModelElement> retval = new Stack<ModelElement>();
-        Stack<Collection<? extends TypeScope>> stack = new Stack<Collection<? extends TypeScope>>();
+        Stack<ModelElement> emptyStack = new Stack<>();
+        Stack<ModelElement> retval = new Stack<>();
+        Stack<Collection<? extends TypeScope>> stack = new Stack<>();
 
         TypeScope type;
         if (semiTypeName != null && semiTypeName.contains(PRE_OPERATION_TYPE_DELIMITER)) {
@@ -1211,18 +1211,25 @@ public final class VariousUtils {
             }
         }
         if (classScope != null) {
-            if ("self".equals(clsName) || "this".equals(clsName) || "static".equals(clsName)) { //NOI18N
-                clsName = classScope.getName();
-            } else if ("parent".equals(clsName)) { //NOI18N
-                QualifiedName fullyQualifiedName = ModelUtils.getFirst(classScope.getPossibleFQSuperClassNames());
-                if (fullyQualifiedName != null) {
-                    clsName = fullyQualifiedName.toString();
-                } else {
-                    ClassScope clzScope = ModelUtils.getFirst(classScope.getSuperClasses());
-                    if (clzScope != null) {
-                        clsName = clzScope.getName();
+            switch (clsName) {
+                case "self": //NOI18N
+                case "this": //NOI18N
+                case "static": //NOI18N
+                    clsName = classScope.getName();
+                    break;
+                case "parent": //NOI18N
+                    QualifiedName fullyQualifiedName = ModelUtils.getFirst(classScope.getPossibleFQSuperClassNames());
+                    if (fullyQualifiedName != null) {
+                        clsName = fullyQualifiedName.toString();
+                    } else {
+                        ClassScope clzScope = ModelUtils.getFirst(classScope.getSuperClasses());
+                        if (clzScope != null) {
+                            clsName = clzScope.getName();
+                        }
                     }
-                }
+                    break;
+                default:
+                    // no-op
             }
         }
         return clsName;
@@ -1325,13 +1332,13 @@ public final class VariousUtils {
         return retval;
     }
     public static Collection<QualifiedName> getAllNames(QualifiedName fullName, NamespaceScope contextNamespace) {
-        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        Set<QualifiedName> namesProposals = new HashSet<>();
         namesProposals.addAll(getRelatives(contextNamespace, fullName));
         namesProposals.add(fullName.toFullyQualified());
         return namesProposals;
     }
     public static Collection<QualifiedName> getRelativesToUses(NamespaceScope contextNamespace, QualifiedName fullName) {
-        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        Set<QualifiedName> namesProposals = new HashSet<>();
         Collection<? extends UseScope> declaredUses = contextNamespace.getDeclaredUses();
         for (UseScope useElement : declaredUses) {
             QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(useElement.getName()), true);
@@ -1342,7 +1349,7 @@ public final class VariousUtils {
         return namesProposals;
     }
     public static Collection<QualifiedName> getRelativesToNamespace(NamespaceScope contextNamespace, QualifiedName fullName) {
-        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        Set<QualifiedName> namesProposals = new HashSet<>();
         QualifiedName proposedName = QualifiedName.getSuffix(fullName, QualifiedName.create(contextNamespace), false);
         if (proposedName != null) {
             namesProposals.add(proposedName);
@@ -1350,7 +1357,7 @@ public final class VariousUtils {
         return namesProposals;
     }
     public static Collection<QualifiedName> getRelatives(NamespaceScope contextNamespace, QualifiedName fullName) {
-        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        Set<QualifiedName> namesProposals = new HashSet<>();
         namesProposals.addAll(getRelativesToNamespace(contextNamespace, fullName));
         namesProposals.addAll(getRelativesToUses(contextNamespace, fullName));
         return namesProposals;
@@ -1358,7 +1365,7 @@ public final class VariousUtils {
 
     public static Collection<QualifiedName> getComposedNames(QualifiedName name, NamespaceScope contextNamespace) {
         Collection<? extends UseScope> declaredUses = contextNamespace.getDeclaredUses();
-        Set<QualifiedName> namesProposals = new HashSet<QualifiedName>();
+        Set<QualifiedName> namesProposals = new HashSet<>();
         if (!name.getKind().isFullyQualified()) {
             QualifiedName proposedName = QualifiedName.create(contextNamespace).append(name).toFullyQualified();
             if (proposedName != null) {
@@ -1423,7 +1430,7 @@ public final class VariousUtils {
      * whether the name belongs to the defined namespace or to the default one.
      */
     public static Collection<QualifiedName> getPossibleFQN(QualifiedName name, int nameOffset, NamespaceScope contextNamespace) {
-        Set<QualifiedName> namespaces = new HashSet<QualifiedName>();
+        Set<QualifiedName> namespaces = new HashSet<>();
         boolean resolved = false;
         if (name.getKind().isFullyQualified()) {
             namespaces.add(name);

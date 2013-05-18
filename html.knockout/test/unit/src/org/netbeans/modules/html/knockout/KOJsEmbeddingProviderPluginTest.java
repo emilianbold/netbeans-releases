@@ -73,18 +73,22 @@ public class KOJsEmbeddingProviderPluginTest extends CslTestBase {
     public void testSimple() {
         FileObject index = getTestFile("KOTestProject/public_html/simple.html");
         BaseDocument document = getDocument(index);
-        JsEmbeddingProviderTest.assertEmbedding(document, "var $root = ko.$bindings;\n"
-                + "var $data = $root;\n"
-                + "var $parent = undefined;\n"
-                + "__netbeans_import__('js/libs/knockout-2.2.1/knockout-min.js');\n"
+        JsEmbeddingProviderTest.assertEmbedding(document,
+                "__netbeans_import__('js/libs/knockout-2.2.1/knockout-min.js');\n"
                 + "\n"
                 + "__netbeans_import__('js/simple_model.js');\n"
                 + "\n"
+                + "(function(){\n"
+                + "var $root = ko.$bindings;\n"
+                + "var $data = $root;\n"
+                + "var $parent = undefined;\n"
+
                 + "(function(){\n"
                 + "addSeat;\n"
                 + "});\n"
                 + "(function(){\n"
                 + "seats().length < 5;\n"
+                + "});\n"
                 + "});\n");
     }
 }

@@ -315,7 +315,7 @@ public final class DashboardTopComponent extends TopComponent {
     }
     
     public void addTask(TaskNode... taskNodes) {
-        List<Category> categories = dashboard.getCategories(true);
+        List<Category> categories = dashboard.getCategories(true, false);
         for (TaskNode taskNode : taskNodes) {
             if (taskNode.isCategorized()) {
                 categories.remove(taskNode.getCategory());

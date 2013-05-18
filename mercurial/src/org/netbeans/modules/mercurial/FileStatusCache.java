@@ -273,6 +273,17 @@ public class FileStatusCache {
      * @return always returns a not null value
      */
     public FileInformation getCachedStatus(final File file) {
+        return getCachedStatus(file, false);
+    }
+
+    /**
+     * Marks the file seen in UI. The file is added to seen roots and from now
+     * on all external changes will trigger status refresh on this file.
+     *
+     * @param file
+     * @return file's current cached status
+     */
+    FileInformation markAsSeenInUI (File file) {
         return getCachedStatus(file, true);
     }
 
@@ -705,9 +716,6 @@ public class FileStatusCache {
      *
      * Is not recursive for flat roots
      * 
-     * <strong>Note</strong> that the given roots will be considered seen roots, so you should not pass a <strong>repository root unless the root has indeed been seen in the UI</strong>.
-     * Such a root will be cached and every external event or repository-affecting action will invoke a status scan on the root.
-     *
      * @param roots context to examine
      * @param includeStatus limit returned files to those having one of supplied statuses
      * @return File [] array of interesting files

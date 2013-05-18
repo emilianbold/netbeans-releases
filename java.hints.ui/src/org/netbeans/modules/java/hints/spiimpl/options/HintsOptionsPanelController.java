@@ -105,7 +105,7 @@ public final class HintsOptionsPanelController extends OptionsPanelController {
         } else {
             settings = null;
         }
-        if ( panel == null ) {
+        if (panel == null || settings != null) {
             panel = new HintsPanel(masterLookup.lookup(OptionsFilter.class), settings);
         }
         return panel;

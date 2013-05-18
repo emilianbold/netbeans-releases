@@ -73,7 +73,7 @@ public final class PhpDocTypeTagInfo extends ASTNodeInfo<PHPDocNode> {
     }
 
     public static List<? extends PhpDocTypeTagInfo> create(PHPDocTypeTag typeTag, Kind kind, Scope scope) {
-        List<PhpDocTypeTagInfo> retval = new ArrayList<PhpDocTypeTagInfo>();
+        List<PhpDocTypeTagInfo> retval = new ArrayList<>();
         List<PHPDocTypeNode> types = typeTag.getTypes();
         if (!types.isEmpty()) {
             for (PHPDocNode docNode : types) {

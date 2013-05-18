@@ -345,7 +345,7 @@ public class DiskRepositoryManager extends BaseRepository implements RepositoryW
         //
         StorageAllocator allocator = getStorageAllocator();
         if (cleanRepository) {
-            allocator.deleteUnitFiles(unitName, true);
+            allocator.deleteUnitFiles(unitId, unitName, true);
         }
         allocator.closeUnit(unitName);
 

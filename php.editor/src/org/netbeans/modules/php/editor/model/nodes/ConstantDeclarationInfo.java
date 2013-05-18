@@ -60,7 +60,7 @@ public class ConstantDeclarationInfo extends ClassConstantDeclarationInfo {
     }
 
     public static List<? extends ConstantDeclarationInfo> create(ConstantDeclaration constantDeclaration) {
-        List<ConstantDeclarationInfo> retval = new ArrayList<ConstantDeclarationInfo>();
+        List<ConstantDeclarationInfo> retval = new ArrayList<>();
         List<Identifier> names = constantDeclaration.getNames();
         for (Identifier identifier : names) {
             String value = null;

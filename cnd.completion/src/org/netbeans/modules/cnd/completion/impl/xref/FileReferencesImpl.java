@@ -469,7 +469,11 @@ public final class FileReferencesImpl extends CsmFileReferences  {
             int pushCount = 0;
             if (derefToken == null) {
                 other(CppTokenId.IDENTIFIER);
-                context.push(peek(brackets), ref);
+                if (peek(brackets) == null) {
+                    context.push(CppTokenId.IDENTIFIER, ref);
+                } else {
+                    context.push(peek(brackets), ref);
+                }
                 ++pushCount;
             } else {
                 if (peek(pushes) == 0 && peek(brackets) != null) {

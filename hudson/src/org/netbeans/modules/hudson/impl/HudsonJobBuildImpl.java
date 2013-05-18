@@ -44,34 +44,27 @@
 
 package org.netbeans.modules.hudson.impl;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import org.netbeans.modules.hudson.api.HudsonJob.Color;
-import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
-import org.netbeans.modules.hudson.impl.HudsonJobImpl.HudsonMavenModule;
-import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.hudson.api.ConnectionBuilder;
 import org.netbeans.modules.hudson.api.HudsonJob;
+import org.netbeans.modules.hudson.api.HudsonJob.Color;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
-import org.netbeans.modules.hudson.api.Utilities;
-import org.netbeans.modules.hudson.spi.HudsonSCM;
-import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
-import org.openide.filesystems.FileSystem;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle.Messages;
+import org.netbeans.modules.hudson.api.HudsonMavenModuleBuild;
+import org.netbeans.modules.hudson.api.ui.ConsoleDataDisplayer;
+import org.netbeans.modules.hudson.api.ui.FailureDataDisplayer;
+import org.netbeans.modules.hudson.api.ui.OpenableInBrowser;
 import static org.netbeans.modules.hudson.impl.Bundle.*;
+import org.netbeans.modules.hudson.impl.HudsonJobImpl.HudsonMavenModule;
 import org.netbeans.modules.hudson.spi.BuilderConnector;
-import org.openide.windows.OutputListener;
-import org.openide.xml.XMLUtil;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
+import org.netbeans.modules.hudson.spi.ConsoleDataDisplayerImpl;
+import org.netbeans.modules.hudson.spi.FailureDataDisplayerImpl;
+import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
+import org.openide.filesystems.FileSystem;
+import org.openide.util.NbBundle.Messages;
 
 public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
 
@@ -148,16 +141,71 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
         return HudsonJobBuildImpl_display_name(job.getDisplayName(), getNumber());
     }
 
-    public static Color getColorForBuild(HudsonJobBuild build) {
-        switch (build.getResult()) {
-            case SUCCESS:
-                return Color.blue;
-            case UNSTABLE:
-                return Color.yellow;
-            case FAILURE:
-                return Color.red;
-            default:
-                return Color.grey;
+    private ConsoleDataDisplayer createDisplayerFromImpl(
+            final ConsoleDataDisplayerImpl displayerImpl) {
+        return new ConsoleDataDisplayer() {
+
+            @Override
+            public void open() {
+                displayerImpl.open();
+            }
+
+            @Override
+            public boolean writeLine(String line) {
+                return displayerImpl.writeLine(line);
+            }
+
+            @Override
+            public void close() {
+                displayerImpl.close();
+            }
+        };
+    }
+
+    private FailureDataDisplayer createDisplayerFromImpl(
+            final FailureDataDisplayerImpl displayerImpl) {
+        return new FailureDataDisplayer() {
+
+            @Override
+            public void open() {
+                displayerImpl.open();
+            }
+
+            @Override
+            public void showSuite(FailureDataDisplayer.Suite suite) {
+                displayerImpl.showSuite(suite);
+            }
+
+            @Override
+            public void close() {
+                displayerImpl.close();
+            }
+        };
+    }
+
+    @Override
+    public boolean canShowConsole() {
+        return connector.getConsoleDataProvider() != null;
+    }
+
+    @Override
+    public void showConsole(ConsoleDataDisplayerImpl displayer) {
+        BuilderConnector.ConsoleDataProvider cd = connector.getConsoleDataProvider();
+        if (cd != null) {
+            cd.showConsole(this, createDisplayerFromImpl(displayer));
+        }
+    }
+
+    @Override
+    public boolean canShowFailures() {
+        return connector.getFailureDataProvider() != null;
+    }
+
+    @Override
+    public void showFailures(FailureDataDisplayerImpl displayer) {
+        BuilderConnector.FailureDataProvider fd = connector.getFailureDataProvider();
+        if (fd != null) {
+            fd.showFailures(this, createDisplayerFromImpl(displayer));
         }
     }
 
@@ -201,6 +249,31 @@ public class HudsonJobBuildImpl implements HudsonJobBuild, OpenableInBrowser {
             return HudsonJobBuildImpl_display_name(getDisplayName(), getNumber());
         }
 
+        @Override
+        public boolean canShowConsole() {
+            return getBuild().canShowConsole();
+        }
+
+        @Override
+        public void showConsole(ConsoleDataDisplayerImpl displayer) {
+            BuilderConnector.ConsoleDataProvider cd = connector.getConsoleDataProvider();
+            if (cd != null) {
+                cd.showConsole(this, createDisplayerFromImpl(displayer));
+            }
+        }
+
+        @Override
+        public boolean canShowFailures() {
+            return getBuild().canShowFailures();
+        }
+
+        @Override
+        public void showFailures(FailureDataDisplayerImpl displayer) {
+            BuilderConnector.FailureDataProvider fp = connector.getFailureDataProvider();
+            if (fp != null) {
+                fp.showFailures(this, createDisplayerFromImpl(displayer));
+            }
+        }
     }
 
 }

@@ -65,6 +65,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Condition;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.DebuggerStartException;
 import org.netbeans.modules.javacard.JCUtil;
 import org.netbeans.modules.javacard.api.RunMode;
@@ -85,7 +87,6 @@ import org.netbeans.modules.javacard.spi.capabilities.StopCapability;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -199,7 +200,7 @@ public class JCProjectActionProvider implements ActionProvider {
                         dir.delete();
                     }
                 } catch (IOException ioe) {
-                    Exceptions.printStackTrace(ioe);
+                    Logger.getLogger(JCProjectActionProvider.class.getName()).log(Level.FINE, ioe.getMessage(), ioe);
                 }
             }
             return;
@@ -301,14 +302,14 @@ public class JCProjectActionProvider implements ActionProvider {
                                 }
                                 task.getInputOutput().select();
                             } catch (IOException ex) {
-                                Exceptions.printStackTrace(ex);
+                                Logger.getLogger(JCProjectActionProvider.class.getName()).log(Level.FINE, ex.getMessage(), ex);
                             }
                         }
                     });
                 }
             }
         } catch (Exception e) {
-            Exceptions.printStackTrace(e);
+            Logger.getLogger(JCProjectActionProvider.class.getName()).log(Level.FINE, e.getMessage(), e);
         }
     }
 
@@ -371,7 +372,7 @@ public class JCProjectActionProvider implements ActionProvider {
                     try {
                         c.await(30000, TimeUnit.MILLISECONDS);
                     } catch (InterruptedException ex) {
-                        Exceptions.printStackTrace(ex);
+                        Logger.getLogger(JCProjectActionProvider.class.getName()).log(Level.FINE, ex.getMessage(), ex);
                     }
                 }
             }
@@ -384,7 +385,7 @@ public class JCProjectActionProvider implements ActionProvider {
                 try {
                     c.await(30000, TimeUnit.MILLISECONDS);
                 } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
+                    Logger.getLogger(JCProjectActionProvider.class.getName()).log(Level.FINE, ex.getMessage(), ex);
                 }
             }
             targets.add("run"); //NOI18N
@@ -458,7 +459,7 @@ public class JCProjectActionProvider implements ActionProvider {
                         try {
                             stopper.stop().await();
                         } catch (InterruptedException ex1) {
-                            Exceptions.printStackTrace(ex1);
+                            Logger.getLogger(JCProjectActionProvider.class.getName()).log(Level.FINE, ex.getMessage(), ex);
                         }
                     }
                     StatusDisplayer.getDefault().setStatusText(
@@ -467,10 +468,10 @@ public class JCProjectActionProvider implements ActionProvider {
                                 "MSG_DEBUG_PORT_TIMEOUT", //NOI18N
                                 host, attachPort));
                 } else {
-                    Exceptions.printStackTrace(ex);
+                    Logger.getLogger(JCProjectActionProvider.class.getName()).log(Level.FINE, ex.getMessage(), ex);
                 }
             } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
+                Logger.getLogger(JCProjectActionProvider.class.getName()).log(Level.FINE, ex.getMessage(), ex);
             }
         }
 
@@ -486,7 +487,7 @@ public class JCProjectActionProvider implements ActionProvider {
                 //before it will not reject another connection
                 Thread.sleep (7000);
             } catch (InterruptedException e) {
-                Exceptions.printStackTrace(e);
+                Logger.getLogger(JCProjectActionProvider.class.getName()).log(Level.FINE, e.getMessage(), e);
             }
 //            HOW THIS OUGHT TO WORK:
 //            for (int i=0; i < 6; i++) {

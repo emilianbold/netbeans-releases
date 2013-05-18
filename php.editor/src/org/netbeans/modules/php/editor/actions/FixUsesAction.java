@@ -109,7 +109,7 @@ public class FixUsesAction extends BaseAction {
         if (target != null) {
             final int caretPosition = target.getCaretPosition();
             final AtomicBoolean cancel = new AtomicBoolean();
-            final AtomicReference<ImportData> importData = new AtomicReference<ImportData>();
+            final AtomicReference<ImportData> importData = new AtomicReference<>();
             final UserTask task = new UserTask() {
 
                 @Override

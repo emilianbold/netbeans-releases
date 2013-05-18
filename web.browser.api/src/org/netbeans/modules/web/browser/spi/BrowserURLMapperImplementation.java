@@ -82,9 +82,17 @@ public interface BrowserURLMapperImplementation {
         public String getServerURLRoot() {
             return serverURLRoot;
         }
+        
+        public void setServerURLRoot(String s) {
+            serverURLRoot = s;
+        }
 
         public String getBrowserURLRoot() {
             return browserURLRoot;
+        }
+        
+        public void setBrowserURLRoot(String url) {
+            browserURLRoot = url;
         }
 
     }

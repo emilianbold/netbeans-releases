@@ -83,7 +83,7 @@ public final class ParameterElementImpl implements ParameterElement {
     }
 
     static List<ParameterElement> parseParameters(final String signature) {
-        List<ParameterElement> retval = new ArrayList<ParameterElement>();
+        List<ParameterElement> retval = new ArrayList<>();
         if (signature != null && signature.length() > 0) {
             final String regexp = String.format("\\%s", Separator.COMMA.toString()); //NOI18N
             for (String sign : signature.split(regexp)) {

@@ -53,8 +53,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
-import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.ui.wizard.common.BasicWizardIterator;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.AsyncGUIJob;
@@ -78,7 +79,7 @@ final class BasicSettingsPanel extends BasicWizardIterator.Panel {
                 "editor" //NOI18N
             };
     private boolean loadedComboBox = false;
-
+    
     /**
      * Creates new form BasicSettingsPanel
      */
@@ -393,7 +394,11 @@ private void redefineActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRS
         }
         task.addTaskListener(new PostProcess());
     } catch (IOException e) {
-        Util.err.notify(e);
+        NotifyDescriptor.Message msg = new NotifyDescriptor.Message(e.getMessage(),
+                    NotifyDescriptor.WARNING_MESSAGE);
+                            DialogDisplayer.getDefault().notify(msg);
+        Logger.getLogger(BasicSettingsPanel.class.getName()).log(Level.INFO, "No application found", e);
+        //Util.err.notify(e);
     }
 }//GEN-LAST:event_redefineActionPerformed
     

@@ -19,7 +19,7 @@ CLASS  ( ) [1:1/0-7:2/179] lcurly=12 SCOPE: $Global$
             UNIQUE NAME f:operator  T*<class>()
             DECLARATION: operator  T*  [3:3/24-3:54/75]
             PARAMETERS:
-            RETURNS const *operator  T*::T TEXT=const T*  [3:30/51-3:31/52]
+            RETURNS *operator  T*::T TEXT=T*  [3:30/51-3:31/52]
             STATEMENT COMPOUND  [3:41/62-3:54/75] SCOPE: operator  T* 
                 STATEMENT RETURN  [3:43/64-3:52/73] SCOPE: Stmt  [3:41/62-3:54/75] text: 'return 0;'
         FUNCTION DEFINITION operator  T C::*  [4:3/78-4:67/142] MethodDDImpl SCOPE:  
@@ -27,7 +27,7 @@ CLASS  ( ) [1:1/0-7:2/179] lcurly=12 SCOPE: $Global$
             UNIQUE NAME f:operator  T C::*<class,class>()
             DECLARATION: operator  T C::*  [4:3/78-4:67/142]
             PARAMETERS:
-            RETURNS const operator  T C::*::T TEXT=const T  [4:39/114-4:40/115]
+            RETURNS operator  T C::*::T TEXT=T  [4:39/114-4:40/115]
             STATEMENT COMPOUND  [4:54/129-4:67/142] SCOPE: operator  T C::* 
                 STATEMENT RETURN  [4:56/131-4:65/140] SCOPE: Stmt  [4:54/129-4:67/142] text: 'return 0;'
         FUNCTION operator & [6:3/154-6:26/177] MethodImpl SCOPE:  

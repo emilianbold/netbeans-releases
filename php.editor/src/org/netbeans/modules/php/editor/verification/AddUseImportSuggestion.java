@@ -136,7 +136,7 @@ public class AddUseImportSuggestion extends SuggestionRule {
 
         private BaseDocument doc;
         private PHPRuleContext context;
-        private Collection<Hint> hints = new ArrayList<Hint>();
+        private Collection<Hint> hints = new ArrayList<>();
         private final OffsetRange lineBounds;
 
         CheckVisitor(PHPRuleContext context, BaseDocument doc, OffsetRange lineBounds) {

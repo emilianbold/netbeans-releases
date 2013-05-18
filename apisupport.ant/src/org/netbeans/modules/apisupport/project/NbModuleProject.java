@@ -322,6 +322,7 @@ public final class NbModuleProject implements Project {
         ic.add(new AntArtifactProviderImpl(this, helper, evaluator()));
         ic.add(new CustomizerProviderImpl(this, getHelper(), evaluator()));
         ic.add(new NbModuleProviderImpl(this));
+        ic.add(new NbProjectProviderImpl(this));
         ic.add(new PrivilegedTemplatesImpl());
         ic.add(new ModuleProjectClassPathExtender(this));
         ic.add(new LocalizedBundleInfoProvider());

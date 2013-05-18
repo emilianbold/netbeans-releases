@@ -62,6 +62,9 @@ public class AntlrLexer implements AsmHighlightLexer {
     
     private int length;
     
+    private static final int ERROR_LIMIT = 100;
+    private int errorsNumber;
+    
     public AntlrLexer(AntlrScanner scanner, IdentResolver resolver) {        
         this.scanner = scanner;
         this.resolver = resolver;
@@ -73,6 +76,11 @@ public class AntlrLexer implements AsmHighlightLexer {
      
         int start = scanner.getOffset();                    
         AsmTokenId tokId = AsmBaseTokenId.ASM_EMPTY;
+        
+        if (errorsNumber > ERROR_LIMIT) {
+            length = scanner.getOffset() - start;
+            return tokId;
+        }
         
         try {           
             AntlrToken antlrTok = (AntlrToken) scanner.nextToken();
@@ -105,6 +113,11 @@ public class AntlrLexer implements AsmHighlightLexer {
             } else {
                 Logger.getLogger(this.getClass().getName()).
                     log(Level.SEVERE, "Unresolved symbol at position " + start); // NOI18N
+                errorsNumber++;
+                if (errorsNumber > ERROR_LIMIT) {
+                    Logger.getLogger(this.getClass().getName()).
+                        log(Level.SEVERE, "More than " + ERROR_LIMIT + " unresolved symbols, skipping the rest"); // NOI18N
+                }
             }            
             length = scanner.getOffset() - start;
         }

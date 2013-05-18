@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.mercurial.ui.pull;
 
+import java.awt.EventQueue;
+import java.awt.event.ActionEvent;
 import java.util.ListIterator;
 import java.net.URISyntaxException;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -66,6 +68,7 @@ import org.netbeans.modules.mercurial.Mercurial;
 import org.netbeans.modules.mercurial.OutputLogger;
 import org.netbeans.modules.mercurial.ui.merge.MergeAction;
 import org.netbeans.modules.mercurial.ui.actions.ContextAction;
+import org.netbeans.modules.mercurial.ui.commit.CommitAction;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.queues.QGoToPatchAction;
 import org.netbeans.modules.mercurial.ui.queues.QPatch;
@@ -81,10 +84,14 @@ import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.DialogDescriptor;
 import org.openide.nodes.Node;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
+import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.util.actions.SystemAction;
+import org.openide.util.lookup.Lookups;
 
 /**
  * Pull action for mercurial:
@@ -303,6 +310,9 @@ public class PullAction extends ContextAction {
      * @param toPrjName
      * @param logger
      */
+    @NbBundle.Messages({
+        "MSG_PullAction.progress.incoming=Checking incoming changesets"
+    })
     static void performPull(final PullType type, final File root, 
     final HgURL pullSource, final String fromPrjName, final String toPrjName, 
     final String revision, final String branch, final HgProgressSupport supp) {
@@ -316,6 +326,7 @@ public class PullAction extends ContextAction {
 
             logCommand(fromPrjName, logger, pullSource, toPrjName, root);
             final List<String> listIncoming;
+            supp.setDisplayName(Bundle.MSG_PullAction_progress_incoming());
             if(type == PullType.LOCAL){
                 listIncoming = HgCommand.doIncoming(root, revision, branch, logger);
             }else{
@@ -394,7 +405,9 @@ public class PullAction extends ContextAction {
         "# Capitalized letters used intentionally to emphasize the words in "
             + "the output window, should be translated",
         "MSG_PULL_REBASE_DO=INFO: Performing Rebase of local commits "
-            + "onto pulled changes"
+            + "onto pulled changes",
+        "MSG_PullAction.progress.pullingFromLocal=Getting incoming changesets",
+        "MSG_PullAction.progress.unbundling=Unbundling incoming changesets"
     })
     private static class PullImpl implements Callable<Void> {
 
@@ -436,8 +449,10 @@ public class PullAction extends ContextAction {
             }
             List<String> list;
             if(type == PullType.LOCAL){
+                supp.setDisplayName(Bundle.MSG_PullAction_progress_pullingFromLocal());
                 list = HgCommand.doPull(root, revision, branch, logger);
             }else{
+                supp.setDisplayName(Bundle.MSG_PullAction_progress_unbundling());
                 list = HgCommand.doUnbundle(root, fileToUnbundle, false, logger);
             }
             if (list != null && !list.isEmpty()) {
@@ -461,7 +476,9 @@ public class PullAction extends ContextAction {
                 + "the tipmost branch head",
             "CTL_PullAction_keepButton_text=&Keep Heads",
             "CTL_PullAction_keepButton_TTtext=Leaves the heads alone and does "
-                + "nothing"
+                + "nothing",
+            "MSG_PullAction.progress.merging=Merging heads",
+            "MSG_PullAction.progress.finishing=Refreshing file statuses"
         })
         private void handlePulledChangesets (List<String> list) throws HgException {
             OutputLogger logger = supp.getLogger();
@@ -499,7 +516,19 @@ public class PullAction extends ContextAction {
                 } else if (mergeAccepted) {
                     logger.output(""); //NOI18N
                     logger.outputInRed(Bundle.MSG_PULL_MERGE_DO());
+                    supp.setDisplayName(Bundle.MSG_PullAction_progress_merging());
                     list = MergeAction.doMergeAction(root, null, logger);
+                    if (MergeAction.handleMergeOutput(root, list, logger, false)) {
+                        final Action commitAction = SystemActionBridge.createAction(
+                                SystemAction.get(CommitAction.class), "commit", Lookups.fixed(
+                                new AbstractNode(Children.LEAF, Lookups.fixed(root))));
+                        EventQueue.invokeLater(new Runnable() {
+                            @Override
+                            public void run () {
+                                commitAction.actionPerformed(new ActionEvent(root, ActionEvent.ACTION_PERFORMED, null));
+                            }
+                        });
+                    }
                 }
                 if (!supp.isCanceled() && finished && topPatch != null) {
                     logger.output(""); //NOI18N
@@ -510,6 +539,7 @@ public class PullAction extends ContextAction {
                     HgUtils.logHgLog(parent, logger);
                 }
             } finally {
+                supp.setDisplayName(Bundle.MSG_PullAction_progress_finishing());
                 HgLogMessage[] heads = HgCommand.getHeadRevisionsInfo(root, false, OutputLogger.getLogger(null));
                 Map<String, Collection<HgLogMessage>> branchHeads = HgUtils.sortByBranch(heads);
                 if (!branchHeads.isEmpty()) {
@@ -523,6 +553,11 @@ public class PullAction extends ContextAction {
 
         private void askForMerge (List<HgLogMessage> parents) {
             if (isRebaseAllowed(root, parents)) {
+                if (Boolean.getBoolean("versioning.mercurial.pullwithrebase")) { //NOI18N
+                    mergeAccepted = false;
+                    rebaseAccepted = true;
+                    return;
+                }
                 JButton btnMerge = new JButton();
                 Mnemonics.setLocalizedText(btnMerge, Bundle.CTL_PullAction_mergeButton_text());
                 btnMerge.setToolTipText(Bundle.CTL_PullAction_mergeButton_TTtext());

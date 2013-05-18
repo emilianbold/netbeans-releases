@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.HashMap;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -90,7 +90,7 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
     private static final String HINT_ID = "Immutable.Variables.Hint"; //NOI18N
     private static final String NUMBER_OF_ALLOWED_ASSIGNMENTS = "php.verification.number.of.allowed.assignments"; //NOI18N
     private static final int DEFAULT_NUMBER_OF_ALLOWED_ASSIGNMENTS = 1;
-    private static final List<String> UNCHECKED_VARIABLES = new LinkedList<String>();
+    private static final List<String> UNCHECKED_VARIABLES = new ArrayList<>();
     private Preferences preferences;
 
     static {
@@ -125,9 +125,9 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
 
         private final FileObject fileObject;
         private final BaseDocument baseDocument;
-        private final Stack<ASTNode> parentNodes = new Stack<ASTNode>();
-        private final Map<ASTNode, Map<String, List<Variable>>> assignments = new HashMap<ASTNode, Map<String, List<Variable>>>();
-        private final List<Hint> hints = new LinkedList<Hint>();
+        private final Stack<ASTNode> parentNodes = new Stack<>();
+        private final Map<ASTNode, Map<String, List<Variable>>> assignments = new HashMap<>();
+        private final List<Hint> hints = new ArrayList<>();
         private boolean variableAssignment;
         private final int numberOfAllowedAssignments;
 
@@ -301,7 +301,7 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
         private Map<String, List<Variable>> getNames(ASTNode parentNode) {
             Map<String, List<Variable>> names = assignments.get(parentNode);
             if (names == null) {
-                names = new HashMap<String, List<Variable>>();
+                names = new HashMap<>();
                 assignments.put(parentNode, names);
             }
             return names;
@@ -318,7 +318,7 @@ public class ImmutableVariablesHint extends HintRule implements CustomisableRule
         private List<Variable> getVariables(Map<String, List<Variable>> names, String name) {
             List<Variable> variables = names.get(name);
             if (variables == null) {
-                variables = new LinkedList<Variable>();
+                variables = new ArrayList<>();
                 names.put(name, variables);
             }
             return variables;

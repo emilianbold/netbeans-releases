@@ -47,6 +47,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.queries.VersioningQuery;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -88,7 +89,7 @@ public final class ShareAction extends AbstractAction {
                     for (Node node : nodes) {
                         final Project prj = node.getLookup().lookup(Project.class);
                         if (prj != null) {
-                            if (Boolean.TRUE.equals(prj.getProjectDirectory().getAttribute("ProvidedExtensions.VCSManaged"))) { //NOI18N
+                            if (VersioningQuery.isManaged(prj.getProjectDirectory().toURI())) { //NOI18N
                                 EventQueue.invokeLater(new Runnable() {
                                     @Override
                                     public void run () {

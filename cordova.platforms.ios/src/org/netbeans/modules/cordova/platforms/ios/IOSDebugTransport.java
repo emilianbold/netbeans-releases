@@ -312,10 +312,6 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 if (getConnectionURL()==null) {
                     //auto setup for phonegap. There is always on tab
                     setBaseUrl(url.toString());
-//                    CordovaMapping mapping = Lookup.getDefault().lookup(CordovaMapping.class);
-//                    mapping.setBaseUrl(url.toString());
-                    BrowserURLMapperImpl.DEFAULT.setBrowserUrl(url.toString());
-                    
                 }
                 map.put(s, new TabDescriptor(url.toString(), title.toString(), identifier.toString()));
             }

@@ -91,7 +91,7 @@ public class AliasedElement implements FullyQualifiedElement {
                 aliasFqn = element.getFullyQualifiedName();
                 final LinkedList<String> originalSegments = aliasFqn.getSegments();
                 final LinkedList<String> toReplaceSegments = aliasedName.getRealName().getSegments();
-                final LinkedList<String> resultSegments = new LinkedList<String>();
+                final LinkedList<String> resultSegments = new LinkedList<>();
                 assert toReplaceSegments.size() > 0;
                 final String firstSegment = toReplaceSegments.get(0);
                 for (int i = 0; i < originalSegments.size(); i++) {

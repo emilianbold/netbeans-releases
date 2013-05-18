@@ -79,6 +79,7 @@ import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.jboss4.nodes.Util;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -286,7 +287,9 @@ public class JBStartServer extends StartServer implements ProgressObject{
                                 result = false;
                                 return null;
                             }
-                            if (checkingConfigName.equals(serverName) && localCheckingServerDir.equals(serverHome)) {
+                            if (checkingConfigName.equals(serverName) 
+                                    && (localCheckingServerDir.equals(serverHome)
+                                        || localCheckingServerDir.equals(new File(serverHome.toString()).getCanonicalPath()))) {
                                 result = true;
                             }
                             return null;

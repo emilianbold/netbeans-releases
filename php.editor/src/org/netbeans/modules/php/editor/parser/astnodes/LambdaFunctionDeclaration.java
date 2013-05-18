@@ -55,8 +55,8 @@ public class LambdaFunctionDeclaration extends Expression {
 
     private boolean isReference;
     private boolean isStatic;
-    private final List<FormalParameter> formalParameters = new ArrayList<FormalParameter>();
-    private final List<Expression> lexicalVariables = new ArrayList<Expression>();
+    private final List<FormalParameter> formalParameters = new ArrayList<>();
+    private final List<Expression> lexicalVariables = new ArrayList<>();
     private Block body;
 
     public LambdaFunctionDeclaration(int start, int end, List formalParameters, List lexicalVars, Block body, boolean isReference, boolean isStatic) {

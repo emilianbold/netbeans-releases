@@ -89,7 +89,7 @@ public class CreateBranch implements DocumentListener {
     }
 
     String getRevision () {
-        return revisionPicker.getRevision();
+        return revisionPicker.getRevision().getRevision();
     }
     
     String getBranchName () {

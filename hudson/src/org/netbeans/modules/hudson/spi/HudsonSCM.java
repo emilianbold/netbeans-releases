@@ -42,26 +42,12 @@
 
 package org.netbeans.modules.hudson.spi;
 
-import java.awt.BorderLayout;
-import java.awt.EventQueue;
 import java.io.File;
-import java.io.IOException;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import org.netbeans.api.diff.Diff;
-import org.netbeans.api.diff.DiffView;
-import org.netbeans.api.diff.StreamSource;
+import javax.swing.JButton;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
-import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
-import org.netbeans.modules.hudson.api.Utilities;
-import org.openide.awt.StatusDisplayer;
-import org.openide.util.NbBundle.Messages;
-import static org.netbeans.modules.hudson.spi.Bundle.*;
-import org.openide.windows.TopComponent;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * Represents one kind of SCM (version control) supported by the Hudson integration.
@@ -99,6 +85,82 @@ public interface HudsonSCM {
     }
 
     /**
+     * A problem with the SCM configuration.
+     */
+    public static final class ConfigurationStatus {
+
+        private String errorMessage;
+        private String warningMessage;
+        private JButton extraButton;
+
+        private ConfigurationStatus() {
+        }
+
+        /**
+         * Creates a valid configuration.
+         */
+        public static ConfigurationStatus valid() {
+            return new ConfigurationStatus();
+        }
+
+        /**
+         * Creates a configuration with a fatal error.
+         */
+        public static ConfigurationStatus withError(String error) {
+            ConfigurationStatus s = new ConfigurationStatus();
+            s.errorMessage = error;
+            return s;
+        }
+
+        /**
+         * Creates a configuration with a nonfatal warning.
+         */
+        public static ConfigurationStatus withWarning(String warning) {
+            ConfigurationStatus s = new ConfigurationStatus();
+            s.warningMessage = warning;
+            return s;
+        }
+
+        /**
+         * Creates a similar configuration but with an extra button added to the
+         * dialog.
+         *
+         * @see NotifyDescriptor#setAdditionalOptions
+         */
+        public ConfigurationStatus withExtraButton(JButton extraButton) {
+            if (this.extraButton != null) {
+                throw new IllegalArgumentException();
+            }
+            ConfigurationStatus s = new ConfigurationStatus();
+            s.errorMessage = errorMessage;
+            s.warningMessage = warningMessage;
+            s.extraButton = extraButton;
+            return s;
+        }
+
+        /**
+         * for internal use only
+         */
+        public String getErrorMessage() {
+            return errorMessage;
+        }
+
+        /**
+         * for internal use only
+         */
+        public String getWarningMessage() {
+            return warningMessage;
+        }
+
+        /**
+         * for internal use only
+         */
+        public JButton getExtraButton() {
+            return extraButton;
+        }
+    }
+
+    /**
      * Attempts to convert a path in a remote Hudson workspace to a local file path.
      * May use SCM information to guess at how these paths should be aligned.
      * @param job a Hudson job
@@ -118,80 +180,4 @@ public interface HudsonSCM {
      * @return a list of parsed changelog items, or null if the SCM is unrecognized
      */
     List<? extends HudsonJobChangeItem> parseChangeSet(HudsonJobBuild build);
-
-    /**
-     * Convenience methods for SCM implementations.
-     */
-    class Helper {
-
-        private static final Logger LOG = Logger.getLogger(HudsonSCM.class.getName());
-
-        private Helper() {}
-
-        /**
-         * Add an SCM polling trigger.
-         * @param configXml a {@code config.xml}
-         */
-        public static void addTrigger(Document configXml) {
-            Element root = configXml.getDocumentElement();
-            root.appendChild(configXml.createElement("triggers")). // NOI18N // XXX reuse existing <triggers> if found
-                    appendChild(configXml.createElement("hudson.triggers.SCMTrigger")). // NOI18N
-                    appendChild(configXml.createElement("spec")). // NOI18N
-                    // XXX pretty arbitrary but seems like a decent first guess
-                    appendChild(configXml.createTextNode("@hourly")); // NOI18N
-        }
-
-        @Deprecated
-        public static String xpath(String expr, Element xml) {
-            return Utilities.xpath(expr, xml);
-        }
-
-        /**
-         * Just notify the user that a diff will be shown for a given path.
-         * @param path a path, probably somehow repo-relative
-         */
-        @Messages({"# {0} - portion of file path", "HudsonSCM.loading_diff=Loading diff for {0}..."})
-        public static void noteWillShowDiff(String path) {
-            StatusDisplayer.getDefault().setStatusText(HudsonSCM_loading_diff(path));
-        }
-
-        /**
-         * Display a diff window for a file.
-         * @param before the former contents
-         * @param after the new contents
-         * @param path some representation of the file path
-         */
-        @Messages({"# {0} - file basename", "HudsonSCM.diffing=Diffing {0}"})
-        public static void showDiff(final StreamSource before, final StreamSource after, final String path) {
-            EventQueue.invokeLater(new Runnable() {
-                @Override public void run() {
-                    try {
-                        DiffView view = Diff.getDefault().createDiff(before, after);
-                        // XXX reuse the same TC
-                        DiffTopComponent tc = new DiffTopComponent(view);
-                        tc.setName(path);
-                        tc.setDisplayName(HudsonSCM_diffing(path.replaceFirst(".+/", "")));
-                        tc.open();
-                        tc.requestActive();
-                    } catch (IOException x) {
-                        LOG.log(Level.INFO, null, x);
-                    }
-                }
-            });
-        }
-        private static class DiffTopComponent extends TopComponent {
-            DiffTopComponent(DiffView view) {
-                setLayout(new BorderLayout());
-                add(view.getComponent(), BorderLayout.CENTER);
-            }
-            public @Override int getPersistenceType() {
-                return TopComponent.PERSISTENCE_NEVER;
-            }
-            protected @Override String preferredID() {
-                return "DiffTopComponent"; // NOI18N
-            }
-        }
-
-    }
-
 }

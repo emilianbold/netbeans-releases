@@ -70,7 +70,7 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocMethodTag> {
     private String methodName;
     private int offset;
     private int typeOffset;
-    private List<ParameterElement> parameters = new LinkedList<ParameterElement>();
+    private List<ParameterElement> parameters = new LinkedList<>();
 
     MagicMethodDeclarationInfo(PHPDocMethodTag node) {
         super(node);
@@ -94,7 +94,7 @@ public class MagicMethodDeclarationInfo extends ASTNodeInfo<PHPDocMethodTag> {
         }
 
         for (PHPDocVarTypeTag parameter : node.getParameters()) {
-            Collection<QualifiedName> names = new LinkedList<QualifiedName>();
+            Collection<QualifiedName> names = new LinkedList<>();
             for (PHPDocTypeNode type : parameter.getTypes()) {
                 QualifiedName qualifiedName = QualifiedName.create(type.getValue());
                 names.add(qualifiedName);

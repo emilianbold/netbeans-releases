@@ -94,7 +94,7 @@ public enum PHPTopTokenId implements TokenId {
 
                 @Override
                 protected Map<String, Collection<PHPTopTokenId>> createTokenCategories() {
-                    Map<String, Collection<PHPTopTokenId>> cats = new HashMap<String, Collection<PHPTopTokenId>>();
+                    Map<String, Collection<PHPTopTokenId>> cats = new HashMap<>();
                     return cats;
                 }
 

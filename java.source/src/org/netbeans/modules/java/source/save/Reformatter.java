@@ -1070,7 +1070,7 @@ public class Reformatter implements ReformatTask {
                 accept(LPAREN);
                 List<? extends VariableTree> params = node.getParameters();
                 if (params != null && !params.isEmpty()) {
-                    spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0, true);
+                    spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0);
                     wrapList(cs.wrapMethodParams(), cs.alignMultilineMethodParams(), false, COMMA, params);
                     spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0);
                 }
@@ -3102,6 +3102,9 @@ public class Reformatter implements ReformatTask {
             if (checkWrap != null && col > rightMargin && checkWrap.pos >= lastNewLineOffset) {
                 throw checkWrap;
             }
+            if (bof) {
+                maxCount = minCount;
+            }
             int count = Math.min(minCount, maxCount);
             if (lastBlankLinesTokenIndex < 0) {
                 lastBlankLines = count;
@@ -3271,7 +3274,7 @@ public class Reformatter implements ReformatTask {
                             if (!indent.contentEquals(text.substring(lastIdx)))
                                 addDiff(new Diff(offset + lastIdx, tokens.offset(), indent));
                         } else {
-                            String text = after == 1 ? getIndent() : getNewlines(count) + getIndent();
+                            String text = getNewlines(count) + getIndent();
                             if (text.length() > 0)
                                 addDiff(new Diff(tokens.offset(), tokens.offset(), text));
                         }

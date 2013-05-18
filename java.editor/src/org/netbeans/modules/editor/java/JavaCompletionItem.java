@@ -3111,11 +3111,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         @Override
-        protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
+        protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, CharSequence toAdd) {
+            if (toAdd.length() > 0 && toAdd.charAt(toAdd.length() - 1) == '.') {
+                if (typeName.length() == length) {
+                    return super.substituteText(c, offset + length, 0, ".", null); //NOI18N
+                }
+                toAdd = toAdd.subSequence(0, toAdd.length() - 1);
+            }
             super.substituteText(c, offset, length, null, null);
             final BaseDocument doc = (BaseDocument)c.getDocument();
             final StringBuilder template = new StringBuilder();
             final AtomicBoolean cancel = new AtomicBoolean();
+            final CharSequence finalToAdd = toAdd;
             ProgressUtils.runOffEventDispatchThread(new Runnable() {
                 @Override
                 public void run() {
@@ -3212,8 +3219,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     }
                                     template.append(")");//NOI18N
                                 }
-                                if (toAdd != null) {
-                                    template.append(toAdd);
+                                if (finalToAdd != null) {
+                                    template.append(finalToAdd);
                                 }
                             }
                         }).commit();
@@ -3472,7 +3479,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         @Override
-        protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
+        protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, CharSequence toAdd) {
+            if (toAdd.length() > 0 && toAdd.charAt(toAdd.length() - 1) == '.') {
+                if (firstMemberName.length() == length) {
+                    return super.substituteText(c, offset + length, 0, ".", null); //NOI18N
+                }
+                toAdd = toAdd.subSequence(0, toAdd.length() - 1);
+            }
             StringBuilder sb = new StringBuilder();
             boolean asTemplate = false;
             for (Iterator<MemberDesc> membersIt = members.iterator(); membersIt.hasNext();) {

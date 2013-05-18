@@ -116,12 +116,12 @@ public final class CGSInfo {
     private boolean fluentSetter;
 
     private CGSInfo(JTextComponent textComp) {
-        properties = new ArrayList<Property>();
-        instanceProperties = new ArrayList<Property>();
-        possibleGetters = new ArrayList<Property>();
-        possibleSetters = new ArrayList<Property>();
-        possibleGettersSetters = new ArrayList<Property>();
-        possibleMethods = new ArrayList<MethodProperty>();
+        properties = new ArrayList<>();
+        instanceProperties = new ArrayList<>();
+        possibleGetters = new ArrayList<>();
+        possibleSetters = new ArrayList<>();
+        possibleGettersSetters = new ArrayList<>();
+        possibleMethods = new ArrayList<>();
         className = null;
         this.textComp = textComp;
         hasConstructor = false;
@@ -235,7 +235,7 @@ public final class CGSInfo {
                                 Set<ClassElement> classes = forFilesFilter.filter(index.getClasses(NameKind.exact(fullyQualifiedName)));
                                 for (ClassElement classElement : classes) {
                                     ElementFilter forNotDeclared = ElementFilter.forExcludedElements(index.getDeclaredMethods(classElement));
-                                    final Set<MethodElement> accessibleMethods = new HashSet<MethodElement>();
+                                    final Set<MethodElement> accessibleMethods = new HashSet<>();
                                     accessibleMethods.addAll(forNotDeclared.filter(index.getAccessibleMethods(classElement, classElement)));
                                     accessibleMethods.addAll(
                                             ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getConstructors(classElement))));
@@ -243,7 +243,7 @@ public final class CGSInfo {
                                             ElementFilter.forExcludedElements(accessibleMethods).filter(forNotDeclared.filter(index.getAccessibleMagicMethods(classElement))));
                                     final Set<TypeElement> preferedTypes = forFilesFilter.prefer(ElementTransformation.toMemberTypes().transform(accessibleMethods));
                                     final TreeElement<TypeElement> enclosingType = index.getInheritedTypesAsTree(classElement, preferedTypes);
-                                    final List<MethodProperty> methodProperties = new ArrayList<MethodProperty>();
+                                    final List<MethodProperty> methodProperties = new ArrayList<>();
                                     final Set<MethodElement> methods = ElementFilter.forMembersOfTypes(preferedTypes).filter(accessibleMethods);
                                     for (final MethodElement methodElement : methods) {
                                         if (!methodElement.isFinal()) {
@@ -255,8 +255,8 @@ public final class CGSInfo {
                                 }
                             }
 
-                            List<String> existingGetters = new ArrayList<String>();
-                            List<String> existingSetters = new ArrayList<String>();
+                            List<String> existingGetters = new ArrayList<>();
+                            List<String> existingSetters = new ArrayList<>();
 
                             PropertiesVisitor visitor = new PropertiesVisitor(existingGetters, existingSetters, Utils.getRoot(info));
                             visitor.scan(classDecl);
@@ -390,7 +390,7 @@ public final class CGSInfo {
          * @return field => (field, _field) OR _field => (_field, field)
          */
         private List<String> getAllPossibleProperties(String possibleProperty) {
-            List<String> allPossibleProperties = new LinkedList<String>();
+            List<String> allPossibleProperties = new LinkedList<>();
             possibleProperty = possibleProperty.toLowerCase();
             allPossibleProperties.add(possibleProperty);
             if (possibleProperty.startsWith("_")) { // NOI18N

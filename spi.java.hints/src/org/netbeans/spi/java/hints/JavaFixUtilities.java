@@ -1183,7 +1183,7 @@ public class JavaFixUtilities {
             switch (original.getKind()) {
                 case PARENTHESIZED:
                     ExpressionTree expr = ((ParenthesizedTree) original).getExpression();
-                    return negate(expr, original, nullOnPlainNeg);
+                    return make.Parenthesized(negate(expr, original, nullOnPlainNeg));
                 case LOGICAL_COMPLEMENT:
                     newTree = ((UnaryTree) original).getExpression();
                     while (newTree.getKind() == Kind.PARENTHESIZED && !JavaFixUtilities.requiresParenthesis(((ParenthesizedTree) newTree).getExpression(), original, parent)) {
@@ -1232,16 +1232,17 @@ public class JavaFixUtilities {
         
         private ExpressionTree negateBinaryOperator(Tree original, Kind newKind, boolean negateOperands) {
             BinaryTree bt = (BinaryTree) original;
+            BinaryTree nonNegated = make.Binary(newKind,
+                                                bt.getLeftOperand(),
+                                                bt.getRightOperand());
             if (negateOperands) {
-                ExpressionTree lo = negate(bt.getLeftOperand(), original, false);
-                ExpressionTree ro = negate(bt.getRightOperand(), original, false);
+                ExpressionTree lo = negate(bt.getLeftOperand(), nonNegated, false);
+                ExpressionTree ro = negate(bt.getRightOperand(), nonNegated, false);
                 return make.Binary(newKind,
                                    lo != null ? lo : bt.getLeftOperand(),
                                    ro != null ? ro : bt.getRightOperand());
             }
-            return make.Binary(newKind,
-                               bt.getLeftOperand(),
-                               bt.getRightOperand());
+            return nonNegated;
         }
         
         private void rewrite(Tree from, Tree to) {

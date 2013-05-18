@@ -145,7 +145,8 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
     private Map<Position, ParseErrorAnnotation> line2Annotations;
     private Map<String, List<ErrorDescription>> layer2Errors;
 
-    private Set<JEditorPane> openedComponents;
+    //@GuardedBy(AWT)
+    private final Set<JEditorPane> openedComponents;
     private FileObject file;
     private DataObject od;
     private BaseDocument doc;
@@ -235,6 +236,8 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
 
     @SuppressWarnings("LeakingThisInConstructor")
     private AnnotationHolder(FileObject file, DataObject od, BaseDocument doc) {
+        openedComponents = new HashSet<>();
+        
         if (file == null)
             return ;
 
@@ -264,7 +267,6 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
         line2Errors = new HashMap<Position, List<ErrorDescription>>();
         line2Annotations = new HashMap<Position, ParseErrorAnnotation>();
         layer2Errors = new HashMap<String, List<ErrorDescription>>();
-        openedComponents = new HashSet<JEditorPane>();
     }
 
     public void stateChanged(ChangeEvent evt) {
@@ -579,21 +581,19 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
 
                 doc.render(new Runnable() {
                     public void run() {
-                        synchronized(AnnotationHolder.this) {
-                            for (JEditorPane pane : openedComponents) {
-                                Container parent = pane.getParent();
+                        for (JEditorPane pane : openedComponents) {
+                            Container parent = pane.getParent();
 
-                                if (parent instanceof JViewport) {
-                                    JViewport viewport = (JViewport) parent;
-                                    Point start = viewport.getViewPosition();
-                                    Dimension size = viewport.getExtentSize();
-                                    Point end = new Point(start.x + size.width, start.y + size.height);
+                            if (parent instanceof JViewport) {
+                                JViewport viewport = (JViewport) parent;
+                                Point start = viewport.getViewPosition();
+                                Dimension size = viewport.getExtentSize();
+                                Point end = new Point(start.x + size.width, start.y + size.height);
 
-                                    int startPosition = pane.viewToModel(start);
-                                    int endPosition = pane.viewToModel(end);
-                                    //TODO: check differences against last:
-                                    visibleRanges.add(new int[]{startPosition, endPosition});
-                                }
+                                int startPosition = pane.viewToModel(start);
+                                int endPosition = pane.viewToModel(end);
+                                //TODO: check differences against last:
+                                visibleRanges.add(new int[]{startPosition, endPosition});
                             }
                         }
                     }

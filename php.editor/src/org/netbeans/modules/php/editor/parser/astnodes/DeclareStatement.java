@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -51,8 +52,8 @@ import java.util.List;
  */
 public class DeclareStatement extends Statement {
 
-    private final ArrayList<Identifier> directiveNames = new ArrayList<Identifier>();
-    private final ArrayList<Expression> directiveValues = new ArrayList<Expression>();
+    private final ArrayList<Identifier> directiveNames = new ArrayList<>();
+    private final ArrayList<Expression> directiveValues = new ArrayList<>();
     private Statement body;
 
     private DeclareStatement(int start, int end, Identifier[] directiveNames, Expression[] directiveValues, Statement action) {
@@ -61,12 +62,8 @@ public class DeclareStatement extends Statement {
         if (directiveNames == null || directiveValues == null || directiveNames.length != directiveValues.length) {
             throw new IllegalArgumentException();
         }
-        for (Identifier identifier : directiveNames) {
-            this.directiveNames.add(identifier);
-        }
-        for (Expression expression : directiveValues) {
-            this.directiveValues.add(expression);
-        }
+        this.directiveNames.addAll(Arrays.asList(directiveNames));
+        this.directiveValues.addAll(Arrays.asList(directiveValues));
         this.body = action;
     }
 

@@ -71,7 +71,7 @@ import org.netbeans.modules.team.ui.common.NbModuleOwnerSupport.OwnerInfo;
 import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.DashboardSupport;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
@@ -406,7 +406,7 @@ public class TeamAccessorImpl extends TeamAccessor {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             if(evt.getPropertyName().equals(TeamServer.PROP_LOGIN) || 
-               evt.getPropertyName().equals(DefaultDashboard.PROP_OPENED_PROJECTS)) {
+               evt.getPropertyName().equals(DashboardSupport.PROP_OPENED_PROJECTS)) {
                 
                 PropertyChangeListener[] la;
                 synchronized (delegates) {
@@ -415,7 +415,7 @@ public class TeamAccessorImpl extends TeamAccessor {
                 String propName;
                 if(TeamServer.PROP_LOGIN.equals(evt.getPropertyName())) {
                     propName = PROP_LOGIN;
-                } else if (DefaultDashboard.PROP_OPENED_PROJECTS.equals(evt.getPropertyName())) {
+                } else if (DashboardSupport.PROP_OPENED_PROJECTS.equals(evt.getPropertyName())) {
                     propName = PROP_PROJETCS_CHANGED;
                 } else {
                     throw new IllegalStateException("Unknown event " + evt.getPropertyName()); // NOI18N

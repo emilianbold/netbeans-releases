@@ -159,7 +159,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
     void process(Result r) {
         PHPParseResult result = (PHPParseResult) r;
-        Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>(100);
+        Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<>(100);
         if (result.getProgram() != null) {
             SemanticHighlightVisitor semanticHighlightVisitor = new SemanticHighlightVisitor(highlights, result.getSnapshot(), result.getModel());
             result.getProgram().accept(semanticHighlightVisitor);
@@ -208,7 +208,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         // for unsed private method: name, identifier
         private final Map<UnusedIdentifier, ASTNodeColoring> privateUnusedMethods;
         // this is holder of blocks, which has to be scanned for usages in the class.
-        private List<Block> needToScan = new ArrayList<Block>();
+        private List<Block> needToScan = new ArrayList<>();
 
         private final Snapshot snapshot;
 
@@ -229,8 +229,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         public SemanticHighlightVisitor(Map<OffsetRange, Set<ColoringAttributes>> highlights, Snapshot snapshot, Model model) {
             this.highlights = highlights;
-            privateFieldsUnused = new HashMap<UnusedIdentifier, ASTNodeColoring>();
-            privateUnusedMethods = new HashMap<UnusedIdentifier, ASTNodeColoring>();
+            privateFieldsUnused = new HashMap<>();
+            privateUnusedMethods = new HashMap<>();
             this.snapshot = snapshot;
             this.model = model;
         }
@@ -337,7 +337,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             scan(cldec.getInterfaes());
             Identifier name = cldec.getName();
             addOffsetRange(name, createTypeNameColoring(name));
-            needToScan = new ArrayList<Block>();
+            needToScan = new ArrayList<>();
             if (cldec.getBody() != null) {
                 cldec.getBody().accept(this);
 
@@ -526,7 +526,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
             typeDeclaration = node;
             Identifier name = node.getName();
             addOffsetRange(name, createTypeNameColoring(name));
-            needToScan = new ArrayList<Block>();
+            needToScan = new ArrayList<>();
             if (node.getBody() != null) {
                 node.getBody().accept(this);
                 for (Block block : needToScan) {

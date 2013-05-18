@@ -134,7 +134,7 @@ public final class CompletionSupport implements DocumentListener {
         return isIncludeCompletionEnabled(doc, offset) || isPreprocessorDirectiveCompletionEnabled(doc, offset);
     }
 
-    public static boolean isPreprocessorDirectiveCompletionEnabled(Document doc, int offset) {
+    private static boolean isPreprocessorDirectiveCompletionEnabledImpl(Document doc, int offset) {
         TokenSequence<TokenId> ts = CndLexerUtilities.getCppTokenSequence(doc, offset, false, true);
         if (ts == null) {
             return false;
@@ -152,6 +152,18 @@ public final class CompletionSupport implements DocumentListener {
             return embedded.offset() + embedded.token().length() >= offset;
         }
         return false;
+    }
+        
+    public static boolean isPreprocessorDirectiveCompletionEnabled(final Document doc, final int offset) {
+        final AtomicBoolean out = new AtomicBoolean(false);
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                out.set(isPreprocessorDirectiveCompletionEnabledImpl(doc, offset));
+            }            
+        });
+        return out.get();
     }
 
     public static boolean isIncludeCompletionEnabled(final Document doc, final int offset) {

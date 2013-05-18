@@ -72,7 +72,7 @@ public class QuickSearchPanel extends javax.swing.JPanel {
     }
 
     private DefaultComboBoxModel getCategoryModel() {
-        categories = DashboardViewer.getInstance().getCategories(true);
+        categories = DashboardViewer.getInstance().getCategories(true, false);
         String[] catNames = new String[categories.size() + 1];
         catNames[0] = "<" + NbBundle.getMessage(QuickSearchPanel.class, "LBL_NoCategory") + ">"; //NOI18N
         for (int i = 0; i < categories.size(); i++) {

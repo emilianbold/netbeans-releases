@@ -58,10 +58,10 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.diff.StreamSource;
+import org.netbeans.modules.hudson.ui.api.HudsonSCMHelper;
 import static org.netbeans.modules.hudson.mercurial.Bundle.*;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
-import org.netbeans.modules.hudson.spi.HudsonSCM.Helper;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
@@ -89,13 +89,13 @@ class MercurialHyperlink implements OutputListener {
     }
 
     public void outputLineAction(OutputEvent ev) {
-        Helper.noteWillShowDiff(file.getName());
+        HudsonSCMHelper.noteWillShowDiff(file.getName());
         RP.post(new Runnable() {
             public void run() {
                 try {
                     final StreamSource before = makeSource(false);
                     final StreamSource after = makeSource(true);
-                    Helper.showDiff(before, after, file.getName());
+                    HudsonSCMHelper.showDiff(before, after, file.getName());
                 } catch (IOException x) {
                     LOG.log(Level.INFO, null, x);
                 }

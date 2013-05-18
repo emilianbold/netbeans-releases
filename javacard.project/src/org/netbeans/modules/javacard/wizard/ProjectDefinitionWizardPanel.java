@@ -106,7 +106,7 @@ public final class ProjectDefinitionWizardPanel implements
 
 
     public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx("org.netbeans.modules.javacard.CreateProject"); //NOI18N
     }
 
 

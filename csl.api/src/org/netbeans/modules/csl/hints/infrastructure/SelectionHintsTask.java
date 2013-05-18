@@ -73,8 +73,13 @@ import org.openide.filesystems.FileObject;
 public class SelectionHintsTask extends ParserResultTask<ParserResult> {
     
     private static final Logger LOG = Logger.getLogger(SelectionHintsTask.class.getName());
-    private boolean cancelled = false;
+    private volatile boolean cancelled = false;
     
+    /**
+     * Tracks the HintsProvider being executed, so it can be cancelled.
+     */
+    private volatile HintsProvider pendingProvider;
+
     public SelectionHintsTask() {
     }
     
@@ -127,8 +132,19 @@ public class SelectionHintsTask extends ParserResultTask<ParserResult> {
                     List<Hint> hints = new ArrayList<Hint>();
 
                     RuleContext ruleContext = manager.createRuleContext((ParserResult) r, language, -1, range[0], range[1]);
-                    if (ruleContext != null && !isCancelled()) {
-                        provider.computeSelectionHints(manager, ruleContext, hints, range[0], range[1]);
+                    if (ruleContext != null) {
+                        try {
+                            synchronized (this) {
+                                pendingProvider = provider;
+                                if (isCancelled()) {
+                                    return;
+                                }
+                            }
+                            provider.computeSelectionHints(manager, ruleContext, hints, range[0], range[1]);
+                        } finally {
+                            pendingProvider = null;
+                        }
+
                         for (int i = 0; i < hints.size(); i++) {
                             Hint hint= hints.get(i);
 
@@ -163,8 +179,14 @@ public class SelectionHintsTask extends ParserResultTask<ParserResult> {
         return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
     }
 
-    public @Override synchronized void cancel() {
-        cancelled = true;
+    public @Override void cancel() {
+        synchronized (this) {
+            cancelled = true;
+        }
+        HintsProvider p = pendingProvider;
+        if (p != null) {
+            p.cancel();
+        }
     }
 
     private synchronized void resume() {

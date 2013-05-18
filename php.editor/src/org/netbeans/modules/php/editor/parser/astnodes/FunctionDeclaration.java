@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -59,16 +60,14 @@ public class FunctionDeclaration extends Statement {
 
     private boolean isReference;
     private Identifier name;
-    private final ArrayList<FormalParameter> formalParameters = new ArrayList<FormalParameter>();
+    private final ArrayList<FormalParameter> formalParameters = new ArrayList<>();
     private Block body;
 
     private FunctionDeclaration(int start, int end, Identifier functionName, FormalParameter[] formalParameters, Block body, final boolean isReference) {
         super(start, end);
         this.isReference = isReference;
         this.name = functionName;
-        for (FormalParameter formalParameter : formalParameters) {
-            this.formalParameters.add(formalParameter);
-        }
+        this.formalParameters.addAll(Arrays.asList(formalParameters));
         this.body = body;
     }
 
