@@ -16,9 +16,9 @@ FUNCTION DEFINITION test2  [1:1/0-15:4/239] SubroutineImpl SCOPE: $Global$
     UNIQUE NAME f:test2
     DECLARATION: test2  [1:1/0-15:4/239]
     PARAMETERS:
-        NN [1:1/0-15:4/239]  TYPE: null   INIT: null  SCOPE: null
-        r [1:1/0-15:4/239]  TYPE: null   INIT: null  SCOPE: null
-        s [1:1/0-15:4/239]  TYPE: null   INIT: null  SCOPE: null
+        NN [1:1/0-15:4/239]  TYPE: int TEXT=int  [1:1/0-1:1/0]  INIT: null  SCOPE: null
+        r [1:1/0-15:4/239]  TYPE: int TEXT=int  [1:1/0-1:1/0]  INIT: null  SCOPE: null
+        s [1:1/0-15:4/239]  TYPE: int TEXT=int  [1:1/0-1:1/0]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [1:1/0-1:1/0]
     STATEMENT is null
 
@@ -28,9 +28,9 @@ FUNCTION DEFINITION test2  [1:1/0-15:4/239] SubroutineImpl SCOPE: $Global$
     UNIQUE NAME f:test2
     DECLARATION: test2  [1:1/0-15:4/239]
     PARAMETERS:
-        NN [1:1/0-15:4/239]  TYPE: null   INIT: null  SCOPE: null
-        r [1:1/0-15:4/239]  TYPE: null   INIT: null  SCOPE: null
-        s [1:1/0-15:4/239]  TYPE: null   INIT: null  SCOPE: null
+        NN [1:1/0-15:4/239]  TYPE: int TEXT=int  [1:1/0-1:1/0]  INIT: null  SCOPE: null
+        r [1:1/0-15:4/239]  TYPE: int TEXT=int  [1:1/0-1:1/0]  INIT: null  SCOPE: null
+        s [1:1/0-15:4/239]  TYPE: int TEXT=int  [1:1/0-1:1/0]  INIT: null  SCOPE: null
     RETURNS int TEXT=int  [1:1/0-1:1/0]
     STATEMENT is null
 

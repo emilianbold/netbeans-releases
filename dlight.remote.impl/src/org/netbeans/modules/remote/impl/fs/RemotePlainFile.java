@@ -107,12 +107,12 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    public final RemoteFileObject getFileObject(String name, String ext) {
+    public final RemoteFileObject getFileObject(String name, String ext, Set<String> antiLoop) {
         return null;
     }
 
     @Override
-    public RemoteFileObject getFileObject(String relativePath) {
+    public RemoteFileObject getFileObject(String relativePath, Set<String> antiLoop) {
         // taken from FileObject.getFileObject(String relativePath)
         if (relativePath.startsWith("/")) { //NOI18N
             relativePath = relativePath.substring(1);
@@ -125,7 +125,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
                 res = res.getParent();
             } else {
                 if (!nameExt.equals(".")) { //NOI18N
-                    res = res.getFileObject(nameExt, null);
+                    res = res.getFileObject(nameExt, antiLoop);
                 }
             }
         }
