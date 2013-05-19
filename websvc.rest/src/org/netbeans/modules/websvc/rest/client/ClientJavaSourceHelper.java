@@ -180,11 +180,11 @@ public class ClientJavaSourceHelper {
                     restLibs.add(lib);
                 }
             }
-            if (cp == null ||
+            if (requiresJersey && (cp == null ||
                     cp.findResource("com/sun/jersey/api/client/WebResource.class") == null ||
                 (Security.Authentication.OAUTH == security.getAuthentication() && 
                  cp.findResource("com/sun/jersey/oauth/client/OAuthClientFilter.class") == null)
-                    ) 
+                    ))
             {
                 Library lib = LibraryManager.getDefault().getLibrary("restlib"); //NOI18N
                 if (lib != null) {
