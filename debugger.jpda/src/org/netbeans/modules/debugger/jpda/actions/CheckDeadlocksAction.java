@@ -97,12 +97,14 @@ public class CheckDeadlocksAction extends AbstractAction
         return NbBundle.getMessage(CheckDeadlocksAction.class, "CTL_CheckDeadlocks"); // NOI18N
     }
     
+    @Override
     public void actionPerformed (ActionEvent evt) {
         DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (de == null) return;
         final JPDADebuggerImpl debugger = (JPDADebuggerImpl) de.lookupFirst(null, JPDADebugger.class);
         if (debugger == null) return;
         debugger.getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 checkForDeadlock(debugger);
             }
@@ -136,7 +138,7 @@ public class CheckDeadlocksAction extends AbstractAction
                 ((DeadlockDetectorImpl) detector).waitForUnfinishedTasks(5000);
             } catch (InterruptedException ex) {}
             Set dealocks = detector.getDeadlocks();
-            if (dealocks == null || dealocks.size() == 0) {
+            if (dealocks == null || dealocks.isEmpty()) {
                 String msg = NbBundle.getMessage(CheckDeadlocksAction.class, "CTL_No_Deadlock"); // NOI18N
                 NotifyDescriptor desc = new NotifyDescriptor.Message(msg, NotifyDescriptor.INFORMATION_MESSAGE);
                 DialogDisplayer.getDefault().notify(desc);
@@ -161,29 +163,34 @@ public class CheckDeadlocksAction extends AbstractAction
         SwingUtilities.invokeLater(this);
     }
     
+    @Override
     public void run() {
         setEnabled(canBeEnabled());
     }
     
     @Override
     protected void finalize() throws Throwable {
-        DebuggerManager.getDebuggerManager().removeDebuggerListener(
-                DebuggerManager.PROP_CURRENT_ENGINE,
-                listener);
+        try {
+            DebuggerManager.getDebuggerManager().removeDebuggerListener(
+                    DebuggerManager.PROP_CURRENT_ENGINE,
+                    listener);
+        } finally {
+            super.finalize();
+        }
     }
 
         
     private static class EnableListener extends DebuggerManagerAdapter {
         
-        private Reference actionRef;
+        private Reference<CheckDeadlocksAction> actionRef;
         
         public EnableListener(CheckDeadlocksAction action) {
-            actionRef = new WeakReference(action);
+            actionRef = new WeakReference<CheckDeadlocksAction>(action);
         }
         
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            CheckDeadlocksAction action = (CheckDeadlocksAction) actionRef.get();
+            CheckDeadlocksAction action = actionRef.get();
             if (action != null) {
                 action.checkEnabled();
             }

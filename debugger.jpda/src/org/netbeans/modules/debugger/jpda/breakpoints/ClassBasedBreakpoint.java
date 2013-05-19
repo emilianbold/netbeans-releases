@@ -423,9 +423,10 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
         VirtualMachine vm = getVirtualMachine ();
         if (vm == null) return false;
         boolean all = className.startsWith("*") || className.endsWith("*"); // NOI18N
-        logger.fine("Check loaded classes: " + className + ", will load all classes: " + all); // NOI18N
+        logger.log(Level.FINE, "Check loaded classes: {0}, will load all classes: {1}", // NOI18N
+                   new Object[]{className, all});
         boolean matched = false;
-        Iterator i = null;
+        Iterator i;
         if (all) {
             i = VirtualMachineWrapper.allClasses0(vm).iterator ();
         } else {
@@ -458,8 +459,9 @@ public abstract class ClassBasedBreakpoint extends BreakpointImpl {
                         }
                     }
                     if (!excluded) {
-                        if (logger.isLoggable(Level.FINE))
+                        if (logger.isLoggable(Level.FINE)) {
                             logger.fine(" Class loaded: " + referenceType);
+                        }
                         if (loadedClasses == null) {
                             loadedClasses = Collections.singletonList(referenceType);
                         } else {

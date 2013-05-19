@@ -66,7 +66,6 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
-import java.util.concurrent.Future;
 import javax.swing.JEditorPane;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
@@ -84,11 +83,8 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 
-import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.MethodWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
-import org.netbeans.modules.debugger.jpda.jdi.ReferenceTypeWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.jpda.EditorContext;
@@ -193,6 +189,7 @@ public class MethodChooserSupport implements PropertyChangeListener {
         final int index = chooser.getSelectedIndex();
         final String name = operations[index].getMethodName();
         debugger.getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 RunIntoMethodActionProvider.doAction(debugger, name, locations[index], true);
             }
@@ -225,7 +222,7 @@ public class MethodChooserSupport implements PropertyChangeListener {
         Operation currOp = currentThread.getCurrentOperation();
         List<Operation> lastOpsList = currentThread.getLastOperations();
         Operation lastOp = lastOpsList != null && lastOpsList.size() > 0 ? lastOpsList.get(lastOpsList.size() - 1) : null;
-        Operation selectedOp = null;
+        Operation selectedOp;
         Operation[] tempOps = expr.getOperations();
         if (tempOps.length == 0) {
             return false;
@@ -378,7 +375,7 @@ public class MethodChooserSupport implements PropertyChangeListener {
         } catch (DataObjectNotFoundException ex) {
         }
         if (dobj == null) return;
-        final EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
         if (ec == null) return;
         JavaSource js = JavaSource.forFileObject(fileObj);
         if (js == null) return;
@@ -392,6 +389,7 @@ public class MethodChooserSupport implements PropertyChangeListener {
         } else {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                         JEditorPane[] openedPanes = ec.getOpenedPanes();
                         if (openedPanes != null && openedPanes.length > 0) {
@@ -408,8 +406,10 @@ public class MethodChooserSupport implements PropertyChangeListener {
 
         try {
             js.runUserActionTask(new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(CompilationController ci) throws Exception {
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING,

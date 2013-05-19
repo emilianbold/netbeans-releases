@@ -49,10 +49,8 @@ package org.netbeans.modules.debugger.jpda.ui.actions;
 import java.awt.event.ActionEvent;
 import javax.swing.Action;
 import javax.swing.AbstractAction;
-import javax.swing.ImageIcon;
 
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 import org.netbeans.modules.debugger.jpda.ui.debugging.DebuggingView;
 
@@ -71,6 +69,7 @@ public class DebuggingViewAction extends AbstractAction {
         putValue("iconbase", "org/netbeans/modules/debugger/jpda/resources/debugging.png"); // NOI18N
     }
 
+    @Override
     public void actionPerformed (ActionEvent evt) {
         DebuggingView view = DebuggingView.getInstance();
         view.open ();

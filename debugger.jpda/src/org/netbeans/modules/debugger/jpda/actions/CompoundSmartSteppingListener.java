@@ -56,7 +56,7 @@ import org.netbeans.spi.debugger.jpda.SmartSteppingCallback;
  *
  * @author  Jan Jancura
  */
-public class CompoundSmartSteppingListener extends SmartSteppingCallback {
+public final class CompoundSmartSteppingListener extends SmartSteppingCallback {
 
 
     private List smartSteppings;
@@ -73,6 +73,7 @@ public class CompoundSmartSteppingListener extends SmartSteppingCallback {
         initFilter (smartSteppingFilter);
     }
     
+    @Override
     public void initFilter (SmartSteppingFilter filter) {
         // init list of smart stepping listeners
         smartSteppings = lookupProvider.lookup 
@@ -88,6 +89,7 @@ public class CompoundSmartSteppingListener extends SmartSteppingCallback {
      * Asks all SmartSteppingListener listeners if executiong should stop on the 
      * current place represented by JPDAThread.
      */
+    @Override
     public boolean stopHere (
         ContextProvider lookupProvider, 
         JPDAThread t, 

@@ -51,8 +51,6 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenuItem;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
@@ -73,17 +71,21 @@ public class SetAsCurrentThreadGutterAction extends SystemAction implements Cont
         setEnabled(false);
     }
 
+    @Override
     public String getName() {
         return NbBundle.getMessage(SetAsCurrentThreadGutterAction.class, "CTL_setAsCurrentThread");
     }
 
+    @Override
     public HelpCtx getHelpCtx() {
         return null;
     }
     
+    @Override
     public void actionPerformed(ActionEvent ev) {
     }
     
+    @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         Collection<? extends Lookup.Provider> annotationLookupProviders =
                 actionContext.lookupAll(Lookup.Provider.class);
@@ -122,6 +124,7 @@ public class SetAsCurrentThreadGutterAction extends SystemAction implements Cont
             this.threads = Collections.singletonList(thread);
         }
 
+        @Override
         public Object getValue(String key) {
             if (Action.NAME.equals(key)) {
                 return NbBundle.getMessage(SetAsCurrentThreadGutterAction.class, "CTL_setAsCurrentThreadT", threads.get(0).getName());
@@ -130,22 +133,29 @@ public class SetAsCurrentThreadGutterAction extends SystemAction implements Cont
             }
         }
 
+        @Override
         public void putValue(String key, Object value) {}
 
+        @Override
         public void setEnabled(boolean b) {}
 
+        @Override
         public boolean isEnabled() {
             return true;
         }
 
+        @Override
         public void addPropertyChangeListener(PropertyChangeListener listener) {}
 
+        @Override
         public void removePropertyChangeListener(PropertyChangeListener listener) {}
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             threads.get(0).makeCurrent();
         }
 
+        @Override
         public JMenuItem getPopupPresenter() {
             if (threads.size() == 1) {
                 return new Actions.MenuItem (this, false);
@@ -156,6 +166,7 @@ public class SetAsCurrentThreadGutterAction extends SystemAction implements Cont
 
         private class MultiThreadsMenu extends JMenuItem implements DynamicMenuContent {
 
+            @Override
             public JComponent[] getMenuPresenters() {
                 JComponent[] cs = new JComponent[threads.size()];
                 for (int i = 0; i < cs.length; i++) {
@@ -164,6 +175,7 @@ public class SetAsCurrentThreadGutterAction extends SystemAction implements Cont
                 return cs;
             }
 
+            @Override
             public JComponent[] synchMenuPresenters(JComponent[] items) {
                 return items;
             }

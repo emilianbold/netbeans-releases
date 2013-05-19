@@ -105,6 +105,7 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
         return action;
     }
     
+    @Override
     public Object getValue(String key) {
         if (key == Action.NAME) {
             return NbBundle.getMessage (ToggleMethodFieldBreakpointAction.class, "CTL_ToggleMethodFieldBreakpointAction");
@@ -140,6 +141,7 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
     }
      */
     
+    @Override
     public void actionPerformed (ActionEvent evt) {
         if (!submitFieldOrMethodOrClassBreakpoint()) {
             // Do the toggle BP action directly in this AWT so that it gets the correct current line number.
@@ -234,6 +236,7 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
                 ActionsSynchronizer.get(debugger).actionScheduled(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
             }
             getPostponedToggleRP().post(new Runnable() {
+                @Override
                 public void run() {
                     // Re-try to submit the field or method breakpoint again
                     try {
@@ -324,10 +327,10 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
             b = findBreakpoint (className, fieldName);
         } else if (methodName != null) {
             b = findBreakpoint (className, methodName, methodSignature);
-        } else if (className != null) {
+        } else {// if (className != null) { - className is not null already
             b = findBreakpoint (className);
-        } else {
-            return false;
+        //} else {
+        //    return false;
         }
         if (b == null && url != null) {
             b = ToggleBreakpointActionProvider.findBreakpoint(url, line);
@@ -344,6 +347,7 @@ public class ToggleMethodFieldBreakpointAction extends AbstractAction {//impleme
             ActionsSynchronizer.get(debugger).actionScheduled(ActionsManager.ACTION_TOGGLE_BREAKPOINT);
         }
         getPostponedToggleRP().post(new Runnable() {
+            @Override
             public void run() {
                 // Re-try to submit the field or method breakpoint again
                 try {

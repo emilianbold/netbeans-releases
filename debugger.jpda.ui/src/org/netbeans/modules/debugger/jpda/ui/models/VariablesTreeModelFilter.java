@@ -785,7 +785,7 @@ ExtendedNodeModelFilter, TableModelFilter, NodeActionsProviderFilter, Runnable {
         @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             String key = evt.getKey();
-            if (VariablesViewButtons.SHOW_VALUE_AS_STRING.equals(key)) {
+            if (VariablesViewButtons.SHOW_VALUE_PROPERTY_EDITORS.equals(key)) {
                 refresh();
             }
         }

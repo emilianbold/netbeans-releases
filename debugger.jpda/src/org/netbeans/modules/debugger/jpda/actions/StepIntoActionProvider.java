@@ -49,7 +49,6 @@ import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -57,12 +56,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.Lock;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.jdi.IllegalThreadStateExceptionWrapper;
@@ -75,13 +72,12 @@ import org.netbeans.modules.debugger.jpda.jdi.ThreadReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.spi.debugger.ActionsProvider;
-import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.ui.MethodChooser;
 
 
 /**
  * Implements non visual part of stepping through code in JPDA debugger.
- * It supports standart debugging actions StepInto, Over, Out, RunToCursor, 
+ * It supports standard debugging actions StepInto, Over, Out, RunToCursor, 
  * and Go. And advanced "smart tracing" action.
  *
  * @author  Jan Jancura
@@ -111,12 +107,14 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
 
     // ActionProviderSupport ...................................................
     
+    @Override
     public Set getActions () {
         return new HashSet<Object>(Arrays.asList (new Object[] {
             ActionsManager.ACTION_STEP_INTO,
         }));
     }
     
+    @Override
     public void doAction (Object action) {
         runAction(action, true, null);
     }
@@ -124,6 +122,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
     @Override
     public void postAction(final Object action, final Runnable actionPerformedNotifier) {
         doLazyAction(action, new Runnable() {
+            @Override
             public void run() {
                 try {
                     runAction(action, true, null);
@@ -141,6 +140,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
         stepInto.runAction(action, doResume, lock);
     }
     
+    @Override
     protected void checkEnabled (int debuggerState) {
         Iterator i = getActions ().iterator ();
         while (i.hasNext ())
@@ -204,7 +204,7 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider {
             MethodChooser.ReleaseListener releaseListener = new MethodChooser.ReleaseListener() {
                 @Override
                 public void released(boolean performAction) {
-                    synchronized (this) {
+                    synchronized (StepIntoActionProvider.this) {
                         currentMethodChooser = null;
                         cSupport.tearDown();
                         if (performAction) {
