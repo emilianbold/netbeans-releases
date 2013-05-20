@@ -105,6 +105,10 @@ public class JsStructureScanner implements StructureScanner {
                 || (ModelUtils.PROTOTYPE.equals(jsObject.getName()) && properties.isEmpty());
         
         for (JsObject child : properties) {
+            // we do not want to show items from virtual source
+            if (result.getSnapshot().getOriginalOffset(child.getOffset()) < 0) {
+                continue;
+            }
             List<StructureItem> children = new ArrayList<StructureItem>();
             if ((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)
                     && !child.getName().equals(ModelUtils.PROTOTYPE)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) {
@@ -358,12 +362,12 @@ public class JsStructureScanner implements StructureScanner {
 
         @Override
         public long getPosition() {
-            return modelElement.getOffset();
+            return parserResult.getSnapshot().getOriginalOffset(modelElement.getOffset());
         }
 
         @Override
         public long getEndPosition() {
-            return modelElement.getOffsetRange().getEnd();
+            return parserResult.getSnapshot().getOriginalOffset(modelElement.getOffsetRange().getEnd());
         }
 
         @Override
