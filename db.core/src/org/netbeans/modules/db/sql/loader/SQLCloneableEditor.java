@@ -103,6 +103,10 @@ persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED,
 mimeType = SQLDataLoader.SQL_MIME_TYPE,
 preferredID = "sql.source",
 position = 1)
+@TopComponent.Description(
+        preferredID = "sql.source",
+        iconBase = "org/netbeans/modules/db/sql/loader/resources/sql16.png",
+        persistenceType = TopComponent.PERSISTENCE_ONLY_OPENED)
 public final class SQLCloneableEditor extends CloneableEditor implements MultiViewElement {
     private transient JSplitPane splitter;
     private transient JTabbedPane resultComponent;
