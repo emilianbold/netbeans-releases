@@ -80,6 +80,8 @@ import org.openide.text.Line.ShowVisibilityType;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 import org.openide.util.datatransfer.PasteType;
 import org.openide.util.lookup.Lookups;
 import org.openide.windows.OutputEvent;
@@ -155,7 +157,7 @@ public final class TextDetail implements Selectable {
     @NbBundle.Messages({
         "MSG_CannotShowTextDetai=The text match cannot be shown."
     })
-    public void showDetail(int how) {
+    public void showDetail(final int how) {
         prepareLine();
         if (lineObj == null) {
             Toolkit.getDefaultToolkit().beep();
@@ -169,10 +171,33 @@ public final class TextDetail implements Selectable {
         if (how == DH_HIDE) {
             return;
         }
-        EditorCookie edCookie = dobj.getLookup().lookup(EditorCookie.class);
+        final EditorCookie edCookie = dobj.getLookup().lookup(EditorCookie.class);
         if (edCookie != null) {
-            edCookie.open();
-	}
+            Task prepareTask = edCookie.prepareDocument();             //#227989
+            prepareTask.addTaskListener(new TaskListener() {
+                @Override
+                public void taskFinished(Task task) {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            edCookie.open();
+                            showLine(how);
+                            highlightDetail(edCookie);
+                        }
+                    });
+                }
+            });
+        } else {
+            showLine(how);
+        }
+        SearchHistory.getDefault().add(
+                SearchPattern.create(
+                searchPattern.getSearchExpression(),
+                searchPattern.isWholeWords(), searchPattern.isMatchCase(),
+                searchPattern.isRegExp()));
+    }
+
+    private void showLine(int how) {
         if (how == DH_SHOW) {
             lineObj.show(ShowOpenType.NONE, 
                          ShowVisibilityType.NONE,
@@ -182,7 +207,10 @@ public final class TextDetail implements Selectable {
                          ShowVisibilityType.FOCUS,
                          column - 1);
         }
-        if ((markLength > 0) && (edCookie != null)) {
+    }
+
+    private void highlightDetail(EditorCookie edCookie) {
+        if (markLength > 0) {
             final JEditorPane[] panes = edCookie.getOpenedPanes();
             if (panes != null && panes.length > 0) {
                 // Necessary since above lineObj.show leads to invoke
@@ -203,11 +231,6 @@ public final class TextDetail implements Selectable {
                 });
             }
         }
-        SearchHistory.getDefault().add(
-                SearchPattern.create(
-                searchPattern.getSearchExpression(),
-                searchPattern.isWholeWords(), searchPattern.isMatchCase(),
-                searchPattern.isRegExp()));
     }
 
     /** Getter for <code>lineText</code> property. */
