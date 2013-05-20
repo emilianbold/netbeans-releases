@@ -1109,7 +1109,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
             // fill up needed collections based on validation
             if (fileImpl.validate()) {
                 if (fileImpl.isParsed()){
-                    if (fileImpl.isSourceFile() || getGraph().getInLinksUids(fileImpl).isEmpty()) {
+                    if (getGraph().getInLinksUids(fileImpl).isEmpty()) {
                         if (APTHandlersSupport.getCompilationUnitCRC(fileAndHandler.preprocHandler) != fileImpl.getLastParsedCompilationUnitCRC()) {
                             if (TraceFlags.TRACE_VALIDATION) {
                                 System.err.printf("Validation: %s properties are changed \n", nativeFile.getAbsolutePath());
