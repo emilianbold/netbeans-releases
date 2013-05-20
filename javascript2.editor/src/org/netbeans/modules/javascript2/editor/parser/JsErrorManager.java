@@ -43,7 +43,9 @@ import jdk.nashorn.internal.runtime.ErrorManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import jdk.nashorn.internal.runtime.ParserException;
@@ -53,6 +55,7 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import static org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId.values;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
@@ -79,6 +82,9 @@ public class JsErrorManager extends ErrorManager {
         }
     };
 
+    /** Keyword from the error.message which identifies missing char in the JS source. */
+    private static final String EXPECTED = "Expected"; //NOI18N
+
     private final Snapshot snapshot;
 
     private final Language<JsTokenId> language;
@@ -86,6 +92,16 @@ public class JsErrorManager extends ErrorManager {
     private List<ParserError> parserErrors;
 
     private List<JsParserError> convertedErrors;
+
+    private final static Map<String, JsTokenId> JS_TEXT_TOKENS = new HashMap<String, JsTokenId>();
+
+    static {
+        for (JsTokenId jsTokenId : values()) {
+            if (jsTokenId.fixedText() != null) {
+                JS_TEXT_TOKENS.put(jsTokenId.fixedText(), jsTokenId);
+            }
+        }
+    }
 
     public JsErrorManager(Snapshot snapshot, Language<JsTokenId> language) {
         this.snapshot = snapshot;
@@ -237,6 +253,7 @@ public class JsErrorManager extends ErrorManager {
         if (snapshot != null && !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimepath)
             && !JsTokenId.JSON_MIME_TYPE.equals(mimepath)) {
                 int nextCorrect = -1;
+                boolean afterGeneratedIdentifier = false;
                 for (SimpleError error : errors) {
                     boolean showExplorerBadge = true;
                     // if the error is in embedded code we ignore it
@@ -254,6 +271,22 @@ public class JsErrorManager extends ErrorManager {
                                 // so we disable them until next } .... \n
                                 nextCorrect = findNextCorrectOffset(ts, error.getPosition());
                                 showExplorerBadge = false;
+                                afterGeneratedIdentifier = true;
+                            } else if (afterGeneratedIdentifier && error.getMessage().indexOf(EXPECTED) != -1) {
+                                // errors after generated identifiers can display farther - see issue #229985
+                                String expected = getExpected(error.getMessage());
+                                if ("eof".equals(expected)) { //NOI18N
+                                    // unexpected end of script, probably missing at some earlier place : ; } etc.
+                                    showExplorerBadge = false;
+                                } else {
+                                    JsTokenId expectedToken = getJsTokenFromString(expected);
+                                    ts.movePrevious();
+                                    org.netbeans.api.lexer.Token<? extends JsTokenId> previousNonWsToken = LexUtilities.findPreviousNonWsNonComment(ts);
+                                    if (expectedToken != null && expectedToken == previousNonWsToken.id()) {
+                                        // char is available, doesn't show the error
+                                        showExplorerBadge = false;
+                                    }
+                                }
                             }
                         }
                     } else {
@@ -267,6 +300,17 @@ public class JsErrorManager extends ErrorManager {
             }
         }
         return ret;
+    }
+
+    private static String getExpected(String errorMessage) {
+        int expectedIndex = errorMessage.indexOf(EXPECTED);
+        String afterExpected = errorMessage.substring(expectedIndex + 9);
+        int indexOfSpace = afterExpected.indexOf(" "); //NOI18N
+        return (indexOfSpace != -1) ? afterExpected.substring(0, indexOfSpace) : afterExpected;
+    }
+
+    public static JsTokenId getJsTokenFromString(String name) {
+        return JS_TEXT_TOKENS.get(name);
     }
 
     private static int findNextCorrectOffset(TokenSequence<? extends JsTokenId> ts, int offset) {
