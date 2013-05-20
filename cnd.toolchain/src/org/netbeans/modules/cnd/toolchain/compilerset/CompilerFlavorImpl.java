@@ -102,7 +102,7 @@ public final class CompilerFlavorImpl extends CompilerFlavor {
 
     @Override
     public boolean isMinGWCompiler() {
-        return "MinGW".equals(sval); // NOI18N
+        return sval != null && sval.toLowerCase().startsWith("mingw"); // NOI18N
     }
 
     @Override

@@ -43,8 +43,10 @@
 package org.netbeans.modules.php.project.ui.actions.tests;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -154,31 +156,38 @@ public class GoToTest implements TestLocator {
         if (sourceRoot == null) {
             return null;
         }
-        Set<Locations.Offset> phpFiles = Collections.emptySet();
+        Map<FileObject, Locations.Offset> phpFiles = new HashMap<>();
         PhpModule phpModule = project.getPhpModule();
         for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
             org.netbeans.modules.php.spi.testing.locate.TestLocator testLocator = testingProvider.getTestLocator(phpModule);
+            Set<Locations.Offset> result;
             if (searchTest) {
-                phpFiles = testLocator.findTests(file);
+                result = testLocator.findTests(file);
             } else {
-                phpFiles = testLocator.findSources(file);
+                result = testLocator.findSources(file);
+            }
+            for (Locations.Offset offset : result) {
+                FileObject fo = offset.getFile();
+                if (phpFiles.get(fo) == null) {
+                    phpFiles.put(fo, offset);
+                }
             }
         }
         if (phpFiles.isEmpty()) {
             return new LocationResult(NbBundle.getMessage(GoToTest.class, searchTest ? "MSG_TestNotFound" : "MSG_SrcNotFound", file.getNameExt()));
         }
         if (phpFiles.size() == 1) {
-            Locations.Offset source = phpFiles.iterator().next();
+            Locations.Offset source = phpFiles.values().iterator().next();
             return new LocationResult(source.getFile(), source.getOffset());
         }
         List<FileObject> files = new ArrayList<FileObject>(phpFiles.size());
-        for (Locations.Offset location : phpFiles) {
+        for (Locations.Offset location : phpFiles.values()) {
             files.add(location.getFile());
         }
         FileObject selected = SelectFilePanel.open(sourceRoot, files);
         if (selected != null) {
             int offset = -1;
-            for (Locations.Offset location : phpFiles) {
+            for (Locations.Offset location : phpFiles.values()) {
                 if (selected.equals(location.getFile())) {
                     offset = location.getOffset();
                     break;

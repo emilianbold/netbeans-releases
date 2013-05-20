@@ -139,4 +139,15 @@ class DiffTooltipActionsPanel extends JToolBar implements ActionListener {
             master.getMaster().onDiff(diff);
         }
     }
+
+    void focusButton () {
+        super.requestFocus();
+        for (JButton b : new JButton[] { prevButton, nextButton, rollButton, diffButton }) {
+            if (b.isEnabled()) {
+                b.requestFocusInWindow();
+                break;
+            }
+        }
+    }
+        
 }

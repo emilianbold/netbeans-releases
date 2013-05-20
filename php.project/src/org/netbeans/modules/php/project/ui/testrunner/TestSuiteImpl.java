@@ -68,6 +68,7 @@ public class TestSuiteImpl implements TestSuite {
 
     @Override
     public TestCase addTestCase(String name, String type) {
+        checkFrozen();
         checkFinished();
         Parameters.notWhitespace("name", name); // NOI18N
         Parameters.notWhitespace("type", type); // NOI18N
@@ -82,6 +83,7 @@ public class TestSuiteImpl implements TestSuite {
 
     @Override
     public void finish(long time) {
+        checkFrozen();
         checkFinished();
         finished = true;
         TestSession session = testSession.getTestSession();
@@ -98,6 +100,10 @@ public class TestSuiteImpl implements TestSuite {
 
     public FileObject getLocation() {
         return location;
+    }
+
+    void checkFrozen() {
+        testSession.checkFrozen();
     }
 
     private void checkFinished() {
