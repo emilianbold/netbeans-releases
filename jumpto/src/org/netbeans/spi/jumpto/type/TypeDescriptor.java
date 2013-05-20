@@ -48,14 +48,19 @@ import javax.swing.Icon;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  * A TypeDescriptor describes a type for display in the Go To Type dialog.
  * Items should be comparable such that the infrastructure can return these.
  * 
  * @author Tor Norbye
+ * @author Tomas Zezula
  */
 public abstract class TypeDescriptor {
+
+    private String highlightText;
+
     /**
      * Return the simple name of the type (not including qualifiers). The entries
      * will typically be sorted by this key.
@@ -162,5 +167,15 @@ public abstract class TypeDescriptor {
        return fo == null ?
            "" : // NOI18N
            FileUtil.getFileDisplayName(fo);
+    }
+
+    @NonNull
+    final String getHighlightText() {
+        return highlightText;
+    }
+
+    final void setHighlightText(@NonNull final String textToHighlight) {
+        Parameters.notNull("textToHighlight", textToHighlight); //NOI18N
+        this.highlightText = textToHighlight;
     }
 }

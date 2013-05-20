@@ -177,11 +177,11 @@ public class FastIndexTest extends NbTestCase {
         
         FastTypeProvider provider = new FastTypeProvider(fastIndex);
 
-        List<TypeDescriptor> results = new ArrayList<TypeDescriptor>();
-        Result r = JumptoAccessor.createResult(results);
+        List<TypeDescriptor> results = new ArrayList<TypeDescriptor>();        
         
         // search by prefix:
         Context c = JumptoAccessor.createContext(null, "ZipException", SearchType.PREFIX);
+        Result r = JumptoAccessor.createResult(results, c);
         
         provider.computeTypeNames(c, r);
         assertEquals(1, results.size());

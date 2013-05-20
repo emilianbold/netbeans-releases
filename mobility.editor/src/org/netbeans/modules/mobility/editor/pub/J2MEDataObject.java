@@ -177,6 +177,8 @@ public class J2MEDataObject extends MultiDataObject {
 
     @Override
     protected void handleDelete() throws java.io.IOException {
+        getPrimaryFile().getFileSystem().removeFileStatusListener(J2MEEditorSupport.fsToStatusListener.get(getPrimaryFile().getFileSystem()));
+        J2MEEditorSupport.fsToStatusListener.remove(getPrimaryFile().getFileSystem());
         ApplicationDescriptorHandler.getDefault().handleDelete(getPrimaryFile());
         super.handleDelete();
     }
@@ -239,8 +241,7 @@ public class J2MEDataObject extends MultiDataObject {
         private CloneableTopComponent topComponent;
         private NodeListener nodeListener;
         private J2MEDataObject j2MEdataObject;
-        
-        private static PropertyChangeListener topcompsListener;        
+                
         private static Map<FileSystem, FileStatusListener> fsToStatusListener = new HashMap<FileSystem, FileStatusListener>();
         
         /** Set of opened J2MEEditorSupport instances */
