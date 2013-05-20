@@ -869,10 +869,9 @@ public class CssCompletion implements CodeCompletionHandler {
         String prefix = completionContext.getPrefix();
         int caretOffset = completionContext.getCaretOffset();
 
-//        Node node = completionContext.getNodeForNonWhiteTokenBackward();
         Node node = completionContext.getActiveNode();
         switch (node.type()) {
-            case media:
+            case mediaBody:
                 completionProposals.addAll(completeHtmlSelectors(completionContext, completionContext.getPrefix(), completionContext.getCaretOffset()));
                 break;
             case elementName:
