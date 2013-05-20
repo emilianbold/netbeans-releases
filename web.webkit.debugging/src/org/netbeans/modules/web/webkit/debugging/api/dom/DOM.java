@@ -86,6 +86,7 @@ public class DOM {
      * Creates a new wrapper for the DOM domain of WebKit Remote Debugging Protocol.
      * 
      * @param transport transport to use.
+     * @param webKit WebKit remote debugging API wrapper to use.
      */
     public DOM(TransportHelper transport, WebKitDebugging webKit) {
         this.transport = transport;
