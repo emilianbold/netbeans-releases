@@ -100,9 +100,16 @@ public class NamespacesModule extends CssEditorModule {
                 proposals.addAll(getNamespaceCompletionProposals(context));
                 break;
 
+            case namespaces:
+                //in body after namespace declaration(s), no prefix 
+                proposals.addAll(getNamespaceCompletionProposals(context));
+                break;
+                
             case root:
             case styleSheet:
             case body:
+                //in body, no prefix 
+                proposals.addAll(getNamespaceCompletionProposals(context));
             case bodyItem:
                 CompletionProposal nsKeywordProposal =
                         CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
