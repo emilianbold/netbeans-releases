@@ -319,7 +319,8 @@ public final class FileImpl implements CsmFile,
     private volatile boolean disposed = false; // convert to flag field as soon as new flags appear
 
     private long lastParsed = Long.MIN_VALUE;
-    private long lastParsedCRC;
+    private long lastParsedBufferCRC;
+    private long lastParsedCompilationUnitCRC;
 
     /** Cache the hash code */
     private int hash = 0; // Default to 0
@@ -630,7 +631,9 @@ public final class FileImpl implements CsmFile,
                             time = System.currentTimeMillis();
                             try {
                                 ParseDescriptor parseParams = new ParseDescriptor(this, fullAPT, null, false, triggerParsingActivity);
+                                long compUnitCRC = 0;
                                 for (APTPreprocHandler preprocHandler : handlers) {
+                                    compUnitCRC = APTHandlersSupport.getCompilationUnitCRC(preprocHandler);
                                     parseParams.setCurrentPreprocHandler(preprocHandler);
                                     parseParams.setLanguage(getContextLanguage(preprocHandler.getState()));
                                     _parse(parseParams);
@@ -638,7 +641,7 @@ public final class FileImpl implements CsmFile,
                                         break; // does not make sense parsing old data
                                     }
                                 }
-                                updateModelAfterParsing(parseParams.content);
+                                updateModelAfterParsing(parseParams.content, compUnitCRC);
                             } finally {
                                 postParse();
                                 synchronized (changeStateLock) {
@@ -665,10 +668,12 @@ public final class FileImpl implements CsmFile,
                                         lastFileBasedSignature = FileContentSignature.create(this);
                                     }
                                 }
+                                long compUnitCRC = 0;
                                 for (APTPreprocHandler preprocHandler : handlers) {
                                     parseParams.setCurrentPreprocHandler(preprocHandler);
                                     parseParams.setLanguage(getContextLanguage(preprocHandler.getState()));
                                     if (first) {
+                                        compUnitCRC = APTHandlersSupport.getCompilationUnitCRC(preprocHandler);
                                         _reparse(parseParams);
                                         first = false;
                                     } else {
@@ -678,7 +683,7 @@ public final class FileImpl implements CsmFile,
                                         break; // does not make sense parsing old data
                                     }
                                 }
-                                updateModelAfterParsing(parseParams.content);
+                                updateModelAfterParsing(parseParams.content, compUnitCRC);
                                 if (tryPartialReparse) {
                                     assert lastFileBasedSignature != null;
                                     newSignature = FileContentSignature.create(this);
@@ -786,7 +791,7 @@ public final class FileImpl implements CsmFile,
                 long lastModified = getBuffer().lastModified();
                 // using "==" when comparison disallows offline index: in most cases timestamps differ
                 if (TraceFlags.USE_CURR_PARSE_TIME ? (lastModified > lastParsed) : (lastModified != lastParsed)) {
-                    if (lastParsedCRC != getBuffer().getCRC()) {
+                    if (lastParsedBufferCRC != getBuffer().getCRC()) {
                         if (TraceFlags.TRACE_VALIDATION || TraceFlags.TRACE_191307_BUG) {
                             System.err.printf("VALIDATED %s\n\t lastModified=%d\n\t   lastParsed=%d\n", getAbsolutePath(), lastModified, lastParsed);
                         }
@@ -1473,7 +1478,11 @@ public final class FileImpl implements CsmFile,
         return lastParsed;
     }
 
-    void updateModelAfterParsing(FileContent fileContent) {
+    long getLastParsedCompilationUnitCRC() {
+        return lastParsedCompilationUnitCRC;
+    }
+
+    private void updateModelAfterParsing(FileContent fileContent, long compUnitCRC) {
         Map<CsmUID<FunctionImplEx<?>>, AST> fakeASTs = fileContent.getFakeASTs();
         ProjectBase projectImpl = getProjectImpl(true);
         CsmUID<CsmFile> thisFileUID = getUID();
@@ -1485,7 +1494,8 @@ public final class FileImpl implements CsmFile,
         currentFileContent = fileContent.toWeakReferenceBasedCopy();
         currentFileContent.put();
         lastParsed = fileBuffer.lastModified();
-        lastParsedCRC = fileBuffer.getCRC();
+        lastParsedBufferCRC = fileBuffer.getCRC();
+        lastParsedCompilationUnitCRC = compUnitCRC;
         // using file time as parse time disallows offline index: in most cases timestamps differ
         if (TraceFlags.USE_CURR_PARSE_TIME) {
             lastParsed = Math.max(System.currentTimeMillis(), fileBuffer.lastModified());
@@ -1507,7 +1517,7 @@ public final class FileImpl implements CsmFile,
         if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
             for (FileContent includedFileContent : fileContent.getIncludedFileContents()) {
                 FileImpl fileImplIncluded = includedFileContent.getFile();
-                fileImplIncluded.updateModelAfterParsing(includedFileContent);
+                fileImplIncluded.updateModelAfterParsing(includedFileContent, compUnitCRC);
                 fileImplIncluded.parsingFileContentRef.get().set(null);
                 if(TraceFlags.CPP_PARSER_NEW_GRAMMAR) {
                     if(fileImplIncluded.parsingErrors == null) {
@@ -1982,7 +1992,8 @@ public final class FileImpl implements CsmFile,
 
         output.writeLong(lastParsed);
         output.writeInt(lastParseTime);
-        output.writeLong(lastParsedCRC);
+        output.writeLong(lastParsedBufferCRC);
+        output.writeLong(lastParsedCompilationUnitCRC);
         State curState = state;
         if (curState != State.PARSED && curState != State.INITIAL) {
             if (TraceFlags.TIMING) {
@@ -2013,7 +2024,8 @@ public final class FileImpl implements CsmFile,
         assert fileBuffer != null;
         lastParsed = input.readLong();
         lastParseTime = input.readInt();
-        lastParsedCRC = input.readLong();
+        lastParsedBufferCRC = input.readLong();
+        lastParsedCompilationUnitCRC = input.readLong();
         state = State.values()[input.readByte()];
         parsingState = ParsingState.NOT_BEING_PARSED;
     }
@@ -2257,6 +2269,16 @@ public final class FileImpl implements CsmFile,
         @Override
         public boolean isValid() {
             return false;
+        }
+
+        @Override
+        public CharSequence getLanguage() {
+            return CharSequences.empty();
+        }
+
+        @Override
+        public CharSequence getLanguageFlavor() {
+            return CharSequences.empty();
         }
     }
 }

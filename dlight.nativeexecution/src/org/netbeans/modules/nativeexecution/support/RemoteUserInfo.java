@@ -114,13 +114,13 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     }
 
     private boolean promptSecret(SecretType secretType, String message) {
-        if (!allowInterraction) {
-            return false;
-        }
-
         synchronized (lock) {
             if (pm.getPassword(env) != null) {
                 return true;
+            }
+
+            if (!allowInterraction) {
+                return false;
             }
 
             PromptPasswordDialog dlg;
