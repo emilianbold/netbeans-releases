@@ -131,8 +131,7 @@ public final class TapParser {
                 state = null;
                 break;
             case OK_SKIP:
-                testCase.setMessage(line);
-                state = null;
+                notOkLines.add(line);
                 break;
             case NOT_OK:
                 notOkLines.add(line);
@@ -260,8 +259,7 @@ public final class TapParser {
         String fileLine = matcher.group(2);
         assert file != null : line;
         testCase.setFile(file);
-        // XXX
-        // assert fileLine != null : line;
+        assert fileLine != null : line;
         if (fileLine != null) {
             testCase.setLine(Integer.valueOf(fileLine));
         }
