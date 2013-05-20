@@ -139,7 +139,6 @@ public class GoToPanel extends javax.swing.JPanel {
         // matchesScrollPane1.setBackground( bgColorBrighter );
         matchesList.setCellRenderer( contentProvider.getListCellRenderer(
                 matchesList,
-                nameField.getDocument(),
                 caseSensitive.getModel()));
         contentProvider.setListModel( this, null );
         
@@ -573,7 +572,6 @@ public class GoToPanel extends javax.swing.JPanel {
         @NonNull
         public ListCellRenderer getListCellRenderer(
                 @NonNull JList list,
-                @NonNull Document doc,
                 @NonNull ButtonModel caseSensitive);
         
         public void setListModel( GoToPanel panel, String text );
