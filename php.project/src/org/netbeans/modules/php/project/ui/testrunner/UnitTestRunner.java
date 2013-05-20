@@ -118,6 +118,7 @@ public final class UnitTestRunner {
             try {
                 LOGGER.log(Level.FINE, "Running {0} tests...", testingProvider.getIdentifier());
                 testingProvider.runTests(project.getPhpModule(), info, testSessionImpl);
+                testSessionImpl.freeze();
                 LOGGER.fine("Test run finished");
             } catch (TestRunException exc) {
                 LOGGER.log(Level.INFO, null, exc);
