@@ -351,6 +351,10 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
         private String getTabForUrl() {
             for (Map.Entry<String, TabDescriptor> entry : map.entrySet()) {
                 String urlFromBrowser = entry.getValue().getUrl();
+                if (urlFromBrowser.startsWith("file:/")) {
+                    //phonegap
+                    return "1";
+                }
                 int hash = urlFromBrowser.indexOf("#");
                 if (hash != -1) {
                     urlFromBrowser = urlFromBrowser.substring(0, hash); 
