@@ -291,7 +291,12 @@ public final class Atoum {
             List<TestSuiteVo> suites = new TapParser()
                     .parse(input, currentMillis() - currentMillis);
             LOGGER.log(Level.FINE, "Parsed test suites: {0}", suites);
-            process(suites);
+            // XXX remove once the output TAP format is perfectly known
+            try {
+                process(suites);
+            } catch (Throwable throwable) {
+                LOGGER.log(Level.WARNING, null, throwable);
+            }
             currentMillis = currentMillis();
         }
 
