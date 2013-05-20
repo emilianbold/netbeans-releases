@@ -86,8 +86,6 @@ public class KeyPresentationFactoryImpl implements KeyPresentationFactory {
                 return new ProjectDeclarationContainerKey(presentation);
             case KeyObjectFactory.KEY_PROJECT_KEY:
                 return new ProjectKey(presentation);
-            case KeyObjectFactory.KEY_PRJ_VALIDATOR_KEY:
-                return new ProjectSettingsValidatorKey(presentation);
             case 'I':
                 return new IncludeKey(presentation);
             case 'i':

@@ -865,7 +865,7 @@ public class TraceModel extends TraceModelBase {
             time = System.currentTimeMillis();
             apt = APTDriver.findAPTLight(buffer);
         }
-        APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(fo), getIncludeHandler(fo), true);
+        APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(getMacroMap(fo), getIncludeHandler(fo), true, CharSequences.empty(), CharSequences.empty());
         APTWalkerTest walker = new APTWalkerTest(apt, ppHandler);
         walker.visit();
         time = System.currentTimeMillis() - time;
@@ -901,7 +901,7 @@ public class TraceModel extends TraceModelBase {
             apt = APTDriver.findAPT(buffer, getFileLanguage(fo), APTLanguageSupport.FLAVOR_UNKNOWN);
         }
         APTMacroMap macroMap = getMacroMap(fo);
-        APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(fo), true);
+        APTPreprocHandler ppHandler = APTHandlersSupport.createPreprocHandler(macroMap, getIncludeHandler(fo), true, CharSequences.empty(), CharSequences.empty());
         APTWalkerTest walker = new APTWalkerTest(apt, ppHandler);
         TokenStream ts = walker.getTokenStream();
         if (expand) {

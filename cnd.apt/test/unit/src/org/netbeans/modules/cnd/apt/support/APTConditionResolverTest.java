@@ -147,7 +147,7 @@ public class APTConditionResolverTest {
     private static final class TestWalker extends APTAbstractWalker {
 
         public TestWalker(APTFile apt, APTMacroMap macros) {
-            super(apt, APTHandlersSupport.createPreprocHandler(macros, null, true), null);
+            super(apt, APTHandlersSupport.createPreprocHandler(macros, null, true, null, null), null);
         }
 
         @Override

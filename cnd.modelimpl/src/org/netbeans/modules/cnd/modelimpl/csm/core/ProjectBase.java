@@ -1021,14 +1021,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 return;
             }
 
-            ProjectSettingsValidator validator = null;
+            boolean validator = false;
             if (status == Status.Validating) {
-                validator = new ProjectSettingsValidator(this);
-                validator.restoreSettings();
+                validator = true;
             }
             if (status == Status.Validating && RepositoryUtils.getRepositoryErrorCount(this) > 0){
                 System.err.println("Clean index for project \""+getUniqueName()+"\" because index was corrupted (was "+RepositoryUtils.getRepositoryErrorCount(this)+" errors)."); // NOI18N
-                validator = null;
+                validator = false;
                 reopenUnit();
             }
 
@@ -1051,13 +1050,13 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                 }
                 reopenUnit();
                 // reset worker to create files without validator
-                validator = null;
-                worker = new CreateFilesWorker(this, readOnlyRemovedFilesSet, null);
+                validator = false;
+                worker = new CreateFilesWorker(this, readOnlyRemovedFilesSet, validator);
                 worker.createProjectFilesIfNeed(sources, true);
                 worker.createProjectFilesIfNeed(headers, false);
             }
             worker.checkLibraries();
-            checkConsistency(validator != null);
+            checkConsistency(validator);
             worker.finishProjectFilesCreation();
             checkConsistency(false);
         } finally {
@@ -1099,34 +1098,41 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     /*package*/final FileImpl createIfNeed(NativeFileItem nativeFile, FileModel lwm,
-            ProjectSettingsValidator validator, Collection<FileImpl> reparseOnEdit, Collection<NativeFileItem> reparseOnPropertyChanged) {
+            boolean validator, Collection<FileImpl> reparseOnEdit, Collection<NativeFileItem> reparseOnPropertyChanged) {
 
         FileAndHandler fileAndHandler = preCreateIfNeed(nativeFile);
         if (fileAndHandler == null) {
             return null;
         }
-        if (validator != null) {
+        FileImpl fileImpl = fileAndHandler.fileImpl;
+        if (validator) {
             // fill up needed collections based on validation
-            if (fileAndHandler.fileImpl.validate()) {
-                if (fileAndHandler.fileImpl.isParsed()){
-                    if (validator.arePropertiesChanged(nativeFile)) {
-                        if (TraceFlags.TRACE_VALIDATION) {
-                            System.err.printf("Validation: %s properties are changed \n", nativeFile.getAbsolutePath());
+            if (fileImpl.validate()) {
+                if (fileImpl.isParsed()){
+                    if (fileImpl.isSourceFile() || getGraph().getInLinksUids(fileImpl).isEmpty()) {
+                        if (APTHandlersSupport.getCompilationUnitCRC(fileAndHandler.preprocHandler) != fileImpl.getLastParsedCompilationUnitCRC()) {
+                            if (TraceFlags.TRACE_VALIDATION) {
+                                System.err.printf("Validation: %s properties are changed \n", nativeFile.getAbsolutePath());
+                            }
+                            reparseOnPropertyChanged.add(nativeFile);
+                        } else {
+                            if (TraceFlags.TRACE_VALIDATION) {
+                                System.err.printf("Validation: %s file is skipped as valid PARSED\n", nativeFile.getAbsolutePath());
+                            }                        
                         }
-                        reparseOnPropertyChanged.add(nativeFile);
                     } else {
                         if (TraceFlags.TRACE_VALIDATION) {
-                            System.err.printf("Validation: %s file is skipped as valid PARSED\n", nativeFile.getAbsolutePath());
-                        }                        
+                            System.err.printf("Validation: %s file is skipped as non compilation unit PARSED\n", nativeFile.getAbsolutePath());
+                        }
                     }
                 } else {
                     if (TraceFlags.TRACE_VALIDATION) {
-                        System.err.printf("Validation: %s file to be parsed, because of state %s\n", nativeFile.getAbsolutePath(), fileAndHandler.fileImpl.getState());
+                        System.err.printf("Validation: %s file to be parsed, because of state %s\n", nativeFile.getAbsolutePath(), fileImpl.getState());
                     }
-                    if (validator.arePropertiesChanged(nativeFile)) {
-                        if (fileAndHandler.fileImpl.getState() == FileImpl.State.INITIAL){
+                    if (APTHandlersSupport.getCompilationUnitCRC(fileAndHandler.preprocHandler) != fileImpl.getLastParsedCompilationUnitCRC()) {
+                        if (fileImpl.getState() == FileImpl.State.INITIAL){
                             fileAndHandler.preprocHandler = createPreprocHandler(nativeFile);
-                            ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
+                            ParserQueue.instance().add(fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
                         } else {
                             if (TraceFlags.TRACE_VALIDATION) {
                                 System.err.printf("Validation: %s properties are changed \n", nativeFile.getAbsolutePath());
@@ -1134,32 +1140,32 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                             reparseOnPropertyChanged.add(nativeFile);
                         }
                     } else {
-                        ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
+                        ParserQueue.instance().add(fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
                     }
                 }
             } else {
                 if (TraceFlags.TRACE_VALIDATION) {
                     System.err.printf("Validation: file %s is changed\n", nativeFile.getAbsolutePath());
                 }
-                if (validator.arePropertiesChanged(nativeFile)) {
+                if (APTHandlersSupport.getCompilationUnitCRC(fileAndHandler.preprocHandler) != fileImpl.getLastParsedCompilationUnitCRC()) {
                     reparseOnPropertyChanged.add(nativeFile);
                 } else {
-                    reparseOnEdit.add(fileAndHandler.fileImpl);
+                    reparseOnEdit.add(fileImpl);
                 }
             }
         } else {
             // put directly into parser queue if needed
-            if (lwm == null || !lwm.fill(fileAndHandler.fileImpl)){
+            if (lwm == null || !lwm.fill(fileImpl)){
                 boolean addToQueue = true;
                 if (TraceFlags.PARSE_HEADERS_WITH_SOURCES) {
-                    addToQueue = fileAndHandler.fileImpl.isSourceFile();
+                    addToQueue = fileImpl.isSourceFile();
                 }
                 if (addToQueue) {
-                    ParserQueue.instance().add(fileAndHandler.fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
+                    ParserQueue.instance().add(fileImpl, fileAndHandler.preprocHandler.getState(), ParserQueue.Position.TAIL);
                 }
             }
         }
-        return fileAndHandler.fileImpl;
+        return fileImpl;
     }
 
     /**
@@ -1386,8 +1392,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         assert (nativeFile != null);
         APTMacroMap macroMap = getMacroMap(nativeFile);
         APTIncludeHandler inclHandler = getIncludeHandler(nativeFile);
-        APTPreprocHandler preprocHandler = APTHandlersSupport.createPreprocHandler(macroMap, inclHandler, isSourceFile(nativeFile));
-        return preprocHandler;
+        return APTHandlersSupport.createPreprocHandler(macroMap, inclHandler, isSourceFile(nativeFile), nativeFile.getLanguage().toString(), nativeFile.getLanguageFlavor().toString());
     }
 
     private APTIncludeHandler getIncludeHandler(NativeFileItem nativeFile) {
@@ -1598,7 +1603,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      * This method for testing purpose only. Used from TraceModel
      */
     public final CsmFile testAPTParseFile(NativeFileItem item) {
-        APTPreprocHandler preprocHandler = this.createPreprocHandler(item);
+        APTPreprocHandler preprocHandler = createPreprocHandler(item);
         return findFile(item.getAbsolutePath(), false, Utils.getFileType(item), preprocHandler, true, preprocHandler.getState(), item);
     }
 
@@ -2164,6 +2169,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
      */
     protected abstract SourceRootContainer getProjectRoots();
 
+    @Override
     public FileSystem getFileSystem() {
         return fileSystem;
     }
@@ -2905,9 +2911,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
             disposeLock.writeLock().lock();
 
-            ProjectSettingsValidator validator = new ProjectSettingsValidator(this);
             checkConsistency(false);
-            validator.storeSettings();
             getUnresolved().dispose();
             RepositoryUtils.closeUnit(getUID(), getRequiredUnits(), cleanPersistent);
             onDispose();
