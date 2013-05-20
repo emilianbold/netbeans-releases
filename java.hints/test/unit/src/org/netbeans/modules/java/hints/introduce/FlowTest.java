@@ -1446,6 +1446,35 @@ public class FlowTest extends NbTestCase {
                                    "ID");//TODO: ID actually already is final - should or should not be on the list?
     }
     
+    public void test229585a() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private boolean value;\n" +
+                                   "    public Runnable runner = null;\n" +
+                                   "    Test() {\n" +
+                                   "        value = false;\n" +
+                                   "        runner = new Runnable() {\n" +
+                                   "            public void run() { value = true; }\n" +
+                                   "        };\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false);
+    }
+    
+    public void test229585b() throws Exception {
+        performFinalCandidatesTest("package test;\n" +
+                                   "public class Test {\n" +
+                                   "    private boolean value;\n" +
+                                   "    Test() {\n" +
+                                   "        value = false;\n" +
+                                   "        class RunnableImpl {\n" +
+                                   "            public RunnableImpl() { value = true; }\n" +
+                                   "        };\n" +
+                                   "    }\n" +
+                                   "}\n",
+                                   false);
+    }
+    
     private void performFinalCandidatesTest(String code, boolean allowErrors, String... finalCandidates) throws Exception {
         prepareTest(code, allowErrors);
 
