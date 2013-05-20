@@ -30,6 +30,7 @@ package org.netbeans.modules.java.hints.bugs;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.test.api.HintTest;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -1255,6 +1256,87 @@ public class NPECheckTest extends NbTestCase {
                        "}")
                 .run(NPECheck.class)
                 .assertWarnings();
+    }
+    
+    public void testAssertNullNotNullTestNG225030() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private void test1(@NullAllowed Object node) {\n" +
+                       "        org.testng.Assert.assertNotNull(node);\n" +
+                       "        node.toString();\n" +
+                       "    }\n" +
+                       "    private void test2(@NullAllowed Object node) {\n" +
+                       "        org.testng.Assert.assertNull(node);\n" +
+                       "        node.toString();\n" +
+                       "    }\n" +
+                       "    private void test3(@NullAllowed Object node) {\n" +
+                       "        org.testng.Assert.assertNotNull(node, \"message\");\n" +
+                       "        node.toString();\n" +
+                       "    }\n" +
+                       "    private void test4(@NullAllowed Object node) {\n" +
+                       "        org.testng.Assert.assertNull(node, \"message\");\n" +
+                       "        node.toString();\n" +
+                       "    }\n" +
+                       "    @interface NullAllowed {}\n" +
+                       "}")
+                .classpath(FileUtil.getArchiveRoot(org.testng.Assert.class.getProtectionDomain().getCodeSource().getLocation()))
+                .run(NPECheck.class)
+                .assertWarnings("8:13-8:21:verifier:DN", "16:13-16:21:verifier:DN");
+    }
+    
+    public void testAssertNullNotNullJUnit225030a() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private void test1(@NullAllowed Object node) {\n" +
+                       "        org.junit.Assert.assertNotNull(node);\n" +
+                       "        node.toString();\n" +
+                       "    }\n" +
+                       "    private void test2(@NullAllowed Object node) {\n" +
+                       "        org.junit.Assert.assertNull(node);\n" +
+                       "        node.toString();\n" +
+                       "    }\n" +
+                       "    private void test3(@NullAllowed Object node) {\n" +
+                       "        org.junit.Assert.assertNotNull(\"message\", node);\n" +
+                       "        node.toString();\n" +
+                       "    }\n" +
+                       "    private void test4(@NullAllowed Object node) {\n" +
+                       "        org.junit.Assert.assertNull(\"message\", node);\n" +
+                       "        node.toString();\n" +
+                       "    }\n" +
+                       "    @interface NullAllowed {}\n" +
+                       "}")
+                .classpath(FileUtil.getArchiveRoot(org.junit.Assert.class.getProtectionDomain().getCodeSource().getLocation()))
+                .run(NPECheck.class)
+                .assertWarnings("8:13-8:21:verifier:DN", "16:13-16:21:verifier:DN");
+    }
+    
+    public void testAssertNullNotNullJUnit225030b() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private void test1(@NullAllowed Object node) {\n" +
+                       "        junit.framework.Assert.assertNotNull(node);\n" +
+                       "        node.toString();\n" +
+                       "    }\n" +
+                       "    private void test2(@NullAllowed Object node) {\n" +
+                       "        junit.framework.Assert.assertNull(node);\n" +
+                       "        node.toString();\n" +
+                       "    }\n" +
+                       "    private void test3(@NullAllowed Object node) {\n" +
+                       "        junit.framework.Assert.assertNotNull(\"message\", node);\n" +
+                       "        node.toString();\n" +
+                       "    }\n" +
+                       "    private void test4(@NullAllowed Object node) {\n" +
+                       "        junit.framework.Assert.assertNull(\"message\", node);\n" +
+                       "        node.toString();\n" +
+                       "    }\n" +
+                       "    @interface NullAllowed {}\n" +
+                       "}")
+                .classpath(FileUtil.getArchiveRoot(junit.framework.Assert.class.getProtectionDomain().getCodeSource().getLocation()))
+                .run(NPECheck.class)
+                .assertWarnings("8:13-8:21:verifier:DN", "16:13-16:21:verifier:DN");
     }
     
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
