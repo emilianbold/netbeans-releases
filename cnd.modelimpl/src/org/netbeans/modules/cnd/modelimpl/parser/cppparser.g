@@ -599,7 +599,7 @@ tokens {
 	boolean is_address;
 	boolean is_pointer;
 
-        private static final int NESTED_CLASSES_LIMIT = 256;
+        private static final int NESTED_CLASSES_LIMIT = 32;
 
         protected int classDefinitionDepth = 0; // to restrict number of nested classes
 
