@@ -80,7 +80,7 @@ class DiffActionTooltipWindow implements AWTEventListener, WindowFocusListener {
     }
 
     public void show(Point location) {
-        DiffTooltipActionsPanel tp = new DiffTooltipActionsPanel(this, diff);
+        final DiffTooltipActionsPanel tp = new DiffTooltipActionsPanel(this, diff);
         actionsWindow.add(tp);
         actionsWindow.pack();
         actionsWindow.setLocation(location);
@@ -124,6 +124,12 @@ class DiffActionTooltipWindow implements AWTEventListener, WindowFocusListener {
         Toolkit.getDefaultToolkit().addAWTEventListener(this, AWTEvent.MOUSE_EVENT_MASK);
         actionsWindow.addWindowFocusListener(this);
         actionsWindow.getOwner().addWindowFocusListener(this);
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run () {
+                tp.focusButton();
+            }
+        });
     }
 
     @Override
