@@ -266,8 +266,11 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
                 StringBuilder sb = new StringBuilder("\n");
                 sb.append(IndentUtils.createIndentString(doc, indent));
                 String commentDelimiter = "//"; //NOI18N
-                if (ts.movePrevious() && ts.token().text().charAt(0) == '#') { //NOI18N
-                    commentDelimiter = "#"; //NOI18N
+                while (ts.token() != null && ts.token().id() == PHPTokenId.PHP_LINE_COMMENT && !isLineCommentDelimiter(ts.token())) {
+                    ts.movePrevious();
+                }
+                if (isLineCommentDelimiter(ts.token())) {
+                    commentDelimiter = ts.token().text().toString();
                 }
                 sb.append(commentDelimiter);
                 // Copy existing indentation
@@ -305,6 +308,10 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
             String concatString = stringDelimiter + "\n . " + stringDelimiter; //NOI18N
             context.setText(concatString, 1, concatString.length(), 2, concatString.length() - 1);
         }
+    }
+
+    private static boolean isLineCommentDelimiter(Token<? extends PHPTokenId> token) {
+        return token != null && token.id() == PHPTokenId.PHP_LINE_COMMENT && ("//".equals(token.text().toString()) || "#".equals(token.text().toString()));
     }
 
     @Override

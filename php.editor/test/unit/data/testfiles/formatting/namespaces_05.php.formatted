@@ -1,6 +1,7 @@
 <?php
 
-namespace Test   // a namespace {
+namespace Test   // a namespace
+{
 
     class Test {
 

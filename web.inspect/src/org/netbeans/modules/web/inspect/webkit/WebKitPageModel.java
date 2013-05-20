@@ -44,6 +44,10 @@ package org.netbeans.modules.web.inspect.webkit;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -253,164 +257,232 @@ public class WebKitPageModel extends PageModel {
      * @return DOM domain listener.
      */
     private DOM.Listener createDOMListener() {
-        return new DOM.Listener() {
-            @Override
-            public void childNodesSet(Node parent) {
-                synchronized(WebKitPageModel.this) {
-                    int nodeId = parent.getNodeId();
-                    DOMNode domNode = nodes.get(nodeId);
-                    if (domNode != null) {
-                        updateNodes(parent);
-                        domNode.updateChildren(parent);
+        return (DOM.Listener)Proxy.newProxyInstance(
+                getClass().getClassLoader(),
+                new Class[] {DOM.Listener.class},
+                new RPInvocationHandler(new DOMListener()));
+    }
+
+    /**
+     * Invocation handler that invokes the methods in {@code RequestProcessor}.
+     */
+    private static class RPInvocationHandler implements InvocationHandler {
+        /** {@code RequestProcessor} used by the invocation handler. */
+        private static final RequestProcessor RP = new RequestProcessor(RPInvocationHandler.class);
+        /** Object on which the methods are invoked. */
+        private final Object target;
+
+        /**
+         * Creates a new {@code RPInvocationHandler}.
+         *
+         * @param target object on which the methods are invoked.
+         */
+        RPInvocationHandler(Object target) {
+            this.target = target;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, final Object[] args) throws Throwable {
+            Class[] parameters = method.getParameterTypes();        
+            final Method thisMethod = target.getClass().getMethod(method.getName(), parameters);        
+            if (Void.TYPE.equals(thisMethod.getReturnType())) {
+                // Method of WebKit Debugging API interfaces
+                RP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        invoke0(thisMethod, args);
                     }
+                });
+                return null;
+            } else if (Object.class.equals(method.getDeclaringClass())
+                    && "equals".equals(method.getName())) { // NOI18N
+                return args[0] == proxy;
+            } else {
+                return invoke0(thisMethod, args);
+            }
+        }
+
+        /**
+         * Invokes the given method on the {@code target}.
+         * 
+         * @param method method to invoked.
+         * @param args arguments of the method.
+         * @return return value of the method.
+         */
+        Object invoke0(Method method, Object[] args) {
+            Object result = null;
+            try {
+                result = method.invoke(target, args);                      
+            } catch (IllegalAccessException iaex) {
+                Logger.getLogger(RPInvocationHandler.class.getName()).log(Level.INFO, null, iaex);
+            } catch (InvocationTargetException itex) {
+                Logger.getLogger(RPInvocationHandler.class.getName()).log(Level.INFO, null, itex);
+            }
+            return result;
+        }
+
+    }
+
+    /**
+     * DOM domain listener.
+     */
+    private class DOMListener implements DOM.Listener {
+
+        @Override
+        public void childNodesSet(Node parent) {
+            synchronized(WebKitPageModel.this) {
+                int nodeId = parent.getNodeId();
+                DOMNode domNode = nodes.get(nodeId);
+                if (domNode != null) {
+                    updateNodes(parent);
+                    domNode.updateChildren(parent);
                 }
             }
+        }
 
-            @Override
-            public void childNodeRemoved(Node parent, Node child) {
-                synchronized(WebKitPageModel.this) {
-                    int nodeId = parent.getNodeId();
-                    DOMNode domNode = nodes.get(nodeId);
-                    if (domNode != null) {
-                        domNode.updateChildren(parent);
-                    }
-                    // Nodes with a content document are removed and added
-                    // again when a content document changes (and sometimes
-                    // even when it doesn't change) => we are not removing
-                    // them from 'nodes' collection to be able to reuse
-                    // them once they are back.
-                    Node contentDocument = child.getContentDocument();
-                    if (contentDocument == null) {
-                        nodes.remove(child.getNodeId());
-                    } else {
-                        contentDocumentMap.remove(contentDocument.getNodeId());
-                    }
+        @Override
+        public void childNodeRemoved(Node parent, Node child) {
+            synchronized(WebKitPageModel.this) {
+                int nodeId = parent.getNodeId();
+                DOMNode domNode = nodes.get(nodeId);
+                if (domNode != null) {
+                    domNode.updateChildren(parent);
+                }
+                // Nodes with a content document are removed and added
+                // again when a content document changes (and sometimes
+                // even when it doesn't change) => we are not removing
+                // them from 'nodes' collection to be able to reuse
+                // them once they are back.
+                Node contentDocument = child.getContentDocument();
+                if (contentDocument == null) {
+                    nodes.remove(child.getNodeId());
+                } else {
+                    contentDocumentMap.remove(contentDocument.getNodeId());
                 }
             }
+        }
 
-            @Override
-            public void childNodeInserted(Node parent, Node child) {
-                synchronized(WebKitPageModel.this) {
-                    int nodeId = parent.getNodeId();
-                    updateNodes(child);
-                    DOMNode domNode = nodes.get(nodeId);
-                    if (domNode != null) {
-                        domNode.updateChildren(parent);
-                    }
+        @Override
+        public void childNodeInserted(Node parent, Node child) {
+            synchronized(WebKitPageModel.this) {
+                int nodeId = parent.getNodeId();
+                updateNodes(child);
+                DOMNode domNode = nodes.get(nodeId);
+                if (domNode != null) {
+                    domNode.updateChildren(parent);
                 }
             }
+        }
 
-            @Override
-            public void documentUpdated() {
-                synchronized (DOCUMENT_NODE_LOCK) {
-                    documentNode = null;
-                    synchronized(WebKitPageModel.this) {
-                        nodes.clear();
-                        contentDocumentMap.clear();
-                        remoteObjectMap.clear();
-                        pseudoClassMap.clear();
-                        selectedNodes = Collections.EMPTY_LIST;
-                        highlightedNodes = Collections.EMPTY_LIST;
-                        RP.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                firePropertyChange(PROP_DOCUMENT, null, null);
-                            }
-                        });
-                    }
-                }
-            }
-
-            @Override
-            public void attributeModified(Node node, String attrName) {
+        @Override
+        public void documentUpdated() {
+            synchronized (DOCUMENT_NODE_LOCK) {
+                documentNode = null;
                 synchronized(WebKitPageModel.this) {
-                    // Attribute modifications that represent selection/highlight
-                    final boolean selected = ":netbeans_selected".equals(attrName); // NOI18N
-                    final boolean highlighted = ":netbeans_highlighted".equals(attrName); // NOI18N
-                    final boolean selectMode = ":netbeans_select_mode".equals(attrName); // NOI18N
-                    if (selected || highlighted) {
-                        if (!isSelectionMode()) {
-                            // Some delayed selection/highlight modifications
-                            // can appear after deactivation of the selection mode
-                            // => ignore these delayed events
-                            return;
+                    nodes.clear();
+                    contentDocumentMap.clear();
+                    remoteObjectMap.clear();
+                    pseudoClassMap.clear();
+                    selectedNodes = Collections.EMPTY_LIST;
+                    highlightedNodes = Collections.EMPTY_LIST;
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            firePropertyChange(PROP_DOCUMENT, null, null);
                         }
-                        Node.Attribute attr = node.getAttribute(attrName);
-                        DOMNode n = getNode(node.getNodeId());
-                        final List<? extends org.openide.nodes.Node> selection;
-                        if (n == null) {
+                    });
+                }
+            }
+        }
+
+        @Override
+        public void attributeModified(Node node, String attrName, String attrValue) {
+            synchronized(WebKitPageModel.this) {
+                // Attribute modifications that represent selection/highlight
+                final boolean selected = ":netbeans_selected".equals(attrName); // NOI18N
+                final boolean highlighted = ":netbeans_highlighted".equals(attrName); // NOI18N
+                final boolean selectMode = ":netbeans_select_mode".equals(attrName); // NOI18N
+                if (selected || highlighted) {
+                    if (!isSelectionMode()) {
+                        // Some delayed selection/highlight modifications
+                        // can appear after deactivation of the selection mode
+                        // => ignore these delayed events
+                        return;
+                    }
+                    DOMNode n = getNode(node.getNodeId());
+                    final List<? extends org.openide.nodes.Node> selection;
+                    if (n == null) {
+                        selection = Collections.EMPTY_LIST;
+                    } else {
+                        if ("set".equals(attrValue)) { // NOI18N
+                            selection = Collections.singletonList(n);
+                        } else if ("clear".equals(attrValue)) { // NOI18N
                             selection = Collections.EMPTY_LIST;
                         } else {
-                            String attrValue = attr.getValue();
-                            if ("set".equals(attrValue)) { // NOI18N
-                                selection = Collections.singletonList(n);
-                            } else if ("clear".equals(attrValue)) { // NOI18N
-                                selection = Collections.EMPTY_LIST;
+                            List<org.openide.nodes.Node> newSelection = new ArrayList<org.openide.nodes.Node>();
+                            newSelection.addAll(selectedNodes);
+                            if ("add".equals(attrValue)) { // NOI18N
+                                newSelection.add(n);
+                            } else if ("remove".equals(attrValue)) { // NOI18N
+                                newSelection.remove(n);
+                            }
+                            selection = newSelection;
+                        }
+                    }
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (selected) {
+                                setSelectedNodes(selection);
+                                firePropertyChange(PageModel.PROP_BROWSER_SELECTED_NODES, null, null);
                             } else {
-                                List<org.openide.nodes.Node> newSelection = new ArrayList<org.openide.nodes.Node>();
-                                newSelection.addAll(selectedNodes);
-                                if ("add".equals(attrValue)) { // NOI18N
-                                    newSelection.add(n);
-                                } else if ("remove".equals(attrValue)) { // NOI18N
-                                    newSelection.remove(n);
-                                }
-                                selection = newSelection;
+                                setHighlightedNodesImpl(selection);
                             }
                         }
-                        RP.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (selected) {
-                                    setSelectedNodes(selection);
-                                    firePropertyChange(PageModel.PROP_BROWSER_SELECTED_NODES, null, null);
-                                } else {
-                                    setHighlightedNodesImpl(selection);
-                                }
-                            }
-                        });
-                        return;
-                    } else if (selectMode) {
-                        final boolean newSelectMode = !isSelectionMode();
-                        RP.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                setSelectionMode(newSelectMode);
-                            }
-                        });
-                        return;
-                    }
+                    });
+                    return;
+                } else if (selectMode) {
+                    final boolean newSelectMode = !isSelectionMode();
+                    RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            setSelectionMode(newSelectMode);
+                        }
+                    });
+                    return;
+                }
 
-                    // Update DOMNode
-                    int nodeId = node.getNodeId();
-                    DOMNode domNode = nodes.get(nodeId);
-                    if (domNode != null) {
-                        domNode.updateAttributes();
-                    }
+                // Update DOMNode
+                int nodeId = node.getNodeId();
+                DOMNode domNode = nodes.get(nodeId);
+                if (domNode != null) {
+                    domNode.updateAttributes();
                 }
             }
+        }
 
-            @Override
-            public void attributeRemoved(Node node, String attrName) {
-                synchronized(WebKitPageModel.this) {
-                    int nodeId = node.getNodeId();
-                    DOMNode domNode = nodes.get(nodeId);
-                    if (domNode != null) {
-                        domNode.updateAttributes();
-                    }
+        @Override
+        public void attributeRemoved(Node node, String attrName) {
+            synchronized(WebKitPageModel.this) {
+                int nodeId = node.getNodeId();
+                DOMNode domNode = nodes.get(nodeId);
+                if (domNode != null) {
+                    domNode.updateAttributes();
                 }
             }
+        }
 
-            @Override
-            public void characterDataModified(Node node) {
-                synchronized(WebKitPageModel.this) {
-                    int nodeId = node.getNodeId();
-                    DOMNode domNode = nodes.get(nodeId);
-                    if (domNode != null) {
-                        domNode.updateCharacterData();
-                    }
+        @Override
+        public void characterDataModified(Node node) {
+            synchronized(WebKitPageModel.this) {
+                int nodeId = node.getNodeId();
+                DOMNode domNode = nodes.get(nodeId);
+                if (domNode != null) {
+                    domNode.updateCharacterData();
                 }
             }
-        };
+        }
+
     }
 
     /**

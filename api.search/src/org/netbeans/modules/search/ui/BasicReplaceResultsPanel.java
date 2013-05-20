@@ -60,6 +60,7 @@ import org.netbeans.modules.search.Manager;
 import org.netbeans.modules.search.ReplaceTask;
 import org.netbeans.modules.search.ResultModel;
 import org.netbeans.modules.search.ResultView;
+import org.openide.awt.Mnemonics;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
@@ -150,6 +151,14 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
         });
     }
 
+    @Override
+    public void searchFinished() {
+        super.searchFinished(); 
+        if (replaceButton.isVisible() && replaceButton.isEnabled()){
+            replaceButton.requestFocusInWindow();
+        }
+    }
+
     private class ModelListener implements PropertyChangeListener {
 
         @Override
@@ -167,8 +176,7 @@ public class BasicReplaceResultsPanel extends BasicAbstractResultsPanel {
 
     private void setButtonText() {
         int matches = resultModel.getSelectedMatchesCount();
-        replaceButton.setText(NbBundle.getMessage(ResultView.class,
-                "TEXT_BUTTON_REPLACE", matches));                       //NOI18N
+        Mnemonics.setLocalizedText(replaceButton, NbBundle.getMessage(ResultView.class, "TEXT_BUTTON_REPLACE", matches));//NOI18N
         replaceButton.setEnabled(matches > 0);
     }
 

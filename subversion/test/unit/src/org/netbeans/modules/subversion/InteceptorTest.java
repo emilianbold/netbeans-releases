@@ -177,7 +177,7 @@ public class InteceptorTest extends NbTestCase {
         TestSuite suite = new TestSuite();
         suite.addTest(new InteceptorTest("getWrongAttribute"));
         suite.addTest(new InteceptorTest("getRemoteLocationAttribute"));
-        suite.addTest(new InteceptorTest("getIsVersionedAttribute"));
+        suite.addTest(new InteceptorTest("getIsManaged"));
         return(suite);
     }
 

@@ -378,24 +378,30 @@ media
 //        | mediaQueryList
          mediaQueryList
     ) ws?
-    LBRACE ws?
-        (
-            (
-            //allow just semicolon closed declaration
-            (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | sass_declaration_interpolation_expression COLON )=>propertyDeclaration ws? SEMI
-            | {isScssSource()}? sass_extend ws? SEMI
-            | {isScssSource()}? sass_debug ws? SEMI
-            | {isScssSource()}? sass_control ws? SEMI
-            | {isScssSource()}? sass_content ws? SEMI            
-            | rule
-            | page
-            | fontFace
-            | vendorAtRule
-            //Just a partial hotfix for nested MQ: complete grammar is defined in: http://www.w3.org/TR/css3-conditional/#processing
-            | media
-            ) ws?
-        )*
+    LBRACE 
+        mediaBody
      RBRACE
+    ;
+    
+mediaBody
+    :
+    ws?
+    (
+        (
+        //allow just semicolon closed declaration
+        (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | sass_declaration_interpolation_expression COLON )=>propertyDeclaration ws? SEMI
+        | {isScssSource()}? sass_extend ws? SEMI
+        | {isScssSource()}? sass_debug ws? SEMI
+        | {isScssSource()}? sass_control ws? SEMI
+        | {isScssSource()}? sass_content ws? SEMI            
+        | rule
+        | page
+        | fontFace
+        | vendorAtRule
+        //Just a partial hotfix for nested MQ: complete grammar is defined in: http://www.w3.org/TR/css3-conditional/#processing
+        | media
+        ) ws?
+    )*
     ;
 
 mediaQueryList
@@ -416,7 +422,13 @@ mediaType
  ;
  
 mediaExpression
-    : LPAREN ws? mediaFeature (ws? COLON ws? expression)? ws? RPAREN
+    : 
+    LPAREN ws? mediaFeature mediaFeatureValue? ws? RPAREN
+    ;
+    
+mediaFeatureValue
+    :
+    ws? COLON ws? expression
     ;
  
 mediaFeature
