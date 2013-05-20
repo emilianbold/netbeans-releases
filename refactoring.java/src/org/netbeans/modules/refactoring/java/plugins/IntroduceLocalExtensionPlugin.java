@@ -42,23 +42,16 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import java.io.IOException;
-import java.net.URL;
-import java.text.MessageFormat;
-import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.api.MoveRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.IntroduceLocalExtensionRefactoring;
-import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
@@ -80,6 +73,13 @@ public final class IntroduceLocalExtensionPlugin extends JavaRefactoringPlugin {
 
     @Override
     protected JavaSource getJavaSource(Phase p) {
+        switch (p) {
+            case CHECKPARAMETERS:
+            case FASTCHECKPARAMETERS:
+            case PRECHECK:
+                ClasspathInfo cpInfo = getClasspathInfo(refactoring);
+                return JavaSource.create(cpInfo, treePathHandle.getFileObject());
+        }
         return null;
     }
 
@@ -94,7 +94,7 @@ public final class IntroduceLocalExtensionPlugin extends JavaRefactoringPlugin {
         }
         Element el = treePathHandle.resolveElement(info);
         if (!(el.getKind() == ElementKind.CLASS)) {
-            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(ChangeParametersPlugin.class, "ERR_ChangeParamsWrongType")); // NOI18N
+            preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(IntroduceLocalExtensionPlugin.class, "ERR_IntroduceLEWrongType")); // NOI18N
             return preCheckProblem;
         }
         return preCheckProblem;
