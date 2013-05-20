@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.actions.CMakeAction;
 import org.netbeans.modules.cnd.actions.MakeAction;
 import org.netbeans.modules.cnd.actions.QMakeAction;
 import org.netbeans.modules.cnd.actions.ShellRunAction;
+import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -72,9 +73,11 @@ import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.netbeans.modules.cnd.execution.ShellExecSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.remote.api.RfsListenerSupport;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -101,10 +104,10 @@ public class ReconfigureProject {
     private static final Logger logger = getLogger("org.netbeans.modules.cnd.discovery.projectimport.ImportProject"); // NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ReconfigureProject.class.getName(), 1);
     private final Project makeProject;
-    private final ConfigurationDescriptorProvider pdp;
-    private final boolean isSunCompiler;
+    private ConfigurationDescriptorProvider pdp;
+    private boolean isSunCompiler;
     private CompilerSet compilerSet;
-    private final int platform;
+    private int platform;
     private DataObject configure;
     private DataObject cmake;
     private DataObject qmake;
@@ -121,60 +124,75 @@ public class ReconfigureProject {
     private File execLog = null;
     private String remoteExecLog = null;
     private ExecutionEnvironment executionEnvironment;
-
-    public ReconfigureProject(Project makeProject){
-        if (TRACE) {
-            logger.setLevel(Level.ALL);
+    
+    public static ReconfigureProject createReconfigureProject(Project makeProject) {
+        ReconfigureProject res = new ReconfigureProject(makeProject);
+        res.pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
+        if (res.pdp == null || !res.pdp.gotDescriptor()) {
+            return null;
         }
-        this.makeProject = makeProject;
-        pdp = makeProject.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        assert pdp != null && pdp.gotDescriptor();
-        MakeConfiguration configuration = pdp.getConfigurationDescriptor().getActiveConfiguration();
-        assert configuration != null && configuration.getConfigurationType().getValue() ==  MakeConfiguration.TYPE_MAKEFILE;
+        MakeConfigurationDescriptor configurationDescriptor = res.pdp.getConfigurationDescriptor();
+        if (configurationDescriptor == null) {
+            return null;
+        }
+        MakeConfiguration configuration = configurationDescriptor.getActiveConfiguration();
+        if (configuration == null || configuration.getConfigurationType().getValue() !=  MakeConfiguration.TYPE_MAKEFILE) {
+            return null;
+        }
         CompilerSet2Configuration set = configuration.getCompilerSet();
-        compilerSet = set.getCompilerSet();
-        assert compilerSet != null;
-        isSunCompiler = compilerSet.getCompilerFlavor().isSunStudioCompiler();
-        for(Item item :  pdp.getConfigurationDescriptor().getExternalFileItemsAsArray()){
+        res.compilerSet = set.getCompilerSet();
+        if (res.compilerSet == null) {
+            return null;
+        }
+        CompilerFlavor compilerFlavor = res.compilerSet.getCompilerFlavor();
+        if (compilerFlavor == null) {
+            return null;
+        }
+        res.isSunCompiler = compilerFlavor.isSunStudioCompiler();
+        for(Item item :  configurationDescriptor.getExternalFileItemsAsArray()){
             DataObject dao = item.getDataObject();
             if (dao != null) {
                 String mime = dao.getPrimaryFile().getMIMEType();
                 if (MIMENames.SHELL_MIME_TYPE.equals(mime)){
                     if ("configure".equals(dao.getPrimaryFile().getNameExt())){ // NOI18N
-                        configure = dao;
+                        res.configure = dao;
                     }
                 } else if (MIMENames.CMAKE_MIME_TYPE.equals(mime)){
-                    cmake = dao;
+                    res.cmake = dao;
                 } else if (MIMENames.QTPROJECT_MIME_TYPE.equals(mime)){
-                    qmake = dao;
+                    res.qmake = dao;
                 } else if (MIMENames.MAKEFILE_MIME_TYPE.equals(mime)){
                     if (dao.getPrimaryFile().hasExt("mk")) { // NOI18N
-                        if (make == null) {
-                            make = dao;
+                        if (res.make == null) {
+                            res.make = dao;
                         }
                     } else {
-                        make = dao;
+                        res.make = dao;
                     }
                 }
             }
         }
-        if (make == null) {
-            FileObject absBuildCommandFileObject = configuration.getMakefileConfiguration().getAbsBuildCommandFileObject();
+        if (res.make == null) {
+            MakefileConfiguration makefileConfiguration = configuration.getMakefileConfiguration();
+            if (makefileConfiguration == null) {
+                return null;
+            }
+            FileObject absBuildCommandFileObject = makefileConfiguration.getAbsBuildCommandFileObject();
             if (absBuildCommandFileObject != null && absBuildCommandFileObject.isValid()) {
                 for (FileObject children : absBuildCommandFileObject.getChildren()) {
                     String mime = children.getMIMEType();
                     if (MIMENames.MAKEFILE_MIME_TYPE.equals(mime)){
                         if (children.hasExt("mk")) { // NOI18N
-                            if (make == null) {
+                            if (res.make == null) {
                                 try {
-                                    make = DataObject.find(children);
+                                    res.make = DataObject.find(children);
                                 } catch (DataObjectNotFoundException ex) {
                                     Exceptions.printStackTrace(ex);
                                 }
                             }
                         } else if (children.getExt().isEmpty()) { // NOI18N
                             try {
-                                make = DataObject.find(children);
+                                res.make = DataObject.find(children);
                             } catch (DataObjectNotFoundException ex) {
                                 Exceptions.printStackTrace(ex);
                             }
@@ -183,9 +201,21 @@ public class ReconfigureProject {
                 }
             }
         }
-        platform = configuration.getDevelopmentHost().getBuildPlatform();
+        DevelopmentHostConfiguration developmentHost = configuration.getDevelopmentHost();
+        if (developmentHost == null) {
+            return null;
+        }
+        res.platform = developmentHost.getBuildPlatform();
+        return res;
     }
 
+    private ReconfigureProject(Project makeProject){
+        if (TRACE) {
+            logger.setLevel(Level.ALL);
+        }
+        this.makeProject = makeProject;
+    }
+    
     public boolean isApplicable() {
         if (cmake != null && make != null) {
             return true;
