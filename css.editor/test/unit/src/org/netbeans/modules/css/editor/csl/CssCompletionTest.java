@@ -131,6 +131,11 @@ public class CssCompletionTest extends CssModuleTestBase {
         checkCC("html > bo| ", arr("body"), Match.EXACT);
         checkCC("html tit| { }", arr("title"), Match.CONTAINS);
     }
+    
+    public void testHtmlSelectorsAfterNamespacesSection() throws ParseException {
+        checkCC("@namespace foo \"http://foo.org\";\n |", arr("html"), Match.CONTAINS);
+        checkCC("@namespace foo \"http://foo.org\";\n ht| ", arr("html"), Match.EXACT);
+    }
 
     public void testHtmlSelectorsCompletionAfterIdSelector() throws ParseException, BadLocationException {
         checkCC("#myid |", arr("html"), Match.CONTAINS);

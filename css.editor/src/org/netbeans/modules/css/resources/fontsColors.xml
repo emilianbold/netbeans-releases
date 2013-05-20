@@ -89,6 +89,10 @@ made subject to such option by the copyright holder.
         <font style="italic" />
     </fontcolor>
     
+    <fontcolor name="mod-custom3" foreColor="black">
+        <font style="italic" />
+    </fontcolor>
+    
     <!-- element, class, id selectors -->
     <fontcolor name="mod-method" foreColor="007c00" >
         <!--<font style="bold" />-->

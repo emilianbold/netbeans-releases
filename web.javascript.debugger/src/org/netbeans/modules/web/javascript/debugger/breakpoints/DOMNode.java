@@ -703,7 +703,7 @@ public final class DOMNode {
         }
 
         @Override
-        public void attributeModified(Node node, String attrName) {
+        public void attributeModified(Node node, String attrName, String attrValue) {
             // Ignored
         }
 

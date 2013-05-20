@@ -119,11 +119,12 @@ public class EditorSupportImpl implements EditorSupport {
         final List<Pair<FileObject, Integer>> retval = new ArrayList<>();
         Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(sourceRoot));
         String fullyQualifiedName = phpClass.getFullyQualifiedName();
-        NameKind kind = fullyQualifiedName == null ? NameKind.prefix(phpClass.getName()) : NameKind.exact(fullyQualifiedName);
+        String unqualifiedName = phpClass.getName();
+        NameKind kind = fullyQualifiedName == null ? NameKind.prefix(unqualifiedName) : NameKind.exact(fullyQualifiedName);
         Set<ClassElement> classes = indexQuery.getClasses(kind);
         for (ClassElement indexedClass : classes) {
             FileObject fo = indexedClass.getFileObject();
-            if (fo != null && fo.isValid()) {
+            if (unqualifiedName.equals(indexedClass.getName()) && fo != null && fo.isValid()) {
                 retval.add(Pair.of(fo, indexedClass.getOffset()));
             }
         }
