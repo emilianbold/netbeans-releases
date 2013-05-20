@@ -140,7 +140,9 @@ public class FoldingSideBar extends JComponent {
         int size = lines.getLineCount();
         int logLine = 0; // logical line (including wrapped lines)
         int nextLogLine;
-        for (int i = 0; i < size - 1; i++) {
+        int firstVisibleLine = Math.max(0, getLineAtPosition(cp.y) - 1);
+        int lastVisibleLine = getLastVisibleLine(cp, size);
+        for (int i = firstVisibleLine; i < lastVisibleLine; i++) {
             if (!lines.isVisible(i)) {
                 continue;
             }
@@ -149,6 +151,49 @@ public class FoldingSideBar extends JComponent {
                     descent);
             logLine = nextLogLine;
         }
+    }
+
+    /**
+     * Get real index of the last line visible in the current clip bounds.
+     *
+     * @param cp Clip bounds.
+     * @param realLineSize Total count of real lines.
+     */
+    private int getLastVisibleLine(Rectangle cp, int realLineSize) {
+        int lineAtClipBoundsEnd = getLineAtPosition(cp.y + cp.height);
+        return lineAtClipBoundsEnd < 0
+                ? realLineSize - 1
+                : Math.min(realLineSize - 1, lineAtClipBoundsEnd + 1);
+    }
+
+    /**
+     * Find absolute line number at a y coordinate.
+     */
+    private int getLineAtPosition(int y) {
+        // TODO refactor, the same code as in paint()
+        FontMetrics fontMetrics = textView.getFontMetrics(textView.getFont());
+        int lineHeight = fontMetrics.getHeight();
+        int offset = 0;
+        try {
+            Rectangle modelToView = textView.modelToView(0);
+            offset = modelToView.y;
+        } catch (BadLocationException ex) {
+            LOG.log(Level.INFO, null, ex);
+        }
+        offset += lineHeight - fontMetrics.getAscent();
+        // end TODO
+        int logicalLine = (y - offset) / lineHeight;
+        final int physicalLine;
+        if (wrapped) {
+            int[] info = new int[]{logicalLine, 0, 0};
+            lines.toPhysicalLineIndex(info, charsPerLine);
+            physicalLine = info[0];
+        } else {
+            physicalLine = logicalLine < lines.getVisibleLineCount()
+                    ? lines.visibleToRealLine(logicalLine)
+                    : -1;
+        }
+        return physicalLine;
     }
 
     /**
@@ -376,30 +421,7 @@ public class FoldingSideBar extends JComponent {
         }
 
         private int getLineForEvent(MouseEvent e) {
-            // TODO refactor, the same code as in paint()
-            FontMetrics fontMetrics = textView.getFontMetrics(textView.getFont());
-            int lineHeight = fontMetrics.getHeight();
-            int offset = 0;
-            try {
-                Rectangle modelToView = textView.modelToView(0);
-                offset = modelToView.y;
-            } catch (BadLocationException ex) {
-                LOG.log(Level.INFO, null, ex);
-            }
-            offset += lineHeight - fontMetrics.getAscent();
-            // end TODO
-            int logicalLine = (e.getY() - offset) / lineHeight;
-            final int physicalLine;
-            if (wrapped) {
-                int[] info = new int[]{logicalLine, 0, 0};
-                lines.toPhysicalLineIndex(info, charsPerLine);
-                physicalLine = info[0];
-            } else {
-                physicalLine = logicalLine < lines.getVisibleLineCount()
-                        ? lines.visibleToRealLine(logicalLine)
-                        : -1;
-            }
-            return physicalLine;
+           return getLineAtPosition(e.getY());
         }
     }
 }
