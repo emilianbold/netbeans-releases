@@ -100,13 +100,14 @@ public class DOMTest {
         final int[] eventsFired = new int[1];
         DOM.Listener listener = new DOMAdapter() {
             @Override
-            public void attributeModified(Node node, String attrName) {
+            public void attributeModified(Node node, String attrName, String attrValue) {
                 eventsFired[0]++;
                 assertEquals(ATTR_NAME, attrName);
                 assertEquals(root, node);
                 Node.Attribute attr = node.getAttribute(attrName);
                 assertNotNull(attr);
                 assertEquals(ATTR_VALUE, attr.getValue());
+                assertEquals(ATTR_VALUE, attrValue);
             }
         };
         dom.addListener(listener);
@@ -384,7 +385,7 @@ public class DOMTest {
         public void childNodeInserted(Node parent, Node child) {}
 
         @Override
-        public void attributeModified(Node node, String attrName) {}
+        public void attributeModified(Node node, String attrName, String attrValue) {}
 
         @Override
         public void attributeRemoved(Node node, String attrName) {}

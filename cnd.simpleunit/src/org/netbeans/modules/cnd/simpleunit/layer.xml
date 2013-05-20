@@ -75,6 +75,7 @@
                 <attr name="templateGenerator" boolvalue="true"/>
                 <attr name="supportedMimeTypes" stringvalue="text/x-c;text/x-h"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="addToLogicalFolder" boolvalue="false"/>
             </file>
 
 <!--            <file name="simpletestfile.c" url="templates/c/test-simple-file-c.template">
@@ -96,6 +97,7 @@
                 <attr name="templateGenerator" boolvalue="true"/>
                 <attr name="supportedMimeTypes" stringvalue="text/x-c++;text/x-h"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="addToLogicalFolder" boolvalue="false"/>
             </file>
 
 <!--            <file name="simpletestfile.cpp" url="templates/cpp/test-simple-file-cpp.template">

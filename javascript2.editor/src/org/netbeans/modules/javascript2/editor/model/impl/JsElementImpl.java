@@ -140,7 +140,12 @@ public abstract class JsElementImpl implements JsElement {
    
     @Override
     public final OffsetRange getOffsetRange(ParserResult result) {
-        return getOffsetRange();
+        int start = result.getSnapshot().getOriginalOffset(offsetRange.getStart());
+        if (start < 0) {
+            return OffsetRange.NONE;
+        }
+        int end = result.getSnapshot().getOriginalOffset(offsetRange.getEnd());
+        return new OffsetRange(start, end);
     }
 
     @Override

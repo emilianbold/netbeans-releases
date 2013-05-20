@@ -179,6 +179,7 @@ import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.NbEditorKit;
 import org.netbeans.modules.editor.bracesmatching.api.BracesMatchingTestUtils;
 import org.netbeans.modules.editor.indent.api.Reformat;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
@@ -1851,8 +1852,14 @@ public abstract class CslTestBase extends NbTestCase {
         assertNotNull("You must override getStructureScanner, either from your GsfLanguage or your test class", handler);
         return handler;
     }
-    
+
     protected void checkStructure(String relFilePath) throws Exception {
+        checkStructure(relFilePath, false, false, false);
+    }
+
+    protected void checkStructure(String relFilePath, final boolean embedded,
+            final boolean inTestDir, final boolean includePositions) throws Exception {
+
         final HtmlFormatter formatter = new HtmlFormatter() {
             private StringBuilder sb = new StringBuilder();
             
@@ -1933,12 +1940,23 @@ public abstract class CslTestBase extends NbTestCase {
                 StructureScanner analyzer = getStructureScanner();
                 assertNotNull("getStructureScanner must be implemented", analyzer);
 
-                Parser.Result r = resultIterator.getParserResult();
+                Parser.Result r = null;
+                if (embedded) {
+                    for (Embedding e : resultIterator.getEmbeddings()) {
+                        if (e.getMimeType().equals(getPreferredMimeType())) {
+                            r = resultIterator.getResultIterator(e).getParserResult();
+                            break;
+                        }
+                    }
+                } else {
+                    r = resultIterator.getParserResult();
+                }
                 assertTrue(r instanceof ParserResult);
                 List<? extends StructureItem> structure = analyzer.scan((ParserResult) r);
 
-                String annotatedSource = annotateStructure(structure, formatter);
-                assertDescriptionMatches(resultIterator.getSnapshot().getSource().getFileObject(), annotatedSource, false, ".structure");
+                String annotatedSource = annotateStructure(structure, formatter, includePositions);
+                assertDescriptionMatches(resultIterator.getSnapshot().getSource().getFileObject(), annotatedSource,
+                        false, ".structure", inTestDir);
             }
         });
     }
@@ -2025,7 +2043,9 @@ public abstract class CslTestBase extends NbTestCase {
         });
     }
 
-    private void annotateStructureItem(int indent, StringBuilder sb, List<? extends StructureItem> structure, HtmlFormatter formatter) {
+    private void annotateStructureItem(int indent, StringBuilder sb, List<? extends StructureItem> structure,
+            HtmlFormatter formatter, boolean includePositions) {
+
         for (StructureItem element : structure) {
             for (int i = 0; i < indent; i++) {
                 sb.append("  ");
@@ -2039,6 +2059,12 @@ public abstract class CslTestBase extends NbTestCase {
             formatter.reset();
             sb.append(element.getHtml(formatter));
             sb.append(":");
+            if (includePositions) {
+                sb.append(element.getPosition());
+                sb.append(",");
+                sb.append(element.getEndPosition());
+                sb.append(":");
+            }
             sb.append("\n");
             List<? extends StructureItem> children = element.getNestedItems();
             if (children != null && children.size() > 0) {
@@ -2063,14 +2089,15 @@ public abstract class CslTestBase extends NbTestCase {
                     
                 });
                 
-                annotateStructureItem(indent+1, sb, c, formatter);
+                annotateStructureItem(indent+1, sb, c, formatter, includePositions);
             }
         }
     }
 
-    private String annotateStructure(List<? extends StructureItem> structure, HtmlFormatter formatter) {
+    private String annotateStructure(List<? extends StructureItem> structure, HtmlFormatter formatter,
+            boolean includePositions) {
         StringBuilder sb = new StringBuilder();
-        annotateStructureItem(0, sb, structure, formatter);
+        annotateStructureItem(0, sb, structure, formatter, includePositions);
         
         return sb.toString();
     }

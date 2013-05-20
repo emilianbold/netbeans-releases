@@ -849,8 +849,8 @@ public class CssCompletion implements CodeCompletionHandler {
         int offset = context.getAnchorOffset();
         NodeType nodeType = node.type();
 
-        if (NodeUtil.isOfType(node, NodeType.root, NodeType.styleSheet, NodeType.body, NodeType.moz_document, NodeType.imports)
-                || nodeType == NodeType.error && NodeUtil.isOfType(node.parent(), NodeType.root, NodeType.styleSheet, NodeType.body, NodeType.moz_document, NodeType.imports)) {
+        if (NodeUtil.isOfType(node, NodeType.root, NodeType.styleSheet, NodeType.body, NodeType.moz_document, NodeType.imports, NodeType.namespaces)
+                || nodeType == NodeType.error && NodeUtil.isOfType(node.parent(), NodeType.root, NodeType.styleSheet, NodeType.body, NodeType.moz_document, NodeType.imports, NodeType.namespaces)) {
             /*
              * somewhere between rules, in an empty or very broken file, between
              * rules
@@ -869,10 +869,9 @@ public class CssCompletion implements CodeCompletionHandler {
         String prefix = completionContext.getPrefix();
         int caretOffset = completionContext.getCaretOffset();
 
-//        Node node = completionContext.getNodeForNonWhiteTokenBackward();
         Node node = completionContext.getActiveNode();
         switch (node.type()) {
-            case media:
+            case mediaBody:
                 completionProposals.addAll(completeHtmlSelectors(completionContext, completionContext.getPrefix(), completionContext.getCaretOffset()));
                 break;
             case elementName:

@@ -60,7 +60,8 @@ public class TestSessionImpl implements TestSession {
     private final PhpTestingProvider testingProvider;
 
     private volatile Coverage coverage;
-    private boolean coverageSet = false;
+    private volatile boolean coverageSet = false;
+    private volatile boolean frozen = false;
 
 
     TestSessionImpl(Manager manager, org.netbeans.modules.gsf.testrunner.api.TestSession testSession, PhpTestingProvider testingProvider) {
@@ -80,6 +81,7 @@ public class TestSessionImpl implements TestSession {
     @Override
     public TestSuite addTestSuite(String name, FileObject location) {
         Parameters.notWhitespace("name", name); // NOI18N
+        checkFrozen();
         String suiteName = Bundle.TestSessionImpl_suite_name(testingProvider.getDisplayName(), name);
         org.netbeans.modules.gsf.testrunner.api.TestSuite testSuite = new org.netbeans.modules.gsf.testrunner.api.TestSuite(suiteName);
         manager.displaySuiteRunning(testSession, suiteName);
@@ -124,6 +126,16 @@ public class TestSessionImpl implements TestSession {
 
     public org.netbeans.modules.gsf.testrunner.api.TestSession getTestSession() {
         return testSession;
+    }
+
+    void freeze() {
+        frozen = true;
+    }
+
+    void checkFrozen() {
+        if (frozen) {
+            throw new IllegalStateException("Test session is already frozen (PhpTestingProvider.runTests() already finished)");
+        }
     }
 
     //~ Mappers
