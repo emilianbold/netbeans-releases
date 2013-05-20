@@ -183,6 +183,21 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
                 // Preceding code should ensure that (prevEtl.nextEmbeddedTokenList == null)
                 // so no need to call etl.setNextEmbeddedTokenList(prevEtl.nextEmbeddedTokenList())
                 ec.addEmbeddedTokenList(prevEtl, etl, true);
+                if (initTokensInNew) {
+                    TokenHierarchyOperation operation = rootTokenList.tokenHierarchyOperation();
+                    if (embedding.joinSections()) {
+                        // Init corresponding TokenListList
+                        operation.tokenListList(embeddedLanguagePath);
+                    } else { // sections not joined
+                        // Check that there is no TLL in this case.
+                        // If there would be one it would already have to run through its constructor
+                        // which should have collected all the ETLs already (with initTokensInNew==false)
+                        // and init tokens explicitly.
+                        // Thus the following assert should always pass.
+                        assert (operation.existingTokenListList(embeddedLanguagePath) == null);
+                        etl.initAllTokens();
+                    }
+                }
                 if (LOG.isLoggable(Level.FINE)) {
                     StringBuilder sb = new StringBuilder(200);
                     sb.append("@@@@@@@@@@ NATURAL-EMBEDDING-CREATED EC-"); // NOI18N
@@ -199,21 +214,6 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
                     }
                 }
 
-                if (initTokensInNew) {
-                    TokenHierarchyOperation operation = rootTokenList.tokenHierarchyOperation();
-                    if (embedding.joinSections()) {
-                        // Init corresponding TokenListList
-                        operation.tokenListList(embeddedLanguagePath);
-                    } else { // sections not joined
-                        // Check that there is no TLL in this case.
-                        // If there would be one it would already have to run through its constructor
-                        // which should have collected all the ETLs already (with initTokensInNew==false)
-                        // and init tokens explicitly.
-                        // Thus the following assert should always pass.
-                        assert (operation.existingTokenListList(embeddedLanguagePath) == null);
-                        etl.initAllTokens();
-                    }
-                }
                 return etl;
             }
             // Update embedding presence to NONE
@@ -305,14 +305,6 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
 
             etl = new EmbeddedTokenList<ET>(ec, embeddedLanguagePath, embedding);
             ec.addEmbeddedTokenList(null, etl, false);
-            if (LOG.isLoggable(Level.FINE)) {
-                LOG.fine("@@@@@@@@@@ EXPLICIT-EMBEDDING-CREATED for " + embeddedLanguagePath.mimePath() +
-                        ", " + embedding + ": " + etl.dumpInfo(null) + '\n');
-                if (LOG.isLoggable(Level.FINER)) { // Include stack trace of the creation
-                    LOG.log(Level.INFO, "Explicit embedding created by:", new Exception());
-                }
-            }
-
             
             // Fire the embedding creation to the clients
             // Threading model may need to be changed if necessary
@@ -323,20 +315,26 @@ public final class EmbeddingContainer<T extends TokenId> implements TokenOrEmbed
                     tokenStartOffset, 0, "", 0);
             eventInfo.setMaxAffectedEndOffset(tokenStartOffset + token.length());
 
-            // When joining sections ensure that the token list list gets created
-            // and the embedded tokens get created because they must exist
-            // before possible next updating of the token list.
-            if (!embedding.joinSections()) {
-                etl.initAllTokens();
-            }
             if (tll != null) {
                 // Update tll by embedding creation
+                // etl.initAllTokens() will be called by TokenListListUpdate.collectAddedEmbeddings()
                 new TokenHierarchyUpdate(eventInfo).updateCreateOrRemoveEmbedding(etl, true);
             } else { // tll == null
                 if (embedding.joinSections()) {
                     // Force token list list creation only when joining sections
                     tll = tokenHierarchyOperation.tokenListList(etl.languagePath());
+                } else {
+                    // Force initialization of the tokens of the ETL
+                    etl.initAllTokens();
                 }
+            }
+            if (LOG.isLoggable(Level.FINE)) {
+                LOG.fine("@@@@@@@@@@ EXPLICIT-EMBEDDING-CREATED for " + embeddedLanguagePath.mimePath() +
+                        ", " + embedding + ": " + etl.dumpInfo(null) + '\n');
+                if (LOG.isLoggable(Level.FINER)) { // Include stack trace of the creation
+                    LOG.log(Level.INFO, "Explicit embedding created by:", new Exception());
+                }
+//                tokenHierarchyOperation.ensureConsistency();
             }
         }
 
