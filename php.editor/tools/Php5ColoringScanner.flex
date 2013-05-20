@@ -838,7 +838,11 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP_LINE_COMMENT;
 }
 
-<ST_PHP_LINE_COMMENT>[^\n\r]*{ANY_CHAR} {
+<ST_PHP_LINE_COMMENT>"?"|"%" {
+    return PHPTokenId.PHP_LINE_COMMENT;
+}
+
+<ST_PHP_LINE_COMMENT>[^\n\r?%]*{ANY_CHAR} {
 	String yytext = yytext();
 	switch (yytext.charAt(yytext.length() - 1)) {
 		case '?':
