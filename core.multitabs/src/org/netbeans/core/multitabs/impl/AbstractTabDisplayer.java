@@ -151,6 +151,7 @@ abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelLi
         scrollPane.getViewport().setOpaque( false );
         scrollPane.setFocusable( false );
         scrollPane.setWheelScrollingEnabled( false );
+        scrollPane.setViewportBorder( BorderFactory.createEmptyBorder() );
 
         scrollPane.addComponentListener( new ComponentListener() {
 
