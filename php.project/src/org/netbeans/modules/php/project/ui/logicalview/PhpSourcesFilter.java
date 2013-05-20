@@ -42,15 +42,12 @@
 
 package org.netbeans.modules.php.project.ui.logicalview;
 
-import java.io.File;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.loaders.ChangeableDataFilter;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
@@ -65,7 +62,7 @@ public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
         private final PhpProject project;
         private final FileObject rootFolder;
         private final PhpVisibilityQuery phpVisibilityQuery;
-        private final File nbProject;
+        private final FileObject nbProject;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
         public PhpSourcesFilter(PhpProject project) {
@@ -78,7 +75,7 @@ public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
             this.rootFolder = rootFolder;
 
             phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
-            nbProject = project.getHelper().resolveFile(AntProjectHelper.PROJECT_XML_PATH).getParentFile();
+            nbProject = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
             assert nbProject != null : "NB metadata folder was not found for project: " + project;
 
             ProjectPropertiesSupport.addWeakIgnoredFilesListener(project, this);
@@ -97,8 +94,7 @@ public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
         }
 
         private boolean isNbProject(FileObject file) {
-            File f = FileUtil.toFile(file);
-            return nbProject.equals(f);
+            return nbProject.equals(file);
         }
 
         private boolean isTestDirectory(FileObject file) {
