@@ -47,12 +47,7 @@ import javax.swing.JButton;
 import javax.swing.JMenuItem;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.discovery.projectimport.ReconfigureProject.CompilerOptions;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
@@ -118,27 +113,11 @@ public class ReconfigureAction extends NodeAction implements Presenter.Popup {
         if (p == null) {
             return false;
         }
-        ConfigurationDescriptorProvider pdp = p.getLookup().lookup(ConfigurationDescriptorProvider.class);
-        if (pdp == null || !pdp.gotDescriptor()){
+        ReconfigureProject reconfigurator = ReconfigureProject.createReconfigureProject(p);
+        if (reconfigurator == null) {
             return false;
         }
-        MakeConfigurationDescriptor mcd = pdp.getConfigurationDescriptor();
-        if (mcd == null) {
-            return false;
-        }
-        MakeConfiguration configuration = mcd.getActiveConfiguration();
-        if (configuration == null || configuration.getConfigurationType().getValue() !=  MakeConfiguration.TYPE_MAKEFILE){
-            return false;
-        }
-        CompilerSet2Configuration set = configuration.getCompilerSet();
-        if (set == null) {
-            return false;
-        }
-        CompilerSet cs = set.getCompilerSet();
-        if (cs == null) {
-            return false;
-        }
-        return new ReconfigureProject(p).isApplicable();
+        return reconfigurator.isApplicable();
     }
 
     
@@ -174,7 +153,10 @@ public class ReconfigureAction extends NodeAction implements Presenter.Popup {
         actionPerformedFlag = true;
         try {
             Project p = getProject(activatedNodes);
-            final ReconfigureProject reconfigurator = new ReconfigureProject(p);
+            final ReconfigureProject reconfigurator = ReconfigureProject.createReconfigureProject(p);
+            if (reconfigurator == null) {
+                return;
+            }
             String cFlags;
             String cxxFlags;
             String linkerFlags = "";

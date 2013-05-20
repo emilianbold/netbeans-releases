@@ -81,7 +81,9 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
         this.macroMap = macroMap;
         this.inclHandler = inclHandler;
         this.compileContext = compileContext;
+        assert lang != null;
         this.lang = lang;
+        assert flavor != null;
         this.flavor = flavor;
         this.cuCRC = countCompilationUnitCRC();
     }
