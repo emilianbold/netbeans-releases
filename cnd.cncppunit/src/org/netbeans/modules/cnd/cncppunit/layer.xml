@@ -53,6 +53,7 @@
                 <attr name="templateGenerator" boolvalue="true"/>
                 <attr name="supportedMimeTypes" stringvalue="text/x-c;text/x-h"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="addToLogicalFolder" boolvalue="false"/>
             </file>
 
 <!--            <file name="cunittestfile.c" url="templates/c/test-cunit-file-c.template">

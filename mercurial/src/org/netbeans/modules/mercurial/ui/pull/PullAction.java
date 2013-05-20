@@ -478,7 +478,8 @@ public class PullAction extends ContextAction {
             "CTL_PullAction_keepButton_TTtext=Leaves the heads alone and does "
                 + "nothing",
             "MSG_PullAction.progress.merging=Merging heads",
-            "MSG_PullAction.progress.finishing=Refreshing file statuses"
+            "MSG_PullAction.progress.finishing=Refreshing file statuses",
+            "MSG_PullAction.progress.updating=Updating to branch's tip"
         })
         private void handlePulledChangesets (List<String> list) throws HgException {
             OutputLogger logger = supp.getLogger();
@@ -503,6 +504,7 @@ public class PullAction extends ContextAction {
                     askForMerge(parents);
                     warnMoreHeads = false;
                 } else if (updateNeeded) {
+                    supp.setDisplayName(Bundle.MSG_PullAction_progress_updating());
                     list = HgCommand.doUpdateAll(root, false, null);
                     logger.output(list);
                 }

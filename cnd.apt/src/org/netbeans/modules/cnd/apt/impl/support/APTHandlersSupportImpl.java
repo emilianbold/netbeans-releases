@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.openide.util.CharSequences;
 
 /**
  * utilities for working with APT states (macro-state, include-state, preproc-state)
@@ -72,12 +73,12 @@ public class APTHandlersSupportImpl {
     private APTHandlersSupportImpl() {
     }
 
-    public static APTPreprocHandler createPreprocHandler(APTMacroMap macroMap, APTIncludeHandler inclHandler, boolean compileContext) {
-        return new APTPreprocHandlerImpl(macroMap, inclHandler, compileContext);
+    public static APTPreprocHandler createPreprocHandler(APTMacroMap macroMap, APTIncludeHandler inclHandler, boolean compileContext, CharSequence lang, CharSequence flavor) {
+        return new APTPreprocHandlerImpl(macroMap, inclHandler, compileContext, lang, flavor);
     }
 
     public static APTPreprocHandler createEmptyPreprocHandler(StartEntry file) {
-        return new APTPreprocHandlerImpl(new APTFileMacroMap(), new APTIncludeHandlerImpl(file), false);
+        return new APTPreprocHandlerImpl(new APTFileMacroMap(), new APTIncludeHandlerImpl(file), false, CharSequences.empty(), CharSequences.empty());
     }
 
     public static void invalidatePreprocHandler(APTPreprocHandler preprocHandler) {
@@ -97,6 +98,13 @@ public class APTHandlersSupportImpl {
             }
         }
         return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths, fileEntries, fileSearch);
+    }
+    
+    public static long getCompilationUnitCRC(APTPreprocHandler preprocHandler){
+        if (preprocHandler instanceof APTPreprocHandlerImpl) {
+            return ((APTPreprocHandlerImpl)preprocHandler).getCompilationUnitCRC();
+        }
+        return 0;
     }
 
     public static APTMacroMap createMacroMap(APTMacroMap sysMap, List<String> userMacros) {
@@ -147,6 +155,14 @@ public class APTHandlersSupportImpl {
     public static APTBaseMacroMap.State extractMacroMapState(APTPreprocHandler.State state){
         assert state != null;
         return (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
+    }
+
+    public static long getCompilationUnitCRC(APTMacroMap map){
+        assert map != null;
+        if (map instanceof APTFileMacroMap) {
+            return ((APTFileMacroMap)map).getCompilationUnitCRC();
+        }
+        return 0;
     }
 
     public static APTIncludeHandler.State extractIncludeState(APTPreprocHandler.State state) {
