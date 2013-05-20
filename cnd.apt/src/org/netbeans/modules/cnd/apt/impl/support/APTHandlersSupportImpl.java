@@ -157,10 +157,10 @@ public class APTHandlersSupportImpl {
         return (StateImpl) ((APTPreprocHandlerImpl.StateImpl)state).macroState;
     }
 
-    public static long getCompilationUnitCRC(APTMacroMap sysMap){
-        assert sysMap != null;
-        if (sysMap instanceof APTFileMacroMap) {
-            return ((APTFileMacroMap)sysMap).getCompilationUnitCRC();
+    public static long getCompilationUnitCRC(APTMacroMap map){
+        assert map != null;
+        if (map instanceof APTFileMacroMap) {
+            return ((APTFileMacroMap)map).getCompilationUnitCRC();
         }
         return 0;
     }
