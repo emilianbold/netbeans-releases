@@ -47,14 +47,19 @@ package org.netbeans.modules.maven.junit.nodes;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.Trees;
+import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.Action;
 import org.netbeans.api.annotations.common.NonNull;
@@ -68,12 +73,14 @@ import org.netbeans.modules.gsf.testrunner.api.Trouble;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.text.Line;
 import org.openide.text.Line.ShowOpenType;
 import org.openide.text.Line.ShowVisibilityType;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -167,8 +174,9 @@ final class OutputUtils {
     static void openTestMethod(final JUnitTestMethodNode node) {
         final FileObject fo = node.getTestcaseFileObject();
         if (fo != null){
+	    final FileObject[] fo2open = new FileObject[]{fo};
             final long[] line = new long[]{0};
-            JavaSource javaSource = JavaSource.forFileObject(fo);
+            JavaSource javaSource = JavaSource.forFileObject(fo2open[0]);
             if (javaSource != null) {
                 try {
                     javaSource.runUserActionTask(new Task<CompilationController>() {
@@ -180,7 +188,7 @@ final class OutputUtils {
                                 List<?extends Tree> typeDecls = compilationUnitTree.getTypeDecls();
                                 for (Tree tree : typeDecls) {
                                     Element element = trees.getElement(trees.getPath(compilationUnitTree, tree));
-                                    if (element != null && element.getKind() == ElementKind.CLASS && element.getSimpleName().contentEquals(fo.getName())){
+                                    if (element != null && element.getKind() == ElementKind.CLASS && element.getSimpleName().contentEquals(fo2open[0].getName())){
                                         List<? extends ExecutableElement> methodElements = ElementFilter.methodsIn(element.getEnclosedElements());
                                         for(Element child: methodElements){
                                             if (child.getSimpleName().contentEquals(node.getTestcase().getName())){
@@ -189,6 +197,10 @@ final class OutputUtils {
                                                 break;
                                             }
                                         }
+					// method not found in this FO, so try to find where this method belongs
+					if (line[0] == 0) {
+					    searchAllMethods(node, fo2open, line, compilationController, element);
+					}
                                         break;
                                     }
                                 }
@@ -199,8 +211,63 @@ final class OutputUtils {
                     ErrorManager.getDefault().notify(ioe);
                 }
             }
-            openFile(fo, (int)line[0]);
+            openFile(fo2open[0], (int)line[0]);
         }
+    }
+
+    static private void searchAllMethods(final JUnitTestMethodNode node, final FileObject[] fo2open, final long[] line, CompilationController compilationController, Element element) {
+	Set<Element> s = new HashSet<Element>();
+	Collections.addAll(s, element);
+	Set<TypeElement> typeElements = ElementFilter.typesIn(s);
+	for (TypeElement typeElement : typeElements) {
+	    List<? extends Element> allMethods = compilationController.getElements().getAllMembers(typeElement);
+	    for (Element method : allMethods) {
+		if (method.getSimpleName().contentEquals(node.getTestcase().getName())) {
+		    try {
+			TypeElement enclosingTypeElement = compilationController.getElementUtilities().enclosingTypeElement(method);
+			String originalPath = FileUtil.toFile(fo2open[0]).getCanonicalPath();
+			String elementFQP = element.toString().replaceAll("\\.", "/"); //NOI18N
+			String newPath = originalPath.substring(0, originalPath.indexOf(elementFQP)) + enclosingTypeElement.getQualifiedName().toString().replaceAll("\\.", "/") + ".java"; //NOI18N
+			fo2open[0] = FileUtil.toFileObject(new File(newPath));
+
+			JavaSource javaSource = JavaSource.forFileObject(fo2open[0]);
+			if (javaSource != null) {
+			    try {
+				javaSource.runUserActionTask(new Task<CompilationController>() {
+				    @Override
+				    public void run(CompilationController compilationController) throws Exception {
+					compilationController.toPhase(Phase.ELEMENTS_RESOLVED);
+					Trees trees = compilationController.getTrees();
+					CompilationUnitTree compilationUnitTree = compilationController.getCompilationUnit();
+					List<? extends Tree> typeDecls = compilationUnitTree.getTypeDecls();
+					for (Tree tree : typeDecls) {
+					    Element element = trees.getElement(trees.getPath(compilationUnitTree, tree));
+					    if (element != null && element.getKind() == ElementKind.CLASS && element.getSimpleName().contentEquals(fo2open[0].getName())) {
+						List<? extends ExecutableElement> methodElements = ElementFilter.methodsIn(element.getEnclosedElements());
+						for (Element child : methodElements) {
+						    if (child.getSimpleName().contentEquals(node.getTestcase().getName())) {
+							long pos = trees.getSourcePositions().getStartPosition(compilationUnitTree, trees.getTree(child));
+							line[0] = compilationUnitTree.getLineMap().getLineNumber(pos);
+							break;
+						    }
+						}
+						break;
+					    }
+					}
+				    }
+				}, true);
+
+			    } catch (IOException ioe) {
+				ErrorManager.getDefault().notify(ioe);
+			    }
+			}
+			break;
+		    } catch (IOException ex) {
+			Exceptions.printStackTrace(ex);
+		    }
+		}
+	    }
+	}
     }
 
     static void openCallstackFrame(Node node, @NonNull String frameInfo) {
