@@ -207,71 +207,6 @@ class SftpSupport {
         return new SftpIOException(e.id, e.getMessage(), path, e);
     }
 
-    private abstract class Worker implements Callable<Integer> {
-
-        protected final Writer error;
-
-        public Worker(Writer error) {
-            this.error = error;
-        }
-
-        protected abstract void work() throws JSchException, SftpException, IOException, CancellationException, InterruptedException, ExecutionException;
-
-        protected abstract String getTraceName();
-
-        @Override
-        public Integer call() throws InterruptedException {
-            long time = System.currentTimeMillis();
-            int rc = -1;
-            try {                
-                Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
-                work();
-                rc = 0;
-            } catch (JSchException ex) {
-                if (ex.getMessage().contains("Received message is too long: ")) { // NOI18N
-                    // This is a known issue... but we cannot
-                    // do anything with this ;(
-                    if (isUnitTest) {
-                        logException(ex);
-                    } else {
-                        Message message = new NotifyDescriptor.Message(NbBundle.getMessage(SftpSupport.class, "SftpConnectionReceivedMessageIsTooLong.error.text"), Message.ERROR_MESSAGE); // NOI18N
-                        DialogDisplayer.getDefault().notifyLater(message);
-                    }
-                    rc = 7;
-                } else {
-                    logException(ex);
-                    rc = 1;
-                }
-            } catch (SftpException ex) {
-                logException(ex);
-                rc = 2;
-            } catch (ConnectException ex) {
-                logException(ex);
-                rc = 3;
-            } catch (InterruptedIOException ex) {
-                rc = 4;
-                throw new InterruptedException(ex.getMessage());
-            } catch (IOException ex) {
-                logException(ex);
-                rc = 5;
-            } catch (CancellationException ex) {
-                // no trace
-                rc = 6;
-            } catch (ExecutionException ex) {
-                logException(ex);
-                rc = 7;
-            } finally {
-                time = System.currentTimeMillis() - time;
-            }
-            LOG.log(Level.FINE, "{0}{1} ({2} ms)", new Object[]{getTraceName(), rc == 0 ? " OK" : " FAILED", time});
-            return rc;
-        }
-
-        protected void logException(Exception ex) {
-            LOG.log(Level.INFO, "Error " + getTraceName(), ex);
-        }
-    }
-    
     private class Uploader implements Callable<UploadStatus> {
 
         private final int mask;
@@ -449,18 +384,70 @@ class SftpSupport {
         }
     }
 
-    private class Downloader extends Worker implements Callable<Integer> {
+    private class Downloader implements Callable<Integer> {
 
         protected final String srcFileName;
         protected final String dstFileName;
+        protected final Writer error;
         
         public Downloader(String srcFileName, String dstFileName, Writer error) {
-            super(error);
+            this.error = error;
             this.srcFileName = srcFileName;
             this.dstFileName = dstFileName;
         }
 
         @Override
+        public Integer call() throws InterruptedException {
+            long time = System.currentTimeMillis();
+            int rc = -1;
+            try {
+                Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
+                work();
+                rc = 0;
+            } catch (JSchException ex) {
+                if (ex.getMessage().contains("Received message is too long: ")) { // NOI18N
+                    // This is a known issue... but we cannot
+                    // do anything with this ;(
+                    if (isUnitTest) {
+                        logException(ex);
+                    } else {
+                        Message message = new NotifyDescriptor.Message(NbBundle.getMessage(SftpSupport.class, "SftpConnectionReceivedMessageIsTooLong.error.text"), Message.ERROR_MESSAGE); // NOI18N
+                        DialogDisplayer.getDefault().notifyLater(message);
+                    }
+                    rc = 7;
+                } else {
+                    logException(ex);
+                    rc = 1;
+                }
+            } catch (SftpException ex) {
+                logException(ex);
+                rc = 2;
+            } catch (ConnectException ex) {
+                logException(ex);
+                rc = 3;
+            } catch (InterruptedIOException ex) {
+                rc = 4;
+                throw new InterruptedException(ex.getMessage());
+            } catch (IOException ex) {
+                logException(ex);
+                rc = 5;
+            } catch (CancellationException ex) {
+                // no trace
+                rc = 6;
+            } catch (ExecutionException ex) {
+                logException(ex);
+                rc = 7;
+            } finally {
+                time = System.currentTimeMillis() - time;
+            }
+            LOG.log(Level.FINE, "{0}{1} ({2} ms)", new Object[]{getTraceName(), rc == 0 ? " OK" : " FAILED", time});
+            return rc;
+        }
+
+        protected void logException(Exception ex) {
+            LOG.log(Level.INFO, "Error " + getTraceName(), ex);
+        }
+
         protected void work() throws IOException, CancellationException, JSchException, SftpException, ExecutionException, InterruptedException {
             LOG.log(Level.FINE, "{0} started", getTraceName());
             ChannelSftp cftp = getChannel();
@@ -473,7 +460,6 @@ class SftpSupport {
             }
         }
 
-        @Override
         protected String getTraceName() {
             return "Downloading " + execEnv + ":" + srcFileName + " to " + dstFileName; // NOI18N
         }
