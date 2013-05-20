@@ -73,8 +73,8 @@ class DiskMapTurboProvider implements TurboProvider {
     private File                            cacheStore;
     private int                             storeSerial;
 
-    private CacheIndex index = createCacheIndex();
-    private CacheIndex conflictedIndex = createCacheIndex();
+    private final CacheIndex index = createCacheIndex();
+    private final CacheIndex conflictedIndex = createCacheIndex();
 
     DiskMapTurboProvider() {
         initCacheStore();
@@ -192,21 +192,24 @@ class DiskMapTurboProvider implements TurboProvider {
                 logTooManyModifications(modifiedFolders, modifiedFiles);
             }
         } finally {
-            Subversion.LOG.info("Finished indexing svn cache with " + entriesCount + " entries. Elapsed time: " + (System.currentTimeMillis() - ts) + " ms.");
+            Subversion.LOG.log(Level.INFO, "Finished indexing svn cache with {0} entries. Elapsed time: {1} ms.", new Object[]{entriesCount, System.currentTimeMillis() - ts});
             if(failedReadCount > 0) {
-                Subversion.LOG.info(" read failed " + failedReadCount + " times.");
+                Subversion.LOG.log(Level.INFO, " read failed {0} times.", failedReadCount);
             }
         }
     }
 
+    @Override
     public boolean recognizesAttribute(String name) {
         return ATTR_STATUS_MAP.equals(name);
     }
 
+    @Override
     public boolean recognizesEntity(Object key) {
         return key instanceof File;
     }
 
+    @Override
     public synchronized Object readEntry(Object key, String name, MemoryCache memoryCache) {
         assert key instanceof File;
         assert name != null;
@@ -273,6 +276,7 @@ class DiskMapTurboProvider implements TurboProvider {
         return null;
     }
 
+    @Override
     public synchronized boolean writeEntry(Object key, String name, Object value) {
         assert key instanceof File;
         assert name != null;
@@ -419,9 +423,9 @@ class DiskMapTurboProvider implements TurboProvider {
             Subversion.LOG.log(Level.INFO, "Corrupted cache file " + file.getAbsolutePath() + " at position " + itemIndex, e);
             FileUtils.copyFile(file, tmpFile);
             byte[] contents = FileUtils.getFileContentsAsByteArray(tmpFile);
-            Subversion.LOG.log(Level.INFO, "Corrupted cache file length: " + contents.length);
+            Subversion.LOG.log(Level.INFO, "Corrupted cache file length: {0}", contents.length);
             String encodedContent = Base64Encoder.encode(contents); // log the file contents
-            Subversion.LOG.log(Level.INFO, "Corrupted cache file content:\n" + encodedContent + "\n");
+            Subversion.LOG.log(Level.INFO, "Corrupted cache file content:\n{0}\n", encodedContent);
             Exception ex = new Exception("Corrupted cache file \"" + file.getAbsolutePath() + "\", please report in subversion module issues and attach "
                     + tmpFile.getAbsolutePath() + " plus the IDE message log", e);
             Subversion.LOG.log(Level.INFO, null, ex);
