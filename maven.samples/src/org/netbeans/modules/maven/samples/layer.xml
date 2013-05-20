@@ -263,8 +263,8 @@
                     <!--
                         JSON-P subsection:
                     -->
-                    <file name="JSONP" url="JSONP.zip">
-<!--                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/JSONP"/>
+<!--                    <file name="JSONP" url="JSONP.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.maven.samples.Bundle#Templates/Project/Samples/Maven/JSONP"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.maven.samples.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.maven.samples.MavenSamplesWizardIterator.createIterator"/>
                         <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/maven/samples/descriptions/JSONP.html"/>
