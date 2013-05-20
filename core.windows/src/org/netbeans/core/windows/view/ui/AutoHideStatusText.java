@@ -55,6 +55,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.core.windows.EditorOnlyDisplayer;
 import org.openide.awt.StatusDisplayer;
 
 /**
@@ -97,6 +98,8 @@ final class AutoHideStatusText implements ChangeListener, Runnable {
     public void run() {
         String text = StatusDisplayer.getDefault().getStatusText();
         lblStatus.setText( text );
+        if( EditorOnlyDisplayer.getInstance().isActive() )
+            return;
         if( null == text || text.isEmpty() ) {
             panel.setVisible( false );
             Container parent = panel.getParent();
