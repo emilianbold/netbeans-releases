@@ -51,8 +51,10 @@ import org.netbeans.modules.turbo.TurboProvider;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.proxy.Base64Encoder;
 import org.openide.modules.Places;
+import org.openide.util.NbBundle;
 
 /**
  * Storage of file attributes with shortcut to retrieve all stored values.
@@ -66,6 +68,7 @@ class DiskMapTurboProvider implements TurboProvider {
     private static final int STATUS_VALUABLE = FileInformation.STATUS_MANAGED & ~FileInformation.STATUS_VERSIONED_UPTODATE;
     private static final String CACHE_DIRECTORY = "svncache"; // NOI18N
     private static final int DIRECTORY = Integer.highestOneBit(Integer.MAX_VALUE);
+    private static final Logger LOG = Logger.getLogger(DiskMapTurboProvider.class.getName());
 
     private File                            cacheStore;
     private int                             storeSerial;
@@ -106,6 +109,11 @@ class DiskMapTurboProvider implements TurboProvider {
             if(files == null) {
                 return;
             }
+            
+            int modifiedFiles = 0;
+            int locallyNewFiles = 0;
+            Map<String, Integer> locallyNewFolders = new HashMap<String, Integer>();
+            Map<String, Integer> modifiedFolders = new HashMap<String, Integer>();
 
             for (int i = 0; i < files.length; i++) {
                 File file = files[i];
@@ -154,6 +162,12 @@ class DiskMapTurboProvider implements TurboProvider {
                                 }
                                 if ((info.getStatus() & STATUS_VALUABLE) != 0) {
                                     index.add(f);
+                                    modifiedFiles++;
+                                    addModifiedFile(modifiedFolders, f);
+                                    if ((info.getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
+                                        locallyNewFiles++;
+                                        addLocallyNewFile(locallyNewFolders, info.isDirectory() ? f.getAbsolutePath() : f.getParent());
+                                    }
                                 }
                             }
                         }
@@ -171,6 +185,11 @@ class DiskMapTurboProvider implements TurboProvider {
                         failedReadCount++;
                     }
                 }
+            }
+            if (locallyNewFiles > 1000) {
+                logTooManyNewFiles(locallyNewFolders, locallyNewFiles);
+            } else if (modifiedFiles > 5000) {
+                logTooManyModifications(modifiedFolders, modifiedFiles);
             }
         } finally {
             Subversion.LOG.info("Finished indexing svn cache with " + entriesCount + " entries. Elapsed time: " + (System.currentTimeMillis() - ts) + " ms.");
@@ -505,6 +524,110 @@ class DiskMapTurboProvider implements TurboProvider {
                 return SvnUtils.isManaged(file);
 }
         };
+    }
+
+    private void addLocallyNewFile (Map<String, Integer> locallyNewFolders, String path) {
+        if (path == null) {
+            return;
+        }
+        boolean toAdd = true;
+        String toRemove = null;
+        Integer val = locallyNewFolders.get(path);
+        if (val != null) {
+            locallyNewFolders.put(path, val + 1);
+            return;
+        }
+        for (Map.Entry<String, Integer> e : locallyNewFolders.entrySet()) {
+            if (path.startsWith(e.getKey() + File.separator)) {
+                e.setValue(e.getValue() + 1);
+                toAdd = false;
+                break;
+            } else if (e.getKey().startsWith(path + File.separator)) {
+                toRemove = e.getKey();
+                break;
+            }
+        }
+        if (toRemove != null) {
+            locallyNewFolders.put(path, locallyNewFolders.remove(toRemove));
+        } else if (toAdd) {
+            locallyNewFolders.put(path, 1);
+        }
+    }
+
+    private void addModifiedFile (Map<String, Integer> modifiedFolders, File file) {
+        File topmost = Subversion.getInstance().getTopmostManagedAncestor(file);
+        if (topmost != null) {
+            String path = topmost.getAbsolutePath();
+            Integer val = modifiedFolders.get(path);
+            if (val == null) {
+                modifiedFolders.put(path, 1);
+            } else {
+                modifiedFolders.put(path, val + 1);
+            }
+        }
+    }
+
+    @NbBundle.Messages({
+        "# {0} - number of changes", "# {1} - the biggest unversioned folders",
+        "MSG_FileStatusCache.cacheTooBig.newFiles.text=Subversion cache contains {0} locally new (uncommitted) files. "
+            + "That many uncommitted files may cause performance problems when accessing the working copy. "
+            + "You should consider committing or permanently ignoring these files. "
+            + "Candidates for ignoring are: {1}",
+        "# {0} - folder path", "# {1} - number of contained unversioned files",
+        "MSG_FileStatusCache.cacheTooBig.ignoreCandidate={0}: {1} new files"
+    })
+    private void logTooManyNewFiles (Map<String, Integer> locallyNewFolders, int locallyNewFiles) {
+        Map<Integer, List<String>> sortedFolders = sortFolders(locallyNewFolders);
+        List<String> biggestFolders = new ArrayList<String>(3);
+        outer: for (Map.Entry<Integer, List<String>> e : sortedFolders.entrySet()) {
+            for (String folder : e.getValue()) {
+                biggestFolders.add(Bundle.MSG_FileStatusCache_cacheTooBig_ignoreCandidate(folder, e.getKey()));
+                if (biggestFolders.size() == 3) {
+                    break outer;
+                }
+            }
+        }
+        LOG.log(Level.WARNING, Bundle.MSG_FileStatusCache_cacheTooBig_newFiles_text(locallyNewFiles, biggestFolders));
+    }
+
+    @NbBundle.Messages({
+        "# {0} - number of changes", "# {1} - checkouts with the highest number of modifications",
+        "MSG_FileStatusCache.cacheTooBig.text=Subversion cache contains {0} locally modified files. "
+            + "That many uncommitted files may cause performance problems when accessing the working copy. "
+            + "You should consider committing or reverting these changes. "
+            + "Checkouts: {1}",
+        "# {0} - checkout folder", "# {1} - number of contained modified files",
+        "MSG_FileStatusCache.cacheTooBig.checkoutWithModifications={0}: {1} modifications"
+    })
+    private void logTooManyModifications (Map<String, Integer> modifiedFolders, int modifiedFiles) {
+        Map<Integer, List<String>> sortedFolders = sortFolders(modifiedFolders);
+        List<String> biggestFolders = new ArrayList<String>(3);
+        outer: for (Map.Entry<Integer, List<String>> e : sortedFolders.entrySet()) {
+            for (String folder : e.getValue()) {
+                biggestFolders.add(Bundle.MSG_FileStatusCache_cacheTooBig_checkoutWithModifications(folder, e.getKey()));
+                if (biggestFolders.size() == 3) {
+                    break outer;
+                }
+            }
+        }
+        LOG.log(Level.WARNING, Bundle.MSG_FileStatusCache_cacheTooBig_text(modifiedFiles, biggestFolders));
+    }
+    
+    private static Map<Integer, List<String>> sortFolders (Map<String, Integer> unsortedFolders) {
+        Map<Integer, List<String>> sortedFolders = new TreeMap<Integer, List<String>>(new Comparator<Integer>() {
+            @Override
+            public int compare (Integer o1, Integer o2) {
+                return - o1.compareTo(o2);
+            }
+        });
+        for (Map.Entry<String, Integer> e : unsortedFolders.entrySet()) {
+            List<String> folders = sortedFolders.get(e.getValue());
+            if (folders == null) {
+                sortedFolders.put(e.getValue(), folders = new ArrayList<String>());
+            }
+            folders.add(e.getKey());
+        }
+        return sortedFolders;
     }
 
 }
