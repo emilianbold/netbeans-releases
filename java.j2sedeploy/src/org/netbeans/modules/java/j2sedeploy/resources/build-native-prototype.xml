@@ -43,7 +43,6 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
 
 
 <project name="Build Native Packages" default="build-native">
-    <target name="build-native" depends="jar">
-        <property name="runtime.jre.home" value="${platform.home}"/>
+    <target name="build-native" depends="jar">        
     </target>
 </project>

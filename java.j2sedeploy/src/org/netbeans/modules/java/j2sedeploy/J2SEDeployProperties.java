@@ -49,12 +49,14 @@ import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -63,6 +65,7 @@ import org.openide.util.MutexException;
  *  Java SE Deployment panel Project Properties support
  * 
  * @author Petr Somol
+ * @author Tomas Zezula
  * @since java.j2seproject 1.65
  */
 public final class J2SEDeployProperties {
@@ -70,7 +73,13 @@ public final class J2SEDeployProperties {
     // Deployment - native packaging
     public static final String JAVASE_NATIVE_BUNDLING_ENABLED = "native.bundling.enabled"; //NOI18N
     // copied from JFXProjectProperties
-    public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N    
+    public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
+
+    private static final String J2SEDEPLOY_EXTENSION = "j2sedeploy";    //NOI18N
+    private static final String BUILD_SCRIPT_PROTOTYPE = String.format(
+        "%s/resources/build-native-prototype.xml",  //NOI18N
+        J2SEDeployProperties.class.getPackage().getName().replace('.','/'));   //NOI18N
+    private static final String EXTENSION_BUILD_SCRIPT_PATH = "nbproject/build-native.xml";        //NOI18N
     
     // Project related references
     private J2SEPropertyEvaluator j2sePropEval;
@@ -155,27 +164,59 @@ public final class J2SEDeployProperties {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
                 @Override
                 public Void run() throws Exception {
-                    final InputStream is = projPropsFO.getInputStream();
-                    try {
+                    try (final InputStream is = projPropsFO.getInputStream()) {
                         ep.load(is);
-                    } finally {
-                        if (is != null) {
-                            is.close();
-                        }
                     }
                     setOrRemove(ep, JAVASE_NATIVE_BUNDLING_ENABLED, nativeBundlingEnabled ? "true" : null); //NOI18N
-                    OutputStream os = null;
-                    FileLock lock = null;
-                    try {
-                        lock = projPropsFO.lock();
-                        os = projPropsFO.getOutputStream(lock);
+                    FileLock lock = projPropsFO.lock();
+                    try (OutputStream os = projPropsFO.getOutputStream(lock)) {
                         ep.store(os);
                     } finally {
-                        if (os != null) {
-                            os.close();
-                        }
-                        if (lock != null) {
-                            lock.releaseLock();
+                        lock.releaseLock();
+                    }
+                    final AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
+                    if (extender != null) {
+                        AntBuildExtender.Extension extension = extender.getExtension(J2SEDEPLOY_EXTENSION);
+                        if (nativeBundlingEnabled) {
+                            if (extension == null) {
+                                final FileObject buildExFoBack = project.getProjectDirectory().getFileObject(String.format(
+                                    "%s~",  //NOI18N
+                                    EXTENSION_BUILD_SCRIPT_PATH));
+                                if (buildExFoBack != null) {
+                                    buildExFoBack.delete();
+                                }
+                                FileObject buildExFo = project.getProjectDirectory().getFileObject(EXTENSION_BUILD_SCRIPT_PATH);
+                                if (buildExFo != null) {
+                                    lock = buildExFo.lock();
+                                    try {
+                                        buildExFo.rename(
+                                            lock,
+                                            buildExFo.getName(),
+                                            String.format(
+                                                "%s~",  //NOI18N
+                                                buildExFo.getExt()));
+                                    } finally {
+                                        lock.releaseLock();
+                                    }
+                                }
+                                buildExFo = FileUtil.createData(project.getProjectDirectory(), EXTENSION_BUILD_SCRIPT_PATH);
+                                lock = buildExFo.lock();
+                                try (final InputStream in = getClass().getClassLoader().getResourceAsStream(BUILD_SCRIPT_PROTOTYPE);
+                                     final OutputStream out = buildExFo.getOutputStream(lock)) {
+                                    FileUtil.copy(in, out);
+                                } finally {
+                                    lock.releaseLock();
+                                }
+                                extension = extender.addExtension(J2SEDEPLOY_EXTENSION, buildExFo);
+                            }
+                        } else {
+                            if (extension != null) {
+                                extender.removeExtension(J2SEDEPLOY_EXTENSION);
+                            }
+                            final FileObject buildExFo = project.getProjectDirectory().getFileObject(EXTENSION_BUILD_SCRIPT_PATH);
+                            if (buildExFo != null) {
+                                buildExFo.delete();
+                            }
                         }
                     }
                     return null;
