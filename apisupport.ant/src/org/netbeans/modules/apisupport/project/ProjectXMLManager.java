@@ -973,12 +973,17 @@ public final class ProjectXMLManager {
      */
     private static Set<ManifestManager.PackageExport> findAllPackages(Element parent) {
         Set<ManifestManager.PackageExport> packages = new HashSet<ManifestManager.PackageExport>();
-        for (Element pkgEl : XMLUtil.findSubElements(parent)) {
-            if (PACKAGE.equals(pkgEl.getTagName())) {
-                packages.add(new ManifestManager.PackageExport(XMLUtil.findText(pkgEl), false));
-            } else if (SUBPACKAGES.equals(pkgEl.getTagName())) {
-                packages.add(new ManifestManager.PackageExport(XMLUtil.findText(pkgEl), true));
+        try {
+            for (Element pkgEl : XMLUtil.findSubElements(parent)) {
+                if (PACKAGE.equals(pkgEl.getTagName())) {
+                    packages.add(new ManifestManager.PackageExport(XMLUtil.findText(pkgEl), false));
+                } else if (SUBPACKAGES.equals(pkgEl.getTagName())) {
+                    packages.add(new ManifestManager.PackageExport(XMLUtil.findText(pkgEl), true));
+                }
             }
+        } catch(IllegalArgumentException e) {
+            LOG.log(Level.WARNING, "Error getting subelements, malformed xml");
+            packages = new HashSet<ManifestManager.PackageExport>();
         }
         return packages;
     }
