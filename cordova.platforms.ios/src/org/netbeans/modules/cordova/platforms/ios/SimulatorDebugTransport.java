@@ -51,7 +51,9 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.concurrent.TimeUnit;
 import org.json.simple.JSONObject;
+import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -96,7 +98,16 @@ public class SimulatorDebugTransport extends IOSDebugTransport {
         byte[] content = new byte[size];
         count = is.read(content);
         while (count < size) {
-            count += is.read(content, count, size - count);
+            final int read = is.read(content, count, size - count);
+            if (read == -1) {
+                boolean s = keepGoing;
+                stop();
+                if (s) {
+                    Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+                }
+                return null;
+            }
+            count += read;
         }
         assert count == size;
         NSObject object = BinaryPropertyListParser.parse(content);
