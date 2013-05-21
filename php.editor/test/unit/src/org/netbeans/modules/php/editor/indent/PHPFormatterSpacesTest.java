@@ -907,4 +907,16 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
         options.put(FmtOptions.SPACE_AFTER_TYPE_CAST, true);
         reformatFileContents("testfiles/formatting/spaces/spaceAfterTypeCast02.php", options);
     }
+
+    public void testIssue228422_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_UNARY_OPS, true);
+        reformatFileContents("testfiles/formatting/spaces/issue228422_01.php", options);
+    }
+
+    public void testIssue228422_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_AROUND_UNARY_OPS, false);
+        reformatFileContents("testfiles/formatting/spaces/issue228422_02.php", options);
+    }
 }
