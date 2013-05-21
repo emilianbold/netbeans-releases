@@ -54,9 +54,11 @@ import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.SourceGroupModifier;
 import org.netbeans.api.project.Sources;
@@ -123,8 +125,12 @@ public class CdiUtil {
         return isCdiEnabled(project);
     }
     
-    public boolean isCdiEnabled(Project project){
-        Collection<FileObject> beansTargetFolder = getBeansTargetFolder(false);
+    public static boolean isCdiEnabled(Project project){
+        // #229078 - since CDI 1.1 beans.xml is optional in case of 'implicit bean archive'
+        if (isCdi11(project)) {
+            return true;
+        }
+        Collection<FileObject> beansTargetFolder = getBeansTargetFolder(project, false);
         for (FileObject fileObject : beansTargetFolder) {
             if ( fileObject != null && fileObject.getFileObject(BEANS_XML)!=null){
                 return true;
@@ -132,7 +138,28 @@ public class CdiUtil {
         }
         return false;
     }
-    
+
+    private static boolean isCdi11(Project p) {
+        return hasResource(p, "javax/enterprise/inject/spi/AfterTypeDiscovery.class");
+    }
+
+    private static boolean hasResource(Project project, String resource) {
+        SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+        if (sgs.length < 1) {
+            return false;
+        }
+        FileObject sourceRoot = sgs[0].getRootFolder();
+        ClassPath classPath = ClassPath.getClassPath(sourceRoot, ClassPath.COMPILE);
+        if (classPath == null) {
+            return false;
+        }
+        FileObject resourceFile = classPath.findResource(resource);
+        if (resourceFile != null) {
+            return true;
+        }
+        return false;
+    }
+
     public Collection<FileObject> getBeansTargetFolder(boolean create) 
     {
         Project project = getProject();
@@ -146,16 +173,6 @@ public class CdiUtil {
         return myProject.get();
     }
     
-    public static boolean hasBeansXml(Project project){
-        Collection<FileObject> beansTargetFolder = getBeansTargetFolder(project,false);
-        for (FileObject fileObject : beansTargetFolder) {
-            if ( fileObject != null && fileObject.getFileObject(BEANS_XML)!=null){
-                return true;
-            }
-        }
-        return false;
-    }
-
     /**
      * Enables CDI in the project and returns reference to the created beans.xml file if any.
      * @return reference to beans.xml if was created, {@code null} otherwise
