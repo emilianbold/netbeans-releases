@@ -26,3 +26,5 @@ sta.d;
 sta.cd;
 sta.ef;
 sta.gh;
+
+#define MAXISIZE 500000    // maximum iterated elements allowed to written per file

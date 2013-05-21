@@ -46,6 +46,7 @@ package org.netbeans.modules.cnd.qnavigator.navigator;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.Collection;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -61,11 +62,13 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileFilter.SortMode;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileModel.PreBuildModel;
@@ -167,16 +170,24 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         }
         synchronized(lock) {
             fileModel.clear();
-            final Children children = root.getChildren();
-            if (!Children.MUTEX.isReadAccess()){
-                 Children.MUTEX.writeAccess(new Runnable(){
-                    @Override
-                    public void run() {
-                        children.remove(children.getNodes());
-                    }
-                });
-            }
+            setChildren(null);
             ui.selectNodes(new Node[] {});
+        }
+    }
+    
+    private void setChildren(final Node[] nodes) {
+        final Children children = root.getChildren();
+        if (!Children.MUTEX.isReadAccess()){
+             Children.MUTEX.writeAccess(new Runnable(){
+                @Override
+                public void run() {
+                    // first remove all existing
+                    children.remove(children.getNodes());
+                    if (nodes != null) {
+                        children.add(nodes);
+                    }
+                }
+            });
         }
     }
 
@@ -205,24 +216,25 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
             if (CsmModelAccessor.getModelState() != CsmModelState.ON) {
                 return;
             }
-            if (csmFile == null || !csmFile.isValid()) {
+            if (csmFile != null && !csmFile.isValid()) {
                 return;
             }
             if (busyListener != null) {
                 busyListener.busyStart();
             }
-            PreBuildModel buildPreModel = fileModel.buildPreModel(csmFile);
-            synchronized(lock) {
-                if (fileModel.buildModel(buildPreModel, csmFile, force)){
-                    final Children children = root.getChildren();
-                    if (!Children.MUTEX.isReadAccess()){
-                         Children.MUTEX.writeAccess(new Runnable(){
-                            @Override
-                            public void run() {
-                                children.remove(children.getNodes());
-                                children.add(fileModel.getNodes());
-                            }
-                        });
+            if (csmFile == null) {
+                Collection<NativeProject> nativeProjects = CsmUtilities.getNativeProjects(cdo);
+                synchronized(lock) {
+                    fileModel.clear();
+                    if (!nativeProjects.isEmpty()) {
+                        setChildren(new Node[]{new NoCodeModelNode(nativeProjects)});
+                    }
+                }
+            } else {
+                PreBuildModel buildPreModel = fileModel.buildPreModel(csmFile);
+                synchronized(lock) {
+                    if (fileModel.buildModel(buildPreModel, csmFile, force)){
+                        setChildren(fileModel.getNodes());
                     }
                 }
             }
@@ -773,6 +785,36 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
                 menu.add(new ShowUsingAction().getPopupPresenter());
             }
             return menu;
+        }
+    }
+    
+    private class NoCodeModelNode extends AbstractNode {
+        private final NativeProject project;
+        
+        public NoCodeModelNode(Collection<NativeProject> projects) {
+            super(Children.LEAF);
+            assert !projects.isEmpty();
+            NativeProject projectToEnable = projects.iterator().next();
+            
+            CsmModel model = CsmModelAccessor.getModel();
+            // check if all projects are loaded
+            for (NativeProject nativeProject : projects) {
+                if (model.isProjectEnabled(nativeProject) == null) {
+                    projectToEnable = null;
+                }
+            }
+            this.project = projectToEnable;
+            if (project != null) {
+                setName(NbBundle.getMessage(NavigatorModel.class, "ModelDisabled", project.getProjectDisplayName()));
+            } else {
+                setName(NbBundle.getMessage(NavigatorModel.class, "Initializing"));
+            }
+            setIconBaseWithExtension("org/netbeans/modules/cnd/qnavigator/resources/exclamation.gif");
+        }
+
+        @Override
+        public Action getPreferredAction() {
+            return new EnableCodeAssistanceAction(project);
         }
     }
 }
