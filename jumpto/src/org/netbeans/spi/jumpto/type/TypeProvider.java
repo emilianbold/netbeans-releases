@@ -140,13 +140,22 @@ public interface TypeProvider {
                 }
 
                 @Override
-                public Result createResult(List<? super TypeDescriptor> result, String[] message) {
-                    return new Result(result, message);
+                @NonNull
+                public Result createResult(
+                        @NonNull final List<? super TypeDescriptor> result,
+                        @NonNull final String[] message,
+                        @NonNull final Context context) {
+                    return new Result(result, message, context);
                 }
 
                 @Override
                 public int getRetry(Result result) {
                     return result.retry;
+                }
+
+                @NonNull
+                public String getHighlightText(@NonNull final TypeDescriptor td) {
+                    return td.getHighlightText();
                 }
             };
         }
@@ -193,17 +202,23 @@ public interface TypeProvider {
         private List<? super TypeDescriptor> result;
         private String[] message;
         private int retry;
+        private String highlightText;
+        private boolean highlightTextAlreadySet;
+        private boolean modified;
 
         Result(
                 @NonNull final List<? super TypeDescriptor> result,
-                @NonNull final String[] message) {
+                @NonNull final String[] message,
+                @NonNull final Context context) {
             Parameters.notNull("result", result);   //NOI18N
             Parameters.notNull("message", message); //NOI18N
+            Parameters.notNull("context", context); //NOI18N
             if (message.length != 1) {
                 throw new IllegalArgumentException("Message.length != 1");  //NOI18N
             }
             this.result = result;
             this.message = message;
+            this.highlightText = context.getText();
         }
         
         /**
@@ -221,8 +236,10 @@ public interface TypeProvider {
           *
           * @param  typeDescriptor  type descriptor to be added to result
           */
-        public void addResult(TypeDescriptor typeDescriptor) {
+        public void addResult(@NonNull final TypeDescriptor typeDescriptor) {
+            typeDescriptor.setHighlightText(highlightText);
             result.add(typeDescriptor);
+            modified = true;
         }
 
         /**
@@ -230,9 +247,10 @@ public interface TypeProvider {
           *
           * @param  typeDescriptor  type descriptor to be added to result
           */
-        @SuppressWarnings("unchecked")
-        public void addResult(List<? extends TypeDescriptor> typeDescriptor) {
-            ((List)result).addAll(typeDescriptor);  //workaround javac issue http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6507334
+        public void addResult(@NonNull final List<? extends TypeDescriptor> typeDescriptors) {
+            for (TypeDescriptor typeDescriptor : typeDescriptors) {
+                addResult(typeDescriptor);
+            }
         }
 
         /**
@@ -246,6 +264,33 @@ public interface TypeProvider {
          */
         public void pendingResult() {
             retry = 2000;
+        }
+
+        /**
+         * Sets a text to highlight in the Go To Type panel.
+         * By default the highlight text matches the text to search {@link Context#getText()}
+         * and {@link TypeProvider} has no need to call this method. When the
+         * {@link TypeProvider} changes the text to search and uses a part of it just as a
+         * restriction it has to call the method to specify the real search text.
+         * For example Java {@link TypeProvider} splits the following text to search "java.lang.Str"
+         * to restriction regexp for package "java.lang" and a new search text "Str". In order to let
+         * the infrastructure correctly highlight found elements the Java {@link TypeProvider}
+         * needs to call {@link Result#setHighlightText(java.lang.String)}.
+         * @param textToHighlight the text to highlight
+         * @throws IllegalStateException when some result was already added or the highlight text
+         * was already set.
+         * @since 1.38
+         */
+        public void setHighlightText(@NonNull final String textToHighlight) {
+            Parameters.notNull("textToHighlight", textToHighlight); //NOI18N
+            if (modified) {
+                throw new IllegalStateException("Calling setHighlightText after addResult");    //NOI18N
+            }
+            if (highlightTextAlreadySet) {
+                throw new IllegalStateException("Highlight text already set");  //NOI18N
+            }
+            this.highlightText = textToHighlight;
+            this.highlightTextAlreadySet = true;
         }
     }
 

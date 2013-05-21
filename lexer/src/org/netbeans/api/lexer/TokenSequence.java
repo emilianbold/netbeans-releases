@@ -410,6 +410,9 @@ public final class TokenSequence<T extends TokenId> {
      *  </pre>
      *  <br/>
      *  Only the embedded sections with the same language path can be joined.
+     * <br/>
+     * If preceding embeddings requested sections joining for the particular language path
+     * then this parameter will be updated from false to true automatically by the method.
      * @return true if the embedding was created successfully or false if an embedding
      *  with the given language already exists for this token.
      * @throws IllegalStateException if {@link #token()} returns null.

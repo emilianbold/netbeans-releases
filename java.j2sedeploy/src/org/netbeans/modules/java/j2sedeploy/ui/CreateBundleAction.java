@@ -50,6 +50,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2sedeploy.J2SEDeployActionProvider;
+import org.netbeans.modules.java.j2sedeploy.NativeBundleType;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -120,11 +121,7 @@ public final class CreateBundleAction extends AbstractAction implements ContextA
             new CreateBundleAction(ap, actionContext);
     }
 
-    @Override
-    @NbBundle.Messages({
-        "CTL_All=All",
-        "CTL_Installers=Installers Only",
-        "CTL_Image=Image Only"})
+    @Override    
     public JMenuItem getPopupPresenter() {
         final JMenu m = new JMenu(this);
         m.putClientProperty(
@@ -132,22 +129,12 @@ public final class CreateBundleAction extends AbstractAction implements ContextA
             getValue(DynamicMenuContent.HIDE_WHEN_DISABLED));
         if (actionProvider != null) {
             assert context != null;
-            m.add(new JMenuItem(new PackageAction(
-                    Bundle.CTL_All(),
+            for (NativeBundleType nbt : NativeBundleType.getSupported()) {
+                m.add(new JMenuItem(new PackageAction(
+                    nbt,
                     actionProvider,
-                    J2SEDeployActionProvider.COMMAND_PACKAGE_ALL,
-                    context
-                    )));
-            m.add(new JMenuItem(new PackageAction(
-                    Bundle.CTL_Installers(),
-                    actionProvider,
-                    J2SEDeployActionProvider.COMMAND_PACKAGE_INSTALLERS,
                     context)));
-            m.add(new JMenuItem(new PackageAction(
-                    Bundle.CTL_Image(),
-                    actionProvider,
-                    J2SEDeployActionProvider.COMMAND_PACKAGE_IMAGE,
-                    context)));
+            }
         }
         return m;
     }
@@ -158,17 +145,17 @@ public final class CreateBundleAction extends AbstractAction implements ContextA
         if (ap == null) {
             return false;
         }
-        boolean found = false;
+        String found = null;
         for (String action : ap.getSupportedActions()) {
-            if (J2SEDeployActionProvider.COMMAND_PACKAGE_ALL.equals(action)) {
-                found = true;
+            if (NativeBundleType.forCommand(action)!= null) {
+                found = action;
                 break;
             }
         }
-        if (!found) {
+        if (found == null) {
             return false;
         }
-        return ap.isActionEnabled(J2SEDeployActionProvider.COMMAND_PACKAGE_ALL, ctx);
+        return ap.isActionEnabled(found, ctx);
     }
 
     private final class PackageAction extends AbstractAction {
@@ -178,17 +165,15 @@ public final class CreateBundleAction extends AbstractAction implements ContextA
         private final Lookup context;
         
         PackageAction(
-            @NonNull final String name,
+            @NonNull final NativeBundleType nativeBundleType,
             @NonNull final ActionProvider ap,
-            @NonNull final String command,
             @NonNull final Lookup context) {
-            Parameters.notNull("name", name);         //NOI18N
+            Parameters.notNull("nativeBundleType", nativeBundleType);         //NOI18N
             Parameters.notNull("ap", ap);             //NOI18N
-            Parameters.notNull("command", command);   //NOI18N
             Parameters.notNull("context", context);   //NOI18N
-            putValue(NAME, name);
+            putValue(NAME, nativeBundleType.getDisplayName());
             this.ap = ap;
-            this.command = command;
+            this.command = nativeBundleType.getCommand();
             this.context = context;
         }
 
