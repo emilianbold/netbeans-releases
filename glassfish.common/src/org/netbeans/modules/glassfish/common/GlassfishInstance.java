@@ -1447,8 +1447,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     // TODO -- this should be done differently
     @Override
     public String getServerDisplayName() {
-        return NbBundle.getMessage(GlassfishInstanceProvider.class,
-                "STR_SERVER_NAME", new Object[] {version.toString()});
+        return NbBundle.getMessage(GlassfishInstance.class, "STR_SERVER_NAME",
+                new Object[] {version != null ? version.toString() : ""});
     }
 
     @Override
