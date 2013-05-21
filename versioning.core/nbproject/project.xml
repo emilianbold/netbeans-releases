@@ -239,11 +239,13 @@ made subject to such option by the copyright holder.
                 </test-type>
             </test-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.localhistory</friend>
                 <friend>org.netbeans.modules.ade</friend>
                 <friend>org.netbeans.modules.remotefs.versioning</friend>
                 <friend>org.netbeans.modules.versioning</friend>
                 <friend>org.netbeans.modules.versioning.masterfs</friend>
                 <friend>org.netbeans.modules.versioning.ui</friend>
+                <friend>org.netbeans.modules.versioning.util</friend>
                 <package>org.netbeans.modules.versioning.core.api</package>
                 <package>org.netbeans.modules.versioning.core.filesystems</package>
                 <package>org.netbeans.modules.versioning.core.spi</package>

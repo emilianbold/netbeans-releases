@@ -85,6 +85,7 @@ public class VCSRegistrationProcessor extends LayerGeneratingProcessor {
             f.bundlevalue("displayName", a.displayName());                      // NOI18N
             f.bundlevalue("menuLabel", a.menuLabel());                          // NOI18N
             f.bundlevalue("actionsCategory", a.actionsCategory());              // NOI18N    
+            f.bundlevalue("isLocalHistory", Boolean.toString(s.equals("org.netbeans.modules.localhistory.LocalHistoryVCS"))); // NOI18N    
             f.write();
         }
         return true;

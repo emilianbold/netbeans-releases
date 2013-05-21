@@ -88,6 +88,7 @@ public class AfterDeleteAfterMoveEndsTest extends NbTestCase {
         File userdir = new File(getWorkDir(), "userdir");
         userdir.mkdirs();
         System.setProperty("netbeans.user", userdir.getAbsolutePath());
+        System.setProperty("versioning.no.localhistory.interceptor", "true");
     }
 
     @Override
