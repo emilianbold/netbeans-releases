@@ -43,20 +43,18 @@
  */
 package org.netbeans.core.multitabs.impl;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.MouseEvent;
-import javax.swing.BorderFactory;
 import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
 import javax.swing.ToolTipManager;
-import javax.swing.UIManager;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.plaf.TableUI;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import org.netbeans.swing.tabcontrol.TabData;
@@ -102,43 +100,6 @@ public class TabTable extends JTable {
         setFocusable( false );
         ToolTipManager.sharedInstance().registerComponent( this );
         setDefaultRenderer( Object.class, renderer );
-
-        adjustColors();
-    }
-
-    private void adjustColors() {
-        String lafId = UIManager.getLookAndFeel().getID();
-        if( "Windows".equals( lafId ) ) { //NOI18N
-            Color background = UIManager.getColor( "TabbedPane.background"); //NOI18N
-            Color highglightBackground = UIManager.getColor( "TabbedPane.highlight" ); //NOI18N
-            if( null != background && null != highglightBackground ) {
-                setBackground( background );
-                setSelectionBackground( highglightBackground );
-                setSelectionForeground( getForeground() );
-            }
-        } else if( "Metal".equals( lafId ) ) { //NOI18N
-            Color background = UIManager.getColor( "TabbedPane.highlight"); //NOI18N
-            Color highglightBackground = UIManager.getColor( "TabbedPane.background" ); //NOI18N
-            if( null != background && null != highglightBackground ) {
-                setBackground( background );
-                setSelectionBackground( highglightBackground );
-                setSelectionForeground( getForeground() );
-            }
-        } else if( "Nimbus".equals( lafId ) ) { //NOI18N
-            setShowGrid( true );
-            setBorder( BorderFactory.createLineBorder( getGridColor(), 1) );
-        } else if( "Aqua".equals( lafId ) ) { //NOI18N
-            setShowGrid( true );
-            Color background = UIManager.getColor( "TabbedPane.highlight"); //NOI18N
-            Color highglightBackground = UIManager.getColor( "TabbedPane.background" ); //NOI18N
-            if( null != background && null != highglightBackground ) {
-                setBackground( background );
-                setSelectionBackground( highglightBackground );
-                setSelectionForeground( getForeground() );
-                setGridColor( highglightBackground.darker() );
-            }
-            setBorder( BorderFactory.createLineBorder( getGridColor(), 1) );
-        }
     }
 
     @Override
@@ -268,5 +229,10 @@ public class TabTable extends JTable {
             return getCellRect( row, col, true );
         }
         return null;
+    }
+
+    @Override
+    public void setUI( TableUI ui ) {
+        super.setUI( new TabTableUI() );
     }
 }

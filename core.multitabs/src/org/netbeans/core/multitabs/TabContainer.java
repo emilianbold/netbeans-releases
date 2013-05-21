@@ -48,6 +48,7 @@ import java.awt.Rectangle;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
+import javax.swing.border.MatteBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.swing.tabcontrol.customtabs.Tabbed;
@@ -65,13 +66,18 @@ public final class TabContainer extends JPanel implements Tabbed.Accessor, Chang
     private final StackLayout layout = new StackLayout();
 
     TabContainer( TabbedImpl tabbedImpl, TabDisplayer tabDisplayer, int orientation ) {
-        super( new BorderLayout(1, 1) );
+        super( new BorderLayout(0, 0) );
         this.tabbedImpl = tabbedImpl;
         this.displayer = tabDisplayer;
         tcPanel = new JPanel( layout );
         add( tcPanel, BorderLayout.CENTER );
         tabbedImpl.getSelectionModel().addChangeListener( this );
-        setBorder( UIManager.getBorder( "Nb.ScrollPane.border" ) ); //NOI18N
+        String lafId = UIManager.getLookAndFeel().getID();
+        if( "Metal".equals( lafId ) ) {
+            setBorder( UIManager.getBorder( "Nb.ScrollPane.border" ) ); //NOI18N
+        } else if( "Nimbus".equals( lafId ) ) {
+            setBorder( new MatteBorder(1, 1, 1, 1, UIManager.getColor("nimbusBorder"))); //NOI18N
+        }
         switch( orientation ) {
             case JTabbedPane.TOP:
                 add( displayer, BorderLayout.NORTH );
