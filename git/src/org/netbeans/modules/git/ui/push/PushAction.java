@@ -85,7 +85,6 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
-import static org.netbeans.modules.git.ui.push.Bundle.*;
 
 /**
  *
