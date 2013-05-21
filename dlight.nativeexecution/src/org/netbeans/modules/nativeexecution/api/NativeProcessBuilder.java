@@ -56,7 +56,6 @@ import org.netbeans.modules.nativeexecution.RemoteNativeProcess;
 import org.netbeans.modules.nativeexecution.TerminalLocalNativeProcess;
 import org.netbeans.modules.nativeexecution.api.pty.PtySupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
-import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminal;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
@@ -69,6 +68,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
 
@@ -190,11 +190,12 @@ public final class NativeProcessBuilder implements Callable<Process> {
             throw new UserQuestionException("No connection to " + execEnv.getDisplayName()) {// NOI18N
                 @Override
                 public void confirmed() throws IOException {
-                    try {
-                        ConnectionManager.getInstance().connectTo(execEnv);
-                    } catch (CancellationException ex) {
-                        throw new IOException(ex);
-                    }
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            ConnectionManager.getInstance().connect(execEnv);
+                        }
+                    });
                 }
 
                 @Override

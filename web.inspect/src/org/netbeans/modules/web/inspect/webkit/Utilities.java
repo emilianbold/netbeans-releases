@@ -44,6 +44,8 @@ package org.netbeans.modules.web.inspect.webkit;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -319,6 +321,10 @@ public class Utilities {
         return "-sass-debug-info".equals(queryListText); // NOI18N
     }
 
+    private static Collection<org.netbeans.modules.css.model.api.Rule> getRules(Media media) {
+        return media.getMediaBody() == null ? Collections.<org.netbeans.modules.css.model.api.Rule>emptySet() : media.getMediaBody().getRules();
+    }
+    
     /**
      * Jumps into the meta-source of the rule that follows the given media
      * (that holds the information about the meta-source).
@@ -330,7 +336,7 @@ public class Utilities {
     private static boolean goToMetaSource(Media media) {
         String originalFileName = null;
         int originalLineNumber = -1;
-        for (org.netbeans.modules.css.model.api.Rule rule : media.getRules()) {
+        for (org.netbeans.modules.css.model.api.Rule rule : getRules(media)) {
             SelectorsGroup selectorGroup = rule.getSelectorsGroup();
             Model sourceModel = media.getModel();
             CharSequence image = sourceModel.getElementSource(selectorGroup);

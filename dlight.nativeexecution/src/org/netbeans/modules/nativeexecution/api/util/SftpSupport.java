@@ -170,7 +170,9 @@ class SftpSupport {
     
     private void releaseChannel(ChannelSftp channel) {
         synchronized (channelLock) {
-            spareChannels.push(channel);
+            if (channel.isConnected()) {
+                spareChannels.push(channel);
+            }
             decrementStatistics();
         }
     }
@@ -178,7 +180,7 @@ class SftpSupport {
     private ChannelSftp getChannel() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException {
         // try to reuse channel
         synchronized (channelLock) {
-            if (!spareChannels.isEmpty()) {
+            while (!spareChannels.isEmpty()) {
                 ChannelSftp channel = spareChannels.pop();
                 if (channel.isConnected()) {
                     incrementStatistics();
@@ -342,6 +344,7 @@ class SftpSupport {
                 }
                 statInfo = createStatInfo(dirName, baseName, attrs, cftp);                
             } catch (SftpException e) {
+                cftp.quit();
                 throw decorateSftpException(e, dstFileName);
             } finally {
                 releaseChannel(cftp);
@@ -454,6 +457,7 @@ class SftpSupport {
             try {
                 cftp.get(srcFileName, dstFileName);
             } catch (SftpException e) {
+                cftp.quit();
                 throw decorateSftpException(e, srcFileName);
             } finally {
                 releaseChannel(cftp);
@@ -530,6 +534,7 @@ class SftpSupport {
                 }
                 result = createStatInfo(dirName, baseName, attrs, cftp);
             } catch (SftpException e) {
+                cftp.quit();
                 throw decorateSftpException(e, path);
             } finally {
                 RemoteStatistics.stopChannelActivity(activityID);
@@ -581,6 +586,7 @@ class SftpSupport {
                     }
                 }            
             } catch (SftpException e) {
+                cftp.quit();
                 throw decorateSftpException(e, path);
             } finally {
                 RemoteStatistics.stopChannelActivity(lsLoadID);

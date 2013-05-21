@@ -57,15 +57,29 @@ public class BranchMapping extends ItemSelector.Item {
     private final String label;
     private final String tooltip;
     private final String remoteBranchName;
+    private final GitBranch localBranch;
     private final GitRemoteConfig remote;
     private static final String BRANCH_MAPPING_LABEL = "{0} -> {1}/{0} [{2}]"; //NOI18N
+    private static final String BRANCH_DELETE_MAPPING_LABEL = "{0} [{1}]"; //NOI18N
     private static final String BRANCH_MAPPING_LABEL_UPTODATE = "{0} -> {1}/{0}"; //NOI18N
 
     public BranchMapping (String remoteBranchName, String remoteBranchId, GitBranch localBranch, GitRemoteConfig remote, boolean preselected) {
         super(preselected);
         this.remoteBranchName = remoteBranchName;
+        this.localBranch = localBranch;
         this.remote = remote;
-        if(localBranch == null) {
+        if (isDeletion()) {
+            // to remove
+            label = MessageFormat.format(BRANCH_DELETE_MAPPING_LABEL, localBranch.getName(), "<font color=\"#999999\">R</font>");
+
+            tooltip = NbBundle.getMessage(
+                BranchMapping.class, 
+                "LBL_FetchBranchesPanel.BranchMapping.description", //NOI18N
+                new Object[] { 
+                    localBranch.getName(),
+                    NbBundle.getMessage(BranchMapping.class, "LBL_FetchBranchesPanel.BranchMapping.Mode.deleted.description") //NOI18N
+                }); //NOI18N
+        } else if (localBranch == null) {
             // added
             label = MessageFormat.format(BRANCH_MAPPING_LABEL, remoteBranchName, remote.getRemoteName(), "<font color=\"#00b400\">A</font>");
 
@@ -98,7 +112,11 @@ public class BranchMapping extends ItemSelector.Item {
     }
 
     public String getRefSpec () {
-        return GitUtils.getRefSpec(remoteBranchName, remote.getRemoteName());
+        if (isDeletion()) {
+            return GitUtils.getDeletedRefSpec(localBranch);
+        } else {
+            return GitUtils.getRefSpec(remoteBranchName, remote.getRemoteName());
+        }
     }
 
     @Override
@@ -118,6 +136,10 @@ public class BranchMapping extends ItemSelector.Item {
     public String getRemoteName () {
         return remote.getRemoteName();
     }
+    
+    public final boolean isDeletion () {
+        return remoteBranchName == null;
+    }
 
     @Override
     public int compareTo(Item t) {
@@ -125,8 +147,24 @@ public class BranchMapping extends ItemSelector.Item {
             return 1;
         }
         if(t instanceof BranchMapping) {
-            return remoteBranchName.compareTo(((BranchMapping)t).remoteBranchName);
+            BranchMapping other = (BranchMapping) t;
+            if (isDeletion() && other.isDeletion()) {
+                return localBranch.getName().compareTo(other.localBranch.getName());
+            } else if (isDeletion() && !other.isDeletion()) {
+                // deleted branches should be at the bottom
+                return 1;
+            } else if (!isDeletion() && other.isDeletion()) {
+                // deleted branches should be at the bottom
+                return -1;
+            } else {
+                return remoteBranchName.compareTo(other.remoteBranchName);
+            }
         }
         return 0;            
     }
+
+    public GitBranch getLocalBranch () {
+        return localBranch;
+    }   
+    
 }

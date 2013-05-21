@@ -926,7 +926,7 @@ public final class ModelVisitor extends DefaultTreePathVisitor {
         }
         ASTNodeInfo<FunctionInvocation> nodeInfo = ASTNodeInfo.create(node);
         String name = nodeInfo.getName();
-        if ("define".equals(name) && node.getParameters().size() == 2) { //NOI18N
+        if ("define".equals(name) && (node.getParameters().size() == 2 || node.getParameters().size() == 3)) { //NOI18N
             Expression d = node.getParameters().get(0);
             if (d instanceof Scalar && ((Scalar) d).getScalarType() == Type.STRING) {
                 Scalar scalar = (Scalar) d;

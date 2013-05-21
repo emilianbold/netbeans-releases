@@ -276,17 +276,20 @@ public class DoxygenDocumentation {
         TokenSequence<CppTokenId> ts = h.tokenSequence(CppTokenId.languageHeader());
 
         // check right after declaration on the same line
-        ts.move(csmOffsetable.getEndOffset());
-        while (ts.moveNext()) {
-            switch (ts.token().id()) {
+        TokenSequence<CppTokenId> ts2 = ts;
+        ts2.move(csmOffsetable.getEndOffset());
+        while (ts2.moveNext()) {
+            switch (ts2.token().id()) {
                 case NEW_LINE:
                     break;
                 case LINE_COMMENT:
                 case BLOCK_COMMENT:
                 case DOXYGEN_COMMENT:
                 case DOXYGEN_LINE_COMMENT:
-                    list.add(new DocCandidate(ts.token().text().toString(), ts.token().id()));
+                    list.add(new DocCandidate(ts2.token().text().toString(), ts2.token().id()));
                     break;
+                case PREPROCESSOR_DIRECTIVE:
+                    ts2 = ts2.embedded(CppTokenId.languagePreproc());      
                 default:
                     continue;
             }
