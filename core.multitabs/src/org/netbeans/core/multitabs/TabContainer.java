@@ -45,6 +45,7 @@ package org.netbeans.core.multitabs;
 
 import java.awt.BorderLayout;
 import java.awt.Rectangle;
+import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.UIManager;
@@ -73,10 +74,12 @@ public final class TabContainer extends JPanel implements Tabbed.Accessor, Chang
         add( tcPanel, BorderLayout.CENTER );
         tabbedImpl.getSelectionModel().addChangeListener( this );
         String lafId = UIManager.getLookAndFeel().getID();
-        if( "Metal".equals( lafId ) ) {
-            setBorder( UIManager.getBorder( "Nb.ScrollPane.border" ) ); //NOI18N
-        } else if( "Nimbus".equals( lafId ) ) {
+        if( "Nimbus".equals( lafId ) ) {
             setBorder( new MatteBorder(1, 1, 1, 1, UIManager.getColor("nimbusBorder"))); //NOI18N
+        } else if( "Aqua".equals( lafId ) ) {
+            setBorder( BorderFactory.createEmptyBorder() );
+        } else {
+            setBorder( UIManager.getBorder( "Nb.ScrollPane.border" ) ); //NOI18N
         }
         switch( orientation ) {
             case JTabbedPane.TOP:
