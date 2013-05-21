@@ -56,23 +56,37 @@ public class PathUtilities {
      * the file is in the current directory rather than ".".
      */
     public static String getDirName(String path) {
-        if (path.length()>0 && (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/')) {
-            path = path.substring(0,path.length()-1);
-        }
+        if (path == null) {
+            return null;
+        }        
+        path = trimRightSlashes(path);
         int sep = path.lastIndexOf('/');
         if (sep == -1) {
             sep = path.lastIndexOf('\\');
         }
         if (sep != -1) {
-            return path.substring(0, sep);
+            return trimRightSlashes(path.substring(0, sep));
         }
         return null;
     }
 
+    private static String trimRightSlashes(String path) {
+        int length = path.length();
+        while (length > 0 && (path.charAt(length-1) == '\\' || path.charAt(length-1) == '/')) {
+            path = path.substring(0,length-1);
+            length = path.length();
+            break;
+        }
+        return path;
+    }
+        
     /** Same as the C library basename function: given a path, return
      * its filename.
      */
     public static String getBaseName(String path) {
+        if (path == null) {
+            return null; // making it consistent with getDirName
+        }
         if (path.length()>0 && (path.charAt(path.length()-1) == '\\' || path.charAt(path.length()-1) == '/')) {
             path = path.substring(0,path.length()-1);
         }

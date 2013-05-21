@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,64 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.dlight.libs.common;
 
-package org.netbeans.modules.cnd.utils.ui;
-
-import java.awt.Dialog;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Vladimir Voskresensky
  */
-public class ModalMessageDlgTestCase {
-
-    private Runnable runner = new Runnable() {
-        @Override
-        public void run() {
-            int cycle = 0;
-            while (true) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                System.err.printf("Running %d\n", cycle++);
-            }
-        }
-    };
-
-    public ModalMessageDlgTestCase() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
+public class PathUtilitiesTest {
+    
+    public PathUtilitiesTest() {
     }
 
     @Test
-    public void testRunLongTask() {
-        Dialog parent = null;
-        Runnable postEDTTask = null;
-        Cancellable canceller = new Cancellable() {
-            @Override
-            public boolean cancel() {
-                System.err.printf("CANCELLER\n");
-                return true;
-            }
-
-        };
-        String title = "Running long task";
-        String message = "Running... and running...";
-        ModalMessageDlg.runLongTask(parent, runner, postEDTTask, canceller, title, message);
+    public void testGetDirName() {
+        assertEquals("/dir", PathUtilities.getDirName("/dir/file"));
+        assertEquals("/dir", PathUtilities.getDirName("/dir//file"));
     }
+
+    @Test
+    public void testNormalizeUnixPath() {
+        assertEquals("../folder1/folder2/folder3/newfile.h", PathUtilities.normalizeUnixPath(".././folder1//folder2/./folder3//newfile.h"));
+    }
+    
 }

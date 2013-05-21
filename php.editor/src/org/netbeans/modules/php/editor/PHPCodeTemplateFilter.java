@@ -41,120 +41,27 @@
  */
 package org.netbeans.modules.php.editor;
 
-import java.util.Collections;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
 import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.parsing.api.Embedding;
-import org.netbeans.modules.parsing.api.ParserManager;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.ParseException;
-import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.editor.CompletionContextFinder.CompletionContext;
-import org.openide.util.Exceptions;
-import org.openide.util.RequestProcessor;
 
 /**
  *
- * @author Tomasz.Slota@Sun.COM
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPCodeTemplateFilter extends UserTask implements CodeTemplateFilter {
-
-    private volatile boolean accept = false;
-    private int caretOffset;
-    private CompletionContext context;
-    private static final RequestProcessor requestProcessor = new RequestProcessor("PHPCodeTemplateFilter"); //NOI18N
-    private final Future<Future<Void>> future;
-
-    public PHPCodeTemplateFilter(final Document document, final int offset) {
-        this.caretOffset = offset;
-        future = requestProcessor.submit(new Callable<Future<Void>>() {
-
-            @Override
-            public Future<Void> call() {
-                try {
-                    return parseDocument(document);
-                } catch (ParseException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                return null;
-            }
-        });
-    }
+public class PHPCodeTemplateFilter implements CodeTemplateFilter {
 
     @Override
     public boolean accept(CodeTemplate template) {
-        try {
-            future.get(300, TimeUnit.MILLISECONDS).get(300, TimeUnit.MILLISECONDS);
-            if (isDefaultTemplate(template)) {
-                String abbrev = template.getAbbreviation();
-                if (context == CompletionContext.CLASS_CONTEXT_KEYWORDS) {
-                    return "fnc".equals(abbrev) || "fcom".equals(abbrev); //NOI18N
-                } else if (context == CompletionContext.INTERFACE_CONTEXT_KEYWORDS) {
-                    return "ifnc".equals(abbrev); //NOI18N
-                }
-            }
-            return accept;
-
-        } catch (TimeoutException | InterruptedException | ExecutionException ex) {
-        }
-        return false;
-    }
-
-    private boolean isDefaultTemplate(final CodeTemplate template) {
-        return template.getContexts() != null && !template.getContexts().isEmpty();
-    }
-
-    @Override
-    public void run(ResultIterator resultIterator) throws Exception {
-        ParserResult parameter;
-        String mimeType = resultIterator.getSnapshot().getMimeType();
-        if (!mimeType.equals(FileUtils.PHP_MIME_TYPE)) {
-            for (Embedding e : resultIterator.getEmbeddings()) {
-                if (e.getMimeType().equals(FileUtils.PHP_MIME_TYPE)) {
-                    resultIterator = resultIterator.getResultIterator(e);
-                    break;
-                }
-            }
-            mimeType = resultIterator.getSnapshot().getMimeType();
-        }
-        if (mimeType.equals(FileUtils.PHP_MIME_TYPE)) {
-            parameter = (ParserResult) resultIterator.getParserResult();
-            if (parameter != null) {
-                context = CompletionContextFinder.findCompletionContext(parameter, caretOffset);
-                switch (context) {
-                    case EXPRESSION:
-                    case CLASS_CONTEXT_KEYWORDS:
-                    case INTERFACE_CONTEXT_KEYWORDS:
-                    case HTML:
-                        accept = true;
-                        break;
-                    default:
-                        accept = false;
-                        break;
-                }
-            }
-        }
+        return true;
     }
 
     public static final class Factory implements CodeTemplateFilter.Factory {
 
         @Override
         public CodeTemplateFilter createFilter(JTextComponent component, int offset) {
-            return new PHPCodeTemplateFilter(component.getDocument(), offset);
+            return new PHPCodeTemplateFilter();
         }
     }
 
-    private Future<Void> parseDocument(final Document document) throws ParseException {
-        return ParserManager.parseWhenScanFinished(Collections.singleton(Source.create(document)), this);
-    }
 }

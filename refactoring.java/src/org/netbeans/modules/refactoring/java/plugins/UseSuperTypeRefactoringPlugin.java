@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Set;
 import javax.lang.model.element.*;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.ModificationResult.Difference;
@@ -61,6 +62,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.java.RefactoringUtils;
+import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.UseSuperTypeRefactoring;
 import org.netbeans.modules.refactoring.java.spi.DiffElement;
 import org.netbeans.modules.refactoring.java.spi.JavaRefactoringPlugin;
@@ -303,7 +305,42 @@ public class UseSuperTypeRefactoringPlugin extends JavaRefactoringPlugin {
             TypeMirror elToMatchErasure = erasureOf(subTypeElement.asType());
         
             if (types.isSameType(varTypeErasure, elToMatchErasure)) {
-                if (isReplaceCandidate(varElement)) {
+                
+                //Check for overloaded methods
+                boolean clashWithOverload = false;
+                if(parentPath != null && parentPath.getLeaf().getKind() == Tree.Kind.METHOD) {
+                    Trees trees = workingCopy.getTrees();
+                    ExecutableElement parent = (ExecutableElement) trees.getElement(parentPath);
+                    TreePath enclosing = JavaRefactoringUtils.findEnclosingClass(workingCopy, parentPath, true, true, true, true, true);
+                    TypeElement typeEl = (TypeElement) (enclosing == null? null : trees.getElement(enclosing));
+                    if(parent != null && typeEl != null) {
+                        Name simpleName = parent.getSimpleName();
+                        int size = parent.getParameters().size();
+                        OUTER: for (ExecutableElement method : ElementFilter.methodsIn(workingCopy.getElements().getAllMembers(typeEl))) {
+                            if (method != parent &&
+                                method.getKind() == parent.getKind() &&
+                                size == method.getParameters().size() &&
+                                simpleName.contentEquals(method.getSimpleName())) {
+                                for (int i = 0; i < parent.getParameters().size(); i++) {
+                                    VariableElement par = parent.getParameters().get(i);
+                                    TypeMirror parErasure = types.erasure(par.asType());
+                                    TypeMirror par2Erasure = types.erasure(method.getParameters().get(i).asType());
+                                    if(!types.isSameType(parErasure, par2Erasure)) {
+                                        if(types.isAssignable(types.erasure(superTypeElement.asType()), par2Erasure)) {
+                                            clashWithOverload = true;
+                                            break OUTER;
+                                        }
+                                        if(types.isSubtype(parErasure, par2Erasure)) {
+                                            clashWithOverload = true;
+                                            break OUTER;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                if (!clashWithOverload && isReplaceCandidate(varElement)) {
                     replaceWithSuperType(varTree, superTypeElement);
                 }
             }

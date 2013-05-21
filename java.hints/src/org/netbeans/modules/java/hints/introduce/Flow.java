@@ -267,7 +267,7 @@ public class Flow {
         private final List<TreePath> pendingFinally = new LinkedList<TreePath>();
         private final Cancel cancel;
         private boolean doNotRecord;
-        private /*Map<ClassTree, */Set<VariableElement> finalCandidates = new HashSet<>();
+        private /*Map<ClassTree, */Set<VariableElement> finalCandidates = new ReluctantSet<>();
         private final Set<VariableElement> usedWhileUndefined = new HashSet<VariableElement>();
 
         public VisitorImpl(CompilationInfo info, Cancel cancel) {
@@ -606,12 +606,14 @@ public class Flow {
                 boolean isConstructor = isConstructor(getCurrentPath());
                 Set<VariableElement> definitellyAssignedOnce = new HashSet<VariableElement>();
                 Set<VariableElement> assigned = new HashSet<VariableElement>();
+                Element methodEl = info.getTrees().getElement(getCurrentPath());
+                Element classEl = methodEl != null ? methodEl.getEnclosingElement() : null;
 
                 for (Iterator<Entry<VariableElement, State>> it = variable2State.entrySet().iterator(); it.hasNext();) {
                     Entry<VariableElement, State> e = it.next();
 
                     if (e.getKey().getKind() == ElementKind.FIELD) {
-                        if (isConstructor && !e.getValue().hasUnassigned() && !e.getValue().reassigned && !e.getKey().getModifiers().contains(Modifier.STATIC)) {
+                        if (isConstructor && !e.getValue().hasUnassigned() && !e.getValue().reassigned && !e.getKey().getModifiers().contains(Modifier.STATIC) && e.getKey().getEnclosingElement().equals(classEl)) {
                             definitellyAssignedOnce.add(e.getKey());
                         }
 
@@ -629,7 +631,7 @@ public class Flow {
                     }
                     
                     for (VariableElement var : assigned) {
-                        if (var.getModifiers().contains(Modifier.STATIC)) {
+                        if (var.getModifiers().contains(Modifier.STATIC) || !definitellyAssignedOnce.contains(var)) {
                             finalCandidates.remove(var);
                         }
                     }
@@ -1317,6 +1319,58 @@ public class Flow {
         public ConstructorData(boolean first, List<Tree> initializers) {
             this.first = first;
             this.initializers = initializers;
+        }
+    }
+    
+    private static final class ReluctantSet<T> implements Set<T> {
+        private final Set<T> included = new HashSet<>();
+        private final Set<Object> removed = new HashSet<>();
+        @Override public int size() {
+            return included.size();
+        }
+        @Override public boolean isEmpty() {
+            return included.isEmpty();
+        }
+        @Override public boolean contains(Object o) {
+            return included.contains(o);
+        }
+        @Override public Iterator<T> iterator() {
+            return Collections.synchronizedSet(included).iterator();
+        }
+        @Override public Object[] toArray() {
+            return included.toArray();
+        }
+        @Override public <T> T[] toArray(T[] a) {
+            return included.toArray(a);
+        }
+        @Override public boolean add(T e) {
+            if (removed.contains(e)) {
+                return false;
+            }
+            return included.add(e);
+        }
+        @Override public boolean remove(Object o) {
+            removed.add(o);
+            return included.remove(o);
+        }
+        @Override public boolean containsAll(Collection<?> c) {
+            return included.containsAll(c);
+        }
+        @Override public boolean addAll(Collection<? extends T> c) {
+            boolean result = false;
+            for (T t : c) result |= add(t);
+            return result;
+        }
+        @Override public boolean retainAll(Collection<?> c) {
+            return included.retainAll(c);
+        }
+        @Override public boolean removeAll(Collection<?> c) {
+            boolean result = false;
+            for (Object o : c) result |= remove(o);
+            return result;
+        }
+        @Override public void clear() {
+            throw new UnsupportedOperationException("Not supported yet.");
         }
     }
     

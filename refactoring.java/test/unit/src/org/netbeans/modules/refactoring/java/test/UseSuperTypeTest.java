@@ -62,6 +62,36 @@ public class UseSuperTypeTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test229635a() throws Exception { // #229635 - UseSupertypeWherePossible causes ambiguous references
+        writeFilesAndWaitForScan(src,
+                new File("t/package-info.java", "package t;"),
+                new File("u/A1.java", "package u; public class A1 { }"),
+                new File("u/C.java", "package u; public class C extends A1 { public void method(IV a) { a.v(this); } }"),
+                new File("u/IV.java", "package u; public interface IV { void v(A1 i); void v(C i); }"));
+        performUseSuperType(src.getFileObject("u/C.java"), 1);
+        verifyContent(src,
+                new File("t/package-info.java", "package t;"),
+                new File("u/A1.java", "package u; public class A1 { }"),
+                new File("u/C.java", "package u; public class C extends A1 { public void method(IV a) { a.v(this); } }"),
+                new File("u/IV.java", "package u; public interface IV { void v(A1 i); void v(C i); }"));
+    }
+    
+    public void test229635b() throws Exception { // #229635 - UseSupertypeWherePossible causes ambiguous references
+        writeFilesAndWaitForScan(src,
+                new File("t/package-info.java", "package t;"),
+                new File("u/A1.java", "package u; public class A1 { }"),
+                new File("u/A2.java", "package u; public interface A2 { }"),
+                new File("u/C.java", "package u; public class C extends A1 implements A2 { public void method(IV a) { a.v(this); } }"),
+                new File("u/IV.java", "package u; public interface IV { void v(A1 i); void v(C i); }"));
+        performUseSuperType(src.getFileObject("u/C.java"), 2);
+        verifyContent(src,
+                new File("t/package-info.java", "package t;"),
+                new File("u/A1.java", "package u; public class A1 { }"),
+                new File("u/A2.java", "package u; public interface A2 { }"),
+                new File("u/C.java", "package u; public class C extends A1 implements A2 { public void method(IV a) { a.v(this); } }"),
+                new File("u/IV.java", "package u; public interface IV { void v(A1 i); void v(C i); }"));
+    }
+    
     public void test174431() throws Exception { // #174431 - [Use Supertype] where possible cannot handle exceptions
         writeFilesAndWaitForScan(src, new File("t/Main.java", "package t;\n"
                 + "import java.io.IOException;\nimport java.util.logging.Level;\nimport java.util.logging.Logger;\n"
@@ -114,7 +144,7 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 + "}\n"));
     }
 
-    public void test131406() throws Exception { // #131406 - [Use Supertype] Refactoring does not check method return type
+    public void test131406a() throws Exception { // #131406 - [Use Supertype] Refactoring does not check method return type
         writeFilesAndWaitForScan(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { static Main instance; static Main getDefault() { return instance; } }"),
@@ -124,7 +154,9 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { static Main instance; static Main getDefault() { return instance; } }"),
                 new File("u/Iface.java", "package u; public interface Iface { }"));
-
+    }
+    
+    public void test131406b() throws Exception { // #131406 - [Use Supertype] Refactoring does not check method return type
         writeFilesAndWaitForScan(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { static Main instance; static Iface getDefault() { return instance; } }"),
@@ -134,7 +166,9 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { static Iface instance; static Iface getDefault() { return instance; } }"),
                 new File("u/Iface.java", "package u; public interface Iface { }"));
+    }
 
+    public void test131406c() throws Exception { // #131406 - [Use Supertype] Refactoring does not check method return type
         writeFilesAndWaitForScan(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { static Main instance; static Main getDefault() { return instance == null ? new Main() : instance; } }"),
@@ -144,7 +178,9 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { static Main instance; static Main getDefault() { return instance == null ? new Main() : instance; } }"),
                 new File("u/Iface.java", "package u; public interface Iface { }"));
-        
+    }
+     
+    public void test131406d() throws Exception { // #131406 - [Use Supertype] Refactoring does not check method return type
         writeFilesAndWaitForScan(src,
                 new File("t/B.java", "package t; interface B { public B m(); }"),
                 new File("t/C.java", "package t; interface C { public C m(); }"),
@@ -156,7 +192,7 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("t/A.java", "package t; class A implements C, B { public A m(){ A a = null; return a; } }"));
     }
 
-    public void test128676() throws Exception { // #128676 - [Use Supertype] Refactoring does not respect bound generic type
+    public void test128676a() throws Exception { // #128676 - [Use Supertype] Refactoring does not respect bound generic type
         writeFilesAndWaitForScan(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public <T extends Main> void action(T input) { input.subMethod(); } }"),
@@ -166,7 +202,9 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public <T extends Main> void action(T input) { input.subMethod(); } }"),
                 new File("u/Iface.java", "package u; public interface Iface { }"));
+    }
 
+    public void test128676b() throws Exception { // #128676 - [Use Supertype] Refactoring does not respect bound generic type
         writeFilesAndWaitForScan(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public <T extends Iface> void action(T input) { input.subMethod(); } }"),
@@ -176,7 +214,9 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Iface sub = new Main(); action(sub); } public void subMethod() { } public <T extends Iface> void action(T input) { input.subMethod(); } }"),
                 new File("u/Iface.java", "package u; public interface Iface { public void subMethod(); }"));
+    }
 
+    public void test128676c() throws Exception { // #128676 - [Use Supertype] Refactoring does not respect bound generic type
         writeFilesAndWaitForScan(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public void action(Main input) { input.subMethod(); } }"),
@@ -188,7 +228,7 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("u/Iface.java", "package u; public interface Iface { }"));
     }
     
-    public void test128674() throws Exception { // #128674 - [Use Supertype] refactoring can produce duplicate method declaration
+    public void test128674a() throws Exception { // #128674 - [Use Supertype] refactoring can produce duplicate method declaration
         writeFilesAndWaitForScan(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public void action(Main input) { System.out.println(input.toString()); } public void action(Iface input) { System.out.println(input.toString()); } }"),
@@ -198,7 +238,9 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public void action(Main input) { System.out.println(input.toString()); } public void action(Iface input) { System.out.println(input.toString()); } }"),
                 new File("u/Iface.java", "package u; public interface Iface { }"));
-        
+    }
+     
+    public void test128674b() throws Exception { // #128674 - [Use Supertype] refactoring can produce duplicate method declaration
         writeFilesAndWaitForScan(src,
                 new File("t/package-info.java", "package t;"),
                 new File("u/Main.java", "package u; public class Main implements Iface { public void method() { Main sub = new Main(); action(sub); } public void subMethod() { } public void action(Iface input) { System.out.println(input.toString()); } }"),
