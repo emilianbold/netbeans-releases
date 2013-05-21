@@ -51,18 +51,22 @@ import java.util.Map;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.editor.indent.project.api.Customizers;
 import org.netbeans.modules.php.api.framework.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
+import org.netbeans.spi.project.support.ant.ui.CustomizerUtilities;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -77,6 +81,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     public static final String PHP_INCLUDE_PATH = "PhpIncludePath"; // NOI18N
     public static final String IGNORE_PATH = "IgnorePath"; // NOI18N
     public static final String FRAMEWORKS = "Frameworks"; // NOI18N
+    private static final String LICENSE = "License"; // NOI18N
 
     private final String name;
     private final Map<ProjectCustomizer.Category, PhpModuleCustomizerExtender> frameworkCategories;
@@ -91,7 +96,10 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         }
     }
 
-    @NbBundle.Messages("CompositePanelProviderImpl.category.browser.title=Browser")
+    @NbBundle.Messages({
+        "CompositePanelProviderImpl.category.browser.title=Browser",
+        "CompositePanelProviderImpl.category.licenceHeaders.title=License Headers",
+    })
     @Override
     public ProjectCustomizer.Category createCategory(Lookup context) {
         ProjectCustomizer.Category toReturn = null;
@@ -137,6 +145,11 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_Frameworks"),
                     null,
                     subcategories.toArray(new ProjectCustomizer.Category[subcategories.size()]));
+        } else if (LICENSE.equals(name)) {
+            toReturn = ProjectCustomizer.Category.create(
+                    LICENSE,
+                    Bundle.CompositePanelProviderImpl_category_licenceHeaders_title(),
+                    null);
         }
         assert toReturn != null : "No category for name: " + name;
         return toReturn;
@@ -158,6 +171,47 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             return new CustomizerIgnorePath(category, uiProps);
         } else if (FRAMEWORKS.equals(nm)) {
             return new JPanel();
+        } else if (LICENSE.equals(nm)) {
+            CustomizerUtilities.LicensePanelContentHandler handler = new CustomizerUtilities.LicensePanelContentHandler() {
+                @Override
+                public String getProjectLicenseLocation() {
+                    return uiProps.getLicensePathValue();
+                }
+                @Override
+                public String getGlobalLicenseName() {
+                    return uiProps.getLicenseNameValue();
+                }
+                @Override
+                public FileObject resolveProjectLocation(@NonNull String path) {
+                    PhpProject project = uiProps.getProject();
+                    String evaluated = ProjectPropertiesSupport.getPropertyEvaluator(project).evaluate(path);
+                    assert evaluated != null : path;
+                    return project.getHelper().resolveFileObject(evaluated);
+                }
+
+                @Override
+                public void setProjectLicenseLocation(@NullAllowed String newLocation) {
+                    uiProps.setLicensePathValue(newLocation);
+                }
+
+                @Override
+                public void setGlobalLicenseName(@NullAllowed String newName) {
+                    uiProps.setLicenseNameValue(newName);
+                }
+
+                @Override
+                public String getDefaultProjectLicenseLocation() {
+                    return "./nbproject/licenseheader.txt"; // NOI18N
+                }
+
+                @Override
+                public void setProjectLicenseContent(@NullAllowed String text) {
+                    uiProps.setChangedLicensePathContent(text);
+                }
+
+            };
+
+            return CustomizerUtilities.createLicenseHeaderCustomizerPanel(category, handler);
         }
         // possibly framework?
         if (frameworkCategories != null) {
@@ -249,8 +303,13 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         return new CompositePanelProviderImpl(FRAMEWORKS);
     }
 
-//o.n.m.javascript.libraries     Projects/o-n-m-php-project/Customizer/o-n-m-javascript-libraries-ui-customizer-JSLibraryCustomizerProvider.instance @375
-//o.n.m.web.client.tools.impl    Projects/o-n-m-php-project/Customizer/o-n-m-web-client-tools-impl-projects-DebugCustomizerPanelProvider-createPhpProjectDebug.instance @400
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType = UiUtils.CUSTOMIZER_PATH,
+        position = 900
+    )
+    public static CompositePanelProviderImpl createLicense() {
+        return new CompositePanelProviderImpl(LICENSE);
+    }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
         projectType = UiUtils.CUSTOMIZER_PATH,
