@@ -47,11 +47,9 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -62,7 +60,6 @@ import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.fetch.BranchMapping;
-import org.netbeans.modules.git.ui.fetch.FetchBranchesStep;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.ui.selectors.ItemSelector;
 import org.netbeans.modules.git.ui.wizards.AbstractWizardPanel;
@@ -101,13 +98,6 @@ public class UpdateBranchReferencesStep extends AbstractWizardPanel implements W
         setValid(true, null);
         if (branches.getSelectedBranches().isEmpty()) {
             setValid(true, new Message(NbBundle.getMessage(UpdateBranchReferencesStep.class, "MSG_PushBranchesPanel.errorNoBranchSelected"), true)); //NOI18N
-        } else {
-            String msgDeletedBranches = FetchBranchesStep.getDeletedBranchesMessage(branches.getSelectedBranches());
-            if (msgDeletedBranches == null) {
-                setValid(true, null);
-            } else {
-                setValid(true, new Message(msgDeletedBranches, true));
-            }
         }
     }
 
@@ -148,20 +138,10 @@ public class UpdateBranchReferencesStep extends AbstractWizardPanel implements W
 
     private void fillRemoteBranches (Map<String, String> branches, Map<String, GitBranch> localBranches) {
         List<BranchMapping> l = new ArrayList<BranchMapping>(branches.size());
-        Set<String> displayedBranches = new HashSet<String>(localBranches.size());
         for (Map.Entry<String, String> branch : branches.entrySet()) {
-            String branchName = remote.getRemoteName() + "/" + branch.getKey();
-            displayedBranches.add(branchName);
-            GitBranch localBranch = localBranches.get(branchName);
+            GitBranch localBranch = localBranches.get(remote.getRemoteName() + "/" + branch.getKey());
             BranchMapping mapping = new BranchMapping(branch.getKey(), branch.getValue(), localBranch, remote, true);
             l.add(mapping);
-        }
-        for (GitBranch branch : localBranches.values()) {
-            if (branch.isRemote() && !displayedBranches.contains(branch.getName())
-                    && branch.getName().startsWith(remote.getRemoteName() + "/")) {
-                // about to be deleted
-                l.add(new BranchMapping(null, null, branch, remote, false));
-            }
         }
         this.branches.setBranches(l);
         validateBeforeNext();
