@@ -79,7 +79,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
     
     private final RequestProcessor RP = new RequestProcessor(IOSDebugTransport.class);
     private RequestProcessor.Task socketListener;
-    private volatile boolean keepGoing = true;
+    protected volatile boolean keepGoing = true;
     private Tabs tabs = new IOSDebugTransport.Tabs();
     private final Object init = new Object();
 
@@ -260,7 +260,11 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
         try {
             sendCommand(command.getCommand());
         } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+            boolean s = keepGoing;
+            stop();
+            if (s) {
+                Lookup.getDefault().lookup(BuildPerformer.class).stopDebugging();
+            }
         }
     }
 
