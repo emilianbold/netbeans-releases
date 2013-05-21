@@ -160,7 +160,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
     @Override
     public void removeNotify() {
         super.removeNotify(); //To change body of generated methods, choose Tools | Templates.
-        validationWorker.cancel();
+        validationWorker.shutdownExecutor();
     }
     
     
@@ -1031,6 +1031,15 @@ final class DebugCorePanel extends javax.swing.JPanel {
                 if (validationTask != null) {
                     validationTask.cancel(true);
                 }
+            }
+        }
+        
+        void shutdownExecutor() {
+            synchronized (validationExecutorLock) {
+                if (validationTask != null) {
+                    validationTask.cancel(true);
+                }                
+                validationExecutor.shutdown();
             }
         }
 

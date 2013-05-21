@@ -285,7 +285,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     @Override
     public void installUI(JComponent c) {
         super.installUI(c);
-    }
+    }   
     
     @Override
     public void uninstallComponents(JFileChooser fc) {
@@ -1375,6 +1375,8 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             public void propertyChange(PropertyChangeEvent evt) {
                 if (DIRECTORY_CHANGED_PROPERTY.equals(evt.getPropertyName()) && fc == fileChooser) {
                     rescanCurrentDirectory(fileChooser);
+                } else if (DIALOG_IS_CLOSING.equals(evt.getPropertyName()) && fc == fileChooser) {
+                    updateWorker.shutdown();
                 }
             }
         });
@@ -1391,14 +1393,13 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             @Override
             public void actionPerformed(ActionEvent e) {
                 getFileChooser().cancelSelection();
-                updateWorker.cancel();
             }
             @Override
             public boolean isEnabled(){
                 return getFileChooser().isEnabled();
             }
         };
-        ActionMap map = new ActionMapUIResource();
+        ActionMap map = new ActionMapUIResource();        
         map.put("approveSelection", getApproveSelectionAction());//NOI18N
         map.put("cancelSelection", escAction);//NOI18N
         map.put("Go Up", getChangeToParentDirectoryAction());//NOI18N
@@ -2998,6 +2999,15 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         }        
         private void restoreCursor () {
             ui.setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
+        }
+
+        private void shutdown() {
+            synchronized (updateTaskLock) {
+                if (updateTask != null) {
+                    updateTask.cancel(true);
+                }
+                executor.shutdown();
+            }            
         }
 
     } // end of UpdateWorker
