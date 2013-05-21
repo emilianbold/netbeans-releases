@@ -161,6 +161,7 @@ public class JSEDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 0.1;
         add(mainPanel, gridBagConstraints);
 
         extPanel.setLayout(new java.awt.GridBagLayout());
@@ -172,7 +173,7 @@ public class JSEDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 0.1;
+        gridBagConstraints.weighty = 1.0;
         add(extPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
