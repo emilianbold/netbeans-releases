@@ -62,6 +62,32 @@ public class UseSuperTypeTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void unfinished228636a() throws Exception { // #228636 - UseSupertypeWherePossible ignores use of generic type
+        writeFilesAndWaitForScan(src,
+                new File("t/package-info.java", "package t;"),
+                new File("u/A2.java", "package u; public class A2 { }"),
+                new File("u/A1.java", "package u; public class A1 extends A2 { void m(A1 a) { } void n() { } }"),
+                new File("u/C.java", "package u; public class C extends A1 { public void m(A1 a) { a.n(); } }"));
+        performUseSuperType(src.getFileObject("u/A1.java"), 1);
+        verifyContent(src,
+                new File("t/package-info.java", "package t;"),
+                new File("u/A2.java", "package u; public class A2 { }"),
+                new File("u/A1.java", "package u; public class A1 extends A2 { void m(A1 a) { } void n() { } }"),
+                new File("u/C.java", "package u; public class C extends A1 { public void m(A1 a) { a.n(); } }"));
+    }
+    
+    public void unfinished228636b() throws Exception { // #228636 - UseSupertypeWherePossible ignores use of generic type
+        writeFilesAndWaitForScan(src,
+                new File("t/package-info.java", "package t;"),
+                new File("u/A1.java", "package u; public interface A1<T> { T m(T a); }"),
+                new File("u/C.java", "package u; public class C implements A1<C> { public C m(C a) { return null; } }"));
+        performUseSuperType(src.getFileObject("u/C.java"), 1);
+        verifyContent(src,
+                new File("t/package-info.java", "package t;"),
+                new File("u/A1.java", "package u; public interface A1<T> { T m(T a); }"),
+                new File("u/C.java", "package u; public class C implements A1<C> { public C m(C a) { return null; } }"));
+    }
+    
     public void test229635a() throws Exception { // #229635 - UseSupertypeWherePossible causes ambiguous references
         writeFilesAndWaitForScan(src,
                 new File("t/package-info.java", "package t;"),
