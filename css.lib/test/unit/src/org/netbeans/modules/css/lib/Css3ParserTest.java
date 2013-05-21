@@ -880,7 +880,6 @@ public class Css3ParserTest extends CssTestBase {
 //        assertTrue(NodeUtil.containsError(node));
 //
 //    }
-
     public void testMSExpression() throws BadLocationException, ParseException {
         String code =
                 "div {"
@@ -934,7 +933,7 @@ public class Css3ParserTest extends CssTestBase {
 
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/"
-                + "rule/selectorsGroup/selector/error");
+                + "rule/error");
         assertNotNull(node);
         assertEquals(6, node.from());
         assertEquals(6, node.to());
@@ -1252,7 +1251,7 @@ public class Css3ParserTest extends CssTestBase {
                 + "background: -webkit-linear-gradient(top,  #b02000 0%,#dc4a00 100%);\n"
                 + "background: -o-linear-gradient(top,  #b02000 0%,#dc4a00 100%);\n"
                 + "background: -ms-linear-gradient(top,  #b02000 0%,#dc4a00 100%);\n"
-//                + "background: linear-gradient(to bottom,  #b02000 0%,#dc4a00 100%); "
+                //                + "background: linear-gradient(to bottom,  #b02000 0%,#dc4a00 100%); "
                 + "}");
     }
 
@@ -1264,23 +1263,23 @@ public class Css3ParserTest extends CssTestBase {
                 + "color:red;\n"
                 + "}");
     }
-    
+
     public void testDeclarationsWithJustOneProperty() throws ParseException, BadLocationException {
         assertParses("a { color: red }");
     }
-    
+
     public void testDeclarations() throws ParseException, BadLocationException {
         assertParses("a { color: red; font-weight: bold }");
     }
-    
+
     public void testPropertyValueSeparatedByCommas() throws ParseException, BadLocationException {
         assertParses("div { font-family: fantasy,monospace; }");
     }
-    
+
     public void testPageContext() throws ParseException, BadLocationException {
         assertParses("@page:left { margin-left: 2cm }");
     }
-    
+
     public void testParseJustSemiInDeclarations() throws ParseException, BadLocationException {
         assertParses(".clz { ; }");
         assertParses(".clz { ; ; }");
@@ -1289,9 +1288,22 @@ public class Css3ParserTest extends CssTestBase {
         assertParses(".clz { ;;; ; color: red; ; }");
         assertParses(".clz { color: red; ;; }");
     }
-    
+
     public void testMaskFn() throws ParseException, BadLocationException {
         assertParses(".clz { filter: mask(); }");
     }
+
+    public void testWSBeforeCommaInSelectorsList() throws ParseException, BadLocationException {
+        assertParses(".tablenav .tablenav-pages a.disabled:hover ,\n"
+                + ".tablenav .tablenav-pages a.disabled:active {\n"
+                + "	cursor: default;\n"
+                + "}");
+    }
     
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=230042#c1
+//    public void testIEExpressionHack_fails() throws ParseException, BadLocationException {
+//        assertParses("div {\n"
+//                + "     margin-top: expression(0 - parseInt(this.offsetHeight / 2) + (TBWindowMargin = document.documentElement && document.documentElement.scrollTop || document.body.scrollTop) + 'px');\n"
+//                + "}");
+//    }
 }

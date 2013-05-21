@@ -119,6 +119,7 @@ public class NamespacesModule extends CssEditorModule {
             case media:
             case combinator:
             case selector:
+            case selectorsGroup:
                 proposals.addAll(getNamespaceCompletionProposals(context));
                 break;
 
