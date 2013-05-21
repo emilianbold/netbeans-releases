@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.toolchain.compilerset.CompilerFlavorImpl;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.ErrorParser;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.OutputListenerRegistry;
 import org.netbeans.modules.cnd.spi.toolchain.ErrorParserProvider.Result;
+import org.netbeans.modules.cnd.toolchain.execution.CompileErrorScanner;
 import org.netbeans.modules.cnd.toolchain.execution.OutputListenerImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
@@ -80,29 +81,29 @@ public final class CompilerLineConvertor implements LineConvertor, ChangeListene
     private static final Logger LOG = Logger.getLogger(CompilerLineConvertor.class.getName());
 
     public CompilerLineConvertor(Project project, CompilerSet set, ExecutionEnvironment execEnv, FileObject relativeTo) {
-        registry = new OutputListenerRegistry();
-            List<CompilerFlavor> flavors = getCompilerSet(set, execEnv);
-            for(CompilerFlavor flavor : flavors) {
-                try {
-                    ErrorParser parser = ErrorParserProvider.getDefault().getErorParser(project, flavor, execEnv, relativeTo);
-                    if (parser != null) {
-                        parsers.add(parser);
-                        parser.setOutputListenerRegistry(registry);
-                    }
-                } catch (Throwable ex) {
-                    LOG.log(Level.SEVERE, "Cannot initialize error scanner for "+flavor.getToolchainDescriptor().getName(), ex);
-                }
-            }
+        registry = new OutputListenerRegistry(project);
+        List<CompilerFlavor> flavors = getCompilerSet(set, execEnv);
+        for(CompilerFlavor flavor : flavors) {
             try {
-                List<ErrorParser> universalErorParsers = ErrorParserProvider.getUniversalErorParsers(project, execEnv, relativeTo);
-                for (ErrorParser parser : universalErorParsers) {
+                ErrorParser parser = ErrorParserProvider.getDefault().getErorParser(project, flavor, execEnv, relativeTo);
+                if (parser != null) {
+                    parsers.add(parser);
                     parser.setOutputListenerRegistry(registry);
                 }
-                parsers.addAll(universalErorParsers);
             } catch (Throwable ex) {
-                LOG.log(Level.SEVERE, "Cannot initialize universal error scanner", ex);
+                LOG.log(Level.SEVERE, "Cannot initialize error scanner for "+flavor.getToolchainDescriptor().getName(), ex);
             }
-}
+        }
+        try {
+            List<ErrorParser> universalErorParsers = ErrorParserProvider.getUniversalErorParsers(project, execEnv, relativeTo);
+            for (ErrorParser parser : universalErorParsers) {
+                parser.setOutputListenerRegistry(registry);
+            }
+            parsers.addAll(universalErorParsers);
+        } catch (Throwable ex) {
+            LOG.log(Level.SEVERE, "Cannot initialize universal error scanner", ex);
+        }
+    }
 
     @Override
     public List<ConvertedLine> convert(String line) {
@@ -116,6 +117,7 @@ public final class CompilerLineConvertor implements LineConvertor, ChangeListene
 
     @Override
     public void stateChanged(ChangeEvent e) {
+        CompileErrorScanner.attach(registry, registry.getProject());
         SwingUtilities.invokeLater(new Runnable() {
 
             @Override
