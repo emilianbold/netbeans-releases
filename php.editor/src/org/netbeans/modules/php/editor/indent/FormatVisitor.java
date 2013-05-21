@@ -189,7 +189,7 @@ public class FormatVisitor extends DefaultVisitor {
             } else if (node instanceof FunctionDeclaration || node instanceof MethodDeclaration) {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FUNCTION, ts.offset()));
                 includeWSBeforePHPDoc = false;
-            } else if (node instanceof FieldsDeclaration) {
+            } else if (node instanceof FieldsDeclaration || node instanceof ConstantDeclaration) {
                 if (isPreviousNodeTheSameInBlock(path.get(0), (Statement) node)) {
                     formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BETWEEN_FIELDS, ts.offset()));
                 } else {

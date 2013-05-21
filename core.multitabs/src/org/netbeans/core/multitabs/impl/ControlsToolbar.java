@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,64 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.core.multitabs.impl;
 
-package org.netbeans.modules.cnd.utils.ui;
-
-import java.awt.Dialog;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
+import java.awt.Component;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JToolBar;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author stan
  */
-public class ModalMessageDlgTestCase {
+final class ControlsToolbar extends JToolBar {
 
-    private Runnable runner = new Runnable() {
-        @Override
-        public void run() {
-            int cycle = 0;
-            while (true) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                System.err.printf("Running %d\n", cycle++);
-            }
+    public ControlsToolbar() {
+        super( JToolBar.HORIZONTAL );
+    }
+    
+    @Override
+    protected void addImpl( Component comp, Object constraints, int index ) {
+        super.addImpl( comp, constraints, index ); 
+        if( comp instanceof JButton ) {
+            JButton btn = (JButton) comp;
+            btn.setContentAreaFilled( false );
+            btn.setOpaque( false );
+            btn.setBorder( BorderFactory.createEmptyBorder(2,2,2,2) );
+            btn.setFocusable( false );
+            btn.setBorderPainted( false );
+            btn.setRolloverEnabled( false );
         }
-    };
-
-    public ModalMessageDlgTestCase() {
     }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
+    
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        configure();
     }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Test
-    public void testRunLongTask() {
-        Dialog parent = null;
-        Runnable postEDTTask = null;
-        Cancellable canceller = new Cancellable() {
-            @Override
-            public boolean cancel() {
-                System.err.printf("CANCELLER\n");
-                return true;
-            }
-
-        };
-        String title = "Running long task";
-        String message = "Running... and running...";
-        ModalMessageDlg.runLongTask(parent, runner, postEDTTask, canceller, title, message);
+    
+    private void configure() {
+        setFloatable( false );
+        setFocusable( false );
+        setBorder( BorderFactory.createEmptyBorder() );
+        setBorderPainted( false );
     }
 }

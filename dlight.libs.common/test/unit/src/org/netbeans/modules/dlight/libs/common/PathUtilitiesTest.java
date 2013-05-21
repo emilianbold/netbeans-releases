@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor;
+package org.netbeans.modules.dlight.libs.common;
 
-import javax.swing.text.JTextComponent;
-import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
-import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Vladimir Voskresensky
  */
-public class PHPCodeTemplateFilter implements CodeTemplateFilter {
-
-    @Override
-    public boolean accept(CodeTemplate template) {
-        return true;
+public class PathUtilitiesTest {
+    
+    public PathUtilitiesTest() {
     }
 
-    public static final class Factory implements CodeTemplateFilter.Factory {
-
-        @Override
-        public CodeTemplateFilter createFilter(JTextComponent component, int offset) {
-            return new PHPCodeTemplateFilter();
-        }
+    @Test
+    public void testGetDirName() {
+        assertEquals("/dir", PathUtilities.getDirName("/dir/file"));
+        assertEquals("/dir", PathUtilities.getDirName("/dir//file"));
     }
 
+    @Test
+    public void testNormalizeUnixPath() {
+        assertEquals("../folder1/folder2/folder3/newfile.h", PathUtilities.normalizeUnixPath(".././folder1//folder2/./folder3//newfile.h"));
+    }
+    
 }

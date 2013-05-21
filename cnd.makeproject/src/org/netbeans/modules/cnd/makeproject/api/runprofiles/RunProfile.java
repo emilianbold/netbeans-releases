@@ -118,7 +118,6 @@ public final class RunProfile implements ConfigurationAuxObject {
     private Env environment;
     // Run Command
     private ComboStringConfiguration runCommand;
-    private DefaultPicklistModel runCommandPicklist;
     private StringConfiguration arguments; // hidden property (used by dbxtool)
 
     private String dorun;
@@ -178,14 +177,12 @@ public final class RunProfile implements ConfigurationAuxObject {
 
     private void initializeImpl(int initialConsoleType) {
         //parent = null;
-        environment = new Env();
+        environment = getDefaultEnv();
         defaultProfile = false;
         runDir = ""; // NOI18N
 
-        runCommandPicklist = new DefaultPicklistModel(10);
-        runCommandPicklist.addElement(DEFAULT_RUN_COMMAND);
-        runCommand = new ComboStringConfiguration(null, DEFAULT_RUN_COMMAND, runCommandPicklist); // NOI18N
-        arguments = new StringConfiguration(null, "");
+        runCommand = getDefaultRunCommand();
+        arguments =  getDefaultArguments();
         buildFirst = true;
         if (makeConfiguration != null && makeConfiguration.isMakefileConfiguration()) {
             // #225018 - when create project from existing source Build First should be "OFF"
@@ -196,10 +193,41 @@ public final class RunProfile implements ConfigurationAuxObject {
         dorun = getDorunScript();
         termPaths = new HashMap<String, String>();
         termOptions = new HashMap<String, String>();
-        consoleType = new IntConfiguration(null, initialConsoleType, consoleTypeNames, null);
-        terminalType = new IntConfiguration(null, 0, setTerminalTypeNames(), null);
-        removeInstrumentation = new IntConfiguration(null, REMOVE_INSTRUMENTATION_ASK, removeInstrumentationNames, null);
+        consoleType = getConsoleTypeConfiguration(initialConsoleType);
+        terminalType = getDefaultTerminalType();
+        removeInstrumentation = getDefaultRemoveInstrumentation();
         clearChanged();
+    }
+    
+    private ComboStringConfiguration getDefaultRunCommand() {
+        DefaultPicklistModel list = new DefaultPicklistModel(10);
+        list.addElement(DEFAULT_RUN_COMMAND);
+        return new ComboStringConfiguration(null, DEFAULT_RUN_COMMAND, list); // NOI18N
+        
+    }
+    
+    private StringConfiguration getDefaultArguments() {
+        return new StringConfiguration(null, "");
+    }
+    
+    private Env getDefaultEnv() {
+        return new Env();
+    }
+    
+    private IntConfiguration getDefaultConsoleTypeConfiguration() {
+        return new IntConfiguration(null, getDefaultConsoleType(), consoleTypeNames, null);        
+    }
+    
+    private IntConfiguration getConsoleTypeConfiguration(int initialConsoleType) {
+        return new IntConfiguration(null, initialConsoleType, consoleTypeNames, null);        
+    }    
+    
+    private IntConfiguration getDefaultTerminalType() {
+        return new IntConfiguration(null, 0, setTerminalTypeNames(), null);        
+    }
+    
+    private IntConfiguration getDefaultRemoveInstrumentation() {
+        return new IntConfiguration(null, REMOVE_INSTRUMENTATION_ASK, removeInstrumentationNames, null);
     }
 
     private String escapeDir(String dir) {
@@ -760,13 +788,15 @@ public boolean isSimpleRunCommand() {
         p.setCloneOf(this);
         p.setDefault(isDefault());
         p.setRunDir(getRunDir());
-        p.setRunCommand(getRunCommand().clone());
-        p.setConfigurationArguments(getConfigurationArguments().clone());
+        //fix for #229873 - NullPointerException at org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile.clone
+        //do not user get.. when clone, use private variable        
+        p.setRunCommand(runCommand == null? getDefaultRunCommand() : runCommand.clone());
+        p.setConfigurationArguments(arguments == null ? getDefaultArguments() : arguments.clone());
         p.setBuildFirst(getBuildFirst());
-        p.setEnvironment(getEnvironment().clone());
-        p.setConsoleType(getConsoleType().clone());
-        p.setTerminalType(getTerminalType().clone());
-        p.setRemoveInstrumentation(getRemoveInstrumentation().clone());
+        p.setEnvironment(environment == null ? getDefaultEnv() : environment.clone());
+        p.setConsoleType(consoleType == null ? getDefaultConsoleTypeConfiguration() : consoleType.clone());        
+        p.setTerminalType(terminalType == null ? getDefaultTerminalType() : terminalType.clone());
+        p.setRemoveInstrumentation(removeInstrumentation == null ? getDefaultRemoveInstrumentation() : removeInstrumentation.clone());
         return p;
     }
 
