@@ -75,7 +75,6 @@ import org.netbeans.modules.git.FileStatusCache;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.VersionsCache;
-import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.ui.blame.AnnotateAction;
 import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
@@ -804,11 +803,16 @@ public final class GitUtils {
     }
     
     private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
+    public static final String REF_SPEC_DEL_PREFIX = ":refs/remotes/"; //NOI18N
     private static final String REF_PUSHSPEC_PATTERN = "refs/heads/{0}:refs/heads/{1}"; //NOI18N
     private static final String REF_TAG_PUSHSPEC_PATTERN = "refs/tags/{0}:refs/tags/{0}"; //NOI18N
 
     public static String getRefSpec(GitBranch branch, String remoteName) {
         return MessageFormat.format(REF_SPEC_PATTERN, branch.getName(), remoteName);
+    }
+
+    public static String getDeletedRefSpec (GitBranch branch) {
+        return REF_SPEC_DEL_PREFIX + branch.getName();
     }
 
     public static String getRefSpec (String branchName, String remoteName) {
