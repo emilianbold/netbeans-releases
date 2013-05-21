@@ -74,9 +74,11 @@ public class MultiRowTabDisplayer extends AbstractTabDisplayer implements ListSe
     TabLayoutManager layoutManager;
     final JPanel rowPanel;
     CloseButtonHandler closeHandler;
+    private final int tabsLocation;
 
     public MultiRowTabDisplayer( final TabDataModel tabModel, int tabsLocation ) {
         super( tabModel, tabsLocation );
+        this.tabsLocation = tabsLocation;
         rowPanel = new RowPanel();
         rowPanel.addMouseWheelListener( this );
         scrollPane.setViewportView( rowPanel );
@@ -102,6 +104,9 @@ public class MultiRowTabDisplayer extends AbstractTabDisplayer implements ListSe
         table.addMouseListener( closeHandler );
         table.addMouseMotionListener( closeHandler );
         rowTables.add( table );
+        if( rowTables.size() == 1 )
+            table.setBorder( TabTableUI.createTabBorder( table, tabsLocation ) );
+
         rowPanel.add( table, new GridBagConstraints(0, rowTables.size()-1, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0,0,0,0), 0, 0 ) );
     }
 
