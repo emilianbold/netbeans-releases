@@ -613,8 +613,28 @@ public class NPECheck {
             
             if (e == null || e.getKind() != ElementKind.METHOD) {
                 return State.POSSIBLE_NULL;
-            } else {
+            } else if (!node.getArguments().isEmpty()) {
                 recordResumeOnExceptionHandler((ExecutableElement) e);
+                String ownerFQN = ((TypeElement) e.getEnclosingElement()).getQualifiedName().toString();
+                Tree argument = null;
+                State targetState = null;
+                
+                switch (e.getSimpleName().toString()) {
+                    case "assertNotNull": targetState = State.NOT_NULL; break;
+                    case "assertNull": targetState = State.NULL; break;
+                }
+                
+                switch (ownerFQN) {
+                    case "org.testng.Assert": argument = node.getArguments().get(0); break;
+                    case "junit.framework.Assert":
+                    case "org.junit.Assert": argument = node.getArguments().get(node.getArguments().size() - 1); break;
+                }
+                
+                Element param = argument != null && targetState != null ? info.getTrees().getElement(new TreePath(getCurrentPath(), argument)) : null;
+                
+                if (param != null && isVariableElement(param)) {
+                    variable2State.put((VariableElement) param, targetState);
+                }
             }
             
             return getStateFromAnnotations(e);
