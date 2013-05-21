@@ -44,6 +44,8 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
 <filesystem>
     <!-- empty folders as workaround to avoid os fs folder creation -->
     <folder name="PHP">
-        <folder name="Testing" />
+        <folder name="Testing">
+            <folder name="Customizers"/>
+        </folder>
     </folder>
 </filesystem>

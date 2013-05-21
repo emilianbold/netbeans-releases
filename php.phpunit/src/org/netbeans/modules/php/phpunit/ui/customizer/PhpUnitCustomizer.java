@@ -43,16 +43,19 @@ package org.netbeans.modules.php.phpunit.ui.customizer;
 
 import javax.swing.JComponent;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.util.UiUtils;
+import org.netbeans.modules.php.api.testing.PhpTesting;
 import org.netbeans.modules.php.phpunit.PhpUnitTestingProvider;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.ServiceProvider;
 
 /**
  * Project customizer for PhpUnit.
  */
+@ServiceProvider(service = ProjectCustomizer.CompositeCategoryProvider.class,
+        path = PhpTesting.CUSTOMIZERS_PATH, position = 100)
 public class PhpUnitCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
 
     @NbBundle.Messages("PhpUnitCustomizer.name=PHPUnit")
@@ -69,14 +72,6 @@ public class PhpUnitCustomizer implements ProjectCustomizer.CompositeCategoryPro
     public JComponent createComponent(Category category, Lookup context) {
         PhpModule phpModule = PhpModule.lookupPhpModule(context);
         return new CustomizerPhpUnit(category, phpModule);
-    }
-
-    @ProjectCustomizer.CompositeCategoryProvider.Registration(
-        projectType = UiUtils.CUSTOMIZER_PATH,
-        position = 350
-    )
-    public static PhpUnitCustomizer createCustomizer() {
-        return new PhpUnitCustomizer();
     }
 
 }

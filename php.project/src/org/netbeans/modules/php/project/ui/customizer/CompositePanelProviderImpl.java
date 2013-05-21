@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.ui.customizer;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -55,6 +56,7 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.editor.indent.project.api.Customizers;
 import org.netbeans.modules.php.api.framework.PhpFrameworks;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.testing.PhpTesting;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
@@ -69,6 +71,7 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author Tomas Mysik, Radek Matous
@@ -81,10 +84,12 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     public static final String PHP_INCLUDE_PATH = "PhpIncludePath"; // NOI18N
     public static final String IGNORE_PATH = "IgnorePath"; // NOI18N
     public static final String FRAMEWORKS = "Frameworks"; // NOI18N
+    private static final String TESTING = "Testing"; // NOI18N
     private static final String LICENSE = "License"; // NOI18N
 
     private final String name;
     private final Map<ProjectCustomizer.Category, PhpModuleCustomizerExtender> frameworkCategories;
+    private final Map<ProjectCustomizer.Category, ProjectCustomizer.CompositeCategoryProvider> testingCategories;
 
     public CompositePanelProviderImpl(String name) {
         this.name = name;
@@ -94,9 +99,15 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         } else {
             frameworkCategories = null;
         }
+        if (TESTING.equals(name)) {
+            testingCategories = new LinkedHashMap<>();
+        } else {
+            testingCategories = null;
+        }
     }
 
     @NbBundle.Messages({
+        "CompositePanelProviderImpl.category.testing.title=Testing",
         "CompositePanelProviderImpl.category.browser.title=Browser",
         "CompositePanelProviderImpl.category.licenceHeaders.title=License Headers",
     })
@@ -145,6 +156,18 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_Frameworks"),
                     null,
                     subcategories.toArray(new ProjectCustomizer.Category[subcategories.size()]));
+        } else if (TESTING.equals(name)) {
+            fillTestingCategories(context);
+            if (testingCategories.isEmpty()) {
+                return null;
+            }
+            List<ProjectCustomizer.Category> subcategories = new ArrayList<>(testingCategories.keySet());
+            assert !subcategories.isEmpty();
+            toReturn = ProjectCustomizer.Category.create(
+                    TESTING,
+                    Bundle.CompositePanelProviderImpl_category_testing_title(),
+                    null,
+                    subcategories.toArray(new ProjectCustomizer.Category[subcategories.size()]));
         } else if (LICENSE.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     LICENSE,
@@ -170,6 +193,9 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         } else if (IGNORE_PATH.equals(nm)) {
             return new CustomizerIgnorePath(category, uiProps);
         } else if (FRAMEWORKS.equals(nm)) {
+            return new JPanel();
+        } else if (TESTING.equals(nm)) {
+            // XXX
             return new JPanel();
         } else if (LICENSE.equals(nm)) {
             CustomizerUtilities.LicensePanelContentHandler handler = new CustomizerUtilities.LicensePanelContentHandler() {
@@ -218,6 +244,13 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             PhpModuleCustomizerExtender extender = frameworkCategories.get(category);
             if (extender != null) {
                 return new CustomizerFramework(category, extender, uiProps);
+            }
+        }
+        // possibly testing provider?
+        if (testingCategories != null) {
+            ProjectCustomizer.CompositeCategoryProvider categoryProvider = testingCategories.get(category);
+            if (categoryProvider != null) {
+                return categoryProvider.createComponent(category, context);
             }
         }
         assert false : "No component found for " + category.getDisplayName();
@@ -305,6 +338,14 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(
         projectType = UiUtils.CUSTOMIZER_PATH,
+        position = 350
+    )
+    public static CompositePanelProviderImpl createTesting() {
+        return new CompositePanelProviderImpl(TESTING);
+    }
+
+    @ProjectCustomizer.CompositeCategoryProvider.Registration(
+        projectType = UiUtils.CUSTOMIZER_PATH,
         position = 900
     )
     public static CompositePanelProviderImpl createLicense() {
@@ -340,4 +381,21 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             }
         }
     }
+
+    private void fillTestingCategories(Lookup context) {
+        testingCategories.clear();
+
+        Collection<? extends ProjectCustomizer.CompositeCategoryProvider> testingProviders =
+                Lookups.forPath(PhpTesting.CUSTOMIZERS_PATH).lookupAll(ProjectCustomizer.CompositeCategoryProvider.class);
+        if (testingProviders.isEmpty()) {
+            return;
+        }
+        for (ProjectCustomizer.CompositeCategoryProvider testingProvider : testingProviders) {
+            ProjectCustomizer.Category category = testingProvider.createCategory(context);
+            if (category != null) {
+                testingCategories.put(category, testingProvider);
+            }
+        }
+    }
+
 }
