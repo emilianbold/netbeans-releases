@@ -42,37 +42,23 @@
  */
 package org.netbeans.modules.web.beans.analysis;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import javax.lang.model.element.Element;
 
 import org.netbeans.api.java.source.CompilationInfo;
-import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.SourceGroup;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.beans.CdiUtil;
 import org.netbeans.modules.web.beans.hints.CDIAnnotation;
-import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.editor.hints.Severity;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
-import com.sun.source.tree.Tree;
 
 
 /**
@@ -138,7 +124,7 @@ public class CdiAnalysisResult {
         CdiUtil lookup = project.getLookup().lookup( CdiUtil.class );
         boolean needFix = false;
         if ( lookup == null ){
-            needFix = !CdiUtil.hasBeansXml(project);
+            needFix = !CdiUtil.isCdiEnabled(project);
         }
         else {
             needFix = !lookup.isCdiEnabled();

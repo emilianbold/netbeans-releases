@@ -50,7 +50,6 @@ import org.netbeans.modules.jumpto.common.Models;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
-import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Color;
 import java.awt.Container;
@@ -106,8 +105,6 @@ import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.awt.HtmlRenderer;
 import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
@@ -238,12 +235,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     @Override
     public ListCellRenderer getListCellRenderer(
             @NonNull final JList list,
-            @NonNull final Document nameFieldDocument,
             @NonNull final ButtonModel caseSensitive) {
         Parameters.notNull("list", list);   //NOI18N
-        Parameters.notNull("nameFieldDocument", nameFieldDocument); //NOI18N
         Parameters.notNull("caseSensitive", caseSensitive); //NOI18N
-        return new Renderer(list, nameFieldDocument, caseSensitive);
+        return new Renderer(list, caseSensitive);
     }
     
     
@@ -575,12 +570,9 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         @SuppressWarnings("unchecked")
         private List<? extends TypeDescriptor> getTypeNames(String text, int[] retry) {
             // TODO: Search twice, first for current project, then for all projects
-            List<TypeDescriptor> items;
-            // Multiple providers: merge results
-            items = new ArrayList<TypeDescriptor>(128);
-            String[] message = new String[1];
-            TypeProvider.Context context = TypeProviderAccessor.DEFAULT.createContext(null, text, nameKind);
-            TypeProvider.Result result = TypeProviderAccessor.DEFAULT.createResult(items, message);
+            final List<TypeDescriptor> items = new ArrayList<TypeDescriptor>(128);
+            final String[] message = new String[1];
+            TypeProvider.Context context = TypeProviderAccessor.DEFAULT.createContext(null, text, nameKind);            
             assert rp.isRequestProcessorThread();
             if (typeProviders == null) {
                 typeProviders = implicitTypeProviders != null ? implicitTypeProviders : Lookup.getDefault().lookupAll(TypeProvider.class);
@@ -590,6 +582,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                     return null;
                 }
                 current = provider;
+                final TypeProvider.Result result = TypeProviderAccessor.DEFAULT.createResult(items, message, context);
                 long start = System.currentTimeMillis();
                 try {
                     LOGGER.log(Level.FINE, "Calling TypeProvider: {0}", provider);  //NOI18N
@@ -603,8 +596,10 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                             provider.getDisplayName(),
                             delta
                         });
+                retry[0] = mergeRetryTimeOut(
+                    retry[0],
+                    TypeProviderAccessor.DEFAULT.getRetry(result));
             }
-            retry[0] = TypeProviderAccessor.DEFAULT.getRetry(result);
             if ( !isCanceled ) {   
                 //time = System.currentTimeMillis();
                 Collections.sort(items, new TypeComparator(caseSensitive));
@@ -616,6 +611,18 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             else {
                 return null;
             }            
+        }
+
+        private int mergeRetryTimeOut(
+            int t1,
+            int t2) {
+            if (t1 == 0) {
+                return t2;
+            }
+            if (t2 == 0) {
+                return t1;
+            }
+            return Math.min(t1,t2);
         }
     }
 
@@ -650,7 +657,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         task.waitFinished();
     }
 
-    private static final class Renderer extends EntitiesListCellRenderer implements DocumentListener, ActionListener {
+    private static final class Renderer extends EntitiesListCellRenderer implements ActionListener {
          
         private MyPanel rendererComponent;
         private JLabel jlName = HtmlRenderer.createLabel();
@@ -666,14 +673,12 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         private Color fgSelectionColor;
         
         private JList jList;
-        private String searchText = "";
         private boolean caseSensitive;
         private final HighlightingNameFormatter typeNameFormatter;
 
         @SuppressWarnings("LeakingThisInConstructor")
         public Renderer(
                 @NonNull final JList list,
-                @NonNull final Document nameFieldDocument,
                 @NonNull final ButtonModel caseSensitive) {
             
             jList = list;
@@ -747,7 +752,6 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             bgSelectionColor = list.getSelectionBackground();
             fgSelectionColor = list.getSelectionForeground();
             this.typeNameFormatter = HighlightingNameFormatter.createBoldFormatter();
-            nameFieldDocument.addDocumentListener(this);
             caseSensitive.addActionListener(this);
         }
         
@@ -790,7 +794,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 //highlight matching search text patterns in type
                 final String formattedTypeName = typeNameFormatter.formatName(
                         td.getTypeName(),
-                        searchText,
+                        TypeProviderAccessor.DEFAULT.getHighlightText(td),
                         caseSensitive,
                         isSelected? fgSelectionColor : fgColor);
                 jlName.setText(formattedTypeName);
@@ -819,26 +823,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
             jList.setFixedCellHeight(jlName.getPreferredSize().height);
             jList.setFixedCellWidth(jv.getExtentSize().width);
         }
-
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-            changedUpdate(e);
-        }
-
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            changedUpdate(e);
-        }
-
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            try {
-                searchText = e.getDocument().getText(0, e.getDocument().getLength());
-            } catch (BadLocationException ex) {
-                searchText = "";    //NOI18N
-            }
-        }
-
+        
         @Override
         public void actionPerformed(@NonNull final ActionEvent e) {
             caseSensitive = ((ButtonModel)e.getSource()).isSelected();
