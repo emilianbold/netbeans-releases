@@ -87,6 +87,7 @@ import org.netbeans.modules.javacard.spi.actions.CardActions;
 import org.openide.loaders.DataNode;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.PropertySupport;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 public class CardDataObject extends PropertiesBasedDataObject<Card> implements CardStateObserver {
@@ -96,6 +97,7 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
     private Reference<CardDataNode> nodeRef;
     private String platformName;
     private String myName;
+    private static final RequestProcessor RP = new RequestProcessor(CardDataObject.class);
 
     public CardDataObject(FileObject pf, MultiFileLoader loader) throws DataObjectExistsException, IOException {
         super(pf, loader, Card.class);
@@ -236,11 +238,17 @@ public class CardDataObject extends PropertiesBasedDataObject<Card> implements C
         return Utils.findPlatformDataObjectNamed(lookFor);
     }
 
+    @Override
     public void onStateChange(Card card, CardState old, CardState nue) {
-        CardDataNode nd = nodeRef == null ? null : nodeRef.get();
-        if (nd != null) {
-            nd.checkForRunningStateChange();
-        }
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                CardDataNode nd = nodeRef == null ? null : nodeRef.get();
+                if (nd != null) {
+                    nd.checkForRunningStateChange();
+                }
+            }
+        });
     }
 
     @Override
