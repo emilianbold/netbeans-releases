@@ -599,6 +599,10 @@ tokens {
 	boolean is_address;
 	boolean is_pointer;
 
+        private static final int NESTED_CLASSES_LIMIT = 32;
+
+        protected int classDefinitionDepth = 0; // to restrict number of nested classes
+
 	protected int MaxTemplateTokenScan = 200;
 
 	static class IF_Type extends Enum { public IF_Type(String id) { super(id); } }
@@ -654,8 +658,19 @@ tokens {
 
 	// Aggregate stuff
 	protected void classForwardDeclaration(/*TypeSpecifier*/int ts, DeclSpecifier ds, String tag) {}
-	protected void beginClassDefinition(/*TypeSpecifier*/int ts, String tag) {}
-	protected void endClassDefinition() {}
+
+	protected void beginClassDefinition(/*TypeSpecifier*/int ts, String tag) {
+            classDefinitionDepth++;
+        }
+
+	protected void endClassDefinition() {
+            classDefinitionDepth--;
+        }
+        
+        protected boolean checkClassDefinitionDepth(int maxDepth) {
+            return classDefinitionDepth < maxDepth;
+        }
+
 	protected void beginEnumDefinition(String s) {}
 	protected void endEnumDefinition() {}
 	protected void enumElement(String s) {}
@@ -2084,40 +2099,52 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
         (sc = storage_class_specifier!)?
         (   id = class_qualified_id
             (options{generateAmbigWarnings = false;}:
-                {
-                    saveClass = enclosingClass;
-                    enclosingClass = id;
-                }
                 (LITERAL_final | LITERAL_explicit)?
                 (base_clause)?
-                {action.class_body(LT(1));}
-                LCURLY
-                // This stores class name in dictionary
-                {beginClassDefinition(ts, id);}
-                class_members
-        		{endClassDefinition();}
-                {enclosingClass = saveClass;}
-                {action.end_class_body(LT(1));}
-                {action.end_class_declaration(LT(1));}
-                {action.end_simple_declaration(LT(1));}
-                ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-                | RCURLY )
+                
+                // parse class body if nesting limit not exceed
+                (
+                    {checkClassDefinitionDepth(NESTED_CLASSES_LIMIT)}?
+                        {
+                            saveClass = enclosingClass;
+                            enclosingClass = id;
+                        }
+                        {action.class_body(LT(1));}
+                        LCURLY
+                        // This stores class name in dictionary
+                        {beginClassDefinition(ts, id);}
+                        class_members
+                        {endClassDefinition();}
+                        {enclosingClass = saveClass;}
+                        {action.end_class_body(LT(1));}
+                        {action.end_class_declaration(LT(1));}
+                        {action.end_simple_declaration(LT(1));}
+                        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+                        | RCURLY )
+                    |   
+                        balanceCurlies
+                 )
             |
                 {classForwardDeclaration(ts, ds, id);}
             )
         |
-            {action.class_body(LT(1));}
-            LCURLY
-            {saveClass = enclosingClass; enclosingClass = (String ) "__anonymous";}
-            {beginClassDefinition(ts, "anonymous");}
-            (member_declaration)*
-            {endClassDefinition();}
-            {action.end_class_body(LT(1));}
-            {action.end_class_declaration(LT(1));}
-            {action.end_simple_declaration(LT(1));}
-            ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-            | RCURLY )
-            {enclosingClass = saveClass;}
+            (   
+                {checkClassDefinitionDepth(NESTED_CLASSES_LIMIT)}?
+                    {action.class_body(LT(1));}
+                    LCURLY
+                    {saveClass = enclosingClass; enclosingClass = (String ) "__anonymous";}
+                    {beginClassDefinition(ts, "anonymous");}
+                    (member_declaration)*
+                    {endClassDefinition();}
+                    {action.end_class_body(LT(1));}
+                    {action.end_class_declaration(LT(1));}
+                    {action.end_simple_declaration(LT(1));}
+                    ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+                    | RCURLY )
+                    {enclosingClass = saveClass;}
+                |     
+                    balanceCurlies
+            )
         )
     ;
 
@@ -3136,12 +3163,21 @@ balanceParens
  
 protected    
 balanceCurlies
-        : 
+        {int depth = 1;}
+        :
             LCURLY
-            (options {greedy=false;}:
-                balanceCurlies | .
+            (options {greedy=true;}:
+                {depth > 0}?
+                    (
+                        LCURLY
+                        {depth++;}
+                    |
+                        RCURLY
+                        {depth--;}
+                    |
+                        .
+                    )
             )*
-            RCURLY
         ;
 
 protected    
