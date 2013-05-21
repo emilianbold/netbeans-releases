@@ -2003,8 +2003,18 @@ public class Reformatter implements ReformatTask {
                 CodeStyle.BracesGenerationStyle redundantDoWhileBraces = cs.redundantDoWhileBraces();
                 if (redundantDoWhileBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
                     redundantDoWhileBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
-                boolean prevblock = wrapStatement(cs.wrapDoWhileStatement(), redundantDoWhileBraces, cs.spaceBeforeDoLeftBrace() ? 1 : 0, node.getStatement());
-                if (cs.placeWhileOnNewLine() || !prevblock) {
+                boolean isBlock = node.getStatement().getKind() == Tree.Kind.BLOCK || redundantDoWhileBraces == CodeStyle.BracesGenerationStyle.GENERATE;
+                if (isBlock && redundantDoWhileBraces == CodeStyle.BracesGenerationStyle.ELIMINATE) {
+                    Iterator<? extends StatementTree> stats = ((BlockTree)node.getStatement()).getStatements().iterator();
+                    if (stats.hasNext()) {
+                        StatementTree stat = stats.next();
+                        if (!stats.hasNext() && stat.getKind() != Tree.Kind.VARIABLE) {
+                            isBlock = false;
+                        }
+                    }
+                }
+                isBlock = wrapStatement(cs.wrapDoWhileStatement(), redundantDoWhileBraces, !isBlock || cs.spaceBeforeDoLeftBrace() ? 1 : 0, node.getStatement());
+                if (cs.placeWhileOnNewLine() || !isBlock) {
                     newline();
                 } else {
                     spaces(cs.spaceBeforeWhile() ? 1 : 0);

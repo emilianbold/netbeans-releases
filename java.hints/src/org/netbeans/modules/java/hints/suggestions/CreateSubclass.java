@@ -85,6 +85,7 @@ import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.codegen.ConstructorGenerator;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
+import org.netbeans.modules.java.hints.suggestions.NameAndPackagePanel.ErrorListener;
 import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.netbeans.spi.editor.hints.ChangeInfo;
@@ -98,6 +99,7 @@ import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.TriggerTreeKind;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -178,18 +180,15 @@ public class CreateSubclass {
             IndexingController.getDefault().enterProtectedMode();
             try {
                 if (overrideNameAndPackage == null) {
-                    final NameAndPackagePanel panel = new NameAndPackagePanel(simpleName, packageName);
+                    final NameAndPackagePanel panel = new NameAndPackagePanel(targetSourceRoot, superType, simpleName, packageName);
                     final DialogDescriptor desc = new DialogDescriptor(panel, getText());
-                    panel.addPropertyChangeListener(new PropertyChangeListener() {
-
-                        @Override
-                        public void propertyChange(PropertyChangeEvent evt) {
-                            if (NameAndPackagePanel.IS_VALID.equals(evt.getPropertyName())) {
-                                desc.setValid(panel.isValidData());
-                            }
+                    final NotificationLineSupport nls = desc.createNotificationLineSupport();
+                    panel.setErrorListener(new ErrorListener() {
+                        @Override public void setErrorMessage(String errorMessage) {
+                            nls.setErrorMessage(errorMessage);
+                            desc.setValid(errorMessage == null);
                         }
                     });
-                    desc.setValid(panel.isValidData());
                     if (DialogDisplayer.getDefault().notify(desc) != DialogDescriptor.OK_OPTION) {
                         return null;
                     }

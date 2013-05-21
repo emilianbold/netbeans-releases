@@ -108,6 +108,22 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="TypeProvider-Result-setHighlightText">
+            <api name="general"/>
+            <summary>Added method <code>setHighlightText</code> to <code>TypeProvider.Result</code> to allow <code>TypeProvider</code> to set text to highlight.</summary>
+            <version major="1" minor="38"/>
+            <date day="20" month="5" year="2012"/>
+            <author login="tzezula"/>
+            <compatibility addition="yes">
+            </compatibility>
+            <description> By default the highlight text matches the text to search and <code>TypeProvider</code> has no need to do anything.
+            But when the <code>TypeProvider</code> changes the text to search and uses a part of it just as a restriction it has to specify
+            the new search text. For example Java TypeProvider splits the following text to search "java.lang.Str" to restriction for package
+            "java.lang" and a new search text "Str". In order to let the infrastructure correctly highlight found elements the Java TypeProvider
+            needs to call <code>Result.setHighlightText</code>.
+            </description>
+            <class package="org.netbeans.spi.jumpto.type" name="TypeProvider"/>
+        </change>
         <change id="SymbolProvider-Result-setHighlightText">
             <api name="general"/>
             <summary>Added method <code>setHighlightText</code> to <code>SymbolProvider.Result</code> to allow <code>SymbolProvider</code> to set text to highlight.</summary>

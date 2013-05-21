@@ -343,10 +343,16 @@ public class JavaTypeProvider implements TypeProvider {
         }
         int lastIndexOfDot = originalText.lastIndexOf("."); //NOI18N
         boolean isFullyQualifiedName = -1 != lastIndexOfDot;
-        final Pattern packageName = isFullyQualifiedName ?
-                createPackageRegExp(originalText.substring(0, lastIndexOfDot)) :
-                null;
-        final String typeName = isFullyQualifiedName ? originalText.substring(lastIndexOfDot + 1) : originalText;
+        final Pattern packageName;
+        final String typeName;
+        if (isFullyQualifiedName) {
+            packageName = createPackageRegExp(originalText.substring(0, lastIndexOfDot));
+            typeName = originalText.substring(lastIndexOfDot + 1);
+            res.setHighlightText(typeName);
+        } else {
+            packageName = null;
+            typeName = originalText;
+        }
         final String textForQuery = getTextForQuery(typeName, nameKind, context.getSearchType());
 
         LOGGER.log(Level.FINE, "Text For Query ''{0}''.", originalText);

@@ -248,8 +248,8 @@ public class JavaTypeProviderTest extends NbTestCase {
 
     private void assertComputeTypeNames(String[][] expectedResults, String searchText, TypeProvider provider) {
         List<TypeDescriptor> results = new ArrayList<TypeDescriptor>();
-        TypeProvider.Result res = JumptoAccessor.createResult(results);
         TypeProvider.Context c = JumptoAccessor.createContext(null, searchText, SearchType.PREFIX);
+        TypeProvider.Result res = JumptoAccessor.createResult(results, c);
 
         provider.computeTypeNames(c, res);
 

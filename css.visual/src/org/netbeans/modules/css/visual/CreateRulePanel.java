@@ -88,6 +88,7 @@ import org.netbeans.modules.css.model.api.Body;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.ElementFactory;
 import org.netbeans.modules.css.model.api.Media;
+import org.netbeans.modules.css.model.api.MediaBody;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.ModelVisitor;
@@ -488,7 +489,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
      */
     private String getSelectedElementClassName() {
         if (activeElementClass == null) {
-            activeElementClass = new AtomicReference<String>();
+            activeElementClass = new AtomicReference<>();
             Attribute clz = getSelectedElementClass();
             if (clz != null) {
                 CharSequence unquotedValue = clz.unquotedValue();
@@ -505,7 +506,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
      */
     private String getSelectedElementIdName() {
         if (activeElementId == null) {
-            activeElementId = new AtomicReference<String>();
+            activeElementId = new AtomicReference<>();
             Attribute id = getSelectedElementId();
             if (id != null) {
                 CharSequence unquotedValue = id.unquotedValue();
@@ -712,7 +713,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
 
         updateElementCodeSample(); //refresh UI
 
-        FileObject existsIn = selector != null ? selector.getExistsInFile() : null;
+        FileObject existsIn = selector.getExistsInFile();
         boolean exists = existsIn != null;
         if (exists) {
             STYLESHEETS_MODEL.setSelectedItem(existsIn);
@@ -728,7 +729,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
     
     private void createStyleSheetsModel() {
         try {
-            Collection<FileObject> items = new TreeSet<FileObject>(new Comparator<FileObject>() {
+            Collection<FileObject> items = new TreeSet<>(new Comparator<FileObject>() {
 
                 //alphabetical sort
                 @Override
@@ -772,7 +773,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
      * @throws ParseException 
      */
     private Model getCssSourceModel(FileObject file) throws ParseException {
-        final AtomicReference<Model> model_ref = new AtomicReference<Model>();
+        final AtomicReference<Model> model_ref = new AtomicReference<>();
         Source source = Source.create(file);
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             @Override
@@ -799,7 +800,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
             return;
         }
         try {
-            final Collection<AtRuleItem> items = new ArrayList<AtRuleItem>();
+            final Collection<AtRuleItem> items = new ArrayList<>();
             items.add(null);
 
             final Model cssSourceModel = getCssSourceModel(file);
@@ -890,7 +891,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
                 }
             }
 
-        } catch (/* IOException | ParseException */Exception e) {
+        } catch (IOException | ParseException e) {
             Exceptions.printStackTrace(e);
         }
 
@@ -915,7 +916,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
                     }
                     break;
             }
-        } catch (/* IOException | ParseException */Exception e) {
+        } catch (IOException | ParseException e) {
             Exceptions.printStackTrace(e);
         }
 
@@ -932,7 +933,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
     private void createNewRule(final SelectorItem selectorItem) throws IOException, ParseException {
         final FileObject createInFile = selectorItem.getCreateInFile();
         final Model cssSourceModel = getCssSourceModel(createInFile);
-        final AtomicReference<Rule> createdRuleRef = new AtomicReference<Rule>();
+        final AtomicReference<Rule> createdRuleRef = new AtomicReference<>();
 
         cssSourceModel.runWriteTask(new Model.ModelTask() {
             @Override
@@ -959,7 +960,11 @@ public class CreateRulePanel extends javax.swing.JPanel {
                     Media oldMedia = createInAtRule.getMedia();  //ref from the old model
                     ModelUtils utils = new ModelUtils(cssSourceModel);
                     Media match = utils.findMatchingMedia(oldMedia.getModel(), oldMedia);
-                    match.addRule(rule);
+                    MediaBody mediaBody = match.getMediaBody();
+                    if(mediaBody == null) {
+                        mediaBody = factory.createMediaBody();
+                    }
+                    mediaBody.addRule(rule);
                 }
 
                 try {
@@ -1207,7 +1212,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
             return;
         }
 
-        Collection<SelectorItem> items = new TreeSet<SelectorItem>();
+        Collection<SelectorItem> items = new TreeSet<>();
         SelectorItem selection = null;
 
         //1.add classes && ids
@@ -1356,7 +1361,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
      */
     private Collection<String> getElementNames() {
         if (ELEMENT_SELECTOR_ITEMS == null) {
-            ELEMENT_SELECTOR_ITEMS = new TreeSet<String>();
+            ELEMENT_SELECTOR_ITEMS = new TreeSet<>();
             HtmlModel model = HtmlModelFactory.getModel(HtmlVersion.HTML5);
             for (HtmlTag tag : model.getAllTags()) {
                 ELEMENT_SELECTOR_ITEMS.add(tag.getName());

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,64 +37,23 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.cnd.utils.ui;
-
-import java.awt.Dialog;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
+package org.netbeans.modules.java.j2sedeploy.api;
 
 /**
  *
- * @author Vladimir Kvashin
+ * @author Petr Somol
+ * @author Tomas Zezula
  */
-public class ModalMessageDlgTestCase {
+public final class J2SEDeployConstants {
+    
+    // Deploy panel component properties (to transfer FX listeners from FX project)
+    public static final String PASS_OK_LISTENER = "pass.OK.listener"; // NOI18N
+    public static final String PASS_STORE_LISTENER = "pass.Store.listener"; // NOI18N
+    public static final String PASS_CLOSE_LISTENER = "pass.Close.listener"; // NOI18N
 
-    private Runnable runner = new Runnable() {
-        @Override
-        public void run() {
-            int cycle = 0;
-            while (true) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-                System.err.printf("Running %d\n", cycle++);
-            }
-        }
-    };
-
-    public ModalMessageDlgTestCase() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-    }
-
-    @Test
-    public void testRunLongTask() {
-        Dialog parent = null;
-        Runnable postEDTTask = null;
-        Cancellable canceller = new Cancellable() {
-            @Override
-            public boolean cancel() {
-                System.err.printf("CANCELLER\n");
-                return true;
-            }
-
-        };
-        String title = "Running long task";
-        String message = "Running... and running...";
-        ModalMessageDlg.runLongTask(parent, runner, postEDTTask, canceller, title, message);
+    private J2SEDeployConstants() {
+        throw new IllegalStateException();
     }
 }

@@ -79,12 +79,14 @@ public class ReconfigureActionHandlerFactory implements ProjectActionHandlerFact
 
             @Override
             public void init(ProjectActionEvent pae, ProjectActionEvent[] paes, Collection<OutputStreamHandler> outputHandlers) {
-                reconfigure = new ReconfigureProject(pae.getProject());
+                reconfigure = ReconfigureProject.createReconfigureProject(pae.getProject());
             }
 
             @Override
             public void execute(InputOutput io) {
-                reconfigure.reconfigure("-g", "-g", "", io); // NOI18N
+                if (reconfigure != null) {
+                    reconfigure.reconfigure("-g", "-g", "", io); // NOI18N
+                }
             }
 
             @Override
@@ -94,17 +96,23 @@ public class ReconfigureActionHandlerFactory implements ProjectActionHandlerFact
 
             @Override
             public void cancel() {
-                reconfigure.cancel();
+                if (reconfigure != null) {
+                    reconfigure.cancel();
+                }
             }
 
             @Override
             public void addExecutionListener(ExecutionListener l) {
-                reconfigure.addExecutionListener(l);
+                if (reconfigure != null) {
+                    reconfigure.addExecutionListener(l);
+                }
             }
 
             @Override
             public void removeExecutionListener(ExecutionListener l) {
-                reconfigure.removeExecutionListener(l);
+                if (reconfigure != null) {
+                    reconfigure.removeExecutionListener(l);
+                }
             }
         };
     }

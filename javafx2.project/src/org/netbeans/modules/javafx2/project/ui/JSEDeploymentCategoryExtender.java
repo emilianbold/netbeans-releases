@@ -51,7 +51,7 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.java.j2sedeploy.J2SEDeployProperties;
+import org.netbeans.modules.java.j2sedeploy.api.J2SEDeployConstants;
 import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
@@ -86,7 +86,7 @@ public class JSEDeploymentCategoryExtender implements J2SECategoryExtensionProvi
                 final JFXProjectProperties props = JFXProjectProperties.getInstance(project.getLookup());
                 JComponent comp = props.getSEDeploymentPanel();
                 //create listeners, put them to component properties
-                comp.putClientProperty(J2SEDeployProperties.PASS_OK_LISTENER, new ActionListener() {
+                comp.putClientProperty(J2SEDeployConstants.PASS_OK_LISTENER, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         if(project != null) {
@@ -97,7 +97,7 @@ public class JSEDeploymentCategoryExtender implements J2SECategoryExtensionProvi
                         }
                     }
                 });
-                comp.putClientProperty(J2SEDeployProperties.PASS_STORE_LISTENER, new ActionListener() {
+                comp.putClientProperty(J2SEDeployConstants.PASS_STORE_LISTENER, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         if(project != null) {
@@ -113,7 +113,7 @@ public class JSEDeploymentCategoryExtender implements J2SECategoryExtensionProvi
                         }
                     }
                 });
-                comp.putClientProperty(J2SEDeployProperties.PASS_CLOSE_LISTENER, new ActionListener() {
+                comp.putClientProperty(J2SEDeployConstants.PASS_CLOSE_LISTENER, new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
                         if(project != null) {

@@ -1809,7 +1809,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             rootPath = CndPathUtilitities.normalizeSlashes(rootPath);
         }
         if (srcRoot == null) {
-            srcRoot = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, folderKind);
+            String name = dir.getNameExt();
+            if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
+                name = MakeProjectUtils.getDiskFolderId(project, folder);
+            }
+            srcRoot = new Folder(folder.getConfigurationDescriptor(), folder, name, dir.getNameExt(), true, folderKind);
             if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
                 srcRoot.setRoot(rootPath);
             }

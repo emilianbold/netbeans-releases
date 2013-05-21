@@ -44,9 +44,13 @@ package org.netbeans.modules.java.j2sedeploy;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.util.ArrayDeque;
 import java.util.Properties;
+import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
@@ -56,6 +60,7 @@ import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -78,17 +83,9 @@ import org.openide.util.TaskListener;
     projectTypes={@LookupProvider.Registration.ProjectType(id="org-netbeans-modules-java-j2seproject",position=500)})
 public class J2SEDeployActionProvider implements ActionProvider {
 
-    public static final String COMMAND_PACKAGE_INSTALLERS = "package-installers"; //NOI18N
-    public static final String COMMAND_PACKAGE_IMAGE = "package-image";           //NOI18N
-    public static final String COMMAND_PACKAGE_ALL = "package-all";               //NOI18N
-    public static final String PROP_NATIVE_BUILDING = "native.bundling.enabled";    //NOI18N
-    public static final String BUILD_NATIVE_SCRIPT_PATH = "nbproject/build-native.xml"; //NOI18N
-
     private static final String TARGET_BUILD_NATIVE = "build-native";               //NOI18N
-    private static final String PACKAGE_TYPE = "native.package.type";               //NOI18N
-    private static final String PACKAGE_TYPE_INSTALLERS = "installers";             //NOI18N
-    private static final String PACKAGE_TYPE_IMAGE = "image";                       //NOI18N
-    private static final String PACKAGE_TYPE_ALL = "all";                           //NOI18N
+    private static final String PACKAGE_TYPE = "native.bundling.type";              //NOI18N
+    private static final String PROP_BUILD_FILE = "buildfile";                      //NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(J2SEDeployActionProvider.class);
 
@@ -102,14 +99,15 @@ public class J2SEDeployActionProvider implements ActionProvider {
 
     @Override
     public String[] getSupportedActions() {
-        return new String[] {
-            COMMAND_PACKAGE_ALL,
-            COMMAND_PACKAGE_IMAGE,
-            COMMAND_PACKAGE_INSTALLERS
-        };
+        final Set<NativeBundleType> nbts = NativeBundleType.getSupported();
+        final Queue<String> res = new ArrayDeque<>(nbts.size());
+        for (NativeBundleType nbt : nbts) {
+            res.add(nbt.getCommand());
+        }
+        return res.toArray(new String[res.size()]);
     }
 
-    @NbBundle.Messages("LBL_No_Build_XML_Found=The project does not have a {0} build script.")
+    @NbBundle.Messages("LBL_No_Build_XML_Found=The project does not have a valid build script {0}.")
     @Override
     public void invokeAction(String command, Lookup context) throws IllegalArgumentException {
         final Project prj = context.lookup(Project.class);
@@ -118,11 +116,16 @@ public class J2SEDeployActionProvider implements ActionProvider {
                 "The context %s has no Project.",   //NOI18N
                 context));
         }
-        final FileObject fo = prj.getProjectDirectory();
-        final FileObject buildScript = fo.getFileObject(BUILD_NATIVE_SCRIPT_PATH);
+        final NativeBundleType nbt = NativeBundleType.forCommand(command);
+        if (nbt == null) {
+            throw new IllegalArgumentException(String.format(
+                "Unsupported command %s.",  //NOI18N
+                command));
+        }
+        final FileObject buildScript = findBuildScript(listener.getProject());
         if (buildScript == null || !buildScript.isValid()) {
             NotifyDescriptor nd = new NotifyDescriptor.Message(
-                Bundle.LBL_No_Build_XML_Found(BUILD_NATIVE_SCRIPT_PATH),
+                Bundle.LBL_No_Build_XML_Found(getBuildXmlName(listener.getProject())),
                 NotifyDescriptor.WARNING_MESSAGE);
             DialogDisplayer.getDefault().notify(nd);
             return;
@@ -131,7 +134,7 @@ public class J2SEDeployActionProvider implements ActionProvider {
         boolean success = false;
         try {
             final Properties p = new Properties();
-            p.setProperty(PACKAGE_TYPE, toPackageType(command));
+            p.setProperty(PACKAGE_TYPE, nbt.getAntProperyValue());
             final ExecutorTask task = ActionUtils.runTarget(
                 buildScript,
                 new String[] {TARGET_BUILD_NATIVE},
@@ -167,20 +170,26 @@ public class J2SEDeployActionProvider implements ActionProvider {
         }
         return false;
     }
+    
+    @CheckForNull
+    private static FileObject findBuildScript (@NonNull final Project prj) {                
+        return prj.getProjectDirectory().getFileObject(getBuildXmlName(prj));
+    }
 
     @NonNull
-    private static String toPackageType(@NonNull final String command) {
-        switch (command) {
-            case COMMAND_PACKAGE_ALL:
-                return PACKAGE_TYPE_ALL;
-            case COMMAND_PACKAGE_IMAGE:
-                return PACKAGE_TYPE_IMAGE;
-            case COMMAND_PACKAGE_INSTALLERS:
-                return PACKAGE_TYPE_INSTALLERS;
-            default:
-                throw new IllegalArgumentException(command);
+    private static String getBuildXmlName (@NonNull final Project prj) {
+        final J2SEPropertyEvaluator evalProvider = prj.getLookup().lookup(J2SEPropertyEvaluator.class);
+        String buildScriptPath = evalProvider == null ?
+            null :
+            evalProvider.evaluator().getProperty(PROP_BUILD_FILE);
+        if (buildScriptPath == null) {
+            buildScriptPath = GeneratedFilesHelper.BUILD_XML_PATH;
         }
+        return buildScriptPath;
     }
+
+
+    
 
     private static final class Listener implements Runnable, PropertyChangeListener {
 
@@ -209,7 +218,7 @@ public class J2SEDeployActionProvider implements ActionProvider {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             final String propName = evt.getPropertyName();
-            if (propName == null || PROP_NATIVE_BUILDING.equals(propName)) {
+            if (propName == null || J2SEDeployProperties.JAVASE_NATIVE_BUNDLING_ENABLED.equals(propName)) {
                 cachedEnabled = null;
                 refresh.schedule(0);
             }
@@ -228,7 +237,7 @@ public class J2SEDeployActionProvider implements ActionProvider {
                 if (initialized.compareAndSet(false, true)) {
                     eval.addPropertyChangeListener(this);
                 }
-                cachedEnabled = res = isTrue(eval.getProperty(PROP_NATIVE_BUILDING));
+                cachedEnabled = res = isTrue(eval.getProperty(J2SEDeployProperties.JAVASE_NATIVE_BUNDLING_ENABLED));
             }
             return res;
         }

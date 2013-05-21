@@ -41,12 +41,14 @@
  */
 package org.netbeans.modules.cnd.apt.support;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.netbeans.modules.cnd.antlr.TokenStream;
 import org.netbeans.modules.cnd.apt.impl.support.APTFileMacroMap;
+import org.netbeans.modules.cnd.apt.impl.support.APTIncludeHandlerImpl;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
 import org.netbeans.modules.cnd.apt.structure.APTInclude;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
@@ -147,7 +149,9 @@ public class APTConditionResolverTest {
     private static final class TestWalker extends APTAbstractWalker {
 
         public TestWalker(APTFile apt, APTMacroMap macros) {
-            super(apt, APTHandlersSupport.createPreprocHandler(macros, null, true, null, null), null);
+            super(apt, APTHandlersSupport.createPreprocHandler(macros, 
+                    new APTIncludeHandlerImpl(null, new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), null),
+                    true, CharSequences.empty(), CharSequences.empty()), null);
         }
 
         @Override

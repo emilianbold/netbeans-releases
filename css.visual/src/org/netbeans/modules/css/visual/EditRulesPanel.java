@@ -62,6 +62,7 @@ import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -72,6 +73,7 @@ import org.netbeans.modules.css.model.api.Body;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.ElementFactory;
 import org.netbeans.modules.css.model.api.Media;
+import org.netbeans.modules.css.model.api.MediaBody;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelUtils;
 import org.netbeans.modules.css.model.api.ModelVisitor;
@@ -80,8 +82,6 @@ import org.netbeans.modules.css.model.api.Selector;
 import org.netbeans.modules.css.model.api.SelectorsGroup;
 import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
-import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
-import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModelFactory;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
@@ -316,13 +316,17 @@ public class EditRulesPanel extends javax.swing.JPanel {
                     styleSheet.getBody().addRule(rule);
                 } else {
                     //add to the media
-                    media.addRule(rule);
+                    MediaBody mediaBody = media.getMediaBody();
+                    if(mediaBody == null) {
+                        mediaBody = factory.createMediaBody();
+                    }
+                    mediaBody.addRule(rule);
                 }
 
                 try {
                     selectedStyleSheetModel.applyChanges();
                     selectTheRuleInEditorIfOpened(selectedStyleSheetModel, rule);
-                } catch (Exception /*ParseException, IOException, BadLocationException*/ ex) {
+                } catch (IOException | BadLocationException | ParseException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
@@ -420,7 +424,7 @@ public class EditRulesPanel extends javax.swing.JPanel {
 
     private Collection<String> getTagNames() {
         if (TAG_NAMES == null) {
-            TAG_NAMES = new TreeSet<String>();
+            TAG_NAMES = new TreeSet<>();
             HtmlModel model = HtmlModelFactory.getModel(HtmlVersion.HTML5);
             for (HtmlTag tag : model.getAllTags()) {
                 TAG_NAMES.add(tag.getName());

@@ -57,9 +57,20 @@ public class CPSemanticAnalyzer extends SemanticAnalyzer {
     //right now it is used just to ignore the less syntax by the "pure css analyzer"
     @Override
     public SemanticAnalyzerResult analyzeDeclaration(Node declarationNode) {
-        return !NodeUtil.getChildrenRecursivelyByType(declarationNode, NodeType.cp_variable).isEmpty()
-                ? SemanticAnalyzerResult.VALID
-                : SemanticAnalyzerResult.UNKNOWN;
+        if(!NodeUtil.getChildrenRecursivelyByType(declarationNode, NodeType.cp_variable).isEmpty()) {
+            //declaration contains some CP code => mark as valid so the plain analyzer won't attemp to check the value
+            return SemanticAnalyzerResult.VALID;
+        }
+        
+        if(NodeUtil.getAncestorByType(declarationNode, NodeType.sass_nested_properties) != null) {
+            //the declaration lies in a nested properties block, so the property name ca be just a suffix of the real name:
+            //font: {
+            //  size: 10px;
+            //}
+            return SemanticAnalyzerResult.VALID;
+        }
+        
+        return SemanticAnalyzerResult.UNKNOWN;
     }
     
 }
