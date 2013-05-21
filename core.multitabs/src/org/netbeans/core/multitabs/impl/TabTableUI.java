@@ -79,7 +79,6 @@ final class TabTableUI extends BasicTableUI {
                 table.setSelectionBackground( highglightBackground );
                 table.setSelectionForeground( table.getForeground() );
             }
-            table.setBorder( BorderFactory.createMatteBorder( 0, 1, 0, 0, table.getGridColor()));
         } else if( "Metal".equals( lafId ) ) { //NOI18N
             Color background = UIManager.getColor( "inactiveCaption"); //NOI18N
             Color highglightBackground = UIManager.getColor( "activeCaption" ); //NOI18N
@@ -88,14 +87,16 @@ final class TabTableUI extends BasicTableUI {
                 table.setSelectionBackground( highglightBackground );
                 table.setSelectionForeground( table.getForeground() );
             }
-        } else if( "Nimbus".equals( lafId ) ) { //NOI18N
+        } else if( "Nimbus".equals( lafId ) || "GTK".equals( lafId ) ) { //NOI18N
             Color highglightBackground = UIManager.getColor( "TabbedPane.highlight"); //NOI18N
             Color background = UIManager.getColor( "TabbedPane.background" ); //NOI18N
             if( null != background && null != highglightBackground ) {
                 table.setBackground( new Color(background.getRGB()) );
                 table.setSelectionBackground( new Color(highglightBackground.getRGB()) );
                 table.setSelectionForeground( new Color(table.getForeground().getRGB()) );
-                Color grid = UIManager.getColor( "controlDkShadow");//NOI18N
+                Color grid = UIManager.getColor( "InternalFrame.borderShadow" );//NOI18N
+                if( null == grid )
+                    grid = UIManager.getColor( "controlDkShadow");//NOI18N
                 if( null != grid ) {
                     table.setGridColor( new Color(grid.getRGB()));
                 }
