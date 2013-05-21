@@ -70,11 +70,7 @@ public final class J2SEDeployProperties {
     // Deployment - native packaging
     public static final String JAVASE_NATIVE_BUNDLING_ENABLED = "native.bundling.enabled"; //NOI18N
     // copied from JFXProjectProperties
-    public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
-    // Deploy panel component properties (to transfer FX listeners from FX project)
-    public static final String PASS_OK_LISTENER = "pass.OK.listener"; // NOI18N
-    public static final String PASS_STORE_LISTENER = "pass.Store.listener"; // NOI18N
-    public static final String PASS_CLOSE_LISTENER = "pass.Close.listener"; // NOI18N
+    public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N    
     
     // Project related references
     private J2SEPropertyEvaluator j2sePropEval;

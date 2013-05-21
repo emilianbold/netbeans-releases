@@ -52,6 +52,7 @@ import javax.swing.JComponent;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.j2sedeploy.J2SEDeployProperties;
+import org.netbeans.modules.java.j2sedeploy.api.J2SEDeployConstants;
 import org.netbeans.modules.java.j2seproject.api.J2SECategoryExtensionProvider;
 import org.openide.util.HelpCtx;
 
@@ -209,15 +210,15 @@ public class JSEDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
                 extPanel.add(comp, constraints);
                 
                 // extract listeners if exist
-                Object okObject = comp.getClientProperty(J2SEDeployProperties.PASS_OK_LISTENER);
+                Object okObject = comp.getClientProperty(J2SEDeployConstants.PASS_OK_LISTENER);
                 if(okObject != null && okObject instanceof ActionListener) {
                     okListener.add((ActionListener)okObject);
                 }
-                Object storeObject = comp.getClientProperty(J2SEDeployProperties.PASS_STORE_LISTENER);
+                Object storeObject = comp.getClientProperty(J2SEDeployConstants.PASS_STORE_LISTENER);
                 if(storeObject != null && storeObject instanceof ActionListener) {
                     storeListener.add((ActionListener)storeObject);
                 }
-                Object closeObject = comp.getClientProperty(J2SEDeployProperties.PASS_CLOSE_LISTENER);
+                Object closeObject = comp.getClientProperty(J2SEDeployConstants.PASS_CLOSE_LISTENER);
                 if(closeObject != null && closeObject instanceof ActionListener) {
                     closeListener.add((ActionListener)closeObject);
                 }
