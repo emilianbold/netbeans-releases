@@ -179,7 +179,8 @@ class PushWizard  implements ChangeListener {
                 Map<String, GitBranch> remoteBranches = selectUriStep.getRemoteBranches();
                 Map<String, String> remoteTags = selectUriStep.getRemoteTags();
                 if (remoteBranches != null) {
-                    pushBranchesStep.fillRemoteBranches(remoteBranches, remoteTags == null ? Collections.<String, String>emptyMap() : remoteTags);
+                    pushBranchesStep.fillRemoteBranches(selectUriStep.getSelectedRemote(),
+                            remoteBranches, remoteTags == null ? Collections.<String, String>emptyMap() : remoteTags);
                 }
                 pushBranchesStep.setAsLastPanel(!selectUriStep.isConfiguredRemoteSelected());
                 selectUriStep.storeURI();
@@ -187,7 +188,7 @@ class PushWizard  implements ChangeListener {
                 Collection<PushMapping> mappings = pushBranchesStep.getSelectedMappings();
                 Map<String, String> remoteBranches = new LinkedHashMap<String, String>(mappings.size());
                 for (PushMapping mapping : mappings) {
-                    if (mapping instanceof PushMapping.PushBranchMapping) {
+                    if (!mapping.isDeletion() && mapping instanceof PushMapping.PushBranchMapping) {
                         PushBranchMapping pushMapping = (PushMapping.PushBranchMapping) mapping;
                         remoteBranches.put(pushMapping.getRemoteRepositoryBranchName(), pushMapping.getLocalRepositoryBranchHeadId());
                     }
