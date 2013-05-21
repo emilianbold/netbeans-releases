@@ -248,7 +248,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     @NbBundle.Messages({
         "# {0} - branch name", "MSG_FetchBranchesStep.toBeDeletedBranch=Branch {0} will be permanently removed."
     })
-    public static String getDeletedBranchesMessage (List<BranchMapping> selectedBranches) {
+    static String getDeletedBranchesMessage (List<BranchMapping> selectedBranches) {
         StringBuilder sb = new StringBuilder(100);
         for (BranchMapping m : selectedBranches) {
             if (m.isDeletion()) {
