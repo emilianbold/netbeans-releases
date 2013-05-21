@@ -2931,7 +2931,8 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                         if (Thread.interrupted()) {
                             return new ValidationResult(Boolean.FALSE, null, false, curDir);
                         }                        
-                        file = fileChooser.getFileSystemView().createFileObject(currentDir);
+                        file = currentDir == null ? fileChooser.getFileSystemView().getDefaultDirectory() : 
+                                fileChooser.getFileSystemView().createFileObject(currentDir);
                         if (Thread.interrupted()) {
                             return new ValidationResult(Boolean.FALSE, null, false, curDir);
                         }
