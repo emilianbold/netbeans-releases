@@ -62,6 +62,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.cnd.api.model.CsmChangeEvent;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmModel;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
@@ -225,7 +226,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
                 Collection<NativeProject> nativeProjects = CsmUtilities.getNativeProjects(cdo);
                 synchronized(lock) {
                     fileModel.clear();
-                    setChildren(new Node[]{new NoCodeModelNode(nativeProjects)});
+                    if (!nativeProjects.isEmpty()) {
+                        setChildren(new Node[]{new NoCodeModelNode(nativeProjects)});
+                    }
                 }
             } else {
                 PreBuildModel buildPreModel = fileModel.buildPreModel(csmFile);
@@ -791,8 +794,21 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
         public NoCodeModelNode(Collection<NativeProject> projects) {
             super(Children.LEAF);
             assert !projects.isEmpty();
-            this.project = projects.iterator().next();
-            setName(NbBundle.getMessage(NavigatorModel.class, "ModelDisabled", project.getProjectDisplayName()));
+            NativeProject projectToEnable = projects.iterator().next();
+            
+            CsmModel model = CsmModelAccessor.getModel();
+            // check if all projects are loaded
+            for (NativeProject nativeProject : projects) {
+                if (model.isProjectEnabled(nativeProject) == null) {
+                    projectToEnable = null;
+                }
+            }
+            this.project = projectToEnable;
+            if (project != null) {
+                setName(NbBundle.getMessage(NavigatorModel.class, "ModelDisabled", project.getProjectDisplayName()));
+            } else {
+                setName(NbBundle.getMessage(NavigatorModel.class, "Initializing"));
+            }
             setIconBaseWithExtension("org/netbeans/modules/cnd/qnavigator/resources/exclamation.gif");
         }
 
