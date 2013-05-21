@@ -71,6 +71,8 @@ import org.openide.util.NbBundle;
  */
 public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
 
+    
+    private static final List<Tree.Kind> unary = Arrays.asList(Tree.Kind.POSTFIX_INCREMENT, Tree.Kind.POSTFIX_DECREMENT, Tree.Kind.PREFIX_INCREMENT, Tree.Kind.PREFIX_DECREMENT);
     private final InlineRefactoring refactoring;
     private TreePathHandle treePathHandle;
 
@@ -549,7 +551,9 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
         @Override
         public Tree visitUnary(UnaryTree node, TreePath p) {
             if (element.equals(asElement(new TreePath(p, node.getExpression())))) {
-                assignmentCount++;
+                if(unary.contains(node.getKind())) {
+                    assignmentCount++;
+                }
             }
             return super.visitUnary(node, p);
         }
