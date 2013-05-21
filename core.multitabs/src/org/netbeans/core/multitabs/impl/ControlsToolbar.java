@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,31 +37,49 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.editor;
+package org.netbeans.core.multitabs.impl;
 
-import javax.swing.text.JTextComponent;
-import org.netbeans.lib.editor.codetemplates.api.CodeTemplate;
-import org.netbeans.lib.editor.codetemplates.spi.CodeTemplateFilter;
+import java.awt.Component;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JToolBar;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author stan
  */
-public class PHPCodeTemplateFilter implements CodeTemplateFilter {
+final class ControlsToolbar extends JToolBar {
 
-    @Override
-    public boolean accept(CodeTemplate template) {
-        return true;
+    public ControlsToolbar() {
+        super( JToolBar.HORIZONTAL );
     }
-
-    public static final class Factory implements CodeTemplateFilter.Factory {
-
-        @Override
-        public CodeTemplateFilter createFilter(JTextComponent component, int offset) {
-            return new PHPCodeTemplateFilter();
+    
+    @Override
+    protected void addImpl( Component comp, Object constraints, int index ) {
+        super.addImpl( comp, constraints, index ); 
+        if( comp instanceof JButton ) {
+            JButton btn = (JButton) comp;
+            btn.setContentAreaFilled( false );
+            btn.setOpaque( false );
+            btn.setBorder( BorderFactory.createEmptyBorder(2,2,2,2) );
+            btn.setFocusable( false );
+            btn.setBorderPainted( false );
+            btn.setRolloverEnabled( false );
         }
     }
-
+    
+    @Override
+    public void updateUI() {
+        super.updateUI();
+        configure();
+    }
+    
+    private void configure() {
+        setFloatable( false );
+        setFocusable( false );
+        setBorder( BorderFactory.createEmptyBorder() );
+        setBorderPainted( false );
+    }
 }

@@ -487,7 +487,7 @@ public class TestMetadata extends MetadataImplementation {
 
         @Override
         public SQLType getType() {
-            throw new UnsupportedOperationException("Not supported yet.");
+            return SQLType.VARCHAR;
         }
     }
 

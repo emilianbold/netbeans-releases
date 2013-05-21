@@ -72,6 +72,8 @@ public class SimpleTabDisplayer extends AbstractTabDisplayer implements ListSele
         table.getColumnModel().getSelectionModel().setSelectionInterval( 0, 0 );
         table.getColumnModel().getSelectionModel().addListSelectionListener( this );
         table.addMouseWheelListener( this );
+        
+        table.setBorder( TabTableUI.createTabBorder( table, tabsLocation ) );
     }
 
     @Override
