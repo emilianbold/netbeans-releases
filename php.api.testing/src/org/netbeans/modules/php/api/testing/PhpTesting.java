@@ -68,6 +68,11 @@ public final class PhpTesting {
      * @since 0.6
      */
     public static final String CUSTOMIZERS_PATH = TESTING_PATH + "/Customizers"; // NOI18N
+    /**
+     * Identifier of Project Customizer for testing.
+     * @since 0.6
+     */
+    public static final String CUSTOMIZER_IDENT = "Testing"; // NOI18N
 
     private static final Lookup.Result<PhpTestingProvider> TESTING_PROVIDERS = Lookups.forPath(TESTING_PATH).lookupResult(PhpTestingProvider.class);
 

@@ -84,8 +84,8 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     public static final String PHP_INCLUDE_PATH = "PhpIncludePath"; // NOI18N
     public static final String IGNORE_PATH = "IgnorePath"; // NOI18N
     public static final String FRAMEWORKS = "Frameworks"; // NOI18N
-    private static final String TESTING = "Testing"; // NOI18N
-    private static final String LICENSE = "License"; // NOI18N
+    public static final String TESTING = PhpTesting.CUSTOMIZER_IDENT;
+    public static final String LICENSE = "License"; // NOI18N
 
     private final String name;
     private final Map<ProjectCustomizer.Category, PhpModuleCustomizerExtender> frameworkCategories;
@@ -158,11 +158,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     subcategories.toArray(new ProjectCustomizer.Category[subcategories.size()]));
         } else if (TESTING.equals(name)) {
             fillTestingCategories(context);
-            if (testingCategories.isEmpty()) {
-                return null;
-            }
             List<ProjectCustomizer.Category> subcategories = new ArrayList<>(testingCategories.keySet());
-            assert !subcategories.isEmpty();
             toReturn = ProjectCustomizer.Category.create(
                     TESTING,
                     Bundle.CompositePanelProviderImpl_category_testing_title(),
@@ -195,8 +191,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         } else if (FRAMEWORKS.equals(nm)) {
             return new JPanel();
         } else if (TESTING.equals(nm)) {
-            // XXX
-            return new JPanel();
+            return new CustomizerTesting(category, uiProps);
         } else if (LICENSE.equals(nm)) {
             CustomizerUtilities.LicensePanelContentHandler handler = new CustomizerUtilities.LicensePanelContentHandler() {
                 @Override

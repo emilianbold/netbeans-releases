@@ -53,6 +53,7 @@ import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -129,8 +130,10 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     public static final String IGNORE_PATH = "ignore.path"; // NOI18N
     public static final String LICENSE_NAME = "project.license";
     public static final String LICENSE_PATH = "project.licensePath";
+    public static final String TESTING_PROVIDERS = "testing.providers";
 
     public static final String DEBUG_PATH_MAPPING_SEPARATOR = "||NB||"; // NOI18N
+    public static final String TESTING_PROVIDERS_SEPARATOR = ";"; // NOI18N
 
     private static final String[] CFG_PROPS = new String[] {
         URL,
@@ -238,6 +241,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     private String aspTags;
     private String phpVersion;
     private Set<PhpModuleCustomizerExtender> customizerExtenders;
+    private List<String> testingProviders;
 
     // CustomizerRun
     final Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> runConfigs;
@@ -498,6 +502,18 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         this.changedLicensePathContent = changedLicensePathContent;
     }
 
+    public List<String> getTestingProviders() {
+        if (testingProviders == null) {
+            String value = ProjectPropertiesSupport.getPropertyEvaluator(project).getProperty(TESTING_PROVIDERS);
+            testingProviders = StringUtils.explode(value, TESTING_PROVIDERS_SEPARATOR);
+        }
+        return testingProviders;
+    }
+
+    public void setTestingProviders(List<String> testingProviders) {
+        this.testingProviders = testingProviders;
+    }
+
     public void save() {
         try {
             // store properties
@@ -646,6 +662,10 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
             try (OutputStream out = fo.getOutputStream()) {
                 FileUtil.copy(new ByteArrayInputStream(changedLicensePathContent.getBytes()), out);
             }
+        }
+
+        if (testingProviders != null) {
+            projectProperties.setProperty(TESTING_PROVIDERS, StringUtils.implode(testingProviders, TESTING_PROVIDERS_SEPARATOR));
         }
 
         // configs

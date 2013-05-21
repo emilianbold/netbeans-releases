@@ -112,12 +112,6 @@ public final class Utils {
         }
     }
 
-    @NbBundle.Messages("Utils.noTestingProviders=No PHP testing provider found, install one via Plugins (e.g. PHPUnit).")
-    public static void informNoTestingProviders() {
-        DialogDisplayer.getDefault().notifyLater(
-                new NotifyDescriptor.Message(Bundle.Utils_noTestingProviders(), NotifyDescriptor.INFORMATION_MESSAGE));
-    }
-
     // XXX use everywhere
     @NonNull
     public static Color getErrorForeground() {
