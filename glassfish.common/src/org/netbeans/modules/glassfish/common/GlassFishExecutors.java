@@ -117,9 +117,7 @@ public class GlassFishExecutors {
     /** Inactive Threads keep alive time [ms] in GlassFish log fetchers executor
      *  thread pool. */
     private static final long FETCH_LOG_EXECUTOR_POOL_KEEPALIVE_TIME = 0;
-    
-            
-            
+
     /**
      * GlassFish log fetchers executor.
      */
