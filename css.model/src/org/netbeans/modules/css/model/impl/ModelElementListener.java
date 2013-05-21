@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.model.impl;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.netbeans.modules.css.model.api.*;
 import org.openide.util.Exceptions;
@@ -83,18 +84,22 @@ public interface ModelElementListener {
     public void elementAdded(ResourceIdentifier resourceIdentifier);
 
     public void elementAdded(Media media);
+    
+    public void elementAdded(MediaBody mediaBody);
 
     public void elementAdded(MediaQueryList mediaQueryList);
 
     public void elementAdded(MediaQuery mediaQuery);
 
-    public void elementAdded(MediaQueryOperator mediaQuery);
+    public void elementAdded(MediaQueryOperator mediaQueryOperator);
 
-    public void elementAdded(MediaExpression mediaQuery);
+    public void elementAdded(MediaExpression mediaExpression);
 
-    public void elementAdded(MediaFeature mediaQuery);
+    public void elementAdded(MediaFeature mediaFeature);
+    
+    public void elementAdded(MediaFeatureValue mediaFeatureValue);
 
-    public void elementAdded(MediaType mediaQuery);
+    public void elementAdded(MediaType mediaType);
 
     public void elementAdded(Namespaces namespaces);
 
@@ -162,19 +167,23 @@ public interface ModelElementListener {
 
     public void elementRemoved(ResourceIdentifier resourceIdentifier);
 
-    public void elementRemoved(Media mediaQueryList);
+    public void elementRemoved(Media media);
+    
+    public void elementRemoved(MediaBody mediaBody);
 
     public void elementRemoved(MediaQueryList mediaQueryList);
 
     public void elementRemoved(MediaQuery mediaQuery);
 
-    public void elementRemoved(MediaQueryOperator mediaQuery);
+    public void elementRemoved(MediaQueryOperator mediaQueryOperator);
 
-    public void elementRemoved(MediaExpression mediaQuery);
+    public void elementRemoved(MediaExpression mediaExpression);
 
-    public void elementRemoved(MediaFeature mediaQuery);
+    public void elementRemoved(MediaFeature mediaFeature);
+    
+    public void elementRemoved(MediaFeatureValue mediaFeatureValue);
 
-    public void elementRemoved(MediaType mediaQuery);
+    public void elementRemoved(MediaType mediaType);
 
     public void elementRemoved(Namespaces namespaces);
 
@@ -222,7 +231,7 @@ public interface ModelElementListener {
                         String methodName = add ? "elementAdded" : "elementRemoved";
                         Method method = listener.getClass().getMethod(methodName, in);
                         method.invoke(listener, element);
-                    } catch (Exception ex) {
+                    } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                         Exceptions.printStackTrace(ex);
                     }
                 }
@@ -682,6 +691,22 @@ public interface ModelElementListener {
 
         @Override
         public void elementRemoved(WebkitKeyframesBlock webkitKeyframesBlock) {
+        }
+
+        @Override
+        public void elementAdded(MediaFeatureValue mediaFeatureValue) {
+        }
+
+        @Override
+        public void elementRemoved(MediaFeatureValue mediaFeatureValue) {
+        }
+
+        @Override
+        public void elementAdded(MediaBody mediaBody) {
+        }
+
+        @Override
+        public void elementRemoved(MediaBody mediaBody) {
         }
     }
 }

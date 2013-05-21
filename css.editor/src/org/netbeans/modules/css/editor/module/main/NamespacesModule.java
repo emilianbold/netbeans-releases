@@ -119,6 +119,7 @@ public class NamespacesModule extends CssEditorModule {
             case media:
             case combinator:
             case selector:
+            case selectorsGroup:
                 proposals.addAll(getNamespaceCompletionProposals(context));
                 break;
 
@@ -220,7 +221,7 @@ public class NamespacesModule extends CssEditorModule {
             
             private void addItem(StructureItem si) {
                 if(items.isEmpty()) {
-                    result.add(new TopLevelStructureItem.Classes(items));
+                    result.add(new TopLevelStructureItem.Namespaces(items));
                 }
                 items.add(si);
             }

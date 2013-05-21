@@ -685,4 +685,10 @@ public class PHPFormatterWrappingTest extends PHPFormatterTestBase {
         options.put(FmtOptions.WRAP_AFTER_ASSIGN_OPS, true);
         reformatFileContents("testfiles/formatting/wrapping/issue225535_08.php", options);
     }
+
+    public void testIssue228712() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.WRAP_EXTENDS_IMPLEMENTS_LIST, CodeStyle.WrapStyle.WRAP_IF_LONG);
+        reformatFileContents("testfiles/formatting/wrapping/issue228712.php", options);
+    }
 }

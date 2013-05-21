@@ -43,22 +43,13 @@ package org.netbeans.modules.css.model.api;
 
 /**
  *
+ * @since 1.20
  * @author marekfukala
  */
-public interface MediaExpression extends Element {
+public interface MediaFeatureValue extends Element {
     
-    public MediaFeature getMediaFeature();
+   public Expression getExpression();
     
-    public void setMediaFeature(MediaFeature mediaFeature);
-    
-    /**
-     * @since 1.20
-     */
-    public MediaFeatureValue getMediaFeatureValue();
-    
-    /**
-     * @since 1.20
-     */
-    public void setMediaFeatureValue(MediaFeatureValue mediaFeatureValue);
+    public void setExpression(Expression expression);
     
 }

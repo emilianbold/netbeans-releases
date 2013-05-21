@@ -80,7 +80,8 @@ public class ClientProjectUtilities {
     }
 
     public static boolean isUsingEmbeddedServer(Project p) {
-        return true;
+        ClientSideModule clientSide = p.getLookup().lookup(ClientSideModule.class);
+        return clientSide != null;
     }
     
     public static String getProperty(Project p, String key) {
