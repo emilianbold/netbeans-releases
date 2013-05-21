@@ -369,7 +369,7 @@ public class WebKitPageModel extends PageModel {
                 updateNodes(child);
                 DOMNode domNode = nodes.get(nodeId);
                 if (domNode != null) {
-                    domNode.updateChildren(parent);
+                    domNode.updateChildren(parent, child);
                 }
             }
         }
