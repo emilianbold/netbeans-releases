@@ -1579,7 +1579,16 @@ public class FormatVisitor extends DefaultVisitor {
                         break;
                     case "++": //NOI18N
                     case "--": //NOI18N
-                        tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset()));
+                        int origOffset = ts.offset();
+                        if (ts.movePrevious()) {
+                            if (ts.token().id() == PHPTokenId.PHP_VARIABLE) {
+                                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
+                            } else if (ts.token().id() != PHPTokenId.WHITESPACE) {
+                                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE, ts.offset() + ts.token().length()));
+                            }
+                            ts.move(origOffset);
+                            ts.moveNext();
+                        }
                         tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), text));
                         tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_AROUND_UNARY_OP, ts.offset() + ts.token().length()));
                         break;
