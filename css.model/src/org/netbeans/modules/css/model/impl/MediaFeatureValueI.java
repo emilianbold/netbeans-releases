@@ -39,26 +39,60 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api;
+package org.netbeans.modules.css.model.impl;
+
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.model.api.*;
 
 /**
  *
  * @author marekfukala
  */
-public interface MediaExpression extends Element {
+public class MediaFeatureValueI extends ModelElement implements MediaFeatureValue {
+
+    private Expression expression;
     
-    public MediaFeature getMediaFeature();
+    private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
+
+        @Override
+        public void elementAdded(Expression value) {
+            expression = value;
+        }      
+        
+    };
     
-    public void setMediaFeature(MediaFeature mediaFeature);
+    public MediaFeatureValueI(Model model) {
+        super(model);
+        
+        addTextElement(" "); //NOI18N
+        addTextElement(":"); //NOI18N
+        addTextElement(" "); //NOI18N
+        addEmptyElement(Expression.class);
+    }
+
+    public MediaFeatureValueI(Model model, Node node) {
+        super(model, node);
+        initChildrenElements();
+    }
+
+    @Override
+    protected Class getModelClass() {
+        return MediaFeatureValue.class;
+    }
     
-    /**
-     * @since 1.20
-     */
-    public MediaFeatureValue getMediaFeatureValue();
-    
-    /**
-     * @since 1.20
-     */
-    public void setMediaFeatureValue(MediaFeatureValue mediaFeatureValue);
-    
+    @Override
+    protected ModelElementListener getElementListener() {
+        return elementListener;
+    }
+
+    @Override
+    public Expression getExpression() {
+        return expression;
+    }
+
+    @Override
+    public void setExpression(Expression expression) {
+        setElement(expression);
+    }
+
 }

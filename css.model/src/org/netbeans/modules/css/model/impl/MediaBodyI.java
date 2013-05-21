@@ -39,26 +39,87 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.api;
+package org.netbeans.modules.css.model.impl;
+
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.model.api.*;
 
 /**
  *
  * @author marekfukala
  */
-public interface MediaExpression extends Element {
+public class MediaBodyI extends ModelElement implements MediaBody {
+
+    private List<Rule> rules = new ArrayList<>();
+    private List<Page> pages = new ArrayList<>();
     
-    public MediaFeature getMediaFeature();
-    
-    public void setMediaFeature(MediaFeature mediaFeature);
-    
-    /**
-     * @since 1.20
-     */
-    public MediaFeatureValue getMediaFeatureValue();
-    
-    /**
-     * @since 1.20
-     */
-    public void setMediaFeatureValue(MediaFeatureValue mediaFeatureValue);
-    
+    private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
+
+        @Override
+        public void elementAdded(Rule value) {
+            rules.add(value);
+        }
+
+        @Override
+        public void elementAdded(Page value) {
+            pages.add(value);
+        }
+        
+    };
+
+    public MediaBodyI(Model model) {
+        super(model);
+        
+        addTextElement("\n");
+        addEmptyElement(Rule.class);
+        addEmptyElement(Page.class);
+        addTextElement("\n");
+    }
+
+    public MediaBodyI(Model model, Node node) {
+        super(model, node);
+        initChildrenElements();
+    }
+
+    @Override
+    protected Class getModelClass() {
+        return MediaBody.class;
+    }
+
+    @Override
+    protected ModelElementListener getElementListener() {
+        return elementListener;
+    }
+
+    @Override
+    public List<Rule> getRules() {
+        return rules;
+    }
+
+    @Override
+    public List<Page> getPages() {
+        return pages;
+    }
+
+    @Override
+    public void addRule(Rule rule) {
+        int index;
+        if(isArtificialElement()) {
+            index = setElement(rule, true);
+        } else {
+            //insert before last element (should be PlainElement("})
+            index = getElementsCount() - 1;
+            insertElement(index, rule);
+        }
+        insertElement(index + 1, model.getElementFactory().createPlainElement("\n"));
+    }
+
+    @Override
+    public void addPage(Page page) {
+        int index = setElement(page, true);
+        insertElement(index + 1, model.getElementFactory().createPlainElement("\n"));
+    }
+
 }

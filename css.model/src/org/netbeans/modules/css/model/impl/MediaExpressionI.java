@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.model.impl;
 
-import java.util.Collection;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.*;
 
@@ -52,7 +51,7 @@ import org.netbeans.modules.css.model.api.*;
 public class MediaExpressionI extends ModelElement implements MediaExpression {
 
     private MediaFeature mediaFeature;
-    private Expression expression;
+    private MediaFeatureValue mediaFeatureValue;
     
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
 
@@ -62,8 +61,8 @@ public class MediaExpressionI extends ModelElement implements MediaExpression {
         }
 
         @Override
-        public void elementAdded(Expression value) {
-            expression = value;
+        public void elementAdded(MediaFeatureValue value) {
+            mediaFeatureValue = value;
         }      
         
     };
@@ -74,10 +73,8 @@ public class MediaExpressionI extends ModelElement implements MediaExpression {
         addTextElement("(");
         addTextElement(" ");
         addEmptyElement(MediaFeature.class);
+        addEmptyElement(MediaFeatureValue.class);
         addTextElement(" ");
-        addTextElement(":");
-        addTextElement(" ");
-        addEmptyElement(Expression.class);
         addTextElement(")");
         addTextElement(" ");
     }
@@ -108,13 +105,13 @@ public class MediaExpressionI extends ModelElement implements MediaExpression {
     }
 
     @Override
-    public Expression getExpression() {
-        return expression;
+    public MediaFeatureValue getMediaFeatureValue() {
+        return mediaFeatureValue;
     }
 
     @Override
-    public void setExpression(Expression expression) {
-        setElement(expression);
+    public void setMediaFeatureValue(MediaFeatureValue mediaFeatureValue) {
+        setElement(mediaFeatureValue);
     }
 
 }

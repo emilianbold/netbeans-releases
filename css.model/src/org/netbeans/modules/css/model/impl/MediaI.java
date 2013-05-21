@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.css.model.impl;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.*;
 
@@ -53,8 +51,8 @@ import org.netbeans.modules.css.model.api.*;
 public class MediaI extends ModelElement implements Media {
 
     private MediaQueryList mediaQueryList;
-    private List<Rule> rules = new ArrayList<Rule>();
-    private List<Page> pages = new ArrayList<Page>();
+    private MediaBody mediaBody;
+    
     
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
 
@@ -64,15 +62,10 @@ public class MediaI extends ModelElement implements Media {
         }
 
         @Override
-        public void elementAdded(Rule value) {
-            rules.add(value);
+        public void elementAdded(MediaBody value) {
+            mediaBody = value;
         }
 
-        @Override
-        public void elementAdded(Page value) {
-            pages.add(value);
-        }
-        
     };
 
     public MediaI(Model model) {
@@ -83,10 +76,7 @@ public class MediaI extends ModelElement implements Media {
         addEmptyElement(MediaQueryList.class);
         addTextElement(" ");
         addTextElement("{");
-        addTextElement("\n");
-        addEmptyElement(Rule.class);
-        addEmptyElement(Page.class);
-        addTextElement("\n");
+        addEmptyElement(MediaBody.class);
         addTextElement("}");
     }
 
@@ -111,37 +101,18 @@ public class MediaI extends ModelElement implements Media {
     }
 
     @Override
-    public List<Rule> getRules() {
-        return rules;
-    }
-
-    @Override
-    public List<Page> getPages() {
-        return pages;
-    }
-
-    @Override
     public void setMediaQueryList(MediaQueryList mediaQueryList) {
         setElement(mediaQueryList);
     }
 
     @Override
-    public void addRule(Rule rule) {
-        int index;
-        if(isArtificialElement()) {
-            index = setElement(rule, true);;
-        } else {
-            //insert before last element (should be PlainElement("})
-            index = getElementsCount() - 1;
-            insertElement(index, rule);
-        }
-        insertElement(index + 1, model.getElementFactory().createPlainElement("\n"));
+    public MediaBody getMediaBody() {
+        return mediaBody;
     }
 
     @Override
-    public void addPage(Page page) {
-        int index = setElement(page, true);
-        insertElement(index + 1, model.getElementFactory().createPlainElement("\n"));
+    public void setMediaBody(MediaBody mediaBody) {
+        setElement(mediaBody);
     }
 
 }
