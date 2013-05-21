@@ -43,6 +43,8 @@ package org.netbeans.modules.db.sql.execute.ui;
 
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -176,7 +178,8 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 updateFilter();
                 }
             });
-        }
+        sqlHistoryTable.setTransferHandler(new TableTransferHandler());
+    }
 
     private void updateRowCount() {
         matchingRowsLabel.setText(Integer.toString(sqlHistoryTable.getRowCount()));
@@ -591,6 +594,36 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     private javax.swing.JLabel sqlLimitLabel;
     private javax.swing.JTextField sqlLimitTextField;
     // End of variables declaration//GEN-END:variables
+
+    private final class TableTransferHandler extends TransferHandler {
+
+        /**
+         * Map Transferable to createTransferableTSV from ResultSetJXTable
+         *
+         * This is needed so that CTRL-C Action of JTable gets the same
+         * treatment as the transfer via the copy Methods of DataTableUI
+         */
+        @Override
+        protected Transferable createTransferable(JComponent c) {
+            StringBuilder sb = new StringBuilder();
+            for (int id : sqlHistoryTable.getSelectedRows()) {
+                int modelIndex = sqlHistoryTable.convertRowIndexToModel(id);
+                if (sb.length() != 0) {
+                    sb.append(System.lineSeparator());
+                }
+                // Column 1 => Column of SQL
+                String sql = (String) htm.getValueAt(modelIndex, 1);
+                sb.append(sql);
+                sb.append(";");
+            }
+            return new StringSelection(sb.toString());
+        }
+
+        @Override
+        public int getSourceActions(JComponent c) {
+            return COPY;
+        }
+    }
 
     private final class HistoryTableModel extends AbstractTableModel {
         
