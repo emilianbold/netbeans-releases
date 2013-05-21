@@ -655,7 +655,7 @@ selectorsGroup
         // looking for #{, lookeahead exited by { (rule beginning)
         ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> sass_selector_interpolation_expression
 	|
-        selector (COMMA ws? selector)*
+        selector (ws? COMMA ws? selector)*
     ;
         
 selector
