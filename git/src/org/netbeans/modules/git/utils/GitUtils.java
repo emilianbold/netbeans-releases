@@ -805,6 +805,7 @@ public final class GitUtils {
     private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
     public static final String REF_SPEC_DEL_PREFIX = ":refs/remotes/"; //NOI18N
     private static final String REF_PUSHSPEC_PATTERN = "refs/heads/{0}:refs/heads/{1}"; //NOI18N
+    public static final String REF_PUSHSPEC_DEL_PREFIX = ":refs/heads/"; //NOI18N
     private static final String REF_TAG_PUSHSPEC_PATTERN = "refs/tags/{0}:refs/tags/{0}"; //NOI18N
 
     public static String getRefSpec(GitBranch branch, String remoteName) {
@@ -821,6 +822,10 @@ public final class GitUtils {
 
     public static String getPushRefSpec (String branchName, String remoteRepositoryBranchName) {
         return MessageFormat.format(REF_PUSHSPEC_PATTERN, branchName, remoteRepositoryBranchName);
+    }
+
+    public static String getPushDeletedRefSpec (String remoteRepositoryBranchName) {
+        return REF_PUSHSPEC_DEL_PREFIX + remoteRepositoryBranchName;
     }
 
     public static String getPushTagRefSpec (String tagName) {

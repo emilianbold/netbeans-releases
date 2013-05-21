@@ -85,6 +85,7 @@ import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor.Task;
+import static org.netbeans.modules.git.ui.push.Bundle.*;
 
 /**
  *
@@ -119,7 +120,20 @@ public class PushAction extends SingleRepositoryAction {
     
     @NbBundle.Messages({
         "# {0} - repository name", "LBL_PushAction.progressName=Pushing - {0}",
-        "# {0} - branch name", "MSG_PushAction.branchDeleted=Branch {0} deleted in the local repository."
+        "# {0} - branch name", "MSG_PushAction.branchDeleted=Branch {0} deleted in the local repository.",
+        "# {0} - branch name", "# {1} - branch head id", "# {2} - result of the update",
+        "MSG_PushAction.updates.deleteBranch=Branch Delete : {0}\n"
+            + "Id            : {1}\n"
+            + "Result        : {2}\n",
+        "# {0} - branch name", "# {1} - branch head id", "# {2} - result of the update",
+        "MSG_PushAction.updates.addBranch=Branch Add : {0}\n"
+            + "Id         : {1}\n"
+            + "Result     : {2}\n",
+        "# {0} - branch name", "# {1} - branch old head id", "# {2} - branch new head id", "# {3} - result of the update",
+        "MSG_PushAction.updates.updateBranch=Branch Update : {0}\n"
+            + "Old Id        : {1}\n"
+            + "New Id        : {2}\n"
+            + "Result        : {3}\n"
     })
     public Task push (File repository, final String remote, final Collection<PushMapping> pushMappins, final List<String> fetchRefSpecs) {
         GitProgressSupport supp = new GitProgressSupport() {
@@ -176,12 +190,18 @@ public class PushAction extends SingleRepositoryAction {
                     for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
                         GitTransportUpdate update = e.getValue();
                         if (update.getType() == Type.BRANCH) {
-                            logger.output(NbBundle.getMessage(PushAction.class, "MSG_PushAction.updates.updateBranch", new Object[] { //NOI18N
-                                update.getLocalName(), 
-                                update.getOldObjectId(),
-                                update.getNewObjectId(),
-                                update.getResult(),
-                            }));
+                            if (update.getNewObjectId() == null && update.getOldObjectId() != null) {
+                                // delete
+                                logger.output(Bundle.MSG_PushAction_updates_deleteBranch(update.getRemoteName(),
+                                        update.getOldObjectId(), update.getResult()));
+                            } else if (update.getNewObjectId() != null && update.getOldObjectId() == null) {
+                                // add
+                                logger.output(Bundle.MSG_PushAction_updates_addBranch(update.getLocalName(),
+                                        update.getNewObjectId(), update.getResult()));
+                            } else {
+                                logger.output(Bundle.MSG_PushAction_updates_updateBranch(update.getLocalName(),
+                                        update.getOldObjectId(), update.getNewObjectId(), update.getResult()));
+                            }
                         } else {
                             logger.output(NbBundle.getMessage(PushAction.class, "MSG_PushAction.updates.updateTag", new Object[] { //NOI18N
                                 update.getLocalName(), 

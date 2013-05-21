@@ -58,13 +58,26 @@ public abstract class PushMapping extends ItemSelector.Item {
     private final String label;
     private final String tooltip;
     private static final String BRANCH_MAPPING_LABEL = "{0} -> {1} [{2}]"; //NOI18N
+    private static final String BRANCH_DELETE_MAPPING_LABEL = "{0} [{1}]"; //NOI18N
     private static final String BRANCH_MAPPING_LABEL_UPTODATE = "{0} -> {1}"; //NOI18N
     private final String localName;
+    private final String remoteName;
     
     protected PushMapping (String localName, String localId, String remoteName, String remoteId, boolean conflict, boolean preselected) {
         super(preselected);
         this.localName = localName;
-        if (remoteName == null) {
+        this.remoteName = remoteName == null ? localName : remoteName;
+        if (localName == null) {
+            // to remove
+            label = MessageFormat.format(BRANCH_DELETE_MAPPING_LABEL, remoteName, "<font color=\"#999999\">R</font>"); //NOI18N
+            tooltip = NbBundle.getMessage(
+                    PushBranchesStep.class,
+                    "LBL_PushBranchMapping.description", //NOI18N
+                    new Object[]{
+                        remoteName,
+                        NbBundle.getMessage(PushBranchesStep.class, "LBL_PushBranchMapping.Mode.deleted.description") //NOI18N
+                    }); //NOI18N
+        } else if (remoteName == null) {
             // added
             label = MessageFormat.format(BRANCH_MAPPING_LABEL, localName, localName, "<font color=\"#00b400\">A</font>");
             tooltip = NbBundle.getMessage(
@@ -105,6 +118,10 @@ public abstract class PushMapping extends ItemSelector.Item {
 
     public abstract String getRefSpec ();
 
+    String getInfoMessage () {
+        return null;
+    }
+
     @Override
     public String getText () {
         return label;
@@ -114,6 +131,10 @@ public abstract class PushMapping extends ItemSelector.Item {
     public String getTooltipText () {
         return tooltip;
     }
+    
+    public final boolean isDeletion () {
+        return localName == null;
+    }
 
     @Override
     public int compareTo (Item t) {
@@ -121,15 +142,40 @@ public abstract class PushMapping extends ItemSelector.Item {
             return 1;
         }
         if (t instanceof PushMapping) {
-            return localName.compareTo(((PushMapping) t).localName);
+            PushMapping other = (PushMapping) t;
+            if (isDeletion() && other.isDeletion()) {
+                return remoteName.compareTo(other.remoteName);
+            } else if (isDeletion() && !other.isDeletion()) {
+                // deleted branches should be at the bottom
+                return 1;
+            } else if (!isDeletion() && other.isDeletion()) {
+                // deleted branches should be at the bottom
+                return -1;
+            } else {
+                return localName.compareTo(other.localName);
+            }
         }
         return 0;
+    }
+
+    String getRemoteName () {
+        return remoteName;
     }
     
     public static final class PushBranchMapping extends PushMapping {
         private final GitBranch localBranch;
         private final String remoteBranchName;
         private final String remoteBranchId;
+        
+        /**
+         * Denotes a branch to be deleted in a remote repository
+         */
+        public PushBranchMapping (String remoteBranchName, String remoteBranchId, boolean preselected) {
+            super(null, null, remoteBranchName, remoteBranchId, false, preselected);
+            this.localBranch = null;
+            this.remoteBranchName = remoteBranchName;
+            this.remoteBranchId = remoteBranchId;
+        }
         
         public PushBranchMapping (String remoteBranchName, String remoteBranchId, GitBranch localBranch, boolean conflict, boolean preselected) {
             super(localBranch.getName(), localBranch.getId(), 
@@ -156,7 +202,24 @@ public abstract class PushMapping extends ItemSelector.Item {
 
         @Override
         public String getRefSpec () {
-            return GitUtils.getPushRefSpec(localBranch.getName(), remoteBranchName == null ? localBranch.getName() : remoteBranchName);
+            if (isDeletion()) {
+                return GitUtils.getPushDeletedRefSpec(remoteBranchName);
+            } else {
+                return GitUtils.getPushRefSpec(localBranch.getName(), remoteBranchName == null ? localBranch.getName() : remoteBranchName);
+            }
+        }
+        
+        @Override
+        @NbBundle.Messages({
+            "# {0} - branch name",
+            "MSG_PushMapping.toBeDeletedBranch=Branch {0} will be permanently removed from the remote repository."
+        })
+        String getInfoMessage () {
+            if (isDeletion()) {
+                return Bundle.MSG_PushMapping_toBeDeletedBranch(remoteBranchName);
+            } else {
+                return super.getInfoMessage();
+            }
         }
     }
     
