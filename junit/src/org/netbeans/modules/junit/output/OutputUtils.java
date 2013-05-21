@@ -230,6 +230,9 @@ public final class OutputUtils {
             return;
         }
         FileObject testfo = methodNode.getTestcase().getClassFileObject();
+	if(testfo == null) {
+	    return;
+	}
         final int[] lineNumStorage = new int[1];
         FileObject file = getFile(frameInfo, lineNumStorage, locator);
         //lineNumStorage -1 means no regexp for stacktrace was matched.

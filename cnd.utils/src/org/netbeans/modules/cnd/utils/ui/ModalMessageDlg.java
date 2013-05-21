@@ -43,232 +43,170 @@
  */
 package org.netbeans.modules.cnd.utils.ui;
 
-import java.awt.Dialog;
-import java.awt.Dimension;
-import java.awt.Frame;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.Window;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.util.concurrent.atomic.AtomicBoolean;
-import javax.swing.JDialog;
-import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.NamedRunnable;
+import org.netbeans.api.progress.ProgressUtils;
 import org.openide.util.Cancellable;
-import org.openide.util.RequestProcessor;
-import org.openide.util.RequestProcessor.Task;
 
 /**
+ * Utility class for displaying a modal Dialog (effectively blocking (but not
+ * freezing) UI) while running a task in background.
+ *
+ * Deprecated. See {@link org.netbeans.api.progress.ProgressUtils}
  *
  * @author Vladimir Voskresensky
  */
-public class ModalMessageDlg extends javax.swing.JPanel {
-    private static final RequestProcessor RP = new RequestProcessor(ModalMessageDlg.class.getName(), 4);
+@Deprecated
+public final class ModalMessageDlg {
 
-    /**
-     * allows to display modal dialog with title and message for the period of
-     * long task run
-     * @param parent parent frame or dialog
-     * @param workTask non EDT task to run
-     * @param postEDTTask EDT task to run after closing modal dialog (can be null)
-     * @param title title of dialog
-     * @param message message in dialog
-     * @return
-     */
-    public static void runLongTask(Dialog parent,
-            final Runnable workTask, final Runnable postEDTTask, final Cancellable canceller,
-            String title, String message) {
-        runLongTaskImpl(parent, workTask, postEDTTask, title, message, canceller);
-    }
-
-    public static void runLongTask(Frame parent,
-            final Runnable workTask, final Runnable postEDTTask, final Cancellable canceller,
-            String title, String message) {
-        runLongTaskImpl(parent, workTask, postEDTTask, title, message, canceller);
+    private ModalMessageDlg() {
     }
 
     /**
+     * Runs operation out of event dispatch thread, blocks UI (with a modal
+     * dialog) while operation is in progress.
      *
-     * @param parent
-     * @param title
-     * @param message
-     * @param workTask if workTask is Cancellable => dialog will have Cancel button
-     *                 if not => no Cancel button is shown
+     * <p>If operation is completed in less than 1 second, then UI is just
+     * freezes for that second and no any dialog is displayed. After one second
+     * delay cursor is changes to 'waiting', after another second delay a modal
+     * dialog is displayed.</p>
+     *
+     * If canceler is not null, then a 'Cancel' button is a part of the
+     * displayed dialog. Once 'Cancel' button is pressed, the operation is
+     * considered to be canceled and no postEDTTask will be invoked.
+     *
+     * <p> This method is thread-safe, and will block until the operation has
+     * completed, regardless of what thread calls this method. </p>
+     *
+     * @param parent <b>Not used</b>
+     * @param workTask a Runnable to start in non-EDT thread. Unlike
+     * {@link ProgressUtils}'s operation this argument is never tested for the
+     * {@link Cancellable} interface. Use <b>canceler</b> for the task
+     * interruption facility.
+     * @param postEDTTask a task to run in the EDT after the <b>workTask</b> is
+     * processed. <code>null</code> is allowed. <br><b>Note:</b> The postEDTTask
+     * is called if <code>workTask</code>has not been canceled by pressing the
+     * cancel button.
+     * @param canceler if not <code>null</code> a cancel button is displayed
+     * while <b>workTask</b> is running. <br/> Note that once the cancel button
+     * is pressed, no <b>postEDTTask</b> will be called.
+     * @param title title of a dialog.
+     * @param message message to display. Could be <code>null</code>. In this
+     * case <b>title</b> is used.
+     *
      */
-    public static void runLongTask(Window parent, String title, String message,
-            final LongWorker workTask, final Cancellable canceller) {
-
-        final JDialog dialog = createDialog(parent, title);
-
-        final Runnable finalizer = new Runnable() {
-            @Override
-            public void run() {
-                // hide dialog and run action if successfully connected
-                dialog.setVisible(false);
-                dialog.dispose();
-                workTask.doPostRunInEDT();
-            }
-        };
-
-        JPanel panel;
-        if (canceller == null) {
-            panel = new ModalMessageDlgPane(message);
-        } else {
-            Cancellable wrapper = new Cancellable() {
-                /** is invoked from a separate cancellation thread */
-                @Override
-                public boolean cancel() {
-                    if (canceller.cancel()) {
-                        // remember for return value
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-            };
-            panel = new ModalMessageDlgCancellablePane(message, wrapper);
-        }
-        addPanel(parent, dialog, panel);
-
-        RP.post(new NamedRunnable(title) {
-            @Override
-            public void runImpl() {
-                try {
-                    workTask.doWork();
-                } finally {
-                    SwingUtilities.invokeLater(finalizer);
-                }
-            }
-        });
-        if (!CndUtils.isStandalone()) { // this means we run in tests
-            dialog.setVisible(true);
-        }
+    public static void runLongTask(final Window parent, final Runnable workTask,
+            final Runnable postEDTTask, final Cancellable canceler,
+            String title, String message) {
+        run(parent, title, message, new LongWorkerImpl(workTask, postEDTTask), canceler);
     }
 
-    private static boolean runLongTaskImpl(Window parent, final Runnable workTask, final Runnable postEDTTask,
-            final String title, String message, final Cancellable canceller) {
+    /**
+     * See
+     * {@link #runLongTask(java.awt.Window, java.lang.Runnable, java.lang.Runnable, org.openide.util.Cancellable, java.lang.String, java.lang.String)}
+     *
+     * @param parent - Not Used
+     * @param title - title of a dialog
+     * @param message - message to display inside a dialog or null
+     * @param workTask - a task with an on-EDT continuation
+     * @param canceler - a canceler to be invoked if user presses Cancel button
+     */
+    public static void runLongTask(final Window parent, final String title, final String message,
+            final LongWorker workTask, final Cancellable canceler) {
 
-        final JDialog dialog = createDialog(parent, title);
-        final AtomicBoolean cancelled = new AtomicBoolean(false);
-
-        final Runnable finalizer = new Runnable() {
-            @Override
-            public void run() {
-                // hide dialog and run action if successfully connected
-                dialog.setVisible(false);
-                dialog.dispose();
-                if (postEDTTask != null && ! cancelled.get()) {
-                    postEDTTask.run();
-                }
-            }
-        };
-
-        JPanel panel;
-        if (canceller == null) {
-            panel = new ModalMessageDlgPane(message);
-        } else {
-            Cancellable wrapper = new Cancellable() {
-                /** is invoked from a separate cancellation thread */
-                @Override
-                public boolean cancel() {
-                    if (canceller.cancel()) {
-                        cancelled.set(true);
-                        SwingUtilities.invokeLater(finalizer);
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-            };
-            panel = new ModalMessageDlgCancellablePane(message, wrapper);
-        }
-        addPanel(parent, dialog, panel);
-
-        final WindowAdapterImpl windowAdapterImpl = new WindowAdapterImpl(dialog, title, workTask, finalizer);
-
-        if (CndUtils.isStandalone()) { // this means we run in tests
-            Task task = windowAdapterImpl.submitJob();
-            task.waitFinished();
-        } else {
-            dialog.addWindowListener(windowAdapterImpl);
-            dialog.setVisible(true);
-        }
-        
-        return !cancelled.get();
-    }
-
-    private static JDialog createDialog(Window parent, String title) {
-        JDialog dialog;
-        if (parent == null) {
-            dialog = new JDialog();
-        } else if (parent instanceof Frame) {
-            dialog = new JDialog((Frame)parent);
-        } else {
-            assert (parent instanceof Dialog);
-            dialog = new JDialog((Dialog)parent);
-        }
-        dialog.setTitle(title);
-        dialog.setModal(true);
-        return dialog;
-    }
-
-    private static void addPanel(Window parent, JDialog dialog, JPanel panel){
-        dialog.getContentPane().add(panel);
-        dialog.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE); //make sure the dialog is not closed during the project open
-        dialog.pack();
-
-        Rectangle bounds = (parent == null) ?
-            new Rectangle(Toolkit.getDefaultToolkit().getScreenSize()) : parent.getBounds();
-
-        int middleX = bounds.x + bounds.width / 2;
-        int middleY = bounds.y + bounds.height / 2;
-
-        Dimension size = dialog.getPreferredSize();
-
-        dialog.setBounds(middleX - size.width / 2, middleY - size.height / 2, size.width, size.height);
+        run(parent, title, message, workTask, canceler);
     }
 
     public interface LongWorker {
+
         void doWork();
+
         void doPostRunInEDT();
     }
 
-    private static class WindowAdapterImpl extends WindowAdapter {
+// <editor-fold defaultstate="collapsed" desc="Private Code">
+    private static void run(
+            final Window parent,
+            final String title,
+            final String message,
+            final LongWorker worker,
+            final Cancellable canceler) {
+        Worker r = (canceler != null) ? new CancellableWorker(worker, canceler) : new Worker(worker);
+        ProgressUtils.runOffEventThreadWithCustomDialogContent(r, title, new ModalMessageDlgPane(message == null ? title : message), 1000, 2000);
+    }
 
-        private final String title;
-        private final Runnable workTask;
-        private final Runnable finalizer;
-        private final JDialog dialog;
-        
-        public WindowAdapterImpl(JDialog dialog, String title, Runnable workTask, Runnable finalizer) {
-            this.title = title;
-            this.workTask = workTask;
-            this.finalizer = finalizer;
-            this.dialog = dialog;
+    private static class Worker implements Runnable {
+
+        private final LongWorker worker;
+
+        private Worker(LongWorker worker) {
+            this.worker = worker;
         }
 
         @Override
-        public void windowOpened(WindowEvent e) {
-            dialog.removeWindowListener(this);
-            submitJob();
+        public void run() {
+            worker.doWork();
+            if (!wasCancelled()) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        worker.doPostRunInEDT();
+                    }
+                });
+            }
         }
 
-        private Task submitJob() {
-            Task task = RP.post(new NamedRunnable(title) {
-
-                @Override
-                public void runImpl() {
-                    try {
-                        workTask.run();
-                    } finally {
-                        SwingUtilities.invokeLater(finalizer);
-                    }
-                }
-            });
-            return task;
+        public boolean wasCancelled() {
+            return false;
         }
     }
+
+    private static class CancellableWorker extends Worker implements Cancellable {
+
+        private final Cancellable canceler;
+        private final AtomicBoolean wasCancelled = new AtomicBoolean(false);
+
+        private CancellableWorker(LongWorker worker, Cancellable canceler) {
+            super(worker);
+            this.canceler = canceler;
+        }
+
+        @Override
+        public boolean cancel() {
+            wasCancelled.set(true);
+            return canceler.cancel();
+        }
+
+        @Override
+        public boolean wasCancelled() {
+            return wasCancelled.get();
+        }
+    }
+
+    private static final class LongWorkerImpl implements LongWorker {
+
+        private final Runnable main;
+        private final Runnable postEDT;
+
+        public LongWorkerImpl(Runnable main, Runnable postEDT) {
+            this.main = main;
+            this.postEDT = postEDT;
+        }
+
+        @Override
+        public void doWork() {
+            if (main != null) {
+                main.run();
+            }
+        }
+
+        @Override
+        public void doPostRunInEDT() {
+            if (postEDT != null) {
+                postEDT.run();
+            }
+        }
+    }
+    // </editor-fold>
 }

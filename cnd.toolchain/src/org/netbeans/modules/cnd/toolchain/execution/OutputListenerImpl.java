@@ -82,6 +82,18 @@ public final class OutputListenerImpl implements OutputListener {
         this.description = description;
     }
 
+    public int getLine() {
+        return line;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public FileObject getFile() {
+        return file;
+    }
+
     @Override
     public void outputLineSelected(OutputEvent ev) {
         showLine(false);

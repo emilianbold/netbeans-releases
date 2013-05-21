@@ -43,6 +43,8 @@ package org.netbeans.modules.db.sql.execute.ui;
 
 import java.awt.Component;
 import java.awt.EventQueue;
+import java.awt.datatransfer.StringSelection;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
@@ -106,6 +108,12 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         rowSorter.setSortsOnUpdates(true);
         rowSorter.sort();
 
+        rowSorter.addRowSorterListener(new RowSorterListener() {
+            @Override
+            public void sorterChanged(RowSorterEvent e) {
+                updateRowCount();
+            }
+        });
         sqlTableSelektion = sqlHistoryTable.getSelectionModel();
 
         updateURLList();
@@ -115,6 +123,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
             @Override
             public void tableChanged(TableModelEvent e) {
                 updateURLList();
+                updateRowCount();
             }
         });
 
@@ -154,10 +163,10 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                     public void valueChanged(ListSelectionEvent e) {
                         if (sqlTableSelektion.isSelectionEmpty()) {
                             insertSQLButton.setEnabled(false);
-                            deleteSQLButtton.setEnabled(false);
+                            deleteSQLButton.setEnabled(false);
                         } else {
                             insertSQLButton.setEnabled(true);
-                            deleteSQLButtton.setEnabled(true);
+                            deleteSQLButton.setEnabled(true);
             }
     }
                 });
@@ -169,7 +178,12 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 updateFilter();
                 }
             });
-        }
+        sqlHistoryTable.setTransferHandler(new TableTransferHandler());
+    }
+
+    private void updateRowCount() {
+        matchingRowsLabel.setText(Integer.toString(sqlHistoryTable.getRowCount()));
+    }
 
     private void updateFilter() {
         List<RowFilter<HistoryTableModel, Integer>> rowFilter = new ArrayList<RowFilter<HistoryTableModel, Integer>>();
@@ -259,8 +273,9 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         sqlLimitTextField = new javax.swing.JTextField();
         sqlLimitButton = new javax.swing.JButton();
         inputWarningLabel = new javax.swing.JLabel();
-        deleteSQLButtton = new javax.swing.JButton();
+        deleteSQLButton = new javax.swing.JButton();
         deleteAllSQLButton = new javax.swing.JButton();
+        matchingRowsLabel = new javax.swing.JLabel();
 
         jLabel1.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Connection")); // NOI18N
 
@@ -330,12 +345,12 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         inputWarningLabel.setRequestFocusEnabled(false);
         inputWarningLabel.setVerifyInputWhenFocusTarget(false);
 
-        org.openide.awt.Mnemonics.setLocalizedText(deleteSQLButtton, org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Delete")); // NOI18N
-        deleteSQLButtton.setToolTipText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "ACSD_Delete")); // NOI18N
-        deleteSQLButtton.setEnabled(false);
-        deleteSQLButtton.addActionListener(new java.awt.event.ActionListener() {
+        org.openide.awt.Mnemonics.setLocalizedText(deleteSQLButton, org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Delete")); // NOI18N
+        deleteSQLButton.setToolTipText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "ACSD_Delete")); // NOI18N
+        deleteSQLButton.setEnabled(false);
+        deleteSQLButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deleteSQLButttonActionPerformed(evt);
+                deleteSQLButtonActionPerformed(evt);
             }
         });
 
@@ -347,6 +362,8 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
             }
         });
 
+        matchingRowsLabel.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.matchingRowsLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -355,31 +372,33 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 568, Short.MAX_VALUE)
+                        .addComponent(inputWarningLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
+                        .addGap(493, 493, 493))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
+                                .addComponent(sqlLimitLabel)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(sqlLimitTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(sqlLimitButton)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(matchingRowsLabel))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 595, Short.MAX_VALUE)
+                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                                 .addComponent(jLabel1)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(connectionUrlComboBox, 0, 224, Short.MAX_VALUE)
+                                .addComponent(connectionUrlComboBox, 0, 218, Short.MAX_VALUE)
                                 .addGap(18, 18, 18)
                                 .addComponent(jLabel2)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(searchTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(insertSQLButton, javax.swing.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
-                            .addComponent(deleteSQLButtton, javax.swing.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
-                            .addComponent(deleteAllSQLButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(inputWarningLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 174, Short.MAX_VALUE)
-                        .addGap(493, 493, 493))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(sqlLimitLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(sqlLimitTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(sqlLimitButton))))
+                            .addComponent(insertSQLButton, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(deleteSQLButton, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(deleteAllSQLButton, javax.swing.GroupLayout.PREFERRED_SIZE, 102, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap())))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -397,13 +416,14 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 141, Short.MAX_VALUE)
                         .addComponent(deleteAllSQLButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(deleteSQLButtton))
+                        .addComponent(deleteSQLButton))
                     .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 228, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(sqlLimitTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addComponent(sqlLimitButton)
-                            .addComponent(sqlLimitLabel))
+                    .addComponent(sqlLimitLabel)
+                    .addComponent(matchingRowsLabel))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(inputWarningLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
@@ -436,9 +456,9 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     verifySQLLimit();
 }//GEN-LAST:event_sqlLimitButtonActionPerformed
 
-    private void deleteSQLButttonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteSQLButttonActionPerformed
+    private void deleteSQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteSQLButtonActionPerformed
         deleteSQL();
-    }//GEN-LAST:event_deleteSQLButttonActionPerformed
+    }//GEN-LAST:event_deleteSQLButtonActionPerformed
 
     private void deleteAllSQLButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteAllSQLButtonActionPerformed
         deleteAllSQL();
@@ -561,18 +581,49 @@ private void sqlLimitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GE
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox connectionUrlComboBox;
     private javax.swing.JButton deleteAllSQLButton;
-    private javax.swing.JButton deleteSQLButtton;
+    private javax.swing.JButton deleteSQLButton;
     private javax.swing.JLabel inputWarningLabel;
     private javax.swing.JButton insertSQLButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel matchingRowsLabel;
     private javax.swing.JTextField searchTextField;
     private javax.swing.JTable sqlHistoryTable;
     private javax.swing.JButton sqlLimitButton;
     private javax.swing.JLabel sqlLimitLabel;
     private javax.swing.JTextField sqlLimitTextField;
     // End of variables declaration//GEN-END:variables
+
+    private final class TableTransferHandler extends TransferHandler {
+
+        /**
+         * Map Transferable to createTransferableTSV from ResultSetJXTable
+         *
+         * This is needed so that CTRL-C Action of JTable gets the same
+         * treatment as the transfer via the copy Methods of DataTableUI
+         */
+        @Override
+        protected Transferable createTransferable(JComponent c) {
+            StringBuilder sb = new StringBuilder();
+            for (int id : sqlHistoryTable.getSelectedRows()) {
+                int modelIndex = sqlHistoryTable.convertRowIndexToModel(id);
+                if (sb.length() != 0) {
+                    sb.append(System.lineSeparator());
+                }
+                // Column 1 => Column of SQL
+                String sql = (String) htm.getValueAt(modelIndex, 1);
+                sb.append(sql);
+                sb.append(";");
+            }
+            return new StringSelection(sb.toString());
+        }
+
+        @Override
+        public int getSourceActions(JComponent c) {
+            return COPY;
+        }
+    }
 
     private final class HistoryTableModel extends AbstractTableModel {
         
