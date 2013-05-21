@@ -490,6 +490,13 @@ public class CndPathUtilitities {
         return normalizeSlashes(path);
     }
 
+    /**
+     * Normalizes a Unix path, not necessarily absolute
+     */
+    public static String normalizeUnixPath(String absPath) {
+        return PathUtilities.normalizeUnixPath(absPath);
+    }
+    
     public static String normalizeSlashes(String path) {
         return path.replace('\\', '/'); // NOI18N
     }
