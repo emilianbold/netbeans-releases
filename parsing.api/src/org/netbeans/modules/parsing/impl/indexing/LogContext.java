@@ -323,6 +323,11 @@ import org.openide.util.Utilities;
             return 2;
         }
         qual = qual.substring(0, dot);
+        // ignore inner classes
+        dot = qual.lastIndexOf('$');
+        if (dot > -1) {
+            qual = qual.substring(0, dot);
+        }
         
         for (Map.Entry<String, String[]> t : blockedThreads.entrySet()) {
             if (t.getValue() == repositoryStack) {
@@ -335,7 +340,9 @@ import org.openide.util.Utilities;
                     return 2;
                 }
             }
+
         }
+        blockingClass = qual.trim();
         return 2;
     }
     

@@ -110,7 +110,7 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.javafx2.project</friend>
-                <package>org.netbeans.modules.java.j2sedeploy</package>
+                <package>org.netbeans.modules.java.j2sedeploy.api</package>
             </friend-packages>
         </data>
     </configuration>

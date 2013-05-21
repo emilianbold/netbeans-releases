@@ -50,6 +50,7 @@ import java.awt.Image;
 import java.awt.image.BufferedImage;
 import java.awt.image.WritableRaster;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -74,6 +75,8 @@ import org.netbeans.spi.editor.hints.HintsController;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
@@ -96,9 +99,13 @@ public class AnalyzerImpl implements Analyzer {
     private final AtomicBoolean cancel = new AtomicBoolean();
 
     @Override
+    @Messages({"ERR_CompiledWithErrors=Some Files Compiled with Errors",
+               "# {0} - HTML encoded list of Java files with error",
+               "DESC_CompiledWithErrors=Some of the analyzed files were compiled with errors. This may lead to incorrect or missing warnings from FindBugs. Files compiled with errors: {0}"
+    })
     public Iterable<? extends ErrorDescription> analyze() {
         List<ErrorDescription> result = new ArrayList<ErrorDescription>();
-        AtomicBoolean warnedAboutUncompilable = new AtomicBoolean();
+        List<URL> uncompilable = new ArrayList<URL>();
         int[] elementsSize = new int[ctx.getScope().getSourceRoots().size() + ctx.getScope().getFolders().size() + ctx.getScope().getFiles().size()];
         int i = 0;
         int total = 0;
@@ -129,7 +136,7 @@ public class AnalyzerImpl implements Analyzer {
 
         for (FileObject sr : ctx.getScope().getSourceRoots()) {
             if (cancel.get()) return Collections.emptyList();
-            result.addAll(doRunFindBugs(sr, total, elementsSize[i], warnedAboutUncompilable));
+            result.addAll(doRunFindBugs(sr, total, elementsSize[i], uncompilable));
             total += elementsSize[i++];
         }
 
@@ -138,7 +145,7 @@ public class AnalyzerImpl implements Analyzer {
             ClassPath source = ClassPath.getClassPath(file, ClassPath.SOURCE);
             FileObject sr = source != null ? source.findOwnerRoot(file) : null;
             if (sr != null) {
-                for (ErrorDescription ed : doRunFindBugs(sr, total, elementsSize[i], warnedAboutUncompilable)) {
+                for (ErrorDescription ed : doRunFindBugs(sr, total, elementsSize[i], uncompilable)) {
                     if (FileUtil.isParentOf(file, ed.getFile()) || file == ed.getFile()) {
                         result.add(ed);
                     }
@@ -154,7 +161,7 @@ public class AnalyzerImpl implements Analyzer {
             ClassPath source = ClassPath.getClassPath(nrf.getFolder(), ClassPath.SOURCE);
             FileObject sr = source != null ? source.findOwnerRoot(nrf.getFolder()) : null;
             if (sr != null) {
-                for (ErrorDescription ed : doRunFindBugs(sr, total, elementsSize[i], warnedAboutUncompilable)) {
+                for (ErrorDescription ed : doRunFindBugs(sr, total, elementsSize[i], uncompilable)) {
                     if (nrf.getFolder() == ed.getFile().getParent()) {
                         result.add(ed);
                     }
@@ -165,18 +172,35 @@ public class AnalyzerImpl implements Analyzer {
             total += elementsSize[i++];
         }
 
+        if (!uncompilable.isEmpty()) {
+            boolean hasErroneousJava = false;
+            StringBuilder sb = new StringBuilder();
+            sb.append("<ul style='list-style-image: url(\"nbres:/org/netbeans/modules/java/resources/class.png\");'>");
+            for (URL url : uncompilable) {
+                if (!url.getPath().endsWith(".java")) continue;
+                FileObject file = URLMapper.findFileObject(url);
+                sb.append("<li><a href='")
+                  .append(url.toString())
+                  .append("'>")
+                  .append(file != null ? FileUtil.getFileDisplayName(file) : url.toString())
+                  .append("</a></li>");
+                hasErroneousJava = true;
+            }
+            sb.append("</ul>");
+            if (hasErroneousJava) {
+                ctx.reportAnalysisProblem(Bundle.ERR_CompiledWithErrors(), Bundle.DESC_CompiledWithErrors(sb.toString()));
+            }
+        }
         ctx.finish();
 
         return result;
     }
 
-    @Messages({"ERR_CompiledWithErrors=Some Files Compiled with Errors",
-               "DESC_CompiledWithErrors=Some of the analyzed files were compiled with errors. This may lead to incorrect or missing warnings from FindBugs."
-    })
-    private List<ErrorDescription> doRunFindBugs(final FileObject sourceRoot, final int start, final int size, AtomicBoolean warnedAboutUncompilable) {
-        if (ErrorsCache.isInError(sourceRoot, true) && !warnedAboutUncompilable.get()) {
-            warnedAboutUncompilable.set(true);
-            ctx.reportAnalysisProblem(Bundle.ERR_CompiledWithErrors(), Bundle.DESC_CompiledWithErrors());
+    private List<ErrorDescription> doRunFindBugs(final FileObject sourceRoot, final int start, final int size, List<URL> uncompilable) {
+        try {
+            uncompilable.addAll(ErrorsCache.getAllFilesInError(sourceRoot.toURL()));
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
         Thread.interrupted();//clear interrupted flag
         synchronized (this) {
