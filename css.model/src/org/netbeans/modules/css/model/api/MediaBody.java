@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,28 +37,29 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.css.model.api;
 
+import java.util.List;
+
 /**
  *
+ * @since 1.20
  * @author marekfukala
  */
-public interface MediaExpression extends Element {
+public interface MediaBody extends Element {
     
-    public MediaFeature getMediaFeature();
+    public List<Rule> getRules();
+
+    public void addRule(Rule rule);
     
-    public void setMediaFeature(MediaFeature mediaFeature);
+//    public boolean removeRule(Rule rule);
     
-    /**
-     * @since 1.20
-     */
-    public MediaFeatureValue getMediaFeatureValue();
+    public List<Page> getPages();
     
-    /**
-     * @since 1.20
-     */
-    public void setMediaFeatureValue(MediaFeatureValue mediaFeatureValue);
+    public void addPage(Page page);
+    
+//    public boolean removePage(Page page);
     
 }

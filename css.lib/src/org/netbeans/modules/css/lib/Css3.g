@@ -380,7 +380,7 @@ media
     ) ws?
     LBRACE 
         mediaBody
-     RBRACE
+    RBRACE
     ;
     
 mediaBody
