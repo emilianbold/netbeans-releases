@@ -52,7 +52,6 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
-import org.netbeans.modules.php.api.testing.PhpTesting;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.DebugFileCommand;
@@ -64,7 +63,6 @@ import org.netbeans.modules.php.project.ui.actions.SyncCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
-import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -170,7 +168,7 @@ public class SrcNode extends FilterNode {
         // customizer - open sources for source node, testing for test node
         Action customizeAction = null;
         if (isTest) {
-            customizeAction = new PhpLogicalViewProvider.CustomizeProjectAction(project, PhpTesting.CUSTOMIZER_IDENT);
+            customizeAction = new PhpLogicalViewProvider.CustomizeProjectAction(project, CompositePanelProviderImpl.TESTING);
         } else {
             customizeAction = CommonProjectActions.customizeProjectAction();
         }
