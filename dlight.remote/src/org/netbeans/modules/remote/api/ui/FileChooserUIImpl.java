@@ -1520,7 +1520,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         JFileChooser fc = getFileChooser();
         if (files != null
                 && files.length > 0
-                && (files.length > 1 || fc.isDirectorySelectionEnabled() || !files[0].isDirectory())) {
+                && (files.length > 1 || fc.isDirectorySelectionEnabled() || (files[0] != null && !files[0].isDirectory()))) {
             setFileName(getStringOfFileNames(files));
         }
     }
@@ -1551,6 +1551,8 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     
     private void fireFilterChanged(PropertyChangeEvent e) {
         clearIconCache();
+        //re-run updater
+        updateWorker.handleValidationParamasChanges();
     }
     
     private void fireFileSelectionModeChanged(PropertyChangeEvent e) {
