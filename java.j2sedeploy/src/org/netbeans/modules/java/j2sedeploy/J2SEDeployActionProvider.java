@@ -89,6 +89,8 @@ public class J2SEDeployActionProvider implements ActionProvider {
     private static final String TARGET_BUILD_NATIVE = "build-native";               //NOI18N
     private static final String NOSCRIPT_SUFFIX = "-noscript";                      //NOI18N
     private static final String PACKAGE_TYPE = "native.bundling.type";              //NOI18N
+    private static final String DECOY_NEEDED = "main.class.manifest.decoy";         //NOI18N
+    private static final String TRUE = "true";                                      //NOI18N
     private static final String PROP_BUILD_FILE = "buildfile";                      //NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(J2SEDeployActionProvider.class);
@@ -141,6 +143,7 @@ public class J2SEDeployActionProvider implements ActionProvider {
         try {
             final Properties p = new Properties();
             p.setProperty(PACKAGE_TYPE, nbt.getAntProperyValue());
+            p.setProperty(DECOY_NEEDED, TRUE);
             String noScript = isJavaScriptAvailable() ? "" : NOSCRIPT_SUFFIX; // NOI18N
             final ExecutorTask task = ActionUtils.runTarget(
                 buildScript,

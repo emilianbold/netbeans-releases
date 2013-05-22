@@ -228,6 +228,14 @@ is divided into following sections:
                         </not>
                     </and>
                 </condition>
+                <condition property="main.class.decoy.needed">
+                    <and>
+                        <isset property="main.class.manifest.decoy"/>
+                        <not>
+                            <equals arg1="${main.class.manifest.decoy}" arg2="" trim="true"/>
+                        </not>
+                    </and>
+                </condition>
                 <condition property="profile.available">
                     <and>
                         <isset property="javac.profile"/>
@@ -259,6 +267,13 @@ is divided into following sections:
                     <and>
                         <isset property="main.class.available"/>
                         <istrue value="${{do.archive}}"/>
+                    </and>
+                </condition>
+                <condition property="do.archive+main.class.available+main.class.decoy.needed">
+                    <and>
+                        <isset property="main.class.available"/>
+                        <istrue value="${{do.archive}}"/>
+                        <isset property="main.class.decoy.needed"/>
                     </and>
                 </condition>
                 <condition property="do.archive+splashscreen.available">
@@ -1863,8 +1878,16 @@ is divided into following sections:
                 <copy file="${{manifest.file}}" tofile="${{tmp.manifest.file}}"/>
             </target>
 
-            <target name="-do-jar-set-mainclass">
+            <target name="-do-jar-set-native-packager-decoy">
                 <xsl:attribute name="depends">init,-do-jar-create-manifest,-do-jar-copy-manifest</xsl:attribute>
+                <xsl:attribute name="if">do.archive+main.class.available+main.class.decoy.needed</xsl:attribute>
+                <manifest file="${{tmp.manifest.file}}" mode="update">
+                    <attribute name="JavaFX-Application-Class" value="${{main.class}}"/>
+                </manifest>
+            </target>
+
+            <target name="-do-jar-set-mainclass">
+                <xsl:attribute name="depends">init,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-native-packager-decoy</xsl:attribute>
                 <xsl:attribute name="if">do.archive+main.class.available</xsl:attribute>
                 <manifest file="${{tmp.manifest.file}}" mode="update">
                     <attribute name="Main-Class" value="${{main.class}}"/>
