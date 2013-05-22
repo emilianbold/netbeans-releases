@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.builds.ImportUtils;
 import org.netbeans.modules.cnd.loaders.CMakeDataObject;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.ui.ModalMessageDlg;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -163,7 +163,7 @@ public class CMakeAction extends AbstractExecutorRunAction {
         if (FileSystemProvider.getExecutionEnvironment(buildDirFileObject).isLocal()) {
             scriptPath = convertToRemoteIfNeeded(execEnv, scriptPath, project);
         }
-        String relativePathToScript = CndPathUtilitities.toRelativePath(buildDir, scriptPath);
+        String relativePathToScript = CndPathUtilities.toRelativePath(buildDir, scriptPath);
         if (relativePathToScript.length()>1) {
             argsFlat.append(" "); // NOI18N
             argsFlat.append(relativePathToScript);

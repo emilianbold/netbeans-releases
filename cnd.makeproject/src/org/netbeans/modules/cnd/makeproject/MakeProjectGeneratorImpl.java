@@ -73,7 +73,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectGenerator;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.MakeSampleProjectGenerator;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -344,10 +344,10 @@ public class MakeProjectGeneratorImpl {
         }
         final String createdMainName;
          if (mainName.indexOf('\\') > 0 || mainName.indexOf('/') > 0) {
-            String absPath = CndPathUtilitities.toAbsolutePath(srcFolder, mainName);
+            String absPath = CndPathUtilities.toAbsolutePath(srcFolder, mainName);
             absPath = FileSystemProvider.getCanonicalPath(srcFolder.getFileSystem(), absPath);
-            srcFolder = FileUtil.createFolder(srcFolder, CndPathUtilitities.getDirName(mainName));
-            createdMainName = CndPathUtilitities.getBaseName(absPath);
+            srcFolder = FileUtil.createFolder(srcFolder, CndPathUtilities.getDirName(mainName));
+            createdMainName = CndPathUtilities.getBaseName(absPath);
          } else {
             createdMainName = mainName;
          }

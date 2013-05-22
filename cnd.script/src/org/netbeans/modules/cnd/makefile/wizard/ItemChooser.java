@@ -64,7 +64,7 @@ import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.JTextComponent;
 import javax.swing.text.Keymap;
 import org.netbeans.modules.cnd.makefile.utils.IpeFileSystemView;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 
 /**
@@ -263,7 +263,7 @@ public class ItemChooser extends MakefileWizardPanel
 		int returnVal = fc.showDialog(ItemChooser.this, null);
 		if (returnVal == JFileChooser.APPROVE_OPTION) {
 		    String path = fc.getSelectedFile().getAbsolutePath();
-		    dirText.setText(CndPathUtilitities.getRelativePath(cwd, path));
+		    dirText.setText(CndPathUtilities.getRelativePath(cwd, path));
 		}
 	    }
 	});

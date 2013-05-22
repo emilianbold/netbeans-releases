@@ -100,7 +100,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -252,7 +252,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         } else {
             String path = ((EditableComboBox)binaryField).getText().trim();
             if (!path.isEmpty() && controller.getWizardDescriptor() != null) {
-                if (CndPathUtilitities.isPathAbsolute(path)) {
+                if (CndPathUtilities.isPathAbsolute(path)) {
                     FileObject fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(path));
                     if (fo == null || !fo.isValid()) {
                         controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, getString("SelectBinaryPanelVisual.FileNotFound"));  // NOI18N
@@ -291,7 +291,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                         dependeciesComboBox.setEnabled(validBinary);
                         viewComboBox.setEnabled(validBinary);
                         if (validBinary && validBinaryPath != null) {
-                            String binaryRoot = CndPathUtilitities.getDirName(validBinaryPath);
+                            String binaryRoot = CndPathUtilities.getDirName(validBinaryPath);
                             if (binaryRoot != null) {
                                 if (binaryRoot.startsWith(root) || root.startsWith(binaryRoot)) {
                                     binaryRoot = null;
@@ -320,7 +320,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                         dependeciesComboBox.setEnabled(false);
                         viewComboBox.setEnabled(validBinary);
                         if (validBinary && validBinaryPath != null) {
-                            String binaryRoot = CndPathUtilitities.getDirName(validBinaryPath);
+                            String binaryRoot = CndPathUtilities.getDirName(validBinaryPath);
                             if (binaryRoot != null) {
                                 if (binaryRoot.startsWith(root) || root.startsWith(binaryRoot)) {
                                     binaryRoot = null;
@@ -348,7 +348,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
                     boolean validBinary = validBinary();
                     String validBinaryPath = getValidBinaryPath();
                     if (validBinary && validBinaryPath != null) {
-                        String binaryRoot = CndPathUtilitities.getDirName(validBinaryPath);
+                        String binaryRoot = CndPathUtilities.getDirName(validBinaryPath);
                         if (binaryRoot != null) {
                             if (binaryRoot.startsWith(root) || root.startsWith(binaryRoot)) {
                                 binaryRoot = null;
@@ -871,7 +871,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         if (path.isEmpty()) {
             return null;
         }
-        if (CndPathUtilitities.isPathAbsolute(path)) {
+        if (CndPathUtilities.isPathAbsolute(path)) {
             return CndFileUtils.normalizeAbsolutePath(fileSystem, path);
         } else {
             return null;
@@ -894,7 +894,7 @@ public class SelectBinaryPanelVisual extends javax.swing.JPanel {
         if (path.isEmpty()) {
             return false;
         }
-        if (CndPathUtilitities.isPathAbsolute(path)) {
+        if (CndPathUtilities.isPathAbsolute(path)) {
             FileObject fo = fileSystem.findResource(CndFileUtils.normalizeAbsolutePath(path));
             if (fo == null || !fo.isValid()) {
                 return false;

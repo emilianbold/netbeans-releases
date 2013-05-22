@@ -71,7 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.actions.NewFolderAction;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.NodeActionFactory.RenameNodeAction;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
@@ -113,7 +113,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         String postfix = "";
         if (folder != null && folder.getRoot() != null) {
             String absPath = folder.getAbsolutePath();
-//            String AbsRootPath = CndPathUtilitities.toAbsolutePath(provider.getMakeConfigurationDescriptor().getBaseDir(), folder.getRoot());
+//            String AbsRootPath = CndPathUtilities.toAbsolutePath(provider.getMakeConfigurationDescriptor().getBaseDir(), folder.getRoot());
 //            AbsRootPath = RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, provider.getProject());
 //            FileObject folderFile = RemoteFileUtil.getFileObject(AbsRootPath, provider.getProject());
             if (absPath != null) {
@@ -305,7 +305,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
             String rootPath = folder.getRootPath();
             FileObject fo;
 //            if (CndFileUtils.isLocalFileSystem(folder.getConfigurationDescriptor().getBaseDirFileSystem())) {
-//                String AbsRootPath = CndPathUtilitities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), rootPath);
+//                String AbsRootPath = CndPathUtilities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDir(), rootPath);
 //                fo = CndFileUtils.toFileObject(CndFileUtils.normalizeAbsolutePath(AbsRootPath));
 //            } else {
                 // looks like line below is OK for all cases
@@ -393,7 +393,7 @@ final class LogicalFolderNode extends AnnotatedNode implements ChangeListener {
         if (!getFolder().isDiskFolder()) {
             return;
         }
-        String absPath = CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), getFolder().getRootPath());
+        String absPath = CndPathUtilities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), getFolder().getRootPath());
         FileObject folderFileObject = CndFileUtils.toFileObject(getFolder().getConfigurationDescriptor().getBaseDirFileSystem(), absPath);
         if (folderFileObject == null /*paranoia*/ || !folderFileObject.isValid() || !folderFileObject.isFolder()) {
             return;

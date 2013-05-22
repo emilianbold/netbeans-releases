@@ -51,7 +51,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -87,7 +87,7 @@ class DebuggerExternalTerminal {
         
         this.exEnv = ExecutionEnvironmentFactory.getLocal();
 
-        String termBaseName = CndPathUtilitities.getBaseName(termPath);
+        String termBaseName = CndPathUtilities.getBaseName(termPath);
         if (ExternalTerminalProvider.getSupportedTerminalIDs().contains(termBaseName)) {
             NativeProcessBuilder npb = NativeProcessBuilder.newLocalProcessBuilder();
             ExternalTerminal terminal = ExternalTerminalProvider.getTerminal(exEnv, termBaseName);

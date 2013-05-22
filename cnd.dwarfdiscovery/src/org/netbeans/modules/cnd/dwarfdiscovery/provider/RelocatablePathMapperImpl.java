@@ -55,7 +55,7 @@ import java.util.zip.Adler32;
 import java.util.zip.Checksum;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -258,7 +258,7 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
     }
 
     private boolean isExistsFolder(FS fs, String path) {
-        String dir = CndPathUtilitities.getDirName(path);
+        String dir = CndPathUtilities.getDirName(path);
         if (dir != null) {
             Boolean res = fileCache.get(dir);
             if (res != null) {
@@ -313,10 +313,10 @@ public class RelocatablePathMapperImpl implements RelocatablePathMapper {
             List<String> list1 = fs.list(unknown);
             List<String> list2 = fs.list(to);
             for(String s : list1) {
-                String name = CndPathUtilitities.getBaseName(s);
+                String name = CndPathUtilities.getBaseName(s);
                 boolean found = false;
                 for(String x : list2) {
-                    if (name.equals(CndPathUtilitities.getBaseName(x))) {
+                    if (name.equals(CndPathUtilities.getBaseName(x))) {
                         found = true;
                         break;
                     }

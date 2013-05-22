@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.ui.utils.TokenizerFactory;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -212,7 +212,7 @@ public class QmakeConfiguration implements Cloneable {
     }
 
     private String getTargetDefault() {
-        return ConfigurationSupport.makeNameLegal(CndPathUtilitities.getBaseName(makeConfiguration.getBaseDir()));
+        return ConfigurationSupport.makeNameLegal(CndPathUtilities.getBaseName(makeConfiguration.getBaseDir()));
     }
 
     public StringConfiguration getTarget() {
