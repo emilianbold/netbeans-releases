@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -86,11 +87,8 @@ import org.openide.util.Utilities;
 public final class Utils {
     private static final Logger LOGGER = Logger.getLogger(Utils.class.getName());
 
-    // protocol://[user[:password]@]domain[:port]/rel/path?query#anchor
-    public static final String URL_REGEXP = "^https?://([^/?#: ]+(:[^/?#: ]+)?@)?[^/?#: ]+(:\\d+)?(/[^?# ]*(\\?[^#]*)?(#\\w*)?)?$"; // NOI18N
     public static final URL PLACEHOLDER_BADGE = Utils.class.getResource("/org/netbeans/modules/php/project/ui/resources/placeholder-badge.png"); // NOI18N
 
-    private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
     private static final char[] INVALID_FILENAME_CHARS = new char[] {'/', '\\', '|', ':', '*', '?', '"', '<', '>'}; // NOI18N
 
     private Utils() {
@@ -153,12 +151,16 @@ public final class Utils {
         if (url == null) {
             return false;
         }
-        try {
-            new URL(url);
-        } catch (MalformedURLException ex) {
+        if (!url.startsWith("http://") // NOI18N
+                && !url.startsWith("https://")) { // NOI18N
             return false;
         }
-        return URL_PATTERN.matcher(url).matches();
+        try {
+            new URL(url).toURI();
+        } catch (MalformedURLException | URISyntaxException ex) {
+            return false;
+        }
+        return true;
     }
 
     /**

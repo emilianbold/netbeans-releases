@@ -66,6 +66,7 @@ public class UtilsTest extends NbTestCase {
             "https://localhost/phpProject1/subdir1/subdir2",
             "https://localhost/phpProject1/subdir1/subdir2/",
             "https://user:pwd@localhost/phpProject1",
+            "http://[::1]/",
         };
         final String[] incorrectUrls = new String[] {
             null,
@@ -79,14 +80,13 @@ public class UtilsTest extends NbTestCase {
             "test",
             "https://user : pwd @ localhost/phpProject1",
             "https://localhost/phpProject1/s u b d i r 1 / s u b  d i r 2 /",
-            "http://:/", // #141991
         };
 
         for (String url : correctUrls) {
-            assertTrue("incorrect url: [" + url + "]", Utils.isValidUrl(url));
+            assertTrue("should be correct url: [" + url + "]", Utils.isValidUrl(url));
         }
         for (String url : incorrectUrls) {
-            assertFalse("correct url: [" + url + "]", Utils.isValidUrl(url));
+            assertFalse("should be incorrect url: [" + url + "]", Utils.isValidUrl(url));
         }
     }
 
