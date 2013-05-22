@@ -39,6 +39,7 @@ package org.netbeans.modules.localhistory;
 
 import java.io.File;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
@@ -51,25 +52,25 @@ public class IsManagedTest extends NbTestCase {
     }
     
     public void testIsManaged() {
-        assertTrue(LocalHistory.getInstance().isManaged(new File("/some/path/file.txt")));
-        assertTrue(LocalHistory.getInstance().isManaged(new File("some/path/file.txt")));
-        assertTrue(LocalHistory.getInstance().isManaged(new File("path/file.txt")));
-        assertTrue(LocalHistory.getInstance().isManaged(new File("file.txt")));
-        assertTrue(LocalHistory.getInstance().isManaged(new File("file")));
+        assertTrue(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("/some/path/file.txt"))));
+        assertTrue(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("some/path/file.txt"))));
+        assertTrue(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("path/file.txt"))));
+        assertTrue(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("file.txt"))));
+        assertTrue(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("file"))));
         
-        assertTrue(LocalHistory.getInstance().isManaged(new File("file.nblh~")));
+        assertTrue(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("file.nblh~"))));
     }
     
     public void testTmpFileSuffix() {
-        assertFalse(LocalHistory.getInstance().isManaged(new File("/some/path/file.txt.0.nblh~")));
-        assertFalse(LocalHistory.getInstance().isManaged(new File("/some/path/file.txt.1.nblh~")));
-        assertFalse(LocalHistory.getInstance().isManaged(new File("/some/path/file.txt.10.nblh~")));
-        assertFalse(LocalHistory.getInstance().isManaged(new File("/some/path/file.txt.100.nblh~")));
-        assertFalse(LocalHistory.getInstance().isManaged(new File("/some/path/file.txt.0.nblh~")));
-        assertFalse(LocalHistory.getInstance().isManaged(new File("some/path/file.txt.0.nblh~")));
-        assertFalse(LocalHistory.getInstance().isManaged(new File("path/file.txt.0.nblh~")));
-        assertFalse(LocalHistory.getInstance().isManaged(new File("file.txt.0.nblh~")));
-        assertFalse(LocalHistory.getInstance().isManaged(new File("file.0.nblh~")));
+        assertFalse(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("/some/path/file.txt.0.nblh~"))));
+        assertFalse(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("/some/path/file.txt.1.nblh~"))));
+        assertFalse(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("/some/path/file.txt.10.nblh~"))));
+        assertFalse(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("/some/path/file.txt.100.nblh~"))));
+        assertFalse(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("/some/path/file.txt.0.nblh~"))));
+        assertFalse(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("some/path/file.txt.0.nblh~"))));
+        assertFalse(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("path/file.txt.0.nblh~"))));
+        assertFalse(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("file.txt.0.nblh~"))));
+        assertFalse(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("file.0.nblh~"))));
     }
     
     public void testMetadata() {
@@ -80,9 +81,9 @@ public class IsManagedTest extends NbTestCase {
     }
 
     private void assertMetadata(String metadata) {
-        assertFalse(LocalHistory.getInstance().isManaged(new File("/some/path/" + metadata + "/whatever/path")));
-        assertFalse(LocalHistory.getInstance().isManaged(new File("/some/path/" + metadata + "/whatever")));
-        assertFalse(LocalHistory.getInstance().isManaged(new File("/some/path/" + metadata)));
-        assertFalse(LocalHistory.getInstance().isManaged(new File(metadata)));
+        assertFalse(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("/some/path/" + metadata + "/whatever/path"))));
+        assertFalse(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("/some/path/" + metadata + "/whatever"))));
+        assertFalse(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File("/some/path/" + metadata))));
+        assertFalse(LocalHistory.getInstance().isManaged(VCSFileProxy.createFileProxy(new File(metadata))));
     }
 }

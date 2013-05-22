@@ -41,17 +41,14 @@
  */
 package org.netbeans.modules.versioning.history;
 
-import java.io.File;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.Set;
 import javax.swing.Action;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.HistoryEntry;
 import org.netbeans.modules.versioning.history.HistoryActionSupport.Callback;
-import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
-import org.netbeans.modules.versioning.spi.VCSHistoryProvider.HistoryEntry;
 import org.openide.nodes.Node;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.actions.NodeAction;
 
@@ -61,21 +58,21 @@ import org.openide.util.actions.NodeAction;
  * 
  * @author Tomas Stupka
  */
-public abstract class HistoryAction extends NodeAction {
+public abstract class HistoryActionVCSProxyBased extends NodeAction {
 
-    private Lookup context;
+    
     private final HistoryActionSupport<VCSHistoryProvider.HistoryEntry> support; 
-    private HistoryActionSupport.Callback<HistoryEntry> callback;
     private final String name;
     private final boolean multipleHistory;
+    private Lookup context;
     
-    public HistoryAction() {
+    public HistoryActionVCSProxyBased() {
         this(null, true);
     }
-    public HistoryAction(String name) {
+    public HistoryActionVCSProxyBased(String name) {
         this(name, true);
     }
-    public HistoryAction(String name, boolean multipleHistory) {
+    public HistoryActionVCSProxyBased(String name, boolean multipleHistory) {
         support = new HistoryActionSupport<VCSHistoryProvider.HistoryEntry>(getCallback());
         this.name = name;
         this.multipleHistory = multipleHistory;
@@ -87,7 +84,7 @@ public abstract class HistoryAction extends NodeAction {
      * @param entry
      * @param value 
      */
-    protected abstract void perform(VCSHistoryProvider.HistoryEntry entry, Set<File> files);
+    protected abstract void perform(VCSHistoryProvider.HistoryEntry entry, Set<VCSFileProxy> files);
 
     @Override
     public String getName() {
@@ -112,7 +109,7 @@ public abstract class HistoryAction extends NodeAction {
     private Lookup getContext() {
         return context;
     }
-
+    
     @Override
     protected void performAction(Node[] activatedNodes) {
         support.performAction(activatedNodes);
@@ -121,44 +118,28 @@ public abstract class HistoryAction extends NodeAction {
     @Override
     protected boolean enable(Node[] activatedNodes) {
         return support.hasEntryAndFiles(activatedNodes);
-    }
-
-    @Override
-    public HelpCtx getHelpCtx() {
-        return null;
-    }
-
-    private Callback<HistoryEntry> getCallback() {
-        if(callback == null) {
-            callback = new Callback<HistoryEntry>() {
-                @Override
-                public void call(HistoryEntry entry, Set<VCSFileProxy> files) {
-                    Set<File> s = new HashSet<File>();
-                    for (VCSFileProxy file : files) {
-                        File f = file.toFile();
-                        if(f != null) {
-                            s.add(f);
-                        }
-                    }
-                    perform(entry, s);
-                }
-                @Override
-                public HistoryActionSupport.HistoryEntryWrapper<HistoryEntry> lookupEntry(Node node) {
-                    VCSHistoryProvider.HistoryEntry he = node.getLookup().lookup(VCSHistoryProvider.HistoryEntry.class);
-                    return he != null ? new HistoryEntryImpl(he) : null;
-                }
-                @Override
-                public Lookup getContext() {
-                    return HistoryAction.this.getContext();
-                }
-
-                @Override
-                public boolean isMultipleHistory() {
-                    return HistoryAction.this.isMultipleHistory();
-                }
-            };
-        }
-        return callback;
+    }    
+    
+    protected Callback<HistoryEntry> getCallback() {
+        return new Callback<HistoryEntry>() {
+            @Override
+            public void call(HistoryEntry entry, Set<VCSFileProxy> files) {
+                perform(entry, files);
+            }
+            @Override
+            public HistoryActionSupport.HistoryEntryWrapper<HistoryEntry> lookupEntry(Node node) {
+                VCSHistoryProvider.HistoryEntry he = node.getLookup().lookup(VCSHistoryProvider.HistoryEntry.class);
+                return he != null ? new HistoryEntryImpl(he) : null;
+            }
+            @Override
+            public Lookup getContext() {
+                return HistoryActionVCSProxyBased.this.getContext();
+            }
+            @Override
+            public boolean isMultipleHistory() {
+                return HistoryActionVCSProxyBased.this.isMultipleHistory();
+            }
+        };
     }
 
     private class HistoryEntryImpl implements HistoryActionSupport.HistoryEntryWrapper<VCSHistoryProvider.HistoryEntry> {

@@ -61,6 +61,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import org.netbeans.modules.localhistory.utils.FileUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -73,7 +74,7 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class StoreEntry {
 
-    private final File file;
+    private final VCSFileProxy file;
     private final File storeFile;
     private final long ts;
     private final String label;
@@ -81,19 +82,19 @@ public abstract class StoreEntry {
     private String mimeType = null;
     private List<StoreEntry> siblingEntries;
       
-    public static StoreEntry createStoreEntry(File file, File storeFile, long ts, String label) {
+    public static StoreEntry createStoreEntry(VCSFileProxy file, File storeFile, long ts, String label) {
         return new DefaultStoreEntry(file, storeFile, ts, label);
     }
 
-    public static StoreEntry createDeletedStoreEntry(File file, long ts) {
+    public static StoreEntry createDeletedStoreEntry(VCSFileProxy file, long ts) {
         return new DeletedStoreEntry(file, ts);
     }
 
-    public static StoreEntry createFakeStoreEntry(File file, long ts) {
-        return new FakeStoreEntry(file, ts);
-    }
+//    public static StoreEntry createFakeStoreEntry(File file, long ts) {
+//        return new FakeStoreEntry(file, ts);
+//    }
     
-    private StoreEntry(File file, File storeFile, long ts, String label) {
+    private StoreEntry(VCSFileProxy file, File storeFile, long ts, String label) {
         this.file = file;
         this.storeFile = storeFile;
         this.ts = ts;
@@ -106,7 +107,7 @@ public abstract class StoreEntry {
         return storeFile;
     }
 
-    public File getFile() {
+    public VCSFileProxy getFile() {
         return file;
     }
     
@@ -177,7 +178,7 @@ public abstract class StoreEntry {
 
     private static class DefaultStoreEntry extends StoreEntry {
         
-        private DefaultStoreEntry(File file, File storeFile, long ts, String label) {
+        private DefaultStoreEntry(VCSFileProxy file, File storeFile, long ts, String label) {
             super(file, storeFile, ts, label);
         }    
         
@@ -198,7 +199,7 @@ public abstract class StoreEntry {
     }
     
     private static class DeletedStoreEntry extends StoreEntry {  
-        public DeletedStoreEntry(File file, long ts) {
+        public DeletedStoreEntry(VCSFileProxy file, long ts) {
             super(file, null, ts, "");
         } 
         
@@ -220,20 +221,20 @@ public abstract class StoreEntry {
         
     }
 
-    private static class FakeStoreEntry extends StoreEntry {
-        
-        public FakeStoreEntry(File file, long ts) {
-            super(file, file, ts, "");
-        }  
-
-        @Override
-        OutputStream getStoreFileOutputStream() throws FileNotFoundException, IOException {
-            throw new FileNotFoundException("There is no OutputStream for this for file " + getFile());
-        }
-
-        @Override
-        public InputStream getStoreFileInputStream() throws FileNotFoundException, IOException {
-            return new FileInputStream(getFile());            
-        }            
-    }    
+//    private static class FakeStoreEntry extends StoreEntry {
+//        
+//        public FakeStoreEntry(VCSFileProxy file, long ts) {
+//            super(file, file, ts, "");
+//        }  
+//
+//        @Override
+//        OutputStream getStoreFileOutputStream() throws FileNotFoundException, IOException {
+//            throw new FileNotFoundException("There is no OutputStream for this for file " + getFile());
+//        }
+//
+//        @Override
+//        public InputStream getStoreFileInputStream() throws FileNotFoundException, IOException {
+//            return new FileInputStream(getFile());            
+//        }            
+//    }    
 }

@@ -504,7 +504,9 @@ public class FileStatusCache {
                     synchronized (FileStatusCache.this) {
                         FileInformation info = getInfo(file);
                         if (info == null || info.containsStatus(Status.UPTODATE)) {
-                            refreshFileStatus(file, FILE_INFORMATION_EXCLUDED);
+                            refreshFileStatus(file, file.isDirectory() 
+                                    ? new FileInformation(EnumSet.of(Status.NOTVERSIONED_EXCLUDED), true)
+                                    : FILE_INFORMATION_EXCLUDED);
                         }
                     }
                 }

@@ -54,8 +54,10 @@ import java.util.logging.LogRecord;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.localhistory.LogHandler;
 import org.netbeans.modules.localhistory.utils.FileUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
+import org.openide.util.test.MockLookup;
 
 /**
 */
@@ -89,7 +91,7 @@ public class StoreTest extends LHTestCase {
         final LocalHistoryTestStore store = createStore();
         final long ts = System.currentTimeMillis();
     
-        final File file = new File(dataDir, "lockedfile");
+        final VCSFileProxy file = VCSFileProxy.createFileProxy(new File(dataDir, "lockedfile"));
         
         // store.fileCreate(file, ts);
         Runnable r = new Runnable() {
@@ -118,7 +120,7 @@ public class StoreTest extends LHTestCase {
         // store.fileCreateFromMove(file, ts);
         r = new Runnable() {
             public void run() {
-                store.fileCreateFromMove(file, new File(file.getParentFile(), "moved"), ts);
+                store.fileCreateFromMove(file, VCSFileProxy.createFileProxy(file.getParentFile(), "moved"), ts);
             }
         };
         assertNotReleasedLock(r);
@@ -126,7 +128,7 @@ public class StoreTest extends LHTestCase {
         // store.fileDeleteFromMove(file, ts);
         r = new Runnable() {
             public void run() {
-                store.fileDeleteFromMove(file, new File(file.getParentFile(), "moved"), ts);
+                store.fileDeleteFromMove(file, VCSFileProxy.createFileProxy(file.getParentFile(), "moved"), ts);
             }
         };
         assertNotReleasedLock(r);
@@ -196,7 +198,7 @@ public class StoreTest extends LHTestCase {
     
         File file = new File(dataDir, "crapfile");
 
-        File storefile = store.getStoreFile(file, ts, true);
+        File storefile = store.getStoreFile(VCSFileProxy.createFileProxy(file), ts, true);
         assertTrue(storefile.getParentFile().exists());
         assertFalse(storefile.exists());
 
@@ -256,7 +258,7 @@ public class StoreTest extends LHTestCase {
         File file = new File(dataDir, "file1");
         createFile(store, file, ts, "data");
 
-        File storefile = store.getStoreFile(file, ts, false);
+        File storefile = store.getStoreFile(VCSFileProxy.createFileProxy(file), ts, false);
         // change file with same ts
         // XXX
 //        if(store.lastModified(file) != ts) {
@@ -316,17 +318,17 @@ public class StoreTest extends LHTestCase {
         File file = new File(dataDir, "file1");
         createFile(store, file, ts, "data");
 
-        store.fileDelete(file, ts);
+        store.fileDelete(VCSFileProxy.createFileProxy(file), ts);
         // check
-        File storefile = store.getStoreFile(file, ts, false);
+        File storefile = store.getStoreFile(VCSFileProxy.createFileProxy(file), ts, false);
         assertFile(file, store, ts, storefile.lastModified(), 1, 1, "data", DELETED);
 
         file = new File(dataDir, "file2");
         createFile(store, file, ts, "data");
 
-        store.fileDelete(file, ts);
+        store.fileDelete(VCSFileProxy.createFileProxy(file), ts);
         // check
-        storefile = store.getStoreFile(file, ts, false);
+        storefile = store.getStoreFile(VCSFileProxy.createFileProxy(file), ts, false);
         assertFile(file, store, ts, storefile.lastModified(), 1, 1, "data", DELETED);
     }
 
@@ -357,18 +359,20 @@ public class StoreTest extends LHTestCase {
         lh.reset(); changeFile(store, file4, System.currentTimeMillis(), "data4.1"); lh.waitUntilDone();
 
         // delete one of them
-        store.fileDelete(file2, System.currentTimeMillis());
-        StoreEntry[] entries = store.getDeletedFiles(folder);
+        store.fileDelete(VCSFileProxy.createFileProxy(file2), System.currentTimeMillis());
+        StoreEntry[] entries = store.getDeletedFiles(VCSFileProxy.createFileProxy(folder));
         assertEntries(entries, new File[] { file2 }, new String[] { "data2.1" } );
 
-        // delete one of them
-        store.fileDelete(file3, System.currentTimeMillis());
-        entries = store.getDeletedFiles(folder);
+        // delete another one 
+        store.fileDelete(VCSFileProxy.createFileProxy(file3), System.currentTimeMillis());
+        entries = store.getDeletedFiles(VCSFileProxy.createFileProxy(folder));
         assertEntries(entries, new File[] { file2, file3 }, new String[] { "data2.1", "data3.1" } );
 
-        // delete without entry - only via .delete()
+        // delete without entry - only via .delete() - even if no event should be intercepted
+        // we expect the file having a store entry so in case it doesn't exist, it also 
+        // should be restored
         file4.delete();
-        entries = store.getDeletedFiles(folder);
+        entries = store.getDeletedFiles(VCSFileProxy.createFileProxy(folder));
         assertEntries(entries, new File[] { file2, file3, file4 }, new String[] { "data2.1", "data3.1", "data4.1" } );
 
     }
@@ -397,98 +401,98 @@ public class StoreTest extends LHTestCase {
         assertDataInFile(file1, "data1.2".getBytes());
 
         // get the files last state
-        StoreEntry entry = store.getStoreEntry(file1, System.currentTimeMillis());
+        StoreEntry entry = store.getStoreEntry(VCSFileProxy.createFileProxy(file1), System.currentTimeMillis());
         assertNotNull(entry);
         assertDataInStream(entry.getStoreFileInputStream(), "data1.1".getBytes());
     }
 
-    public void testGetFolderState() throws Exception {
-        LocalHistoryTestStore store = createStore();
-
-        // check for deleted root folder
-        File folder = new File(dataDir, "datafolder");
-        setupFirstFolderToRevert(store, folder);
-
-        File[] files = folder.listFiles();
-
-        assertEquals(files.length, 7);  //   fileNotInStorage
-                                        //   fileUnchanged
-                                        //   fileChangedAfterRevert
-                                        // X fileDeletedAfterRevert
-                                        //   fileDeletedBeforeRevert
-                                        //   fileUndeletedBeforeRevert
-                                        //   fileCreatedToLate
-                                        //   folderCreatedAfterRevert
-
-        store.fileDelete(folder, System.currentTimeMillis());
-        Thread.sleep(1000); // give me some time
-        long revertToTS = System.currentTimeMillis();
-
-        StoreEntry[] entries = store.getFolderState(folder, files , revertToTS);
-        assertEquals(entries.length, 0);  // all are deleted
-
-
-        store.cleanUp(1);
-        cleanUpDataFolder();
-
-        folder = new File(dataDir, "datafolder");
-        revertToTS = setupFirstFolderToRevert(store, folder);
-        files = folder.listFiles();
-        assertEquals(files.length, 7);  //   fileNotInStorage
-                                        //   fileUnchanged
-                                        //   fileChangedAfterRevert
-                                        // X fileDeletedAfterRevert
-                                        //   fileDeletedBeforeRevert
-                                        //   fileUndeletedBeforeRevert
-                                        //   fileCreatedToLate
-
-                                        // X  folderDeletedAfterRevert
-                                        //    folderCreatedAfterRevert
-
-
-        entries = store.getFolderState(folder, files , revertToTS);
-
-        assertEquals(entries.length, 8);
-        //   * returned, X as to be deleted
-        //   fileNotInStorage             -
-        //*   fileUnchanged                - *
-        //*   fileChangedAfterRevert       - * previous revision
-        //*   fileDeletedAfterRevert       - *
-        //*   fileUndeletedBeforeRevert    - *
-        // X fileCreatedAfterRevert       - * X
-        //* X fileDeletedBeforeRevert      - * X
-
-        //*   folderDeletedAfterRevert     - *
-        //   folderCreatedAfterRevert     - * X
-
-        Map<String, StoreEntry> entriesMap = new HashMap<String, StoreEntry>();
-        for(StoreEntry se : entries) {
-            entriesMap.put(se.getFile().getName(), se);
-        }
-        assertNull(entriesMap.get("fileNotInStorage"));
-
-        assertNotNull(entriesMap.get("fileUnchanged"));
-        assertNotNull(entriesMap.get("fileChangedAfterRevert"));
-        assertNotNull(entriesMap.get("fileDeletedAfterRevert"));
-        assertNotNull(entriesMap.get("fileUndeletedBeforeRevert"));
-        assertNotNull(entriesMap.get("fileCreatedAfterRevert"));
-        assertNotNull(entriesMap.get("fileDeletedBeforeRevert"));
-        assertNotNull(entriesMap.get("folderDeletedAfterRevert"));
-        assertNotNull(entriesMap.get("folderCreatedAfterRevert"));
-
-        assertNotNull(entriesMap.get("fileUnchanged").getStoreFile());
-        assertNotNull(entriesMap.get("fileChangedAfterRevert").getStoreFile());
-        assertNotNull(entriesMap.get("fileDeletedAfterRevert").getStoreFile());
-        assertNotNull(entriesMap.get("fileUndeletedBeforeRevert").getStoreFile());
-        assertNotNull(entriesMap.get("folderDeletedAfterRevert").getStoreFile());
-        assertNull(entriesMap.get("fileCreatedAfterRevert").getStoreFile());
-        assertNull(entriesMap.get("fileDeletedBeforeRevert").getStoreFile());
-        assertNull(entriesMap.get("folderCreatedAfterRevert").getStoreFile());
-
-        String strStore = read(entriesMap.get("fileChangedAfterRevert").getStoreFileInputStream(), 1024);
-//        String strFile = read(new FileInputStream(entriesMap.get("fileChangedAfterRevert").getFile()), 1024);
-        assertNotSame("BEFORE change", strStore);
-    }
+    // method not used anyway
+//    public void testGetFolderState() throws Exception {
+//        LocalHistoryTestStore store = createStore();
+//        // check for deleted root folder
+//        File folder = new File(dataDir, "datafolder");
+//        setupFirstFolderToRevert(store, folder);
+//
+//        VCSFileProxy[] files = VCSFileProxy.createFileProxy(folder).listFiles();
+//
+//        assertEquals(files.length, 7);  //   fileNotInStorage
+//                                        //   fileUnchanged
+//                                        //   fileChangedAfterRevert
+//                                        // X fileDeletedAfterRevert
+//                                        //   fileDeletedBeforeRevert
+//                                        //   fileUndeletedBeforeRevert
+//                                        //   fileCreatedToLate
+//                                        //   folderCreatedAfterRevert
+//
+//        store.fileDelete(VCSFileProxy.createFileProxy(folder), System.currentTimeMillis());
+//        Thread.sleep(1000); // give me some time
+//        long revertToTS = System.currentTimeMillis();
+//
+//        StoreEntry[] entries = store.getFolderState(VCSFileProxy.createFileProxy(folder), files , revertToTS);
+//        assertEquals(entries.length, 0);  // all are deleted
+//
+//
+//        store.cleanUp(1);
+//        cleanUpDataFolder();
+//
+//        folder = new File(dataDir, "datafolder");
+//        revertToTS = setupFirstFolderToRevert(store, folder);
+//        files = VCSFileProxy.createFileProxy(folder).listFiles();
+//        assertEquals(files.length, 7);  //   fileNotInStorage
+//                                        //   fileUnchanged
+//                                        //   fileChangedAfterRevert
+//                                        // X fileDeletedAfterRevert
+//                                        //   fileDeletedBeforeRevert
+//                                        //   fileUndeletedBeforeRevert
+//                                        //   fileCreatedToLate
+//
+//                                        // X  folderDeletedAfterRevert
+//                                        //    folderCreatedAfterRevert
+//
+//
+//        entries = store.getFolderState(VCSFileProxy.createFileProxy(folder), files , revertToTS);
+//
+//        assertEquals(entries.length, 8);
+//        //   * returned, X as to be deleted
+//        //   fileNotInStorage             -
+//        //*   fileUnchanged                - *
+//        //*   fileChangedAfterRevert       - * previous revision
+//        //*   fileDeletedAfterRevert       - *
+//        //*   fileUndeletedBeforeRevert    - *
+//        // X fileCreatedAfterRevert       - * X
+//        //* X fileDeletedBeforeRevert      - * X
+//
+//        //*   folderDeletedAfterRevert     - *
+//        //   folderCreatedAfterRevert     - * X
+//
+//        Map<String, StoreEntry> entriesMap = new HashMap<String, StoreEntry>();
+//        for(StoreEntry se : entries) {
+//            entriesMap.put(se.getFile().getName(), se);
+//        }
+//        assertNull(entriesMap.get("fileNotInStorage"));
+//
+//        assertNotNull(entriesMap.get("fileUnchanged"));
+//        assertNotNull(entriesMap.get("fileChangedAfterRevert"));
+//        assertNotNull(entriesMap.get("fileDeletedAfterRevert"));
+//        assertNotNull(entriesMap.get("fileUndeletedBeforeRevert"));
+//        assertNotNull(entriesMap.get("fileCreatedAfterRevert"));
+//        assertNotNull(entriesMap.get("fileDeletedBeforeRevert"));
+//        assertNotNull(entriesMap.get("folderDeletedAfterRevert"));
+//        assertNotNull(entriesMap.get("folderCreatedAfterRevert"));
+//
+//        assertNotNull(entriesMap.get("fileUnchanged").getStoreFile());
+//        assertNotNull(entriesMap.get("fileChangedAfterRevert").getStoreFile());
+//        assertNotNull(entriesMap.get("fileDeletedAfterRevert").getStoreFile());
+//        assertNotNull(entriesMap.get("fileUndeletedBeforeRevert").getStoreFile());
+//        assertNotNull(entriesMap.get("folderDeletedAfterRevert").getStoreFile());
+//        assertNull(entriesMap.get("fileCreatedAfterRevert").getStoreFile());
+//        assertNull(entriesMap.get("fileDeletedBeforeRevert").getStoreFile());
+//        assertNull(entriesMap.get("folderCreatedAfterRevert").getStoreFile());
+//
+//        String strStore = read(entriesMap.get("fileChangedAfterRevert").getStoreFileInputStream(), 1024);
+////        String strFile = read(new FileInputStream(entriesMap.get("fileChangedAfterRevert").getFile()), 1024);
+//        assertNotSame("BEFORE change", strStore);
+//    }
 
     public void testGetStoreEntries() throws Exception {
         LocalHistoryTestStore store = createStore();
@@ -509,7 +513,7 @@ public class StoreTest extends LHTestCase {
         lh.reset(); changeFile(store, file1, ts + 4000, "data1.3"); lh.waitUntilDone();
         lh.reset(); changeFile(store, file1, ts + 5000, "data1.4"); lh.waitUntilDone();
 
-        StoreEntry[] se = store.getStoreEntries(file1);
+        StoreEntry[] se = store.getStoreEntries(VCSFileProxy.createFileProxy(file1));
         assertEntries(
                 se, file1,
                 new long[] {ts + 1000, ts + 2000, ts + 3000, ts + 4000, ts + 5000},
@@ -517,9 +521,9 @@ public class StoreTest extends LHTestCase {
         );
 
         // delete an entry
-        store.deleteEntry(file1, ts + 3000);
+        store.deleteEntry(VCSFileProxy.createFileProxy(file1), ts + 3000);
 
-        se = store.getStoreEntries(file1);
+        se = store.getStoreEntries(VCSFileProxy.createFileProxy(file1));
         assertEntries(
                 se, file1,
                 new long[] {ts + 1000, ts + 2000, ts + 4000, ts + 5000},
@@ -543,7 +547,7 @@ public class StoreTest extends LHTestCase {
         lh.reset(); changeFile(store, file1, ts + 2000, "data1.1"); lh.waitUntilDone();
         lh.reset(); changeFile(store, file1, ts + 3000, "data1.2"); lh.waitUntilDone();
 
-        StoreEntry[] se = store.getStoreEntries(file1);
+        StoreEntry[] se = store.getStoreEntries(VCSFileProxy.createFileProxy(file1));
         assertEntries(
                 se, file1,
                 new long[] {ts + 1000, ts + 2000, ts + 3000},
@@ -551,24 +555,24 @@ public class StoreTest extends LHTestCase {
         );
 
         // delete an entry
-        store.deleteEntry(file1, ts + 2000);
-        se = store.getStoreEntries(file1);
+        store.deleteEntry(VCSFileProxy.createFileProxy(file1), ts + 2000);
+        se = store.getStoreEntries(VCSFileProxy.createFileProxy(file1));
         assertEntries(
                 se, file1,
                 new long[] {ts + 1000, ts + 3000},
                 new String[] {"data1", "data1.2"}
         );
 
-        store.deleteEntry(file1, ts + 3000);
-        se = store.getStoreEntries(file1);
+        store.deleteEntry(VCSFileProxy.createFileProxy(file1), ts + 3000);
+        se = store.getStoreEntries(VCSFileProxy.createFileProxy(file1));
         assertEntries(
                 se, file1,
                 new long[] {ts + 1000},
                 new String[] {"data1"}
         );
 
-        store.deleteEntry(file1, ts + 1000);
-        se = store.getStoreEntries(file1);
+        store.deleteEntry(VCSFileProxy.createFileProxy(file1), ts + 1000);
+        se = store.getStoreEntries(VCSFileProxy.createFileProxy(file1));
         assertEquals(se.length, 0);
 
     }
@@ -592,11 +596,11 @@ public class StoreTest extends LHTestCase {
         assertFile(file1, store, ts + 3000, -1, 3, 1, "data1.2", TOUCHED);
 
         String label = "My most beloved label";
-        store.setLabel(file1, ts + 2000, label);
+        store.setLabel(VCSFileProxy.createFileProxy(file1), ts + 2000, label);
 
         assertFile(file1, store, ts + 3000, -1, 3, 1, "data1.2", TOUCHED, true);
 
-        File labelsFile = store.getLabelsFile(file1);
+        File labelsFile = store.getLabelsFile(VCSFileProxy.createFileProxy(file1));
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         DataOutputStream dos = new DataOutputStream(baos);
@@ -608,17 +612,17 @@ public class StoreTest extends LHTestCase {
         assertDataInFile(labelsFile, baos.toByteArray());
 
         label = "My second most beloved label";
-        store.setLabel(file1, ts + 1000, label);
+        store.setLabel(VCSFileProxy.createFileProxy(file1), ts + 1000, label);
 
         dos.writeLong(ts + 1000);
         dos.writeInt(label.length());
         dos.writeChars(label);
         dos.flush();
 
-        labelsFile = store.getLabelsFile(file1);
+        labelsFile = store.getLabelsFile(VCSFileProxy.createFileProxy(file1));
         assertDataInFile(labelsFile, baos.toByteArray());
 
-        store.setLabel(file1, ts + 2000, null);
+        store.setLabel(VCSFileProxy.createFileProxy(file1), ts + 2000, null);
 
         baos = new ByteArrayOutputStream();
         dos = new DataOutputStream(baos);
@@ -627,7 +631,7 @@ public class StoreTest extends LHTestCase {
         dos.writeChars(label);
         dos.flush();
 
-        labelsFile = store.getLabelsFile(file1);
+        labelsFile = store.getLabelsFile(VCSFileProxy.createFileProxy(file1));
         assertDataInFile(labelsFile, baos.toByteArray());
 
         dos.close();
@@ -696,10 +700,10 @@ public class StoreTest extends LHTestCase {
                 
         
         fileDeletedBeforeRevert.delete();
-        store.fileDelete(fileDeletedBeforeRevert, System.currentTimeMillis());                                
+        store.fileDelete(VCSFileProxy.createFileProxy(fileDeletedBeforeRevert), System.currentTimeMillis());                                
         
         fileUndeletedBeforeRevert.delete();
-        store.fileDelete(fileUndeletedBeforeRevert, System.currentTimeMillis());
+        store.fileDelete(VCSFileProxy.createFileProxy(fileUndeletedBeforeRevert), System.currentTimeMillis());
         createFile(store, fileUndeletedBeforeRevert, System.currentTimeMillis(), "fileUndeletedBeforeRevert BEFORE revert");
         
         // REVERT
@@ -713,14 +717,14 @@ public class StoreTest extends LHTestCase {
         lh.waitUntilDone();
 
         fileDeletedAfterRevert.delete();
-        store.fileDelete(fileDeletedAfterRevert, System.currentTimeMillis());        
+        store.fileDelete(VCSFileProxy.createFileProxy(fileDeletedAfterRevert), System.currentTimeMillis());        
         
         createFile(store, fileDeletedBeforeRevert, System.currentTimeMillis(), "fileDeletedBeforeRevert after delete");
         
         createFile(store, fileCreatedAfterRevert, System.currentTimeMillis(), "fileCreatedAfterRevert");
         
         folderDeletedAfterRevert.delete();
-        store.fileDelete(folderDeletedAfterRevert, System.currentTimeMillis());
+        store.fileDelete(VCSFileProxy.createFileProxy(folderDeletedAfterRevert), System.currentTimeMillis());
         
         createFile(store, folderCreatedAfterRevert, System.currentTimeMillis(), null);
         
@@ -795,7 +799,7 @@ public class StoreTest extends LHTestCase {
             @Override
             public void versioningEvent(VersioningEvent evt) {
                 event[0] = true;
-                StoreEntry entry = store.getStoreEntry(file, ts);
+                StoreEntry entry = store.getStoreEntry(VCSFileProxy.createFileProxy(file), ts);
                 try {
                     entry.getStoreFileOutputStream();
                 } catch (IOException ex) {
