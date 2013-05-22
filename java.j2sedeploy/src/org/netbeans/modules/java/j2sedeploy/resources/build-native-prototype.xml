@@ -294,6 +294,10 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
     
     <target name="build-native" depends="-set-do-build-native-package, -check-ant-jre-supports-native-packaging, -check-native-packager-external-tools, fx-jar-impl, build-native-impl"/>
 
+    <target name="build-native-noscript">
+        <fail message="Java Application Native Packager requires JDK JavaScript support but has not found any."/>
+    </target>
+
     <target name="-check-do-jar">
         <condition property="do-jar-false">
             <and>
