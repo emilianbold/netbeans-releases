@@ -130,7 +130,10 @@ public final class EnterpriseCatalog implements CatalogReader, CatalogDescriptor
         schemas.add(new SchemaInfo("beans_1_1.xsd", NEW_JAVAEE_NS));
         // permissions
         schemas.add(new SchemaInfo("permissions_7.xsd", NEW_JAVAEE_NS));
-       
+        // batch API
+        schemas.add(new SchemaInfo("batchXML_1_0.xsd", NEW_JAVAEE_NS));
+        schemas.add(new SchemaInfo("jobXML_1_0.xsd", NEW_JAVAEE_NS));
+
     }
     
     public Image getIcon(int type) {
