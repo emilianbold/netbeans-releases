@@ -70,6 +70,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.queries.SourceLevelQuery.Profile;
 import org.netbeans.api.java.source.support.ProfileSupport;
@@ -99,8 +100,10 @@ import static org.netbeans.modules.java.project.Bundle.*;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.project.classpath.support.ProjectClassPathSupport;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 /**
  *
  * @author Tomas Zezula
@@ -112,8 +115,6 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
     private static final String FILE_PREFIX = "${file.reference."; //NOI18N
     private static final String REF_PREFIX = "${"; //NOI18N
     private static final String VOL_CLASSPATH = "classpath";    //NOI18N
-    private static final String RES_MANIFEST = "META-INF/MANIFEST.MF";              //NOI18N
-    private static final String ATTR_PROFILE = "Profile";                           //NOI18N
     private static final char PATH_SEPARATOR_CHAR = ':';                          //NOI18N
     private static final String ICON_LIBRARIES = "org/netbeans/modules/java/project/resources/libraries.gif"; //NOI18N
     private static final String ICON_FILE = "org/netbeans/modules/java/project/resources/jar.gif";//NOI18N
@@ -216,7 +217,9 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
 
     @Override
     public void propertyChange(@NonNull final PropertyChangeEvent event) {
-        if (ClassPath.PROP_ROOTS.equals(event.getPropertyName())) {            
+        final String propName = event.getPropertyName();
+        if (ClassPath.PROP_ROOTS.equals(propName) ||
+            JavaPlatformManager.PROP_INSTALLED_PLATFORMS.equals(propName)) {
             firer.schedule(SLIDING_DELAY);
         }
     }
@@ -235,6 +238,8 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
         synchronized (listenersInitLock) {
             if (slRes == null) {
                 assert classPath == null;
+                final JavaPlatformManager jpm = JavaPlatformManager.getDefault();
+                jpm.addPropertyChangeListener(WeakListeners.propertyChange(this, jpm));
                 slRes = SourceLevelQuery.getSourceLevel2(antProjectHelper.getProjectDirectory());
                 slRes.addChangeListener(this);
                 final File baseFolder = FileUtil.toFile(antProjectHelper.getProjectDirectory());
@@ -714,6 +719,31 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
                     });
             res.run();
             return res;
+        }
+
+        @Override
+        public int hashCode() {
+            int res = 17;
+            final FileObject projDir = antProjectHelper.getProjectDirectory();
+            res = res * 31 + (projDir == null ? 0 : projDir.toURI().hashCode());
+            res = res * 31 + currentProfile.hashCode();
+            return res;
+        }
+
+        @Override
+        public boolean equals(@NullAllowed Object other) {
+            if (other == this) {
+                return true;
+            }
+            if (!(other instanceof ProfileResolver)) {
+                return false;
+            }
+            final ProfileResolver otherResolver = (ProfileResolver) other;
+            final FileObject projDir = antProjectHelper.getProjectDirectory();
+            final FileObject otherProjDir = otherResolver.antProjectHelper.getProjectDirectory();
+            return
+                currentProfile.equals(otherResolver.currentProfile) &&
+                (projDir == null ? otherProjDir == null : projDir.equals(otherProjDir));
         }
     }    
 }
