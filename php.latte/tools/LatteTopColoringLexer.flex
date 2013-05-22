@@ -307,7 +307,7 @@ SYNTAX_PYTHON_END="%}"
         yypushback(1);
         pushState(ST_POSSIBLE_LATTE);
     }
-    "<"[a-z0-9:]+ {
+    "<""!"?[a-zA-Z0-9:]+ {
         tags.push(new HtmlTag());
         pushState(ST_IN_HTML_TAG);
         return LatteTopTokenId.T_HTML;
