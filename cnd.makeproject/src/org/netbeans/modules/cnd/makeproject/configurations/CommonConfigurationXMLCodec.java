@@ -746,13 +746,13 @@ public abstract class CommonConfigurationXMLCodec
 
     private void writeSourceRoots(XMLEncoderStream xes) {
         MakeConfigurationDescriptor makeProjectDescriptor = (MakeConfigurationDescriptor) projectDescriptor;
+        // Filter
+        if (!makeProjectDescriptor.getFolderVisibilityQuery().getRegEx().equals(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN)) {
+            xes.element(SOURCE_FOLDERS_FILTER_ELEMENT, makeProjectDescriptor.getFolderVisibilityQuery().getRegEx());
+        }
+
         List<String> list = makeProjectDescriptor.getSourceRoots();
         if (list.size() > 0) {
-            // Filter
-            if (!makeProjectDescriptor.getFolderVisibilityQuery().getRegEx().equals(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN)) {
-                xes.element(SOURCE_FOLDERS_FILTER_ELEMENT, makeProjectDescriptor.getFolderVisibilityQuery().getRegEx());
-            }
-
             // Source Root
             xes.elementOpen(SOURCE_ROOT_LIST_ELEMENT);
             for (String l : list) {
