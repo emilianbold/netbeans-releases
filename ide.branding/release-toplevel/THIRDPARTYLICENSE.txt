@@ -151,9 +151,9 @@ java/docs/beansbinding-1.2.1-doc.zip                                  LGPL-2.1
 java/modules/ext/beansbinding-1.2.1.jar                               LGPL-2.1
 java/modules/ext/cglib-2.2.jar                                        Apache-2.0
 java/modules/ext/eclipselink/eclipselink.jar                          EPL-v10 (see also about.html inside this JAR file)
-java/modules/ext/eclipselink/javax.persistence_2.0.111.v201304031339.jar  EPL-v10 (see also about.html inside this JAR file)
-java/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_2.5.0.v20130403-740364a.jar  EPL-v10 (see also about.html inside this JAR file)
-java/modules/ext/eclipselink/org.eclipse.persistence.jpa.modelgen_2.5.0.v20130403-740364a.jar  EPL-v10 (see also about.html inside this JAR file)
+java/modules/ext/eclipselink/javax.persistence_2.1.0.v201304241213.jar  EPL-v10 (see also about.html inside this JAR file)
+java/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_2.5.0.v20130507-3faac2b.jar  EPL-v10 (see also about.html inside this JAR file)
+java/modules/ext/eclipselink/org.eclipse.persistence.jpa.modelgen_2.5.0.v20130507-3faac2b.jar  EPL-v10 (see also about.html inside this JAR file)
 java/modules/ext/hibernate                                            LGPL-2.1, incl. BSD, Apache-2.0 (see also Hibernate 3.2.5 at http://hibernate.org)
 java/modules/ext/jaxws22/woodstox-core-asl.jar                        Apache-2.0
 java/modules/ext/jaxws22/stax2-api.jar                                BSD-woodstox
