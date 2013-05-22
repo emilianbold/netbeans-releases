@@ -45,7 +45,7 @@
 
 package org.netbeans.modules.cnd.debugger.dbx.rtc;
 
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.openide.util.ImageUtilities;
 
 import org.openide.windows.TopComponent;
@@ -95,7 +95,7 @@ public class RtcViewer extends TopComponent {
 	this.view = view;
 	add(view, java.awt.BorderLayout.CENTER);
 
-	setName(CndPathUtilitities.getBaseName(view.getName()));
+	setName(CndPathUtilities.getBaseName(view.getName()));
 	setToolTipText(view.getName());
     }
 

@@ -960,7 +960,7 @@ public class RtcModel {
 	final String dir     = profile.getExperimentDir();
 	String absoluteDir;
 
-	if (org.netbeans.modules.cnd.utils.CndPathUtilitities.isPathAbsolute(dir))
+	if (org.netbeans.modules.cnd.utils.CndPathUtilities.isPathAbsolute(dir))
 	    absoluteDir = dir;
 	else
 	    absoluteDir = baseDir + File.separatorChar + dir;

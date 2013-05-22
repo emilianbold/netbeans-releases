@@ -146,7 +146,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.FileMapper;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakefileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.StringConfiguration;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 /**
  * A "service" for DebuggerEngine
@@ -363,7 +363,7 @@ public final class DbxDebuggerImpl extends NativeDebuggerImpl
      */
     String shortname(String path) {
         if (isShortName()) {
-            return CndPathUtilitities.getBaseName(path);
+            return CndPathUtilities.getBaseName(path);
         } else {
             return path;
         }
