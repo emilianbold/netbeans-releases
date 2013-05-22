@@ -45,8 +45,9 @@ import java.awt.EventQueue;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 import javax.swing.GroupLayout;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -66,7 +67,7 @@ public class CustomizerTesting extends JPanel {
     private final ProjectCustomizer.Category category;
     private final PhpProjectProperties uiProps;
     // @GuardedBy("EDT")
-    final List<String> selectedTestingProviders = new ArrayList<>();
+    final Set<String> selectedTestingProviders = new TreeSet<>();
 
 
     CustomizerTesting(ProjectCustomizer.Category category, PhpProjectProperties uiProps) {
@@ -148,8 +149,7 @@ public class CustomizerTesting extends JPanel {
 
     private void storeData() {
         assert EventQueue.isDispatchThread();
-        assert selectedTestingProviders.size() == new HashSet<>(selectedTestingProviders).size() : "Duplicated providers: " + selectedTestingProviders;
-        uiProps.setTestingProviders(selectedTestingProviders);
+        uiProps.setTestingProviders(new ArrayList<>(selectedTestingProviders));
     }
 
     /**
@@ -212,9 +212,11 @@ public class CustomizerTesting extends JPanel {
         public void itemStateChanged(ItemEvent e) {
             assert EventQueue.isDispatchThread();
             if (e.getStateChange() == ItemEvent.SELECTED) {
-                selectedTestingProviders.add(testingProvider);
+                boolean added = selectedTestingProviders.add(testingProvider);
+                assert added : "Provider " + testingProvider + " already present in " + selectedTestingProviders;
             } else {
-                selectedTestingProviders.remove(testingProvider);
+                boolean removed = selectedTestingProviders.remove(testingProvider);
+                assert removed : "Provider " + testingProvider + " not present in " + selectedTestingProviders;
             }
             validateAndStore();
         }
