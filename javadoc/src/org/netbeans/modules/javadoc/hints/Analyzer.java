@@ -47,6 +47,7 @@ package org.netbeans.modules.javadoc.hints;
 import com.sun.javadoc.MethodDoc;
 import com.sun.javadoc.ParamTag;
 import com.sun.javadoc.ThrowsTag;
+import com.sun.javadoc.Type;
 import static org.netbeans.modules.javadoc.hints.JavadocUtilities.*;
 import com.sun.source.doctree.AttributeTree;
 import com.sun.source.doctree.AuthorTree;
@@ -646,7 +647,10 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                             inheritedTypeParams.add(paramTag.parameterName());
                         }
                         for (ThrowsTag throwsTag : methodDoc.throwsTags()) {
-                            inheritedThrows.add(throwsTag.exceptionType().qualifiedTypeName());
+                            Type exceptionType = throwsTag.exceptionType();
+                            if(exceptionType != null) {
+                                inheritedThrows.add(exceptionType.qualifiedTypeName());
+                            }
                         }
                         returnTypeFound |= methodDoc.tags("return").length > 0;
                     }
