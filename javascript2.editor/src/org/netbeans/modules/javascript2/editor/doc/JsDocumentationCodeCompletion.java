@@ -81,7 +81,7 @@ public class JsDocumentationCodeCompletion {
             orderingBase++;
             for (AnnotationCompletionTag tag : provider.getAnnotations()) {
                 if (tag.getName().startsWith(request.prefix)) {
-                    resultList.add(new JsDocumentationCodeCompletionItem(request.anchor, tag, provider.getName(), orderingBase));
+                    resultList.add(new JsDocumentationCodeCompletionItem(request.result.getSnapshot().getOriginalOffset(request.anchor), tag, provider.getName(), orderingBase));
                 }
             }
         }

@@ -72,7 +72,7 @@ import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.trace.NativeProjectProvider;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.NamedRunnable;
@@ -446,7 +446,7 @@ public class CsmStandaloneFileProviderImpl extends CsmStandaloneFileProvider {
         private void check(List<FSPath> list) {
             for(Iterator<FSPath> it = list.iterator(); it.hasNext();){
                 FSPath path = it.next();
-                if (!CndPathUtilitities.isPathAbsolute(path.getPath())) {
+                if (!CndPathUtilities.isPathAbsolute(path.getPath())) {
                     CndUtils.assertTrueInConsole(false, "Can not convert "+path.getPath()); //NOI18N
                     it.remove();
                 }

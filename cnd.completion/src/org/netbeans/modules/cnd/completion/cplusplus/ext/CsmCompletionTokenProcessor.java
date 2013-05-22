@@ -224,6 +224,14 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
         addTokenTo(exp);
         return exp;
     }
+    
+    private CsmCompletionExpression createTokenExp(int id, CsmCompletionExpression oldExpression) {
+        CsmCompletionExpression exp = new CsmCompletionExpression(id);
+        for (int i = 0; i < oldExpression.getTokenCount(); i++) {
+            exp.addToken(oldExpression.getTokenID(i), oldExpression.getTokenOffset(i), oldExpression.getTokenText(i));
+        }
+        return exp;
+    }    
 
     /** Add the token to a given expression */
     private void addTokenTo(CsmCompletionExpression exp) {
@@ -1390,6 +1398,9 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                         top = gen;
                                         genericType = true;
 
+                                        // It seems that bugs 159068 and 159054 are now handled by other branches,
+                                        // so this fix is used for cases as in bug 230079
+                                        
                                         // IZ#159068 : Unresolved ids in instantiations after &
                                         // IZ#159054 : Unresolved id in case of reference to template as return type
                                         if (gen.getParameterCount() > 0) {
@@ -1397,14 +1408,23 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                             if (param.getParameterCount() > 0) {
                                                 switch (param.getExpID()) {
                                                     case MEMBER_POINTER: // check for "&List<...>" case
-                                                        CsmCompletionExpression newMemPointer = createTokenExp(param.getExpID());
                                                         CsmCompletionExpression newGen = createTokenExp(GENERIC_TYPE);
                                                         newGen.addParameter(param.getParameter(0));
                                                         for (int i = 1; i < gen.getParameterCount(); i++) {
                                                             newGen.addParameter(gen.getParameter(i));
                                                         }
-                                                        newMemPointer.addParameter(newGen);
-                                                        top = newMemPointer;
+//                                                        newMemPointer.addParameter(newGen);
+                                                        top = newGen;
+                                                        
+                                                        // pop generic type
+                                                        popExp();          
+                                                        
+                                                        // push MEMBER_POINTER_OPEN (it must be reduced to MEMBER_POINTER later)
+                                                        pushExp(createTokenExp(MEMBER_POINTER_OPEN, param)); 
+                                                        
+                                                        // push new GENERIC_TYPE (without MEMBER_POINTER)
+                                                        pushExp(newGen);
+                                                        
                                                     default:
                                                 }
                                             }

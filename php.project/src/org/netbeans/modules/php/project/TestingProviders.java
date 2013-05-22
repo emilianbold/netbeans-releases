@@ -41,54 +41,52 @@
  */
 package org.netbeans.modules.php.project;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.testing.PhpTesting;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
-import org.openide.util.LookupEvent;
-import org.openide.util.LookupListener;
 
 /**
  * Handler for testing providers of the project.
  */
-public final class TestingProviders {
+public final class TestingProviders implements PropertyChangeListener {
 
     private static final Logger LOGGER = Logger.getLogger(TestingProviders.class.getName());
 
-    private final PhpModule phpModule;
+    private final PhpProject project;
     private final List<PhpTestingProvider> testingProviders = new CopyOnWriteArrayList<PhpTestingProvider>();
-    private final LookupListener testingProvidersListener = new TestingProvidersListener();
 
     private volatile boolean providersDirty = true;
 
 
-    public TestingProviders(PhpModule phpModule) {
-        this.phpModule = phpModule;
+    private TestingProviders(PhpProject project) {
+        this.project = project;
     }
 
-    public void projectOpened() {
-        PhpTesting.addTestingProvidersListener(testingProvidersListener);
-        resetTestingProviders();
-    }
-
-    public void projectClosed() {
-        PhpTesting.removeTestingProvidersListener(testingProvidersListener);
+    public static TestingProviders create(PhpProject project) {
+        TestingProviders providers = new TestingProviders(project);
+        ProjectPropertiesSupport.addWeakPropertyEvaluatorListener(project, providers);
+        return providers;
     }
 
     public List<PhpTestingProvider> getTestingProviders() {
         synchronized (testingProviders) {
             if (providersDirty) {
                 providersDirty = false;
-                List<PhpTestingProvider> allProviders = PhpTesting.getTestingProviders();
-                List<PhpTestingProvider> projectProviders = new ArrayList<PhpTestingProvider>(allProviders.size());
-                for (PhpTestingProvider provider : allProviders) {
-                    if (provider.isInPhpModule(phpModule)) {
+                Set<String> storedTestingProviders = new HashSet<>(new PhpProjectProperties(project).getTestingProviders());
+                List<PhpTestingProvider> projectProviders = new ArrayList<>(storedTestingProviders.size());
+                for (PhpTestingProvider provider : PhpTesting.getTestingProviders()) {
+                    if (storedTestingProviders.contains(provider.getIdentifier())) {
                         if (LOGGER.isLoggable(Level.FINE)) {
-                            LOGGER.fine(String.format("Adding testing provider %s for project %s", provider.getIdentifier(), phpModule.getName()));
+                            LOGGER.fine(String.format("Adding testing provider %s for project %s", provider.getIdentifier(), project.getName()));
                         }
                         projectProviders.add(provider);
                     }
@@ -97,20 +95,18 @@ public final class TestingProviders {
                 testingProviders.addAll(projectProviders);
             }
         }
-        return new ArrayList<PhpTestingProvider>(testingProviders);
+        return new ArrayList<>(testingProviders);
     }
 
     void resetTestingProviders() {
         providersDirty = true;
     }
 
-    //~ Inner classes
-
-    private final class TestingProvidersListener implements LookupListener {
-
-        @Override
-        public void resultChanged(LookupEvent ev) {
-            LOGGER.fine("testing providers change, providers back to null");
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        String propertyName = evt.getPropertyName();
+        if (propertyName == null
+                || PhpProjectProperties.TESTING_PROVIDERS.equals(propertyName)) {
             resetTestingProviders();
         }
     }

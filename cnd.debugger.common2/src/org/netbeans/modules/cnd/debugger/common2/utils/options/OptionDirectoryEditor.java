@@ -48,7 +48,7 @@ import java.beans.PropertyEditorSupport;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
@@ -115,7 +115,7 @@ class OptionDirectoryEditor extends PropertyEditorSupport
 	    String seed = path;
 	    if (seed.length() == 0)
 		seed = ".";	// NOI18N
-	    if (!CndPathUtilitities.isPathAbsolute(seed))
+	    if (!CndPathUtilities.isPathAbsolute(seed))
 		seed = baseDir + File.separatorChar + seed;
 	    return seed;
 	}
@@ -146,7 +146,7 @@ class OptionDirectoryEditor extends PropertyEditorSupport
 		File file = getSelectedFile();
 		if (file != null) {
 		    String path = file.getPath();
-		    path = CndPathUtilitities.toAbsolutePath(baseDir, path);
+		    path = CndPathUtilities.toAbsolutePath(baseDir, path);
 		    editor.setValue(path);
 		}
 	    }

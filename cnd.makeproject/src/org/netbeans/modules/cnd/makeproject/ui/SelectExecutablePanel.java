@@ -66,7 +66,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
@@ -190,7 +190,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
         } else {
             String executablePath = executableTextField.getText();
             FileObject exe;
-            if (!CndPathUtilitities.isPathAbsolute(executablePath)) {
+            if (!CndPathUtilities.isPathAbsolute(executablePath)) {
                 exe = buildWorkingDirFO.getFileObject(executablePath);
             } else {
                 executablePath = CndFileUtils.normalizeAbsolutePath(executablePath);
@@ -455,7 +455,7 @@ public class SelectExecutablePanel extends javax.swing.JPanel {
             return;
         }
 
-        String path = CndPathUtilitities.normalizeSlashes(fileChooser.getSelectedFile().getPath());
+        String path = CndPathUtilities.normalizeSlashes(fileChooser.getSelectedFile().getPath());
         executableTextField.setText(path);
     }//GEN-LAST:event_browseButtonActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables

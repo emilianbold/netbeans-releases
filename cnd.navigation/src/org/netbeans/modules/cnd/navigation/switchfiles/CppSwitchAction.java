@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -351,7 +351,7 @@ public final class CppSwitchAction extends BaseAction {
     // Utility
     
     private static String getName(String path) {
-        String name = CndPathUtilitities.getBaseName(path);
+        String name = CndPathUtilities.getBaseName(path);
         int idxDot = name.lastIndexOf('.');
         return name.substring(0, idxDot == -1 ? name.length() : idxDot);
     }

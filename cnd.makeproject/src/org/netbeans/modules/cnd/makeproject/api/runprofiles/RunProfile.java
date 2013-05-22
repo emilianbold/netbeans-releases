@@ -72,7 +72,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.runprofiles.RunProfileXMLCodec;
 import org.netbeans.modules.cnd.makeproject.runprofiles.ui.EnvPanel;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -452,7 +452,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         String oldArgsFlat = getRunArgs();
         getRunCommand().setValue(runBinary + " " + argsFlat); // NOI18N
         arguments.setValue(argsFlat);
-        if (pcs != null && !CndPathUtilitities.sameString(oldArgsFlat, argsFlat)) {
+        if (pcs != null && !CndPathUtilities.sameString(oldArgsFlat, argsFlat)) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgsFlat, argsFlat);
         }
         needSave = true;
@@ -461,7 +461,7 @@ public final class RunProfile implements ConfigurationAuxObject {
     public void setArgs(String[] argsArray) {
         String argsFlat = ""; // NOI18N
         for (int i = 0; i < argsArray.length; i++) {
-            argsFlat += CndPathUtilitities.quoteIfNecessary(argsArray[i]);
+            argsFlat += CndPathUtilities.quoteIfNecessary(argsArray[i]);
             if (i < (argsArray.length - 1)) {
                 argsFlat += " "; // NOI18N
             }
@@ -510,7 +510,7 @@ public final class RunProfile implements ConfigurationAuxObject {
      * Base directory is what run directory is relative to if it is relative.
      */
     public void setBaseDir(String baseDir) {
-        assert baseDir != null && CndPathUtilitities.isPathAbsolute(baseDir);
+        assert baseDir != null && CndPathUtilities.isPathAbsolute(baseDir);
         this.baseDir = baseDir;
     }
 
@@ -585,7 +585,7 @@ public final class RunProfile implements ConfigurationAuxObject {
                 Logger.getLogger(RunProfile.class.getName()).log(Level.INFO, "", ex);  // NOI18N
             }
         }
-        if (CndPathUtilitities.isPathAbsolute(runDir2)) {
+        if (CndPathUtilities.isPathAbsolute(runDir2)) {
             runDirectory = runDir2;
         } else {
             runDirectory = getBaseDir() + "/" + runDir2; // NOI18N
@@ -615,7 +615,7 @@ public final class RunProfile implements ConfigurationAuxObject {
         if (newRunDir == null || newRunDir.length() == 0) {
             newRunDir = "."; // NOI18N
         }
-        setRunDir(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), newRunDir));
+        setRunDir(CndPathUtilities.toAbsoluteOrRelativePath(getBaseDir(), newRunDir));
     }
 
     // Should Build ...
@@ -661,7 +661,7 @@ public boolean isSimpleRunCommand() {
         String oldArgsFlat = getArgsFlat();
         this.runCommand = runCommand;
         String argsFlat = getArgsFlat();
-        if (pcs != null && !CndPathUtilitities.sameString(oldArgsFlat, argsFlat)) {
+        if (pcs != null && !CndPathUtilities.sameString(oldArgsFlat, argsFlat)) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgsFlat, argsFlat);
         }
     }
@@ -763,7 +763,7 @@ public boolean isSimpleRunCommand() {
         getRunCommand().assign(p.getRunCommand());
         //runCommandPicklist = p.getRunCommand().getPicklist();
         setConfigurationArguments(p.getConfigurationArguments().clone());
-        if (pcs != null && !CndPathUtilitities.sameString(oldArgs, getArgsFlat())) {
+        if (pcs != null && !CndPathUtilities.sameString(oldArgs, getArgsFlat())) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgs, getArgsFlat());
         }
         //setRawRunDirectory(p.getRawRunDirectory());
@@ -824,7 +824,7 @@ public boolean isSimpleRunCommand() {
             try {
                 String shell = HostInfoUtils.getHostInfo(targetEnv).getShell();
                 if (shell != null) {
-                    shell = CndPathUtilitities.getBaseName(shell);
+                    shell = CndPathUtilities.getBaseName(shell);
                     runComboHintSuffix = NbBundle.getMessage(RunProfile.class, "ShellSyntaxSupported", shell); // NOI18N
                 }
             } catch (IOException ex) {
@@ -937,7 +937,7 @@ public boolean isSimpleRunCommand() {
     public void setArguments(String val) {
         String oldArgs = arguments.getValue();
         arguments.setValue(val);
-        if (pcs != null && !CndPathUtilitities.sameString(oldArgs, val)) {
+        if (pcs != null && !CndPathUtilities.sameString(oldArgs, val)) {
             pcs.firePropertyChange(PROP_RUNARGS_CHANGED, oldArgs, val);
         }
     }
@@ -955,8 +955,8 @@ public boolean isSimpleRunCommand() {
 
         @Override
         public void setValue(String v) {
-            String path = CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), v);
-            path = CndPathUtilitities.normalizeSlashes(path);
+            String path = CndPathUtilities.toAbsoluteOrRelativePath(getBaseDir(), v);
+            path = CndPathUtilities.normalizeSlashes(path);
             setRunDir(path);
         }
 
@@ -967,7 +967,7 @@ public boolean isSimpleRunCommand() {
             if (runDir2.length() == 0) {
                 runDir2 = "."; // NOI18N
             }
-            if (CndPathUtilitities.isPathAbsolute(runDir2)) {
+            if (CndPathUtilities.isPathAbsolute(runDir2)) {
                 seed = runDir2;
             } else {
                 seed = getBaseDir() + File.separatorChar + runDir2;

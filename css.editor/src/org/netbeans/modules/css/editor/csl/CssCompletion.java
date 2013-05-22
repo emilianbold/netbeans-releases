@@ -884,24 +884,27 @@ public class CssCompletion implements CodeCompletionHandler {
                 //complete element name - without a or with a prefix
                 completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                 break;
+                
             case selectorsGroup:
             case simpleSelectorSequence:
             case combinator:
             case selector:
             case rule:
-                assert completionContext.getActiveTokenId() == CssTokenId.WS || completionContext.getActiveTokenId() == CssTokenId.NL;
-                //complete selector list without prefix in selector list e.g. BODY, | { ... }
-                
-                //filter out situation when the completion is invoked just after the left curly bracket
-                // div { | color: red;} or div { | }
-                //in this case the caret position falls to the rule node as the declarations node
-                //doesn't contain the whitespace before first declaration
-                TokenSequence<CssTokenId> tokenSequence = completionContext.getTokenSequence();
-                if(null == LexerUtils.followsToken(tokenSequence, CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL)) {
-                    completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
+                CssTokenId activeTokenId = completionContext.getActiveTokenId();
+                if(activeTokenId == CssTokenId.WS || activeTokenId == CssTokenId.NL || activeTokenId.getTokenCategory() == CssTokenIdCategory.OPERATORS) {
+                    //complete selector list without prefix in selector list e.g. BODY, | { ... }
+
+                    //filter out situation when the completion is invoked just after the left curly bracket
+                    // div { | color: red;} or div { | }
+                    //in this case the caret position falls to the rule node as the declarations node
+                    //doesn't contain the whitespace before first declaration
+                    TokenSequence<CssTokenId> tokenSequence = completionContext.getTokenSequence();
+                    if(null == LexerUtils.followsToken(tokenSequence, CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL)) {
+                        completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
+                    }
                 }
                 break;
-
+                
             case error:
                 Node parentNode = completionContext.getActiveNode().parent();
                 if (parentNode == null) {

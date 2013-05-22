@@ -72,7 +72,7 @@ import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.Utilities;
@@ -451,7 +451,7 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
                             s = DiscoveryUtils.removeEscape(s);
                         }
                     }
-                    String s2 = CndPathUtilitities.quoteIfNecessary(s);
+                    String s2 = CndPathUtilities.quoteIfNecessary(s);
                     if (s.equals(s2)) {
                         if (s.indexOf('"') > 0) {// NOI18N
                             int j = s.indexOf("\\\"");// NOI18N

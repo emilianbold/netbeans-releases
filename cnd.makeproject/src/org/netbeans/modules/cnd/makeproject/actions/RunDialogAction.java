@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.makeproject.api.RunDialogPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -206,7 +206,7 @@ public class RunDialogAction extends NodeAction {
         if (conf != null && isRun) {
             RunProfile profile = conf.getProfile();
             String path = executable;
-            path = CndPathUtilitities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
+            path = CndPathUtilities.toRelativePath(profile.getRunDirectory(), path); // FIXUP: should use rel or abs ...
             ProjectActionEvent projectActionEvent = new ProjectActionEvent(
                     project,
                     PredefinedType.RUN,

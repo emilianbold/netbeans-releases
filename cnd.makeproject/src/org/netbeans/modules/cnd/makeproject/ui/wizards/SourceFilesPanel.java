@@ -61,7 +61,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
@@ -409,7 +409,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
             seed = lastSelectedPath;
         }
         if (seed == null) {
-            if (wd != null && wd.length() > 0 && !CndPathUtilitities.isPathAbsolute(wd)) {
+            if (wd != null && wd.length() > 0 && !CndPathUtilities.isPathAbsolute(wd)) {
                 seed = baseDir + File.separator + wd;
             } else if (wd != null) {
                 seed = wd;
@@ -439,7 +439,7 @@ public class SourceFilesPanel extends javax.swing.JPanel {
         File file = fileChooser.getSelectedFile();
         lastSelectedPath = file.getAbsolutePath();
         FileObject fo = CndFileUtils.toFileObject(file);
-        data.add(new FolderEntry(fo, CndPathUtilitities.toAbsoluteOrRelativePath(baseDir, fileChooser.getSelectedFile().getPath()))); //TODO:fullRemote use base dir file object
+        data.add(new FolderEntry(fo, CndPathUtilities.toAbsoluteOrRelativePath(baseDir, fileChooser.getSelectedFile().getPath()))); //TODO:fullRemote use base dir file object
         refresh();
     }
 

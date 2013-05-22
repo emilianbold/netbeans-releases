@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
@@ -276,7 +276,7 @@ public class MakeArtifact implements Cloneable {
         if (makeConfiguration != null) {
             return makeConfiguration.expandMacros(output);
         } else {
-            String val = CndPathUtilitities.expandMacro(output, MakeConfiguration.CND_CONF_MACRO, configurationName); // NOI18N
+            String val = CndPathUtilities.expandMacro(output, MakeConfiguration.CND_CONF_MACRO, configurationName); // NOI18N
             return parentMakeConfiguration.expandMacros(val);
         }
     }
@@ -286,7 +286,7 @@ public class MakeArtifact implements Cloneable {
             try {
                 String projectPath = projectLocation;
                 FileSystem fs = parentMakeConfiguration.getBaseFSPath().getFileSystem();
-                if (!CndPathUtilitities.isPathAbsolute(projectLocation)) {
+                if (!CndPathUtilities.isPathAbsolute(projectLocation)) {
                     projectPath = parentMakeConfiguration.getBaseFSPath().getPath() + FileSystemProvider.getFileSeparatorChar(fs) + projectPath;
                 }
                 projectPath = FileSystemProvider.normalizeAbsolutePath(projectPath, fs);

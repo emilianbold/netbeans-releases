@@ -47,7 +47,7 @@ import java.util.StringTokenizer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 /**
  * list <--> converter
@@ -112,7 +112,7 @@ public final class TokenizerFactory {
 
                 @Override
                 public String resolve(String from) {
-                    if (CndPathUtilitities.isPathAbsolute(from)) {
+                    if (CndPathUtilities.isPathAbsolute(from)) {
                         return from;
                     }
                     if (project != null) {
@@ -123,8 +123,8 @@ public final class TokenizerFactory {
                             folder.isDiskFolder();
                             if (folderPath != null) {
                                 from = folderPath+"/"+from; // NOI18N
-                                if (CndPathUtilitities.isPathAbsolute(from)) {
-                                    return CndPathUtilitities.toAbsoluteOrRelativePath(folder.getConfigurationDescriptor().getBaseDir(), from);
+                                if (CndPathUtilities.isPathAbsolute(from)) {
+                                    return CndPathUtilities.toAbsoluteOrRelativePath(folder.getConfigurationDescriptor().getBaseDir(), from);
                                 } else {
                                     return from;
                                 }
@@ -135,8 +135,8 @@ public final class TokenizerFactory {
                         }
                     } else if (item != null) {
                         // TODO: should use compile dir?
-                        from = CndPathUtilitities.getDirName(item.getAbsolutePath())+"/"+from; // NOI18N
-                        return CndPathUtilitities.toAbsoluteOrRelativePath(item.getFolder().getConfigurationDescriptor().getBaseDir(), from);
+                        from = CndPathUtilities.getDirName(item.getAbsolutePath())+"/"+from; // NOI18N
+                        return CndPathUtilities.toAbsoluteOrRelativePath(item.getFolder().getConfigurationDescriptor().getBaseDir(), from);
                     }
                     return from;
                 }
@@ -245,7 +245,7 @@ public final class TokenizerFactory {
             if (addSep) {
                 ret.append(separator);
             }
-            ret.append(CndPathUtilitities.quoteIfNecessary(list.get(i)));
+            ret.append(CndPathUtilities.quoteIfNecessary(list.get(i)));
             addSep = true;
         }
         return ret.toString();

@@ -90,16 +90,6 @@ public final class PhpUnitTestingProvider implements PhpTestingProvider {
     }
 
     @Override
-    public String getCustomizerCategoryIdent() {
-        return IDENTIFIER;
-    }
-
-    @Override
-    public boolean isInPhpModule(PhpModule phpModule) {
-        return true;
-    }
-
-    @Override
     public boolean isTestFile(PhpModule phpModule, FileObject fileObj) {
         if (!PhpUnit.isTestFile(fileObj.getNameExt())) {
             return false;

@@ -1813,6 +1813,7 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                         enableNewLibraryComponent(false);
                         enableDefinedLibraryComponent(false);
                     }
+                    updatePreferredLanguages();
                 }
             });
             LOG.log(Level.FINEST, "Time spent in server libraries init = {0} ms", (System.currentTimeMillis()-time));

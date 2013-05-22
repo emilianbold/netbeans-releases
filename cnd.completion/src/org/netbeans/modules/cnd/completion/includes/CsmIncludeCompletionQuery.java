@@ -41,7 +41,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
@@ -99,7 +99,7 @@ public class CsmIncludeCompletionQuery {
         }
         Collection<FSPath> usrPaths = Collections.<FSPath>emptyList();
         Collection<FSPath> sysPaths = Collections.<FSPath>emptyList();
-        if (CndPathUtilitities.isPathAbsolute(childSubDir)) {
+        if (CndPathUtilities.isPathAbsolute(childSubDir)) {
             // special handling for absolute paths...
             addFolderItems(FSPath.toFSPath(docFileSystem.getRoot()),
                     "",

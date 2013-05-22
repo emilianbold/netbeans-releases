@@ -69,7 +69,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 
 /**
@@ -292,7 +292,7 @@ public class CreateTargetsPanel extends MakefileWizardPanel implements FocusList
                 if (returnVal == JFileChooser.APPROVE_OPTION) {
                     File file = fc.getSelectedFile();
                     //String cwd = getMakefileData().getBaseDirectory(MakefileData.EXPAND);
-                    //String path = CndPathUtilitities.getRelativePath(cwd, file.getPath());
+                    //String path = CndPathUtilities.getRelativePath(cwd, file.getPath());
                     //addTarget(path);
                     nameText.setText(file.getName());
                     setupButtons();
@@ -425,7 +425,7 @@ public class CreateTargetsPanel extends MakefileWizardPanel implements FocusList
         TargetData target = tlist.get(idx);
 
         if (name.charAt(name.length() - 1) == File.separatorChar) {
-            name = CndPathUtilitities.trimpath(name);
+            name = CndPathUtilities.trimpath(name);
             nameText.setText(name);
             ((DefaultListModel) list.getModel()).set(idx, name);
         }

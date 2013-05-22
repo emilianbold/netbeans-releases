@@ -62,6 +62,7 @@ public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
         private final PhpProject project;
         private final FileObject rootFolder;
         private final PhpVisibilityQuery phpVisibilityQuery;
+        // can be null when e.g. deleting project
         private final FileObject nbProject;
         private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -76,7 +77,6 @@ public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
 
             phpVisibilityQuery = PhpVisibilityQuery.forProject(project);
             nbProject = project.getProjectDirectory().getFileObject("nbproject"); // NOI18N
-            assert nbProject != null : "NB metadata folder was not found for project: " + project;
 
             ProjectPropertiesSupport.addWeakIgnoredFilesListener(project, this);
         }
@@ -94,7 +94,7 @@ public class PhpSourcesFilter implements  ChangeListener, ChangeableDataFilter {
         }
 
         private boolean isNbProject(FileObject file) {
-            return nbProject.equals(file);
+            return file.equals(nbProject);
         }
 
         private boolean isTestDirectory(FileObject file) {

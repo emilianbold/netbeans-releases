@@ -57,6 +57,7 @@ import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
@@ -131,8 +132,13 @@ public class GoToTest implements TestLocator {
         }
 
         if (CommandUtils.isUnderTests(project, fo, false)) {
+            List<PhpTestingProvider> testingProviders = project.getTestingProviders();
+            if (testingProviders.isEmpty()) {
+                // return test file type => customizer will be opened on action
+                return FileType.TEST;
+            }
             PhpModule phpModule = project.getPhpModule();
-            for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
+            for (PhpTestingProvider testingProvider : testingProviders) {
                 if (testingProvider.isTestFile(phpModule, fo)) {
                     return FileType.TEST;
                 }
@@ -156,9 +162,14 @@ public class GoToTest implements TestLocator {
         if (sourceRoot == null) {
             return null;
         }
+        List<PhpTestingProvider> testingProviders = project.getTestingProviders();
+        if (testingProviders.isEmpty()) {
+            PhpProjectUtils.openCustomizer(project, CompositePanelProviderImpl.TESTING);
+            return null;
+        }
         Map<FileObject, Locations.Offset> phpFiles = new HashMap<>();
         PhpModule phpModule = project.getPhpModule();
-        for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
+        for (PhpTestingProvider testingProvider : testingProviders) {
             org.netbeans.modules.php.spi.testing.locate.TestLocator testLocator = testingProvider.getTestLocator(phpModule);
             Set<Locations.Offset> result;
             if (searchTest) {

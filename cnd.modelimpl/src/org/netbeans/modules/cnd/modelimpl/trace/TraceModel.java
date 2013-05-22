@@ -90,7 +90,7 @@ import org.netbeans.modules.cnd.modelimpl.platform.ModelSupport;
 import org.netbeans.modules.cnd.modelimpl.repository.RepositoryUtils;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -774,7 +774,7 @@ public class TraceModel extends TraceModelBase {
             qInc = new ArrayList<String>(getQuoteIncludePaths().size());
             for (Iterator<String> it = getQuoteIncludePaths().iterator(); it.hasNext();) {
                 String path = it.next();
-                if (CndPathUtilitities.isPathAbsolute(path)) {
+                if (CndPathUtilities.isPathAbsolute(path)) {
                     qInc.add(path);
                 } else {
                     FileObject dirFO = fo.getParent();
