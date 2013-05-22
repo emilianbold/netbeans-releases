@@ -33,8 +33,11 @@ package org.netbeans.modules.autoupdate.updateprovider;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -47,6 +50,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -146,6 +155,25 @@ public class NetworkAccess {
                 public InputStream call () throws Exception {
                     URLConnection conn = url.openConnection ();
                     conn.setConnectTimeout (timeout);
+                    if(conn instanceof HttpsURLConnection){
+                        NetworkAccess.initSSL((HttpsURLConnection) conn);
+                    }
+                    //for HTTP or HTTPS: conenct and read response - redirection or not?
+                    if (conn instanceof HttpURLConnection) {
+                        conn.connect();
+                        if (((HttpURLConnection) conn).getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP) {
+                            // in case of redirection, try to obtain new URL
+                            String redirUrl = conn.getHeaderField("Location"); //NOI18N
+                            if (null != redirUrl && !redirUrl.isEmpty()) {
+                                //create connection to redirected url and substitute original conn
+                                URL redirectedUrl = new URL(redirUrl);
+                                URLConnection connRedir = redirectedUrl.openConnection();
+                                connRedir.setRequestProperty("User-Agent", "NetBeans");
+                                connRedir.setConnectTimeout(timeout);
+                                conn = (HttpURLConnection) connRedir;
+                            }
+                        }
+                    }
                     InputStream is = conn.getInputStream ();
                     contentLength = conn.getContentLength();
                     Map <String, List <String>> map = conn.getHeaderFields();
@@ -177,4 +205,38 @@ public class NetworkAccess {
         public void notifyException (Exception x);
     }
     
+    public static void initSSL(HttpURLConnection httpCon) throws IOException {
+        if (httpCon instanceof HttpsURLConnection) {
+            HttpsURLConnection https = (HttpsURLConnection) httpCon;
+
+            try {
+                TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        @Override
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return new X509Certificate[0];
+                        }
+
+                        @Override
+                        public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                        }
+
+                        @Override
+                        public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                        }
+                    }};
+                SSLContext sslContext = SSLContext.getInstance("SSL"); // NOI18N
+                sslContext.init(null, trustAllCerts, new SecureRandom());
+                https.setHostnameVerifier(new HostnameVerifier() {
+                    @Override
+                    public boolean verify(String hostname, SSLSession session) {
+                        return true;
+                    }
+                });
+                https.setSSLSocketFactory(sslContext.getSocketFactory());
+            } catch (Exception ex) {
+                throw new IOException(ex);
+            }
+        }
+    }
 }
