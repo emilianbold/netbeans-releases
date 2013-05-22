@@ -192,7 +192,7 @@ public class BugzillaRepository {
         String component = null;
         for (String productCandidate : conf.getProducts()) {
             // iterates because a product without a component throws NPE inside mylyn
-            List<String> components = conf.getComponents(product);
+            List<String> components = conf.getComponents(productCandidate);
             if (!components.isEmpty()) {
                 product = productCandidate;
                 component = components.get(0);
