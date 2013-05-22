@@ -62,7 +62,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -244,8 +244,8 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
                 for (int i = 0; i < artifacts.length; i++) {
                     String location = ProjectSupport.toProperPath(baseDir.getFileObject(), artifacts[i].getProjectLocation(), project);
                     String workingdir = ProjectSupport.toProperPath(baseDir.getFileObject(), artifacts[i].getWorkingDirectory(), project);
-                    location = CndPathUtilitities.normalizeSlashes(location);
-                    workingdir = CndPathUtilitities.normalizeSlashes(workingdir);
+                    location = CndPathUtilities.normalizeSlashes(location);
+                    workingdir = CndPathUtilities.normalizeSlashes(workingdir);
                     artifacts[i].setProjectLocation(location);
                     artifacts[i].setWorkingDirectory(workingdir);
                     myListEditorPanel.addObjectAction(new LibraryItem.ProjectItem(artifacts[i]));
@@ -361,7 +361,7 @@ public class LibrariesPanel extends javax.swing.JPanel implements HelpCtx.Provid
             for(File libFile: fileChooser.getSelectedFiles()) {
                 // FIXUP: why are baseDir UNIX path when remote?
                 String path = ProjectSupport.toProperPath(baseDir.getFileObject(), libFile.getPath(), project);
-                path = CndPathUtilitities.normalizeSlashes(path);
+                path = CndPathUtilities.normalizeSlashes(path);
                 myListEditorPanel.addObjectAction(new LibraryItem.LibFileItem(path));
             }
         }

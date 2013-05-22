@@ -60,14 +60,14 @@ import org.openide.util.Utilities;
 /**
  * Miscellaneous utility classes useful for the Ipe module
  */
-public class CndPathUtilitities {
+public class CndPathUtilities {
 
     private static boolean isWindows = Utilities.isWindows();
 
     /**
      * Constructor is private. This class should not be instantiated.
      */
-    private CndPathUtilitities() {
+    private CndPathUtilities() {
     }
 
     /*package*/ static void testSetWindows(boolean isWin) {
@@ -248,7 +248,7 @@ public class CndPathUtilitities {
                 relPath = "."; // NOI18N
             } // NOI18N
             else if (isPathAbsolute(base)) {
-                relPath = CndPathUtilitities.getRelativePath(base, relPath);
+                relPath = CndPathUtilities.getRelativePath(base, relPath);
             } else {
                 relPath = path;
             }
@@ -600,7 +600,7 @@ public class CndPathUtilitities {
             return false;
         }
         for (int x = 0; x < a.length; x++) {
-            if (!CndPathUtilitities.sameString(a[x], b[x])) {
+            if (!CndPathUtilities.sameString(a[x], b[x])) {
                 return false;
             }
         }

@@ -71,7 +71,7 @@ import org.netbeans.modules.cnd.builds.MakeExecSupport;
 import org.netbeans.modules.cnd.builds.QMakeExecSupport;
 import org.netbeans.modules.cnd.execution.ExecutionSupport;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
@@ -408,7 +408,7 @@ public abstract class AbstractExecutorRunAction extends NodeAction {
     private static FileObject getAbsolutePath(String bdir, FileObject relativeDirFO) {
         if (bdir.length() == 0 || bdir.equals(".")) { // NOI18N
             return relativeDirFO;
-        } else if (CndPathUtilitities.isPathAbsolute(bdir)) {
+        } else if (CndPathUtilities.isPathAbsolute(bdir)) {
             try {
                 return relativeDirFO.getFileSystem().findResource(bdir);
             } catch (FileStateInvalidException ex) {

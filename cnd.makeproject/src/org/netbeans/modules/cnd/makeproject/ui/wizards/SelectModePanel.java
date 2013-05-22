@@ -63,7 +63,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.DevHostsInitializer;
 import org.netbeans.modules.cnd.makeproject.ui.wizards.PanelProjectLocationVisual.ToolCollectionItem;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -398,7 +398,7 @@ public class SelectModePanel extends javax.swing.JPanel {
         if (WizardDescriptor.CLOSED_OPTION.equals(wizardDescriptor.getValue()) || WizardDescriptor.CANCEL_OPTION.equals(wizardDescriptor.getValue()) ) {
             return;
         }
-        if (CndPathUtilitities.isPathAbsolute(folderPath)) {
+        if (CndPathUtilities.isPathAbsolute(folderPath)) {
             String normalizeAbsolutePath = RemoteFileUtil.normalizeAbsolutePath(folderPath, env);
             FSPath path = new FSPath(fileSystem, normalizeAbsolutePath);
             wizardDescriptor.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, path);
@@ -439,7 +439,7 @@ public class SelectModePanel extends javax.swing.JPanel {
             if (path.length() == 0) {
                 return false;
             }
-            if (!CndPathUtilitities.isPathAbsolute(path)) {
+            if (!CndPathUtilities.isPathAbsolute(path)) {
                 messageKind = notFolder;
                 return false;
             }

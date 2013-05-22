@@ -76,7 +76,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -240,7 +240,7 @@ public class AnalyzeModel implements DiscoveryProvider {
             return;
         }
         if (d.exists() && d.isDirectory() && d.canRead()){
-            if (CndPathUtilitities.isIgnoredFolder(d)){
+            if (CndPathUtilities.isIgnoredFolder(d)){
                 return;
             }
             String canPath;

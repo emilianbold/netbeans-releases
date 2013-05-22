@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem.Proje
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.remote.sync.SharabilityFilter;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -134,7 +134,7 @@ public class RemoteProjectSupport {
         if (runDir != null) {
             String d = conf.getMakefileConfiguration().getBuildCommandWorkingDirValue();
             FileSystem fs = conf.getBaseFSPath().getFileSystem();
-            if (!CndPathUtilitities.isPathAbsolute(d)) {
+            if (!CndPathUtilities.isPathAbsolute(d)) {
                 d = conf.getBaseFSPath().getPath() + FileSystemProvider.getFileSeparatorChar(fs) + d;
             }
             d = FileSystemProvider.normalizeAbsolutePath(d, fs);

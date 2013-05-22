@@ -109,7 +109,7 @@ public final class MIMESupport {
      * @return one of cnd source mime types (@see MIMENames.SOURCE_MIME_TYPES) or null
      */
     public static String getKnownSourceFileMIMETypeByExtension(String filePathOrName) {
-        String fileName = CndPathUtilitities.getBaseName(filePathOrName);
+        String fileName = CndPathUtilities.getBaseName(filePathOrName);
         // check by known file extension
         String ext = FileUtil.getExtension(fileName);
         for (String mimeType : SOURCE_MIME_TYPES) {
@@ -163,7 +163,7 @@ public final class MIMESupport {
      * @return one of cnd source mime types (@see MIMENames.SOURCE_MIME_TYPES) or null
      */
     public static String getKnownBinaryFileMIMETypeByExtension(String filePathOrName) {
-        String fileName = CndPathUtilitities.getBaseName(filePathOrName);
+        String fileName = CndPathUtilities.getBaseName(filePathOrName);
         // check by known file extension
         String ext = FileUtil.getExtension(fileName);
         for (String mimeType : BINARY_MIME_TYPES) {

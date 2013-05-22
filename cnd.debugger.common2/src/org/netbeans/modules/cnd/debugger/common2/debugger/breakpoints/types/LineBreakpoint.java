@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.DebuggerAnnotation;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.EditorBridge;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.NativeBreakpoint;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.text.Line;
@@ -82,7 +82,7 @@ public final class LineBreakpoint extends NativeBreakpoint {
 	if (fileName.get() == null)
 	    return "";
 	else
-	    return CndPathUtilitities.getBaseName(fileName.get());
+	    return CndPathUtilities.getBaseName(fileName.get());
     } 
 
     public String getFileName() {
@@ -225,7 +225,7 @@ public final class LineBreakpoint extends NativeBreakpoint {
     } 
 
     protected String getDisplayNameHelp() {
-	return CndPathUtilitities.getBaseName(getFileName()) +
+	return CndPathUtilities.getBaseName(getFileName()) +
 	    ":" + getLineNumber(); // NOI18N
     }
 

@@ -86,4 +86,30 @@ public class Analyzer2Test extends NbTestCase {
                 .assertNotContainsWarnings("Missing @param tag for <T>")
                 .assertNotContainsWarnings("Missing @param tag for prvniho");
     }
+    
+    public void testEmptyTags() throws Exception {
+        HintTest.create()
+                .input(
+                "package test;\n" +
+                "class ZimaImpl implements Zima {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     */\n" +
+                "    public <T> String leden(T prvniho) throws Exception {\n" +
+                "        return \"\";\n" +
+                "    }\n" +
+                "}\n" +
+                "interface Zima {\n" +
+                "    /**\n" +
+                "     * \n" +
+                "     * @param <>\n" +
+                "     * @return <>\n" +
+                "     * @throws <>\n" +
+                "     */\n" +
+                "    <T> String leden(T prvniho) throws Exception;\n" +
+                "}\n")
+                .preference(AVAILABILITY_KEY + true, true)
+                .preference(SCOPE_KEY, "private")
+                .run(JavadocHint.class);
+    }
 }

@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Confi
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostConfiguration;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.openide.util.Lookup;
 
 /**
@@ -453,7 +453,7 @@ public final class DebugTarget implements Record {
 
 	    String executable = getExecutable();
 	    if (executable != null) 
-		newdir = CndPathUtilitities.getDirName(executable);
+		newdir = CndPathUtilities.getDirName(executable);
 
 	}
 	/* OLD

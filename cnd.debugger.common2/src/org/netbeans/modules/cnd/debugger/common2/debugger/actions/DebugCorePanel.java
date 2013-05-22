@@ -88,7 +88,7 @@ import org.netbeans.modules.cnd.debugger.common2.APIAccessor;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.ExecutableProjectPanel.ProjectCBItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -1057,7 +1057,7 @@ final class DebugCorePanel extends javax.swing.JPanel {
 
         @Override
         protected void documentChanged(DocumentEvent e) {
-            String pName = CndPathUtilitities.getBaseName(getExecutablePath());
+            String pName = CndPathUtilities.getBaseName(getExecutablePath());
             matchProject(pName);
             updateValidationParams();
         }

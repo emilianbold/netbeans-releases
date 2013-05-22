@@ -69,7 +69,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.modelutil.Tracer;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
@@ -300,10 +300,10 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             createItemTimeOut.remove(path);
             String dirName;
             if (event.getSource() instanceof FileObject) {
-                dirName = CndPathUtilitities.getDirName(path);
+                dirName = CndPathUtilities.getDirName(path);
             } else {
                 Item item = (Item) event.getAttrs()[0];
-                dirName = CndPathUtilitities.getDirName(item.getAbsolutePath());
+                dirName = CndPathUtilities.getDirName(item.getAbsolutePath());
             }
             if (isNotNormalized(dirName)) {
                 // Ignore not normalized paths
@@ -333,7 +333,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             LOG.log(timeOutLevel, "Timeout {0}s of find file object {1}", new Object[]{time/NANO_TO_SEC, path}); //NOI18N
             return;
         }
-        String dirName = CndPathUtilitities.getDirName(path);
+        String dirName = CndPathUtilities.getDirName(path);
         if (isNotNormalized(dirName)) {
             // Ignore not normalized paths
             return;
@@ -363,7 +363,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             //TODO: process timeout
             return;
         }
-        String dirName = CndPathUtilitities.getDirName(fo.getPath());
+        String dirName = CndPathUtilities.getDirName(fo.getPath());
         if (isNotNormalized(dirName)) {
             // Ignore not normalized paths
             return;
@@ -413,7 +413,7 @@ public class PerformanceIssueDetector implements PerformanceLogger.PerformanceLi
             }
             return;
         }
-        String dirName = CndPathUtilitities.getDirName(fo.getPath());
+        String dirName = CndPathUtilities.getDirName(fo.getPath());
         if (isNotNormalized(dirName)) {
             // Ignore not normalized paths
             return;

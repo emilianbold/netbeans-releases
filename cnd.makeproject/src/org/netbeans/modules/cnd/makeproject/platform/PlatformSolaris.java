@@ -45,7 +45,7 @@
 package org.netbeans.modules.cnd.makeproject.platform;
 
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 
 public class PlatformSolaris  extends Platform {
@@ -93,13 +93,13 @@ public class PlatformSolaris  extends Platform {
                 libName = libName.substring(3);
             }
             return compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getDynamicLibrarySearchFlag()
-                    + CndPathUtilitities.escapeOddCharacters(libDir)
+                    + CndPathUtilities.escapeOddCharacters(libDir)
                     + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibrarySearchFlag() // NOI18N
-                    + CndPathUtilitities.escapeOddCharacters(libDir)
+                    + CndPathUtilities.escapeOddCharacters(libDir)
                     + " " + compilerSet.getCompilerFlavor().getToolchainDescriptor().getLinker().getLibraryFlag() // NOI18N
-                    + CndPathUtilitities.escapeOddCharacters(libName);
+                    + CndPathUtilities.escapeOddCharacters(libName);
         } else {
-            return CndPathUtilitities.escapeOddCharacters(libPath);
+            return CndPathUtilities.escapeOddCharacters(libPath);
         }
     }
 }

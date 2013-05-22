@@ -52,7 +52,7 @@ import org.netbeans.modules.cnd.api.toolchain.AbstractCompiler;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.makeproject.SmartOutputStream;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCCompilerConfiguration.OptionToString;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
@@ -270,7 +270,7 @@ public class QmakeProjectWriter {
             String actualMimeType = fo.getMIMEType();
             for (String mimeType : mimeTypes) {
                 if (mimeType.equals(actualMimeType)) {
-                    list.add(CndPathUtilitities.quoteIfNecessary(item.getPath()));
+                    list.add(CndPathUtilities.quoteIfNecessary(item.getPath()));
                     break;
                 }
             }
@@ -350,7 +350,7 @@ public class QmakeProjectWriter {
     }
 
     private String expandAndQuote(String s) {
-        return CndPathUtilitities.quoteIfNecessary(configuration.expandMacros(s));
+        return CndPathUtilities.quoteIfNecessary(configuration.expandMacros(s));
     }
 
     private static class LibraryToString implements VectorConfiguration.ToString<LibraryItem> {
@@ -398,13 +398,13 @@ public class QmakeProjectWriter {
                 }
 
                 buf.append(searchOption);
-                String dirName = CndPathUtilitities.getDirName(path);
+                String dirName = CndPathUtilities.getDirName(path);
                 if (dirName != null && dirName.length() > 0) {
-                    buf.append(CndPathUtilitities.quoteIfNecessary(dirName));
+                    buf.append(CndPathUtilities.quoteIfNecessary(dirName));
                     buf.append(' '); // NOI18N
                 }
             }
-            buf.append(CndPathUtilitities.quoteIfNecessary(path));
+            buf.append(CndPathUtilities.quoteIfNecessary(path));
             return buf.toString();
         }
 
@@ -428,7 +428,7 @@ public class QmakeProjectWriter {
                 if (compilerSet != null) {
                     item = CppUtils.normalizeDriveLetter(compilerSet, item);
                 }
-                return CndPathUtilitities.quoteIfNecessary(item);
+                return CndPathUtilities.quoteIfNecessary(item);
             } else {
                 return ""; // NOI18N
             }

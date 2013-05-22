@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Location;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebugger;
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.openide.util.Exceptions;
 
@@ -186,7 +186,7 @@ public class DisInfoPanel extends JPanel {
         if (INSTANCE != null) {
             String src = location.src();
             if (src != null) {
-                src = CndPathUtilitities.getBaseName(src);
+                src = CndPathUtilities.getBaseName(src);
             } else {
                 src = "";
             }

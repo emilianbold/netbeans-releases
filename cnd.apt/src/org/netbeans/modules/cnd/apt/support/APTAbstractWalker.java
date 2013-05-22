@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.apt.support.APTIncludeHandler.IncludeState;
 import org.netbeans.modules.cnd.apt.support.APTMacro.Kind;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.TinyMaps;
 import org.openide.filesystems.FileSystem;
 
@@ -111,7 +111,7 @@ public abstract class APTAbstractWalker extends APTWalker {
             if (resolvedPath == null) {
                 if (DebugUtils.STANDALONE) {
                     if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
-                        System.err.println("FAILED INCLUDE: from " + CndPathUtilitities.getBaseName(startPath.toString()) + " for:\n\t" + apt);// NOI18N
+                        System.err.println("FAILED INCLUDE: from " + CndPathUtilities.getBaseName(startPath.toString()) + " for:\n\t" + apt);// NOI18N
                     }
                 } else {
                     APTUtils.LOG.log(Level.WARNING,
@@ -131,7 +131,7 @@ public abstract class APTAbstractWalker extends APTWalker {
             if (resolvedPath == null) {
                 if (DebugUtils.STANDALONE) {
                     if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
-                        System.err.println("FAILED INCLUDE: from " + CndPathUtilitities.getBaseName(startPath.toString()) + " for:\n\t" + apt);// NOI18N
+                        System.err.println("FAILED INCLUDE: from " + CndPathUtilities.getBaseName(startPath.toString()) + " for:\n\t" + apt);// NOI18N
                     }
                 } else {
                     APTUtils.LOG.log(Level.WARNING,
@@ -184,12 +184,12 @@ public abstract class APTAbstractWalker extends APTWalker {
         } else {
             if (DebugUtils.STANDALONE) {
                 if (APTUtils.LOG.getLevel().intValue() <= Level.SEVERE.intValue()) {
-                    System.err.println("INCORRECT #define directive: in " + CndPathUtilitities.getBaseName(startPath.toString()) + " for:\n\t" + apt);// NOI18N
+                    System.err.println("INCORRECT #define directive: in " + CndPathUtilities.getBaseName(startPath.toString()) + " for:\n\t" + apt);// NOI18N
                 }
             } else {
                 APTUtils.LOG.log(Level.SEVERE,
                         "INCORRECT #define directive: in {0} for:\n\t{1}", // NOI18N
-                        new Object[] { CndPathUtilitities.getBaseName(startPath.toString()), apt });
+                        new Object[] { CndPathUtilities.getBaseName(startPath.toString()), apt });
             }
         }
     }

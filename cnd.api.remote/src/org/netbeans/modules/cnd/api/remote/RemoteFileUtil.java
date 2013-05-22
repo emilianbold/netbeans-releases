@@ -53,7 +53,7 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileView;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
@@ -111,7 +111,7 @@ public class RemoteFileUtil {
     public static FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath) {
         FileObject result = FileSystemProvider.getFileObject(baseFileObject, relativeOrAbsolutePath);
         if (result == null) {
-            String absRootPath = CndPathUtilitities.toAbsolutePath(baseFileObject, relativeOrAbsolutePath);
+            String absRootPath = CndPathUtilities.toAbsolutePath(baseFileObject, relativeOrAbsolutePath);
             try {
                 // XXX:fullRemote we use old logic for local and new for remote
                 // but remote approach for local gives #197093 -  Exception: null file

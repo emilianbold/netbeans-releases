@@ -72,7 +72,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -372,17 +372,17 @@ public class TableEditorPanel extends ListEditorPanel<LibraryItem> {
             } else if (col == 1) {
                 // FIXUP: should do a deep clone of the list
                 MakeArtifact oldMakeArtifact = ((LibraryItem.ProjectItem) libraryItem).getMakeArtifact();
-                boolean abs = CndPathUtilitities.isPathAbsolute(oldMakeArtifact.getProjectLocation());
+                boolean abs = CndPathUtilities.isPathAbsolute(oldMakeArtifact.getProjectLocation());
                 MakeArtifact makeArtifact = ((MakeArtifactWrapper) value).getMakeArtifact();
                 String projectLocation = makeArtifact.getProjectLocation();
                 String workingDirectory = makeArtifact.getWorkingDirectory();
                 if (!abs) {
                     // retain abs/rel paths...
-                    projectLocation = CndPathUtilitities.toRelativePath(baseDir.getFileObject(), projectLocation);
-                    workingDirectory = CndPathUtilitities.toRelativePath(baseDir.getFileObject(), workingDirectory);
+                    projectLocation = CndPathUtilities.toRelativePath(baseDir.getFileObject(), projectLocation);
+                    workingDirectory = CndPathUtilities.toRelativePath(baseDir.getFileObject(), workingDirectory);
                 }
-                makeArtifact.setProjectLocation(CndPathUtilitities.normalizeSlashes(projectLocation));
-                makeArtifact.setWorkingDirectory(CndPathUtilitities.normalizeSlashes(workingDirectory));
+                makeArtifact.setProjectLocation(CndPathUtilities.normalizeSlashes(projectLocation));
+                makeArtifact.setWorkingDirectory(CndPathUtilities.normalizeSlashes(workingDirectory));
                 replaceElement(libraryItem, new LibraryItem.ProjectItem(makeArtifact), row);
                 // FIXUP
                 fireTableCellUpdated(row, 0);

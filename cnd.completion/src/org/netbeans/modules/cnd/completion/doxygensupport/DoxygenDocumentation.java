@@ -278,18 +278,28 @@ public class DoxygenDocumentation {
         // check right after declaration on the same line
         TokenSequence<CppTokenId> ts2 = ts;
         ts2.move(csmOffsetable.getEndOffset());
+        int parenCount = 0;
         while (ts2.moveNext()) {
             switch (ts2.token().id()) {
                 case NEW_LINE:
                     break;
+                case LPAREN:
+                    parenCount++;
+                    continue;
+                case RPAREN:
+                    parenCount--;
+                    continue;
                 case LINE_COMMENT:
                 case BLOCK_COMMENT:
                 case DOXYGEN_COMMENT:
                 case DOXYGEN_LINE_COMMENT:
-                    list.add(new DocCandidate(ts2.token().text().toString(), ts2.token().id()));
+                    if (parenCount==0) {
+                        list.add(new DocCandidate(ts2.token().text().toString(), ts2.token().id()));
+                    }
                     break;
                 case PREPROCESSOR_DIRECTIVE:
                     ts2 = ts2.embedded(CppTokenId.languagePreproc());      
+                    ts2.move(csmOffsetable.getStartOffset());
                 default:
                     continue;
             }

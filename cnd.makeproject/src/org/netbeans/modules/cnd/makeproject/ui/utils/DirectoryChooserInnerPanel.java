@@ -47,7 +47,7 @@ import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import java.util.List;
 import javax.swing.JFileChooser;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -88,18 +88,18 @@ public class DirectoryChooserInnerPanel extends ListEditorPanel<String> {
             return null;
         }
         String itemPath = fileChooser.getSelectedFile().getPath();
-        itemPath = CndPathUtilitities.naturalizeSlashes(itemPath);
+        itemPath = CndPathUtilities.naturalizeSlashes(itemPath);
         String bd = baseDir;
-        bd = CndPathUtilitities.naturalizeSlashes(bd);
-        itemPath = CndPathUtilitities.toRelativePath(bd, itemPath);
+        bd = CndPathUtilities.naturalizeSlashes(bd);
+        itemPath = CndPathUtilities.toRelativePath(bd, itemPath);
 //        if (pathPanel != null && pathPanel.getMode() == PathPanel.REL_OR_ABS) {
-//            itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(bd, itemPath);
+//            itemPath = CndPathUtilities.toAbsoluteOrRelativePath(bd, itemPath);
 //        } else if (pathPanel != null && pathPanel.getMode() == PathPanel.REL) {
-//            itemPath = CndPathUtilitities.toRelativePath(bd, itemPath);
+//            itemPath = CndPathUtilities.toRelativePath(bd, itemPath);
 //        } else {
 //            itemPath = itemPath;
 //        }
-        itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
+        itemPath = CndPathUtilities.normalizeSlashes(itemPath);
         return itemPath;
     }
 

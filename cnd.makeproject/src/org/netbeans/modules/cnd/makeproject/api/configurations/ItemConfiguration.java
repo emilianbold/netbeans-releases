@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ItemXMLCodec;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -537,7 +537,7 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         set.setName("Item"); // NOI18N
         set.setDisplayName(getString("ItemTxt"));
         set.setShortDescription(getString("ItemHint"));
-        set.put(new StringRONodeProp(getString("NameTxt"), CndPathUtilitities.getBaseName(item.getPath())));
+        set.put(new StringRONodeProp(getString("NameTxt"), CndPathUtilities.getBaseName(item.getPath())));
         set.put(new StringRONodeProp(getString("FilePathTxt"), item.getPath()));
         String mdate = ""; // NOI18N
         String fullPath;
@@ -550,10 +550,10 @@ public class ItemConfiguration implements ConfigurationAuxObject {
         final String baseDir = mc.getSourceBaseDir();
         FileObject baseDirFO = sourceFS.findResource(baseDir);
         if (baseDirFO != null && baseDirFO.isValid()) {
-            fullPath = CndPathUtilitities.toAbsolutePath(baseDirFO, item.getPath());            
+            fullPath = CndPathUtilities.toAbsolutePath(baseDirFO, item.getPath());            
             itemFO = sourceFS.findResource(FileSystemProvider.normalizeAbsolutePath(fullPath, sourceFS));
         } else {
-            fullPath = CndPathUtilitities.toAbsolutePath(baseDir, item.getPath());
+            fullPath = CndPathUtilities.toAbsolutePath(baseDir, item.getPath());
             itemFO = null;
         }
         if (itemFO != null && itemFO.isValid()) {

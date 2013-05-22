@@ -63,7 +63,7 @@ import javax.swing.JPanel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.DialogDescriptor;
 import org.openide.WizardDescriptor;
@@ -935,7 +935,7 @@ public class MakefileWizard implements TemplateWizard.Iterator {
                 if (makefileDir.equals(baseDir)) {
                     buildDirectory = ("."); // NOI18N
                 } else {
-                    buildDirectory = CndPathUtilitities.getRelativePath(makefileDir, baseDir);
+                    buildDirectory = CndPathUtilities.getRelativePath(makefileDir, baseDir);
                 }
                 mes.setBuildDirectory(buildDirectory);
 
@@ -943,7 +943,7 @@ public class MakefileWizard implements TemplateWizard.Iterator {
                 String fullBuildDirectoryPath = buildDirectory;
                 int aIndex = fullMakefilePath.lastIndexOf(File.separatorChar);
                 if (aIndex >= 0) {
-                    fullBuildDirectoryPath = CndPathUtilitities.toAbsolutePath(fullMakefilePath.substring(0, aIndex), fullBuildDirectoryPath);
+                    fullBuildDirectoryPath = CndPathUtilities.toAbsolutePath(fullMakefilePath.substring(0, aIndex), fullBuildDirectoryPath);
                 }
 
                 // Send creation event
@@ -1048,7 +1048,7 @@ public class MakefileWizard implements TemplateWizard.Iterator {
         // Create and set makefile name based on name from targetChooser panel and basedirectory
         MakefileData md = getMakefileData();
         String makefileName = getTemplateWizard().getTargetName();
-        String dir = CndPathUtilitities.trimSlashes(md.getMakefileDirName());
+        String dir = CndPathUtilities.trimSlashes(md.getMakefileDirName());
         if (makefileName == null) {
             makefileName = uniqDefaultName(dir, "Makefile"); // NOI18N
         }

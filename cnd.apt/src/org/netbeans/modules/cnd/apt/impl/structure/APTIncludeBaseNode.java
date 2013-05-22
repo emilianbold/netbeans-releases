@@ -58,7 +58,7 @@ import org.netbeans.modules.cnd.apt.support.APTTokenAbstact;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.apt.utils.ListBasedTokenStream;
 import org.netbeans.modules.cnd.apt.utils.TokenBasedTokenStream;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 /**
  * #include and #include_next base implementation
@@ -202,7 +202,7 @@ public abstract class APTIncludeBaseNode extends APTTokenBasedNode
                 }
             }
         }
-        return CndPathUtilitities.normalizeUnixPath(out);
+        return CndPathUtilities.normalizeUnixPath(out);
     }
 
     public boolean isSystem(APTMacroCallback callback) {
