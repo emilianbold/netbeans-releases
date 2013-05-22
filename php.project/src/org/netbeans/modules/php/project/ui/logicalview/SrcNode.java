@@ -52,6 +52,7 @@ import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
+import org.netbeans.modules.php.api.testing.PhpTesting;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.DebugFileCommand;
@@ -169,13 +170,7 @@ public class SrcNode extends FilterNode {
         // customizer - open sources for source node, testing for test node
         Action customizeAction = null;
         if (isTest) {
-            for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
-                String customizerCategory = testingProvider.getCustomizerCategoryIdent();
-                if (customizerCategory != null) {
-                    customizeAction = new PhpLogicalViewProvider.CustomizeProjectAction(project, customizerCategory);
-                    break;
-                }
-            }
+            customizeAction = new PhpLogicalViewProvider.CustomizeProjectAction(project, PhpTesting.CUSTOMIZER_IDENT);
         } else {
             customizeAction = CommonProjectActions.customizeProjectAction();
         }

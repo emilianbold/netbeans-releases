@@ -1,3 +1,4 @@
+<?php
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,39 +40,31 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.phpunit.ui.customizer;
-
-import javax.swing.JComponent;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.api.testing.PhpTesting;
-import org.netbeans.modules.php.phpunit.PhpUnitTestingProvider;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
 
 /**
- * Project customizer for PhpUnit.
+ * Simple class for our unit tests.
  */
-@ServiceProvider(service = ProjectCustomizer.CompositeCategoryProvider.class,
-        path = PhpTesting.CUSTOMIZERS_PATH, position = 100)
-public class PhpUnitCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+class Calculator {
 
-    @NbBundle.Messages("PhpUnitCustomizer.name=PHPUnit")
-    @Override
-    public Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                PhpUnitTestingProvider.getInstance().getIdentifier(),
-                Bundle.PhpUnitCustomizer_name(),
-                null,
-                (ProjectCustomizer.Category[]) null);
+    public function plus($a, $b) {
+        return $a + $b;
     }
 
-    @Override
-    public JComponent createComponent(Category category, Lookup context) {
-        PhpModule phpModule = PhpModule.lookupPhpModule(context);
-        return new CustomizerPhpUnit(category, phpModule);
+    public function minus($a, $b) {
+        return $a - $b;
+    }
+
+    public function multiply($a, $b) {
+        return $a * $b;
+    }
+
+    public function divide($a, $b) {
+        if ($b == 0) {
+            throw new InvalidArgumentException('Cannot divide by zero');
+        }
+        return $a / $b;
     }
 
 }
+
+?>
