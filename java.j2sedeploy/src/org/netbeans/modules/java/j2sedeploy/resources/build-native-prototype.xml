@@ -315,40 +315,40 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         <condition property="need.Inno.presence">
             <and>
                 <isset property="running.on.windows"/>
-                <isset property="javafx.native.bundling.type"/>
+                <isset property="native.bundling.type"/>
                 <or>
-                    <equals arg1="${javafx.native.bundling.type}" arg2="all" casesensitive="false"/>
-                    <equals arg1="${javafx.native.bundling.type}" arg2="installer" casesensitive="false"/>
-                    <equals arg1="${javafx.native.bundling.type}" arg2="exe" casesensitive="false"/>
+                    <equals arg1="${native.bundling.type}" arg2="all" casesensitive="false"/>
+                    <equals arg1="${native.bundling.type}" arg2="installer" casesensitive="false"/>
+                    <equals arg1="${native.bundling.type}" arg2="exe" casesensitive="false"/>
                 </or>
             </and>
         </condition>
         <condition property="need.WiX.presence">
             <and>
                 <isset property="running.on.windows"/>
-                <isset property="javafx.native.bundling.type"/>
+                <isset property="native.bundling.type"/>
                 <or>
-                    <equals arg1="${javafx.native.bundling.type}" arg2="all" casesensitive="false"/>
-                    <equals arg1="${javafx.native.bundling.type}" arg2="installer" casesensitive="false"/>
-                    <equals arg1="${javafx.native.bundling.type}" arg2="msi" casesensitive="false"/>
+                    <equals arg1="${native.bundling.type}" arg2="all" casesensitive="false"/>
+                    <equals arg1="${native.bundling.type}" arg2="installer" casesensitive="false"/>
+                    <equals arg1="${native.bundling.type}" arg2="msi" casesensitive="false"/>
                 </or>
             </and>
         </condition>
         <condition property="need.dpkg.presence">
             <and>
                 <isset property="running.on.unix"/>
-                <isset property="javafx.native.bundling.type"/>
+                <isset property="native.bundling.type"/>
                 <or>
-                    <equals arg1="${javafx.native.bundling.type}" arg2="deb" casesensitive="false"/>
+                    <equals arg1="${native.bundling.type}" arg2="deb" casesensitive="false"/>
                 </or>
             </and>
         </condition>
         <condition property="need.rpmbuild.presence">
             <and>
                 <isset property="running.on.unix"/>
-                <isset property="javafx.native.bundling.type"/>
+                <isset property="native.bundling.type"/>
                 <or>
-                    <equals arg1="${javafx.native.bundling.type}" arg2="rpm" casesensitive="false"/>
+                    <equals arg1="${native.bundling.type}" arg2="rpm" casesensitive="false"/>
                 </or>
             </and>
         </condition>
