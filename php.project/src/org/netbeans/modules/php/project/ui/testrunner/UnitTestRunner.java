@@ -87,7 +87,6 @@ public final class UnitTestRunner {
         coverageProvider = project.getLookup().lookup(PhpCoverageProvider.class);
         assert coverageProvider != null;
         testingProviders = project.getTestingProviders();
-        assert !testingProviders.isEmpty();
 
         testSession = new TestSession(getOutputTitle(project, info), project, map(info.getSessionType()), new PhpTestRunnerNodeFactory(new CallStackCallback(project)));
         testSession.setRerunHandler(rerunHandler);
