@@ -178,7 +178,7 @@ public class JQueryCodeCompletion implements CompletionProvider {
         if (element != null && element instanceof DocSimpleElement) {
             return ((DocSimpleElement)element).getDocumentation();
         }
-        if (element.getKind() == ElementKind.CALL) {
+        if (element != null && element.getKind() == ElementKind.CALL) {
             String name = element.getName();
             name = name.substring(1); // remove :
             int index = name.indexOf('(');
@@ -186,7 +186,7 @@ public class JQueryCodeCompletion implements CompletionProvider {
                 name = name.substring(0, index);
             }
             return SelectorsLoader.getDocumentation(getJQueryAPIFile(), name);
-        } else if (element.getKind() == ElementKind.METHOD) {
+        } else if (element != null &&  element.getKind() == ElementKind.METHOD) {
             if (JQueryUtils.isJQuery(info, lastTsOffset)) {
                 return SelectorsLoader.getMethodDocumentation(getJQueryAPIFile(), element.getName());
             }
