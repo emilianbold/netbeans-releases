@@ -58,6 +58,7 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
+import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
@@ -97,10 +98,17 @@ public class BeansXmlIterator implements TemplateWizard.Iterator {
     public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
         String targetName = Templates.getTargetName(wizard);
         FileObject targetDir = Templates.getTargetFolder(wizard);
-
-        FileObject fo = DDHelper.createBeansXml(Profile.JAVA_EE_6_FULL, targetDir, targetName);
+        Project project = Templates.getProject(wizard);
+        boolean useCDI11 = true;
+        if (project != null) {
+            J2eeProjectCapabilities cap = J2eeProjectCapabilities.forProject(project);
+            if (cap != null && !cap.isCdi11Supported()) {
+                useCDI11 = false;
+            }
+        }
+        FileObject fo = DDHelper.createBeansXml(
+                useCDI11 ? Profile.JAVA_EE_7_FULL : Profile.JAVA_EE_6_FULL, targetDir, targetName);
         if (fo != null) {
-            Project project = Templates.getProject(wizard);
             if ( project != null ){
                 CdiUtil logger = project.getLookup().lookup( CdiUtil.class );
                 if (logger != null){
