@@ -46,14 +46,11 @@ import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javaee.specs.support.api.EjbSupport;
 import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
@@ -173,13 +170,14 @@ public final class J2eeProjectCapabilities {
     }
 
     /**
-     * Is CDI 1.1 supported in this project? Returns true if project has EE7 profile.
+     * Is CDI 1.1 supported in this project?
+     * @return {@code true} if the project targets EE7 profile, {@code false} otherwise
      * @since 1.86
      */
     public boolean isCdi11Supported() {
-        return Profile.JAVA_EE_7_WEB.equals(ejbJarProfile) ||
+        return Profile.JAVA_EE_7_FULL.equals(ejbJarProfile) ||
             Profile.JAVA_EE_7_WEB.equals(webProfile) ||
-            Profile.JAVA_EE_7_WEB.equals(carProfile);
+            Profile.JAVA_EE_7_FULL.equals(carProfile);
     }
 
     /**
