@@ -370,7 +370,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
             if (!inheritablePropertiesOnly) {
                 set1.put(new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
             }
-            set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseFSPath(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, new HelpCtx("AddtlLibraryDirectories")){ // NOI18N
+            set1.put(new VectorNodeProp(getAdditionalLibs(), null, getMakeConfiguration().getBaseFSPath(), new String[]{"AdditionalLibraryDirectories", getString("AdditionalLibraryDirectoriesTxt"), getString("AdditionalLibraryDirectoriesHint")}, true, true, new HelpCtx("AddtlLibraryDirectories")){ // NOI18N
                 @Override
                 protected List<String> convertToList(String text) {
                     return TokenizerFactory.DEFAULT_CONVERTER.convertToList(text);
@@ -382,7 +382,7 @@ public class LinkerConfiguration implements AllOptionsProvider, Cloneable {
             });
         }
         if (linker != null && linker.getDynamicLibrarySearchFlag() != null && linker.getDynamicLibrarySearchFlag().length() > 0) {
-            set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseFSPath(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, new HelpCtx("RuntimeSearchDirectories")){ // NOI18N
+            set1.put(new VectorNodeProp(getDynamicSearch(), null, getMakeConfiguration().getBaseFSPath(), new String[]{"RuntimeSearchDirectories", getString("RuntimeSearchDirectoriesTxt"), getString("RuntimeSearchDirectoriesHint")}, false, true, new HelpCtx("RuntimeSearchDirectories")){ // NOI18N
                 @Override
                 protected List<String> convertToList(String text) {
                     return TokenizerFactory.DEFAULT_CONVERTER.convertToList(text);
