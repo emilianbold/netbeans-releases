@@ -46,7 +46,6 @@ package org.netbeans.modules.cnd.qnavigator.navigator;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Collection;
 import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -68,6 +67,8 @@ import org.netbeans.modules.cnd.api.model.CsmModelListener;
 import org.netbeans.modules.cnd.api.model.CsmModelState;
 import org.netbeans.modules.cnd.api.model.CsmProgressListener;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.project.NativeFileItem;
+import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.qnavigator.navigator.CsmFileFilter.SortMode;
@@ -223,12 +224,9 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
                 busyListener.busyStart();
             }
             if (csmFile == null) {
-                Collection<NativeProject> nativeProjects = CsmUtilities.getNativeProjects(cdo);
                 synchronized(lock) {
                     fileModel.clear();
-                    if (!nativeProjects.isEmpty()) {
-                        setChildren(new Node[]{new NoCodeModelNode(nativeProjects)});
-                    }
+                    setChildren(new Node[]{new NoCodeModelNode(cdo)});
                 }
             } else {
                 PreBuildModel buildPreModel = fileModel.buildPreModel(csmFile);
@@ -791,24 +789,42 @@ public class NavigatorModel implements CsmProgressListener, CsmModelListener {
     private class NoCodeModelNode extends AbstractNode {
         private final NativeProject project;
         
-        public NoCodeModelNode(Collection<NativeProject> projects) {
+        public NoCodeModelNode(DataObject dobj) {
             super(Children.LEAF);
-            assert !projects.isEmpty();
-            NativeProject projectToEnable = projects.iterator().next();
             
+            boolean loading = false;
+            NativeProject owner = null;
+            boolean excluded = true;
             CsmModel model = CsmModelAccessor.getModel();
-            // check if all projects are loaded
-            for (NativeProject nativeProject : projects) {
-                if (model.isProjectEnabled(nativeProject) == null) {
-                    projectToEnable = null;
+            
+            if (dobj != null && dobj.isValid()) {
+                NativeFileItemSet set = dobj.getLookup().lookup(NativeFileItemSet.class);
+                if (set != null && !set.isEmpty()) {
+                    for (NativeFileItem item : set.getItems()) {
+                        owner = item.getNativeProject();
+                        if (!item.isExcluded()) {
+                            excluded = false;
+                        }
+                        if (model.isProjectEnabled(owner) == null) {
+                            loading = true;
+                            break;
+                        }
+                    }
                 }
             }
-            this.project = projectToEnable;
-            if (project != null) {
-                setName(NbBundle.getMessage(NavigatorModel.class, "ModelDisabled", project.getProjectDisplayName()));
-            } else {
+            
+            if (loading) {
                 setName(NbBundle.getMessage(NavigatorModel.class, "Initializing"));
+                owner = null;
+            } else if (owner == null) {
+                setName(NbBundle.getMessage(NavigatorModel.class, "OrphanFile"));
+            } else if (excluded) {
+                setName(NbBundle.getMessage(NavigatorModel.class, "FileExcludedFromCodeAssistance"));
+            } else {
+                setName(NbBundle.getMessage(NavigatorModel.class, "ModelDisabled", owner.getProjectDisplayName()));
             }
+            
+            this.project = owner;
             setIconBaseWithExtension("org/netbeans/modules/cnd/qnavigator/resources/exclamation.gif");
         }
 
