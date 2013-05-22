@@ -41,6 +41,7 @@ import java.io.File;
 import java.net.URI;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
@@ -48,7 +49,10 @@ import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.openide.awt.StatusDisplayer;
+import org.openide.awt.StatusDisplayer.Message;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 import org.openide.util.Parameters;
@@ -196,7 +200,27 @@ import org.openide.util.Utilities;
     }
     
     void log() {
-        log(true, true);
+        // prevent logging of events within 3 minutes from the start of scan. Do not freeze...
+        if (canLogScanCancel()) {
+            log(true, true);
+        } else {
+            if (System.getProperty(RepositoryUpdater.PROP_SAMPLING) == null) {
+                // enable profiling just up to the 1st exception report
+                System.setProperty(RepositoryUpdater.PROP_SAMPLING, "oneshot"); // NOI18N
+            }
+            final LogRecord r = new LogRecord(Level.INFO,  LOG_MESSAGE_EARLY);
+            r.setResourceBundle(NbBundle.getBundle(LogContext.class));
+            r.setResourceBundleName(LogContext.class.getPackage().getName() + ".Bundle"); //NOI18N
+            r.setLoggerName(LOG.getName());
+            LOG.log(r);
+
+            // schedule the log for later, after enough time elapses.
+            RequestProcessor.getDefault().post(new Runnable() {
+                public void run() {
+                    log(true, true);
+                }
+            }, (int)EXEC_TRESHOLD);
+        }
     }
     
     /**
@@ -367,20 +391,21 @@ import org.openide.util.Utilities;
 
     private volatile boolean updaterThreadAlive = false;
     
-    private Exception createException() {
+    private ScanCancelledException createException() {
         
         if (analyzeStacktraces() == 2) {
             String msg = "RepositoryUpdater is blocked by " + ((blockingClass != null) ? blockingClass : " <unknown>"); // NOI18N
-            return new ScanCancelledException(msg, stackTrace);
+            return new ScanCancelledException(msg, blockingClass, stackTrace);
         } 
         findCulpritIndexer();
         if (culpritIndexer != null) {
-            return new ScanCancelledException("Slow scanning in " + culpritIndexer, stackTrace); // NOI18N
+            return new ScanCancelledException("Slow scanning in " + culpritIndexer, 
+                    culpritIndexer, stackTrace); // NOI18N
         }
 
         // try to measure crawling speed
         if (crawlerTime >= (totalScanningTime * 0.6)) {
-            return new ScanCancelledException("Slow crawling", stackTrace); // NOI18N
+            return new ScanCancelledException("Slow crawling", "crawler", stackTrace); // NOI18N
         }
         
         long delay = (getExecutedTime() - getScheduledTime()) / 1000;
@@ -388,7 +413,7 @@ import org.openide.util.Utilities;
         if (delay > 5 * 60  && predecessor != null) {
             Exception nested = predecessor.createException();
             if (nested != null) {
-                return new ScanCancelledException("Execution delayed by: " + nested.getMessage(), stackTrace); // NOI18N
+                return new ScanCancelledException("Execution delayed by: " + nested.getMessage(), null, stackTrace); // NOI18N
             }
         }
        return null;
@@ -400,29 +425,27 @@ import org.openide.util.Utilities;
      */
     private static final long EXEC_TRESHOLD = Integer.getInteger(LogContext.class.getName() + ".cancelTreshold", 
             3 /* mins */ * 60) * 1000 /* millis */;
-
+    
+    /**
+     * Checks if enough time has elapsed so the scan cancel can be logged.
+     */
+    boolean canLogScanCancel() {
+        return !(executed > 0) && (System.currentTimeMillis() - executed) < EXEC_TRESHOLD;
+    }
+    
     void log(boolean cancel, boolean logAbsorbed) {
-        // prevent logging of events within 3 minutes from the start of scan. Do not freeze...
-        if (cancel && (executed > 0) && (System.currentTimeMillis() - executed) < EXEC_TRESHOLD) {
-            final LogRecord r = new LogRecord(Level.INFO,  LOG_MESSAGE_EARLY);
-            r.setParameters(new Object[]{this});
-            r.setResourceBundle(NbBundle.getBundle(LogContext.class));
-            r.setResourceBundleName(LogContext.class.getPackage().getName() + ".Bundle"); //NOI18N
-            r.setLoggerName(LOG.getName());
-            LOG.log(r);
-            return;
-        }
         freeze();
         final LogRecord r = new LogRecord(Level.INFO, 
                 cancel ? LOG_MESSAGE : LOG_EXCEEDS_RATE); //NOI18N
         if (!logAbsorbed) {
             this.absorbed = null;
         }
-        r.setParameters(new Object[]{this});
+        r.setParameters(new Object[]{this, null});
         r.setResourceBundle(NbBundle.getBundle(LogContext.class));
         r.setResourceBundleName(LogContext.class.getPackage().getName() + ".Bundle"); //NOI18N
         r.setLoggerName(LOG.getName());
         if (cancel) {
+            final Message msg = StatusDisplayer.getDefault().setStatusText("Please wait while the scan cancel report is being produced", StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
             threadDump = createThreadDump();
             updaterThreadAlive = false;
             RP.post(new Runnable() {
@@ -430,15 +453,34 @@ import org.openide.util.Utilities;
                 @Override
                 public void run() {
                     secondDump = createThreadDump();
-                    Exception e = createException();
+                    ScanCancelledException e = createException();
                     if (e == null) {
-                        e = new ScanCancelledException("Scanning cancelled", stackTrace); // NOI18N 
+                        e = new ScanCancelledException("Scanning cancelled", null, stackTrace); // NOI18N 
                     }
+                    byte[] profileData = null;
+                    if (profileDataSource != null) {
+                        try {
+                            profileData = profileDataSource.call();
+                        } catch (Exception ex) {
+                            // ignore
+                        }
+                    }
+                    // Keep the parameters in sync with UIHandler !
+                    r.setParameters(new Object[]{
+                        LogContext.this,                // [0]
+                        totalScanningTime,              // [1]
+                        profileData,                    // [2]
+                        e.getLocation()                 // [3]
+                    });
                     r.setThrown(e);
+                    if ("oneshot".equals(System.getProperty(RepositoryUpdater.PROP_SAMPLING))) { // NOI18N
+                        System.getProperties().remove(RepositoryUpdater.PROP_SAMPLING); // NOI18N
+                    }
+                    msg.clear(0);
                     LOG.log(r);
                 }
 
-            }, SECOND_DUMP_DELAY);
+            }, SECOND_DUMP_DELAY, Thread.MAX_PRIORITY);
         } else {
             LOG.log(r);
         }
@@ -550,6 +592,8 @@ import org.openide.util.Utilities;
     private Map<String, Long>   totalIndexerTime = new HashMap<String, Long>();
     
     private long crawlerStart;
+    
+    private Callable<byte[]> profileDataSource;
     
     private class RootInfo {
         private URL     url;
@@ -781,6 +825,10 @@ import org.openide.util.Utilities;
         }
         ri2.merge(ri);
         checkConsistency();
+    }
+    
+    public void setProfileSource(Callable<byte[]> source) {
+        this.profileDataSource = source;
     }
     
     public synchronized void startIndexer(String fName) {
