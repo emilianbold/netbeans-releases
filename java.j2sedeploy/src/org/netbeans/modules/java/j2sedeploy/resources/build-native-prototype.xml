@@ -52,7 +52,18 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
          xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:fx="javafx:com.sun.javafx.tools.ant">
     <description>Native Packager Ant calls based on SE support in JavaFX packager</description>
 
+    <target name="-j2sedeploy-extend-manifest" depends="init,-do-jar-create-manifest,-do-jar-copy-manifest,-j2sedeploy-extend-manifest-init" if="j2sedeploy.extend.manifest.true">
+        <manifest file="${tmp.manifest.file}" mode="update">
+            <attribute name="JavaFX-Application-Class" value="${main.class}"/>
+        </manifest>
+    </target>
 
+    <target name="-j2sedeploy-extend-manifest-init">
+        <condition property="j2sedeploy.extend.manifest.true">
+            <istrue value="${j2sedeploy.extend.manifest}"/>
+        </condition>
+    </target>
+    
     <!-- Check system and JDK version -->
 
     <target name="-check-operating-system">
