@@ -45,15 +45,14 @@ package org.netbeans.modules.localhistory;
 
 import java.util.HashMap;
 import java.io.File;
-import java.io.IOException;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
-import org.netbeans.modules.versioning.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
 
 /**
  *
@@ -68,10 +67,10 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     private class StorageMoveHandler {
         private long ts = -1;
 
-        private final File from;
-        private final File to;
+        private final VCSFileProxy from;
+        private final VCSFileProxy to;
 
-        StorageMoveHandler(File from, File to) {
+        StorageMoveHandler(VCSFileProxy from, VCSFileProxy to) {
             this.from = from;
             this.to = to;
         }
@@ -93,9 +92,9 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     private Map<String, StorageMoveHandler> moveHandlerMap;
 
     // XXX reconsider this. is there realy no other way? is it robust enough?
-    private Set<File> toBeDeleted = new HashSet<File>();
-    private Set<File> toBeCreated = new HashSet<File>();
-    private Set<File> wasJustCreated = new HashSet<File>();
+    private Set<VCSFileProxy> toBeDeleted = new HashSet<VCSFileProxy>();
+    private Set<VCSFileProxy> toBeCreated = new HashSet<VCSFileProxy>();
+    private Set<VCSFileProxy> wasJustCreated = new HashSet<VCSFileProxy>();
 
     /** Creates a new instance of LocalHistoryVCSInterceptor */
     public LocalHistoryVCSInterceptor() {
@@ -107,7 +106,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // ==================================================================================================
     
     @Override
-    public boolean beforeDelete(File file) {
+    public boolean beforeDelete(VCSFileProxy file) {
         LOG.log(Level.FINE, "beforeDelete {0}", file); // NOI18N
         if(!accept(file)) {
             return false;
@@ -119,7 +118,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     }
 
     @Override
-    public void afterDelete(File file) {
+    public void afterDelete(VCSFileProxy file) {
         LOG.log(Level.FINE, "afterDelete {0}", file); // NOI18N
         if(!accept(file)) {
             return;
@@ -130,7 +129,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
             return;
         }
 
-        String key = file.getAbsolutePath();
+        String key = file.getPath();
         if(getMoveHandlerMap().containsKey(key)) {
             StorageMoveHandler handler = getMoveHandlerMap().get(key);
             try {
@@ -148,7 +147,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // ==================================================================================================
     
     @Override
-    public boolean beforeMove(final File from, final File to) {
+    public boolean beforeMove(final VCSFileProxy from, final VCSFileProxy to) {
         LOG.log(Level.FINE, "beforeMove {0} to {1}", new Object[] {from, to}); // NOI18N
         if(!accept(from)) {
             return false;
@@ -158,18 +157,18 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
         // - create(to) and delete(from)
         // - or the files from the package come like move(from, to)
         StorageMoveHandler handler = new StorageMoveHandler(from, to);
-        getMoveHandlerMap().put(to.getAbsolutePath(), handler);
-        getMoveHandlerMap().put(from.getAbsolutePath(), handler);
+        getMoveHandlerMap().put(to.getPath(), handler);
+        getMoveHandlerMap().put(from.getPath(), handler);
         return false;
     }
 
     @Override
-    public void afterMove(File from, File to) {
+    public void afterMove(VCSFileProxy from, VCSFileProxy to) {
         LOG.log(Level.FINE, "afterMove {0} to {1}", new Object[] {from, to}); // NOI18N
         if(!accept(from)) {
             return;
         } 
-        String key = to.getAbsolutePath();
+        String key = to.getPath();
         if(getMoveHandlerMap().containsKey(key)) {
             StorageMoveHandler handler = getMoveHandlerMap().get(key);
             try {
@@ -177,7 +176,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
                 handler.delete();
             } finally {
                 getMoveHandlerMap().remove(key);
-                getMoveHandlerMap().remove(from.getAbsolutePath());
+                getMoveHandlerMap().remove(from.getPath());
             }
         }
     }
@@ -187,7 +186,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // ==================================================================================================
     
     @Override
-    public boolean beforeCopy(File from, File to) {
+    public boolean beforeCopy(VCSFileProxy from, VCSFileProxy to) {
         getStore().waitForProcessedStoring(from, "beforeCopy"); // NOI18N
         return super.beforeCopy(from, to); 
     }
@@ -197,7 +196,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // ==================================================================================================
 
     @Override
-    public boolean beforeCreate(File file, boolean isDirectory) {
+    public boolean beforeCreate(VCSFileProxy file, boolean isDirectory) {
         LOG.log(Level.FINE, "beforeCreate {0}", file); // NOI18N
         if(!accept(file)) {
             return false;
@@ -208,7 +207,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     }
 
     @Override
-    public void afterCreate(File file) {
+    public void afterCreate(VCSFileProxy file) {
         LOG.log(Level.FINE, "afterCreate {0}", file); // NOI18N
         if(!accept(file)) {
             return;
@@ -226,7 +225,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
             wasJustCreated.add(file);
         }
 
-        String key = file.getAbsolutePath();
+        String key = file.getPath();
         if(getMoveHandlerMap().containsKey(key)) {                                
             StorageMoveHandler handler = getMoveHandlerMap().get(key);
             try {
@@ -242,7 +241,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     // ==================================================================================================
     
     @Override
-    public void beforeChange(File file) {
+    public void beforeChange(VCSFileProxy file) {
         LOG.log(Level.FINE, "beforeChange {0}", file); // NOI18N
         if(toBeCreated.contains(file) || 
            wasJustCreated.remove(file)) 
@@ -259,7 +258,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     }
 
     @Override
-    public void afterChange(File file) {
+    public void afterChange(VCSFileProxy file) {
         LOG.log(Level.FINE, "afterChange {0}", file); // NOI18N
         // just in case
         wasJustCreated.remove(file);
@@ -270,7 +269,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
     }
 
     @Override
-    public void beforeEdit(File file) {
+    public void beforeEdit(VCSFileProxy file) {
         LOG.log(Level.FINE, "beforeEdit {0}", file); // NOI18N
         if(!accept(file)) {
             return;
@@ -292,7 +291,7 @@ class LocalHistoryVCSInterceptor extends VCSInterceptor {
      * @param file the file to be stored
      * @return true if the file has to be stored in the Local History, otherwise false
      */
-    private boolean accept(File file) {
+    private boolean accept(VCSFileProxy file) {
         if(!LocalHistory.getInstance().isManaged(file)) {
             return false;
         }

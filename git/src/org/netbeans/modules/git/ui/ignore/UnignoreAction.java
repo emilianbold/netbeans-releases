@@ -92,7 +92,8 @@ public class UnignoreAction extends MultipleRepositoryAction {
             FileStatusCache cache = Git.getInstance().getFileStatusCache();
             for (File root : getCurrentContext(activatedNodes).getRootFiles()) {
                 if (cache.getStatus(root).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
-                    enabled = true;
+                    File parent = root.getParentFile();
+                    enabled = parent == null || !cache.getStatus(parent).containsStatus(Status.NOTVERSIONED_EXCLUDED);
                     break;
                 }
             }

@@ -819,7 +819,9 @@ ExplorerManager.Provider, PropertyChangeListener {
                 tc.setCellRenderer(new DelegatingCellRenderer(
                         name,
                         treeTable.getTable().getCellRenderer(0, 0)));
-                tci++;
+                if (defaultColumnIndex == 0) {
+                    tci++;
+                }
             }
         }
         if (logger.isLoggable(Level.FINE)) {

@@ -163,7 +163,7 @@ public class CssStylesTCController implements PropertyChangeListener, LookupList
     }
 
     private CssStylesTC getCssStylesTC() {
-        return (CssStylesTC)WindowManager.getDefault().findTopComponent("CssStylesTC");
+        return (CssStylesTC)WindowManager.getDefault().findTopComponent("CssStylesTC"); // NOI18N
     }
     
     static TopComponentGroup getCssStylesTCGroup() {

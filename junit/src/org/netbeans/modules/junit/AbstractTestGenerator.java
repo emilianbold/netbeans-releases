@@ -108,6 +108,7 @@ import static javax.lang.model.element.Modifier.ABSTRACT;
 import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
+import javax.lang.model.type.WildcardType;
 import static org.netbeans.modules.junit.TestCreator.ACCESS_MODIFIERS;
 
 /**
@@ -1464,7 +1465,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                     retTypeKind = retType.getKind();
                 }
                 default:
-                    retType = workingCopy.getTypes().erasure(retType);
+                    retType = getTypeMirror(workingCopy, retType);
                     retTypeKind = retType.getKind();
                     Tree retTypeTree = maker.Type(retType);
                     VariableTree expectedValue = maker.Variable(
@@ -1527,6 +1528,51 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
         return maker.Block(statements, false);
     }
 
+    private TypeMirror getTypeMirror(WorkingCopy workingCopy, TypeMirror retType) {
+	if (retType.getKind() == TypeKind.DECLARED) {
+	    List<? extends TypeMirror> typeArguments = ((DeclaredType) retType).getTypeArguments();
+	    for (TypeMirror argument : typeArguments) {
+		if (argument.getKind() == TypeKind.WILDCARD) {
+		    TypeMirror extendsBound = ((WildcardType) argument).getExtendsBound();
+		    TypeMirror superBound = ((WildcardType) argument).getSuperBound();
+		    if(extendsBound == null && superBound == null) {
+			return workingCopy.getTypes().erasure(retType);
+		    }
+		    if (extendsBound != null) {
+			if (shouldApplyErasure(extendsBound)) {
+			    return workingCopy.getTypes().erasure(retType);
+			}
+		    }
+		    if (superBound != null) {
+			if (shouldApplyErasure(superBound)) {
+			    return workingCopy.getTypes().erasure(retType);
+			}
+		    }
+		} else if (argument.getKind() == TypeKind.DECLARED) {
+		    if (((DeclaredType) argument).asElement().getModifiers().contains(Modifier.PRIVATE)) {
+			return workingCopy.getTypes().erasure(retType);
+		    }
+		} else {
+		    return workingCopy.getTypes().erasure(retType);
+		}
+	    }
+	} else {
+	    return workingCopy.getTypes().erasure(retType);
+	}
+	return retType;
+    }
+
+    private boolean shouldApplyErasure(TypeMirror argument) {
+	if (argument.getKind() == TypeKind.DECLARED) {
+	    if (((DeclaredType) argument).asElement().getModifiers().contains(Modifier.PRIVATE)) {
+		return true;
+	    }
+	} else {
+	    return true;
+	}
+	return false;
+    }
+
     protected BlockTree generateStubTestMethodBody(WorkingCopy workingCopy) {
         TreeMaker maker = workingCopy.getTreeMaker();
         List<StatementTree> statements = new ArrayList<StatementTree>(8);
@@ -1580,6 +1626,7 @@ abstract class AbstractTestGenerator implements CancellableTask<WorkingCopy>{
                     return null;
                 }
             }
+	    param = getTypeMirror(workingCopy, param);
             paramVariables.add(
                     maker.Variable(maker.Modifiers(noModifiers),
                                    varNames[index++],

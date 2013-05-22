@@ -43,11 +43,15 @@ package org.netbeans.api.debugger.jpda;
 
 import java.awt.Color;
 import java.awt.Point;
+import java.beans.FeatureDescriptor;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import junit.framework.Test;
 import org.netbeans.api.debugger.DebuggerManager;
@@ -143,6 +147,21 @@ public class MirrorValuesTest extends NbTestCase {
                     throw ex;
                 }
             }
+            
+            // Test of objects referenced in a circle
+            
+            v = variablesByName.get("selfReferencedList");
+            m = v.createMirrorObject();
+            assertTrue("mirror is "+m, m instanceof LinkedList);
+            assertTrue("mirror is "+m, ((List) m).get(0) == m);
+            
+            v = variablesByName.get("event");
+            m = v.createMirrorObject();
+            assertTrue("mirror is "+((m == null) ? null : m.getClass()), m instanceof EventObject);
+            Object source = ((EventObject) m).getSource();
+            assertTrue("mirror's source is "+((source == null) ? null : source.getClass()),
+                       source instanceof FeatureDescriptor);
+            assertTrue(((FeatureDescriptor) ((EventObject) m).getSource()).getValue("event") == m);
             
             /*
             // Test of setFromMirrorObject():

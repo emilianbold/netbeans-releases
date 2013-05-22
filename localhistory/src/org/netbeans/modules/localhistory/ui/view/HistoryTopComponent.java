@@ -49,6 +49,7 @@ import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 
 import javax.swing.*;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.ui.history.HistoryComponent;
 
 /**
@@ -69,7 +70,7 @@ final public class HistoryTopComponent extends TopComponent {
         setToolTipText(NbBundle.getMessage(HistoryTopComponent.class, "HINT_LocalHistoryTopComponent")); // NOI18N
     }
 
-    HistoryTopComponent(File[] files) {
+    HistoryTopComponent(VCSFileProxy[] files) {
         this();
         hc = new HistoryComponent(files);
         setLayout(new java.awt.BorderLayout());

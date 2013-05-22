@@ -44,15 +44,13 @@
 package org.netbeans.modules.localhistory;
 
 import java.io.File;
-import org.netbeans.modules.versioning.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
-import org.netbeans.modules.versioning.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.spi.VersioningSystem;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
+import org.netbeans.modules.versioning.core.spi.VersioningSystem;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
-import org.openide.util.NbBundle;
-import org.openide.util.lookup.ServiceProvider;
-import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
@@ -60,14 +58,15 @@ import org.openide.util.lookup.ServiceProviders;
  * 
  * @author Tomas Stupka
  */
-@ServiceProviders({@ServiceProvider(service=VersioningSystem.class), @ServiceProvider(service=LocalHistoryVCS.class)})
+@VersioningSystem.Registration(
+    displayName="#CTL_DisplayName", 
+    menuLabel="#CTL_MainMenuItem", 
+    metadataFolderNames={""}, 
+    actionsCategory="History"
+)
 public class LocalHistoryVCS extends VersioningSystem {
         
     public LocalHistoryVCS() {
-        putProperty(PROP_DISPLAY_NAME, NbBundle.getMessage(LocalHistoryVCS.class, "CTL_DisplayName")); // NOI18N
-        putProperty(PROP_MENU_LABEL, NbBundle.getMessage(LocalHistoryVCS.class, "CTL_MainMenuItem")); // NOI18N
-        putProperty(PROP_LOCALHISTORY_VCS, Boolean.TRUE);
-        
         LocalHistory.getInstance().addVersioningListener(new VersioningListener() {
             @Override
             public void versioningEvent(VersioningEvent event) {
@@ -79,7 +78,7 @@ public class LocalHistoryVCS extends VersioningSystem {
     }
     
     @Override
-    public File getTopmostManagedAncestor(File file) {    
+    public VCSFileProxy getTopmostManagedAncestor(VCSFileProxy file) {    
         if(file == null) {
             return null;
         }                
@@ -90,7 +89,7 @@ public class LocalHistoryVCS extends VersioningSystem {
             return file;
         }
     
-        File a = lh.isManagedByParent(file);
+        VCSFileProxy a = lh.isManagedByParent(file);
         if(a != null) {
             return a;
         }
