@@ -122,9 +122,15 @@ implements ActionListener, Runnable, Callable<JButton> {
                         public void run() {
                             Installer.writeOut(r);
                             SUPPORT.firePropertyChange(null, null, null);
+                            byte[] profData = (byte[])r.getParameters()[2];
+                            
+                            SlownessData sdata = null;
+                            if (profData != null) {
+                                sdata = new SlownessData((Long)r.getParameters()[1], profData, "background_scan", (String)r.getParameters()[3]); // NOI18N
+                            }
                             r = null;
                             TimeToFailure.logAction();
-                            Installer.displaySummary("ERROR_URL", true, false, true); //NOI18N
+                            Installer.displaySummary("ERROR_URL", true, false, true, sdata); //NOI18N
                         }
                     }
                     WriteOut wo = new WriteOut();
@@ -253,13 +259,30 @@ implements ActionListener, Runnable, Callable<JButton> {
 
     private boolean shouldReportScanCancel() {
         final JButton sendOption = new JButton(NbBundle.getMessage(UIHandler.class, "LBL_SendReport"));
-        final NotifyDescriptor nd = new NotifyDescriptor(
+        final JButton sendAndProfileOption = new JButton(NbBundle.getMessage(UIHandler.class, "LBL_SendReportAndProfile"));
+        final NotifyDescriptor nd;
+        
+        if (System.getProperty("org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.indexerSampling") == null) { // NOI18N
+            nd = new NotifyDescriptor(
+            NbBundle.getMessage(UIHandler.class, "MSG_SCAN_CANCELLED2"),
+            NbBundle.getMessage(UIHandler.class, "TITLE_SCAN_CANCELLED"),
+            NotifyDescriptor.YES_NO_CANCEL_OPTION,
+            NotifyDescriptor.QUESTION_MESSAGE,
+            new Object[] {sendOption, sendAndProfileOption, DialogDescriptor.CANCEL_OPTION},
+            sendOption);
+        } else {
+            nd = new NotifyDescriptor(
             NbBundle.getMessage(UIHandler.class, "MSG_SCAN_CANCELLED"),
             NbBundle.getMessage(UIHandler.class, "TITLE_SCAN_CANCELLED"),
             NotifyDescriptor.YES_NO_CANCEL_OPTION,
             NotifyDescriptor.QUESTION_MESSAGE,
             new Object[] {sendOption, DialogDescriptor.CANCEL_OPTION},
             sendOption);
-        return DialogDisplayer.getDefault().notify(nd) == sendOption;
+        }
+        Object opt = DialogDisplayer.getDefault().notify(nd);
+        if (opt == sendAndProfileOption) {
+            System.setProperty("org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater.indexerSampling", "true"); // NOI18N
+        }
+        return opt == sendAndProfileOption || opt == sendOption;
     }
 }
