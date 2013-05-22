@@ -114,6 +114,10 @@ public class MavenProjectSupport {
         // We know server instance which should be assigned to the project
         if (instanceID != null && serverID == null) {
             assignServer(project, instanceID, initContextPath);
+
+        // We know both server name and server ID, just do the same as above
+        } else if (instanceID != null && serverID != null) {
+            assignServer(project, instanceID, initContextPath);
             
         // We don't know anything which means we want to assign <No Server> value to the project
         } else if (instanceID == null && serverID == null) {
