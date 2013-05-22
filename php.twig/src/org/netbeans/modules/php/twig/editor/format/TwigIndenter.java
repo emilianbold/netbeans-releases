@@ -69,7 +69,8 @@ public class TwigIndenter extends AbstractIndenter<TwigTopTokenId> {
 
     @Override
     protected List<IndentCommand> getLineIndent(IndenterContextData<TwigTopTokenId> context, List<IndentCommand> preliminaryNextLineIndent) throws BadLocationException {
-        return Collections.<IndentCommand>emptyList();
+        preliminaryNextLineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getNextLineStartOffset()));
+        return Collections.singletonList(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getLineStartOffset()));
     }
 
     @Override
