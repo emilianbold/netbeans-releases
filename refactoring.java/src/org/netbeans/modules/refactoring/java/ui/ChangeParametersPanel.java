@@ -1016,8 +1016,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            FileObject file = RefactoringUtils.getFileObject(refactoredObj);
-            ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(file), table.getValueAt(row, col).toString(), null);
+            ElementHandle<TypeElement> type = TypeElementFinder.find(null, table.getValueAt(row, col).toString(), null);
             if (type != null) {
                 String fqn = type.getQualifiedName().toString();
                 acceptEditedValue();
