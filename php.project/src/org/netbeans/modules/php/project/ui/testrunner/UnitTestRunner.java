@@ -49,8 +49,9 @@ import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.project.PhpProject;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.codecoverage.PhpCoverageProvider;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.coverage.Coverage;
@@ -135,7 +136,7 @@ public final class UnitTestRunner {
         if (!testingProviders.isEmpty()) {
             return true;
         }
-        Utils.informNoTestingProviders();
+        PhpProjectUtils.openCustomizer(project, CompositePanelProviderImpl.TESTING);
         return false;
     }
 

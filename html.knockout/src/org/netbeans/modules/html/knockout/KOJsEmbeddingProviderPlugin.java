@@ -54,6 +54,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
+import org.netbeans.modules.html.knockout.model.KOModel;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
 import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.parsing.api.Embedding;
@@ -90,7 +91,11 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         this.tokenSequence = tokenSequence;
         this.embeddings = embeddings;
 
-         FileObject file = snapshot.getSource().getFileObject();
+        if(!KOModel.getModel(parserResult).containsKnockout()) {
+            return false;
+        }
+        
+        FileObject file = snapshot.getSource().getFileObject();
         if (file == null) {
             return false;
         }

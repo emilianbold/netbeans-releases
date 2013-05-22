@@ -310,21 +310,36 @@ public class JsStructureScanner implements StructureScanner {
         
         @Override
         public boolean equals(Object obj) {
-            boolean thesame = false;
-            if (obj instanceof JsStructureItem) {
-                JsStructureItem item = (JsStructureItem) obj;
-                if (item.fqn != null && this.fqn != null) {
-                    thesame = item.fqn.equals(this.fqn);
-                }
+            if (obj == null) {
+                return false;
             }
-            return thesame;
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final JsStructureItem other = (JsStructureItem) obj;
+            if ((this.fqn == null) ? (other.fqn != null) : !this.fqn.equals(other.fqn)) {
+                return false;
+            }
+            if ((this.modelElement == null && other.modelElement != null)
+                    || (this.modelElement != null && other.modelElement == null)) {
+                return false;
+            }
+            if ((this.modelElement.getJSKind() == null) ? (other.modelElement.getJSKind() != null) :
+                    !this.modelElement.getJSKind().equals(other.modelElement.getJSKind())) {
+                return false;
+            }
+
+            return true;
         }
-        
+
         @Override
         public int hashCode() {
-            return this.fqn.hashCode();
+            int hash = 5;
+            hash = 37 * hash + (this.fqn != null ? this.fqn.hashCode() : 0);
+            hash = 37 * hash + (this.modelElement != null && this.modelElement.getJSKind() != null ?this.modelElement.getJSKind().hashCode() : 0);
+            return hash;
         }
-        
+
         @Override
         public String getName() {
             return modelElement.getName();

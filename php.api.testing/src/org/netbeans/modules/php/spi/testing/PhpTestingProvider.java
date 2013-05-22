@@ -85,24 +85,6 @@ public interface PhpTestingProvider {
     String getDisplayName();
 
     /**
-     * Finds out whether the provider can <i>test</i> the given PHP module.
-     * <p>
-     * <b>This method should be as fast as possible.</b>
-     * @param  phpModule the PHP module; never {@code null}
-     * @return {@code true} if this PHP module can be <i>tested</i> by this testing provider, {@code false} otherwise
-     */
-    boolean isInPhpModule(@NonNull PhpModule phpModule);
-
-    /**
-     * If this provider has a customizer, returns its category identifier (non-localized). If not,
-     * returns {@code null}.
-     * @return the non-localized customizer category identifier or {@code null}
-     * @since 0.2
-     */
-    @CheckForNull
-    String getCustomizerCategoryIdent();
-
-    /**
      * Checks whether the given file is a test file.
      * @param phpModule the PHP module; never {@code null}
      * @param fileObj file to be checked; never {@code null}

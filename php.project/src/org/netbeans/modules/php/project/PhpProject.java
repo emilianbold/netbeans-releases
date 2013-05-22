@@ -240,7 +240,7 @@ public final class PhpProject implements Project {
 
         PhpModuleImpl phpModule = new PhpModuleImpl(this);
         frameworks = new Frameworks(phpModule);
-        testingProviders = new TestingProviders(phpModule);
+        testingProviders = TestingProviders.create(this);
 
         // lookup
         lookup = createLookup(configuration, phpModule);
@@ -758,7 +758,6 @@ public final class PhpProject implements Project {
             addSourceDirListener();
             CssPreprocessors.getDefault().addCssPreprocessorsListener(cssPreprocessorsListener);
 
-            testingProviders.projectOpened();
             frameworks.projectOpened();
 
             reinitFolders();
@@ -797,7 +796,6 @@ public final class PhpProject implements Project {
                 removeSourceDirListener();
                 CssPreprocessors.getDefault().removeCssPreprocessorsListener(cssPreprocessorsListener);
 
-                testingProviders.projectClosed();
                 frameworks.projectClosed();
 
                 ClassPathProviderImpl cpProvider = lookup.lookup(ClassPathProviderImpl.class);
