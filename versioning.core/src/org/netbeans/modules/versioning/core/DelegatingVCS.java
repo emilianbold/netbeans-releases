@@ -73,6 +73,7 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
     
     private final String displayName;
     private final String menuLabel;
+    private final boolean isLocalHistory;    
     
     private final PropertyChangeSupport support = new PropertyChangeSupport(this);
 
@@ -90,7 +91,7 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
         this.map = map;
         this.displayName = (String) map.get("displayName");
         this.menuLabel = (String) map.get("menuLabel");
-        
+        this.isLocalHistory = Boolean.parseBoolean((String) map.get("isLocalHistory"));
         VersioningManager.LOG.log(Level.FINE, "Created DelegatingVCS for : {0}", map.get("displayName")); // NOI18N
     }
 
@@ -155,7 +156,7 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
 
     @Override
     public boolean isLocalHistory() {
-        return false; // harcoding the fact that LocalHistory is registered via versioning.spi
+        return isLocalHistory;
     }
 
     @Override

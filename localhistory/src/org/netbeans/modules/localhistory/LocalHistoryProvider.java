@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.localhistory;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.*;
@@ -49,8 +48,10 @@ import java.util.logging.Level;
 import javax.swing.Action;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.localhistory.utils.FileUtils;
-import org.netbeans.modules.versioning.history.HistoryAction;
-import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider.*;
+import org.netbeans.modules.versioning.history.HistoryActionVCSProxyBased;
 import org.netbeans.modules.versioning.util.VersioningEvent;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.LifecycleManager;
@@ -84,7 +85,7 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
     }
 
     @Override
-    public HistoryEntry[] getHistory(File[] files, Date fromDate) {
+    public HistoryEntry[] getHistory(VCSFileProxy[] files, Date fromDate) {
         if(files == null || files.length == 0) {
             LocalHistory.LOG.log(Level.FINE, "LocalHistory requested for no files {0}", files != null ? files.length : null);
             return new HistoryEntry[0];
@@ -92,7 +93,7 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
         logFiles(files);
         
         Map<Long, HistoryEntry> storeEntries = new HashMap<Long, HistoryEntry>();
-        for (File f : files) {
+        for (VCSFileProxy f : files) {
             StoreEntry[] ses = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntries(f);
             for(StoreEntry se : ses) {
                 if(!storeEntries.keySet().contains(se.getTimestamp())) { 
@@ -118,17 +119,17 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
     }
     
     @Override
-    public Action createShowHistoryAction(File[] files) {
+    public Action createShowHistoryAction(VCSFileProxy[] proxies) {
         return null;
     }
     
-    public void fireHistoryChange(File file) {
+    public void fireHistoryChange(VCSFileProxy proxy) {
         HistoryChangeListener[] la;
         synchronized(listeners) {
             la = listeners.toArray(new HistoryChangeListener[listeners.size()]);
         }
         for (HistoryChangeListener l : la) {
-            l.fireHistoryChanged(new HistoryEvent(this, new File[] {file}));
+            l.fireHistoryChanged(new HistoryEvent(this, new VCSFileProxy[] {proxy}));
         }
     }
 
@@ -146,7 +147,7 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
     public void versioningEvent(VersioningEvent event) {
         Object[] params = event.getParams();
         if(params[0] != null) {
-            fireHistoryChange((File) params[0]);
+            fireHistoryChange((VCSFileProxy)params[0]);
         }
     }
     
@@ -158,13 +159,13 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
         }
         
         @Override
-        public void getRevisionFile(File originalFile, File revisionFile) {
+        public void getRevisionFile(VCSFileProxy originalFile, VCSFileProxy revisionFile) {
             assert originalFile != null;
             if(originalFile == null) {
                 LocalHistory.LOG.log(Level.FINE, "revision {0} requested for null file", se.getDate().getTime()); // NOI18N
                 return;
             }
-            LocalHistory.LOG.log(Level.FINE, "revision {0} requested for file {1}", new Object[]{se.getDate().getTime(), originalFile.getAbsolutePath()}); // NOI18N
+            LocalHistory.LOG.log(Level.FINE, "revision {0} requested for file {1}", new Object[]{se.getDate().getTime(), originalFile.getPath()}); // NOI18N
             try {
                 // we won't use the member store entry as that might have been 
                 // set for e.g. a stored .form while this is the according .java
@@ -173,7 +174,7 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
                 long ts = se.getTimestamp();
                 StoreEntry storeEntry = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(originalFile, ts);
                 if(storeEntry != null) {
-                    FileUtils.copy(storeEntry.getStoreFileInputStream(), revisionFile); 
+                    FileUtils.copy(storeEntry.getStoreFileInputStream(), revisionFile.toFile()); 
                 } else {
                     LocalHistory.LOG.log(Level.WARNING, "No entry in Local History for file {0} {1} {2}", new Object[]{originalFile, new Date(ts), ts}); // NOI18N
                 }
@@ -194,7 +195,7 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
         }
     }
 
-    private void logFiles(File[] files) {
+    private void logFiles(VCSFileProxy[] files) {
         if(LocalHistory.LOG.isLoggable(Level.FINE)) {
             StringBuilder sb = new StringBuilder();
             sb.append("LocalHistory requested for files: "); // NOI18N
@@ -221,10 +222,10 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
         }
     }    
     
-    private String toString(File[] files) {
+    private String toString(VCSFileProxy[] files) {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < files.length; i++) {
-            sb.append(files[i] != null ? files[i].getAbsolutePath() : "null"); // NOI18N
+            sb.append(files[i] != null ? files[i].getPath() : "null"); // NOI18N
             if(i < files.length -1 ) sb.append(","); // NOI18N
         }
         return sb.toString();
@@ -238,7 +239,7 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
         }   
 
         @Override
-        protected void perform(final HistoryEntry entry, final Set<File> files) {
+        protected void perform(final HistoryEntry entry, final Set<VCSFileProxy> files) {
             // XXX try to save files in invocation context only
             // list somehow modified file in the context and save
             // just them.
@@ -280,16 +281,16 @@ public class LocalHistoryProvider implements VCSHistoryProvider, VersioningListe
         public HelpCtx getHelpCtx() {
             return new HelpCtx("org.netbeans.modules.localhistory.ui.view.DeleteAction"); // NOI18N
         }
-        
+
     }    
 
-    private abstract class LHAction extends HistoryAction {
+    private abstract class LHAction extends HistoryActionVCSProxyBased {
         @Override
-        protected void perform(final HistoryEntry entry, final Set<File> files) {
+        protected void perform(final HistoryEntry entry, final Set<VCSFileProxy> files) {
             LocalHistory.getInstance().getParallelRequestProcessor().post(new Runnable() {
                 @Override
                 public void run() { 
-                    for (File file : files) {
+                    for (VCSFileProxy file : files) {
                         StoreEntry se = LocalHistory.getInstance().getLocalHistoryStore().getStoreEntry(file, entry.getDateTime().getTime());
                         if(se != null) {
                             perform(se);

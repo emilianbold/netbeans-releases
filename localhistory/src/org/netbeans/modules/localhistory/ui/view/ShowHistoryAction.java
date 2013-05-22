@@ -47,6 +47,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import javax.swing.JEditorPane;
@@ -57,7 +59,8 @@ import org.netbeans.core.api.multiview.MultiViewHandler;
 import org.netbeans.core.api.multiview.MultiViewPerspective;
 import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.core.spi.multiview.MultiViewDescription;
-import org.netbeans.modules.versioning.spi.VCSContext;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSContext;
 import org.netbeans.modules.versioning.ui.history.History;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
@@ -95,16 +98,15 @@ public class ShowHistoryAction extends NodeAction {
     @Override
     protected void performAction(final Node[] activatedNodes) {                        
         VCSContext ctx = VCSContext.forNodes(activatedNodes);
-        final Set<File> rootSet = ctx.getRootFiles();                    
+        final Set<VCSFileProxy> rootSet = ctx.getRootFiles();                    
 
-        final File[] files = rootSet.toArray(new File[rootSet.size()]);                
-
+        final VCSFileProxy[] files = rootSet.toArray(new VCSFileProxy[rootSet.size()]);                
         if(!files[0].isFile()) {
             return;
         }
 
-        File file = files[0];
-        FileObject fo = FileUtil.toFileObject(file);
+        VCSFileProxy file = files[0];
+        FileObject fo = file.toFileObject();
         if(fo != null) {
             DataObject dataObject = null;
             try {
@@ -171,7 +173,7 @@ public class ShowHistoryAction extends NodeAction {
         openLocalHistoryTC(files);
     }
 
-    private void openLocalHistoryTC(final File[] files) {
+    private void openLocalHistoryTC(final VCSFileProxy[] files) {
         // fallback opening a LHTopComponent
         Runnable r = new Runnable() {
             @Override
@@ -234,12 +236,12 @@ public class ShowHistoryAction extends NodeAction {
             return false;
         }
         VCSContext ctx = VCSContext.forNodes(activatedNodes);
-        Set<File> rootSet = ctx.getRootFiles();                
+        Set<VCSFileProxy> rootSet = ctx.getRootFiles();                
         if(rootSet == null || rootSet.isEmpty()) { 
             return false;
         }                        
-        for (File file : rootSet) {            
-            if(file != null && !file.isFile()) {
+        for (VCSFileProxy p : rootSet) {            
+            if(p != null && !p.isFile()) {
                 return false;
             }
         }        
@@ -258,9 +260,9 @@ public class ShowHistoryAction extends NodeAction {
 
     private class TCOpenedListener implements PropertyChangeListener {
         private final DataObject dataObject;
-        private final File[] files;
+        private final VCSFileProxy[] files;
 
-        private TCOpenedListener(DataObject dataObject, File[] files) {
+        private TCOpenedListener(DataObject dataObject, VCSFileProxy[] files) {
             this.dataObject = dataObject;
             this.files = files;
         }
