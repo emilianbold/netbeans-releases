@@ -311,7 +311,7 @@ public class CsmIncludeHyperlinkProvider extends CsmAbstractHyperlinkProvider {
                 if (fo !=  null && fo.isValid() && fo.isFolder()) {
                     buf.append(path.getPath());
                 } else if (fo !=  null && fo.isValid() && fo.isData()) {
-                    buf.append("<font color='green'>");  // NOI18N
+                    buf.append("<font color='blue'>");  // NOI18N
                     buf.append(path.getPath());
                     buf.append("</font>");  // NOI18N
                 } else {
