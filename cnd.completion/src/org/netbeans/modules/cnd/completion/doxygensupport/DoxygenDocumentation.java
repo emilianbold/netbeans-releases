@@ -58,8 +58,11 @@ import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
+import org.netbeans.modules.cnd.api.model.CsmMacro;
+import org.netbeans.modules.cnd.api.model.CsmMacroParameter;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 
@@ -278,28 +281,33 @@ public class DoxygenDocumentation {
         // check right after declaration on the same line
         TokenSequence<CppTokenId> ts2 = ts;
         ts2.move(csmOffsetable.getEndOffset());
-        int parenCount = 0;
         while (ts2.moveNext()) {
             switch (ts2.token().id()) {
                 case NEW_LINE:
                     break;
-                case LPAREN:
-                    parenCount++;
-                    continue;
-                case RPAREN:
-                    parenCount--;
-                    continue;
                 case LINE_COMMENT:
                 case BLOCK_COMMENT:
                 case DOXYGEN_COMMENT:
                 case DOXYGEN_LINE_COMMENT:
-                    if (parenCount==0) {
-                        list.add(new DocCandidate(ts2.token().text().toString(), ts2.token().id()));
-                    }
+                    list.add(new DocCandidate(ts2.token().text().toString(), ts2.token().id()));
                     break;
                 case PREPROCESSOR_DIRECTIVE:
                     ts2 = ts2.embedded(CppTokenId.languagePreproc());      
-                    ts2.move(csmOffsetable.getStartOffset());
+                    
+                    if (csmOffsetable instanceof CsmMacro) {
+                        ts2.move(csmOffsetable.getEndOffset());
+                        ts2.movePrevious();
+                        ts2.movePrevious();
+                    } else {
+                        ts2.move(csmOffsetable.getStartOffset());
+                        ts2.moveNext();
+                        switch (ts2.token().id()) {
+                            case BLOCK_COMMENT:
+                            case DOXYGEN_COMMENT:
+                                list.add(new DocCandidate(ts2.token().text().toString(), ts2.token().id()));
+                                break;
+                        }                        
+                    }
                 default:
                     continue;
             }
