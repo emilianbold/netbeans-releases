@@ -230,7 +230,7 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("src/bug229990.cpp", 8, 35, "sys_include/sys_stat_h.h", 5, 1);
         performTest("src/bug229990.cpp", 10, 50, "sys_include/sys_stat_h.h", 7, 9);
         performTest("src/bug229990.cpp", 13, 40, "src/bug229990.h", 15, 5);
-//        performTest("src/bug229990.cpp", 12, 35, "src/bug229990.h", 14, 1);
+        performTest("src/bug229990.cpp", 12, 35, "src/bug229990.h", 14, 1);
     }    
     
     public static class Failed extends HyperlinkBaseTestCase {
