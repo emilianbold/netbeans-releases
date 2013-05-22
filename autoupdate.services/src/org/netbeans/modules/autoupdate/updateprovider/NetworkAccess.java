@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -70,7 +70,7 @@ public class NetworkAccess {
         private URL url;
         private int timeout;
         private NetworkListener listener;
-        private ExecutorService es = Executors.newSingleThreadExecutor ();
+        private final ExecutorService es = Executors.newSingleThreadExecutor ();
         private Future<InputStream> connect = null;
         private RequestProcessor.Task rpTask = null;
         
@@ -90,9 +90,10 @@ public class NetworkAccess {
         private void postTask () {
             final SizedConnection connectTask = createCallableNetwork (url, timeout);
             rpTask = NETWORK_ACCESS.post (new Runnable () {
+                @Override
                 public void run () {
                     connect = es.submit (connectTask);
-                    InputStream is = null;
+                    InputStream is;
                     try {
                         is = connect.get (timeout, TimeUnit.MILLISECONDS);
                         if (connect.isDone ()) {
@@ -136,10 +137,12 @@ public class NetworkAccess {
             return new SizedConnection () {
                 private int contentLength = -1;
 
+                @Override
                 public int getContentLength() {
                     return contentLength;
                 }
 
+                @Override
                 public InputStream call () throws Exception {
                     URLConnection conn = url.openConnection ();
                     conn.setConnectTimeout (timeout);
@@ -147,9 +150,9 @@ public class NetworkAccess {
                     contentLength = conn.getContentLength();
                     Map <String, List <String>> map = conn.getHeaderFields();
                     StringBuilder sb = new StringBuilder("Connection opened for:\n");
-                       sb.append("    Url: " + conn.getURL() + "\n");
+                    sb.append("    Url: ").append(conn.getURL()).append("\n");
                     for(String field : map.keySet()) {
-                       sb.append("    " + (field==null ? "Status" : field )+ ": " + map.get(field) + "\n");
+                       sb.append("    ").append(field==null ? "Status" : field).append(": ").append(map.get(field)).append("\n");
                     }
                     sb.append("\n");
                     err.log(Level.FINE, sb.toString());
@@ -158,6 +161,7 @@ public class NetworkAccess {
             };
         }
         
+        @Override
         public boolean cancel () {
             return connect.cancel (true);
         }
