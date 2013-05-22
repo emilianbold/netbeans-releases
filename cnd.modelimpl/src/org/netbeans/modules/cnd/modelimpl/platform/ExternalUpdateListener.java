@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
@@ -126,7 +126,7 @@ import org.openide.filesystems.FileUtil;
             if (isCOrCpp(fo)) {
                 FSPath newPath = FSPath.toFSPath(fo);
                 String strPrevExt = (fe.getExt() == null || fe.getExt().isEmpty()) ? "" : "." + fe.getExt(); // NOI18N
-                String strPrevPath = CndPathUtilitities.getDirName(newPath.getPath()) + '/' + fe.getName() + strPrevExt; // NOI18N
+                String strPrevPath = CndPathUtilities.getDirName(newPath.getPath()) + '/' + fe.getName() + strPrevExt; // NOI18N
                 FSPath prevPath = new FSPath(newPath.getFileSystem(), strPrevPath);        
                 FileObject removedFO = InvalidFileObjectSupport.getInvalidFileObject(prevPath.getFileSystem(), prevPath.getPath());
                 FileEvent deleteFE = new FileEvent((FileObject) fe.getSource(), removedFO, fe.isExpected(), fe.getTime());

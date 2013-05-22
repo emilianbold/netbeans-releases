@@ -56,7 +56,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
 import org.openide.DialogDescriptor;
@@ -499,7 +499,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        path = CndPathUtilitities.normalizeSlashes(path);
+        path = CndPathUtilities.normalizeSlashes(path);
         buildLogTextField.setText(path);
     }//GEN-LAST:event_buildLogButtonActionPerformed
 
@@ -543,7 +543,7 @@ public class ParserConfigurationPanel extends javax.swing.JPanel implements Help
                 return null;
             }
             String itemPath = fileChooser.getSelectedFile().getPath();
-            itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
+            itemPath = CndPathUtilities.normalizeSlashes(itemPath);
             return itemPath;
         }
 

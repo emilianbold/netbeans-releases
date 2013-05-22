@@ -52,7 +52,7 @@ import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.ModelEvent;
 
 import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 /**
  * Our prallel object to debuggercore Sessions.
@@ -301,7 +301,7 @@ public final class NativeSession {
 	    return "";
 	else {
 	    if (shortName == null)
-		shortName = CndPathUtilitities.getBaseName(target);
+		shortName = CndPathUtilities.getBaseName(target);
 	    return shortName;
 	}
     }

@@ -71,7 +71,7 @@ import org.netbeans.modules.cnd.makeproject.BrokenReferencesSupport;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.IncludePathExpansionProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.UserOptionsProvider;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -114,9 +114,9 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
         } catch (FileStateInvalidException ex) {
             throw new IllegalStateException(ex);
         }
-        String absPath = CndPathUtilitities.toAbsolutePath(baseDirFileObject, path);
+        String absPath = CndPathUtilities.toAbsolutePath(baseDirFileObject, path);
         this.normalizedPath = FileSystemProvider.normalizeAbsolutePath(absPath, fileSystem);
-        this.path = CndPathUtilitities.normalizeSlashes(path);
+        this.path = CndPathUtilities.normalizeSlashes(path);
     }
 
     public static Item createInFileSystem(FileSystem fileSystem, String path) {
@@ -223,7 +223,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
 
     @Override
     public String getName() {
-        return CndPathUtilitities.getBaseName(path);
+        return CndPathUtilities.getBaseName(path);
     }
 
     public String getPath(boolean norm) {
@@ -237,7 +237,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
 
     public String getAbsPath() {
         String retPath = null;
-        if (CndPathUtilitities.isPathAbsolute(getPath())) {// UNIX path
+        if (CndPathUtilities.isPathAbsolute(getPath())) {// UNIX path
             retPath = getPath();
         } else if (getFolder() != null) {
             retPath = getFolder().getConfigurationDescriptor().getBaseDir() + '/' + getPath(); // UNIX path
@@ -294,10 +294,10 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
             if (getFolder() != null) {
                 FileObject fo = (FileObject) evt.getNewValue();
                 String newPath = fo.getPath();
-                if (!CndPathUtilitities.isPathAbsolute(getPath())) {
-                    newPath = CndPathUtilitities.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), newPath);
+                if (!CndPathUtilities.isPathAbsolute(getPath())) {
+                    newPath = CndPathUtilities.toRelativePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), newPath);
                 }
-                newPath = CndPathUtilitities.normalizeSlashes(newPath);
+                newPath = CndPathUtilities.normalizeSlashes(newPath);
                 renameTo(newPath);
             }
         }
@@ -443,7 +443,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     // don't know file system, fall back to the default one
                     // but do not cache file object
                     String p = getPath();
-                    if (CndPathUtilitities.isPathAbsolute(p)) {// UNIX path
+                    if (CndPathUtilities.isPathAbsolute(p)) {// UNIX path
                         p = FileSystemProvider.normalizeAbsolutePath(p, fileSystem);                        
                         fileObject = fileSystem.findResource(p);
                     }
@@ -684,7 +684,7 @@ public final class Item implements NativeFileItem, PropertyChangeListener {
                     }
                     p = macroConverter.expand(p);
                 }
-                String absPath = CndPathUtilitities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
+                String absPath = CndPathUtilities.toAbsolutePath(getFolder().getConfigurationDescriptor().getBaseDirFileObject(), p);
                 result.add(new FSPath(projectFS, absPath));
             }
             List<String> vec3 = new ArrayList<String>();

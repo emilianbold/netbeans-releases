@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.modelutil.spi.FileObjectRedirector;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -439,7 +439,7 @@ public class CsmUtilities {
     public static boolean isCsmSuitable(FileObject fo) {
         // workaround for #194431 - Path should be absolute: Templates/cFiles/CSimpleTest.c
         // fo.isVirtual returns false, FileUtil.toFile() return non-null for such files
-        return CndPathUtilitities.isPathAbsolute(fo.getPath());
+        return CndPathUtilities.isPathAbsolute(fo.getPath());
     }
     
     public static Collection<NativeProject> getNativeProjects(DataObject dobj) {

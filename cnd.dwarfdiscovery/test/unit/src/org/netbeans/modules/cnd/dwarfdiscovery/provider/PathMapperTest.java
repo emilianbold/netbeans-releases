@@ -53,7 +53,7 @@ import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapper.ResolvedPath;
 import org.netbeans.modules.cnd.dwarfdiscovery.provider.RelocatablePathMapperImpl.MapperEntry;
 import org.netbeans.modules.cnd.dwarfdump.Dwarf;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 /**
  *
@@ -354,7 +354,7 @@ public class PathMapperTest extends NbTestCase {
             set.add(prefix+"/oracore");
             set.add(prefix+"/oracore/port");
             set.add(prefix+"/oracore/public");
-            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+            while ((prefix = CndPathUtilities.getDirName(prefix)) != null) {
                 set.add(prefix);
             }
         }
@@ -376,7 +376,7 @@ public class PathMapperTest extends NbTestCase {
             set.add(prefix);
             set.add(prefix+"/glib-1.2.10");
             set.add(prefix+"/glib-1.2.10/gcache.c");
-            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+            while ((prefix = CndPathUtilities.getDirName(prefix)) != null) {
                 set.add(prefix);
             }
         }
@@ -403,7 +403,7 @@ public class PathMapperTest extends NbTestCase {
             set.add(prefix+"/oracle/ctx/src");
             set.add(prefix+"/oracle/ctx");
             set.add(prefix+"/oracle");
-            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+            while ((prefix = CndPathUtilities.getDirName(prefix)) != null) {
                 set.add(prefix);
             }
         }
@@ -425,7 +425,7 @@ public class PathMapperTest extends NbTestCase {
             set.add(prefix);
             set.add(prefix+"/rdbms");
             set.add(prefix+"/odbc");
-            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+            while ((prefix = CndPathUtilities.getDirName(prefix)) != null) {
                 set.add(prefix);
             }
         }
@@ -459,7 +459,7 @@ public class PathMapperTest extends NbTestCase {
             set.add(prefix+"/ctx_src_4/src/ext");
             set.add(prefix+"/ctx_src_4/src/ext/zfm");
             set.add(prefix+"/ctx_src_4/src/ext/zfm/zfma.c");
-            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+            while ((prefix = CndPathUtilities.getDirName(prefix)) != null) {
                 set.add(prefix);
             }
         }
@@ -509,15 +509,15 @@ public class PathMapperTest extends NbTestCase {
             set.add("/soft/1.1/ssl/include");
             set.add("/soft/1.2/ssl/include");
             this.prefix = prefix;
-            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+            while ((prefix = CndPathUtilities.getDirName(prefix)) != null) {
                 set.add(prefix);
             }
             prefix = "/soft/1.1/ssl/include";
-            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+            while ((prefix = CndPathUtilities.getDirName(prefix)) != null) {
                 set.add(prefix);
             }
             prefix = "/soft/1.2/ssl/include";
-            while ((prefix = CndPathUtilitities.getDirName(prefix)) != null) {
+            while ((prefix = CndPathUtilities.getDirName(prefix)) != null) {
                 set.add(prefix);
             }
         }

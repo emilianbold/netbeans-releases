@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.SupportAPIAccessor;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
@@ -71,7 +71,7 @@ public class APTIncludeUtils {
      */
     public static ResolvedPath resolveFilePath(FileSystem fs, String inclString, CharSequence baseFile) {
         if (baseFile != null) {
-            String folder = CndPathUtilitities.getDirName(baseFile.toString());
+            String folder = CndPathUtilities.getDirName(baseFile.toString());
             String absolutePath = folder + CndFileUtils.getFileSeparatorChar(fs) + inclString;
             if (isExistingFile(fs, absolutePath)) {
                 absolutePath = normalize(fs, absolutePath);
@@ -84,9 +84,9 @@ public class APTIncludeUtils {
     
     public static ResolvedPath resolveAbsFilePath(FileSystem fs, String absFile) {
         if (APTTraceFlags.APT_ABSOLUTE_INCLUDES) {
-            if (CndPathUtilitities.isPathAbsolute(absFile) && isExistingFile(fs, absFile) ) {
+            if (CndPathUtilities.isPathAbsolute(absFile) && isExistingFile(fs, absFile) ) {
                 absFile = normalize(fs, absFile);
-                String parent = CndPathUtilitities.getDirName(absFile);
+                String parent = CndPathUtilities.getDirName(absFile);
                 return new ResolvedPath(fs, FilePathCache.getManager().getString(parent), absFile, false, 0);
             }
         }   

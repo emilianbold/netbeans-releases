@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.OptionsNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
@@ -307,7 +307,7 @@ public class ArchiverConfiguration implements AllOptionsProvider, Cloneable {
 
         @Override
         public void setValue(String v) {
-            if (CndPathUtilitities.hasMakeSpecialCharacters(v)) {
+            if (CndPathUtilities.hasMakeSpecialCharacters(v)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
                 return;
             }
@@ -316,7 +316,7 @@ public class ArchiverConfiguration implements AllOptionsProvider, Cloneable {
     }
 
     private String getOutputDefault() {
-        String outputName = CndPathUtilitities.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase();
+        String outputName = CndPathUtilities.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase();
         switch (getMakeConfiguration().getConfigurationType().getValue()) {
             case MakeConfiguration.TYPE_STATIC_LIB:
                 outputName = "lib" + outputName + ".a"; // NOI18N
@@ -330,7 +330,7 @@ public class ArchiverConfiguration implements AllOptionsProvider, Cloneable {
      * Default output pre version 28
      */
     public String getOutputDefault27() {
-        String outputName = CndPathUtilitities.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase();
+        String outputName = CndPathUtilities.getBaseName(getMakeConfiguration().getBaseDir()).toLowerCase();
         outputName = "lib" + outputName + ".a"; // NOI18N
         return MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + outputName; // UNIX path // NOI18N
     }

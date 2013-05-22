@@ -108,7 +108,7 @@ import org.netbeans.modules.cnd.makeproject.ui.options.FullFileIndexer;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
@@ -437,7 +437,7 @@ public final class MakeProject implements Project, MakeProjectListener {
                     props.load(is);
                     String path = props.getProperty("cache.location"); //NOI18N
                     if (path != null) {
-                        if (CndPathUtilitities.isPathAbsolute(path)) {
+                        if (CndPathUtilities.isPathAbsolute(path)) {
                             return new File(path);
                         } else {
                             return new File(projectDirectory.getPath() + '/' + path); //NOI18N
@@ -1053,7 +1053,7 @@ public final class MakeProject implements Project, MakeProjectListener {
 
             FileObject baseDir = project.getProjectDirectory();
             for (String loc : subProjectLocations) {
-                String location = CndPathUtilitities.toAbsolutePath(baseDir, loc);
+                String location = CndPathUtilities.toAbsolutePath(baseDir, loc);
                 try {
 		    FileObject fo = RemoteFileUtil.getFileObject(baseDir, location);
                     if (fo != null && fo.isValid()) {
@@ -1676,7 +1676,7 @@ public final class MakeProject implements Project, MakeProjectListener {
 
         @Override
         public String resolveRelativeRemotePath(String path) {
-            if (!CndPathUtilitities.isPathAbsolute(path)) {
+            if (!CndPathUtilities.isPathAbsolute(path)) {
                 if (project.remoteMode == RemoteProject.Mode.REMOTE_SOURCES && project.remoteBaseDir != null && !project.remoteBaseDir.isEmpty()) {
                     String resolved = project.remoteBaseDir;
                     if (!resolved.endsWith("/")) { //NOI18N

@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.makeproject.api.MakeProjectOptions;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BooleanConfiguration;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.ListEditorPanel;
@@ -257,12 +257,12 @@ public class DirectoryChooserPanel extends javax.swing.JPanel implements HelpCtx
             if (ret == JFileChooser.CANCEL_OPTION) {
                 return null;
             }
-            String itemPath = CndPathUtilitities.naturalizeSlashes(fileChooser.getSelectedFile().getPath());
+            String itemPath = CndPathUtilities.naturalizeSlashes(fileChooser.getSelectedFile().getPath());
             itemPath = ProjectSupport.toProperPath(
-                    CndPathUtilitities.naturalizeSlashes(baseDir.getPath()),
+                    CndPathUtilities.naturalizeSlashes(baseDir.getPath()),
                     itemPath,
                     MakeProjectOptions.getPathMode());
-            itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
+            itemPath = CndPathUtilities.normalizeSlashes(itemPath);
             return itemPath;
         }
 
