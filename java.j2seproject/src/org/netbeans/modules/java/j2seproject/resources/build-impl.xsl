@@ -1913,8 +1913,13 @@ is divided into following sections:
                 </manifest>
             </target>
 
+            <target name="-do-jar-extend-manifest" >
+                <xsl:comment> Empty placeholder for easier customization. </xsl:comment>
+                <xsl:comment> You can override this target in the ../build.xml file. </xsl:comment>
+            </target>
+
             <target name="-do-jar-copylibs">
-                <xsl:attribute name="depends">init,-init-macrodef-copylibs,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen</xsl:attribute>
+                <xsl:attribute name="depends">init,-init-macrodef-copylibs,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen,-do-jar-extend-manifest</xsl:attribute>
                 <xsl:attribute name="if">do.mkdist</xsl:attribute>
                 <j2seproject3:copylibs manifest="${{tmp.manifest.file}}"/>
                 <echo level="info">To run this application from the command line without Ant, try:</echo>
@@ -1926,7 +1931,7 @@ is divided into following sections:
             </target>
 
             <target name="-do-jar-jar">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen,-do-jar-extend-manifest</xsl:attribute>
                 <xsl:attribute name="if">do.archive</xsl:attribute>
                 <xsl:attribute name="unless">do.mkdist</xsl:attribute>
                 <j2seproject1:jar manifest="${{tmp.manifest.file}}"/>
@@ -1955,10 +1960,10 @@ is divided into following sections:
 
 
             <target name="-do-jar-without-libraries">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen,-do-jar-jar,-do-jar-delete-manifest</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen,-do-jar-extend-manifest,-do-jar-jar,-do-jar-delete-manifest</xsl:attribute>
             </target>
             <target name="-do-jar-with-libraries">
-                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen,-do-jar-copylibs,-do-jar-delete-manifest</xsl:attribute>
+                <xsl:attribute name="depends">init,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen,-do-jar-extend-manifest,-do-jar-copylibs,-do-jar-delete-manifest</xsl:attribute>
             </target>
            
             <target name="-post-jar">

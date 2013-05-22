@@ -74,8 +74,9 @@ public final class J2SEDeployProperties {
     public static final String NATIVE_BUNDLING_ENABLED = "native.bundling.enabled"; //NOI18N
     // copied from JFXProjectProperties
     public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
-
     private static final String J2SEDEPLOY_EXTENSION = "j2sedeploy";    //NOI18N
+    private static final String J2SE_EXTEND_MANIFEST_TARGET = "-do-jar-extend-manifest";    //NOI18N
+    private static final String DEPLOY_EXTEND_MANIFEST_TARGET = "-j2sedeploy-extend-manifest";  //NOI18N
     private static final String BUILD_SCRIPT_PROTOTYPE = String.format(
         "%s/resources/build-native-prototype.xml",  //NOI18N
         J2SEDeployProperties.class.getPackage().getName().replace('.','/'));   //NOI18N
@@ -208,6 +209,7 @@ public final class J2SEDeployProperties {
                                     lock.releaseLock();
                                 }
                                 extension = extender.addExtension(J2SEDEPLOY_EXTENSION, buildExFo);
+                                extension.addDependency(J2SE_EXTEND_MANIFEST_TARGET, DEPLOY_EXTEND_MANIFEST_TARGET);
                             }
                         } else {
                             if (extension != null) {
