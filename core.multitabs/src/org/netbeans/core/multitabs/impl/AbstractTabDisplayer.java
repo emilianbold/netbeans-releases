@@ -58,7 +58,9 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTable;
 import javax.swing.JToolBar;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.core.multitabs.ButtonFactory;
@@ -92,11 +94,7 @@ abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelLi
         setLayout( new BorderLayout( 3, 3 ) );
         this.orientation = tabsLocation == JTabbedPane.TOP || tabsLocation == JTabbedPane.BOTTOM ? JTabbedPane.HORIZONTAL : JTabbedPane.VERTICAL;
         scrollPane = new JScrollPane();
-        controls = new JToolBar( JToolBar.HORIZONTAL );
-        controls.setFloatable( false );
-        controls.setFocusable( false );
-        controls.setBorder( BorderFactory.createEmptyBorder() );
-        controls.setBorderPainted( false );
+        controls = new ControlsToolbar();
         lblFullPath.setBorder( BorderFactory.createEmptyBorder( 0, 3, 2, 3) );
         Font defaultFont = lblFullPath.getFont();
         lblFullPath.setFont( defaultFont.deriveFont( defaultFont.getSize2D()-2 ) );
@@ -151,6 +149,7 @@ abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelLi
         scrollPane.getViewport().setOpaque( false );
         scrollPane.setFocusable( false );
         scrollPane.setWheelScrollingEnabled( false );
+        scrollPane.setViewportBorder( BorderFactory.createEmptyBorder() );
 
         scrollPane.addComponentListener( new ComponentListener() {
 

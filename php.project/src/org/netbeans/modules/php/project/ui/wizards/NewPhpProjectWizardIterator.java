@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -187,6 +188,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 .setDescriptor(descriptor)
                 .setCopySources(isCopyFiles())
                 .setCopySourcesTarget(getCopySrcTarget())
+                .setCopySourcesOnOpen(getCopySrcOnOpen())
                 .setRemoteConfiguration((RemoteConfiguration) descriptor.getProperty(RunConfigurationPanel.REMOTE_CONNECTION))
                 .setRemoteDirectory((String) descriptor.getProperty(RunConfigurationPanel.REMOTE_DIRECTORY))
                 .setUploadFiles(wizardType == WizardType.REMOTE ? UploadFiles.ON_SAVE : (UploadFiles) descriptor.getProperty(RunConfigurationPanel.REMOTE_UPLOAD))
@@ -418,6 +420,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         settings.putProperty(RunConfigurationPanel.COPY_SRC_FILES, null);
         settings.putProperty(RunConfigurationPanel.COPY_SRC_TARGET, null);
         settings.putProperty(RunConfigurationPanel.COPY_SRC_TARGETS, null);
+        settings.putProperty(RunConfigurationPanel.COPY_SRC_ON_OPEN, null);
         settings.putProperty(RunConfigurationPanel.URL, null);
         settings.putProperty(RunConfigurationPanel.INDEX_FILE, null);
         settings.putProperty(RunConfigurationPanel.REMOTE_CONNECTION, null);
@@ -474,7 +477,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return indexName;
     }
 
-    @org.netbeans.api.annotations.common.SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "Null means that it is not set")
     private Boolean isCopyFiles() {
         PhpProjectProperties.RunAsType runAs = getRunAsType();
         if (runAs == null) {
@@ -504,6 +507,15 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             return new File(localServer.getSrcRoot());
         }
         return null;
+    }
+
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "Null means that it is not set")
+    @CheckForNull
+    private Boolean getCopySrcOnOpen() {
+        if (getRunAsType() == null) {
+            return null;
+        }
+        return (Boolean) descriptor.getProperty(RunConfigurationPanel.COPY_SRC_ON_OPEN);
     }
 
     private Integer getPort() {

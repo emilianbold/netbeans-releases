@@ -171,6 +171,14 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
         return Collections.unmodifiableList(userIncludeFilePaths);
     }
 
+    /*package*/List<IncludeDirEntry> getUserIncludePaths() {
+        return Collections.unmodifiableList(userIncludePaths);
+    }
+
+    /*package*/List<IncludeDirEntry> getSystemIncludePaths() {
+        return Collections.unmodifiableList(systemIncludePaths);
+    }
+
     /*package*/boolean isFirstLevel() {
         return inclStack == null || inclStack.isEmpty();
     }

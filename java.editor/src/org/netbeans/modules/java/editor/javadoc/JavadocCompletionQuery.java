@@ -84,8 +84,10 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.java.lexer.JavadocTokenId;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClasspathInfo;
@@ -145,7 +147,32 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
             resultSet.finish();
         }
     }
+
+    @Override
+    protected boolean canFilter(JTextComponent component) {
+        final int newOffset = component.getSelectionStart();
+        final Document doc = component.getDocument();
+        if (newOffset > caretOffset) {
+            try {
+                String prefix = doc.getText(caretOffset, newOffset - caretOffset);
+                if (!isJavaIdentifierPart(prefix)) {
+                    Completion.get().hideDocumentation();
+                    Completion.get().hideCompletion();
+                }
+            } catch (BadLocationException ble) {
+            }
+        }
+        return false;
+    }
     
+    private boolean isJavaIdentifierPart(String text) {
+        for (int i = 0; i < text.length(); i++) {
+            if (!(Character.isJavaIdentifierPart(text.charAt(i))))
+                return false;
+        }
+        return true;
+    }
+
     static List<CompletionItem> runCompletionQuery(int queryType, Document doc, int caret) {
         JavadocCompletionQuery q = new JavadocCompletionQuery(queryType);
         JavadocContext jdctx = new JavadocContext();

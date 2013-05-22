@@ -54,13 +54,18 @@ public class ReconfigureProviderImpl extends ReconfigureProvider {
 
     @Override
     public void reconfigure(Project makeProject, String cFlags, String cxxFlags, String linkerFlags) {
-        ReconfigureProject reconfigurator = new ReconfigureProject(makeProject);
-        reconfigurator.reconfigure(cFlags, cxxFlags, linkerFlags, null);
+        ReconfigureProject reconfigurator = ReconfigureProject.createReconfigureProject(makeProject);
+        if (reconfigurator != null) {
+            reconfigurator.reconfigure(cFlags, cxxFlags, linkerFlags, null);
+        }
     }
 
     @Override
     public String getLastFlags(Project makeProject) {
-        ReconfigureProject reconfigurator = new ReconfigureProject(makeProject);
-        return reconfigurator.getLastFlags();
+        ReconfigureProject reconfigurator = ReconfigureProject.createReconfigureProject(makeProject);
+        if (reconfigurator != null) {
+            return reconfigurator.getLastFlags();
+        }
+        return ""; //NOI18N
     }
 }

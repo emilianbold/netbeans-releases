@@ -50,6 +50,8 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.JavaSource;
+import org.netbeans.core.api.multiview.MultiViewHandler;
+import org.netbeans.core.api.multiview.MultiViews;
 import org.netbeans.modules.java.navigation.ClassMemberPanelUI;
 import org.netbeans.spi.navigator.NavigatorHandler;
 import org.netbeans.spi.navigator.NavigatorPanel;
@@ -62,6 +64,8 @@ import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  *
@@ -75,6 +79,8 @@ id = "org.netbeans.modules.java.navigation.actions.ShowMembersAction")
 @ActionReference(path = "Menu/GoTo/Inspect", position = 1100)
 @NbBundle.Messages("CTL_ShowMembersAction=&File Members")
 public class ShowMembersAction extends AbstractAction {
+
+    private static final String FORM_VIEW_ID = "form";  //NOI18N
 
     public ShowMembersAction() {
         putValue(Action.NAME, Bundle.CTL_ShowMembersAction());
@@ -144,6 +150,15 @@ public class ShowMembersAction extends AbstractAction {
             }
         }
         if (fo == null) {
+            return null;
+        }
+        TopComponent.Registry regs = WindowManager.getDefault().getRegistry();
+        final TopComponent tc = regs.getActivated();
+        final MultiViewHandler h = tc == null ?
+                null :
+                MultiViews.findMultiViewHandler(tc);
+        if (h != null && FORM_VIEW_ID.equals(h.getSelectedPerspective().preferredID())) {
+            //Form view does not support Members View
             return null;
         }
         return JavaSource.forFileObject(fo);

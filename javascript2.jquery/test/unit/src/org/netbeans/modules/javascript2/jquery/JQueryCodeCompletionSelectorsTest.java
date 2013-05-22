@@ -162,6 +162,26 @@ public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
         checkAppliedCompletion("testfiles/completion/jQuery/selectors/basic/issue221481_2.js", "$(document).find('a #foo img[^');", "$(document).find('a #foo img[title^');", "title", false);
     }
 
+    public void testIssue229750() throws Exception {
+        checkCompletion("testfiles/completion/jQuery/selectors/basic/selectors.js", "$('[h^]')", false);
+    }
+    
+    public void testPropertyNames_01 () throws Exception {
+        checkCompletion("testfiles/completion/propertyNames.js", "    e^rror: function(jqXHR, textStatus, errorThrown) {", false);
+    }
+    
+    public void testPropertyNames_02 () throws Exception {
+        checkCompletion("testfiles/completion/propertyNames.js", "    c^ontents: ss", false);
+    }
+    
+    public void testPropertyNames_03() throws Exception {
+        checkAppliedCompletion("testfiles/completion/propertyNames.js", "    ^    // here cc 01", "    data: ,^", "data", false);
+    }
+    
+    public void testPropertyNames_04() throws Exception {
+        checkAppliedCompletion("testfiles/completion/propertyNames.js", "    ^    // here cc 02", "        ^", "success", false);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         return Collections.singletonMap(
@@ -366,8 +386,8 @@ public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
                     }
                 });
 
-                assertDescriptionMatches(file, bd.getText(0, bd.getLength()), false, ".expected.js");
-                final String fileName = file.substring(0, file.indexOf(".")) + ".js.expected.js";
+                assertDescriptionMatches(file, bd.getText(0, bd.getLength()), true, ".expected.js");
+                final String fileName = file.substring(0, file.indexOf(".")) + ".js." + getName() + ".expected.js";
                 assertTrue("File not found: " + getTestFile(fileName).getPath(), getTestFile(fileName).isValid());
                 Source expectedSource = getTestSource(getTestFile(fileName));
                 final StringBuilder expectedContent = new StringBuilder(expectedSource.getDocument(false).getText(0, expectedSource.getDocument(false).getLength()));

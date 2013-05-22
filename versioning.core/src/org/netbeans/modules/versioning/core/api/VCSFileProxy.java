@@ -140,7 +140,7 @@ public final class VCSFileProxy {
      * @return a VCSFileProxy representing the given file or null if the given 
      * FileObject-s Filesystem isn't supported - e.g. jar filesystem. 
      */
-    public static VCSFileProxy createFileProxy(FileObject fileObject) {
+    public static VCSFileProxy createFileProxy(FileObject fileObject) {        
         try {
             VCSFileProxyOperations fileProxyOperations = getFileProxyOperations(fileObject.getFileSystem());
             if (fileProxyOperations == null) {
@@ -248,6 +248,22 @@ public final class VCSFileProxy {
             return new File(path).canWrite();
         } else {
             return proxy.canWrite(this);
+        }
+    }
+    
+    /**
+     * Determines the last time this file was modified.
+     * <b>This method might block for a longer time and shouldn't be called in EDT.
+     * 
+     * @return A <code>long</code> value representing the time the file was
+     *         last modified.
+     * @see File#lastModified() 
+     */
+    public long lastModified() {
+        if (proxy == null) {
+            return new File(path).lastModified();
+        } else {
+            throw new UnsupportedOperationException("not yet suppoted");
         }
     }
     

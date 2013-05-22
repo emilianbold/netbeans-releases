@@ -53,7 +53,7 @@ import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.MemberAccessor;
 import org.netbeans.modules.team.ui.spi.MemberHandle;
 import org.netbeans.modules.team.ui.spi.MessagingHandle;
-import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.util.treelist.LeafNode;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.NbBundle;
@@ -63,16 +63,16 @@ import org.openide.util.NbBundle;
  *
  * @author Jan Becicka
  */
-public class MemberListNode<S extends TeamServer, P> extends SectionNode {
+public class MemberListNode<P> extends SectionNode {
 
     private MessagingHandle msg;
     private PropertyChangeListener l;
     private static final String PROP_MEMBERS = "members"; // NOI18N
-    private final DashboardProvider<S, P> dashboard;
+    private final DashboardProvider<P> dashboard;
 
-    public MemberListNode( ProjectNode<S, P> parent, DashboardProvider<S, P> dashboard ) {
-        super(getText(dashboard.getMessagingAccessor().getMessaging(parent.getProject())),
-             parent, PROP_MEMBERS); //NOI18N
+    public MemberListNode( TreeListNode parent, ProjectHandle project, DashboardProvider<P> dashboard ) {
+        super(getText(dashboard.getMessagingAccessor().getMessaging(project)),
+             parent, project, PROP_MEMBERS); //NOI18N
         this.dashboard = dashboard;
         msg = dashboard.getMessagingAccessor().getMessaging(project);
         msg.addPropertyChangeListener(l=new PropertyChangeListener() {

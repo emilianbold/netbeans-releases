@@ -544,28 +544,33 @@ public final class ModuleList {
         String module = eval.getProperty("module.jar"); // NOI18N
         // Cf. ParseProjectXml.computeClasspath:
         StringBuilder cpextra = new StringBuilder();
-        for (Element ext : XMLUtil.findSubElements(data)) {
-            if (!ext.getLocalName().equals("class-path-extension")) { // NOI18N
-                continue;
+        try {
+            for (Element ext : XMLUtil.findSubElements(data)) {
+                if (!ext.getLocalName().equals("class-path-extension")) { // NOI18N
+                    continue;
+                }
+                Element binaryOrigin = XMLUtil.findElement(ext, "binary-origin", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+                String text;
+                if (binaryOrigin != null) {
+                    text = XMLUtil.findText(binaryOrigin);
+                } else {
+                    Element runtimeRelativePath = XMLUtil.findElement(ext, "runtime-relative-path", NbModuleProject.NAMESPACE_SHARED); // NOI18N
+                    assert runtimeRelativePath != null : "Malformed <class-path-extension> in " + basedir;
+                    String reltext = XMLUtil.findText(runtimeRelativePath);
+                    // XXX assumes that module.jar is not overridden independently of module.jar.dir:
+                    text = "${cluster}/${module.jar.dir}/" + reltext; // NOI18N
+                }
+                String evaluated = eval.evaluate(text);
+                if (evaluated == null) {
+                    continue;
+                }
+                File binary = PropertyUtils.resolveFile(basedir, evaluated);
+                cpextra.append(File.pathSeparatorChar);
+                cpextra.append(binary.getAbsolutePath());
             }
-            Element binaryOrigin = XMLUtil.findElement(ext, "binary-origin", NbModuleProject.NAMESPACE_SHARED); // NOI18N
-            String text;
-            if (binaryOrigin != null) {
-                text = XMLUtil.findText(binaryOrigin);
-            } else {
-                Element runtimeRelativePath = XMLUtil.findElement(ext, "runtime-relative-path", NbModuleProject.NAMESPACE_SHARED); // NOI18N
-                assert runtimeRelativePath != null : "Malformed <class-path-extension> in " + basedir;
-                String reltext = XMLUtil.findText(runtimeRelativePath);
-                // XXX assumes that module.jar is not overridden independently of module.jar.dir:
-                text = "${cluster}/${module.jar.dir}/" + reltext; // NOI18N
-            }
-            String evaluated = eval.evaluate(text);
-            if (evaluated == null) {
-                continue;
-            }
-            File binary = PropertyUtils.resolveFile(basedir, evaluated);
-            cpextra.append(File.pathSeparatorChar);
-            cpextra.append(binary.getAbsolutePath());
+        } catch(IllegalArgumentException e) {
+            LOG.log(Level.WARNING, "Error getting subelements, malformed xml");
+            cpextra = new StringBuilder();
         }
         File manifest = new File(basedir, "manifest.mf"); // NOI18N
         ManifestManager mm = (manifest.isFile() ? 

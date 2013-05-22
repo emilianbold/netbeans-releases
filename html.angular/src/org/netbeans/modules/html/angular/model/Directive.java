@@ -79,7 +79,7 @@ public enum Directive {
     include (true,  true, true,  true,  string),
     init    (true,  true, true,  false, expression),
     list    (true,  true, true,  false, string),
-    model   (true,  true, true,  false, noValue),
+    model   (true,  true, true,  false, expression),
     mousedown
             (true,  true, true,  false, expression),
     mouseenter

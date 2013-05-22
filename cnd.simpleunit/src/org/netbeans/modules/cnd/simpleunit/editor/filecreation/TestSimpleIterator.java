@@ -122,7 +122,7 @@ public class TestSimpleIterator extends AbstractUnitTestIterator {
                 ("cpp".equals(wiz.getTemplate().getPrimaryFile().getExt())?CodeGenerator.Language.CPP:CodeGenerator.Language.C))); // NOI18N
 
         DataObject formDataObject = NewTestSimplePanel.getTemplateDataObject(
-                "simpletestfile." + wiz.getTemplate().getPrimaryFile().getExt()); // NOI18N
+                "simpletest." + wiz.getTemplate().getPrimaryFile().getExt()); // NOI18N
         
         DataObject dataObject = formDataObject.createFromTemplate(targetFolder, getTestFileName(), params);
 

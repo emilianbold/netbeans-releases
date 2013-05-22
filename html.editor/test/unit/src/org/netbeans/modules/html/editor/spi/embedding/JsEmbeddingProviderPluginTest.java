@@ -51,6 +51,7 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.test.CslTestBase;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.embedding.JsEmbeddingProviderTest;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -91,8 +92,8 @@ public class JsEmbeddingProviderPluginTest extends CslTestBase {
         public static boolean started, ended, processed;
         
         @Override
-        public boolean startProcessing(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
-            assertNotNull(snapshot);
+        public boolean startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {            assertNotNull(snapshot);
+            assertNotNull(parserResult);
             assertNotNull(ts);
             assertNotNull(embeddings);
             this.snapshot = snapshot;
@@ -118,7 +119,7 @@ public class JsEmbeddingProviderPluginTest extends CslTestBase {
         public void endProcessing() {
             ended = true;
         }
-        
+
     }
 
 }

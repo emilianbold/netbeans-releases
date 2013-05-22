@@ -1367,21 +1367,24 @@ public final class OpenProjectList {
         PrivilegedTemplates pt = priv != null ? priv : project != null ? project.getLookup().lookup( PrivilegedTemplates.class ) : null;
         String ptNames[] = pt == null ? null : pt.getPrivilegedTemplates();        
         final ArrayList<String> privilegedTemplates = new ArrayList<String>( Arrays.asList( pt == null ? new String[0]: ptNames ) );
-        
+        final ArrayList<String> toRemove = new ArrayList<String>();
         if (priv == null) {
             // when the privileged templates are part of the active lookup,
             // do not mix them with the recent templates, but use only the privileged ones.
             // eg. on Webservices node, one is not interested in a recent "jsp" file template..
             
-            ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() {
+            ProjectManager.mutex().readAccess(new Mutex.Action<Void>() { //#201355 changed from writeAccess to readAccess no apparent data modification going on with exception of 
+                                                                         //invalid recent templates removal.. postpone that to a later async time
                 public @Override Void run() {
                 String[] rtNames = getRecommendedTypes(project);
+                
                 Iterator<String> it = getRecentTemplates().iterator();
                 for( int i = 0; i < NUM_TEMPLATES && it.hasNext(); i++ ) {
                     String templateName = it.next();
                     FileObject fo = FileUtil.getConfigFile( templateName );
                     if ( fo == null ) {
-                        it.remove(); // Does not exists remove
+                        toRemove.add(templateName);
+                        // Does not exists remove
                     }
                     else if ( isRecommended( project, rtNames, fo ) ) {
                         result.add( fo );
@@ -1390,6 +1393,21 @@ public final class OpenProjectList {
                 }
                 return null;
             }
+            });
+        }
+        if (!toRemove.isEmpty()) {
+            //remove obsolete templates async to avoid using writeAccess in main body
+            RequestProcessor.getDefault().post(new Runnable() {
+
+                @Override
+                public void run() {
+                    ProjectManager.mutex().writeAccess(new Mutex.Action<Void>() { //#201355 changed from writeAccess to readAccess no apparent data modification going on.                
+                        public @Override Void run() {
+                            getRecentTemplates().removeAll(toRemove);
+                            return null;
+                        }
+                    });
+                }
             });
         }
         

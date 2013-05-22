@@ -55,6 +55,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.libraries.Library;
@@ -91,6 +92,7 @@ import org.openide.util.NbBundle.Messages;
  */
 public class FacesConfigIterator implements TemplateWizard.Iterator {
 
+    private static final long serialVersionUID = 1L;
     private static final Logger LOG = Logger.getLogger(FacesConfigIterator.class.getName());
     private static final String defaultName = "faces-config";   //NOI18N
     private static final String FACES_CONFIG_PARAM = "javax.faces.CONFIG_FILES";    //NOI18N
@@ -100,6 +102,7 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
     private int index;
     private transient WizardDescriptor.Panel[] panels;
 
+    @Override
     public Set<DataObject> instantiate(TemplateWizard wizard) throws IOException {
         Project project = Templates.getProject( wizard );
         String targetName = Templates.getTargetName(wizard);
@@ -208,12 +211,11 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
         return JSFCatalog.RES_FACES_CONFIG_DEFAULT;
     }
 
+    @Override
     public void initialize(TemplateWizard wizard) {
         // obtaining target folder
         Project project = Templates.getProject( wizard );
-
-        Sources sources = project.getLookup().lookup(org.netbeans.api.project.Sources.class);
-
+        Sources sources = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups = sources.getSourceGroups(WebProjectConstants.TYPE_WEB_INF);
 
         if (sourceGroups == null || sourceGroups.length == 0) {
@@ -225,9 +227,7 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
             sourceGroups = sources.getSourceGroups(Sources.TYPE_GENERIC);
         }
 
-        folderPanel = new FacesConfigValidationPanel(
-                Templates.createSimpleTargetChooser(project, sourceGroups));
-
+        folderPanel = new FacesConfigValidationPanel(Templates.buildSimpleTargetChooser(project, sourceGroups).create());
         panels = new WizardDescriptor.Panel[] { folderPanel };
 
         // Creating steps.
@@ -271,40 +271,49 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
         Templates.setTargetName(wizard, defaultName);
     }
 
+    @Override
     public void uninitialize(TemplateWizard wiz) {
         panels = null;
     }
 
+    @Override
     public Panel<WizardDescriptor> current() {
         return panels[index];
     }
 
+    @Override
     public String name() {
         return NbBundle.getMessage(FacesConfigIterator.class, "TITLE_x_of_y",
                 index + 1, panels.length);
     }
 
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
 
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
 
+    @Override
     public void nextPanel() {
         if (! hasNext ()) throw new NoSuchElementException ();
         index++;
     }
 
+    @Override
     public void previousPanel() {
         if (! hasPrevious ()) throw new NoSuchElementException ();
         index--;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) {
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
     }
 

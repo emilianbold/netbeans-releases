@@ -100,9 +100,16 @@ public class NamespacesModule extends CssEditorModule {
                 proposals.addAll(getNamespaceCompletionProposals(context));
                 break;
 
+            case namespaces:
+                //in body after namespace declaration(s), no prefix 
+                proposals.addAll(getNamespaceCompletionProposals(context));
+                break;
+                
             case root:
             case styleSheet:
             case body:
+                //in body, no prefix 
+                proposals.addAll(getNamespaceCompletionProposals(context));
             case bodyItem:
                 CompletionProposal nsKeywordProposal =
                         CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
@@ -112,6 +119,7 @@ public class NamespacesModule extends CssEditorModule {
             case media:
             case combinator:
             case selector:
+            case selectorsGroup:
                 proposals.addAll(getNamespaceCompletionProposals(context));
                 break;
 
@@ -213,7 +221,7 @@ public class NamespacesModule extends CssEditorModule {
             
             private void addItem(StructureItem si) {
                 if(items.isEmpty()) {
-                    result.add(new TopLevelStructureItem.Classes(items));
+                    result.add(new TopLevelStructureItem.Namespaces(items));
                 }
                 items.add(si);
             }

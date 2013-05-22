@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.services.CsmInstantiationProvider;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
+import org.netbeans.modules.cnd.apt.support.lang.APTLanguageSupport;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.InheritanceImpl.InheritanceBuilder;
@@ -92,7 +93,9 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         super(name, kind, file, start, end);
     }
     
-    public static ClassImplFunctionSpecialization create(AST ast, CsmScope scope, CsmFile file, FileContent fileContent, boolean register, DeclarationsContainer container) throws AstRendererException {
+    public static ClassImplFunctionSpecialization create(AST ast, CsmScope scope, CsmFile file, String language, FileContent fileContent, boolean register, DeclarationsContainer container) throws AstRendererException {
+        assert !APTLanguageSupport.getInstance().isLanguageC(language) : "Function specialization is not allowed in C"; // NOI18N
+        
         NameHolder nameHolder = NameHolder.createName(getClassName(ast));
         ClassImplFunctionSpecialization impl = new ClassImplFunctionSpecialization(ast, nameHolder, file);
         impl.initQualifiedName(ast, scope, false, file);
@@ -100,7 +103,7 @@ public final class ClassImplFunctionSpecialization extends ClassImplSpecializati
         if (clsImpl != null) {
             impl = clsImpl;
         } else {
-            impl.init(scope, ast, file, fileContent, register);
+            impl.init(scope, ast, file, fileContent, language, register);
         }
         nameHolder.addReference(fileContent, impl);
         return impl;

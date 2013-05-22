@@ -61,9 +61,10 @@ import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.Utilities;
 import static org.netbeans.modules.hudson.git.Bundle.*;
+import org.netbeans.modules.hudson.ui.api.HudsonSCMHelper;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
-import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
+import org.netbeans.modules.hudson.spi.HudsonSCM.ConfigurationStatus;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputListener;
@@ -96,7 +97,7 @@ public class HudsonGitSCM implements HudsonSCM {
                 // Note that all this will be wrong if the local repo is using a nondefault remote, or a branch, etc. etc.
                 configXmlSCM.appendChild(doc.createElement("source")).appendChild(doc.createTextNode(replacement != null ? replacement : origin.toString()));
                 // XXX consider <clean>true</clean> (though it does not seem to work)
-                Helper.addTrigger(doc);
+                HudsonSCMHelper.addTrigger(doc);
             }
             @Override public ConfigurationStatus problems() {
                 if (origin == null) {

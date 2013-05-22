@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -98,8 +98,8 @@ public class AccidentalAssignmentHint extends HintRule implements CustomisableRu
     private class CheckVisitor extends DefaultVisitor {
 
         private final FileObject fileObject;
-        private final List<Hint> hints = new LinkedList<Hint>();
-        private final List<Assignment> accidentalAssignments = new LinkedList<Assignment>();
+        private final List<Hint> hints = new ArrayList<>();
+        private final List<Assignment> accidentalAssignments = new ArrayList<>();
         private final BaseDocument doc;
 
         public CheckVisitor(FileObject fileObject, BaseDocument doc) {
@@ -144,7 +144,7 @@ public class AccidentalAssignmentHint extends HintRule implements CustomisableRu
         }
 
         private List<HintFix> createFixes(Assignment assignment) {
-            List<HintFix> fixes = new LinkedList<HintFix>();
+            List<HintFix> fixes = new ArrayList<>();
             fixes.add(new IdenticalComparisonHintFix(assignment, doc));
             fixes.add(new EqualComparisonHintFix(assignment, doc));
             return fixes;
@@ -201,7 +201,7 @@ public class AccidentalAssignmentHint extends HintRule implements CustomisableRu
 
     private static class AssignmentVisitor extends DefaultVisitor {
 
-        private final List<Assignment> accidentalAssignments = new LinkedList<Assignment>();
+        private final List<Assignment> accidentalAssignments = new ArrayList<>();
 
         @Override
         public void visit(Assignment node) {

@@ -82,7 +82,6 @@ import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescrip
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
-import org.netbeans.modules.nativeexecution.api.util.Shell.ShellType;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

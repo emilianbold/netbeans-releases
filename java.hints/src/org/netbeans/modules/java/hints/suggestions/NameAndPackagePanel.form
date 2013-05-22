@@ -61,9 +61,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="classNameTextField">
-      <Events>
-        <EventHandler event="keyTyped" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="classNameTextFieldKeyTyped"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="packageNameLabel">
       <Properties>
@@ -76,9 +73,6 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="packageNameTextField">
-      <Events>
-        <EventHandler event="keyTyped" listener="java.awt.event.KeyListener" parameters="java.awt.event.KeyEvent" handler="packageNameTextFieldKeyTyped"/>
-      </Events>
     </Component>
   </SubComponents>
 </Form>

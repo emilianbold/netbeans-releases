@@ -320,6 +320,11 @@ class FilesystemInterceptor extends VCSInterceptor {
         LOG.log(Level.FINE, "afterMove {0} -> {1}", new Object[] { from, to }); //NOI18N
         if (from == null || to == null || !to.exists()) return;
 
+        if (from.equals(Git.getInstance().getRepositoryRoot(from))
+                || to.equals(Git.getInstance().getRepositoryRoot(to))) {
+            // whole repository was renamed/moved, need to refresh versioning roots
+            refreshOwnersTask.schedule(0);
+        }
         // There is no point in refreshing the cache for ignored files.
         if (!cache.getStatus(from).containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
             reScheduleRefresh(800, Collections.singleton(from), true);

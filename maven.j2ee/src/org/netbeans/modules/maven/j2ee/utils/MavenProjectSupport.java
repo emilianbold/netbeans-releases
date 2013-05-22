@@ -56,7 +56,6 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerLibrarySupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -66,8 +65,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
-import org.netbeans.modules.j2ee.spi.ejbjar.EarProvider;
-import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
@@ -75,6 +72,7 @@ import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.j2ee.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
+import org.netbeans.modules.maven.j2ee.ear.EarDDHelper;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
@@ -84,7 +82,6 @@ import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
-import org.netbeans.spi.project.AuxiliaryProperties;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
@@ -414,11 +411,7 @@ public class MavenProjectSupport {
             if (applicationXML == null) {
                 String j2eeVersion = readJ2eeVersion(project);
                 if (j2eeVersion != null) {
-                    try {
-                        DDHelper.createApplicationXml(Profile.fromPropertiesString(j2eeVersion), metaInf, true);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
+                    EarDDHelper.setupDD(Profile.fromPropertiesString(j2eeVersion), metaInf, project, true);
                 }
             }
         }

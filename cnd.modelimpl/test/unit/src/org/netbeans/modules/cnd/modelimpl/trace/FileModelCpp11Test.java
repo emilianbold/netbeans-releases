@@ -81,4 +81,9 @@ public class FileModelCpp11Test extends TraceModelTestBase {
     public void testClassMemberFwdEnums() throws Exception {
         performTest("classMemberFwdEnum.cpp");
     }
+    
+    public void testClassMemberOperator() throws Exception {
+        // #225102 - [73cat] virtual operator double() const override brokes the parser.
+        performTest("bug225102.cpp");
+    }
 }

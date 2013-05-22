@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.ui.repository;
 
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.util.NbBundle;
 
@@ -52,10 +53,16 @@ import org.openide.util.NbBundle;
 public class Revision {
     private final String revision;
     private final String name;
+    private final String shortMessage;
 
     public Revision (String revision, String name) {
+        this(revision, name, null);
+    }
+    
+    public Revision (String revision, String name, String shortMessage) {
         this.revision = revision;
         this.name = name;
+        this.shortMessage = shortMessage;
     }
     
     @NbBundle.Messages("LBL_Revision.LOCAL.name=Local Changes")
@@ -63,7 +70,7 @@ public class Revision {
 
         @Override
         public String toString (boolean shorten) {
-            return getName();
+            return getRevision();
         }
     };
     @NbBundle.Messages("LBL_Revision.BASE.name=Base")
@@ -71,7 +78,7 @@ public class Revision {
 
         @Override
         public String toString (boolean shorten) {
-            return getName();
+            return getRevision();
         }
     };
     @NbBundle.Messages("LBL_Revision.HEAD.name=HEAD")
@@ -79,15 +86,15 @@ public class Revision {
 
         @Override
         public String toString (boolean shorten) {
-            return getName();
+            return getRevision();
         }
     };
 
-    public String getRevision () {
+    public String getCommitId () {
         return revision;
     }
 
-    public String getName () {
+    public String getRevision () {
         return name;
     }
 
@@ -103,7 +110,14 @@ public class Revision {
                     ? revision.substring(0, 7)
                     : revision).append(")"); //NOI18N
         } else {
-            sb.append(revision);
+            if (shorten && revision.length() > 7) {
+                sb.append(revision.substring(0, 7));
+            } else {
+                sb.append(revision);
+            }
+        }
+        if (shortMessage != null && !shortMessage.isEmpty()) {
+            sb.append(" - ").append(shortMessage); //NOI18N
         }
         return sb.toString();
     }
@@ -126,5 +140,28 @@ public class Revision {
         hash = 97 * hash + (this.revision != null ? this.revision.hashCode() : 0);
         hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
         return hash;
+    }
+
+    public String getShortMessage () {
+        return shortMessage;
+    }
+    
+    public static final class BranchReference extends Revision {
+        private final GitBranch branch;
+
+        public BranchReference (GitBranch branch) {
+            super(branch.getId(), branch.getName());
+            this.branch = branch;
+        }
+
+        @Override
+        public String toString (boolean shorten) {
+            if (shorten) {
+                return branch.getName();
+            } else {
+                return new StringBuilder(branch.getName()).append(" (") //NOI18N
+                        .append(branch.getId().substring(0, 7)).append(")").toString(); //NOI18N
+            }
+        }
     }
 }

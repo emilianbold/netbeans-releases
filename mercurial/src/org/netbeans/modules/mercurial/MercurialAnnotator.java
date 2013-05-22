@@ -167,7 +167,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         boolean folderAnnotation = false;
                 
         for (final File file : context.getRootFiles()) {
-            FileInformation info = cache.getCachedStatus(file);
+            FileInformation info = cache.markAsSeenInUI(file);
             int status = info.getStatus();
             if ((status & STATUS_IS_IMPORTANT) == 0) continue;
             
@@ -218,7 +218,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         FileInformation mostImportantInfo = null;
         File mostImportantFile = null;
         for (final File file : context.getRootFiles()) {
-            FileInformation info = cache.getCachedStatus(file);
+            FileInformation info = cache.markAsSeenInUI(file);
             int status = info.getStatus();
             if ((status & STATUS_IS_IMPORTANT) == 0) {
                 continue;
@@ -266,10 +266,7 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
         boolean isVersioned = false;
         for (Iterator i = context.getRootFiles().iterator(); i.hasNext();) {
             File file = (File) i.next();
-            // There is an assumption here that annotateName was already
-            // called and FileStatusCache.getStatus was scheduled if
-            // FileStatusCache.getCachedStatus returned null.
-            FileInformation info = cache.getCachedStatus(file);
+            FileInformation info = cache.markAsSeenInUI(file);
             if (info != null && (info.getStatus() & STATUS_BADGEABLE) != 0) {
                 isVersioned = true;
                 break;

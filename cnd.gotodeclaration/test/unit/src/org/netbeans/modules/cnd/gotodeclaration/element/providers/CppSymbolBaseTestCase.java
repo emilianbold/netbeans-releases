@@ -88,7 +88,7 @@ public class CppSymbolBaseTestCase extends ProjectBasedTestCase {
 
         List<SymbolDescriptor> elems = new ArrayList<SymbolDescriptor>();
         SymbolProvider.Context context = SymbolProviderContextAndResultFactory.createContext(null, type, text);
-        SymbolProvider.Result result = SymbolProviderContextAndResultFactory.createResult(elems);
+        SymbolProvider.Result result = SymbolProviderContextAndResultFactory.createResult(elems, context);
         provider.computeSymbolNames(context, result);
         assertNotNull(elems);
 
@@ -126,7 +126,7 @@ public class CppSymbolBaseTestCase extends ProjectBasedTestCase {
                 if (result == 0) {
                     result = compareStrings(t1.getProjectName(), t2.getProjectName());
                     if (result == 0) {
-                        result = compareStrings(t1.getFileObject().getPath(), t2.getFileObject().getPath());
+                        result = compareStrings(t1.getFileDisplayPath(), t2.getFileDisplayPath());
                     }
                 }
             }

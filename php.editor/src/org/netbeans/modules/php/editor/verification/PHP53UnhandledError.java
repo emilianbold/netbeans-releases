@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Stack;
 import org.netbeans.modules.csl.api.Error;
@@ -91,8 +91,8 @@ public class PHP53UnhandledError extends UnhandledErrorRule {
     }
 
     private static class CheckVisitor extends DefaultVisitor {
-        private List<Error> errors = new LinkedList<Error>();
-        private Stack<ASTNode> parent = new Stack<ASTNode>();
+        private List<Error> errors = new ArrayList<>();
+        private Stack<ASTNode> parent = new Stack<>();
         private final FileObject fileObject;
 
         public CheckVisitor(FileObject fileObject) {

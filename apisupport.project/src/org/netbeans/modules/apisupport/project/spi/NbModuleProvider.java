@@ -133,6 +133,14 @@ public interface NbModuleProvider {
     void addDependencies(@NonNull ModuleDependency[] dependencies) throws IOException;
     
     /**
+     * add/updates the given modules to the project's target platform
+     * @param dependencies list of 
+     * @since 1.64
+     * @throws IOException
+     */
+    void addModulesToTargetPlatform(@NonNull ModuleDependency[] dependencies) throws IOException;
+    
+    /**
      * Checks the version of the given dependency.
      * The return value should be what the module currently compiles against
      * (which might be different in some harnesses than the minimum runtime dependency).
@@ -180,6 +188,7 @@ public interface NbModuleProvider {
         private final SpecificationVersion version;
         private final boolean useInCompiler;
         private boolean testDependency;
+        private final String clusterName;
 
         public ModuleDependency(String codeNameBase, String releaseVersion, SpecificationVersion version, boolean useInCompiler) {
             this.testDependency = false;
@@ -187,6 +196,16 @@ public interface NbModuleProvider {
             this.releaseVersion = releaseVersion;
             this.version = version;
             this.useInCompiler = useInCompiler;
+            this.clusterName = null;
+        }
+
+        public ModuleDependency(String codeNameBase, String releaseVersion, SpecificationVersion version, boolean useInCompiler, String clusterName) {
+            this.testDependency = false;
+            this.codeNameBase = codeNameBase;
+            this.releaseVersion = releaseVersion;
+            this.version = version;
+            this.useInCompiler = useInCompiler;
+            this.clusterName = clusterName;
         }
 
         public String getCodeNameBase() {
@@ -213,6 +232,9 @@ public interface NbModuleProvider {
             this.testDependency = isTestDependency;
         }
 
+        public String getClusterName() {
+            return clusterName;
+        }
  
         
     }

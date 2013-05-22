@@ -49,7 +49,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.beans.PropertyVetoException;
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
@@ -977,7 +976,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     String revision = entry.getRevision();
                     Date date = entry.getDateTime();
                     FileObject[] files = tc.getFiles();
-                    File file = files[0] != null ? FileUtil.toFile(files[0]) : null;
+                    VCSFileProxy file = files[0] != null ? VCSFileProxy.createFileProxy(files[0]) : null;
                     MsgTooltipWindow ttw = new MsgTooltipWindow(outline, file, message, revision, author, date);
                     Point p = e.getPoint();
                     SwingUtilities.convertPointToScreen(p, outline);

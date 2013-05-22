@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.localhistory.store;
 
-import java.io.File;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.VersioningListener;
 
 /**
@@ -73,7 +73,7 @@ public interface LocalHistoryStore {
      * @param file 
      * @param ts 
      */
-    public void fileCreate(File file, long ts);        
+    public void fileCreate(VCSFileProxy file, long ts);        
     
     /**
      * Stores the files actual state under the given timestamp and marks it as deleted
@@ -81,7 +81,7 @@ public interface LocalHistoryStore {
      * @param file the file which has to be stored
      * @param ts the timestamp under which the file has to be stored
      */
-    public void fileDelete(File file, long ts);
+    public void fileDelete(VCSFileProxy file, long ts);
     
     /**
      * Marks in toFile-s history that it was created with timestamp ts as a result from
@@ -92,7 +92,7 @@ public interface LocalHistoryStore {
      * @param toFile 
      * @param ts 
      */
-    public void fileCreateFromMove(File fromFile, File toFile, long ts);
+    public void fileCreateFromMove(VCSFileProxy fromFile, VCSFileProxy toFile, long ts);
     
     /**
      * Stores fromFile-s actual state under the given timestamp and 
@@ -102,7 +102,7 @@ public interface LocalHistoryStore {
      * @param to 
      * @param ts 
      */
-    public void fileDeleteFromMove(File fromFile, File toFile, long ts);
+    public void fileDeleteFromMove(VCSFileProxy fromFile, VCSFileProxy toFile, long ts);
  
     /**
      * Stores the files actual state under the given timestamp
@@ -111,7 +111,7 @@ public interface LocalHistoryStore {
      * @param handleAsync whether the given file should be copied to the store asynchronously or not
      * @param ts the timestamp under which the file has to be stored
      */
-    public void fileChange(File file, long ts);                   
+    public void fileChange(VCSFileProxy file, long ts);                   
         
     /**
      * Sets a label for an entry represented by the given file and timestamp
@@ -120,7 +120,7 @@ public interface LocalHistoryStore {
      * @param ts timestamp
      * @param label the label to be set 
      */ 
-    public StoreEntry setLabel(File file, long ts, String label);    
+    public StoreEntry setLabel(VCSFileProxy file, long ts, String label);    
     
     /**
      * Adds a property change listener
@@ -142,17 +142,17 @@ public interface LocalHistoryStore {
      * @param file the file for which the entries are to be retrieved
      * @return StoreEntry[] all entries present in the storage
      */ 
-    public StoreEntry[] getStoreEntries(File file);
+    public StoreEntry[] getStoreEntries(VCSFileProxy file);
     
     /**
-     * Returns an entry representig the given files state in time ts
+     * Returns an entry representing the given files state in time ts
      * 
      * @param file the file for which the entries are to be retrieved
      * @param ts the time for which the StoreEntry has to retrieved
      * @return StoreEntry a StoreEntry representing the given file in time ts. 
      *         <tt>null</tt> if file is a directory or there is no entry with a timestamp &lt; <tt>ts</tt>
      */ 
-    public StoreEntry getStoreEntry(File file, long ts);
+    public StoreEntry getStoreEntry(VCSFileProxy file, long ts);
     
     /**
      * Return an StoreEntry array representing the given root folders state 
@@ -166,20 +166,20 @@ public interface LocalHistoryStore {
      * @param ts timestamp to which teh history has to be retrieved
      * @return StoreEntry array representing the given root folders state 
      */ 
-    public StoreEntry[] getFolderState(File root, File[] files, long ts);        
+    public StoreEntry[] getFolderState(VCSFileProxy root, VCSFileProxy[] files, long ts);        
     
     /**
      * Returns StoreEntries for files which are directly 
      * under the given root folder and:
      * <ul>
      *  <li> their youngest entry is marked as deleted
-     *  <li> or have an entry in the storage but don't exist under the given root anymore e.g. externaly deleted
+     *  <li> or have an entry in the storage but don't exist under the given root anymore e.g. externally deleted
      * </ul>
      * 
      * @param root 
      * @return an array of StoreEntries
      */ 
-    public StoreEntry[] getDeletedFiles(File root);    
+    public StoreEntry[] getDeletedFiles(VCSFileProxy root);    
     
     /**
      * Deletes a StoreEntry from the storage represented by the given file and timestamp
@@ -188,7 +188,7 @@ public interface LocalHistoryStore {
      * @param ts the timestamp for which a StoreEntry has to be deleted
      * 
      */ 
-    public void deleteEntry(File file, long ts); 
+    public void deleteEntry(VCSFileProxy file, long ts); 
         
     /**
      * Removes all history information from the storage which is older than now - ttl. 
@@ -206,6 +206,6 @@ public interface LocalHistoryStore {
      * @param file the file to check
      * @param caller identifies whoever called this method
      */
-    public void waitForProcessedStoring(File file, String caller);
+    public void waitForProcessedStoring(VCSFileProxy file, String caller);
             
 }

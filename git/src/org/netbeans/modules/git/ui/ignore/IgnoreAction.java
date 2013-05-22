@@ -101,7 +101,8 @@ public class IgnoreAction extends MultipleRepositoryAction {
             enabled = cache.containsFiles(ctx, EnumSet.of(Status.NEW_INDEX_WORKING_TREE), true);
             if (!enabled) {
                 for (File root : ctx.getRootFiles()) {
-                    if (cache.getStatus(root).isDirectory()) {
+                    FileInformation status = cache.getStatus(root);
+                    if (status.isDirectory() && !status.containsStatus(Status.NOTVERSIONED_EXCLUDED)) {
                         enabled = true;
                         break;
                     }

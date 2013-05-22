@@ -62,6 +62,8 @@ public interface RepositoryListener {
      * @param unitName String the name of the unit
      */    
     void unitClosed(int unitId, CharSequence unitName);
+
+    void unitRemoved(int unitId, CharSequence unitName);
     
     void anExceptionHappened(int unitId, CharSequence unitName, RepositoryException exc);
 

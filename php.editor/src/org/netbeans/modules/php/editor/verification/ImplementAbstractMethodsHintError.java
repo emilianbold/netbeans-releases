@@ -46,7 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -129,23 +129,23 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
     }
 
     private List<HintFix> createHintFixes(BaseDocument doc, FixInfo fixInfo) {
-        List<HintFix> hintFixes = new LinkedList<HintFix>();
+        List<HintFix> hintFixes = new ArrayList<>();
         hintFixes.add(new ImplementAllFix(doc, fixInfo));
         hintFixes.add(new AbstractClassFix(doc, fixInfo));
         return Collections.unmodifiableList(hintFixes);
     }
 
     private Collection<FixInfo> checkHints(Collection<? extends ClassScope> allClasses, PHPRuleContext context) {
-        List<FixInfo> retval = new ArrayList<FixInfo>();
+        List<FixInfo> retval = new ArrayList<>();
         for (ClassScope classScope : allClasses) {
             if (!classScope.isAbstract()) {
                 Index index = context.getIndex();
-                Set<String> allValidMethods = new HashSet<String>();
+                Set<String> allValidMethods = new HashSet<>();
                 allValidMethods.addAll(toNames(getValidInheritedMethods(getInheritedMethods(classScope, index))));
                 allValidMethods.addAll(toNames(index.getDeclaredMethods(classScope)));
                 ElementFilter declaredMethods = ElementFilter.forExcludedNames(allValidMethods, PhpElementKind.METHOD);
                 Set<MethodElement> accessibleMethods = declaredMethods.filter(index.getAccessibleMethods(classScope, classScope));
-                Set<String> methodSkeletons = new LinkedHashSet<String>();
+                Set<String> methodSkeletons = new LinkedHashSet<>();
                 MethodElement lastMethodElement = null;
                 FileObject lastFileObject = null;
                 FileScope fileScope = null;
@@ -159,7 +159,7 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
                         }
                         if (fileScope != null) {
                             NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(fileScope, methodElement.getOffset());
-                            List typeNameResolvers = new ArrayList<TypeNameResolver>();
+                            List typeNameResolvers = new ArrayList<>();
                             if (fileObject != null && CodeUtils.isPhp52(fileObject)) {
                                 typeNameResolvers.add(TypeNameResolverImpl.forUnqualifiedName());
                             } else {
@@ -205,9 +205,9 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
     }
 
     private Set<MethodElement> getInheritedMethods(final ClassScope classScope, final Index index) {
-        Set<MethodElement> inheritedMethods = new HashSet<MethodElement>();
-        Set<MethodElement> declaredSuperMethods =  new HashSet<MethodElement>();
-        Set<MethodElement> accessibleSuperMethods =  new HashSet<MethodElement>();
+        Set<MethodElement> inheritedMethods = new HashSet<>();
+        Set<MethodElement> declaredSuperMethods =  new HashSet<>();
+        Set<MethodElement> accessibleSuperMethods =  new HashSet<>();
         Collection<? extends ClassScope> superClasses = classScope.getSuperClasses();
         for (ClassScope cls : superClasses) {
             declaredSuperMethods.addAll(index.getDeclaredMethods(cls));
@@ -229,7 +229,7 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
     }
 
     private Set<MethodElement> getValidInheritedMethods(Set<MethodElement> inheritedMethods) {
-        Set<MethodElement> retval = new HashSet<MethodElement>();
+        Set<MethodElement> retval = new HashSet<>();
         for (MethodElement methodElement : inheritedMethods) {
             if (!methodElement.isAbstract()) {
                 retval.add(methodElement);
@@ -239,7 +239,7 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
     }
 
     private static Set<String> toNames(Set<? extends PhpElement> elements) {
-        Set<String> names = new HashSet<String>();
+        Set<String> names = new HashSet<>();
         for (PhpElement elem : elements) {
             names.add(elem.getName());
         }
@@ -360,7 +360,7 @@ public class ImplementAbstractMethodsHintError extends HintErrorRule {
         private final int classDeclarationOffset;
 
         FixInfo(ClassScope classScope, Set<String> methodSkeletons, MethodElement lastMethodElement, int newMethodsOffset, int classDeclarationOffset) {
-            this.methodSkeletons = new ArrayList<String>(methodSkeletons);
+            this.methodSkeletons = new ArrayList<>(methodSkeletons);
             className = classScope.getFullyQualifiedName().toString();
             Collections.sort(this.methodSkeletons);
             this.classNameRange = classScope.getNameRange();

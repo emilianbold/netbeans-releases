@@ -101,6 +101,8 @@ public final class ElementFactoryImpl implements ElementFactory {
             return new ResourceIdentifierI(model, node);
         } else if (className.equals("Media")) {
             return new MediaI(model, node);
+        } else if (className.equals("MediaBody")) {
+            return new MediaBodyI(model, node);
         } else if (className.equals("MediaQueryList")) {
             return new MediaQueryListI(model, node);
         } else if (className.equals("MediaQuery")) {
@@ -111,6 +113,8 @@ public final class ElementFactoryImpl implements ElementFactory {
             return new MediaExpressionI(model, node);
         } else if (className.equals("MediaFeature")) {
             return new MediaFeatureI(model, node);
+        } else if (className.equals("MediaFeatureValue")) {
+            return new MediaFeatureValueI(model, node);
         } else if (className.equals("MediaType")) {
             return new MediaTypeI(model, node);
         } else if (className.equals("Namespaces")) {
@@ -390,16 +394,21 @@ public final class ElementFactoryImpl implements ElementFactory {
     }
 
     @Override
-    public MediaExpression createMediaExpression(MediaFeature mediaFeature, Expression expression) {
+    public MediaExpression createMediaExpression(MediaFeature mediaFeature, MediaFeatureValue mediaFeatureValue) {
         MediaExpression me = createMediaExpression();
         me.setMediaFeature(mediaFeature);
-        me.setExpression(expression);
+        me.setMediaFeatureValue(mediaFeatureValue);
         return me;
     }
 
     @Override
     public MediaFeature createMediaFeature() {
         return new MediaFeatureI(model);
+    }
+    
+    @Override
+    public MediaFeatureValue createMediaFeatureValue() {
+        return new MediaFeatureValueI(model);
     }
 
     @Override
@@ -459,22 +468,34 @@ public final class ElementFactoryImpl implements ElementFactory {
     }
 
     @Override
-    public Media createMedia(MediaQueryList mediaQueryList, Rule... rule) {
+    public Media createMedia(MediaQueryList mediaQueryList, MediaBody mediaBody) {
         Media media = createMedia();
         media.setMediaQueryList(mediaQueryList);
-        for (Rule r : rule) {
-            media.addRule(r);
-        }
+        media.setMediaBody(mediaBody);
         return media;
+    }
+    
+    @Override
+    public MediaBody createMediaBody() {
+        return new MediaBodyI(model);
+    }
+    
+    @Override
+    public MediaBody createMediaBody(Rule... rules) {
+        MediaBody mediaBody = createMediaBody();
+        for (Rule r : rules) {
+            mediaBody.addRule(r);
+        }
+        return mediaBody;
     }
 
     @Override
-    public Media createMedia(MediaQueryList mediaQueryList, Page... page) {
-        Media media = createMedia();
-        for (Page p : page) {
-            media.addPage(p);
+    public MediaBody createMediaBody(Page... pages) {
+        MediaBody mediaBody = createMediaBody();
+        for (Page page : pages) {
+            mediaBody.addPage(page);
         }
-        return media;
+        return mediaBody;
     }
 
     @Override
@@ -528,4 +549,12 @@ public final class ElementFactoryImpl implements ElementFactory {
     public AtRule createAtRule() {
         return new AtRuleI(model);
     }
+
+    @Override
+    public MediaFeatureValue createMediaFeatureValue(Expression expression) {
+        MediaFeatureValue mediaFeatureValue = createMediaFeatureValue();
+        mediaFeatureValue.setExpression(expression);
+        return mediaFeatureValue;
+    }
+
 }

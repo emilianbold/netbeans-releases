@@ -77,7 +77,7 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
 
     public static Set<NamespaceElement> fromSignature(final NameKind query, final IndexQueryImpl indexQuery, final IndexResult indexResult) {
         final String[] values = indexResult.getValues(IDX_FIELD);
-        final Set<NamespaceElement> retval = new HashSet<NamespaceElement>();
+        final Set<NamespaceElement> retval = new HashSet<>();
         for (final String val : values) {
             final NamespaceElement namespace = fromSignature(query, indexQuery, indexResult, Signature.get(val));
             if (namespace != null) {

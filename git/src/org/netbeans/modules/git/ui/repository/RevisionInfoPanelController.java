@@ -73,6 +73,7 @@ public class RevisionInfoPanelController {
     private final PropertyChangeSupport support;
     public static final String PROP_VALID = "RevisionInfoPanelController.valid"; //NOI18N
     private String mergingInto;
+    private Revision info;
 
     public RevisionInfoPanelController (File repository) {
         this.repository = repository;
@@ -103,6 +104,10 @@ public class RevisionInfoPanelController {
         this.mergingInto = revision;
     }
 
+    Revision getInfo () {
+        return info;
+    }
+
     private void resetInfoFields () {
         panel.taMessage.setText(MSG_LOADING);
         panel.tbAuthor.setText(MSG_LOADING);
@@ -117,7 +122,9 @@ public class RevisionInfoPanelController {
         }
         if (revision.equals(info.getRevision())) {
             panel.tbRevisionId.setText(new StringBuilder(info.getRevision()).append(getMergedStatus(revisionMerged)).toString());
+            this.info = new Revision(revision, revision, info.getShortMessage());
         } else {
+            this.info = new Revision(info.getRevision(), revision, info.getShortMessage());
             if (revision.startsWith(GitUtils.PREFIX_R_HEADS)) { //NOI18N
                 revision = revision.substring(GitUtils.PREFIX_R_HEADS.length());
             } else if (revision.startsWith(GitUtils.PREFIX_R_REMOTES)) { //NOI18N

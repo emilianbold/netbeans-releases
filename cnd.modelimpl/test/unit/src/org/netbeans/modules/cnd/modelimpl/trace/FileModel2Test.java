@@ -464,4 +464,13 @@ public class FileModel2Test extends TraceModelTestBase {
         // Bug 217390 - Code model is unstable on unknown specifiers
         performTest("bug217390.cpp");
     }
+    
+    public void testBug229069() throws Exception {
+        performTest("bug229069.c"); // NOI18N
+    }    
+    
+    public void testCNamespaces() throws Exception {
+        // Error with existing namespaces in C language
+        performTest("c_namespaces.c");
+    }
 }

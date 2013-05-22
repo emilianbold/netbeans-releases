@@ -44,6 +44,7 @@ package org.netbeans.modules.kenai.ui.dashboard;
 
 import org.netbeans.modules.team.ui.common.LinkButton;
 import java.awt.*;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.List;
@@ -52,7 +53,8 @@ import org.netbeans.modules.kenai.api.*;
 import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
-import org.netbeans.modules.team.ui.common.DefaultDashboard;
+import org.netbeans.modules.team.ui.common.DashboardSupport;
+import org.netbeans.modules.team.ui.common.ProjectNode;
 import org.netbeans.modules.team.ui.common.ProjectProvider;
 import org.netbeans.modules.team.ui.spi.MessagingAccessor;
 import org.netbeans.modules.team.ui.spi.MessagingHandle;
@@ -114,9 +116,15 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
     private TreeLabel rightPar;
     private TreeLabel leftPar;
     private RequestProcessor issuesRP = new RequestProcessor(MyProjectNode.class);
-    private final DefaultDashboard<KenaiServer, KenaiProject> dashboard;
+    private final DashboardSupport<KenaiProject> dashboard;
+    private final boolean canOpen;
+    private final boolean canBookmark;
+    private final Action closeAction;
+    private LinkButton btnBookmark;
+    private JLabel myPrjLabel;
+    private LinkButton btnClose;
 
-    public MyProjectNode( final ProjectHandle<KenaiProject> project ) {
+    public MyProjectNode( final ProjectHandle<KenaiProject> project , boolean canOpen, boolean canBookmark, Action closeAction ) {
         super( null );
         if (project==null) {
             throw new IllegalArgumentException("project cannot be null"); // NOI18N
@@ -162,6 +170,9 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
             }
         };
         this.project = project;
+        this.canOpen = canOpen;
+        this.canBookmark = canBookmark;
+        this.closeAction = closeAction;
         this.accessor = ProjectAccessorImpl.getDefault();
         this.maccessor = MessagingAccessorImpl.getDefault();
         this.qaccessor = dashboard.getDashboardProvider().getQueryAccessor(KenaiProject.class);
@@ -229,14 +240,55 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
 //                btnBookmark.setRolloverEnabled(true);
 //                btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/bookmark_over.png", true));
 //                component.add( btnBookmark, new GridBagConstraints(6,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
-                btnOpen = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open.png", true), getOpenAction()); //NOI18N
-                btnOpen.setText(null);
-                btnOpen.setToolTipText(NbBundle.getMessage(MyProjectNode.class, "LBL_Open"));
-                btnOpen.setRolloverEnabled(true);
-                btnOpen.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open_over.png", true)); // NOI18N
-                component.add( btnOpen, new GridBagConstraints(7,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                
+                int idxX = 6;
+                if(canBookmark) {
+                    btnBookmark = new LinkButton(ImageUtilities.loadImageIcon(
+                            "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true), dummyAction); //NOI18N
+                    btnBookmark.setRolloverEnabled(true);
+                    component.add( btnBookmark, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                    myPrjLabel = new JLabel();
+                    component.add( myPrjLabel, new GridBagConstraints(idxX,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );                    
+                }
+                if(closeAction != null) {
+                    btnClose = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true), dummyAction); //NOI18N
+                    btnClose.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_Close"));
+                    btnClose.setRolloverEnabled(true);
+                    btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
+                    component.add( btnClose, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                }
+                
+                if(canOpen) {
+                    btnOpen = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open.png", true), getOpenAction()); //NOI18N
+                    btnOpen.setText(null);
+                    btnOpen.setToolTipText(NbBundle.getMessage(MyProjectNode.class, "LBL_Open"));
+                    btnOpen.setRolloverEnabled(true);
+                    btnOpen.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/ui/resources/open_over.png", true)); // NOI18N
+                    component.add( btnOpen, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
+                }
             }
             lbl.setForeground(foreground);
+            
+            if(btnBookmark != null) {
+                btnBookmark.setForeground(foreground, isSelected);
+                btnBookmark.setIcon(ImageUtilities.loadImageIcon(
+                            "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
+                btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
+                            "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true)); // NOI18N
+                btnBookmark.setToolTipText(NbBundle.getMessage(ProjectNode.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
+            }
+            if(myPrjLabel != null) {
+                if (isMemberProject) {
+                    myPrjLabel.setIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/bookmark.png", true)); // NOI18N
+                    myPrjLabel.setToolTipText(NbBundle.getMessage(ProjectNode.class, "LBL_MyProject_Tooltip")); // NOI18N
+                } else {
+                    myPrjLabel.setIcon(null);
+                    myPrjLabel.setToolTipText(null);
+                }
+            }
+            if(btnClose != null) {
+                btnClose.setForeground(foreground, isSelected);
+            }
             return component;
         }
     }
@@ -261,7 +313,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
                 if (btnMessages != null) {
                     btnMessages.setVisible(b);
                 }
-                dashboard.dashboardComponent.repaint();
+                dashboard.getComponent().repaint();
             }
         };
         if (SwingUtilities.isEventDispatchThread()) {
@@ -330,7 +382,7 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
                 btnBugs.setVisible(!"0".equals(bug.getText())); // NOI18N
                 component.validate();
                 dashboard.myProjectsProgressFinished();
-                dashboard.dashboardComponent.repaint();
+                dashboard.getComponent().repaint();
             }
         });
     }
@@ -364,5 +416,12 @@ public class MyProjectNode<S extends TeamServer, P> extends LeafNode implements 
     @Override
     protected Type getType() {
         return Type.CLOSED;
+    }
+    
+    private final DummyAction dummyAction = new DummyAction();
+    private static class DummyAction extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+        }
     }
 }

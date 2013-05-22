@@ -68,7 +68,10 @@ public class ErrorFilterQuery {
         List<Error> filtered = new LinkedList<Error>();
         for(ErrorFilter.Factory factory : factories) {
             ErrorFilter filter = factory.createErrorFilter(featureName);
-            String fn = "TLIndexer:" + filterName(filter);
+            String fn = "TLIndexer:" + filterName(factory, filter);
+            if (filter == null) {
+                continue;
+            }
             try {
                 LogRecord lr = new LogRecord(Level.INFO, "INDEXER_START");
                 lr.setParameters(new Object[] { fn });
@@ -83,11 +86,18 @@ public class ErrorFilterQuery {
                 UPDATER_BACKDOOR.log(lr);
             }
         }
-        return filtered.isEmpty() ? parserResult.getDiagnostics() :  filtered;
+        return filtered.isEmpty() ? null :  filtered;
     }
 
-    static String filterName(ErrorFilter f) {
-        Class c = f.getClass();
+    static String filterName(ErrorFilter.Factory fact, ErrorFilter f) {
+        Class c;
+        
+        if (f == null) {
+            c = fact.getClass();
+        } else {
+            c = f.getClass();
+        }
+        
         String n = c.getName();
         int idx = n.indexOf(".modules.");
         int last = n.lastIndexOf('.');

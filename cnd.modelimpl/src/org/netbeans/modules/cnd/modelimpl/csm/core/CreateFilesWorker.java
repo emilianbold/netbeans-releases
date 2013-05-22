@@ -71,8 +71,8 @@ final class CreateFilesWorker {
     private final Set<NativeFileItem> reparseOnPropertyChanged = Collections.synchronizedSet(new HashSet<NativeFileItem>());
     private final AtomicBoolean failureDetected = new AtomicBoolean(false);
     private final Set<NativeFileItem> removedFiles;
-    private final ProjectSettingsValidator validator;
-    CreateFilesWorker(ProjectBase project, Set<NativeFileItem> removedFiles, ProjectSettingsValidator validator) {
+    private final boolean validator;
+    CreateFilesWorker(ProjectBase project, Set<NativeFileItem> removedFiles, boolean validator) {
         this.project = project;
         this.removedFiles = removedFiles;
         this.validator = validator;
@@ -116,7 +116,7 @@ final class CreateFilesWorker {
         }
         if (!failureDetected.get()) {
             // no issues with repository was found so far
-            if (validator != null && !sources) {
+            if (validator && !sources) {
                 final Set<CsmUID<CsmFile>> allFilesUID = new HashSet<CsmUID<CsmFile>>(project.getHeaderFilesUID());
                 allFilesUID.removeAll(handledFiles);
                 if (TraceFlags.TRACE_VALIDATION) {
@@ -177,7 +177,7 @@ final class CreateFilesWorker {
     }
 
     /*package*/void checkLibraries() {
-        if (!failureDetected.get() && validator != null) {
+        if (!failureDetected.get() && validator) {
             // check libraries and find if our storage has extra model to contribute
             reparseOnEdit.addAll(project.checkLibrariesAfterRestore());
         }

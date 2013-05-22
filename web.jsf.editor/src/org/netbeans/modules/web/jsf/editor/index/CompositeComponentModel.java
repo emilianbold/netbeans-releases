@@ -220,9 +220,8 @@ public class CompositeComponentModel extends JsfPageModel {
         dsb.append(VALUES_SEPARATOR);
         dsb.append(encode(interfaceShortDescription != null ? interfaceShortDescription : NOT_AVAILABLE_VALUE));
         document.addPair(INTERFACE_DESCRIPTION_KEY, dsb.toString(), false, true);
-        
-	return LibraryUtils.getCompositeLibraryURL(libraryName);
 
+        return LibraryUtils.getCompositeLibraryURL(libraryName, true); // the return value looks to be used nowhere
     }
 
     private String getLibraryPath() {
@@ -309,8 +308,11 @@ public class CompositeComponentModel extends JsfPageModel {
 
         @Override
         public JsfPageModel getModel(HtmlParserResult result) {
-            Node node = result.root(LibraryUtils.COMPOSITE_LIBRARY_NS); //NOI18N
-            if(node == null) {
+            Node node = result.root(LibraryUtils.COMPOSITE_LIBRARY_NS);
+            if (node == null || node.children().isEmpty()) {
+                node = result.root(LibraryUtils.COMPOSITE_LIBRARY_LEGACY_NS);
+            }
+            if (node == null) {
                 return null; //no composite library declaration
             }
             FileObject file = result.getSnapshot().getSource().getFileObject();

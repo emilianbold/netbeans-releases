@@ -43,17 +43,17 @@
 
 package org.netbeans.lib.profiler.results.memory;
 
-import org.netbeans.lib.profiler.global.CommonConstants;
-import org.netbeans.lib.profiler.results.AbstractDataFrameProcessor;
-import org.netbeans.lib.profiler.results.ProfilingResultListener;
 import java.util.logging.Level;
-
+import org.netbeans.lib.profiler.global.CommonConstants;
+import org.netbeans.lib.profiler.results.ProfilingResultListener;
+import org.netbeans.lib.profiler.results.locks.AbstractLockDataFrameProcessor;
 
 /**
  *
  * @author Jaroslav Bachorik
+ * @author Tomas Hurka
  */
-public class MemoryDataFrameProcessor extends AbstractDataFrameProcessor {
+public class MemoryDataFrameProcessor extends AbstractLockDataFrameProcessor {
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     public void doProcessDataFrame(byte[] buffer) {
@@ -163,6 +163,94 @@ public class MemoryDataFrameProcessor extends AbstractDataFrameProcessor {
                     }
 
                     fireProfilingPoint(threadId, id, timeStamp);
+
+                    break;
+                }
+                case CommonConstants.SET_FOLLOWING_EVENTS_THREAD: {
+                    currentThreadId = (char) ((((int) buffer[curPos++] & 0xFF) << 8) | ((int) buffer[curPos++] & 0xFF));
+                    if (LOGGER.isLoggable(Level.FINEST)) {
+                        LOGGER.log(Level.FINEST, "Change current thread , tId={0}", currentThreadId); // NOI18N
+                    }
+
+                    break;
+                }
+                case CommonConstants.NEW_THREAD: {
+                    int threadId = (char) ((((int) buffer[curPos++] & 0xFF) << 8) | ((int) buffer[curPos++] & 0xFF));
+                    int strLen = ((((int) buffer[curPos++] & 0xFF) << 8) | ((int) buffer[curPos++] & 0xFF));
+                    String threadName = new String(buffer, curPos, strLen);
+                    curPos += strLen;
+                    strLen = ((((int) buffer[curPos++] & 0xFF) << 8) | ((int) buffer[curPos++] & 0xFF));
+
+                    String threadClassName = new String(buffer, curPos, strLen);
+                    curPos += strLen;
+
+                    if (LOGGER.isLoggable(Level.FINEST)) {
+                        LOGGER.log(Level.FINEST, "Creating new thread , tId={0}", threadId); // NOI18N
+                    }
+
+                    fireNewThread(threadId, threadName, threadClassName);
+                    currentThreadId = threadId;
+
+                    break;
+                }
+                case CommonConstants.NEW_MONITOR: {
+                    int hash = (((int) buffer[curPos++] & 0xFF) << 24) 
+                         | (((int) buffer[curPos++] & 0xFF) << 16)
+                         | (((int) buffer[curPos++] & 0xFF) << 8) 
+                         | ((int) buffer[curPos++] & 0xFF);
+                    int strLen = ((((int) buffer[curPos++] & 0xFF) << 8) | ((int) buffer[curPos++] & 0xFF));
+                    String className = new String(buffer, curPos, strLen);
+                    curPos += strLen;
+
+                    if (LOGGER.isLoggable(Level.FINEST)) {
+                        LOGGER.log(Level.FINEST, "Creating new monitor , mId={0} , className={1}", new Object[] {hash, className}); // NOI18N
+                    }
+
+                    fireNewMonitor(hash, className);
+                    break;
+                }
+                case CommonConstants.METHOD_ENTRY_MONITOR:
+                case CommonConstants.METHOD_EXIT_MONITOR: {
+                    long timeStamp0 = (((long) buffer[curPos++] & 0xFF) << 48) | (((long) buffer[curPos++] & 0xFF) << 40)
+                                 | (((long) buffer[curPos++] & 0xFF) << 32) | (((long) buffer[curPos++] & 0xFF) << 24)
+                                 | (((long) buffer[curPos++] & 0xFF) << 16) | (((long) buffer[curPos++] & 0xFF) << 8)
+                                 | ((long) buffer[curPos++] & 0xFF);
+                    long timeStamp1 = -1;
+                    int hash = (((int) buffer[curPos++] & 0xFF) << 24) 
+                        | (((int) buffer[curPos++] & 0xFF) << 16)
+                        | (((int) buffer[curPos++] & 0xFF) << 8) 
+                        | ((int) buffer[curPos++] & 0xFF);
+                    
+                    if (eventType == CommonConstants.METHOD_ENTRY_MONITOR) {
+                        if (LOGGER.isLoggable(Level.FINEST)) {
+                            LOGGER.log(Level.FINEST, "Monitor entry , tId={0} , monitorId={1}", new Object[]{currentThreadId,hash}); // NOI18N
+                        }
+
+                        fireMonitorEntry(currentThreadId, timeStamp0, timeStamp1, hash);
+                    }
+                    if (eventType == CommonConstants.METHOD_EXIT_MONITOR) {
+                        if (LOGGER.isLoggable(Level.FINEST)) {
+                            LOGGER.log(Level.FINEST, "Monitor exit , tId={0} , monitorId={1}", new Object[]{currentThreadId,hash}); // NOI18N
+                        }
+
+                        fireMonitorExit(currentThreadId, timeStamp0, timeStamp1, hash);
+                    }
+                    break;
+                }
+                case CommonConstants.ADJUST_TIME: {
+                    long timeStamp0 = (((long) buffer[curPos++] & 0xFF) << 48) | (((long) buffer[curPos++] & 0xFF) << 40)
+                                 | (((long) buffer[curPos++] & 0xFF) << 32) | (((long) buffer[curPos++] & 0xFF) << 24)
+                                 | (((long) buffer[curPos++] & 0xFF) << 16) | (((long) buffer[curPos++] & 0xFF) << 8)
+                                 | ((long) buffer[curPos++] & 0xFF);
+                    long timeStamp1 = (((long) buffer[curPos++] & 0xFF) << 48) | (((long) buffer[curPos++] & 0xFF) << 40)
+                                 | (((long) buffer[curPos++] & 0xFF) << 32) | (((long) buffer[curPos++] & 0xFF) << 24)
+                                 | (((long) buffer[curPos++] & 0xFF) << 16) | (((long) buffer[curPos++] & 0xFF) << 8)
+                                 | ((long) buffer[curPos++] & 0xFF);
+                    if (LOGGER.isLoggable(Level.FINEST)) {
+                        LOGGER.log(Level.FINEST, "Adjust time , tId={0}", currentThreadId); // NOI18N
+                    }
+
+                    fireAdjustTime(currentThreadId, timeStamp0, timeStamp1);
 
                     break;
                 }

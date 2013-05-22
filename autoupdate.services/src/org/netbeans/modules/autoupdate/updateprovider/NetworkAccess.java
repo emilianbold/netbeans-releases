@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -33,8 +33,11 @@ package org.netbeans.modules.autoupdate.updateprovider;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -47,6 +50,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -70,7 +79,7 @@ public class NetworkAccess {
         private URL url;
         private int timeout;
         private NetworkListener listener;
-        private ExecutorService es = Executors.newSingleThreadExecutor ();
+        private final ExecutorService es = Executors.newSingleThreadExecutor ();
         private Future<InputStream> connect = null;
         private RequestProcessor.Task rpTask = null;
         
@@ -90,9 +99,10 @@ public class NetworkAccess {
         private void postTask () {
             final SizedConnection connectTask = createCallableNetwork (url, timeout);
             rpTask = NETWORK_ACCESS.post (new Runnable () {
+                @Override
                 public void run () {
                     connect = es.submit (connectTask);
-                    InputStream is = null;
+                    InputStream is;
                     try {
                         is = connect.get (timeout, TimeUnit.MILLISECONDS);
                         if (connect.isDone ()) {
@@ -136,20 +146,41 @@ public class NetworkAccess {
             return new SizedConnection () {
                 private int contentLength = -1;
 
+                @Override
                 public int getContentLength() {
                     return contentLength;
                 }
 
+                @Override
                 public InputStream call () throws Exception {
                     URLConnection conn = url.openConnection ();
                     conn.setConnectTimeout (timeout);
+                    if(conn instanceof HttpsURLConnection){
+                        NetworkAccess.initSSL((HttpsURLConnection) conn);
+                    }
+                    //for HTTP or HTTPS: conenct and read response - redirection or not?
+                    if (conn instanceof HttpURLConnection) {
+                        conn.connect();
+                        if (((HttpURLConnection) conn).getResponseCode() == HttpURLConnection.HTTP_MOVED_TEMP) {
+                            // in case of redirection, try to obtain new URL
+                            String redirUrl = conn.getHeaderField("Location"); //NOI18N
+                            if (null != redirUrl && !redirUrl.isEmpty()) {
+                                //create connection to redirected url and substitute original conn
+                                URL redirectedUrl = new URL(redirUrl);
+                                URLConnection connRedir = redirectedUrl.openConnection();
+                                connRedir.setRequestProperty("User-Agent", "NetBeans");
+                                connRedir.setConnectTimeout(timeout);
+                                conn = (HttpURLConnection) connRedir;
+                            }
+                        }
+                    }
                     InputStream is = conn.getInputStream ();
                     contentLength = conn.getContentLength();
                     Map <String, List <String>> map = conn.getHeaderFields();
                     StringBuilder sb = new StringBuilder("Connection opened for:\n");
-                       sb.append("    Url: " + conn.getURL() + "\n");
+                    sb.append("    Url: ").append(conn.getURL()).append("\n");
                     for(String field : map.keySet()) {
-                       sb.append("    " + (field==null ? "Status" : field )+ ": " + map.get(field) + "\n");
+                       sb.append("    ").append(field==null ? "Status" : field).append(": ").append(map.get(field)).append("\n");
                     }
                     sb.append("\n");
                     err.log(Level.FINE, sb.toString());
@@ -158,6 +189,7 @@ public class NetworkAccess {
             };
         }
         
+        @Override
         public boolean cancel () {
             return connect.cancel (true);
         }
@@ -173,4 +205,38 @@ public class NetworkAccess {
         public void notifyException (Exception x);
     }
     
+    public static void initSSL(HttpURLConnection httpCon) throws IOException {
+        if (httpCon instanceof HttpsURLConnection) {
+            HttpsURLConnection https = (HttpsURLConnection) httpCon;
+
+            try {
+                TrustManager[] trustAllCerts = new TrustManager[]{
+                    new X509TrustManager() {
+                        @Override
+                        public X509Certificate[] getAcceptedIssuers() {
+                            return new X509Certificate[0];
+                        }
+
+                        @Override
+                        public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                        }
+
+                        @Override
+                        public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                        }
+                    }};
+                SSLContext sslContext = SSLContext.getInstance("SSL"); // NOI18N
+                sslContext.init(null, trustAllCerts, new SecureRandom());
+                https.setHostnameVerifier(new HostnameVerifier() {
+                    @Override
+                    public boolean verify(String hostname, SSLSession session) {
+                        return true;
+                    }
+                });
+                https.setSSLSocketFactory(sslContext.getSocketFactory());
+            } catch (Exception ex) {
+                throw new IOException(ex);
+            }
+        }
+    }
 }

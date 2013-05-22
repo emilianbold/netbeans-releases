@@ -143,7 +143,7 @@ public class JSFClientGenerator {
     
     private static final String WELCOME_JSF_JSP_PAGE = "welcomeJSF.jsp";  //NOI18N
     private static final String WELCOME_JSF_FL_PAGE = "index.xhtml";  //NOI18N
-    static final String TEMPLATE_JSF_FL_PAGE = "template.template";  //NOI18N
+    static final String TEMPLATE_JSF_FL_PAGE = "template.xhtml";  //NOI18N
     public  static final String JSFCRUD_STYLESHEET = "jsfcrud.css"; //NOI18N
     private static final String JSFCRUD_JAVASCRIPT = "jsfcrud.js"; //NOI18N
     private static final String JSPF_FOLDER = "WEB-INF/jspf"; //NOI18N
@@ -242,10 +242,11 @@ public class JSFClientGenerator {
         final ClasspathInfo classpathInfo = ClasspathInfo.create(pkg);
         JavaSource javaSource = JavaSource.create(classpathInfo);
         javaSource.runUserActionTask(new Task<CompilationController>() {
+            @Override
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TypeElement jc = controller.getElements().getTypeElement(entityClass);
-                arrEntityClassFO[0] = org.netbeans.api.java.source.SourceUtils.getFile(jc, controller.getClasspathInfo());
+                arrEntityClassFO[0] = org.netbeans.api.java.source.SourceUtils.getFile(ElementHandle.create(jc), controller.getClasspathInfo());
                 fieldAccess[0] = JpaControllerUtil.isFieldAccess(jc);
                 for (ExecutableElement method : JpaControllerUtil.getEntityMethods(jc)) {
                     String methodName = method.getSimpleName().toString();

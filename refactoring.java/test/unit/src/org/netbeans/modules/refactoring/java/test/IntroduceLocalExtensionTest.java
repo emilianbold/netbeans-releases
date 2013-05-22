@@ -396,6 +396,24 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         //</editor-fold>
     }
     
+    public void testEnum() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "import java.util.Date;\n"
+                + "import java.util.Calendar;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    public En today() {\n"
+                + "        En date;\n"
+                + "        date = En.A;\n"
+                + "        return date;\n"
+                + "    }\n"
+                + "\n"
+                + "    private enum En { A, B, C, D, E };\n"
+                + "}"));
+        performIntroduceLocalExtension("EnM", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE, new Problem(true, "ERR_IntroduceLEWrongType"));
+    }
+    
     public void testDate() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

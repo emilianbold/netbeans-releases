@@ -60,12 +60,12 @@ import org.openide.util.NbBundle;
  *
  * @author S. Aubrecht, Jan Becicka
  */
-public class SourceListNode<S extends TeamServer, P> extends SectionNode {
-    private final DashboardProvider<S, P> dashboard;
+public class SourceListNode<P> extends SectionNode {
+    private final DashboardProvider<P> dashboard;
     private final LeafNode[] nodes;
 
-    public SourceListNode( ProjectNode parent, DashboardProvider<S, P> dashboard, LeafNode... nodes  ) {
-        super( NbBundle.getMessage(SourceListNode.class, "LBL_Sources"), parent, ProjectHandle.PROP_SOURCE_LIST ); //NOI18N
+    public SourceListNode( TreeListNode parent,  ProjectHandle project, DashboardProvider<P> dashboard, LeafNode... nodes  ) {
+        super( NbBundle.getMessage(SourceListNode.class, "LBL_Sources"), parent, project, ProjectHandle.PROP_SOURCE_LIST ); //NOI18N
         this.dashboard = dashboard;
         this.nodes = nodes;
     }
@@ -84,7 +84,7 @@ public class SourceListNode<S extends TeamServer, P> extends SectionNode {
             if (s.getWorkingDirectory() != null) {
                 res.add(new OpenNbProjectNode(s, this, dashboard ));
                 res.add(new OpenFavoritesNode(s, this, dashboard ));
-        }
+            }
         }
         return res;
     }

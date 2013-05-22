@@ -450,12 +450,22 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         }
 
         Collection<? extends IndexerCache.IndexerInfo<CustomIndexerFactory>> cifInfos = IndexerCache.getCifCache().getIndexersByName(indexerName);
+        Work w;
+        
         if (cifInfos == null) {
-            throw new InvalidParameterException("No CustomIndexerFactory with name: '" + indexerName + "'"); //NOI18N
+            Collection<? extends IndexerCache.IndexerInfo<EmbeddingIndexerFactory>> eifInfos = IndexerCache.getEifCache().getIndexersByName(indexerName);
+            if (eifInfos == null) {
+                throw new InvalidParameterException("No CustomIndexerFactory or EmbeddingIndexerFactory with name: '" + indexerName + "'"); //NOI18N
+            } else {
+                w = new RefreshEifIndices(
+                        eifInfos,
+                        scannedRoots2Dependencies, sourcesForBinaryRoots, suspendSupport.getSuspendStatus(), logCtx
+                );
+            }
         } else {
-            Work w = new RefreshCifIndices(cifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, suspendSupport.getSuspendStatus(), logCtx);
-            scheduleWork(w, false);
+            w = new RefreshCifIndices(cifInfos, scannedRoots2Dependencies, sourcesForBinaryRoots, suspendSupport.getSuspendStatus(), logCtx);
         }
+        scheduleWork(w, false);
     }
 
     public void refreshAll(
@@ -2925,7 +2935,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         new FileObjectCrawler(rootFo, checkTimeStamps, entry, getCancelRequest(), getSuspendStatus()) : // rescan the whole root (no timestamp check)
                         new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), checkTimeStamps, entry, getCancelRequest(), getSuspendStatus()); // rescan selected files (no timestamp check)
                     if (lctx != null) {
-                        lctx.noteRootScanning(root);
+                        lctx.noteRootScanning(root, true);
                     }
                     long t = System.currentTimeMillis();
                     final List<Indexable> resources = crawler.getResources();
@@ -3521,7 +3531,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 //            updateProgress(root);
             LogContext lctx = getLogContext();
             if (lctx != null) {
-                lctx.noteRootScanning(root);
+                lctx.noteRootScanning(root, false);
             }
             try {
                 final List<Indexable> indexables = new ArrayList<Indexable>();
@@ -3629,7 +3639,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 LogContext lctx = getLogContext();
                 
                 if (lctx != null) {
-                    lctx.noteRootScanning(root);
+                    lctx.noteRootScanning(root, false);
                 }
                 this.updateProgress(root, true);
                 try {
@@ -3799,7 +3809,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }                
                 LogContext lctx = getLogContext();
                 if (lctx != null) {
-                    lctx.noteRootScanning(root);
+                    lctx.noteRootScanning(root, false);
                 }
                 this.updateProgress(root, true);
                 try {
@@ -4654,7 +4664,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             final BitSet startedIndexers = new BitSet(contexts.size());
             LogContext lctx = getLogContext();
             if (lctx != null) {
-                lctx.noteRootScanning(root);
+                lctx.noteRootScanning(root, false);
             }
             try {
                 createBinaryContexts(root, binaryIndexers, contexts);
@@ -4743,7 +4753,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     LogContext lctx = getLogContext();
                     try {
                         if (lctx != null) {
-                            lctx.noteRootScanning(source);
+                            lctx.noteRootScanning(source, false);
                         }
                         if (scanSource (source, ctx.fullRescanSourceRoots.contains(source), ctx.sourcesForBinaryRoots.contains(source), indexers, outOfDateFiles, deletedFiles, recursiveListenersTime)) {
                             ctx.scannedRoots.add(source);

@@ -132,7 +132,9 @@ public class ProjectColorTabDecorator extends TabDecorator {
 
     @Override
     public Color getForeground( TabData tab, boolean selected ) {
-        return null;
+        if( selected || !Settings.getDefault().isSameProjectSameColor() )
+            return null;
+        return null == getBackground( tab, selected ) ? null : Color.black;
     }
 
     @Override

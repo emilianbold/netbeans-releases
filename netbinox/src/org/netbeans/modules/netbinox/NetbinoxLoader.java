@@ -65,24 +65,8 @@ import org.osgi.framework.FrameworkEvent;
  * @author Jaroslav Tulach <jtulach@netbeans.org>
  */
 final class NetbinoxLoader extends DefaultClassLoader {
-    private static final boolean jdk7;
     static {
-        Method m = null;
-        boolean isJDK7 = true;
-        try {
-            m = ClassLoader.class.getDeclaredMethod("registerAsParallelCapable");
-        } catch (NoSuchMethodException ex) {
-            isJDK7 = false;
-        }
-        jdk7 = isJDK7;
-        if (m != null) {
-            try {
-                m.setAccessible(true);
-                m.invoke(null);
-            } catch (Exception ex) {
-                throw new IllegalStateException(ex);
-            }
-        }
+        registerAsParallelCapable();
     }
     
     public NetbinoxLoader(ClassLoader parent, ClassLoaderDelegate delegate, ProtectionDomain domain, BaseData bd, String[] classpath) {
@@ -92,7 +76,7 @@ final class NetbinoxLoader extends DefaultClassLoader {
 
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        assert !jdk7 || !Thread.holdsLock(this) : 
+        assert !Thread.holdsLock(this) : 
             "Classloading while holding classloader lock!";
         return super.loadClass(name, resolve);
     }

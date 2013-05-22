@@ -54,6 +54,7 @@ import org.netbeans.modules.cnd.api.xml.AttrValuePair;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
+import org.netbeans.modules.cnd.makeproject.BrokenReferencesSupport;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
@@ -745,13 +746,13 @@ public abstract class CommonConfigurationXMLCodec
 
     private void writeSourceRoots(XMLEncoderStream xes) {
         MakeConfigurationDescriptor makeProjectDescriptor = (MakeConfigurationDescriptor) projectDescriptor;
+        // Filter
+        if (!makeProjectDescriptor.getFolderVisibilityQuery().getRegEx().equals(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN)) {
+            xes.element(SOURCE_FOLDERS_FILTER_ELEMENT, makeProjectDescriptor.getFolderVisibilityQuery().getRegEx());
+        }
+
         List<String> list = makeProjectDescriptor.getSourceRoots();
         if (list.size() > 0) {
-            // Filter
-            if (!makeProjectDescriptor.getFolderVisibilityQuery().getRegEx().equals(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN)) {
-                xes.element(SOURCE_FOLDERS_FILTER_ELEMENT, makeProjectDescriptor.getFolderVisibilityQuery().getRegEx());
-            }
-
             // Source Root
             xes.elementOpen(SOURCE_ROOT_LIST_ELEMENT);
             for (String l : list) {
@@ -1273,6 +1274,12 @@ public abstract class CommonConfigurationXMLCodec
             try {
                 HostInfo hostInfo = HostInfoUtils.getHostInfo(conf.getFileSystemHost());
                 environment = hostInfo.getEnvironment();
+                Map<String, String> temporaryEnv = BrokenReferencesSupport.getTemporaryEnv(conf.getDevelopmentHost().getExecutionEnvironment());
+                if (temporaryEnv != null) {
+                    Map<String, String> res = new HashMap<String, String>(temporaryEnv);
+                    res.putAll(environment);
+                    environment = res;
+                }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
             } catch (ConnectionManager.CancellationException ex) {

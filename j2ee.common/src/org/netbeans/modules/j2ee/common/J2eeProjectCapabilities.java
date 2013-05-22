@@ -46,13 +46,11 @@ import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javaee.specs.support.api.EjbSupport;
 import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
@@ -70,13 +68,15 @@ public final class J2eeProjectCapabilities {
     private final J2eeModuleProvider provider;
     private final Profile ejbJarProfile;
     private final Profile webProfile;
+    private final Profile carProfile;
 
     private J2eeProjectCapabilities(Project project, J2eeModuleProvider provider,
-            Profile ejbJarProfile, Profile webProfile) {
+            Profile ejbJarProfile, Profile webProfile, Profile carProfile) {
         this.project = project;
         this.provider = provider;
         this.ejbJarProfile = ejbJarProfile;
         this.webProfile = webProfile;
+        this.carProfile = carProfile;
     }
 
     @CheckForNull
@@ -87,6 +87,7 @@ public final class J2eeProjectCapabilities {
         }
         Profile ejbJarProfile = null;
         Profile webProfile = null;
+        Profile carProfile = null;
         if (provider.getJ2eeModule().getType() == J2eeModule.Type.EJB ||
                 provider.getJ2eeModule().getType() == J2eeModule.Type.WAR) {
             EjbJar[] ejbJars = EjbJar.getEjbJars(project);
@@ -101,7 +102,13 @@ public final class J2eeProjectCapabilities {
                 }
             }
         }
-        return new J2eeProjectCapabilities(project, provider, ejbJarProfile, webProfile);
+        if (provider.getJ2eeModule().getType() == J2eeModule.Type.CAR) {
+            Car car = Car.getCar(project.getProjectDirectory());
+            if (car != null) {
+                carProfile = car.getJ2eeProfile();
+            }
+        }
+        return new J2eeProjectCapabilities(project, provider, ejbJarProfile, webProfile, carProfile);
     }
 
     /**
@@ -160,6 +167,17 @@ public final class J2eeProjectCapabilities {
         J2eeModule.Type moduleType = provider.getJ2eeModule().getType();
         boolean ee7Web = ejbJarProfile != null && ejbJarProfile.equals(Profile.JAVA_EE_7_WEB);
         return isEjb32Supported() || (J2eeModule.Type.WAR.equals(moduleType) && ee7Web);
+    }
+
+    /**
+     * Is CDI 1.1 supported in this project?
+     * @return {@code true} if the project targets EE7 profile, {@code false} otherwise
+     * @since 1.86
+     */
+    public boolean isCdi11Supported() {
+        return Profile.JAVA_EE_7_FULL.equals(ejbJarProfile) ||
+            Profile.JAVA_EE_7_WEB.equals(webProfile) ||
+            Profile.JAVA_EE_7_FULL.equals(carProfile);
     }
 
     /**

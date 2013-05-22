@@ -80,6 +80,7 @@ class PerProjectHintsPanelUI extends javax.swing.JPanel {
     private MimeType2Preferences globalPreferencesProvider;
     private MimeType2Preferences preferencesProvider;
     private final Map<LanguageDescription, OptionsPanelController> mimeType2OptionsController = new HashMap<>();
+    private final Map<LanguageDescription, JComponent> mimeType2OptionsPanel = new HashMap<>();
     private final Set<String> supportsFiltering = new HashSet<>();
     
     public PerProjectHintsPanelUI(FileObject customizersFolder) {
@@ -160,15 +161,20 @@ class PerProjectHintsPanelUI extends javax.swing.JPanel {
         customPanel.removeAll();
         
         if (mimeType != null) {
-            OptionsPanelController c = mimeType2OptionsController.get(mimeType);
-            JComponent panel = c.getComponent(Lookups.fixed(PerProjectHintsPanelUI.this.preferencesProvider.getPreferences(mimeType.mimeType),
-                                                            OptionsFilter.create(searchText.getDocument(), new Runnable() {
-                @Override public void run() {
-                    supportsFiltering.add(mimeType.mimeType);
-                    searchEnableDisable();
-                }
-            })));
-            c.update();
+            JComponent panel = mimeType2OptionsPanel.get(mimeType);
+            
+            if (panel == null) {
+                OptionsPanelController c = mimeType2OptionsController.get(mimeType);
+                panel = c.getComponent(Lookups.fixed(PerProjectHintsPanelUI.this.preferencesProvider.getPreferences(mimeType.mimeType),
+                                                     OptionsFilter.create(searchText.getDocument(), new Runnable() {
+                    @Override public void run() {
+                        supportsFiltering.add(mimeType.mimeType);
+                        searchEnableDisable();
+                    }
+                })));
+                mimeType2OptionsPanel.put(mimeType, panel);
+                c.update();
+            }
             customPanel.add(panel, BorderLayout.CENTER);
         }
         
@@ -211,11 +217,13 @@ class PerProjectHintsPanelUI extends javax.swing.JPanel {
         searchText = new javax.swing.JTextField();
         customPanel = new javax.swing.JPanel();
 
+        jLabel1.setLabelFor(languageCombo);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PerProjectHintsPanelUI.class, "PerProjectHintsPanelUI.jLabel1.text")); // NOI18N
 
         languageCombo.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         languageCombo.setPrototypeDisplayValue("9999999999");
 
+        jLabel2.setLabelFor(searchText);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(PerProjectHintsPanelUI.class, "PerProjectHintsPanelUI.jLabel2.text")); // NOI18N
 
         searchText.setColumns(10);

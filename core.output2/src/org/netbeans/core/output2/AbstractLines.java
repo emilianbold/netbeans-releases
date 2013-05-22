@@ -815,7 +815,8 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
         } else {
             foldOffsets.add(lineIndex - currentFoldStart);
         }
-        if (currentFoldStart != -1 && visibleList.get(currentFoldStart) == 0) {
+        if (currentFoldStart != -1 && (visibleList.get(currentFoldStart) == 0
+                || !isVisible(currentFoldStart))) {
             hiddenLines++;
             realToVisibleLine.add(-1);
         } else {
@@ -1293,6 +1294,9 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 return;
             }
             visibleList.set(foldStartIndex, expanded ? 1 : 0);
+            if (!isVisible(foldStartIndex)) {
+                return; // No need to recompute any mapping.
+            }
             int len = foldLength(foldStartIndex);
             if (len > 0) {
                 int changed = updateRealToVisibleIndexesInFold(foldStartIndex,

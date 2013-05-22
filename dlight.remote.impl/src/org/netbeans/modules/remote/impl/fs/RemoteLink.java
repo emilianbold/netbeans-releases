@@ -122,7 +122,7 @@ public final class RemoteLink extends RemoteLinkBase {
     protected RemoteFileObjectBase getDelegateImpl() {
         HashSet<String> antiLoop = new HashSet<String>();
         antiLoop.add(getPath());
-        RemoteFileObjectBase delegate = getFileSystem().findResource(normalizedTargetPath, antiLoop);
+        RemoteFileObjectBase delegate = getFileSystem().findResourceImpl(normalizedTargetPath, antiLoop);
         return delegate;
     }
 }

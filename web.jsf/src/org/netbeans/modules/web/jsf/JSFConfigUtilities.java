@@ -243,11 +243,13 @@ public class JSFConfigUtilities {
                     EnumSet.of(ClassIndex.SearchScope.SOURCE));
             for (ElementHandle<TypeElement> handle : elements) {
                 TypeElement element = handle.resolve(parameter);
-                List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
-                for (AnnotationMirror annotationMirror : annotationMirrors) {
-                    if (ElementHandle.create(annotationMirror.getAnnotationType().asElement())
-                            .equals(jsfResourceElementHandle)) {
-                        return true;
+                if (element != null) {
+                    List<? extends AnnotationMirror> annotationMirrors = element.getAnnotationMirrors();
+                    for (AnnotationMirror annotationMirror : annotationMirrors) {
+                        if (ElementHandle.create(annotationMirror.getAnnotationType().asElement())
+                                .equals(jsfResourceElementHandle)) {
+                            return true;
+                        }
                     }
                 }
             }

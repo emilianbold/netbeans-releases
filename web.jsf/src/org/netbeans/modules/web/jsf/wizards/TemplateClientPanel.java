@@ -65,6 +65,7 @@ public class TemplateClientPanel implements WizardDescriptor.Panel, WizardDescri
         this.wizardDescriptor = wizardDescriptor;
     }
 
+    @Override
     public Component getComponent() {
         if (component == null){
             component = new TemplateClientPanelVisual(wizardDescriptor);
@@ -73,17 +74,21 @@ public class TemplateClientPanel implements WizardDescriptor.Panel, WizardDescri
         return component;
     }
 
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(TemplateClientPanel.class);
+        return new HelpCtx("org.netbeans.modules.web.jsf.wizards.TemplateClientPanel");
     }
 
+    @Override
     public void readSettings(Object settings) {
         wizardDescriptor = (WizardDescriptor) settings;
     }
 
+    @Override
     public void storeSettings(Object settings) {
     }
 
+    @Override
     public boolean isValid() {
         return component.validateTemplate();
     }
@@ -102,19 +107,20 @@ public class TemplateClientPanel implements WizardDescriptor.Panel, WizardDescri
         getComponent();
         return component.getTemplate();
     }
-    
+
+    @Override
     public void addChangeListener(ChangeListener l) {
         getComponent();
         component.addChangeListener(l);
     }
 
+    @Override
     public void removeChangeListener(ChangeListener l) {
         getComponent();
         component.removeChangeListener(l);
     }
 
-    
-    
+    @Override
     public boolean isFinishPanel() {
         return true;
     }

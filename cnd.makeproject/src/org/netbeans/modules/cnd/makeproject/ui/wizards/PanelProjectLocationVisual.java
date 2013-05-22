@@ -506,7 +506,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
     @Override
     public void removeNotify() {
         super.removeNotify();    
-        validationWorker.cancel();
+        validationWorker.shutdown();
     }
 
     private boolean isValidMakeFile(String text) {
@@ -1345,6 +1345,15 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                     wizardValidationTask.cancel(true);
                 }
             }            
+        }
+        
+        void shutdown() {
+            synchronized (wizardValidationExecutorLock) {
+                if (wizardValidationTask != null) {
+                    wizardValidationTask.cancel(true);
+                }
+                wizardValidationExecutor.shutdown();
+            }                        
         }
        
 

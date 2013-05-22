@@ -51,7 +51,7 @@ import static org.junit.Assert.*;
 public class CndPathUtilititiesTest {
 
     @Test
-    public void testGetPathNameArray() {
+    public void testGetPathNameArrayWin() {
         CndPathUtilitities.testSetWindows(true);
         assertArrayEquals(new String[] {"C:", "tmp", "test.cpp"}, // NOI18N
                      CndPathUtilitities.getPathNameArray("C:\\tmp\\test.cpp")); // NOI18N
@@ -65,8 +65,20 @@ public class CndPathUtilititiesTest {
                      CndPathUtilitities.getPathNameArray("tmp/test.cpp")); // NOI18N
     }
 
+
     @Test
-    public void testIsPathAbsolute() {
+    public void testGetPathNameArray() {
+        CndPathUtilitities.testSetWindows(false);
+        assertArrayEquals(new String[]{"tmp", "test.cpp"}, // NOI18N
+                CndPathUtilitities.getPathNameArray("\\tmp\\test.cpp")); // NOI18N
+        assertArrayEquals(new String[]{"tmp", "test.cpp"}, // NOI18N
+                CndPathUtilitities.getPathNameArray("/tmp/test.cpp")); // NOI18N
+        assertArrayEquals(new String[]{}, // NOI18N
+                CndPathUtilitities.getPathNameArray("tmp/test.cpp")); // NOI18N
+    }
+
+    @Test
+    public void testIsPathAbsoluteWin() {
         CndPathUtilitities.testSetWindows(true);
         assertTrue(CndPathUtilitities.isPathAbsolute("C:\\tmp\\test.cpp")); // NOI18N
         assertTrue(CndPathUtilitities.isPathAbsolute("C:/tmp/test.cpp")); // NOI18N
@@ -85,15 +97,31 @@ public class CndPathUtilititiesTest {
         assertTrue(CndPathUtilitities.isPathAbsolute("C:\\a")); // NOI18N
         assertTrue(CndPathUtilitities.isPathAbsolute("C:/a")); // NOI18N
     }
+    
+    @Test
+    public void testIsPathAbsolute() {
+        CndPathUtilitities.testSetWindows(false);
+        assertTrue(CndPathUtilitities.isPathAbsolute("\\temp\\..\\tmp\\test.cpp")); // NOI18N
+        assertTrue(CndPathUtilitities.isPathAbsolute("/tmp/test.cpp")); // NOI18N
+        assertTrue(CndPathUtilitities.isPathAbsolute("/../tmp/test.cpp")); // NOI18N
+        assertTrue(CndPathUtilitities.isPathAbsolute("/.")); // NOI18N
+        assertFalse(CndPathUtilitities.isPathAbsolute("../tmp/test.cpp")); // NOI18N
+        assertFalse(CndPathUtilitities.isPathAbsolute("./")); // NOI18N
+        assertFalse(CndPathUtilitities.isPathAbsolute("tmp\\test.cpp")); // NOI18N
+        assertFalse(CndPathUtilitities.isPathAbsolute("C:")); // NOI18N
+        assertFalse(CndPathUtilitities.isPathAbsolute("C:a")); // NOI18N
+    }
 
     @Test
     public void test158596() {
+        CndPathUtilitities.testSetWindows(true);
         assertEquals("c", // NOI18N
                      normalize(CndPathUtilitities.toRelativePath("\\C:\\f", "C:\\f\\c"))); // NOI18N
     }
 
     @Test
-    public void test185323() {
+    public void test185323Win() {
+        CndPathUtilitities.testSetWindows(true);
         assertEquals("../b", // NOI18N
                      normalize(CndPathUtilitities.toRelativePath("\\C:\\a", "C:\\b"))); // NOI18N
         assertEquals("../home2", // NOI18N
@@ -103,10 +131,19 @@ public class CndPathUtilititiesTest {
         assertEquals("..", // NOI18N
                      normalize(CndPathUtilitities.toRelativePath("/export/home1", "/export"))); // NOI18N
     }
-
+    
+    @Test
+    public void test185323() {
+        CndPathUtilitities.testSetWindows(false);
+        assertEquals("../home2", // NOI18N
+                     normalize(CndPathUtilitities.toRelativePath("/export/home1", "/export/home2"))); // NOI18N
+        assertEquals("..", // NOI18N
+                     normalize(CndPathUtilitities.toRelativePath("/export/home1", "/export"))); // NOI18N
+    }
 
     @Test
-    public void testToRelativePath() {
+    public void testToRelativePathWin() {
+        CndPathUtilitities.testSetWindows(true);
         assertEquals("D:\\tmp\\test.cpp", // NOI18N
                      CndPathUtilitities.toRelativePath("C:\\tmp", "D:\\tmp\\test.cpp")); // NOI18N
         assertEquals("/tmp/test.cpp", // NOI18N
@@ -131,6 +168,25 @@ public class CndPathUtilititiesTest {
                      CndPathUtilitities.toRelativePath("/tmp", "/tmp")); // NOI18N
     }
 
+    @Test
+    public void testToRelativePath() {
+        CndPathUtilitities.testSetWindows(false);
+        assertEquals("D:\\tmp\\test.cpp", // NOI18N
+                     CndPathUtilitities.toRelativePath("C:\\tmp", "D:\\tmp\\test.cpp")); // NOI18N
+        assertEquals("/tmp/test.cpp", // NOI18N
+                     CndPathUtilitities.toRelativePath("/temp/", "/tmp/test.cpp")); // NOI18N
+        assertEquals("1/test.cpp", // NOI18N
+                     CndPathUtilitities.toRelativePath("/tmp", "/tmp/1/test.cpp")); // NOI18N
+        assertEquals("test.cpp", // NOI18N
+                     CndPathUtilitities.toRelativePath("/tmp", "/tmp/test.cpp")); // NOI18N
+        assertEquals("../../../3/2/1/test.cpp", // NOI18N
+                     normalize(CndPathUtilitities.toRelativePath("/tmp/dir/1/2/3", "/tmp/dir/3/2/1/test.cpp"))); // NOI18N
+        assertEquals("D:\\", // NOI18N
+                     CndPathUtilitities.toRelativePath("C:\\", "D:\\")); // NOI18N
+        assertEquals(".", // NOI18N
+                     CndPathUtilitities.toRelativePath("/tmp", "/tmp")); // NOI18N
+    }
+       
     private String normalize(String path) {
         return path.replace('\\', '/');
     }

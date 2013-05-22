@@ -63,7 +63,7 @@ import org.openide.util.NbBundle;
  *
  * @author S. Aubrecht
  */
-public class SourceNode<ODCSUIServer, ODCSProject> extends LeafNode {
+public class SourceNode<ODCSProject> extends LeafNode {
 
     private final SourceHandle source;
     private final DashboardProviderImpl provider;

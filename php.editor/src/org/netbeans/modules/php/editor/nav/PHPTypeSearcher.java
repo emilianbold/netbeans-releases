@@ -102,7 +102,7 @@ public class PHPTypeSearcher implements IndexSearcher {
                 Collections.<String>emptySet());
         final Index index = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(findRoots));
 
-        Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
+        Set<PHPTypeDescriptor> result = new HashSet<>();
         if (index != null && textForQuery.trim().length() > 0) {
             final boolean isVariable = textForQuery.startsWith("$"); //NOI18N
             String query = prepareIdxQuery(textForQuery, regexpKinds, kind);
@@ -132,7 +132,7 @@ public class PHPTypeSearcher implements IndexSearcher {
         if (regexpKinds.contains(kind)) {
             //handles wildcards and camelCases
             Set<PHPTypeDescriptor> originalResult = result;
-            result = new HashSet<PHPTypeDescriptor>();
+            result = new HashSet<>();
             Pattern pattern = queryToPattern(textForQuery, insensitiveKinds.contains(originalkind));
             for (PHPTypeDescriptor typeDescriptor : originalResult) {
                 String typeName = typeDescriptor.getElement().getName();
@@ -163,7 +163,7 @@ public class PHPTypeSearcher implements IndexSearcher {
                 Collections.<String>emptySet());
         final Index index = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(findRoots));
 
-        Set<PHPTypeDescriptor> result = new HashSet<PHPTypeDescriptor>();
+        Set<PHPTypeDescriptor> result = new HashSet<>();
         QualifiedName queryName = QualifiedName.create(textForQuery);
         QualifiedNameKind qnk = queryName.getKind();
         if (index != null) {
@@ -179,7 +179,7 @@ public class PHPTypeSearcher implements IndexSearcher {
         if (qnk.isUnqualified() && regexpKinds.contains(kind)) {
             //handles wildcards and camelCases
             Set<PHPTypeDescriptor> originalResult = result;
-            result = new HashSet<PHPTypeDescriptor>();
+            result = new HashSet<>();
             Pattern pattern = queryToPattern(textForQuery, insensitiveKinds.contains(originalkind));
             for (PHPTypeDescriptor typeDescriptor : originalResult) {
                 String typeName = typeDescriptor.getElement().getName();

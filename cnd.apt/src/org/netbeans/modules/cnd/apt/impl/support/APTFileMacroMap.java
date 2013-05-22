@@ -179,6 +179,14 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         return new FileStateImpl(active.getParent(), sysMacroMap, crc1, crc2);
     }
 
+    public long getCompilationUnitCRC() {
+        long out = (((long)crc1) << 32) + crc2;
+        if (sysMacroMap instanceof APTSystemMacroMap) {
+            out += ((APTSystemMacroMap)sysMacroMap).getCompilationUnitCRC();
+        }
+        return out;
+    }
+    
     @Override
     public void setState(State state) {
         active = makeSnapshot(((StateImpl)state).snap);

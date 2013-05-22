@@ -17,43 +17,45 @@
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" attributes="0">
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
+                  <Group type="102" alignment="0" attributes="0">
+                      <Component id="inputWarningLabel" pref="174" max="32767" attributes="0"/>
+                      <EmptySpace min="-2" pref="493" max="-2" attributes="0"/>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Group type="103" groupAlignment="1" attributes="0">
                   <Group type="102" attributes="0">
-                      <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane1" pref="568" max="32767" attributes="0"/>
-                          <Group type="102" attributes="0">
+                              <Component id="sqlLimitLabel" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="sqlLimitTextField" min="-2" pref="62" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="sqlLimitButton" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
+                              <Component id="matchingRowsLabel" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Component id="jScrollPane1" alignment="0" pref="595" max="32767" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
                               <Component id="jLabel1" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="connectionUrlComboBox" pref="224" max="32767" attributes="0"/>
+                              <Component id="connectionUrlComboBox" pref="218" max="32767" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
                               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="searchTextField" min="-2" pref="147" max="-2" attributes="0"/>
                           </Group>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="insertSQLButton" pref="87" max="32767" attributes="1"/>
-                          <Component id="deleteSQLButtton" alignment="0" pref="87" max="32767" attributes="1"/>
-                          <Component id="deleteAllSQLButton" alignment="0" max="32767" attributes="0"/>
+                          <Component id="insertSQLButton" min="-2" pref="102" max="-2" attributes="1"/>
+                          <Component id="deleteSQLButton" alignment="0" min="-2" pref="102" max="-2" attributes="1"/>
+                          <Component id="deleteAllSQLButton" alignment="0" min="-2" pref="102" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="inputWarningLabel" pref="174" max="32767" attributes="0"/>
-                      <EmptySpace min="-2" pref="493" max="-2" attributes="0"/>
                   </Group>
-                  <Group type="102" alignment="0" attributes="0">
-                      <Component id="sqlLimitLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="sqlLimitTextField" min="-2" pref="62" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
-                      <Component id="sqlLimitButton" min="-2" max="-2" attributes="0"/>
                   </Group>
               </Group>
-          </Group>
-      </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
@@ -72,7 +74,7 @@
                       <EmptySpace pref="141" max="32767" attributes="0"/>
                       <Component id="deleteAllSQLButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="deleteSQLButtton" min="-2" max="-2" attributes="0"/>
+                      <Component id="deleteSQLButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="jScrollPane1" alignment="1" pref="228" max="32767" attributes="0"/>
               </Group>
@@ -81,6 +83,7 @@
                   <Component id="sqlLimitTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="sqlLimitButton" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="sqlLimitLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="matchingRowsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="inputWarningLabel" min="-2" pref="26" max="-2" attributes="0"/>
@@ -253,7 +256,7 @@
         <Property name="verifyInputWhenFocusTarget" type="boolean" value="false"/>
       </Properties>
     </Component>
-    <Component class="javax.swing.JButton" name="deleteSQLButtton">
+    <Component class="javax.swing.JButton" name="deleteSQLButton">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/db/sql/execute/ui/Bundle.properties" key="LBL_Delete" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -264,7 +267,7 @@
         <Property name="enabled" type="boolean" value="false"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteSQLButttonActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteSQLButtonActionPerformed"/>
       </Events>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
@@ -282,6 +285,13 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="deleteAllSQLButtonActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="matchingRowsLabel">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/sql/execute/ui/Bundle.properties" key="SQLHistoryPanel.matchingRowsLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
     </Component>
   </SubComponents>
 </Form>

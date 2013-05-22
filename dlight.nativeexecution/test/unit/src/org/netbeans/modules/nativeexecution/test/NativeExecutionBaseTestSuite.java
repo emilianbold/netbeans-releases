@@ -61,6 +61,10 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
  */
 public class NativeExecutionBaseTestSuite extends NbTestSuite {
 
+    static {
+        System.setProperty("remote.user.password.keep_in_memory", "true");
+    }
+
     private final String defaultSection;
 
     /**

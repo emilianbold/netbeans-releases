@@ -110,7 +110,7 @@ public class PHPDocMethodTag extends PHPDocTypeTag {
         public String extract(String description) {
             originalDescription = description;
             currentDescription = description;
-            int index = 0;
+            int index;
             while ((index = currentDescription.lastIndexOf('(')) > -1) {
                 findComment(index);
                 if (commentMatched) {

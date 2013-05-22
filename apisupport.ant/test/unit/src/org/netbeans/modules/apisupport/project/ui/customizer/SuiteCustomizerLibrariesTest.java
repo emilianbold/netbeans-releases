@@ -149,8 +149,8 @@ public class SuiteCustomizerLibrariesTest extends TestBase {
         lbinfo.store();
         // MODULE org.example.module3
         module = TestBase.generateSuiteComponent(suite, "module3");
-        ApisupportAntUtils.addDependency(module, "org.example.module2", null, null, true);
-        ApisupportAntUtils.addDependency(module, "bar", null, null, true);
+        ApisupportAntUtils.addDependency(module, "org.example.module2", null, null, true, null);
+        ApisupportAntUtils.addDependency(module, "bar", null, null, true, null);
         lbinfo = module.getLookup().lookup(LocalizedBundleInfo.Provider.class).getLocalizedBundleInfo();
         lbinfo.setDisplayName("Module Three");
         lbinfo.store();

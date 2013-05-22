@@ -307,7 +307,7 @@ public final class Utils {
     private static class NodeRangeLocator extends DefaultVisitor {
 
         private OffsetRange range;
-        private List<ASTNode> nodes = new ArrayList<ASTNode>();
+        private List<ASTNode> nodes = new ArrayList<>();
 
         public List<ASTNode> locate(ASTNode beginNode, OffsetRange range) {
             this.range = range;
@@ -342,7 +342,7 @@ public final class Utils {
     }
 
     public static List<PHPDocVarTypeTag> getPropertyTags(Program root, ClassDeclaration node) {
-        List<PHPDocVarTypeTag> tags = new ArrayList<PHPDocVarTypeTag>();
+        List<PHPDocVarTypeTag> tags = new ArrayList<>();
         Comment comment = Utils.getCommentForNode(root, node);
         if (comment != null && (comment instanceof PHPDocBlock)) {
             PHPDocBlock phpDoc = (PHPDocBlock) comment;

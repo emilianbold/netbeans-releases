@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -53,7 +54,7 @@ import java.util.List;
  */
 public class NamespaceName extends Expression {
 
-    protected List<Identifier> segments = new ArrayList<Identifier>();
+    protected List<Identifier> segments = new ArrayList<>();
     /** Whether the namespace name has '\' prefix, which means it relates to the global scope */
     private boolean global;
     /** Whether the namespace name has 'namespace' prefix, which means it relates to the current namespace scope */
@@ -65,9 +66,7 @@ public class NamespaceName extends Expression {
         if (segments == null) {
             throw new IllegalArgumentException();
         }
-        for (Identifier name : segments) {
-            this.segments.add(name);
-        }
+        this.segments.addAll(Arrays.asList(segments));
 
         this.global = global;
         this.current = current;

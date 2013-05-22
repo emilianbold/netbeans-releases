@@ -198,8 +198,7 @@ public class TplTopLexerBatchTest extends TplTestBase {
 
         SmartyOptions.getInstance().setSmartyVersion(Version.SMARTY3);
         TokenSequence ts = createTokenSequence(text);
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "{");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " var tmp = 1; }");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "{ var tmp = 1; }");
     }
 
     public void testSmarty2CurlyBracesFeature() {
@@ -243,7 +242,7 @@ public class TplTopLexerBatchTest extends TplTestBase {
         SmartyOptions.getInstance().setDefaultOpenDelimiter("LDELIM");
         SmartyOptions.getInstance().setSmartyVersion(Version.SMARTY3);
         TokenSequence ts = createTokenSequence(text);
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "LDELIM");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "LDELIM var tmp = 1; }");
     }
 
     public void testIssue205742() {
@@ -341,9 +340,7 @@ public class TplTopLexerBatchTest extends TplTestBase {
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "$title");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "</title><style type=\"text/css\">.a ");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "{");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " margin-left: 15px; }</style>");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "</title><style type=\"text/css\">.a { margin-left: 15px; }</style>");
     }
 
 

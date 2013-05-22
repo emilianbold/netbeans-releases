@@ -46,14 +46,9 @@ package org.netbeans.modules.cnd.makeproject.ui;
 import java.awt.Image;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.SwingUtilities;
-import javax.swing.SwingWorker;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
@@ -65,6 +60,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.DevelopmentHostCo
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec;
 import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks.BrokenLink;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -73,9 +69,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup.Template;
 import org.openide.util.NbBundle;
@@ -101,6 +95,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     private final RequestProcessor annotationRP;
     private final MakeProject project;
     private MakeLogicalViewRootNode projectRootNode;
+    private boolean checkVersion = true;
 
     public MakeLogicalViewProvider(MakeProject project) {
         this.project = project;
@@ -114,7 +109,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
     public Node createLogicalView() {
         if (gotMakeConfigurationDescriptor()) {
             MakeConfigurationDescriptor configurationDescriptor = getMakeConfigurationDescriptor();
-            if (configurationDescriptor == null || configurationDescriptor.getState() == State.BROKEN || configurationDescriptor.getConfs().size() == 0) {
+            if (configurationDescriptor == null) {
                 return new MakeLogicalViewRootNodeBroken(project);
             } else {
                 createRoot(configurationDescriptor);
@@ -142,6 +137,23 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         InstanceContent ic = new InstanceContent();
         addLookup(ic);
         projectRootNode = new MakeLogicalViewRootNode(null, this, ic);
+    }
+    
+    public void reInit(MakeConfigurationDescriptor configurationDescriptor, boolean ignoreFutureVersion) {
+        if (ignoreFutureVersion) {
+            checkVersion = false;
+        }
+        projectRootNode.reInit(configurationDescriptor);
+    }
+    
+    public boolean isIncorectVersion() {
+        if (checkVersion) {
+            if (gotMakeConfigurationDescriptor()) {
+                int version = getMakeConfigurationDescriptor().getVersion();
+                return version > CommonConfigurationXMLCodec.CURRENT_VERSION;
+            }
+        }
+        return false;
     }
     
     private void addLookup(InstanceContent ic) {
@@ -397,99 +409,33 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
         if (CndUtils.isStandalone()) {
             return;
         }
-        if (delta.getAdded().isEmpty() &&
-            //delta.getChanged().isEmpty() &&
-            delta.getDeleted().isEmpty() &&
-            delta.getExcluded().isEmpty() &&
-            delta.getIncluded().isEmpty() &&
-            delta.getReplaced().isEmpty()) {
+        if (delta.getAdded().isEmpty()
+                && //delta.getChanged().isEmpty() &&
+                delta.getDeleted().isEmpty()
+                && delta.getExcluded().isEmpty()
+                && delta.getIncluded().isEmpty()
+                && delta.getReplaced().isEmpty()) {
             // only changed properties => no changes in project tree
             return;
         }
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                checkForChangedViewItemNodes(project);
-            }
-        });
+        refreshProjectNodes(project);
     }
 
     public static void checkForChangedViewItemNodes(final Project project, final Folder folder, final Item item) {
         if (CndUtils.isStandalone()) {
             return;
         }
+
+        refreshProjectNodes(project);
+    }
+
+    private static void refreshProjectNodes(final Project project) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (item == null) {
-                    checkForChangedViewItemNodes(project);
-                    return;
-                }
-                Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
-                Node root = findProjectNode(rootNode, project);
-                if (root != null) {
-                    Node node = findItemNode(root, item);
-                    if (node instanceof FilterNode) {
-                        Object o = node.getLookup().lookup(ViewItemNode.class);
-                        if (o != null) {
-                            ((ChangeListener) o).stateChanged(null);
-                        }
-                    }
-                }
+                ProjectNodesRefreshSupport.refreshProjectNodes(project);
             }
         });
-    }
-
-    private static void checkForChangedViewItemNodes(Project project) {
-        Node rootNode = ProjectTabBridge.getInstance().getExplorerManager().getRootContext();
-        checkForChangedViewItemNodes(findProjectNode(rootNode, project));
-    }
-
-    private static class ChangedViewItemNodesChecker extends SwingWorker<Collection<ChangeListener>, Object> {
-
-        private Node root = null;
-
-        public ChangedViewItemNodesChecker(Node root) {
-            this.root = root;
-        }
-
-        @Override
-        protected Collection<ChangeListener> doInBackground() throws Exception {
-            List<ChangeListener> result = new LinkedList<ChangeListener>();
-            doWork(root, result);
-            return result;
-        }
-
-        private void doWork(Node current, List<ChangeListener> result) {
-            if (current != null) {
-                for (Node node : current.getChildren().getNodes(true)) {
-                    doWork(node, result);
-                    if (node instanceof FilterNode) {
-                        Object o = node.getLookup().lookup(ViewItemNode.class);
-                        if (o != null) {
-                            result.add((ChangeListener) o);
-                        }
-                    }
-                }
-            }
-        }
-
-        @Override
-        protected void done() {
-            try {
-                for (ChangeListener listener : get()) {
-                    listener.stateChanged(null);
-                }
-            } catch (InterruptedException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ExecutionException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-
-    private static void checkForChangedViewItemNodes(Node root) {
-        (new ChangedViewItemNodesChecker(root)).execute();
     }
 
     /**
@@ -498,25 +444,7 @@ public class MakeLogicalViewProvider implements LogicalViewProvider {
      * @param project
      */
     public static void refreshBrokenItems(final Project project) {
-        Node rootNode = getRootNode();
-        if (rootNode != null) {
-            refreshBrokenItemsImpl(findProjectNode(rootNode, project));
-        }
-    }
-
-    private static void refreshBrokenItemsImpl(Node root) {
-        if (root != null) {
-            if (root.isLeaf()) {
-                BrokenViewItemNode brokenItem = root.getLookup().lookup(BrokenViewItemNode.class);
-                if (brokenItem != null) {
-                    brokenItem.refresh();
-                }
-            } else {
-                for (Node node : root.getChildren().getNodes(true)) {
-                    refreshBrokenItemsImpl(node);
-                }
-            }
-        }
+        BrokenViewItemRefreshSupport.refreshBrokenItems(project);
     }
 
     private static Node getRootNode() {

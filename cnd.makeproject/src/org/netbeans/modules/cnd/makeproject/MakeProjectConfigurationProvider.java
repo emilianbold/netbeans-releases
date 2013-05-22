@@ -56,9 +56,16 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
+import static org.netbeans.spi.project.ProjectConfigurationProvider.PROP_CONFIGURATIONS;
 import org.openide.util.RequestProcessor;
 
 public class MakeProjectConfigurationProvider implements ProjectConfigurationProvider<Configuration>, PropertyChangeListener {
+
+    /**
+     * Property name of the set of configurations.
+     * Use it when firing a change in the set of configurations.
+     */
+    String PROP_CONFIGURATIONS_BROKEN = "brokenConfigurations"; // NOI18N
 
     private final Project project;
     private ConfigurationDescriptorProvider projectDescriptorProvider;
@@ -105,6 +112,10 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
         }
     }
 
+    public void registerPropertyChangeListener(PropertyChangeListener lst) {
+        pcs.addPropertyChangeListener(lst);
+    }
+    
     @Override
     public void addPropertyChangeListener(PropertyChangeListener lst) {
         pcs.addPropertyChangeListener(lst);
@@ -119,6 +130,11 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
                             makeConfigurationDescriptor.getConfs().addPropertyChangeListener(MakeProjectConfigurationProvider.this);
                             pcs.firePropertyChange(PROP_CONFIGURATIONS, null, getConfigurations());
                             pcs.firePropertyChange(PROP_CONFIGURATION_ACTIVE, null, getActiveConfiguration());
+                        } else {
+                            if (makeConfigurationDescriptor != null && makeConfigurationDescriptor.getState() == State.BROKEN) {
+                                // notify problem
+                                pcs.firePropertyChange(PROP_CONFIGURATIONS_BROKEN, null, State.BROKEN);
+                            }
                         }
                     }
                 }

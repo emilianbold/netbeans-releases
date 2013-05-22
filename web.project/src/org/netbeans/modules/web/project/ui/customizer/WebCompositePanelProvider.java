@@ -49,7 +49,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
-import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraryCustomizerPanel;
+import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.project.ProjectWebModule;
@@ -71,7 +71,6 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
     private static final String SOURCES = "Sources";
     static final String LIBRARIES = "Libraries";
     private static final String FRAMEWORKS = "Frameworks";
-    private static final String JS_LIBRARIES = "JavaScript-Libraries";
 
     private static final String BUILD = "Build";
     private static final String WAR = "War";
@@ -139,11 +138,6 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
             toReturn = ProjectCustomizer.Category.create(WEBSERVICESCATEGORY,
                     bundle.getString("LBL_Config_WebServiceCategory"), // NOI18N
                     null, services, clients);
-        } else if (JS_LIBRARIES.equals(name)) {
-            toReturn = ProjectCustomizer.Category.create(
-                    JS_LIBRARIES,
-                    bundle.getString( "LBL_Config_JavaScriptLibraries" ), // NOI18N
-                    null);
         }
         
 //        assert toReturn != null : "No category for name:" + name;
@@ -169,26 +163,6 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
             return new CustomizerJavadoc(uiProps);
         } else if (RUN.equals(nm)) {
             return new CustomizerRun(category, uiProps);
-        } else if (JS_LIBRARIES.equals(nm)) {
-            return new JavaScriptLibraryCustomizerPanel(category, new JavaScriptLibraryCustomizerPanel.CustomizerSupport() {
-
-                @Override
-                public File getWebRoot() {
-                    FileObject fo = uiProps.getProject().getAPIWebModule().getDocumentBase();
-                    if (fo != null) {
-                        return FileUtil.toFile(fo);
-                    }
-                    return null;
-                }
-
-                @Override
-                public void setLibrariesFolder(String librariesFolder) {
-                }
-
-                @Override
-                public void setSelectedLibraries(List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries) {
-                }
-            });
         } else if (WEBSERVICES.equals(nm) || WEBSERVICECLIENTS.equals(nm)) {
             ProjectWebModule wm = uiProps.getProject().getLookup().lookup(ProjectWebModule.class);
             FileObject docBase = wm.getDocumentBase();
@@ -265,8 +239,27 @@ public class WebCompositePanelProvider implements ProjectCustomizer.CompositeCat
     }
     
     @ProjectCustomizer.CompositeCategoryProvider.Registration(projectType="org-netbeans-modules-web-project", position=350)
-    public static WebCompositePanelProvider createJavaScriptLibraries() {
-        return new WebCompositePanelProvider(JS_LIBRARIES);
+    public static ProjectCustomizer.CompositeCategoryProvider createJavaScriptLibraries() {
+        return JavaScriptLibraries.createCustomizer(new JavaScriptLibraries.CustomizerSupport() {
+            @Override
+            public File getWebRoot(Lookup context) {
+                WebProjectProperties projectProperties = context.lookup(WebProjectProperties.class);
+                assert projectProperties != null;
+                FileObject fo = projectProperties.getProject().getAPIWebModule().getDocumentBase();
+                if (fo != null) {
+                    return FileUtil.toFile(fo);
+                }
+                return null;
+            }
+            @Override
+            public void setLibrariesFolder(Lookup context, String librariesFolder) {
+                // noop
+            }
+            @Override
+            public void setSelectedLibraries(Lookup context, List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries) {
+                // noop
+            }
+        });
     }
 
     @ProjectCustomizer.CompositeCategoryProvider.Registration(

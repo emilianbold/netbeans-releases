@@ -62,10 +62,12 @@ import java.util.logging.Logger;
 import org.netbeans.modules.localhistory.LocalHistory;
 import org.netbeans.modules.versioning.ui.history.HistorySettings;
 import org.netbeans.modules.localhistory.utils.FileUtils;
+import org.netbeans.modules.localhistory.utils.Utils;
 import org.netbeans.modules.turbo.CustomProviders;
 import org.netbeans.modules.turbo.Turbo;
 import org.netbeans.modules.turbo.TurboProvider;
 import org.netbeans.modules.turbo.TurboProvider.MemoryCache;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.ListenersSupport;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.modules.Places;
@@ -100,7 +102,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
 
     private static long LOCK_TIMEOUT = 30;
     private final RequestProcessor rp = new RequestProcessor("LocalHistoryStore", 50); // NOI18N
-    private final Map<File, Semaphore> proccessedFiles = new HashMap<File, Semaphore>();
+    private final Map<VCSFileProxy, Semaphore> proccessedFiles = new HashMap<VCSFileProxy, Semaphore>();
     static final Logger LOG = Logger.getLogger(LocalHistoryStoreImpl.class.getName());    
     
     private static FilenameFilter fileEntriesFilter =
@@ -131,10 +133,10 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public void fileCreate(File file, long ts) {
+    public void fileCreate(VCSFileProxy file, long ts) {
         Semaphore s = lock(file, "fileCreate"); // NOI18N
         try {
-            fileCreateImpl(file, ts, null, file.getAbsolutePath());
+            fileCreateImpl(file, ts, null, file.getPath());
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
         } finally {
@@ -142,7 +144,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
     }
 
-    private void fileCreateImpl(File file, long ts, String from, String to) throws IOException {
+    private void fileCreateImpl(VCSFileProxy file, long ts, String from, String to) throws IOException {
        if(lastModified(file) > 0) {
             return;
         }
@@ -158,8 +160,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             }
             LocalHistory.logCreate(file, storeFile, ts, from, to);
         }
-        touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, file.isFile()));
-        File parent = file.getParentFile();
+        touch(file, new StoreDataFile(file.getPath(), TOUCHED, ts, file.isFile()));
+        VCSFileProxy parent = file.getParentFile();
         if(parent != null) {
             // XXX consider also touching the parent - yes (collisions, ...)
             writeHistoryForFile(parent, new HistoryEntry[] {new HistoryEntry(ts, from, to, TOUCHED)}, true);
@@ -168,7 +170,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public void fileChange(final File file, final long ts) {
+    public void fileChange(final VCSFileProxy file, final long ts) {
         final Semaphore s = lock(file, "fileChange"); // NOI18N
         rp.post(new Runnable() {
             @Override
@@ -183,7 +185,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                         storeChangedSync(file, ts);
                     } else {
                         try {
-                            touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, false));
+                            touch(file, new StoreDataFile(file.getPath(), TOUCHED, ts, false));
                         } catch (IOException ioe) {
                             LocalHistory.LOG.log(Level.WARNING, null, ioe);
                         }
@@ -200,7 +202,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         
     }
 
-    private void storeChangedSync(File file, long ts) {
+    private void storeChangedSync(VCSFileProxy file, long ts) {
         File storeFile = getStoreFile(file, Long.toString(ts), true);
         try {
             try {
@@ -208,7 +210,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 LocalHistory.LOG.log(Level.FINE, "copied file {0} into storage file {1}", new Object[]{file, storeFile}); // NOI18N
 
                 LocalHistory.logChange(file, storeFile, ts);
-                touch(file, new StoreDataFile(file.getAbsolutePath(), TOUCHED, ts, true));
+                touch(file, new StoreDataFile(file.getPath(), TOUCHED, ts, true));
             } finally {
                 // release lock
                 lockedFolders.remove(storeFile.getParentFile());
@@ -223,10 +225,10 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
     
     @Override
-    public void fileDelete(File file, long ts) {
+    public void fileDelete(VCSFileProxy file, long ts) {
         Semaphore s = lock(file, "fileDelete"); // NOI18N
         try {
-            fileDeleteImpl(file, null, file.getAbsolutePath(), ts);
+            fileDeleteImpl(file, null, file.getPath(), ts);
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
         } finally {
@@ -235,8 +237,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         fireChanged(file, ts);
     }
 
-    private void fileDeleteImpl(File file, String from, String to, long ts) throws IOException {
-        StoreDataFile data = readStoreData(file, true);
+    private void fileDeleteImpl(VCSFileProxy file, String from, String to, long ts) throws IOException {
+        StoreDataFile data = readStoreData(file);
         // XXX what if already deleted?
 
         if(data == null) {
@@ -252,8 +254,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             LocalHistory.logDelete(file, storeFile, ts);
         }
 
-        touch(file, new StoreDataFile(file.getAbsolutePath(), DELETED, lastModified, isFile));
-        File parent = file.getParentFile();
+        touch(file, new StoreDataFile(file.getPath(), DELETED, lastModified, isFile));
+        VCSFileProxy parent = file.getParentFile();
         if(parent != null) {
             // XXX consider also touching the parent
             writeHistoryForFile(parent, new HistoryEntry[] {new HistoryEntry(ts, from, to, DELETED)}, true);
@@ -261,13 +263,13 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public void fileCreateFromMove(File from, File to, long ts) {
+    public void fileCreateFromMove(VCSFileProxy from, VCSFileProxy to, long ts) {
         Semaphore s = lock(from, "fileCreateFromMove"); // NOI18N
         try {
             if(lastModified(to) > 0) {
                 return;
             }
-            fileCreateImpl(to, ts, from.getAbsolutePath(), to.getAbsolutePath());
+            fileCreateImpl(to, ts, from.getPath(), to.getPath());
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
         } finally {
@@ -277,10 +279,10 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public void fileDeleteFromMove(File from, File to, long ts) {
+    public void fileDeleteFromMove(VCSFileProxy from, VCSFileProxy to, long ts) {
         Semaphore s = lock(from, "fileDeleteFromMove"); // NOI18N
         try {
-            fileDeleteImpl(from, from.getAbsolutePath(), to.getAbsolutePath(), ts);
+            fileDeleteImpl(from, from.getPath(), to.getPath(), ts);
         } catch (IOException ioe) {
             LocalHistory.LOG.log(Level.WARNING, null, ioe);
         } finally {
@@ -293,13 +295,13 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return new File(new File(Places.getUserDirectory(), "var"), "filehistory"); // NOI18N
     }
 
-    private long lastModified(File file) {
-        StoreDataFile data = readStoreData(file, true);
+    private long lastModified(VCSFileProxy file) {
+        StoreDataFile data = readStoreData(file);
         return data != null && data.getStatus() != DELETED ? data.getLastModified() : -1;
     }
 
     @Override
-    public StoreEntry[] getStoreEntries(File file) {
+    public StoreEntry[] getStoreEntries(VCSFileProxy file) {
         Semaphore s = lock(file, "getStoreEntries"); // NOI18N
         try {
             // XXX file.isFile() won't work for deleted files
@@ -309,7 +311,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
     }
 
-    private StoreEntry[] getStoreEntriesImpl(File file) {
+    private StoreEntry[] getStoreEntriesImpl(VCSFileProxy file) {
         File storeFolder = getStoreFolder(file);
         File[] storeFiles = storeFolder.listFiles(fileEntriesFilter);
         if(storeFiles != null && storeFiles.length > 0) {
@@ -330,135 +332,137 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public StoreEntry[] getFolderState(File root, File[] files, long ts) {
-        Semaphore s = lock(root, "getFolderState"); // NOI18N
-        try {
-            return getFolderStateIntern(root, files, ts);
-        } finally {
-            if(s != null) s.release();
-        }
-    }
-
-    private StoreEntry[] getFolderStateIntern(File root, File[] files, long ts) {
-
-        // check if the root wasn't deleted to that time
-        File parentFile = root.getParentFile();
-        if(parentFile != null) {
-            List<HistoryEntry> parentHistory = readHistoryForFile(parentFile);
-            if(wasDeleted(root, parentHistory, ts)) {
-                return emptyStoreEntryArray;
-            }
-        }
-
-        List<HistoryEntry> history = readHistoryForFile(root);
-
-        // StoreEntries we will return
-        List<StoreEntry> ret = new ArrayList<StoreEntry>();
-
-        Map<File, HistoryEntry> beforeRevert = new HashMap<File, HistoryEntry>();
-        Map<File, HistoryEntry> afterRevert = new HashMap<File, HistoryEntry>();
-
-        for(HistoryEntry he : history) {
-            File file = new File(he.getTo());
-            if(he.getTimestamp() < ts) {
-                // this is the LAST thing which happened
-                // to a file before the given time
-                beforeRevert.put(file, he);
-            } else {
-                // this is the FIRST thing which happened
-                // to a file before the given time
-                if(!afterRevert.containsKey(file)) {
-                    afterRevert.put(file, he);
-                }
-            }
-        }
-
-        for(File file : files) {
-            HistoryEntry before = beforeRevert.get(file);
-            HistoryEntry after = afterRevert.get(file);
-
-            // lets see what remains when we are throught all existing files
-            beforeRevert.remove(file);
-            afterRevert.remove(file);
-
-            if(before != null && before.getStatus() == DELETED) {
-                // the file was deleted to the given time -> delete it!
-                ret.add(StoreEntry.createDeletedStoreEntry(file, ts));
-                continue;
-            }
-
-            StoreDataFile data = readStoreData(file, true);
-            if(data == null) {
-                // XXX ???
-                continue;
-            }
-            if(data.isFile()) {
-                StoreEntry se = getStoreEntryIntern(file, ts);
-                if(se != null) {
-                    ret.add(se);
-                } else {
-                    if(after != null && after.getStatus() == TOUCHED) {
-                        ret.add(StoreEntry.createDeletedStoreEntry(file, ts));
-                    } else {
-                        // XXX is this possible?
-                    }
-                    // the file still exists and there is no entry -> uptodate?
-                }
-            } else {
-                if(after != null && after.getStatus() == TOUCHED) {
-                    ret.add(StoreEntry.createDeletedStoreEntry(file, ts));
-                } else {
-                    // XXX is this possible?
-                }
-                // the folder still exists and it wasn't deleted, so do nothing
-            }
-        }
-
-
-        for(Entry<File, HistoryEntry> entry : beforeRevert.entrySet()) {
-
-            File file = entry.getKey();
-
-            // lets see what remains
-            afterRevert.remove(file);
-
-            // the file doesn't exist now, but
-            // there was something done to it before the given time
-            if(entry.getValue().getStatus() == DELETED) {
-                // this is exactly what we have - forget it!
-                continue;
-            }
-
-            StoreDataFile data = readStoreData(file, true);
-            if(data != null) {
-                if(data.isFile()) {
-                    StoreEntry se = getStoreEntryIntern(file, ts);
-                    if(se != null) {
-                        ret.add(se);
-                    } else {
-                        // XXX what now? this should be covered
-                    }
-                } else {
-                    // it must have existed
-                    File storeFile = getStoreFolder(root); // XXX why returning the root
-                    StoreEntry folderEntry = StoreEntry.createStoreEntry(new File(data.getAbsolutePath()), storeFile, data.getLastModified(), "");
-                    ret.add(folderEntry);
-                }
-            } else {
-                // XXX how to cover this?
-            }
-        }
-
-        // XXX do we even need this
-//        for(Entry<File, HistoryEntry> entry : afterRevert.entrySet()) {
-//
+    public StoreEntry[] getFolderState(VCSFileProxy root, VCSFileProxy[] files, long ts) {
+        // XXX get rid of this! used by nobody anyway
+//        Semaphore s = lock(root, "getFolderState"); // NOI18N
+//        try {
+//            return getFolderStateIntern(root, files, ts);
+//        } finally {
+//            if(s != null) s.release();
 //        }
-        return ret.toArray(new StoreEntry[ret.size()]);
-
+        return new StoreEntry[0];
     }
 
-    private boolean wasDeleted(File file, List<HistoryEntry> history , long ts) {
-        String path = file.getAbsolutePath();
+//    private StoreEntry[] getFolderStateIntern(VCSFileProxy root, VCSFileProxy[] files, long ts) {
+//
+//        // check if the root wasn't deleted to that time
+//        VCSFileProxy parentFile = root.getParentFile();
+//        if(parentFile != null) {
+//            List<HistoryEntry> parentHistory = readHistoryForFile(parentFile);
+//            if(wasDeleted(root, parentHistory, ts)) {
+//                return emptyStoreEntryArray;
+//            }
+//        }
+//
+//        List<HistoryEntry> history = readHistoryForFile(root);
+//
+//        // StoreEntries we will return
+//        List<StoreEntry> ret = new ArrayList<StoreEntry>();
+//
+//        Map<File, HistoryEntry> beforeRevert = new HashMap<File, HistoryEntry>();
+//        Map<File, HistoryEntry> afterRevert = new HashMap<File, HistoryEntry>();
+//
+//        for(HistoryEntry he : history) {
+//            File file = new File(he.getTo());
+//            if(he.getTimestamp() < ts) {
+//                // this is the LAST thing which happened
+//                // to a file before the given time
+//                beforeRevert.put(file, he);
+//            } else {
+//                // this is the FIRST thing which happened
+//                // to a file before the given time
+//                if(!afterRevert.containsKey(file)) {
+//                    afterRevert.put(file, he);
+//                }
+//            }
+//        }
+//
+//        for(VCSFileProxy file : files) {
+//            HistoryEntry before = beforeRevert.get(file);
+//            HistoryEntry after = afterRevert.get(file);
+//
+//            // lets see what remains when we are throught all existing files
+//            beforeRevert.remove(file);
+//            afterRevert.remove(file);
+//
+//            if(before != null && before.getStatus() == DELETED) {
+//                // the file was deleted to the given time -> delete it!
+//                ret.add(StoreEntry.createDeletedStoreEntry(file, ts));
+//                continue;
+//            }
+//
+//            StoreDataFile data = readStoreData(file);
+//            if(data == null) {
+//                // XXX ???
+//                continue;
+//            }
+//            if(data.isFile()) {
+//                StoreEntry se = getStoreEntryIntern(file, ts);
+//                if(se != null) {
+//                    ret.add(se);
+//                } else {
+//                    if(after != null && after.getStatus() == TOUCHED) {
+//                        ret.add(StoreEntry.createDeletedStoreEntry(file, ts));
+//                    } else {
+//                        // XXX is this possible?
+//                    }
+//                    // the file still exists and there is no entry -> uptodate?
+//                }
+//            } else {
+//                if(after != null && after.getStatus() == TOUCHED) {
+//                    ret.add(StoreEntry.createDeletedStoreEntry(file, ts));
+//                } else {
+//                    // XXX is this possible?
+//                }
+//                // the folder still exists and it wasn't deleted, so do nothing
+//            }
+//        }
+//
+//
+//        for(Entry<File, HistoryEntry> entry : beforeRevert.entrySet()) {
+//
+//            File file = entry.getKey();
+//
+//            // lets see what remains
+//            afterRevert.remove(file);
+//
+//            // the file doesn't exist now, but
+//            // there was something done to it before the given time
+//            if(entry.getValue().getStatus() == DELETED) {
+//                // this is exactly what we have - forget it!
+//                continue;
+//            }
+//
+//            StoreDataFile data = readStoreData(file);
+//            if(data != null) {
+//                if(data.isFile()) {
+//                    StoreEntry se = getStoreEntryIntern(file, ts);
+//                    if(se != null) {
+//                        ret.add(se);
+//                    } else {
+//                        // XXX what now? this should be covered
+//                    }
+//                } else {
+//                    // it must have existed
+//                    File storeFile = getStoreFolder(root); // XXX why returning the root
+//                    StoreEntry folderEntry = StoreEntry.createStoreEntry(new File(data.getAbsolutePath()), storeFile, data.getLastModified(), "");
+//                    ret.add(folderEntry);
+//                }
+//            } else {
+//                // XXX how to cover this?
+//            }
+//        }
+//
+//        // XXX do we even need this
+////        for(Entry<File, HistoryEntry> entry : afterRevert.entrySet()) {
+////
+////        }
+//        return ret.toArray(new StoreEntry[ret.size()]);
+//
+//    }
+
+    private boolean wasDeleted(VCSFileProxy file, List<HistoryEntry> history , long ts) {
+        String path = file.getPath();
         boolean deleted = false;
 
         for(int i = 0; i < history.size(); i++) {
@@ -478,7 +482,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public StoreEntry getStoreEntry(File file, long ts) {
+    public StoreEntry getStoreEntry(VCSFileProxy file, long ts) {
         Semaphore s = lock(file, "getStoreEntry"); // NOI18N
         try {
             return getStoreEntryIntern(file, ts);
@@ -487,11 +491,11 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
     }
     
-    private StoreEntry getStoreEntryIntern(File file, long ts) {
-        return getStoreEntryImpl(file, ts, readStoreData(file, true));
+    private StoreEntry getStoreEntryIntern(VCSFileProxy file, long ts) {
+        return getStoreEntryImpl(file, ts, readStoreData(file));
     }
 
-    private StoreEntry getStoreEntryImpl(File file, long ts, StoreDataFile data) {
+    private StoreEntry getStoreEntryImpl(VCSFileProxy file, long ts, StoreDataFile data) {
         // XXX what if file deleted?
         StoreEntry entry = null;
 
@@ -516,7 +520,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public void deleteEntry(File file, long ts) {
+    public void deleteEntry(VCSFileProxy file, long ts) {
         Semaphore s = lock(file, "deleteEntry"); // NOI18N
         try {
             File storeFile = getStoreFile(file, Long.toString(ts), false);
@@ -531,7 +535,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public StoreEntry[] getDeletedFiles(File root) {
+    public StoreEntry[] getDeletedFiles(VCSFileProxy root) {
         Semaphore s = lock(root, "getDeletedFiles"); // NOI18N
         try {
             return getDeletedFilesIntern(root);
@@ -540,11 +544,14 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
     }
     
-    private StoreEntry[] getDeletedFilesIntern(File root) {
+    private StoreEntry[] getDeletedFilesIntern(VCSFileProxy root) {
         if(root.isFile()) {
             return null;
         }
-
+        if(root.toFile() == null) {
+            // XXX VCSFileProxy hack! there is no way to create a non local (io.File) file
+        }
+        
         Map<String, StoreEntry> deleted = new HashMap<String, StoreEntry>();
 
         // first of all find files which are tagged as deleted in the given folder
@@ -554,12 +561,12 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             if(he.getStatus() == DELETED) {
                 String filePath = he.getTo();
                 if(!deleted.containsKey(filePath)) {
-                    StoreDataFile data = readStoreData(new File(he.getTo()), true);
+                    StoreDataFile data = readStoreData(Utils.createProxy(he.getTo()));
                     if(data != null && data.getStatus() == DELETED) {
                         File storeFile = data.isFile ?
-                                            getStoreFile(new File(data.getAbsolutePath()), Long.toString(data.getLastModified()), false) :
+                                            getStoreFile(Utils.createProxy(data.getAbsolutePath()), Long.toString(data.getLastModified()), false) :
                                             getStoreFolder(root);
-                        deleted.put(filePath, StoreEntry.createStoreEntry(new File(data.getAbsolutePath()), storeFile, data.getLastModified(), ""));
+                        deleted.put(filePath, StoreEntry.createStoreEntry(Utils.createProxy(data.getAbsolutePath()), storeFile, data.getLastModified(), ""));
                     }
                 }
             }
@@ -570,9 +577,9 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         // It woudln't be very userfriendly to ignore them just because they don't meet all the byrocratic expectations
         // WARNING! don't see this as a bruteforce substitution for the previous block as it is impossible to
         // recover deleted folders this way
-        List<File> lostFiles = getLostFiles();
-        for(File lostFile : lostFiles) {
-            if(!deleted.containsKey(lostFile.getAbsolutePath())) {
+        List<VCSFileProxy> lostFiles = getLostFiles();
+        for(VCSFileProxy lostFile : lostFiles) {
+            if(!deleted.containsKey(lostFile.getPath())) {
                 // careful about lostFile being the root folder - it has no parent
                 if(root.equals(lostFile.getParentFile())) {
                     StoreEntry[] storeEntries = getStoreEntriesImpl(lostFile);
@@ -585,7 +592,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                             storeEntry = storeEntries[i];
                         }
                     }
-                    deleted.put(lostFile.getAbsolutePath(), storeEntry);
+                    deleted.put(lostFile.getPath(), storeEntry);
                 }
             }
         }
@@ -593,8 +600,8 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return deleted.values().toArray(new StoreEntry[deleted.size()]);
     }
 
-    private List<File> getLostFiles() {
-        List<File> files = new ArrayList<File>();
+    private List<VCSFileProxy> getLostFiles() {
+        List<VCSFileProxy> files = new ArrayList<VCSFileProxy>();
         File[] topLevelFiles = storage.listFiles();
         if(topLevelFiles == null || topLevelFiles.length == 0) {
             return files;
@@ -605,11 +612,11 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
                 continue;
             }
             for(File storeFile : secondLevelFiles) {
-                StoreDataFile data = readStoreData(new File(storeFile, DATA_FILE), false);
+                StoreDataFile data = readStoreFile(new File(storeFile, DATA_FILE));
                 if(data == null) {
                     continue;
                 }
-                File file = new File(data.getAbsolutePath());
+                VCSFileProxy file = Utils.createProxy(data.getAbsolutePath());
                 if(!file.exists()) {
                     files.add(file);
                 }
@@ -619,7 +626,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public StoreEntry setLabel(File file, long ts, String label) {
+    public StoreEntry setLabel(VCSFileProxy file, long ts, String label) {
         Semaphore s = lock(file, "setLabel"); // NOI18N
         try {
             return setLabelIntern(file, ts, label);
@@ -628,7 +635,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
     }
     
-    private StoreEntry setLabelIntern(File file, long ts, String label) {
+    private StoreEntry setLabelIntern(VCSFileProxy file, long ts, String label) {
         File labelsFile = getLabelsFile(file);
         File parent = labelsFile.getParentFile();
         if(!parent.exists()) {
@@ -774,7 +781,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
             return cleanUpStoredFolder(folder, ttl, now);
         }
 
-        StoreDataFile data = readStoreData(dataFile, false);
+        StoreDataFile data = readStoreFile(dataFile);
         if(data == null || data.getAbsolutePath() == null) {
             // what's this?
             return true;
@@ -845,7 +852,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         if(!skipped) {
             // all entries are gone -> remove also the metadata
             labelsFile.delete();
-            writeStoreData(dataFile, null, false);  // null stands for remove
+            writeStoreFile(dataFile, null);  // null stands for remove
         } else {
             if(labels.size() > 0) {
                 writeLabels(labelsFile, labels);
@@ -917,20 +924,20 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
 
     private void purgeDataFile(File dataFile) {
         if(dataFile.exists()) {
-            writeStoreData(dataFile, null, false);
+            writeStoreFile(dataFile, null);
         }
     }
 
-    private void fireChanged(File file, long ts) {
+    private void fireChanged(VCSFileProxy file, long ts) {
         listenersSupport.fireVersioningEvent(EVENT_HISTORY_CHANGED, new Object[] {file, ts});
     }
 
-    private void fireDeleted(File file, long ts) {
+    private void fireDeleted(VCSFileProxy file, long ts) {
         listenersSupport.fireVersioningEvent(EVENT_ENTRY_DELETED, new Object[] {file, ts});
     }
 
-    private void touch(File file, StoreDataFile data) throws IOException {
-        writeStoreData(file, data, true);
+    private void touch(VCSFileProxy file, StoreDataFile data) throws IOException {
+        writeStoreData(file, data);
     }
 
     private void initStorage() {
@@ -941,13 +948,13 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         writeStorage();
     }
 
-    private File getStoreFolder(File file) {
-        String filePath = file.getAbsolutePath();
+    private File getStoreFolder(VCSFileProxy file) {
+        String filePath = file.getPath();
         File storeFolder = getStoreFolderName(filePath);
         int i = 0;
         while(storeFolder.exists()) {
             // check for collisions
-            StoreDataFile data = readStoreData(new File(storeFolder, DATA_FILE), false);
+            StoreDataFile data = readStoreFile(new File(storeFolder, DATA_FILE));
             if(data == null || data.getAbsolutePath().equals(filePath)) {
                 break;
             }
@@ -984,7 +991,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return ret.toString();
     }
 
-    private File getStoreFile(File file, String name, boolean forceCreate) {
+    private File getStoreFile(VCSFileProxy file, String name, boolean forceCreate) {
         File storeFolder = getStoreFolder(file);
         if(forceCreate) {
             lockedFolders.add(storeFolder);
@@ -995,7 +1002,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return new File(storeFolder, name);
     }
 
-    private File getHistoryFile(File file) {
+    private File getHistoryFile(VCSFileProxy file) {
         File storeFolder = getStoreFolder(file);
         if(!storeFolder.exists()) {
             storeFolder.mkdirs();
@@ -1003,12 +1010,12 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return new File(storeFolder, HISTORY_FILE);
     }
 
-    private File getDataFile(File file) {
+    private File getDataFile(VCSFileProxy file) {
         File storeFolder = getStoreFolder(file);
         return new File(storeFolder, DATA_FILE);
     }
 
-    private File getLabelsFile(File file) {
+    private File getLabelsFile(VCSFileProxy file) {
         File storeFolder = getStoreFolder(file);
         return new File(storeFolder, LABELS_FILE);
     }
@@ -1039,7 +1046,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return emptyLabels;
     }
 
-    private void writeHistoryForFile(File file, HistoryEntry[] entries, boolean append) {
+    private void writeHistoryForFile(VCSFileProxy file, HistoryEntry[] entries, boolean append) {
         if(!LocalHistory.LOG.isLoggable(Level.FINE)) {
             if(getDataFile(file) == null) {
                 LocalHistory.log("writing history for file without data : " + file);    // NOI18N
@@ -1069,7 +1076,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
     }
 
-    private List<HistoryEntry> readHistoryForFile(File file) {
+    private List<HistoryEntry> readHistoryForFile(VCSFileProxy file) {
         return readHistory(getHistoryFile(file));
     }
 
@@ -1100,10 +1107,11 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         return emptyHistory;
     }
 
-    private StoreDataFile readStoreData(File file, boolean isOriginalFile) {
-        if(isOriginalFile) {
-            file = getDataFile(file);
-        }
+    private StoreDataFile readStoreData(VCSFileProxy file) {
+        return readStoreFile(getDataFile(file));
+    }
+
+    private StoreDataFile readStoreFile(File file) {
         return (StoreDataFile) turbo.readEntry(file, DataFilesTurboProvider.ATTR_DATA_FILES);
     }
 
@@ -1122,13 +1130,14 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
     }
 
-    private void writeStoreData(File file, StoreDataFile data, boolean isOriginalFile) {
-        if(isOriginalFile) {
-            file = getDataFile(file);
-        }
-        turbo.writeEntry(file, DataFilesTurboProvider.ATTR_DATA_FILES, data);
+    private void writeStoreData(VCSFileProxy file, StoreDataFile data) {
+        writeStoreFile(getDataFile(file), data);
     }
 
+    private void writeStoreFile(File file, StoreDataFile data) {
+        turbo.writeEntry(file, DataFilesTurboProvider.ATTR_DATA_FILES, data);
+    }
+    
     private static void writeString(DataOutputStream dos, String str) throws IOException {
         if(str != null) {
             dos.writeInt(str.length());
@@ -1199,7 +1208,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
     }
 
     @Override
-    public void waitForProcessedStoring(File file, String caller) {
+    public void waitForProcessedStoring(VCSFileProxy file, String caller) {
         Semaphore s;
         synchronized(proccessedFiles) {
             s = proccessedFiles.get(file);
@@ -1228,7 +1237,7 @@ class LocalHistoryStoreImpl implements LocalHistoryStore {
         }
     }
 
-    private Semaphore lock(File file, String caller) {
+    private Semaphore lock(VCSFileProxy file, String caller) {
         Semaphore s;
         synchronized(proccessedFiles) {
             s = proccessedFiles.get(file);

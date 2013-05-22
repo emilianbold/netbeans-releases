@@ -19,7 +19,7 @@ STRUCT iz158684_A (iz158684_A ) [1:1/0-3:2/57] lcurly=18 SCOPE: $Global$
             SIGNATURE operator  int&()
             UNIQUE NAME F:iz158684_A::operator  int&()
             PARAMETERS:
-            RETURNS const &int TEXT=const int&  [2:22/41-2:25/44]
+            RETURNS &int TEXT=int&  [2:22/41-2:25/44]
 
 ========== Dumping model of PROJECT DummyProject
 STRUCT iz158684_A (iz158684_A ) [1:1/0-3:2/57] lcurly=18 SCOPE: $Global$ 
@@ -30,5 +30,5 @@ STRUCT iz158684_A (iz158684_A ) [1:1/0-3:2/57] lcurly=18 SCOPE: $Global$
             SIGNATURE operator  int&()
             UNIQUE NAME F:iz158684_A::operator  int&()
             PARAMETERS:
-            RETURNS const &int TEXT=const int&  [2:22/41-2:25/44]
+            RETURNS &int TEXT=int&  [2:22/41-2:25/44]
 

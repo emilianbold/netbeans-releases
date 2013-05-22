@@ -56,20 +56,23 @@ import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmImageLoader;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.CndUtils;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.spi.jumpto.symbol.SymbolDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
+import org.openide.util.RequestProcessor;
 
 /**
  * SymbolDescriptor implementation for C/C++
  * @author Vladimir Kvashin
  */
-public class CppSymbolDescriptor extends SymbolDescriptor {
+public class CppSymbolDescriptor extends SymbolDescriptor implements Runnable {
 
     private final Icon icon;
     private final CsmProject project;
-    private final FileObject fileObject;
+    private final CharSequence filePath;
     private final int offset;
     private final CharSequence ownerName;
     private final CharSequence name;
@@ -77,7 +80,7 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
     public CppSymbolDescriptor(CsmOffsetable csmObj) {
         Parameters.notNull("csmObj", csmObj);
         CsmFile csmFile = csmObj.getContainingFile();
-        fileObject = csmFile.getFileObject();
+        filePath = csmFile.getAbsolutePath();
         offset = csmObj.getStartOffset();
         project = csmFile.getProject();
         if (CsmKindUtilities.isClass(csmObj) && CsmKindUtilities.isTemplate(csmObj)) {
@@ -90,7 +93,7 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
             throw new IllegalArgumentException("should be CsmNamedElement, in fact " + csmObj.getClass().getName()); //NOI18N
         }
 
-        CharSequence fileName = fileObject.getNameExt();
+        CharSequence fileName = csmFile.getName();
         if (CsmKindUtilities.isMacro(csmObj)) {
             //CsmMacro macro = (CsmMacro)  csmObj;
             ownerName = fileName;
@@ -118,7 +121,13 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
     
     @Override
     public FileObject getFileObject() {
-        return fileObject;
+        CndUtils.assertNonUiThread();
+        return new FSPath(project.getFileSystem(), filePath.toString()).getFileObject();
+    }
+
+    @Override
+    public String getFileDisplayPath() {
+        return filePath.toString();
     }
 
     @Override
@@ -167,6 +176,11 @@ public class CppSymbolDescriptor extends SymbolDescriptor {
 
     @Override
     public void open() {
+        RequestProcessor.getDefault().post(this);
+    }
+
+    @Override
+    public void run() {
         CsmUtilities.openSource(getFileObject(), offset);
     }
 }

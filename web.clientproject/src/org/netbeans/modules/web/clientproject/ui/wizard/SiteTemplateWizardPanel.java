@@ -41,16 +41,14 @@
  */
 package org.netbeans.modules.web.clientproject.ui.wizard;
 
-import java.awt.EventQueue;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.util.HelpCtx;
 
-public class SiteTemplateWizardPanel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor>,
+public class SiteTemplateWizardPanel implements WizardDescriptor.ExtendedAsynchronousValidatingPanel<WizardDescriptor>,
         WizardDescriptor.FinishablePanel<WizardDescriptor> {
 
     static final Logger LOGGER = Logger.getLogger(SiteTemplateWizardPanel.class.getName());
@@ -58,20 +56,12 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.AsynchronousVal
     // @GuardedBy("EDT") - not possible, wizard support calls store() method in EDT as well as in a background thread
     private volatile SiteTemplateWizard siteTemplateWizard;
     private volatile WizardDescriptor wizardDescriptor;
-    // #202796
-    volatile boolean asynchError = false;
 
 
     @Override
     public SiteTemplateWizard getComponent() {
         if (siteTemplateWizard == null) {
             siteTemplateWizard = new SiteTemplateWizard();
-            siteTemplateWizard.addChangeListener(new ChangeListener() {
-                @Override
-                public void stateChanged(ChangeEvent e) {
-                    asynchError = false;
-                }
-            });
         }
         return siteTemplateWizard;
     }
@@ -84,12 +74,11 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.AsynchronousVal
     @Override
     public void readSettings(WizardDescriptor settings) {
         wizardDescriptor = settings;
-        asynchError = false;
         SiteTemplateImplementation template = (SiteTemplateImplementation) wizardDescriptor.getProperty(ClientSideProjectWizardIterator.NewProjectWizard.SITE_TEMPLATE);
-        if (template!=null) {
+        if (template != null) {
             getComponent().preSelectSiteTemplate(template);
         }
-        
+
     }
 
     @Override
@@ -104,29 +93,19 @@ public class SiteTemplateWizardPanel implements WizardDescriptor.AsynchronousVal
 
     @Override
     public void validate() throws WizardValidationException {
-        String error;
-        try {
-            error = getComponent().prepareTemplate();
-        } finally {
-            EventQueue.invokeLater(new Runnable() {
-                @Override
-                public void run() {
-                    getComponent().unlockPanel();
-                }
-            });
-        }
+        String error = getComponent().prepareTemplate();
         if (error != null) {
-            asynchError = true;
             throw new WizardValidationException(getComponent(), "ERROR_PREPARE", error); // NOI18N
         }
     }
 
     @Override
+    public void finishValidation() {
+        getComponent().unlockPanel();
+    }
+
+    @Override
     public boolean isValid() {
-        // grrr
-        if (asynchError) {
-            return true;
-        }
         // error
         String error = getComponent().getErrorMessage();
         if (error != null && !error.isEmpty()) {

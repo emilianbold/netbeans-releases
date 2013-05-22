@@ -93,10 +93,10 @@ import org.xml.sax.SAXParseException;
  */
 public class HudsonConnector extends BuilderConnector {
     private static final Logger LOG = Logger.getLogger(HudsonConnector.class.getName());
-    public static final HudsonFailureDisplayer HUDSON_FAILURE_DISPLAYER =
-            new HudsonFailureDisplayer();
-    public static final HudsonConsoleDisplayer HUDSON_CONSOLE_DISPLAYER =
-            new HudsonConsoleDisplayer();
+    public static final HudsonFailureDataProvider HUDSON_FAILURE_DISPLAYER =
+            new HudsonFailureDataProvider();
+    public static final HudsonConsoleDataProvider HUDSON_CONSOLE_DISPLAYER =
+            new HudsonConsoleDataProvider();
     
     private HudsonVersion version;
     private boolean connected = false;
@@ -567,12 +567,12 @@ public class HudsonConnector extends BuilderConnector {
     }
 
     @Override
-    public ConsoleDisplayer getConsoleDisplayer() {
+    public ConsoleDataProvider getConsoleDataProvider() {
         return HUDSON_CONSOLE_DISPLAYER;
     }
 
     @Override
-    public FailureDisplayer getFailureDisplayer() {
+    public FailureDataProvider getFailureDataProvider() {
         return HUDSON_FAILURE_DISPLAYER;
     }
 

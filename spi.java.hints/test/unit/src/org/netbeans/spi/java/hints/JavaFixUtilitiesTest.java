@@ -977,7 +977,7 @@ public class JavaFixUtilitiesTest extends TestBase {
     }
     
     public void testOptimizeNegExpressionParens() throws Exception {
-        performOptimizeNegExpressionTest("(!(a.length == 0))", "a.length == 0");
+        performOptimizeNegExpressionTest("!(a.length == 0)", "a.length == 0");
     }
     
     public void testOptimizeNegExpressionEquals() throws Exception {
@@ -1022,6 +1022,14 @@ public class JavaFixUtilitiesTest extends TestBase {
     
     public void testOptimizeNegExpressionAnd() throws Exception {
         performOptimizeNegExpressionTest("b1 && b2", "!b1 || !b2");
+    }
+    
+    public void test229785a() throws Exception {
+        performOptimizeNegExpressionTest("(a[0] == null && a[1] != null) || (a[0] != null && !a[0].equals(a[1]))", "(a[0] != null || a[1] == null) && (a[0] == null || a[0].equals(a[1]))");
+    }
+    
+    public void test229785b() throws Exception {
+        performOptimizeNegExpressionTest("a[0] == null && a[1] != null || a[0] != null && !a[0].equals(a[1])", "(a[0] != null || a[1] == null) && (a[0] == null || a[0].equals(a[1]))");
     }
     
     private void performOptimizeNegExpressionTest(String origExpr, String newExpr) throws Exception {

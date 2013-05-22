@@ -249,8 +249,14 @@ public final class JSchChannelsSupport {
                     newSession.connect(JSCH_CONNECTION_TIMEOUT);
                     break;
                 } catch (JSchException ex) {
-                    if (!UNIT_TEST_MODE && "Auth fail".equals(ex.getMessage())) { // NOI18N
-                        PasswordManager.getInstance().clearPassword(env);
+                    if (!UNIT_TEST_MODE) {
+                        String msg = ex.getMessage();
+                        if (msg == null) {
+                            throw ex;
+                        }
+                        if (msg.startsWith("Auth fail") || msg.startsWith("SSH_MSG_DISCONNECT: 2")) { // NOI18N
+                            PasswordManager.getInstance().clearPassword(env);
+                        }
                     } else {
                         throw ex;
                     }

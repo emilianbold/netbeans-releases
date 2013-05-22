@@ -712,13 +712,13 @@ public class ModelUtils {
                 }
             }
             for (JsObject jsObject : lastResolvedObjects) {
-//                if (jsObject.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
+                if (jsObject.isDeclared()) {
                     String fqn = jsObject.getFullyQualifiedName();
-                    if(!resultTypes.containsKey(fqn)) {
+                    if (!resultTypes.containsKey(fqn)) {
                         resultTypes.put(fqn, new TypeUsageImpl(fqn, offset));
                     }
-//                }
-             }
+                }
+            }
             return resultTypes.values();
     }
 
@@ -744,7 +744,7 @@ public class ModelUtils {
                     }
                     resolvedAll = false;
                     String sexp = typeUsage.getType();
-                    if (sexp.startsWith("@exp;")) {
+                    if (sexp.startsWith("@exp;") && (sexp.length() > 5)) {
                         int start = sexp.charAt(5) == '@' ? 6 : 5;
                         sexp = sexp.substring(start);
                         List<String> nExp = new ArrayList<String>();

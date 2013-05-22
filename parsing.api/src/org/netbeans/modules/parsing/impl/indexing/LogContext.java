@@ -44,6 +44,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -184,10 +185,11 @@ import org.openide.util.Utilities;
     private synchronized void freeze() {
         // finish all roots
         this.timeCutOff = System.currentTimeMillis();
-        for (RootInfo ri : allCurrentRoots.values()) {
+        this.frozenCurrentRoots = new HashMap<Thread, RootInfo>(allCurrentRoots);
+        for (RootInfo ri : frozenCurrentRoots.values()) {
             ri.finishCurrentIndexer(timeCutOff);
-            long diff = timeCutOff - ri.startTime;
-            ri.spent += diff;
+            // merge root statistics to the overall stats
+            finishScannedRoot(ri.url);
         }
         this.frozen = true;
         checkConsistency();
@@ -195,6 +197,201 @@ import org.openide.util.Utilities;
     
     void log() {
         log(true, true);
+    }
+    
+    /**
+     * The culprit indexer, or null if no single indexer seems responsible
+     */
+    private String culpritIndexer;
+    
+    /**
+     * Uses global per-indexer statistics to find the indexer, which consumes the most time. If the indexer consumes more
+     * than 30% time than the next indexer in a row, it is marked as 'culprit'
+     */
+    private void findCulpritIndexer() {
+        long secondToMax = 0;
+        long max = 0;
+        String candidate = null;
+        
+        for (Map.Entry<String, Long> check : totalIndexerTime.entrySet()) {
+            if (check.getValue() > max) {
+                secondToMax = max;
+                max = check.getValue();
+                candidate = check.getKey();
+            }
+        }
+        
+        if (candidate == null) {
+            return;
+        }
+        // the indexer consumes at least 30% of the total scanning time,
+        // and it takes 30% more than the second-to-worst indexer, report it.
+        if (max >= totalScanningTime / 3 &&
+            max > secondToMax * 1.3) {
+            culpritIndexer = candidate;
+        }
+    }
+    
+   /**
+     * if non-null, the repo thread is potentially blocked by some other thread
+     */
+    private String blockingClass;
+    
+    private Map<String, String[]> threadTraces;
+    
+    private Map<String, String> threadStatuses;
+    
+    private void buildThreadTraces(String dumpString) {
+        String[] threads = dumpString.split("Thread id ");
+        threadTraces = new HashMap<String, String[]>();
+        threadStatuses = new HashMap<String, String>();
+        
+        for (String t : threads) {
+            String[] lines = t.split("\n");
+            if (lines.length == 0 || !lines[0].contains("\"")) {
+                continue;
+            }
+            int quote = lines[0].indexOf('"');
+            if (quote == -1) {
+                continue;
+            }
+            int nextQuote = lines[0].indexOf('"', quote + 1);
+            if (nextQuote == -1) {
+                continue;
+            }
+            String tName = lines[0].substring(quote + 1, nextQuote);
+            
+            threadTraces.put(tName, lines);
+            int paren = lines[0].lastIndexOf('(');
+            if (paren != -1) {
+                int rparen = lines[0].lastIndexOf(')');
+                String state;
+                
+                if (rparen == -1) {
+                    state = lines[0].substring(paren + 1);
+                } else {
+                    state = lines[0].substring(paren + 1, rparen);
+                }
+                threadStatuses.put(tName, state);
+            }
+        }
+    }
+    
+    /**
+     * Checks whether a stacktrace contains "BLOCKED" status for the RepositoryUpdater thread.
+     * Result "1" means that the thread has been waiting for some time. "2" means that the thread was blocked
+     * by another thread.
+     */
+    private int analyzeStacktraces() {
+        if (threadDump == null) {
+            return 0;
+        }
+        buildThreadTraces(threadDump);
+        
+        Map<String, String[]> blockedThreads = new HashMap<String, String[]>();
+        for (Map.Entry<String, String> stEntry : threadStatuses.entrySet()) {
+            String st = stEntry.getValue();
+            if (st.contains("BLOCKED") || st.contains("PARKED") || st.contains("WAITING")) {
+                blockedThreads.put(stEntry.getKey(), threadTraces.get(stEntry.getKey()));
+            }
+        }
+        if (!blockedThreads.containsKey("RepositoryUpdater.worker")) { // NOI18N
+            return 0;
+        }
+        if (updaterThreadAlive) {
+            return 1;
+        }
+        String[] repositoryStack = blockedThreads.get("RepositoryUpdater.worker"); // NOI18N
+        int line;
+        for (line = 1; line < repositoryStack.length; line++) {
+            if (!CONCURRENT_PATTERN.matcher(repositoryStack[line]).find()) {
+                break;
+            }
+        }
+        if (line >= repositoryStack.length) {
+            return 2;
+        }
+        String qual = repositoryStack[line];
+        int paren = qual.indexOf('(');
+        if (paren == -1) {
+            // very unlikely, probably line information is missing ?
+            paren = qual.length();
+        }
+        qual = qual.substring(0, paren);
+        int dot = qual.lastIndexOf('.'); // NOI18N
+        if (dot == -1) {
+            return 2;
+        }
+        qual = qual.substring(0, dot);
+        // ignore inner classes
+        dot = qual.lastIndexOf('$');
+        if (dot > -1) {
+            qual = qual.substring(0, dot);
+        }
+        
+        for (Map.Entry<String, String[]> t : blockedThreads.entrySet()) {
+            if (t.getValue() == repositoryStack) {
+                continue;
+            }
+            String[] lines = t.getValue();
+            for (int i = 1 ; i < lines.length; i++) {
+                if (lines[i].startsWith(qual)) {
+                    blockingClass = qual.trim();
+                    return 2;
+                }
+            }
+
+        }
+        blockingClass = qual.trim();
+        return 2;
+    }
+    
+    private static final Pattern CONCURRENT_PATTERN;
+    
+    private static final Pattern PARSING_PATTERN;
+    
+    private static final String STACK_CONCURRENT_PREFIXES = 
+        "\\s+sun.*|" +
+        "\\s+java.util.concurrent.*|" +
+        "\\s+java.lang.*|" +
+        "\\s+org.openide.*Mutex.*";
+    
+    private static final String STACK_PARSING_PREFIXES = 
+        "\\s+org.netbeans.modules.parsing.impl";
+    
+    static {
+        CONCURRENT_PATTERN = Pattern.compile(STACK_CONCURRENT_PREFIXES);
+        PARSING_PATTERN = Pattern.compile(STACK_PARSING_PREFIXES);
+    }
+    
+
+    private volatile boolean updaterThreadAlive = false;
+    
+    private Exception createException() {
+        
+        if (analyzeStacktraces() == 2) {
+            String msg = "RepositoryUpdater is blocked by " + ((blockingClass != null) ? blockingClass : " <unknown>"); // NOI18N
+            return new ScanCancelledException(msg, stackTrace);
+        } 
+        findCulpritIndexer();
+        if (culpritIndexer != null) {
+            return new ScanCancelledException("Slow scanning in " + culpritIndexer, stackTrace); // NOI18N
+        }
+
+        // try to measure crawling speed
+        if (crawlerTime >= (totalScanningTime * 0.6)) {
+            return new ScanCancelledException("Slow crawling", stackTrace); // NOI18N
+        }
+        
+        long delay = (getExecutedTime() - getScheduledTime()) / 1000;
+        // delayed by 5 minutes
+        if (delay > 5 * 60  && predecessor != null) {
+            Exception nested = predecessor.createException();
+            if (nested != null) {
+                return new ScanCancelledException("Execution delayed by: " + nested.getMessage(), stackTrace); // NOI18N
+            }
+        }
+       return null;
     }
     
     /**
@@ -225,22 +422,19 @@ import org.openide.util.Utilities;
         r.setResourceBundle(NbBundle.getBundle(LogContext.class));
         r.setResourceBundleName(LogContext.class.getPackage().getName() + ".Bundle"); //NOI18N
         r.setLoggerName(LOG.getName());
-        final Exception e = new Exception(
-                cancel ? 
-                    "Scan canceled." : 
-                    "Scan exceeded rate");    //NOI18N
-        if (cancel) {
-            e.setStackTrace(stackTrace);
-            r.setThrown(e);
-        }
-
         if (cancel) {
             threadDump = createThreadDump();
+            updaterThreadAlive = false;
             RP.post(new Runnable() {
 
                 @Override
                 public void run() {
                     secondDump = createThreadDump();
+                    Exception e = createException();
+                    if (e == null) {
+                        e = new ScanCancelledException("Scanning cancelled", stackTrace); // NOI18N 
+                    }
+                    r.setThrown(e);
                     LOG.log(r);
                 }
 
@@ -341,6 +535,8 @@ import org.openide.util.Utilities;
      */
     private Map<Thread, RootInfo>    allCurrentRoots = new HashMap<Thread, RootInfo>();
     
+    private Map<Thread, RootInfo>    frozenCurrentRoots = Collections.emptyMap();
+    
     /**
      * The scanned root, possibly null.
      */
@@ -368,6 +564,7 @@ import org.openide.util.Utilities;
         private int     resCount = -1;
         private int     allResCount = -1;
         private LinkedList<Object> pastIndexers = null;
+        private long    crawlerStart = -1;
 
         public RootInfo(URL url, long startTime) {
             this.url = url;
@@ -484,7 +681,8 @@ import org.openide.util.Utilities;
         }
     }
     
-    public synchronized void noteRootScanning(URL currentRoot) {
+    public synchronized void noteRootScanning(URL currentRoot, boolean crawling) {
+        updaterThreadAlive = true;
         if (frozen) {
             return;
         }
@@ -494,6 +692,9 @@ import org.openide.util.Utilities;
                     currentRoot,
                     System.currentTimeMillis()
         ));
+        if (crawling) {
+            ri.crawlerStart = ri.startTime;
+        }
         currentlyIndexedRoot.set(ri);
         currentLogContext.set(this);
     }
@@ -505,6 +706,7 @@ import org.openide.util.Utilities;
     public synchronized void reportCrawlerProgress(int resCount, int allResCount) {
         long t = System.currentTimeMillis();
         
+        updaterThreadAlive = true;
         RootInfo ri = allCurrentRoots.get(Thread.currentThread());
         if (ri == null) {
             LOG.log(Level.WARNING, "No root specified for crawler run", new Throwable());
@@ -520,6 +722,7 @@ import org.openide.util.Utilities;
     }
     
     public synchronized void addCrawlerTime(long time, int resCount, int allResCount) {
+        updaterThreadAlive = true;
         if (frozen) {
             return;
         }
@@ -530,6 +733,7 @@ import org.openide.util.Utilities;
             return;
         }
         ri.crawlerTime += time;
+        ri.crawlerStart = -1;
         if (resCount != -1) {
             ri.resCount = resCount;
         }
@@ -540,6 +744,7 @@ import org.openide.util.Utilities;
     }
     
     public synchronized void addStoreTime(long time) {
+        updaterThreadAlive = true;
         if (frozen) {
             return;
         }
@@ -547,6 +752,7 @@ import org.openide.util.Utilities;
     }
     
     public synchronized void finishScannedRoot(URL scannedRoot) {
+        updaterThreadAlive = true;
         if (frozen) {
             return;
         }
@@ -559,6 +765,11 @@ import org.openide.util.Utilities;
         totalScanningTime += diff;
         // support multiple entries
         ri.spent += diff;
+        if (ri.crawlerStart >= 0) {
+            ri.crawlerTime = time - ri.crawlerStart;
+            ri.crawlerStart = -1;
+        }
+        crawlerTime += ri.crawlerTime;
         allCurrentRoots.remove(Thread.currentThread());
         currentlyIndexedRoot.remove();
         currentLogContext.remove();
@@ -573,6 +784,7 @@ import org.openide.util.Utilities;
     }
     
     public synchronized void startIndexer(String fName) {
+        updaterThreadAlive = true;
         if (frozen) {
             return;
         }
@@ -585,6 +797,7 @@ import org.openide.util.Utilities;
     }
     
     public synchronized void finishIndexer(String fName) {
+        updaterThreadAlive = true;
         if (frozen) {
             return;
         }
@@ -602,6 +815,7 @@ import org.openide.util.Utilities;
     }
     
     public synchronized void addIndexerTime(String fName, long addTime) {
+        updaterThreadAlive = true;
         if (frozen) {
             return;
         }
@@ -737,9 +951,9 @@ import org.openide.util.Utilities;
         sb.append("\nScanned roots: ").append(scannedSourceRoots.values().toString().replaceAll(",", "\n\t")).
                 append("\n, total time: ").append(totalScanningTime);
         
-        sb.append("\nCurrent root(s): ").append(allCurrentRoots.values().toString().replaceAll(",", "\n\t"));
+        sb.append("\nCurrent root(s): ").append(frozenCurrentRoots.values().toString().replaceAll(",", "\n\t"));
         sb.append("\nCurrent indexer(s): ");
-        for (RootInfo ri : allCurrentRoots.values()) {
+        for (RootInfo ri : frozenCurrentRoots.values()) {
             sb.append("\n\t").append(ri.url);
             List<String> indexerNames = new ArrayList<String>(ri.rootIndexerTime.keySet());
             Collections.sort(indexerNames);

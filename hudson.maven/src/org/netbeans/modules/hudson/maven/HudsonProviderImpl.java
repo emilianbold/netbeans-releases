@@ -46,7 +46,7 @@ package org.netbeans.modules.hudson.maven;
 
 import java.util.Collections;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
+import org.netbeans.modules.hudson.ui.spi.ProjectHudsonProvider;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;

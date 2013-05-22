@@ -94,6 +94,7 @@ public class HgModuleConfig {
     private static final String PROP_EXCLUDE_NEW_FILES = "excludeNewFiles"; //NOI18N
     private static final String PROP_DIFF_VIEW_MODE = "diffViewMode"; //NOI18N
     private static final String KEY_QPATCH_MESSAGE = "qpatch.message."; //NOI18N
+    private static final String PROP_RECENT_COMMIT_AUTHORS = "recentCommitAuhtors";// NOI18N
 
     private static final String RECENT_URL = "repository.recentURL";                                        // NOI18N
     private static final String SHOW_CLONE_COMPLETED = "cloneCompleted.showCloneCompleted";        // NOI18N  
@@ -423,6 +424,14 @@ public class HgModuleConfig {
 
     public void setDiffViewMode (int value) {
         getPreferences().putInt(PROP_DIFF_VIEW_MODE, value);
+    }
+
+    public void putRecentCommitAuthors (String user) {
+        Utils.insert(getPreferences(), PROP_RECENT_COMMIT_AUTHORS, user, 10);
+    }
+
+    public List<String> getRecentCommitAuthors () {
+        return Utils.getStringList(getPreferences(), PROP_RECENT_COMMIT_AUTHORS);
     }
 
     private HgConfigFiles getHgConfigFiles(File file) {

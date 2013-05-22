@@ -66,6 +66,7 @@ import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 /**
  *
  * @author Petr Pisl
@@ -91,7 +92,7 @@ public class JSFRefactoringUtils {
     public static String getPackageName(URL url) {
         File file = null;
         try {
-            file = FileUtil.normalizeFile(new File(url.toURI()));
+            file = FileUtil.normalizeFile(Utilities.toFile(url.toURI()));
         } catch (URISyntaxException uRISyntaxException) {
             throw new IllegalArgumentException("Cannot create package name for url " + url);  //NOI18N
         }

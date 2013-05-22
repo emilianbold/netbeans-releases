@@ -70,7 +70,7 @@ public class UnusedUsesCollector extends DefaultVisitor {
     public UnusedUsesCollector(PHPParseResult parserResult) {
         assert parserResult != null;
         this.parserResult = parserResult;
-        unusedUsesOffsetRanges = new HashMap<String, UnusedOffsetRanges>();
+        unusedUsesOffsetRanges = new HashMap<>();
     }
 
     public Collection<UnusedOffsetRanges> collect() {
@@ -106,7 +106,7 @@ public class UnusedUsesCollector extends DefaultVisitor {
     }
 
     private void processFirstSegmentName(final String firstSegmentName) {
-        Set<String> namesToRemove = new HashSet<String>();
+        Set<String> namesToRemove = new HashSet<>();
         for (String name : unusedUsesOffsetRanges.keySet()) {
             QualifiedName qualifiedUseName = QualifiedName.create(name);
             if (qualifiedUseName.getSegments().getLast().equals(firstSegmentName)) {

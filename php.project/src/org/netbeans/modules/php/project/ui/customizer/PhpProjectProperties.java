@@ -95,6 +95,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     public static final String SOURCE_ENCODING = "source.encoding"; // NOI18N
     public static final String COPY_SRC_FILES = "copy.src.files"; // NOI18N
     public static final String COPY_SRC_TARGET = "copy.src.target"; // NOI18N
+    public static final String COPY_SRC_ON_OPEN = "copy.src.on.open"; // NOI18N
     public static final String BROWSER_ID = "browser.id"; // NOI18N
     public static final String BROWSER_RELOAD_ON_SAVE = "browser.reload.on.save"; // NOI18N
     public static final String WEB_ROOT = "web.root"; // NOI18N
@@ -222,6 +223,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
     private boolean testDirRemoved = false;
     private String copySrcFiles;
     private String copySrcTarget;
+    private Boolean copySrcOnOpen;
     private String browserId;
     private String browserReloadOnSave;
     private String webRoot;
@@ -295,6 +297,17 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
     public void setCopySrcTarget(String copySrcTarget) {
         this.copySrcTarget = copySrcTarget;
+    }
+
+    public boolean getCopySrcOnOpen() {
+        if (copySrcOnOpen == null) {
+            copySrcOnOpen = ProjectPropertiesSupport.isCopySourcesOnOpen(project);
+        }
+        return copySrcOnOpen;
+    }
+
+    public void setCopySrcOnOpen(boolean copySrcOnOpen) {
+        this.copySrcOnOpen = copySrcOnOpen;
     }
 
     public void setShortTags(String shortTags) {
@@ -526,6 +539,9 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
         }
         if (copySrcTarget != null) {
             privateProperties.setProperty(COPY_SRC_TARGET, copySrcTarget);
+        }
+        if (copySrcOnOpen != null) {
+            privateProperties.setProperty(COPY_SRC_ON_OPEN, String.valueOf(copySrcOnOpen));
         }
         if (encoding != null) {
             projectProperties.setProperty(SOURCE_ENCODING, encoding);
