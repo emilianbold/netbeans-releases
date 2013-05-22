@@ -100,7 +100,8 @@ class SftpSupport {
     private static AtomicInteger uploadCount = new AtomicInteger(0);
 
     private static final int PUT_RETRY_COUNT = Integer.getInteger("sftp.put.retries", 1); // NOI18N
-    
+    private static final int LS_RETRY_COUNT = Integer.getInteger("sftp.ls.retries", 2); // NOI18N
+
     /** for test purposes only */
     /*package-local*/ static int getUploadCount() {
         return uploadCount.get();
@@ -516,31 +517,49 @@ class SftpSupport {
                 
         @Override
         public StatInfo call() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException, SftpException {
+            StatInfo result = null;
+            SftpException exception = null;
             LOG.log(Level.FINE, "{0} started", getTraceName());
-            StatInfo result;
-            ChannelSftp cftp = getChannel();
-            Object activityID = RemoteStatistics.stratChannelActivity("statload", cftp, path); // NOI18N
+            String threadName = Thread.currentThread().getName();
+            Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
+            int attempt = 0;
             try {
-                Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
-                SftpATTRS attrs = cftp.lstat(path);            
-                String dirName, baseName;
-                int slashPos = path.lastIndexOf('/');
-                if (slashPos == 0) {
-                    dirName = "";
-                    baseName = path.substring(1);
-                } else {
-                    dirName = path.substring(0, slashPos);
-                    baseName = path.substring(slashPos + 1);
+                for (; attempt < LS_RETRY_COUNT; attempt++) {
+                    ChannelSftp cftp = getChannel();
+                    Object activityID = RemoteStatistics.stratChannelActivity("statload", cftp, path); // NOI18N
+                    try {
+                        SftpATTRS attrs = cftp.lstat(path);
+                        String dirName, baseName;
+                        int slashPos = path.lastIndexOf('/');
+                        if (slashPos == 0) {
+                            dirName = "";
+                            baseName = path.substring(1);
+                        } else {
+                            dirName = path.substring(0, slashPos);
+                            baseName = path.substring(slashPos + 1);
+                        }
+                        result = createStatInfo(dirName, baseName, attrs, cftp);
+                        exception = null;
+                        break;
+                    } catch (SftpException e) {
+                        LOG.log(Level.FINE, "{0} - exception while attempt {1}", new Object[]{getTraceName(), attempt});
+                        cftp.quit();
+                        exception = e;
+                    } finally {
+                        RemoteStatistics.stopChannelActivity(activityID);
+                        releaseChannel(cftp);
+                    }
                 }
-                result = createStatInfo(dirName, baseName, attrs, cftp);
-            } catch (SftpException e) {
-                cftp.quit();
-                throw decorateSftpException(e, path);
             } finally {
-                RemoteStatistics.stopChannelActivity(activityID);
-                releaseChannel(cftp);
+                Thread.currentThread().setName(threadName);
             }
-            LOG.log(Level.FINE, "{0} finished", getTraceName());
+
+            if (exception != null) {
+                LOG.log(Level.FINE, "{0} failed", getTraceName());
+                throw decorateSftpException(exception, path);
+            }
+
+            LOG.log(Level.FINE, "{0} finished in {1} attempt(s)", new Object[]{getTraceName(), attempt});
             return result;
         }
 
@@ -563,54 +582,68 @@ class SftpSupport {
         @Override
         @SuppressWarnings("unchecked")
         public StatInfo[] call() throws IOException, CancellationException, JSchException, ExecutionException, InterruptedException, SftpException {
+            List<StatInfo> result = null;
+            SftpException exception = null;
             LOG.log(Level.FINE, "{0} started", getTraceName());
-            List<StatInfo> result = Collections.<StatInfo>emptyList();
-            ChannelSftp cftp = getChannel();
-            Object lsLoadID = RemoteStatistics.stratChannelActivity("lsload", cftp, path); // NOI18N
+            String threadName = Thread.currentThread().getName();
+            Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
+            int attempt = 0;
             try {
-                Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
-                List<LsEntry> entries = (List<LsEntry>) cftp.ls(path);
-                result = new ArrayList<StatInfo>(Math.max(1, entries.size() - 2));
-                int i = 0;
-                for (LsEntry entry : entries) {
-                    String name = entry.getFilename();
-                    if (! ".".equals(name) && ! "..".equals(name)) { //NOI18N
-                        SftpATTRS attrs = entry.getAttrs();
-                        //if (!(attrs.isDir() || attrs.isLink())) {
-                        //    if ( (attrs.getPermissions() & S_IFMT) != S_IFREG) {
-                        //        // skip not regular files
-                        //        continue;
-                        //    }
-                        //}
-                        result.add(createStatInfo(path, name, attrs, cftp));
+                for (; attempt < LS_RETRY_COUNT; attempt++) {
+                    ChannelSftp cftp = getChannel();
+                    Object lsLoadID = RemoteStatistics.stratChannelActivity("lsload", cftp, path); // NOI18N
+                    try {
+                        List<LsEntry> entries = (List<LsEntry>) cftp.ls(path);
+                        result = new ArrayList<StatInfo>(Math.max(1, entries.size() - 2));
+                        for (LsEntry entry : entries) {
+                            String name = entry.getFilename();
+                            if (! ".".equals(name) && ! "..".equals(name)) { //NOI18N
+                                SftpATTRS attrs = entry.getAttrs();
+                                //if (!(attrs.isDir() || attrs.isLink())) {
+                                //    if ( (attrs.getPermissions() & S_IFMT) != S_IFREG) {
+                                //        // skip not regular files
+                                //        continue;
+                                //    }
+                                //}
+                                result.add(createStatInfo(path, name, attrs, cftp));
+                            }
+                        }
+                        exception = null;
+                        break;
+                    } catch (SftpException e) {
+                        LOG.log(Level.FINE, "{0} - exception while attempt {1}", new Object[]{getTraceName(), attempt});
+                        cftp.quit();
+                        exception = e;
+                    } finally {
+                        RemoteStatistics.stopChannelActivity(lsLoadID);
+                        releaseChannel(cftp);
                     }
-                }            
-            } catch (SftpException e) {
-                cftp.quit();
-                throw decorateSftpException(e, path);
+                }
             } finally {
-                RemoteStatistics.stopChannelActivity(lsLoadID);
-                releaseChannel(cftp);
+                Thread.currentThread().setName(threadName);
             }
-            LOG.log(Level.FINE, "{0} finished", getTraceName());
-            return result.toArray(new StatInfo[result.size()]);
+
+            if (exception != null) {
+                LOG.log(Level.FINE, "{0} failed", getTraceName());
+                throw decorateSftpException(exception, path);
+            }
+
+            LOG.log(Level.FINE, "{0} finished in {1} attempt(s)", new Object[]{getTraceName(), attempt});
+
+            return result == null ? new StatInfo[0] : result.toArray(new StatInfo[result.size()]);
         }
 
         public String getTraceName() {
             return "listing directory " + path; //NOI18N
         }
     }
-    
-    private StatInfo createStatInfo(String dirName, String baseName, SftpATTRS attrs, ChannelSftp cftp) throws SftpIOException {
+
+    private StatInfo createStatInfo(String dirName, String baseName, SftpATTRS attrs, ChannelSftp cftp) throws SftpException {
         String linkTarget = null;
         if (attrs.isLink()) {
             String path = dirName + '/' + baseName;
             LOG.log(Level.FINE, "performing readlink {0}", path);
-            try {
-                linkTarget = cftp.readlink(path);
-            } catch (SftpException e) {
-                throw decorateSftpException(e, path);
-            }
+            linkTarget = cftp.readlink(path);
         }
         Date lastModified = new Date(attrs.getMTime()*1000L);
         StatInfo result = new FileInfoProvider.StatInfo(baseName, attrs.getUId(), attrs.getGId(), attrs.getSize(), 
