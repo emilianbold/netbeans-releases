@@ -123,7 +123,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
     static final Logger LOGGER = Logger.getLogger(JavaScriptLibrarySelectionPanel.class.getName());
 
-    private static final Pattern LIBRARIES_FOLDER_PATTERN = Pattern.compile("^[\\w-]+$", Pattern.CASE_INSENSITIVE); // NOI18N
+    private static final Pattern LIBRARIES_FOLDER_PATTERN = Pattern.compile("^[\\w-.]+$", Pattern.CASE_INSENSITIVE); // NOI18N
     private static final String DEFAULT_LIBRARIES_FOLDER = "js/libs"; // NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(JavaScriptLibrarySelectionPanel.class);
@@ -651,7 +651,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     }
 
     @NbBundle.Messages({
-        "JavaScriptLibrarySelectionPanel.error.librariesFolder.invalid=Libraries folder can contain only alphanumeric characters, \"_\", \"-\" and \"/\"."
+        "JavaScriptLibrarySelectionPanel.error.librariesFolder.invalid=Libraries folder can contain only alphanumeric characters, \"_\", \"-\", \".\" and \"/\"."
     })
     private String validateLibrariesFolder() {
         if (librariesFolder.isEmpty()) {
