@@ -1413,7 +1413,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                                         for (int i = 1; i < gen.getParameterCount(); i++) {
                                                             newGen.addParameter(gen.getParameter(i));
                                                         }
-//                                                        newMemPointer.addParameter(newGen);
+
                                                         top = newGen;
                                                         
                                                         // pop generic type
