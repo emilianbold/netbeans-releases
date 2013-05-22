@@ -302,7 +302,9 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
         for(int i = list.size() - 1; i >= 0; i--) {
             inheritedValues.append(list.get(i).getIncludeDirectories().toString(visitor, "\n")); //NOI18N
         }
-        set1.put(new VectorNodeProp(getIncludeDirectories(), getMaster() != null ? getInheritIncludes() : null, owner.getBaseFSPath(), new String[]{"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()}, true, new HelpCtx("AddtlIncludeDirectories")){// NOI18N
+        set1.put(new VectorNodeProp(getIncludeDirectories(), getMaster() != null ? getInheritIncludes() : null, owner.getBaseFSPath(), 
+                new String[]{"IncludeDirectories", getString("IncludeDirectoriesTxt"), getString("IncludeDirectoriesHint"), inheritedValues.toString()},
+                true, false, new HelpCtx("AddtlIncludeDirectories")){// NOI18N
             private final TokenizerFactory.Converter converter = TokenizerFactory.getPathConverter(project, folder, item);
             @Override
             protected List<String> convertToList(String text) {
