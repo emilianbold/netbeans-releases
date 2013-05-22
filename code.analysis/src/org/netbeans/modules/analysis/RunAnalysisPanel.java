@@ -96,10 +96,12 @@ import org.netbeans.modules.analysis.spi.Analyzer.Context;
 import org.netbeans.modules.analysis.spi.Analyzer.MissingPlugin;
 import org.netbeans.modules.analysis.spi.Analyzer.WarningDescription;
 import org.netbeans.modules.analysis.ui.AdjustConfigurationPanel;
+import org.netbeans.modules.analysis.ui.AdjustConfigurationPanel.ErrorListener;
 import org.netbeans.modules.analysis.ui.ConfigurationsComboModel;
 import org.netbeans.modules.refactoring.api.Scope;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFolder;
@@ -633,12 +635,32 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         updatePlugins();
     }//GEN-LAST:event_configurationComboActionPerformed
 
-    @Messages("LBL_Configurations=Configurations")
-    private void manageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageActionPerformed
-        AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, null, null, (Configuration) configurationCombo.getSelectedItem());
+    private AdjustConfigurationPanel showConfigurationPanel(AnalyzerFactory preselectedAnalyzer, String preselected, Configuration configurationToSelect) {
+        final NotificationLineSupport[] nls = new NotificationLineSupport[1];
+        final DialogDescriptor[] dd = new DialogDescriptor[1];
+        ErrorListener errorListener = new ErrorListener() {
+            @Override public void setError(String error) {
+                nls[0].setErrorMessage(error);
+                dd[0].setValid(error == null);
+            }
+        };
+        AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, preselectedAnalyzer, preselected, configurationToSelect, errorListener);
         DialogDescriptor nd = new DialogDescriptor(panel, Bundle.LBL_Configurations(), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null);
+        
+        nls[0] = nd.createNotificationLineSupport();
+        dd[0] = nd;
 
         if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
+            return panel;
+        }
+        
+        return null;
+    }
+
+    @Messages("LBL_Configurations=Configurations")
+    private void manageActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_manageActionPerformed
+        AdjustConfigurationPanel panel = showConfigurationPanel(null, null, (Configuration) configurationCombo.getSelectedItem());
+        if (panel != null) {
             panel.save();
             configurationCombo.setSelectedItem(panel.getSelectedConfiguration());
         }
@@ -666,10 +688,9 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
             warningToSelect = "";
         }
 
-        AdjustConfigurationPanel panel = new AdjustConfigurationPanel(analyzers, analyzerToSelect, warningToSelect, null);
-        DialogDescriptor nd = new DialogDescriptor(panel, Bundle.LBL_Browse(), true, NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.OK_OPTION, null);
+        AdjustConfigurationPanel panel = showConfigurationPanel(analyzerToSelect, warningToSelect, null);
 
-        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
+        if (panel != null) {
             inspectionCombo.setSelectedItem(warningId2Description.get(panel.getIdToRun()));
         }
     }//GEN-LAST:event_browseActionPerformed
