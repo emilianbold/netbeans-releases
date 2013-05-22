@@ -53,7 +53,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.spi.project.CopyOperationImplementation;
@@ -175,9 +175,9 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         String originalFilePath = getOriginalPath(original, originalPath);
         String newFilePath = project.getProjectDirectory().getPath();
         if (originalFilePath != null && !originalFilePath.equals(newFilePath)) {
-            //String fromOriginalToNew = CndPathUtilitities.getRelativePath(originalFilePath, newFilePath);
-            String fromNewToOriginal = CndPathUtilitities.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
-            fromNewToOriginal = CndPathUtilitities.normalizeSlashes(fromNewToOriginal);
+            //String fromOriginalToNew = CndPathUtilities.getRelativePath(originalFilePath, newFilePath);
+            String fromNewToOriginal = CndPathUtilities.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
+            fromNewToOriginal = CndPathUtilities.normalizeSlashes(fromNewToOriginal);
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.setRelativeOffset(fromNewToOriginal);
         }
@@ -212,9 +212,9 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         String originalFilePath = getOriginalPath(original, originalPath);
         String newFilePath = project.getProjectDirectory().getPath();
         if (originalFilePath != null && !originalFilePath.equals(newFilePath)) {
-            //String fromOriginalToNew = CndPathUtilitities.getRelativePath(originalFilePath, newFilePath);
-            String fromNewToOriginal = CndPathUtilitities.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
-            fromNewToOriginal = CndPathUtilitities.normalizeSlashes(fromNewToOriginal);
+            //String fromOriginalToNew = CndPathUtilities.getRelativePath(originalFilePath, newFilePath);
+            String fromNewToOriginal = CndPathUtilities.getRelativePath(newFilePath, originalFilePath) + "/"; // NOI18N
+            fromNewToOriginal = CndPathUtilities.normalizeSlashes(fromNewToOriginal);
             ConfigurationDescriptorProvider pdp = project.getLookup().lookup(ConfigurationDescriptorProvider.class);
             pdp.setRelativeOffset(fromNewToOriginal);
         }

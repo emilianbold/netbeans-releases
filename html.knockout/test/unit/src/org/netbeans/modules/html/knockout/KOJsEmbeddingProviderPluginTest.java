@@ -91,4 +91,11 @@ public class KOJsEmbeddingProviderPluginTest extends CslTestBase {
                 + "});\n"
                 + "});\n");
     }
+    
+     public void testDoNotCreateKOVirtualSourceForPlainFiles() {
+        FileObject index = getTestFile("KOTestProject/public_html/plain.html");
+        BaseDocument document = getDocument(index);
+        JsEmbeddingProviderTest.assertEmbedding(document, null); //no embedded js code
+    }
+    
 }

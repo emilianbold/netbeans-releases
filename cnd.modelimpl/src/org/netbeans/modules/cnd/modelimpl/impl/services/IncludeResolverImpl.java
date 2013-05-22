@@ -69,7 +69,7 @@ import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmIncludeHierarchyResolver;
 import org.netbeans.modules.cnd.api.project.NativeFileItem;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.utils.FSPath;
@@ -228,7 +228,7 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
                         String bestSystemPath = getRelativePath(nativeFile.getSystemIncludePaths(), incFilePath);
                         if (!bestSystemPath.equals("")) { // NOI18N
                             includeDirective.append("<"); // NOI18N
-                            includeDirective.append(CndPathUtilitities.toRelativePath(bestSystemPath, incFilePath));
+                            includeDirective.append(CndPathUtilities.toRelativePath(bestSystemPath, incFilePath));
                             includeDirective.append(">"); // NOI18N
                             return includeDirective.toString();
                         }
@@ -241,9 +241,9 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
                         }
                         String bestUserPath = getRelativePath(nativeFile.getUserIncludePaths(), incFilePath);
                         if (bestUserPath.length() < projectPath.length()) {
-                            includeDirective.append(CndPathUtilitities.toRelativePath(projectPath, incFilePath));
+                            includeDirective.append(CndPathUtilities.toRelativePath(projectPath, incFilePath));
                         } else {
-                            includeDirective.append(CndPathUtilitities.toRelativePath(bestUserPath, incFilePath));
+                            includeDirective.append(CndPathUtilities.toRelativePath(bestUserPath, incFilePath));
                         }
                         if (!bestUserPath.equals("") || !projectPath.equals("")) // NOI18N
                         {
@@ -304,7 +304,7 @@ public final class IncludeResolverImpl extends CsmIncludeResolver {
             if (!incFilePath.startsWith(projectPath)) {
                 projectPath = ""; // NOI18N
             }
-            includeDirective.append(CndPathUtilitities.toRelativePath(projectPath, incFilePath));
+            includeDirective.append(CndPathUtilities.toRelativePath(projectPath, incFilePath));
             if (!projectPath.equals("")) // NOI18N
             {
                 includeDirective.append("\""); // NOI18N

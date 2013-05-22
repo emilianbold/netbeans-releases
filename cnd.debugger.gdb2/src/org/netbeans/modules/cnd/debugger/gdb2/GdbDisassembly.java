@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerImpl;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.BreakpointModel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.DisProgressPanel;
 import org.netbeans.modules.cnd.debugger.common2.debugger.assembly.Disassembly;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.cookies.LineCookie;
@@ -166,7 +166,7 @@ public class GdbDisassembly extends Disassembly {
                 if (lineIdx > 0) {
                     //String path = debugger.getRunDirectory();
                     String fileStr = readValue(FILE_HEADER, msg, combinedPos);
-                    if (resolvedFileName != null && CndPathUtilitities.getBaseName(resolvedFileName).equals(fileStr)) {
+                    if (resolvedFileName != null && CndPathUtilities.getBaseName(resolvedFileName).equals(fileStr)) {
                         FileObject src_fo = EditorBridge.findFileObject(resolvedFileName, getDebugger());
                         if (src_fo != null && src_fo.isValid()) {
                             try {

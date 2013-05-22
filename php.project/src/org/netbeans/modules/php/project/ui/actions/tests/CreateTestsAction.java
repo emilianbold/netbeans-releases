@@ -62,8 +62,8 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.PhpVisibilityQuery;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.create.CreateTestsResult;
@@ -125,7 +125,7 @@ public final class CreateTestsAction extends NodeAction {
         }
         List<PhpTestingProvider> testingProviders = phpProject.getTestingProviders();
         if (testingProviders.isEmpty()) {
-            Utils.informNoTestingProviders();
+            PhpProjectUtils.openCustomizer(phpProject, CompositePanelProviderImpl.TESTING);
             return;
         }
         final PhpTestingProvider testingProvider = selectTestingProvider(testingProviders);

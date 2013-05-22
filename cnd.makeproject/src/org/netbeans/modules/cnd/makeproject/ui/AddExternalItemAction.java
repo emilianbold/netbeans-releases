@@ -56,7 +56,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -108,7 +108,7 @@ public class AddExternalItemAction extends AbstractAction {
                 continue;
             }
 	    String itemPath = ProjectSupport.toProperPath(makeProjectDescriptor.getBaseDir(), files[i].getPath(), project);
-	    itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
+	    itemPath = CndPathUtilities.normalizeSlashes(itemPath);
             Item item = makeProjectDescriptor.getExternalItemFolder().findItemByPath(itemPath);
 	    if (item != null) {
                 items.add(item);

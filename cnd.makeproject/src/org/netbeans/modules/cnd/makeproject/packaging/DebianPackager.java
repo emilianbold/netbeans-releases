@@ -49,7 +49,7 @@ import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -191,7 +191,7 @@ public class DebianPackager implements PackagerDescriptor {
             for (PackagerFileElement elem : fileList) {
                 bw.write("cd \"${TOP}\"\n"); // NOI18N
                 if (elem.getType() == PackagerFileElement.FileType.FILE) {
-                    String toDir = CndPathUtilitities.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
+                    String toDir = CndPathUtilities.getDirName(conf.getPackagingConfiguration().expandMacros(elem.getTo()));
                     if (toDir != null && toDir.length() >= 0) {
                         bw.write("makeDirectory \"" + "${NBTMPDIR}/" + toDir + "\"\n"); // NOI18N
                     }
@@ -199,8 +199,8 @@ public class DebianPackager implements PackagerDescriptor {
                 } else if (elem.getType() == PackagerFileElement.FileType.DIRECTORY) {
                     bw.write("makeDirectory " + " \"${NBTMPDIR}/" + elem.getTo() + "\"" + " 0" + elem.getPermission() + "\n"); // NOI18N
                 } else if (elem.getType() == PackagerFileElement.FileType.SOFTLINK) {
-                    String toDir = CndPathUtilitities.getDirName(elem.getTo());
-                    String toName = CndPathUtilitities.getBaseName(elem.getTo());
+                    String toDir = CndPathUtilities.getDirName(elem.getTo());
+                    String toName = CndPathUtilities.getBaseName(elem.getTo());
                     if (toDir != null && toDir.length() >= 0) {
                         bw.write("makeDirectory " + "\"" + "${NBTMPDIR}/" + toDir + "\"" + "\n"); // NOI18N
                     }
@@ -252,7 +252,7 @@ public class DebianPackager implements PackagerDescriptor {
             bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " --build ${TMPDIRNAME}\n"); // NOI18N
             bw.write("checkReturnCode\n"); // NOI18N
             bw.write("cd \"${TOP}\"\n"); // NOI18N
-            bw.write("mkdir -p  " + CndPathUtilitities.getDirName(packagingConfiguration.getOutputValue()) + "\n"); // NOI18N
+            bw.write("mkdir -p  " + CndPathUtilities.getDirName(packagingConfiguration.getOutputValue()) + "\n"); // NOI18N
             bw.write("mv ${NBTMPDIR}.deb " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
             bw.write("checkReturnCode\n"); // NOI18N
 

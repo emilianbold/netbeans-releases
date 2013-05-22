@@ -95,7 +95,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWrite
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
@@ -614,17 +614,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public Item findProjectItemByPath(String path) {
         // Try first as-is
-        path = CndPathUtilitities.normalizeSlashes(path);
+        path = CndPathUtilities.normalizeSlashes(path);
         Item item = projectItems.get(path);
         if (item == null) {
             // Then try absolute if relative or relative if absolute
             String newPath;
-            if (CndPathUtilitities.isPathAbsolute(path)) {
-                newPath = CndPathUtilitities.toRelativePath(getBaseDir(), CndPathUtilitities.naturalizeSlashes(path));
+            if (CndPathUtilities.isPathAbsolute(path)) {
+                newPath = CndPathUtilities.toRelativePath(getBaseDir(), CndPathUtilities.naturalizeSlashes(path));
             } else {
-                newPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
+                newPath = CndPathUtilities.toAbsolutePath(getBaseDirFileObject(), path);
             }
-            newPath = CndPathUtilitities.normalizeSlashes(newPath);
+            newPath = CndPathUtilities.normalizeSlashes(newPath);
             item = projectItems.get(newPath);
         }
         return item;
@@ -635,17 +635,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (externalFileItems == null) {
             return null;
         }
-        path = CndPathUtilitities.normalizeSlashes(path);
+        path = CndPathUtilities.normalizeSlashes(path);
         Item item = externalFileItems.findItemByPath(path);
         if (item == null) {
             // Then try absolute if relative or relative if absolute
             String newPath;
-            if (CndPathUtilitities.isPathAbsolute(path)) {
-                newPath = CndPathUtilitities.toRelativePath(getBaseDir(), CndPathUtilitities.naturalizeSlashes(path));
+            if (CndPathUtilities.isPathAbsolute(path)) {
+                newPath = CndPathUtilities.toRelativePath(getBaseDir(), CndPathUtilities.naturalizeSlashes(path));
             } else {
-                newPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
+                newPath = CndPathUtilities.toAbsolutePath(getBaseDirFileObject(), path);
             }
-            newPath = CndPathUtilitities.normalizeSlashes(newPath);
+            newPath = CndPathUtilities.normalizeSlashes(newPath);
             item = externalFileItems.findItemByPath(newPath);
         }
         return item;
@@ -1182,7 +1182,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
         }
         if (!allOk) {
-            String projectName = CndPathUtilitities.getBaseName(getBaseDir());
+            String projectName = CndPathUtilities.getBaseName(getBaseDir());
             StringBuilder text = new StringBuilder();
             text.append(getString("CannotSaveTxt", projectName)); // NOI18N
             for (int i = 0; i < notOkFiles.size(); i++) {
@@ -1471,16 +1471,16 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     private void addTestRoot(String path) {
-        String absPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
-        String relPath = CndPathUtilitities.normalizeSlashes(CndPathUtilitities.toRelativePath(getBaseDir(), path));
+        String absPath = CndPathUtilities.toAbsolutePath(getBaseDirFileObject(), path);
+        String relPath = CndPathUtilities.normalizeSlashes(CndPathUtilities.toRelativePath(getBaseDir(), path));
         boolean addPath = true;
 
-        //if (CndPathUtilitities.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
+        //if (CndPathUtilities.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
         synchronized (testRoots) {
             if (addPath) {
                 String usePath;
                 if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL_OR_ABS) {
-                    usePath = CndPathUtilitities.normalizeSlashes(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
+                    usePath = CndPathUtilities.normalizeSlashes(CndPathUtilities.toAbsoluteOrRelativePath(getBaseDir(), path));
                 } else if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL) {
                     usePath = relPath;
                 } else {
@@ -1499,14 +1499,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
      * Don't add if root is subdir of existing root
      */
     public void addSourceRoot(String path) {
-        String absPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
+        String absPath = CndPathUtilities.toAbsolutePath(getBaseDirFileObject(), path);
         String canonicalPath;
         try {
             canonicalPath = FileSystemProvider.getCanonicalPath(baseDirFS, absPath);
         } catch (IOException ioe) {
             canonicalPath = null;
         }
-        String relPath = CndPathUtilitities.normalizeSlashes(CndPathUtilitities.toRelativePath(getBaseDir(), path));
+        String relPath = CndPathUtilities.normalizeSlashes(CndPathUtilities.toRelativePath(getBaseDir(), path));
         boolean addPath = true;
         ArrayList<String> toBeRemoved = new ArrayList<String>();
 
@@ -1514,7 +1514,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (canonicalPath != null) {
                 int canonicalPathLength = canonicalPath.length();
                 for (String sourceRoot : sourceRoots) {
-                    String absSourceRoot = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), sourceRoot);
+                    String absSourceRoot = CndPathUtilities.toAbsolutePath(getBaseDirFileObject(), sourceRoot);
                     String canonicalSourceRoot;
                     try {
                         canonicalSourceRoot = FileSystemProvider.getCanonicalPath(baseDirFS, absSourceRoot);
@@ -1549,7 +1549,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (addPath) {
                 String usePath;
                 if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL_OR_ABS) {
-                    usePath = CndPathUtilitities.normalizeSlashes(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
+                    usePath = CndPathUtilities.normalizeSlashes(CndPathUtilities.toAbsoluteOrRelativePath(getBaseDir(), path));
                 } else if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL) {
                     usePath = relPath;
                 } else {
@@ -1731,7 +1731,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         List<String> copy = new ArrayList<String>();
         synchronized (sourceRoots) {
             for (String sr : sourceRoots) {
-                copy.add(CndPathUtilitities.toAbsolutePath(baseDirFO, sr));
+                copy.add(CndPathUtilities.toAbsolutePath(baseDirFO, sr));
             }
         }
         return copy;
@@ -1744,7 +1744,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         List<String> copy = new ArrayList<String>();
         synchronized (testRoots) {
             for (String s : testRoots) {
-                copy.add(CndPathUtilitities.toAbsolutePath(baseDirFO, s));
+                copy.add(CndPathUtilities.toAbsolutePath(baseDirFO, s));
             }
         }
         return copy;
@@ -1806,7 +1806,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         String rootPath = null;
         if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
             rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
-            rootPath = CndPathUtilitities.normalizeSlashes(rootPath);
+            rootPath = CndPathUtilities.normalizeSlashes(rootPath);
         }
         if (srcRoot == null) {
             String name = dir.getNameExt();

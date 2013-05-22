@@ -48,7 +48,7 @@ import java.io.IOException;
 import java.io.Writer;
 import org.netbeans.modules.cnd.apt.structure.APT;
 import org.netbeans.modules.cnd.apt.structure.APTFile;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 /**
  *
@@ -65,12 +65,12 @@ public class APTTraceUtils {
             return "<no file>"; // NOI18N
         } else {
             String file = aptFile.getPath().toString();
-            String parentFile = CndPathUtilitities.getDirName(file);
-            String name = CndPathUtilitities.getBaseName(file);
+            String parentFile = CndPathUtilities.getDirName(file);
+            String name = CndPathUtilities.getBaseName(file);
             if (parentFile == null) {
                 return name;
             }
-            return CndPathUtilitities.getBaseName(parentFile) + "/" + name; // NOI18N
+            return CndPathUtilities.getBaseName(parentFile) + "/" + name; // NOI18N
         }
     }
     

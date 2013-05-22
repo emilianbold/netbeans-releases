@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.makeproject;
 import java.io.File;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -199,7 +199,7 @@ public class MakeTemplateListener implements OperationListener {
                 return;
             }
             String itemPath = ProjectSupport.toProperPath(makeConfigurationDescriptor.getBaseDir(), ioFile.getPath(), project);
-            itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
+            itemPath = CndPathUtilities.normalizeSlashes(itemPath);
             Item item = Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), itemPath);
 
             folder.addItemAction(item);
@@ -212,7 +212,7 @@ public class MakeTemplateListener implements OperationListener {
             // Ugly fix for #196885 full remote: new C source file doesn't show in Project view. TODO: find better (more common) solution
             if (file.isData() && makeConfigurationDescriptor.okToChange()) {
                 String itemPath = ProjectSupport.toProperPath(makeConfigurationDescriptor.getBaseDirFileObject(), file, project);
-                itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
+                itemPath = CndPathUtilities.normalizeSlashes(itemPath);
                 Item item = Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), itemPath);
                 folder.addItemAction(item);
             }

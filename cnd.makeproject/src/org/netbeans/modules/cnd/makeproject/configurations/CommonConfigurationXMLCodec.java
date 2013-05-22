@@ -83,7 +83,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -1290,7 +1290,7 @@ public abstract class CommonConfigurationXMLCodec
                     String toReplace = environment.get(envVariableName);
                     // for now we support abs paths replacements
                     if (toReplace != null && !toReplace.isEmpty() && 
-                        CndPathUtilitities.isPathAbsolute(toReplace)) { 
+                        CndPathUtilities.isPathAbsolute(toReplace)) { 
                         replacements.put(toReplace, "${" + envVariableName + "}"); // NOI18N
                         toReplace = toReplace.replace('\\', '/');
                         replacements.put(toReplace, "${" + envVariableName + "}"); // NOI18N

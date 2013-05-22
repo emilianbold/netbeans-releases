@@ -85,7 +85,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ItemConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -648,10 +648,10 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
             FileSystem fs = getFileSystem();
             while (iter.hasNext()) {
                 String path = iter.next();
-                if (CndPathUtilitities.isPathAbsolute(path)) {
+                if (CndPathUtilities.isPathAbsolute(path)) {
                     vec.add(new FSPath(fs, path));                    
                 } else {
-                    path = CndPathUtilitities.toAbsolutePath(getProjectRoot(), path);
+                    path = CndPathUtilities.toAbsolutePath(getProjectRoot(), path);
                     vec.add(new FSPath(fs, path));
                 }
             }

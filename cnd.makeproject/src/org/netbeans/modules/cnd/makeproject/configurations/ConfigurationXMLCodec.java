@@ -90,7 +90,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
 import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
@@ -272,9 +272,9 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 String displayName = name;
                 if (root != null) { 
                     // except source root which has name as ID and we'd like to display physical
-                    String absRootPath = CndPathUtilitities.toAbsolutePath(projectDescriptor.getBaseDirFileObject(), root);
+                    String absRootPath = CndPathUtilities.toAbsolutePath(projectDescriptor.getBaseDirFileObject(), root);
                     absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, projectDescriptor.getProject());
-                    displayName = CndPathUtilitities.getBaseName(absRootPath);
+                    displayName = CndPathUtilities.getBaseName(absRootPath);
                     name = MakeProjectUtils.getDiskFolderId(project, currentFolderStack.peek());
                 }
                 currentFolder = currentFolder.addNewFolder(name, displayName, true, Folder.Kind.SOURCE_DISK_FOLDER);
@@ -1001,7 +1001,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
     private String adjustOffset(String path) {
         if (relativeOffset != null && path.startsWith("..")) { // NOI18N
-            path = CndPathUtilitities.trimDotDot(relativeOffset + path);
+            path = CndPathUtilities.trimDotDot(relativeOffset + path);
         }
         return path;
     }

@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.completion.doxygensupport;
 
 import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -87,5 +88,13 @@ public class BasicDocumentationTextGenerationTestCase extends DocumentationTextG
     
     public void test228509() throws Exception {
         performTest("doctest.c", 30, 17, DoxygenDocumentation.doxygen2HTML("// maximum iterated elements allowed to written per file", CppTokenId.LINE_COMMENT));
+    }
+    
+    public void test228509_1() throws Exception {
+        performTest("doctest.c", 31, 31, DoxygenDocumentation.doxygen2HTML("/*param*/", CppTokenId.BLOCK_COMMENT));
+    }
+    
+    public void test228509_2() throws Exception {
+        performTest("doctest.c", 31, 10, DoxygenDocumentation.doxygen2HTML("  "+ NbBundle.getMessage(CompletionDocumentationProviderImpl.class, "NO_DOC_FOUND"), CppTokenId.LINE_COMMENT));
     }
 }

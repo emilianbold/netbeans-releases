@@ -64,7 +64,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.ResolvedPath;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Utilities;
 
@@ -171,8 +171,8 @@ public class ModelSource implements SourceFileProperties {
         if (Utilities.isWindows()) {
             path = path.replace('/', File.separatorChar);
         }
-        path = CndPathUtilitities.toRelativePath(getCompilePath(), path);
-        path = CndPathUtilitities.normalizeSlashes(path);
+        path = CndPathUtilities.toRelativePath(getCompilePath(), path);
+        path = CndPathUtilities.normalizeSlashes(path);
         return path;
     }
     

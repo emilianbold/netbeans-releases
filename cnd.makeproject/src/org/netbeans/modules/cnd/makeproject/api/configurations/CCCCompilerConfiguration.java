@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringListNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.VectorNodeProp;
 import org.netbeans.modules.cnd.makeproject.ui.utils.TokenizerFactory;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.HelpCtx;
@@ -456,7 +456,7 @@ public abstract class CCCCompilerConfiguration extends BasicCompilerConfiguratio
                 if (compilerSet != null) {
                     item = CppUtils.normalizeDriveLetter(compilerSet, item);
                 }
-                item = CndPathUtilitities.escapeOddCharacters(item);
+                item = CndPathUtilities.escapeOddCharacters(item);
                 return prepend == null ? item : prepend + item;
             } else {
                 return ""; // NOI18N

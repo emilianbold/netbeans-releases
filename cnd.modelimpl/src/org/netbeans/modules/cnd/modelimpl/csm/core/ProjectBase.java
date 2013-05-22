@@ -150,7 +150,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
 import org.netbeans.modules.cnd.repository.support.SelfPersistent;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
@@ -3450,7 +3450,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 
         @Override
         public String getName() {
-            return CndPathUtilitities.getBaseName(normalizedAbsPath);
+            return CndPathUtilities.getBaseName(normalizedAbsPath);
         }
         
         @Override

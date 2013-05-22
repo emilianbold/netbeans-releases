@@ -54,7 +54,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDesc
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -230,7 +230,7 @@ public abstract class AbstractUnitTestIterator implements TemplateWizard.Iterato
             return false;
         }
         String itemPath = ProjectSupport.toProperPath(makeConfigurationDescriptor.getBaseDir(), file.getPath(), project);
-        itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
+        itemPath = CndPathUtilities.normalizeSlashes(itemPath);
         Item item = Item.createInFileSystem(makeConfigurationDescriptor.getBaseDirFileSystem(), itemPath);
         folder.addItemAction(item);
         return true;

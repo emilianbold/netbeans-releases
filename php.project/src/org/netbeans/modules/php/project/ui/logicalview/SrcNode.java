@@ -63,7 +63,6 @@ import org.netbeans.modules.php.project.ui.actions.SyncCommand;
 import org.netbeans.modules.php.project.ui.actions.UploadCommand;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
-import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
 import org.netbeans.spi.project.ui.support.FileSensitiveActions;
 import org.netbeans.spi.project.ui.support.ProjectSensitiveActions;
@@ -169,13 +168,7 @@ public class SrcNode extends FilterNode {
         // customizer - open sources for source node, testing for test node
         Action customizeAction = null;
         if (isTest) {
-            for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
-                String customizerCategory = testingProvider.getCustomizerCategoryIdent();
-                if (customizerCategory != null) {
-                    customizeAction = new PhpLogicalViewProvider.CustomizeProjectAction(project, customizerCategory);
-                    break;
-                }
-            }
+            customizeAction = new PhpLogicalViewProvider.CustomizeProjectAction(project, CompositePanelProviderImpl.TESTING);
         } else {
             customizeAction = CommonProjectActions.customizeProjectAction();
         }

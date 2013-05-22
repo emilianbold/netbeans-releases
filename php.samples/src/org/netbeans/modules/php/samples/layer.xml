@@ -83,6 +83,14 @@ made subject to such option by the copyright holder.
                         <attr name="template" boolvalue="true"/>
                         <attr name="position" intvalue="400"/>
                     </file>
+                    <file name="Calculator-atoum" url="Calculator-atoum.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.php.samples.Bundle#Templates/Project/Samples/PHP/Calculator-atoum"/>
+                        <attr name="iconBase" stringvalue="org/netbeans/modules/php/samples/icons/TodoList.png"/>
+                        <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.php.samples.PHPSamplesWizardIterator.createIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/php/samples/descriptions/Calculator-atoum.html"/>
+                        <attr name="template" boolvalue="true"/>
+                        <attr name="position" intvalue="500"/>
+                    </file>
                 </folder>
             </folder>
         </folder>
