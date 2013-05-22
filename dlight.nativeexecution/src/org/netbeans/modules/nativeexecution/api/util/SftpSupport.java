@@ -554,9 +554,9 @@ class SftpSupport {
             }
             String threadName = Thread.currentThread().getName();
             Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
-            int attempt = 0;
+            int attempt = 1;
             try {
-                for (; attempt < LS_RETRY_COUNT; attempt++) {
+                for (; attempt <= LS_RETRY_COUNT; attempt++) {
                     ChannelSftp cftp = getChannel();
                     Object activityID = RemoteStatistics.stratChannelActivity("statload", cftp, path); // NOI18N
                     try {
@@ -574,11 +574,17 @@ class SftpSupport {
                         exception = null;
                         break;
                     } catch (SftpException e) {
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.log(Level.FINE, "{0} - exception while attempt {1}", new Object[]{getTraceName(), attempt});
-                        }
-                        cftp.quit();
                         exception = e;
+                        if (e.id == SftpIOException.SSH_FX_FAILURE) {
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.log(Level.FINE, "{0} - exception while attempt {1}", new Object[]{getTraceName(), attempt});
+                            }
+                            cftp.quit();
+                        } else {
+                            // re-try in case of failure only
+                            // otherwise consider this exception as unrecoverable
+                            break;
+                        }
                     } finally {
                         RemoteStatistics.stopChannelActivity(activityID);
                         releaseChannel(cftp);
@@ -627,9 +633,9 @@ class SftpSupport {
             }
             String threadName = Thread.currentThread().getName();
             Thread.currentThread().setName(PREFIX + ": " + getTraceName()); // NOI18N
-            int attempt = 0;
+            int attempt = 1;
             try {
-                for (; attempt < LS_RETRY_COUNT; attempt++) {
+                for (; attempt <= LS_RETRY_COUNT; attempt++) {
                     ChannelSftp cftp = getChannel();
                     Object lsLoadID = RemoteStatistics.stratChannelActivity("lsload", cftp, path); // NOI18N
                     try {
@@ -651,11 +657,17 @@ class SftpSupport {
                         exception = null;
                         break;
                     } catch (SftpException e) {
-                        if (LOG.isLoggable(Level.FINE)) {
-                            LOG.log(Level.FINE, "{0} - exception while attempt {1}", new Object[]{getTraceName(), attempt});
-                        }
-                        cftp.quit();
                         exception = e;
+                        if (e.id == SftpIOException.SSH_FX_FAILURE) {
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.log(Level.FINE, "{0} - exception while attempt {1}", new Object[]{getTraceName(), attempt});
+                            }
+                            cftp.quit();
+                        } else {
+                            // re-try in case of failure only
+                            // otherwise consider this exception as unrecoverable
+                            break;
+                        }
                     } finally {
                         RemoteStatistics.stopChannelActivity(lsLoadID);
                         releaseChannel(cftp);
