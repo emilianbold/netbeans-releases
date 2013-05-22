@@ -227,6 +227,11 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug213282.cpp", 60, 10, "bug213282.cpp", 29, 5);
     }
     
+    public void testBug230079() throws Exception {
+        // Bug 230079 - Unable to resolve type in case of dereferencing template function return type
+        performTest("bug230079.cpp", 14, 40, "bug230079.cpp", 5, 7);
+    }
+    
     
     public static class Failed extends HyperlinkBaseTestCase {
 
