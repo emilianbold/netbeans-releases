@@ -156,10 +156,22 @@ public final class Resolver3 implements Resolver {
 
     private CsmClassifier findClassifier(CsmNamespace ns, CharSequence qualifiedNamePart) {
         CsmClassifier result = null;
+        CsmClassifier backupResult = null;
         while ( ns != null  && result == null) {
             String fqn = ns.getQualifiedName() + "::" + qualifiedNamePart; // NOI18N
-            result = findClassifierUsedInFile(fqn);
+            CsmClassifier aCls = findClassifierUsedInFile(fqn);
+            if (aCls != null) {
+                if (!ForwardClass.isForwardClass(aCls) || needForwardClassesOnly()) {
+                    return aCls;
+                }
+                if (backupResult == null) {
+                    backupResult = aCls;
+                }
+            }
             ns = ns.getParent();
+        }
+        if (result == null) {
+            result = backupResult;
         }
         return result;
     }
@@ -729,10 +741,16 @@ public final class Resolver3 implements Resolver {
             containingNS = context.getContainingNamespace();
             result = findNamespace(containingNS, name);
         }
-        if (result == null && needClassifiers()) {
+        if (needClassifiers() && 
+                (result == null ||
+                 (!needForwardClassesOnly() && ForwardClass.isForwardClass(result)))) {
+            CsmObject oldResult = result;
             result = findClassifierUsedInFile(name);
             if(needTemplateClassesOnly() && !CsmKindUtilities.isTemplate(result)) {
                 result = null;
+            }
+            if (result == null) {
+                result = oldResult;
             }
         }
         CsmObject backupResult = result;

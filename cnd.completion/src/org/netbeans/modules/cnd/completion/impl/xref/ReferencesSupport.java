@@ -111,6 +111,7 @@ import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.CsmTypeBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
 import org.netbeans.modules.cnd.completion.cplusplus.hyperlink.CsmDefineHyperlinkProvider;
@@ -465,13 +466,30 @@ public final class ReferencesSupport {
         if (csmObject == null) {
             // try with code completion engine
             Collection<CsmObject> objs = CompletionUtilities.findItemsReferencedAtCaretPos(null, doc, CsmCompletionProvider.getCompletionQuery(csmFile, queryScope, fileReferencesContext), offset);
-            if (!objs.isEmpty()) {
-                csmObject = objs.iterator().next();
-            }
+            csmObject = extractBestReferencedObject(objs, csmObject);
         }
         return csmObject;
     }
 
+    private static CsmObject extractBestReferencedObject(Collection<CsmObject> objs, CsmObject csmObject) {
+        CsmObject out = null;
+        CsmObject fwd = null;
+        for (CsmObject cur : objs) {
+            if (CsmKindUtilities.isClassForwardDeclaration(cur) || CsmClassifierResolver.getDefault().isForwardClassifier(cur)) {
+                if (fwd == null) {
+                    fwd = cur;
+                }
+            } else {
+                out = cur;
+                break;
+            }
+        }
+        if (out == null) {
+            out = fwd;
+        }
+        return out;
+    }
+    
     /*package*/ static ReferenceImpl createReferenceImpl(final CsmFile file, final BaseDocument doc, final int offset) {
         ReferenceImpl ref = null;
         doc.readLock();
