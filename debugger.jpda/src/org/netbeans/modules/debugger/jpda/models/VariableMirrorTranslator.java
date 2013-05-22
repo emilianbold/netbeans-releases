@@ -75,6 +75,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.Lock;
@@ -110,11 +111,16 @@ class VariableMirrorTranslator {
     private static final Logger logger = Logger.getLogger(VariableMirrorTranslator.class.getName());
     
     static Object createMirrorObject(Value value) {
+        return createMirrorObject(value, new HashMap<Value, Object>());
+    }
+    
+    private static Object createMirrorObject(Value value, Map<Value, Object> mirrorsMap) {
         try {
             Type type = ValueWrapper.type(value);
             String typeStr;
             if (type instanceof ArrayType) {
                 typeStr = TypeWrapper.signature(type);
+                typeStr = typeStr.replace('/', '.');
             } else {
                 typeStr = TypeWrapper.name(type);
             }
@@ -124,7 +130,7 @@ class VariableMirrorTranslator {
                     if (String.class.equals(clazz)) {
                         return StringReferenceWrapper.value((StringReference) value);
                     }
-                    return createMirrorObject((ObjectReference) value, (ReferenceType) type, clazz);
+                    return createMirrorObject((ObjectReference) value, (ReferenceType) type, clazz, mirrorsMap);
                 } catch (ClassNotFoundException ex) {
                 } catch (ClassNotPreparedExceptionWrapper ex) {
                 }
@@ -198,7 +204,12 @@ class VariableMirrorTranslator {
         }
     }
     
-    static private Object createMirrorObject(ObjectReference value, ReferenceType type, Class clazz) throws ClassNotPreparedExceptionWrapper, InternalExceptionWrapper, VMDisconnectedExceptionWrapper, ObjectCollectedExceptionWrapper {
+    static private Object createMirrorObject(ObjectReference value, ReferenceType type,
+                                             Class clazz, Map<Value, Object> mirrorsMap)
+                                             throws ClassNotPreparedExceptionWrapper,
+                                                    InternalExceptionWrapper,
+                                                    VMDisconnectedExceptionWrapper,
+                                                    ObjectCollectedExceptionWrapper {
         logger.log(Level.FINE, "createMirrorObject({0}, {1}, {2})", new Object[]{value, type, clazz});
         if (clazz.isArray() && value instanceof ArrayReference) {
             ArrayReference arrayRef = (ArrayReference) value;
@@ -211,7 +222,10 @@ class VariableMirrorTranslator {
                 if (v == null) {
                     element = null;
                 } else {
-                    element = createMirrorObject(v);
+                    element = mirrorsMap.get(v);
+                    if (element == null) {
+                        element = createMirrorObject(v, mirrorsMap);
+                    }
                     if (element == null) {
                         return null;
                     }
@@ -229,6 +243,7 @@ class VariableMirrorTranslator {
             if (newInstance == null) {
                 return null;
             }
+            mirrorsMap.put(value, newInstance);
             List<Field> fields = ReferenceTypeWrapper.allFields0(type);
             List<Field> fieldsToAskFor = new ArrayList<Field>();
             for (Field f : fields) {
@@ -250,7 +265,10 @@ class VariableMirrorTranslator {
                     if (v == null) {
                         field.set(newInstance, null);
                     } else {
-                        Object mv = createMirrorObject(v);
+                        Object mv = mirrorsMap.get(v);
+                        if (mv == null) {
+                            mv = createMirrorObject(v, mirrorsMap);
+                        }
                         if (mv != null) {
                             field.set(newInstance, mv);
                         } else {
