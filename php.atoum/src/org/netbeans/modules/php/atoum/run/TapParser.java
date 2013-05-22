@@ -64,7 +64,7 @@ public final class TapParser {
     private TestCaseVo testCase = null;
     private int testCaseCount = 0;
     private State state = null;
-    private List<String> notOkLines = new ArrayList<>();
+    private List<String> commentLines = new ArrayList<>();
 
 
     public TapParser() {
@@ -131,10 +131,10 @@ public final class TapParser {
                 state = null;
                 break;
             case OK_SKIP:
-                notOkLines.add(line);
+                commentLines.add(line);
                 break;
             case NOT_OK:
-                notOkLines.add(line);
+                commentLines.add(line);
                 break;
             default:
                 assert false : "Unknown state: " + state;
@@ -142,15 +142,15 @@ public final class TapParser {
     }
 
     private void processNotOkLines() {
-        if (notOkLines.isEmpty()) {
+        if (commentLines.isEmpty()) {
             return;
         }
         assert testCase != null;
         // last line
-        int lastIndex = notOkLines.size() - 1;
-        String lastLine = notOkLines.get(lastIndex);
+        int lastIndex = commentLines.size() - 1;
+        String lastLine = commentLines.get(lastIndex);
         if (setFileLine(lastLine)) {
-            notOkLines.remove(lastIndex);
+            commentLines.remove(lastIndex);
         } else {
             // aborted test
             // XXX
@@ -161,22 +161,23 @@ public final class TapParser {
         // rest
         StringBuilder message = null;
         List<String> stackTrace = new ArrayList<>();
-        while (!notOkLines.isEmpty()) {
-            String firstLine = notOkLines.get(0);
-            notOkLines.remove(0);
+        while (!commentLines.isEmpty()) {
+            String firstLine = commentLines.get(0);
+            commentLines.remove(0);
             if (firstLine.equals("Stack trace:")) { // NOI18N
                 testCase.setStatus(TestCase.Status.ERROR);
-                stackTrace.addAll(processStackTrace(notOkLines));
-                notOkLines.clear();
+                stackTrace.addAll(processStackTrace(commentLines));
+                commentLines.clear();
             } else if (firstLine.equals("-Reference")) { // NOI18N
-                processDiff(notOkLines);
-                notOkLines.clear();
+                processDiff(commentLines);
+                commentLines.clear();
             } else {
                 if (message == null) {
                     message = new StringBuilder(200);
                 }
                 if (message.length() > 0) {
-                    message.append("\n"); // NOI18N
+                    // unfortunately, \n not supported in the ui
+                    message.append("; "); // NOI18N
                 }
                 message.append(firstLine);
             }
@@ -260,9 +261,7 @@ public final class TapParser {
         assert file != null : line;
         testCase.setFile(file);
         assert fileLine != null : line;
-        if (fileLine != null) {
-            testCase.setLine(Integer.valueOf(fileLine));
-        }
+        testCase.setLine(Integer.valueOf(fileLine));
         return true;
     }
 

@@ -143,13 +143,21 @@ public class JsEmbeddingProviderTest extends CslTestBase {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     ResultIterator jsRi = WebUtils.getResultIterator(resultIterator, "text/javascript");
-                    assertNotNull(jsRi);
-                    jsCodeRef.set(jsRi.getSnapshot().getText().toString());
+                    if(jsRi != null) {
+                        jsCodeRef.set(jsRi.getSnapshot().getText().toString());
+                    } else {
+                        //no js embedded code
+                    }
                 }
             });
             String jsCode = jsCodeRef.get();
-            assertNotNull(jsCode);
-            assertEquals(expectedJsVirtualSource, jsCode);
+            if(expectedJsVirtualSource != null) {
+                assertNotNull(jsCode);
+                assertEquals(expectedJsVirtualSource, jsCode);
+            } else {
+                //expected no embedded js code
+                assertNull(jsCode);
+            }
         } catch (ParseException ex) {
             throw new RuntimeException(ex);
         }

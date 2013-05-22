@@ -81,7 +81,7 @@ public class TapParserTest extends NbTestCase {
         TestCaseVo testCase2 = testCases1.get(1);
         assertEquals("testFail", testCase2.getName());
         assertEquals(TestCase.Status.FAILED, testCase2.getStatus());
-        assertEquals("object(stdClass) is not null", testCase2.getMessage());
+        assertEquals("object(stdClass) is not null; second line of the message", testCase2.getMessage());
         assertEquals("/home/gapon/NetBeansProjects/atoum-sample/tests/unit/StdClass.php", testCase2.getFile());
         assertEquals(19, testCase2.getLine());
         assertEquals(100L, testCase2.getTime());

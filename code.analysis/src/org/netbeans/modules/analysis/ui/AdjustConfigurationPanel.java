@@ -159,9 +159,13 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
     }
 
     private void updateAnalyzer() {
+        analyzerPanel.removeAll();
+        
         AnalyzerFactory selected = (AnalyzerFactory) analyzerCombo.getSelectedItem();
         CustomizerProvider customizer = customizers.get(selected);
 
+        if (customizer == null) return ;
+        
         if (!customizerData.containsKey(customizer)) {
             customizerData.put(customizer, customizer.initialize());
         }
@@ -169,7 +173,6 @@ public class AdjustConfigurationPanel extends javax.swing.JPanel {
         Object data = customizerData.get(customizer);
         Preferences settings = currentPreferencesOverlay.node(SPIAccessor.ACCESSOR.getAnalyzerId(selected));
 
-        analyzerPanel.removeAll();
         currentContext = new CustomizerContext<Object, JComponent>(settings, preselected, null, data);
         currentContext.setSelectedId(preselected);
         analyzerPanel.add(customizer.createComponent(currentContext), BorderLayout.CENTER);

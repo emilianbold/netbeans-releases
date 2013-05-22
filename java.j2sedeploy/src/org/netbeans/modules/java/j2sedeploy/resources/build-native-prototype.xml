@@ -315,40 +315,40 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         <condition property="need.Inno.presence">
             <and>
                 <isset property="running.on.windows"/>
-                <isset property="javafx.native.bundling.type"/>
+                <isset property="native.bundling.type"/>
                 <or>
-                    <equals arg1="${javafx.native.bundling.type}" arg2="all" casesensitive="false"/>
-                    <equals arg1="${javafx.native.bundling.type}" arg2="installer" casesensitive="false"/>
-                    <equals arg1="${javafx.native.bundling.type}" arg2="exe" casesensitive="false"/>
+                    <equals arg1="${native.bundling.type}" arg2="all" casesensitive="false"/>
+                    <equals arg1="${native.bundling.type}" arg2="installer" casesensitive="false"/>
+                    <equals arg1="${native.bundling.type}" arg2="exe" casesensitive="false"/>
                 </or>
             </and>
         </condition>
         <condition property="need.WiX.presence">
             <and>
                 <isset property="running.on.windows"/>
-                <isset property="javafx.native.bundling.type"/>
+                <isset property="native.bundling.type"/>
                 <or>
-                    <equals arg1="${javafx.native.bundling.type}" arg2="all" casesensitive="false"/>
-                    <equals arg1="${javafx.native.bundling.type}" arg2="installer" casesensitive="false"/>
-                    <equals arg1="${javafx.native.bundling.type}" arg2="msi" casesensitive="false"/>
+                    <equals arg1="${native.bundling.type}" arg2="all" casesensitive="false"/>
+                    <equals arg1="${native.bundling.type}" arg2="installer" casesensitive="false"/>
+                    <equals arg1="${native.bundling.type}" arg2="msi" casesensitive="false"/>
                 </or>
             </and>
         </condition>
         <condition property="need.dpkg.presence">
             <and>
                 <isset property="running.on.unix"/>
-                <isset property="javafx.native.bundling.type"/>
+                <isset property="native.bundling.type"/>
                 <or>
-                    <equals arg1="${javafx.native.bundling.type}" arg2="deb" casesensitive="false"/>
+                    <equals arg1="${native.bundling.type}" arg2="deb" casesensitive="false"/>
                 </or>
             </and>
         </condition>
         <condition property="need.rpmbuild.presence">
             <and>
                 <isset property="running.on.unix"/>
-                <isset property="javafx.native.bundling.type"/>
+                <isset property="native.bundling.type"/>
                 <or>
-                    <equals arg1="${javafx.native.bundling.type}" arg2="rpm" casesensitive="false"/>
+                    <equals arg1="${native.bundling.type}" arg2="rpm" casesensitive="false"/>
                 </or>
             </and>
         </condition>
@@ -442,9 +442,99 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
     </target>
 
     
+    <!-- Copy dependent libraries -->
+    
+    <target name="-jfx-copylibs" depends="init,compile,-pre-pre-jar,-pre-jar,-jfx-copylibs-warning" unless="fallback.no.javascript">
+        <jfx-copylibs-js-impl/>
+    </target>
+    <target name="-jfx-copylibs-warning" if="fallback.no.javascript">
+        <echo message="Warning: Dependent Libraries copy (-jfx-copylibs) skipped in fallback build mode due to JDK missing JavaScript support."/>
+    </target>
+    <macrodef name="jfx-copylibs-js-impl">
+        <sequential>
+            <local name="run.classpath.without.build.classes.and.dist.dir"/>
+            <pathconvert property="run.classpath.without.build.classes.and.dist.dir">
+                <path path="${run.classpath}"/>
+                <map from="${basedir}${file.separator}${build.classes.dir}" to=""/>
+                <map from="${basedir}${file.separator}${dist.jar}" to=""/>
+                <scriptmapper language="javascript">
+                    self.addMappedName(
+                        (source.indexOf("jfxrt.jar") >= 0) ||
+                        (source.indexOf("deploy.jar") >= 0) ||
+                        (source.indexOf("javaws.jar") >= 0) ||
+                        (source.indexOf("plugin.jar") >= 0)
+                        ? "" : source
+                    );
+                </scriptmapper>
+            </pathconvert>
+            <!-- add possibly missing dependencies at distance 2 (build system logic thus provides transitive closure) -->
+            <local name="run.and.lib.classpath"/>
+            <echo message="JavaScript: -jfx-copylibs" level="verbose"/>
+            <script language="javascript">
+                <![CDATA[
+                    function prefix(s, len) {
+                        if(s == null || len <= 0 || s.length == 0) {
+                            return new String("");
+                        }
+                        return new String(s.substr(0, len));
+                    }
+                    function defined(s) {
+                        return (s != null) && (s != "null") && (s.length > 0);
+                    }
+                    var classPath = new String(project.getProperty("run.classpath.without.build.classes.and.dist.dir"));
+                    if(defined(classPath)) {
+                        var fileSeparator = new String(project.getProperty("file.separator"));
+                        var pathConvert = project.createTask("pathconvert");
+                        pathConvert.setProperty("run.and.lib.classpath");
+                        var classPathCopy = pathConvert.createPath();
+                        classPathCopy.setPath(classPath);
+                        var pathArray;
+                        if(classPath.indexOf(";") != -1) {
+                            pathArray = classPath.split(";");
+                        } else {
+                            pathArray = classPath.split(":");
+                        }
+                        var added = new java.lang.StringBuilder();
+                        for (var i = 0; i < pathArray.length; i++) {
+                            var index = pathArray[i].lastIndexOf(fileSeparator);
+                            if (index >= 0) {
+                                var onePath = prefix(pathArray[i], index+1).concat("lib");
+                                var oneDir = new java.io.File(onePath);
+                                if(oneDir.exists()) {
+                                    var fs = project.createDataType( "fileset" );
+                                    fs.setDir( oneDir );
+                                    fs.setIncludes("*.jar");
+                                    var ds = fs.getDirectoryScanner(project);
+                                    var srcFiles = ds.getIncludedFiles();
+                                    for (var j = 0; j < srcFiles.length; j++) {
+                                        if(classPath.indexOf( srcFiles[j] ) == -1 && added.indexOf( srcFiles[j] ) == -1) {
+                                            var path = pathConvert.createPath();
+                                            path.setPath( onePath.concat(fileSeparator).concat(srcFiles[j]) );
+                                            added.append( srcFiles[j] );
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        pathConvert.perform();
+                    }
+                ]]>
+            </script>
+            <echo message="run.and.lib.classpath = ${run.and.lib.classpath}" level="verbose"/>
+            <property name="run.and.lib.classpath" value=""/> <!-- fallback -->
+            <delete dir="${dist.dir}${file.separator}lib" includeEmptyDirs="true" quiet="true"/>
+            <copy todir="${dist.dir}${file.separator}lib" flatten="true" preservelastmodified="true" overwrite="true">
+                <path>
+                    <pathelement path="${run.and.lib.classpath}"/>
+                </path>
+            </copy>
+        </sequential>
+    </macrodef>
+
+
     <!-- <fx:jar> replacing standard jar, because native packager up to JDK7u21 refuses to package standard jars -->    
     
-    <target name="fx-jar-impl" depends="-check-jfx-sdk-version, -check-ant-javafx-version, -check-ant-jre-version, clean, compile">
+    <target name="fx-jar-impl" depends="-check-jfx-sdk-version, -check-ant-javafx-version, -check-ant-jre-version, clean, compile, -jfx-copylibs">
         <echo message="javafx.ant.classpath = ${javafx.ant.classpath}" level="verbose"/>
         <typedef name="fx_jar" classname="com.sun.javafx.tools.ant.FXJar" classpath="${javafx.ant.classpath}"/>
         <echo message="Launching &lt;fx:jar&gt; task from ${ant-javafx.jar.location}" level="info"/>
@@ -542,6 +632,27 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
                     app.setVersion(appversion);
                 } else {
                     app.setVersion("1.0");
+                }
+
+                // fx:resources
+                var res = jar.createResources();
+                res.setProject(project);
+                var pdir = new String(project.getProperty("pp_jar_dir"));
+                var fn = res.createFileSet();
+                fn.setProject(project);
+                fn.setDir(new java.io.File(pdir));
+                var ia = new String(project.getProperty("deployment.jar"));
+                var ib = new String(project.getProperty("pp_jar_fs2"));
+                fn.setIncludes(ia);
+                fn.setIncludes(ib);
+                fn.setRequiredFor("startup");
+                var lazyjars = getLazyJars();
+                if(lazyjars != null) {
+                    var fn2 = res.createFileSet();
+                    fn2.setProject(project);
+                    fn2.setDir(new java.io.File(pdir));
+                    fn2.setRequiredFor("runtime");
+                    setDownloadMode(fn,fn2,lazyjars);
                 }
 
                 // fileset to include classes

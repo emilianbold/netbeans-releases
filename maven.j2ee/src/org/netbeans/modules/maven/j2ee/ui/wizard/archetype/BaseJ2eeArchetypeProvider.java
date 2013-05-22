@@ -93,7 +93,6 @@ abstract class BaseJ2eeArchetypeProvider {
         archetype.setGroupId("org.codehaus.mojo.archetypes"); //NOI18N
         archetype.setVersion(version);
         archetype.setArtifactId(artifactId);
-        archetype.setRepository("https://nexus.codehaus.org/content/repositories/snapshots/");
 
         return archetype;
     }

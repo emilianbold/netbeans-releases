@@ -229,7 +229,7 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
 
             return result;
         } catch (IOException e) {
-            LOG.log(Level.INFO, null, e);
+            LOG.log(Level.FINE, null, e);
             return null;
         }
     }

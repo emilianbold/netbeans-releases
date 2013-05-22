@@ -376,4 +376,11 @@ public class CssCompletionTest extends CssModuleTestBase {
         assertComplete("div { co| }",  "div { color: | }", "color");
     }
     
+     public void testFontVariant() throws ParseException {
+        checkCC("div { font-variant: | }", arr("normal"), Match.CONTAINS);
+        checkCC("div { font-variant: | }", arr("small-caps"), Match.CONTAINS);
+        checkCC("div { font-variant: sma| }", arr("small-caps"), Match.CONTAINS);
+        
+    }
+    
 }
