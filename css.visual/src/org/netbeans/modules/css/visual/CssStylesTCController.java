@@ -46,10 +46,12 @@ package org.netbeans.modules.css.visual;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.css.visual.api.CssStylesTC;
 import org.netbeans.modules.web.browser.api.Page;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.openide.filesystems.FileObject;
+import org.openide.modules.OnStop;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -59,6 +61,8 @@ import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponent.Registry;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
+import org.openide.windows.WindowSystemEvent;
+import org.openide.windows.WindowSystemListener;
 
 /**
  * Class responsible for management (for example, opening and closing) of CSS Styles view.
@@ -162,7 +166,7 @@ public class CssStylesTCController implements PropertyChangeListener, LookupList
         return (CssStylesTC)WindowManager.getDefault().findTopComponent("CssStylesTC");
     }
     
-    private TopComponentGroup getCssStylesTCGroup() {
+    static TopComponentGroup getCssStylesTCGroup() {
         return WindowManager.getDefault().findTopComponentGroup("CssStyles"); //NOI18N
     }
 
@@ -174,6 +178,43 @@ public class CssStylesTCController implements PropertyChangeListener, LookupList
             lookupResult.removeLookupListener(this);
             pageInspector.addPropertyChangeListener(this);
         }
+    }
+
+    /**
+     * Ensures that CSS Styles window group is closed when the IDE shuts down.
+     */
+    @OnStop
+    public static class ShutdownHook implements Callable<Boolean>, WindowSystemListener {
+        /** Determines whether the window system listener has been installed already. */
+        private boolean listenerInstalled;
+
+        @Override
+        public Boolean call() throws Exception {
+            if (!listenerInstalled) {
+                listenerInstalled = true;
+                WindowManager.getDefault().addWindowSystemListener(this);
+            }
+            return Boolean.TRUE;
+        }
+
+        @Override
+        public void beforeLoad(WindowSystemEvent event) {
+        }
+
+        @Override
+        public void afterLoad(WindowSystemEvent event) {
+        }
+
+        @Override
+        public void beforeSave(WindowSystemEvent event) {
+            // Close the group before window system saves its state (during IDE shutdown)
+            getCssStylesTCGroup().close();
+        }
+
+        @Override
+        public void afterSave(WindowSystemEvent event) {
+        }
+
     }
 
 }
