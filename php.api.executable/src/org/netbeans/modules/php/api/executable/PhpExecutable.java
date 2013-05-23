@@ -48,6 +48,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -151,6 +153,7 @@ public final class PhpExecutable {
     private Map<String, String> environmentVariables = Collections.<String, String>emptyMap();
     private PhpExecutableValidator.ValidationHandler validationHandler = null;
     private File fileOutput = null;
+    private Charset outputCharset = null;
     private boolean fileOutputOnly = false;
     private boolean noInfo = false;
 
@@ -353,14 +356,17 @@ public final class PhpExecutable {
      * The default value is {@code null} and {@code false} (it means no output is stored to any file
      * and info is printed in Output window).
      * @param fileOutput file for executable output
+     * @param outputCharset charset to be used for the output
      * @param fileOutputOnly {@code true} for only file output, {@code false} otherwise
      * @return the PHP Executable instance itself
      * @see #noInfo(boolean)
-     * @since 0.3
+     * @since 0.17
      */
-    public PhpExecutable fileOutput(@NonNull File fileOutput, boolean fileOutputOnly) {
+    public PhpExecutable fileOutput(@NonNull File fileOutput, @NonNull String outputCharset, boolean fileOutputOnly) {
         Parameters.notNull("fileOutput", fileOutput); // NOI18N
+        Parameters.notNull("outputCharset", outputCharset); // NOI18N
         this.fileOutput = fileOutput;
+        this.outputCharset = Charset.forName(outputCharset);
         this.fileOutputOnly = fileOutputOnly;
         return this;
     }
@@ -809,7 +815,7 @@ public final class PhpExecutable {
         return new ExecutionDescriptor.InputProcessorFactory() {
             @Override
             public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
-                return new RedirectOutputProcessor(fileOutput);
+                return new RedirectOutputProcessor(fileOutput, outputCharset);
             }
         };
     }
@@ -895,12 +901,16 @@ public final class PhpExecutable {
     static final class RedirectOutputProcessor implements InputProcessor {
 
         private final File fileOuput;
+        private final Charset outputCharset;
 
         private OutputStream outputStream;
 
 
-        public RedirectOutputProcessor(File fileOuput) {
+        public RedirectOutputProcessor(File fileOuput, Charset outputCharset) {
+            assert fileOuput != null;
+            assert outputCharset != null;
             this.fileOuput = fileOuput;
+            this.outputCharset = outputCharset;
         }
 
         @Override
@@ -908,9 +918,7 @@ public final class PhpExecutable {
             if (outputStream == null) {
                 outputStream = new BufferedOutputStream(new FileOutputStream(fileOuput));
             }
-            for (char c : chars) {
-                outputStream.write((byte) c);
-            }
+            outputStream.write(outputCharset.encode(CharBuffer.wrap(chars)).array());
         }
 
         @Override

@@ -79,6 +79,8 @@ public final class Doctrine2Script {
     public static final String SCRIPT_NAME = "doctrine"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
+    private static final String XML_CHARSET_NAME = "UTF-8"; // NOI18N
+
     private static final List<String> DEFAULT_PARAMS = Collections.singletonList("--ansi"); // NOI18N
     private static final List<String> LIST_PARAMS = Arrays.asList(
             "list", // NOI18N
@@ -129,7 +131,7 @@ public final class Doctrine2Script {
         }
         Future<Integer> result = new PhpExecutable(doctrine2Path)
                 .workDir(FileUtil.toFile(phpModule.getSourceDirectory()))
-                .fileOutput(tmpFile, true)
+                .fileOutput(tmpFile, XML_CHARSET_NAME, true)
                 .additionalParameters(LIST_PARAMS)
                 .run(getSilentDescriptor());
         try {
@@ -150,7 +152,7 @@ public final class Doctrine2Script {
         }
         List<Doctrine2CommandVO> commandsVO = new ArrayList<Doctrine2CommandVO>();
         try {
-            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile), "UTF-8")); // NOI18N
+            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile), XML_CHARSET_NAME));
             Doctrine2CommandsXmlParser.parse(reader, commandsVO);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);

@@ -92,6 +92,8 @@ public class SymfonyScript {
     public static final String SCRIPT_NAME = "symfony"; // NOI18N
     public static final String SCRIPT_NAME_LONG = SCRIPT_NAME + FileUtils.getScriptExtension(true);
 
+    private static final String XML_CHARSET_NAME = "UTF-8"; // NOI18N
+
     public static final String OPTIONS_SUB_PATH = "Symfony"; // NOI18N
 
     private static final String DEFAULT_PARAM = "--color"; // NOI18N
@@ -313,7 +315,7 @@ public class SymfonyScript {
             return null;
         }
         Future<Integer> result = createPhpExecutable(phpModule)
-                .fileOutput(tmpFile, true)
+                .fileOutput(tmpFile, XML_CHARSET_NAME, true)
                 .warnUser(false)
                 .additionalParameters(LIST_XML_COMMAND)
                 .run(getSilentDescriptor());
@@ -334,7 +336,7 @@ public class SymfonyScript {
         }
         List<SymfonyCommandVO> commandsVO = new ArrayList<SymfonyCommandVO>();
         try {
-            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile), "UTF-8")); // NOI18N
+            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile), XML_CHARSET_NAME));
             SymfonyCommandsXmlParser.parse(reader, commandsVO);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);

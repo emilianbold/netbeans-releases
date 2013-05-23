@@ -181,7 +181,8 @@ public final class FileRunner {
                 if (getRedirectToFile()) {
                     File tmpFile = createTempFile();
                     if (tmpFile != null) {
-                        executable.fileOutput(tmpFile, false);
+                        String charset = FileEncodingQuery.getEncoding(FileUtil.toFileObject(file)).name();
+                        executable.fileOutput(tmpFile, charset, false);
                         postExecution = new PostExecution(tmpFile);
                     }
                 }
