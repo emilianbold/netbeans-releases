@@ -527,7 +527,7 @@ public final class PhpExecutable {
      * Debug this executable with the given execution descriptor, <b>blocking but not blocking the UI thread</b>
      * (it displays progress dialog if it is running in it).
      * @param startFile the start file
-     * @param executionDescriptor execution descriptor to be used
+     * @param executionDescriptor execution descriptor to be used (never controllable)
      * @return exit code of the process or {@code null} if any error occured
      * @throws ExecutionException if any error occurs
      * @see #debug(FileObject)
@@ -542,7 +542,7 @@ public final class PhpExecutable {
      * Debug this executable with the given execution descriptor and optional output processor factory, <b>blocking but not blocking the UI thread</b>
      * (it displays progress dialog if it is running in it).
      * @param startFile the start file
-     * @param executionDescriptor execution descriptor to be used
+     * @param executionDescriptor execution descriptor to be used (never controllable)
      * @param outProcessorFactory output processor factory to be used, can be {@code null}
      * @return exit code of the process or {@code null} if any error occured
      * @throws ExecutionException if any error occurs
@@ -576,7 +576,7 @@ public final class PhpExecutable {
     }
 
     @CheckForNull
-    Integer debugInternal(@NonNull FileObject startFile, final @NonNull ExecutionDescriptor executionDescriptor,
+    Integer debugInternal(@NonNull FileObject startFile, @NonNull ExecutionDescriptor executionDescriptor,
             final @NullAllowed ExecutionDescriptor.InputProcessorFactory outProcessorFactory) throws ExecutionException {
         if (EventQueue.isDispatchThread()) {
             throw new IllegalStateException("Debugging cannot be called from the UI thread");
@@ -589,13 +589,16 @@ public final class PhpExecutable {
                 return debug(startFile, executionDescriptor, outProcessorFactory);
             }
         }
+        // never controllable for debugging
+        final ExecutionDescriptor notControllableExecutionDescriptor = executionDescriptor
+                .controllable(false);
         final AtomicReference<Future<Integer>> result = new AtomicReference<Future<Integer>>();
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         Callable<Cancellable> task = new Callable<Cancellable>() {
             @Override
             public Cancellable call() throws Exception {
                 try {
-                    result.set(PhpExecutable.this.runInternal(executionDescriptor, outProcessorFactory, true));
+                    result.set(PhpExecutable.this.runInternal(notControllableExecutionDescriptor, outProcessorFactory, true));
                 } finally {
                     countDownLatch.countDown();
                 }
