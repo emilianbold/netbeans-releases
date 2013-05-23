@@ -45,11 +45,6 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
 <filesystem>
-    <folder name="Actions">
-        <folder name="Project">
-            <file name="org-netbeans-modules-javafx2-project-CreateNativePackageAction.instance_hidden"/>
-        </folder>
-    </folder>
     <folder name="Templates">
         <folder name="JFX">
             <attr name="position" intvalue="0"/>
