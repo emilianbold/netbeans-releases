@@ -689,6 +689,10 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
                     profileAttribute.setValue(new String(project.getProperty("javac.profile")));
                     man.addConfiguredAttribute(profileAttribute);
                 }
+                var splashScreenAvailable = new String(project.getProperty("splashscreen.available"));
+                if (defined(splashScreenAvailable)) {
+                    project.setProperty("deploy.splash.image",new String(project.getProperty("application.splash")));
+                }
                 jar.perform();
             ]]>
         </script>
