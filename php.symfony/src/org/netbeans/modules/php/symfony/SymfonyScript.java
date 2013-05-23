@@ -195,12 +195,10 @@ public class SymfonyScript {
             if (result != null) {
                 result.get();
             }
-        } catch (CancellationException ex) {
-            // canceled
+        } catch (CancellationException | ExecutionException ex) {
+            // cancelled | wizard handles it
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-        } catch (ExecutionException ex) {
-            // wizard handles it
         }
         return SymfonyPhpFrameworkProvider.getInstance().isInPhpModule(phpModule);
     }
@@ -324,14 +322,11 @@ public class SymfonyScript {
                 // error
                 return null;
             }
-        } catch (CancellationException ex) {
-            // canceled
+        } catch (CancellationException | ExecutionException ex) {
+            // cancelled | ignored
             return null;
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
-            return null;
-        } catch (ExecutionException ex) {
-            // ignored
             return null;
         }
         List<SymfonyCommandVO> commandsVO = new ArrayList<>();

@@ -367,10 +367,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 getOperationMonitor().operationProcess(Operation.UPLOAD, file);
                 try {
                     uploadFile(transferInfo, file);
-                } catch (IOException exc) {
-                    transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
-                    continue;
-                } catch (RemoteException exc) {
+                } catch (IOException | RemoteException exc) {
                     transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
                     continue;
                 }
@@ -694,9 +691,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 public void run() {
                     try {
                         downloadFileInternal(transferInfo, file);
-                    } catch (IOException exc) {
-                        transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
-                    } catch (RemoteException exc) {
+                    } catch (IOException | RemoteException exc) {
                         transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
                     }
                 }
@@ -1118,10 +1113,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
             try {
                 getOperationMonitor().operationProcess(Operation.DELETE, file);
                 deleteFile(transferInfo, file);
-            } catch (IOException exc) {
-                transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
-                continue;
-            } catch (RemoteException exc) {
+            } catch (IOException | RemoteException exc) {
                 transferFailed(transferInfo, file, NbBundle.getMessage(RemoteClient.class, "MSG_ErrorReason", exc.getMessage().trim()));
                 continue;
             }
