@@ -43,9 +43,13 @@ package org.netbeans.api.debugger.jpda.testapps;
 
 import java.awt.Color;
 import java.awt.Point;
+import java.beans.FeatureDescriptor;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.EventObject;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * A test application for mirror values.
@@ -83,6 +87,9 @@ public class MirrorValuesApp {
         
         Color[][] colors = new Color[][] { { Color.WHITE, Color.BLACK }, { Color.YELLOW, Color.GRAY } };
         
+        List selfReferencedList = createSelfReferencedList();
+        EventObject event = createObjectCircle();
+        
         System.currentTimeMillis();             // LBREAKPOINT
         
         boolean newValues = (boo == false) && b == (byte) 255 && c == 'Z' &&
@@ -98,5 +105,18 @@ public class MirrorValuesApp {
                              file.equals(new File("/tmp/Test.java"));
         
         System.currentTimeMillis();             // LBREAKPOINT
+    }
+
+    private static List createSelfReferencedList() {
+        List list = new LinkedList();
+        list.add(list);
+        return list;
+    }
+    
+    private static EventObject createObjectCircle() {
+        FeatureDescriptor fd = new FeatureDescriptor();
+        EventObject eo = new EventObject(fd);
+        fd.setValue("event", eo);
+        return eo;
     }
 }

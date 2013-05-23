@@ -1366,7 +1366,8 @@ public class Registry implements PropertyContainer {
                 boolean productIsGood = true;
                 
                 for (Product dependent: getProducts()) {
-                    if ((dependent.getStatus() != Status.NOT_INSTALLED) &&
+                    if (dependent.getStatus() != Status.NOT_INSTALLED &&
+                            dependent.getStatus() != Status.TO_BE_INSTALLED &&
                             !currentList.contains(dependent) &&
                             satisfiesRequirement(product, dependent)) {
                         productIsGood = false;

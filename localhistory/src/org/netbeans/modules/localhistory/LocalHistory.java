@@ -62,17 +62,16 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.LocalHistoryStoreFactory;
-import org.netbeans.modules.versioning.spi.VCSAnnotator;
-import org.netbeans.modules.versioning.spi.VCSHistoryProvider;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
+import org.netbeans.modules.versioning.core.spi.VCSAnnotator;
+import org.netbeans.modules.versioning.core.spi.VCSHistoryProvider;
 import org.netbeans.modules.versioning.util.ListenersSupport;
-import org.netbeans.modules.versioning.util.Utils;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.netbeans.modules.versioning.ui.history.HistorySettings;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.text.CloneableEditorSupport;
 import org.openide.text.NbDocument;
 import org.openide.util.*;
 import org.openide.util.Lookup.Result;
@@ -96,10 +95,10 @@ public class LocalHistory {
     private VCSHistoryProvider vcsHistoryProvider;
     private LocalHistoryStore store;
 
-    private ListenersSupport listenerSupport = new ListenersSupport(this);
+    private final ListenersSupport listenerSupport = new ListenersSupport(this);
     
-    private Set<File> userDefinedRoots;
-    private final Set<File> roots = new HashSet<File>();
+    private final Set<String> userDefinedRoots;
+    private final Set<String> roots = new HashSet<String>();
        
     private Pattern includeFiles = null;
     private Pattern excludeFiles = null;
@@ -139,9 +138,9 @@ public class LocalHistory {
             userDefinedRoots = Collections.EMPTY_SET;               
         } else {
             String[] paths = rootPaths.split(";");
-            userDefinedRoots = new HashSet<File>(paths.length);
+            userDefinedRoots = new HashSet<String>(paths.length);
             for(String root : paths) {
-                addRootFile(userDefinedRoots, new File(root));   
+                addRootFile(userDefinedRoots, root);   
             }            
         }
 
@@ -180,24 +179,24 @@ public class LocalHistory {
     }
     
     private void setRoots(Project[] projects) {        
-        Set<File> newRoots = new HashSet<File>();
+        Set<String> newRoots = new HashSet<String>();
         for(Project project : projects) {
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] groups = sources.getSourceGroups(Sources.TYPE_GENERIC);
             for(SourceGroup group : groups) {
                 FileObject fo = group.getRootFolder();
-                File root = FileUtil.toFile(fo); 
+                VCSFileProxy root = VCSFileProxy.createFileProxy(fo); 
                 if( root == null ) {
                     LOG.log(Level.WARNING, "source group{0} returned null root folder", group.getDisplayName());
                 } else {
-                    addRootFile(newRoots, root);    
+                    addRootFile(newRoots, root.getPath());    
                 }                
             }
-            File root = FileUtil.toFile(project.getProjectDirectory()); 
+            VCSFileProxy root = VCSFileProxy.createFileProxy(project.getProjectDirectory()); 
             if( root == null ) {
                 LOG.log(Level.WARNING, "project {0} returned null root folder", project.getProjectDirectory());
             } else {
-                addRootFile(newRoots, root);    
+                addRootFile(newRoots, root.getPath());    
             }
         }                
         synchronized(roots) {
@@ -207,7 +206,7 @@ public class LocalHistory {
         fireFileEvent(EVENT_PROJECTS_CHANGED, null);
     }
     
-    private void addRootFile(Set<File> set, File file) {
+    private void addRootFile(Set<String> set, String file) {
         if(file == null) {
             return;
         }
@@ -263,15 +262,15 @@ public class LocalHistory {
         return store;
     }
     
-    File isManagedByParent(File file) {
+    VCSFileProxy isManagedByParent(VCSFileProxy file) {
         if(roots == null) {
             // init not finnished yet 
             return file;
         }        
-        File parent = null;
+        VCSFileProxy parent = null;
         while(file != null) {
             synchronized(roots) {
-                if(roots.contains(file) || userDefinedRoots.contains(file)) {
+                if(roots.contains(file.getPath()) || userDefinedRoots.contains(file.getPath())) {
                     parent = file;
                 }            
             }                        
@@ -280,22 +279,22 @@ public class LocalHistory {
         return parent;    
     }
     
-    void touch(File file) {
+    void touch(VCSFileProxy file) {
         if(!isOpened(file)) {
             return;
         }
         synchronized(touchedFiles) {
-            touchedFiles.add(file.getAbsolutePath());
+            touchedFiles.add(file.getPath());
         }
         synchronized(openedFiles) {
-            openedFiles.remove(file.getAbsolutePath());
+            openedFiles.remove(file.getPath());
         }
     }
 
-    private boolean isOpened(File file) {
+    private boolean isOpened(VCSFileProxy file) {
         boolean opened;
         synchronized(openedFiles) {
-            opened = openedFiles.contains(file.getAbsolutePath());
+            opened = openedFiles.contains(file.getPath());
         }
         if(LOG.isLoggable(Level.FINER)) {
             LOG.log(Level.FINER, " file {0} {1}", new Object[]{file, opened ? "is opened" : "isn't opened"});
@@ -303,14 +302,14 @@ public class LocalHistory {
         return opened;
     }
 
-    boolean isOpenedOrTouched(File file) {
+    boolean isOpenedOrTouched(VCSFileProxy file) {
         if(isOpened(file)) {
             return true;
         }
         
         boolean touched;
         synchronized(touchedFiles) {
-            touched = touchedFiles.contains(file.getAbsolutePath());
+            touched = touchedFiles.contains(file.getPath());
         }
         if(LOG.isLoggable(Level.FINER)) {
             LOG.log(Level.FINER, " file {0} {1}", new Object[]{file, touched ? "is touched" : "isn't touched"});
@@ -318,13 +317,13 @@ public class LocalHistory {
         return touched;
     }
 
-    boolean isManaged(File file) {
+    boolean isManaged(VCSFileProxy file) {
         log("isManaged() " + file);
 
         if(file == null) {
             return false;
         }
-        String path = file.getAbsolutePath();        
+        String path = file.getPath();        
         if(metadataPattern.matcher(path).matches()) {
             return false;
         }
@@ -352,7 +351,7 @@ public class LocalHistory {
         listenerSupport.removeListener(listener);
     }
 
-    void fireFileEvent(Object id, File file) {
+    void fireFileEvent(Object id, VCSFileProxy file) {
         listenerSupport.fireVersioningEvent(id, new Object[]{file});
     }    
     
@@ -371,14 +370,14 @@ public class LocalHistory {
         }            
     };
 
-    public static void logCreate(File file, File storeFile, long ts, String  from, String to) {
+    public static void logCreate(VCSFileProxy file, File storeFile, long ts, String  from, String to) {
         if(!LOG.isLoggable(Level.FINE)) {
             return;
         }
         StringBuilder sb = new StringBuilder();
         sb.append("create");
         sb.append('\t');
-        sb.append(file.getAbsolutePath());
+        sb.append(file.getPath());
         sb.append('\t');        
         sb.append(storeFile.getAbsolutePath());
         sb.append('\t');        
@@ -390,14 +389,14 @@ public class LocalHistory {
         log(sb.toString());
     }    
     
-    public static void logChange(File file, File storeFile, long ts) {
+    public static void logChange(VCSFileProxy file, File storeFile, long ts) {
         if(!LOG.isLoggable(Level.FINE)) {
             return;
         }        
         StringBuilder sb = new StringBuilder();
         sb.append("change");
         sb.append('\t');
-        sb.append(file.getAbsolutePath());
+        sb.append(file.getPath());
         sb.append('\t');        
         sb.append(storeFile.getAbsolutePath());
         sb.append('\t');        
@@ -405,14 +404,14 @@ public class LocalHistory {
         log(sb.toString());
     }
 
-    public static void logDelete(File file, File storeFile, long ts) {
+    public static void logDelete(VCSFileProxy file, File storeFile, long ts) {
         if(!LOG.isLoggable(Level.FINE)) {
             return;
         }  
         StringBuilder sb = new StringBuilder();
         sb.append("delete");
         sb.append('\t');
-        sb.append(file.getAbsolutePath());
+        sb.append(file.getPath());
         sb.append('\t');        
         sb.append(storeFile.getAbsolutePath());
         sb.append('\t');        
@@ -499,16 +498,16 @@ public class LocalHistory {
             }
         }
 
-        private void addOpenedFiles(List<File> files) {
+        private void addOpenedFiles(List<VCSFileProxy> files) {
             if(files == null) {
                 return;
             }
             synchronized (openedFiles) {
-                for (File file : files) {
+                for (VCSFileProxy file : files) {
                     LOG.log(Level.FINE, " adding to opened files : ", new Object[]{file});
-                    openedFiles.add(file.getAbsolutePath());
+                    openedFiles.add(file.getPath());
                 }
-                for (File file : files) {
+                for (VCSFileProxy file : files) {
                     if (handleManaged(file)) {
                         break;
                     }
@@ -516,19 +515,19 @@ public class LocalHistory {
             }
         }
         
-        private void removeOpenedFiles(List<File> files) {
+        private void removeOpenedFiles(List<VCSFileProxy> files) {
             if(files == null) {
                 return;
             }
             synchronized (openedFiles) {
-                for (File file : files) {
+                for (VCSFileProxy file : files) {
                     LOG.log(Level.FINE, " removing from opened files {0} ", new Object[]{file});
-                    openedFiles.remove(file.getAbsolutePath());
+                    openedFiles.remove(file.getPath());
                 }
             }
         }
         
-        private List<File> getFiles(TopComponent tc) {
+        private List<VCSFileProxy> getFiles(TopComponent tc) {
             LOG.log(Level.FINER, " looking up files in tc {0} ", new Object[]{tc});
             DataObject tcDataObject = tc.getLookup().lookup(DataObject.class);
             if(tcDataObject == null) {
@@ -563,27 +562,27 @@ public class LocalHistory {
             return Collections.EMPTY_LIST;
         }
 
-        private List<File> getFiles(DataObject tcDataObject) {
-            List<File> ret = new ArrayList<File>();
+        private List<VCSFileProxy> getFiles(DataObject tcDataObject) {
+            List<VCSFileProxy> ret = new ArrayList<VCSFileProxy>();
             LOG.log(Level.FINER, "  looking up files in dataobject {0} ", new Object[]{tcDataObject});
             Set<FileObject> fos = tcDataObject.files();
             if(fos != null) {
                 for (FileObject fo : fos) {
                     LOG.log(Level.FINER, "   found file {0}", new Object[]{fo});
-                    File f = FileUtil.toFile(fo);
-                    if (f != null && !openedFiles.contains(f.getAbsolutePath()) && !touchedFiles.contains(f.getAbsolutePath())) {
+                    VCSFileProxy f = VCSFileProxy.createFileProxy(fo);
+                    if (f != null && !openedFiles.contains(f.getPath()) && !touchedFiles.contains(f.getPath())) {
                         ret.add(f);
                     }
                 }
             }
             if(LOG.isLoggable(Level.FINER)) {
-                for (File f : ret) {
+                for (VCSFileProxy f : ret) {
                     LOG.log(Level.FINER, "   returning file {0} ", new Object[]{f});
                 }
             }
             return ret;
         }
-        private boolean handleManaged(File file) {
+        private boolean handleManaged(VCSFileProxy file) {
             if (isManagedByParent(file) != null) {
                 return false;
             }

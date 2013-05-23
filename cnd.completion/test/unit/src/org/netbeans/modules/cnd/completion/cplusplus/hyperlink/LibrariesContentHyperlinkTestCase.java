@@ -223,6 +223,14 @@ public class LibrariesContentHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testBug179048() throws Exception {
         // Bug 179048 - Unable to resolve using of global function in namespace
         performTest("src/bug179048.cpp", 10, 22, "src/bug179048.cpp", 2, 1);
+    }
+    
+    public void testBug229990() throws Exception {
+        // Bug 229990 - stability tests: unresolved identifier in clucene-core-0.9.11
+        performTest("src/bug229990.cpp", 8, 35, "sys_include/sys_stat_h.h", 5, 1);
+        performTest("src/bug229990.cpp", 10, 50, "sys_include/sys_stat_h.h", 7, 9);
+        performTest("src/bug229990.cpp", 13, 40, "src/bug229990.h", 15, 5);
+        performTest("src/bug229990.cpp", 12, 35, "src/bug229990.h", 14, 1);
     }    
     
     public static class Failed extends HyperlinkBaseTestCase {

@@ -42,7 +42,6 @@
 package org.netbeans.modules.cnd.completion.doxygensupport;
 
 import org.netbeans.cnd.api.lexer.CppTokenId;
-import org.openide.util.NbBundle;
 
 /**
  *
@@ -91,10 +90,14 @@ public class BasicDocumentationTextGenerationTestCase extends DocumentationTextG
     }
     
     public void test228509_1() throws Exception {
-        performTest("doctest.c", 31, 31, DoxygenDocumentation.doxygen2HTML("/*param*/", CppTokenId.BLOCK_COMMENT));
+        performTest("doctest.c", 31, 61, DoxygenDocumentation.doxygen2HTML("/*param*/", CppTokenId.BLOCK_COMMENT));
     }
     
     public void test228509_2() throws Exception {
-        performTest("doctest.c", 31, 10, DoxygenDocumentation.doxygen2HTML("  "+ NbBundle.getMessage(CompletionDocumentationProviderImpl.class, "NO_DOC_FOUND"), CppTokenId.LINE_COMMENT));
+        performTest("doctest.c", 31, 65, DoxygenDocumentation.doxygen2HTML("/*param2*/", CppTokenId.BLOCK_COMMENT));
+    }
+    
+    public void test228509_3() throws Exception {
+        performTest("doctest.c", 31, 10, DoxygenDocumentation.doxygen2HTML("// line com", CppTokenId.LINE_COMMENT));
     }
 }

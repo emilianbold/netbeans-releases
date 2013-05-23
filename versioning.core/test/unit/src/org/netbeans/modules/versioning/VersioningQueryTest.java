@@ -63,6 +63,7 @@ public class VersioningQueryTest extends NbTestCase {
     public VersioningQueryTest(String testName) {
         super(testName);
         MockLookup.setLayersAndInstances();
+        System.setProperty("versioning.no.localhistory.interceptor", "true");
     }
 
     protected void setUp() throws Exception {

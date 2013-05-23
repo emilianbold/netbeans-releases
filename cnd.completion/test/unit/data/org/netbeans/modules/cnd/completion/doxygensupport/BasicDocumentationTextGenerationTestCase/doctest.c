@@ -28,4 +28,4 @@ sta.ef;
 sta.gh;
 
 #define MAXISIZE 500000    // maximum iterated elements allowed to written per file
-#define B(x/*param*/) BODY + x
+#define B(x/*param*/, y /*param2*/) /*fake comment*/ BODY + x + y  // line com
