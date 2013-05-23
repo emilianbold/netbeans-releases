@@ -1886,6 +1886,13 @@
                             }
                         }
                     }
+                    var profileAvailable = new String(project.getProperty("profile.available"));
+                    if (defined(profileAvailable)) {
+                        var profileAttribute = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
+                        profileAttribute.setName("Profile");
+                        profileAttribute.setValue(new String(project.getProperty("javac.profile")));
+                        man.addConfiguredAttribute(profileAttribute);
+                    }
                     
                     jar.perform();
                 ]]>
