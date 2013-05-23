@@ -1144,7 +1144,7 @@ public class LogViewMgr {
                     return log;
                 }
             }
-            log = FetchLog.create(instance);
+            log = FetchLogPiped.create(instance);
             serverInputStreams.put(instance, log);
         }
         if (deadLog != null) {
