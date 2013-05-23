@@ -53,10 +53,6 @@
     <name>The EJB 3.2 Stateless Session Bean Sample Client</name>
         
     <repositories>
-        <repository>
-            <id>maven.java.net</id>
-            <url>https://maven.java.net/content/groups/promoted/</url>
-        </repository>
         <repository> 
             <id>EclipseLink</id> 
             <url>http://download.eclipse.org/rt/eclipselink/maven.repo</url> 
@@ -67,7 +63,7 @@
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
-            <version>7.0-b84</version>
+            <version>7.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency> 

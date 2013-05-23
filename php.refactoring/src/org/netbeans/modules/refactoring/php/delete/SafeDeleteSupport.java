@@ -109,7 +109,7 @@ public final class SafeDeleteSupport {
             declaredConstants = ModelUtils.getDeclaredConstants(fileScope);
             declaredVariables = ModelUtils.getDeclaredVariables(fileScope);
 
-            final Set<ModelElement> elements = new HashSet<ModelElement>();
+            final Set<ModelElement> elements = new HashSet<>();
             elements.addAll(declaredClasses);
             elements.addAll(declaredInterfaces);
             elements.addAll(declaredFunctions);
@@ -127,7 +127,7 @@ public final class SafeDeleteSupport {
 
     Set<FileObject> getRelevantFiles() {
         if (relevantFiles == null) {
-            relevantFiles = new HashSet<FileObject>();
+            relevantFiles = new HashSet<>();
             for (ModelElement element : getVisibleElements()) {
                 relevantFiles.addAll(idx.getLocationsForIdentifiers(element.getName()));
             }

@@ -129,10 +129,8 @@ public class PhpDeleteRefactoringPlugin extends ProgressProviderAdapter implemen
                     final ProblemDetailsImplemen problemDetailsImplemen = new ProblemDetailsImplemen(new WhereUsedQueryUI(support), inner);
                     final ProblemDetails problemDetails = ProblemDetailsFactory.createProblemDetails(problemDetailsImplemen);
                     Problem problem = new Problem(false, NbBundle.getMessage(PhpDeleteRefactoringPlugin.class, "ERR_ReferencesFound"), problemDetails);
-                    if (problem != null) {
-                        fireProgressListenerStop();
-                        return problem;
-                    }
+                    fireProgressListenerStop();
+                    return problem;
                 }
             }
         }
