@@ -340,6 +340,12 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
         checkModifiers(testSource, caretOffset, "static|public");
     }
 
+    public void testIssue224759() throws Exception {
+        Source testSource = getTestSource(getTestFile(FILE_NAME_GENERAL));
+        final int caretOffset = getCaretOffset(testSource, "function Issue224759() ^{");
+        checkFirstSummary(testSource, caretOffset, "Issue224759 This is not visible in Help");
+    }
+
     private static class FakeDocParameter implements DocParameter {
 
         DocIdentifier paramName;
