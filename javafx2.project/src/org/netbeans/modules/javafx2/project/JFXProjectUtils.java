@@ -74,6 +74,7 @@ import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.modules.javafx2.platform.api.JavaFxRuntimeInclusion;
 import org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.WizardType;
+import org.netbeans.spi.project.ProjectIconAnnotator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -782,6 +783,12 @@ public final class JFXProjectUtils {
 //                FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
 ////                dirFO.createFolder("test"); // NOI18N
 //                createFiles(mainClass, fxmlName, srcFolder, type);
+                for (ProjectIconAnnotator annotator : Lookup.getDefault().lookupAll(ProjectIconAnnotator.class)) {
+                    if(annotator instanceof JFXProjectIconAnnotator) {
+                        JFXProjectIconAnnotator fxAnnotator = (JFXProjectIconAnnotator) annotator;
+                        fxAnnotator.fireChange(project, true);
+                    }
+                }
             }
         });
         if(true) {

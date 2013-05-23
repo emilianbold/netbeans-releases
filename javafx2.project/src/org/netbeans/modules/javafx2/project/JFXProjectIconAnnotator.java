@@ -98,6 +98,11 @@ public class JFXProjectIconAnnotator implements ProjectIconAnnotator {
     public void removeChangeListener(ChangeListener listener) {
         cs.removeChangeListener(listener);
     }
+    
+    public void fireChange(@NonNull final Project p, boolean type) {
+        projectType.put(p, type);
+        cs.fireChange();
+    }
 
 
     /**
