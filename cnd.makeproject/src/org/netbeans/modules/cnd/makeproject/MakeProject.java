@@ -794,7 +794,7 @@ public final class MakeProject implements Project, MakeProjectListener {
             if (nodeList != null && nodeList.getLength() > 0) {
                 for (int i = 0; i < nodeList.getLength(); i++) {
                     Node node = nodeList.item(i);
-                    projectFormattingStyle = new AtomicBoolean("true".equals(node.getTextContent()));
+                    projectFormattingStyle = new AtomicBoolean("true".equals(node.getTextContent())); //NOI18N
                     break;
                 }
             }

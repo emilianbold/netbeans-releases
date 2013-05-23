@@ -563,9 +563,9 @@ public final class CodeStyle {
 
     // Nested classes ----------------------------------------------------------
     public enum Language {
-        C(MIMENames.C_MIME_TYPE, "C_CodeStyles", "C_Style"),
-        CPP(MIMENames.CPLUSPLUS_MIME_TYPE, "CPP_CodeStyles", "CPP_Style"),
-        HEADER(MIMENames.HEADER_MIME_TYPE, "H_CodeStyles", "H_Style");
+        C(MIMENames.C_MIME_TYPE, "C_CodeStyles", "C_Style"), // NOI18N
+        CPP(MIMENames.CPLUSPLUS_MIME_TYPE, "CPP_CodeStyles", "CPP_Style"), // NOI18N
+        HEADER(MIMENames.HEADER_MIME_TYPE, "H_CodeStyles", "H_Style"); // NOI18N
         
         private final String mime;
         private final String node;

@@ -1337,10 +1337,10 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         Node n = doc.createElement(MakeProjectTypeImpl.FORMATTING_STYLE_PROJECT_ELEMENT);
         boolean isProject;
         if (((MakeProject) getProject()).isProjectFormattingStyle()) {
-            n.appendChild(doc.createTextNode("true"));
+            n.appendChild(doc.createTextNode("true")); //NOI18N
             isProject = true;
         } else {
-            n.appendChild(doc.createTextNode("false"));
+            n.appendChild(doc.createTextNode("false")); //NOI18N
             isProject = false;
         }
         element.appendChild(n);

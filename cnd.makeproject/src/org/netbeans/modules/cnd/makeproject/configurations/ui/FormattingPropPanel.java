@@ -136,7 +136,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         Preferences pref = null;
         CodeStylePreferences.Provider myProvider = null;
         for(CodeStylePreferences.Provider p : Lookup.getDefault().lookupAll(CodeStylePreferences.Provider.class)) {
-            if (p.getClass().getName().equals("org.netbeans.modules.cnd.editor.options.CodeStylePreferencesProvider"))  {
+            if (p.getClass().getName().equals("org.netbeans.modules.cnd.editor.options.CodeStylePreferencesProvider")) { //NOI18N
                 myProvider = p;
                 pref = p.forDocument(null, mimeType);
             }

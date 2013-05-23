@@ -69,8 +69,8 @@ import org.openide.util.NbBundle;
  */
 public class EditorOptions {
     public static CodeStyleFactory codeStyleFactory;
-    /*package*/static final String CODE_STYLE_NODE = "CodeStyle";
-    private static final String LIST_OF_STYLES_PROPERTY = "List_Of_Styles";
+    /*package*/static final String CODE_STYLE_NODE = "CodeStyle"; //NOI18N
+    private static final String LIST_OF_STYLES_PROPERTY = "List_Of_Styles"; //NOI18N
     static {
         Class<?> c = CodeStyle.class;
         try {
