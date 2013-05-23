@@ -473,7 +473,18 @@ public final class CompletionSupport implements DocumentListener {
         return isCompletionEnabled(doc, offset, -1);
     }
     
-    public static boolean isCompletionEnabled(Document doc, int offset, int queryType) {
+    public static boolean isCompletionEnabled(final Document doc, final int offset, final int queryType) {
+        final AtomicBoolean out = new AtomicBoolean(false);
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                out.set(isCompletionEnabledImpl(doc, offset, queryType));
+            }
+        });
+        return out.get();
+    }
+    
+    private static boolean isCompletionEnabledImpl(Document doc, int offset, int queryType) {
         if (doc.getLength() == 0) {
             // it's fine to show completion in empty doc
             return true;
