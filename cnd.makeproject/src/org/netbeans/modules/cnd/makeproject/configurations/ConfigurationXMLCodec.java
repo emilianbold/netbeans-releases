@@ -45,11 +45,9 @@ package org.netbeans.modules.cnd.makeproject.configurations;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Stack;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
@@ -136,6 +134,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private Folder currentFolder = null;
     private String relativeOffset;
     private Map<String, String> cache = new HashMap<String, String>();
+    private Map<String, String> rootDecoder = new HashMap<String, String>();
     private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
 
     public ConfigurationXMLCodec(String tag, FileObject projectDirectory, MakeConfigurationDescriptor projectDescriptor, String relativeOffset) {
@@ -275,7 +274,12 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                     String absRootPath = CndPathUtilities.toAbsolutePath(projectDescriptor.getBaseDirFileObject(), root);
                     absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, projectDescriptor.getProject());
                     displayName = CndPathUtilities.getBaseName(absRootPath);
-                    name = MakeProjectUtils.getDiskFolderId(project, currentFolderStack.peek());
+                    if (name == null) {
+                        name = displayName;
+                    }
+                    String id = MakeProjectUtils.getDiskFolderId(project, currentFolderStack.peek());
+                    rootDecoder.put(name, id);
+                    name = id;
                 }
                 currentFolder = currentFolder.addNewFolder(name, displayName, true, Folder.Kind.SOURCE_DISK_FOLDER);
                 if (root != null) {
@@ -318,6 +322,17 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(FolderXMLCodec.FOLDER_ELEMENT)) {
             String path = getString(atts.getValue(FolderXMLCodec.PATH_ATTR));
             Folder folder = projectDescriptor.findFolderByPath(path);
+            if (folder == null) {
+                int i = path.indexOf('/');
+                if (i > 0) {
+                    String root = path.substring(0,i);
+                    String id = rootDecoder.get(root);
+                    if (id != null) {
+                        path = getString(id+path.substring(i));
+                        folder = projectDescriptor.findFolderByPath(path);
+                    }
+                }
+            }
             if (folder != null) {
                 FolderConfiguration folderConfiguration = folder.getFolderConfiguration(currentConf);
                 currentFolderConfiguration = folderConfiguration;
