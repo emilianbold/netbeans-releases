@@ -660,7 +660,13 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
                 fo = FileUtil.toFileObject(file);
             }
             try (OutputStream out = fo.getOutputStream()) {
-                FileUtil.copy(new ByteArrayInputStream(changedLicensePathContent.getBytes()), out);
+                String charsetName;
+                if (encoding != null) {
+                    charsetName = encoding;
+                } else {
+                    charsetName = ProjectPropertiesSupport.getEncoding(project);
+                }
+                FileUtil.copy(new ByteArrayInputStream(changedLicensePathContent.getBytes(charsetName)), out);
             }
         }
 
