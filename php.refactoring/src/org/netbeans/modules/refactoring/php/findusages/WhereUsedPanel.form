@@ -242,7 +242,7 @@
                           <EmptySpace min="-2" max="-2" attributes="0"/>
                           <Component id="elementLabel" min="-2" max="-2" attributes="0"/>
                           <EmptySpace max="-2" attributes="0"/>
-                          <Component id="elementComboBox" pref="214" max="32767" attributes="0"/>
+                          <Component id="elementComboBox" pref="243" max="32767" attributes="0"/>
                       </Group>
                   </Group>
                   <EmptySpace min="-2" max="-2" attributes="0"/>

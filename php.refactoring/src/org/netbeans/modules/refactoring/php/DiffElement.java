@@ -135,7 +135,7 @@ public class DiffElement extends SimpleRefactoringElementImplementation {
             Exceptions.printStackTrace(ex);
             return null;
         }
-        newFileContent = new WeakReference<String>(result);
+        newFileContent = new WeakReference<>(result);
         return result;
     }
 

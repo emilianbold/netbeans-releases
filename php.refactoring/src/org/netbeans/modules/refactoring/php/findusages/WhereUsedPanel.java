@@ -181,7 +181,7 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
     }
 
     private void handleElementsCombo(List<ModelElement> elements) {
-        elementComboBox.setModel(new DefaultComboBoxModel(new Vector<ModelElement>(elements)));
+        elementComboBox.setModel(new DefaultComboBoxModel(new Vector<>(elements)));
         elementComboBox.setSelectedIndex(0);
         if (elements.size() == 1) {
             elementLabel.setVisible(false);
