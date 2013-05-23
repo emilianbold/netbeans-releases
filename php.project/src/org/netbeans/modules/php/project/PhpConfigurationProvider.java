@@ -203,7 +203,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
     }
 
     private void calculateConfigs() {
-        configs = new HashMap<String, Config>();
+        configs = new HashMap<>();
         if (configDir != null) {
             for (FileObject kid : configDir.getChildren()) {
                 if (!kid.hasExt("properties")) {
@@ -232,7 +232,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
     @Override
     public Collection<Config> getConfigurations() {
         calculateConfigs();
-        List<Config> l = new ArrayList<Config>();
+        List<Config> l = new ArrayList<>();
         l.addAll(configs.values());
         Collections.sort(l, new Comparator<Config>() {
 

@@ -409,7 +409,7 @@ public final class SyncItem {
     }
 
     private boolean verifyChildrenOperation(TransferFile transferFile, Operation operation) {
-        LinkedList<TransferFile> children = new LinkedList<TransferFile>();
+        LinkedList<TransferFile> children = new LinkedList<>();
         children.addAll(transferFile.getChildren());
         while (!children.isEmpty()) {
             TransferFile child = children.pop();

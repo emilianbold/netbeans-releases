@@ -58,7 +58,7 @@ public class Symfony2CommonLineAnnotationLineParser implements AnnotationLinePar
 
     private static final AnnotationLineParser INSTANCE = new Symfony2CommonLineAnnotationLineParser();
 
-    private static final Set<String> INLINE_ANNOTATIONS = new HashSet<String>();
+    private static final Set<String> INLINE_ANNOTATIONS = new HashSet<>();
     static {
         INLINE_ANNOTATIONS.add("NotBlank"); //NOI18N
         INLINE_ANNOTATIONS.add("Blank"); //NOI18N
@@ -88,7 +88,7 @@ public class Symfony2CommonLineAnnotationLineParser implements AnnotationLinePar
         INLINE_ANNOTATIONS.add("Valid"); //NOI18N
     }
 
-    private static final Set<String> TYPED_PARAMETERS = new HashSet<String>();
+    private static final Set<String> TYPED_PARAMETERS = new HashSet<>();
     static {
         TYPED_PARAMETERS.add("type"); //NOI18N
     }
@@ -101,7 +101,7 @@ public class Symfony2CommonLineAnnotationLineParser implements AnnotationLinePar
     @Override
     public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
-        Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+        Map<OffsetRange, String> types = new HashMap<>();
         types.putAll(AnnotationUtils.extractInlineAnnotations(line, INLINE_ANNOTATIONS));
         types.putAll(AnnotationUtils.extractTypesFromParameters(line, TYPED_PARAMETERS));
         if (!types.isEmpty()) {

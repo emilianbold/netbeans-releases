@@ -139,7 +139,7 @@ public final class PhpExecutable {
     private final String executable;
     private final List<String> parameters;
     private final String command;
-    final List<String> fullCommand = new CopyOnWriteArrayList<String>();
+    final List<String> fullCommand = new CopyOnWriteArrayList<>();
 
     private String executableName = null;
     private String displayName = null;
@@ -199,7 +199,7 @@ public final class PhpExecutable {
      * @return parameters, can be an empty array but never {@code null}.
      */
     public List<String> getParameters() {
-        return new ArrayList<String>(parameters);
+        return new ArrayList<>(parameters);
     }
 
     /**
@@ -483,7 +483,7 @@ public final class PhpExecutable {
         if (result == null) {
             return null;
         }
-        final AtomicReference<ExecutionException> executionException = new AtomicReference<ExecutionException>();
+        final AtomicReference<ExecutionException> executionException = new AtomicReference<>();
         if (SwingUtilities.isEventDispatchThread()) {
             if (!result.isDone()) {
                 try {
@@ -557,8 +557,8 @@ public final class PhpExecutable {
             return debugInternal(startFile, executionDescriptor, outProcessorFactory);
         }
         // ui thread
-        final AtomicReference<Integer> executionResult = new AtomicReference<Integer>();
-        final AtomicReference<ExecutionException> executionException = new AtomicReference<ExecutionException>();
+        final AtomicReference<Integer> executionResult = new AtomicReference<>();
+        final AtomicReference<ExecutionException> executionException = new AtomicReference<>();
         ProgressUtils.showProgressDialogAndRun(new Runnable() {
             @Override
             public void run() {
@@ -592,7 +592,7 @@ public final class PhpExecutable {
         // never controllable for debugging
         final ExecutionDescriptor notControllableExecutionDescriptor = executionDescriptor
                 .controllable(false);
-        final AtomicReference<Future<Integer>> result = new AtomicReference<Future<Integer>>();
+        final AtomicReference<Future<Integer>> result = new AtomicReference<>();
         final CountDownLatch countDownLatch = new CountDownLatch(1);
         Callable<Cancellable> task = new Callable<Cancellable>() {
             @Override
@@ -763,7 +763,7 @@ public final class PhpExecutable {
     }
 
     private ExecutionDescriptor getExecutionDescriptor(ExecutionDescriptor executionDescriptor, ExecutionDescriptor.InputProcessorFactory outProcessorFactory) {
-        final List<ExecutionDescriptor.InputProcessorFactory> inputProcessors = new CopyOnWriteArrayList<ExecutionDescriptor.InputProcessorFactory>();
+        final List<ExecutionDescriptor.InputProcessorFactory> inputProcessors = new CopyOnWriteArrayList<>();
         // colors
         ExecutionDescriptor.InputProcessorFactory infoOutProcessorFactory = getInfoOutputProcessorFactory();
         if (infoOutProcessorFactory != null) {
@@ -884,7 +884,7 @@ public final class PhpExecutable {
         }
 
         public static String getInfoCommand(List<String> fullCommand) {
-            List<String> escapedCommand = new ArrayList<String>(fullCommand.size());
+            List<String> escapedCommand = new ArrayList<>(fullCommand.size());
             for (String command : fullCommand) {
                 escapedCommand.add("\"" + command.replace("\"", "\\\"") + "\""); // NOI18N
             }

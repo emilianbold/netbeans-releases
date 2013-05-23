@@ -324,7 +324,7 @@ public final class TransferSelector extends TransferFilesChooserPanel implements
         public RootChildren(Set<TransferFile> transferFiles) {
             // do not allow select source-dir
             boolean projRoot = false;
-            List<TransferFile> roots = new LinkedList<TransferFile>();
+            List<TransferFile> roots = new LinkedList<>();
             for (TransferFile file : transferFiles) {
                 if (file.isProjectRoot()) {
                     roots.clear();

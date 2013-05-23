@@ -79,8 +79,8 @@ public final class TestRunInfo {
     private final FileObject startFile;
     private final String suiteName;
     private final boolean coverageEnabled;
-    private final List<TestInfo> customTests = new CopyOnWriteArrayList<TestInfo>();
-    private final Map<String, Object> parameters = new ConcurrentHashMap<String, Object>();
+    private final List<TestInfo> customTests = new CopyOnWriteArrayList<>();
+    private final Map<String, Object> parameters = new ConcurrentHashMap<>();
 
     private volatile boolean rerun = false;
 
@@ -161,7 +161,7 @@ public final class TestRunInfo {
      * @return custom tests to be run or empty list, never {@code null}
      */
     public List<TestInfo> getCustomTests() {
-        return new ArrayList<TestInfo>(customTests);
+        return new ArrayList<>(customTests);
     }
 
     /**

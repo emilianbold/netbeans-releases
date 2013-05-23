@@ -89,7 +89,7 @@ public final class CreateTestsAction extends NodeAction {
     private static final Logger LOGGER = Logger.getLogger(CreateTestsAction.class.getName());
 
     private static final RequestProcessor RP = new RequestProcessor("Generate PHP unit tests", 1); // NOI18N
-    static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<Runnable>();
+    static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<>();
     private static final RequestProcessor.Task TASK = RP.create(new Runnable() {
         @Override
         public void run() {
@@ -206,15 +206,15 @@ public final class CreateTestsAction extends NodeAction {
 
         List<FileObject> files = CommandUtils.getFileObjects(activatedNodes);
         assert !files.isEmpty() : "No files for tests?!";
-        final List<FileObject> sanitizedFiles = new ArrayList<FileObject>(files.size() * 2);
+        final List<FileObject> sanitizedFiles = new ArrayList<>(files.size() * 2);
         sanitizeFiles(sanitizedFiles, files, phpProject, PhpVisibilityQuery.forProject(phpProject));
         if (sanitizedFiles.isEmpty()) {
             LOGGER.info("No visible files for creating tests -> exiting.");
             return;
         }
 
-        final Set<FileObject> succeeded = new HashSet<FileObject>();
-        final Set<FileObject> failed = new HashSet<FileObject>();
+        final Set<FileObject> succeeded = new HashSet<>();
+        final Set<FileObject> failed = new HashSet<>();
         final PhpModule phpModule = phpProject.getPhpModule();
         FileUtil.runAtomicAction(new Runnable() {
             @Override

@@ -99,7 +99,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
 
     private static final AdvancedProperties DEFAULT_ADVANCED_PROPERTIES = new AdvancedProperties();
     private static final OperationMonitor DEV_NULL_OPERATION_MONITOR = new DevNullOperationMonitor();
-    private static final Set<String> IGNORED_DIRS = new HashSet<String>(Arrays.asList(".", "..", "nbproject")); // NOI18N
+    private static final Set<String> IGNORED_DIRS = new HashSet<>(Arrays.asList(".", "..", "nbproject")); // NOI18N
     private static final int TRIES_TO_TRANSFER = 3; // number of tries if file download/upload fails
     private static final String REMOTE_TMP_NEW_SUFFIX = ".new"; // NOI18N
     private static final String REMOTE_TMP_OLD_SUFFIX = ".old"; // NOI18N
@@ -265,7 +265,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
                 LOGGER.log(Level.FINE, "No children found for {0}", file);
                 return Collections.emptyList();
             }
-            List<TransferFile> transferFiles = new ArrayList<TransferFile>(remoteFiles.size());
+            List<TransferFile> transferFiles = new ArrayList<>(remoteFiles.size());
             for (RemoteFile remoteFile : remoteFiles) {
                 if (isVisible(getLocalFile(new File(file.getBaseLocalDirectoryPath()), file, remoteFile))) {
                     LOGGER.log(Level.FINE, "File {0} added to download queue", remoteFile);
@@ -292,7 +292,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         File baseLocalDir = FileUtil.toFile(baseLocalDirectory);
         baseLocalDir = FileUtil.normalizeFile(baseLocalDir);
         String baseLocalAbsolutePath = baseLocalDir.getAbsolutePath();
-        Queue<TransferFile> queue = new LinkedList<TransferFile>();
+        Queue<TransferFile> queue = new LinkedList<>();
         for (FileObject fo : filesToUpload) {
             File f = FileUtil.toFile(fo);
             if (f == null) {
@@ -307,7 +307,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
             }
         }
 
-        Set<TransferFile> files = new HashSet<TransferFile>();
+        Set<TransferFile> files = new HashSet<>();
         while (!queue.isEmpty()) {
             if (cancelled) {
                 LOGGER.fine("Prepare upload cancelled");
@@ -574,7 +574,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         assert filesToDownload != null;
         assert filesToDownload.length > 0 : "At least one file to download must be specified";
 
-        List<File> files = new ArrayList<File>(filesToDownload.length);
+        List<File> files = new ArrayList<>(filesToDownload.length);
         for (FileObject fo : filesToDownload) {
             File f = FileUtil.toFile(fo);
             if (f != null) {
@@ -592,7 +592,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
         ensureConnected();
 
         String baseLocalAbsolutePath = FileUtil.normalizeFile(baseLocalDir).getAbsolutePath();
-        List<TransferFile> baseFiles = new LinkedList<TransferFile>();
+        List<TransferFile> baseFiles = new LinkedList<>();
         for (File f : filesToDownload) {
             f = FileUtil.normalizeFile(f);
             if (isVisible(f)) {
@@ -610,7 +610,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
             }
         }
 
-        Set<TransferFile> files = new HashSet<TransferFile>();
+        Set<TransferFile> files = new HashSet<>();
         for (TransferFile file : baseFiles) {
             if (cancelled) {
                 LOGGER.fine("Prepare download cancelled");
@@ -1345,7 +1345,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
     }
 
     private Set<TransferFile> getFiles(Set<TransferFile> all) {
-        Set<TransferFile> files = new HashSet<TransferFile>();
+        Set<TransferFile> files = new HashSet<>();
         for (TransferFile file : all) {
             if (file.isFile()) {
                 files.add(file);
@@ -1357,7 +1357,7 @@ public final class RemoteClient implements Cancellable, RemoteClientImplementati
     private Set<TransferFile> getDirectories(Set<TransferFile> all) {
         // we need to get longest paths first to be able to delete directories properly
         //  (e.g. to have [a/b, a] and not [a, a/b])
-        Set<TransferFile> dirs = new TreeSet<TransferFile>(new Comparator<TransferFile>() {
+        Set<TransferFile> dirs = new TreeSet<>(new Comparator<TransferFile>() {
             private final String SEPARATOR = Pattern.quote(TransferFile.REMOTE_PATH_SEPARATOR);
             @Override
             public int compare(TransferFile o1, TransferFile o2) {

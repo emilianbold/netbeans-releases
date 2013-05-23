@@ -67,7 +67,7 @@ public final class MessDetectorReportParser extends DefaultHandler {
 
     private static final Logger LOGGER = Logger.getLogger(MessDetectorReportParser.class.getName());
 
-    private final List<Result> results = new ArrayList<Result>();
+    private final List<Result> results = new ArrayList<>();
     private final XMLReader xmlReader;
 
     private Result currentResult = null;

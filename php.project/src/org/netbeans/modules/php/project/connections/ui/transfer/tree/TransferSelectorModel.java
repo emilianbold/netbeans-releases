@@ -160,7 +160,7 @@ final class TransferSelectorModel {
     }
 
     public Set<TransferFile> getSelected() {
-        return new HashSet<TransferFile>(selected);
+        return new HashSet<>(selected);
     }
 
     public int getSelectedSize() {
@@ -225,7 +225,7 @@ final class TransferSelectorModel {
     }
 
     private Set<TransferFile> copyNoProjectRoot(Set<TransferFile> transferFiles) {
-        Set<TransferFile> files = new HashSet<TransferFile>();
+        Set<TransferFile> files = new HashSet<>();
         for (TransferFile file : transferFiles) {
             if (!file.isProjectRoot()) {
                 files.add(file);

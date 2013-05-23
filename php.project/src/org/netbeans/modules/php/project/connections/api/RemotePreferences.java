@@ -88,7 +88,7 @@ public final class RemotePreferences {
      * @return all server configurations of all types
      */
     public static Map<String, Map<String, String>> getServerConfigs() {
-        Map<String, Map<String, String>> serverConfigs = new HashMap<String, Map<String, String>>();
+        Map<String, Map<String, String>> serverConfigs = new HashMap<>();
         Preferences remoteConnections = getServerConfigsPreferences();
         try {
             for (String name : remoteConnections.childrenNames()) {
@@ -97,7 +97,7 @@ public final class RemotePreferences {
                     continue;
                 }
                 Preferences node = remoteConnections.node(name);
-                Map<String, String> value = new TreeMap<String, String>();
+                Map<String, String> value = new TreeMap<>();
                 for (String key : node.keys()) {
                     value.put(key, node.get(key, null));
                 }

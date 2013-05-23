@@ -175,7 +175,7 @@ public final class FileRunner {
     }
 
     private List<String> getParams() {
-        List<String> params = new ArrayList<String>();
+        List<String> params = new ArrayList<>();
         if (StringUtils.hasText(phpArgs)) {
             params.addAll(Arrays.asList(Utilities.parseParameters(phpArgs)));
         }

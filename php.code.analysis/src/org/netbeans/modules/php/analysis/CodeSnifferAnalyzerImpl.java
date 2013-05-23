@@ -128,7 +128,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
         "CodeSnifferAnalyzerImpl.analyze.error.description=Error occured during code sniffer analysis, review Output window for more information.",
     })
     private Iterable<? extends ErrorDescription> doAnalyze(Scope scope, CodeSniffer codeSniffer, String codeSnifferStandard, Map<FileObject, Integer> fileCount) {
-        List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
+        List<ErrorDescription> errors = new ArrayList<>();
         int progress = 0;
         for (FileObject root : scope.getSourceRoots()) {
             if (cancelled.get()) {

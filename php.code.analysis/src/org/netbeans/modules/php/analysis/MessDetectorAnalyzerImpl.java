@@ -127,7 +127,7 @@ public class MessDetectorAnalyzerImpl implements Analyzer {
         "MessDetectorAnalyzerImpl.analyze.error.description=Error occured during mess detector analysis, review Output window for more information.",
     })
     private Iterable<? extends ErrorDescription> doAnalyze(Scope scope, MessDetector messDetector, List<String> messDetectorRuleSets, Map<FileObject, Integer> fileCount) {
-        List<ErrorDescription> errors = new ArrayList<ErrorDescription>();
+        List<ErrorDescription> errors = new ArrayList<>();
         int progress = 0;
         for (FileObject root : scope.getSourceRoots()) {
             if (cancelled.get()) {
@@ -162,7 +162,7 @@ public class MessDetectorAnalyzerImpl implements Analyzer {
                 return Collections.emptyList();
             }
             FileObject folder = nonRecursiveFolder.getFolder();
-            List<FileObject> dataChildren = new ArrayList<FileObject>();
+            List<FileObject> dataChildren = new ArrayList<>();
             for (FileObject child : folder.getChildren()) {
                 if (child.isData()) {
                     dataChildren.add(child);

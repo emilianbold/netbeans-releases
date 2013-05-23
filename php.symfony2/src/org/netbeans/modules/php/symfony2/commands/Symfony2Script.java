@@ -199,7 +199,7 @@ public final class Symfony2Script {
             UiUtils.processExecutionException(ex, Symfony2OptionsPanelController.OPTIONS_SUBPATH);
             return null;
         }
-        List<Symfony2CommandVO> commandsVO = new ArrayList<Symfony2CommandVO>();
+        List<Symfony2CommandVO> commandsVO = new ArrayList<>();
         try {
             Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile), XML_CHARSET_NAME));
             Symfony2CommandsXmlParser.parse(reader, commandsVO);
@@ -233,7 +233,7 @@ public final class Symfony2Script {
     }
 
     private List<String> getAllParameters(List<String> params) {
-        List<String> allParams = new ArrayList<String>(DEFAULT_PARAMS.size() + params.size());
+        List<String> allParams = new ArrayList<>(DEFAULT_PARAMS.size() + params.size());
         allParams.addAll(DEFAULT_PARAMS);
         allParams.addAll(params);
         return allParams;

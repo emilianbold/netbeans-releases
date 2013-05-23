@@ -125,7 +125,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
             }
             warning = visibleExtender.getWarningMessage();
         }
-        Set<PhpFrameworkProvider> invalidFrameworks = new HashSet<PhpFrameworkProvider>();
+        Set<PhpFrameworkProvider> invalidFrameworks = new HashSet<>();
         for (Entry<PhpFrameworkProvider, PhpModuleExtender> entry : frameworksPanel.getSelectedExtenders().entrySet()) {
             PhpModuleExtender extender = entry.getValue();
             if (extender != null
@@ -176,7 +176,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
     }
 
     private Map<PhpFrameworkProvider, PhpModuleExtender> createExtenders() {
-        Map<PhpFrameworkProvider, PhpModuleExtender> extenders = new LinkedHashMap<PhpFrameworkProvider, PhpModuleExtender>();
+        Map<PhpFrameworkProvider, PhpModuleExtender> extenders = new LinkedHashMap<>();
         for (PhpFrameworkProvider provider : PhpFrameworks.getFrameworks()) {
             PhpModuleExtender extender = provider.createPhpModuleExtender(null);
             if (extender != null) {

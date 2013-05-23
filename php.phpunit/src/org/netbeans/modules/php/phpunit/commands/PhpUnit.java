@@ -401,7 +401,7 @@ public final class PhpUnit {
     }
 
     private List<String> createParams(boolean withDefaults) {
-        List<String> params = new ArrayList<String>();
+        List<String> params = new ArrayList<>();
         if (withDefaults) {
             params.addAll(DEFAULT_PARAMS);
         }

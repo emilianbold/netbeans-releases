@@ -107,7 +107,7 @@ public final class ZendPhpFrameworkProvider extends PhpFrameworkProvider {
             // broken project
             return new File[0];
         }
-        List<File> files = new LinkedList<File>();
+        List<File> files = new LinkedList<>();
         FileObject appConfig = sourceDirectory.getFileObject("application/configs"); // NOI18N
         if (appConfig != null) {
             for (FileObject child : appConfig.getChildren()) {

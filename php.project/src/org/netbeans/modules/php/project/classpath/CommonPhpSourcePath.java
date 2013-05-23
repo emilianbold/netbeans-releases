@@ -78,7 +78,7 @@ public final class CommonPhpSourcePath {
         // XXX disabled, unit tests failures
         //assert !preindexedFolders.contains(null) : "Preindexed folders contains null";
         FileObject sfsFolder = FileUtil.getConfigFile("PHP/RuntimeLibraries"); // NOI18N
-        List<FileObject> folders = new ArrayList<FileObject>(preindexedFolders.size() + 1);
+        List<FileObject> folders = new ArrayList<>(preindexedFolders.size() + 1);
         // #210578
         if (sfsFolder != null) {
             folders.add(sfsFolder);

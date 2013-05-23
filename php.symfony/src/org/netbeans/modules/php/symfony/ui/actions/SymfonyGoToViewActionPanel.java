@@ -162,7 +162,7 @@ public class SymfonyGoToViewActionPanel extends javax.swing.JPanel implements Fo
     }
 
     private ListModel<SymfonyViewItem> createListModel() {
-        DefaultListModel<SymfonyViewItem> dlm = new DefaultListModel<SymfonyViewItem>();
+        DefaultListModel<SymfonyViewItem> dlm = new DefaultListModel<>();
 
         for (FileObject view : views) {
             dlm.addElement(new SymfonyViewItem(view));

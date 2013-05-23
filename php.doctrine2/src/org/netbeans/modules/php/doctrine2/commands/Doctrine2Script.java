@@ -150,7 +150,7 @@ public final class Doctrine2Script {
             UiUtils.processExecutionException(ex, Doctrine2OptionsPanelController.OPTIONS_SUBPATH);
             return null;
         }
-        List<Doctrine2CommandVO> commandsVO = new ArrayList<Doctrine2CommandVO>();
+        List<Doctrine2CommandVO> commandsVO = new ArrayList<>();
         try {
             Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile), XML_CHARSET_NAME));
             Doctrine2CommandsXmlParser.parse(reader, commandsVO);
@@ -183,7 +183,7 @@ public final class Doctrine2Script {
     }
 
     private List<String> getAllParameters(List<String> params) {
-        List<String> allParams = new ArrayList<String>(DEFAULT_PARAMS.size() + params.size());
+        List<String> allParams = new ArrayList<>(DEFAULT_PARAMS.size() + params.size());
         allParams.addAll(DEFAULT_PARAMS);
         allParams.addAll(params);
         return allParams;

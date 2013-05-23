@@ -391,7 +391,7 @@ public final class ProjectPropertiesSupport {
                 getString(project, PhpProjectProperties.DEBUG_PATH_MAPPING_LOCAL, null), PhpProjectProperties.DEBUG_PATH_MAPPING_SEPARATOR);
         int remotesSize = remotes.size();
         int localsSize = locals.size();
-        List<Pair<String, String>> paths = new ArrayList<Pair<String, String>>(remotesSize);
+        List<Pair<String, String>> paths = new ArrayList<>(remotesSize);
         for (int i = 0; i < remotesSize; ++i) {
             String remotePath = remotes.get(i);
             if (StringUtils.hasText(remotePath)) {

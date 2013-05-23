@@ -140,7 +140,7 @@ final class ProjectClassPathImplementation implements ClassPathImplementation, P
     }
 
     private List<PathResourceImplementation> getPath() {
-        List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>();
+        List<PathResourceImplementation> result = new ArrayList<>();
         for (String p : propertyNames) {
             String prop = evaluator.getProperty(p);
             if (prop != null) {

@@ -83,7 +83,7 @@ public final class ApiGenPreferences {
             return phpModule.getProperties().getEncoding();
         }
     };
-    public static final Property<String> EXCLUDES = new Property<String>("excludes"); // NOI18N
+    public static final Property<String> EXCLUDES = new Property<>("excludes"); // NOI18N
     public static final Property<String> ACCESS_LEVELS = new Property<String>("accessLevels") { // NOI18N
         @Override
         public String getDefaultValue(PhpModule phpModule) {
@@ -132,10 +132,10 @@ public final class ApiGenPreferences {
             return ApiGenScript.DEFAULT_SOURCE_CODE;
         }
     };
-    public static final Property<Boolean> HAS_CONFIG = new Property<Boolean>("hasConfig"); // NOI18N
+    public static final Property<Boolean> HAS_CONFIG = new Property<>("hasConfig"); // NOI18N
 
     // package private
-    static final Property<Object> TARGET = new Property<Object>("target"); // NOI18N
+    static final Property<Object> TARGET = new Property<>("target"); // NOI18N
 
     private static final String DEFAULT_VALUE = ""; // NOI18N
     private static final String SEPARATOR = ","; // NOI18N

@@ -202,7 +202,7 @@ public class UserAnnotationPanel extends JPanel {
     }
 
     private EnumMap<UserAnnotationTag.Type, JCheckBox> createTypeCheckBoxes() {
-        EnumMap<UserAnnotationTag.Type, JCheckBox> map = new EnumMap<UserAnnotationTag.Type, JCheckBox>(UserAnnotationTag.Type.class);
+        EnumMap<UserAnnotationTag.Type, JCheckBox> map = new EnumMap<>(UserAnnotationTag.Type.class);
         for (UserAnnotationTag.Type type : UserAnnotationTag.Type.values()) {
             JCheckBox checkBox;
             switch (type) {

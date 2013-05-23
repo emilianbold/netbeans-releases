@@ -58,7 +58,7 @@ public class Doctrine2CommandsXmlParserTest extends NbTestCase {
     public void testParseCommands() throws Exception {
         Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "doctrine2-commands.xml")));
 
-        List<Doctrine2CommandVO> commands = new ArrayList<Doctrine2CommandVO>();
+        List<Doctrine2CommandVO> commands = new ArrayList<>();
         Doctrine2CommandsXmlParser.parse(reader, commands);
 
         assertFalse(commands.isEmpty());
@@ -101,7 +101,7 @@ public class Doctrine2CommandsXmlParserTest extends NbTestCase {
     public void testIssue213542() throws Exception {
         Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "commands-issue213542.xml")));
 
-        List<Doctrine2CommandVO> commands = new ArrayList<Doctrine2CommandVO>();
+        List<Doctrine2CommandVO> commands = new ArrayList<>();
         Doctrine2CommandsXmlParser.parse(reader, commands);
 
         assertFalse(commands.isEmpty());
