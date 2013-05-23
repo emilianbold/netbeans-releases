@@ -141,7 +141,7 @@ public class PhpRenameRefactoringPlugin extends PhpWhereUsedQueryPlugin {
     }
 
     private void refactorElement(ModificationResult modificationResult, WhereUsedElement whereUsedElement) {
-        List<Difference> diffs = new ArrayList<Difference>();
+        List<Difference> diffs = new ArrayList<>();
         diffs.add(new Difference(Difference.Kind.CHANGE,
                 whereUsedElement.getPosition().getBegin(),
                 whereUsedElement.getPosition().getEnd(),
