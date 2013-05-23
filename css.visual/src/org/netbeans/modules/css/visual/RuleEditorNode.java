@@ -134,7 +134,7 @@ public class RuleEditorNode extends AbstractNode {
     public Rule getRule() {
         return panel.getRule();
     }
-
+    
     public boolean isShowAllProperties() {
         return panel.getViewMode().isShowAllProperties();
     }
@@ -443,7 +443,7 @@ public class RuleEditorNode extends AbstractNode {
                 
                 //do NOT show all properties
                 //Add the fake "Add Property" FeatureDescriptor at the end of the set
-                if(panel.getCreatedDeclaration() == null) {
+                if(getModel().canApplyChanges() && panel.getCreatedDeclaration() == null) {
                     //do not add the "Add Property" item when we are editing value of the just added property
                     set.add_Add_Property_FeatureDescriptor();
                 }
@@ -753,7 +753,7 @@ public class RuleEditorNode extends AbstractNode {
             super(propertyName,
                     String.class,
                     propertyDisplayName,
-                    null, true, getRule().isValid());
+                    null, true, getModel().canApplyChanges() && getRule().isValid());
             this.propertyName = propertyName;
             this.propertyDeclaration = declaration;
             this.markAsModified = markAsModified;
@@ -765,7 +765,7 @@ public class RuleEditorNode extends AbstractNode {
             //setValue("inplaceEditor", new MyInplaceEditor());
 
         }
-
+        
         public PropertyDeclaration getDeclaration() {
             return propertyDeclaration;
         }
