@@ -634,7 +634,7 @@ declaration
     | (sass_nested_properties)=>sass_nested_properties { declarationType = DeclarationType.BLOCK; }
     | (propertyDeclaration)=>propertyDeclaration { declarationType = DeclarationType.COMMAND; }
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
-    | (~(LBRACE|SEMI|RBRACE|COLON)* COLON)=>propertyDeclaration { declarationType = DeclarationType.COMMAND; }
+    | (property COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration { declarationType = DeclarationType.COMMAND; }
     | (rule)=>rule { declarationType = DeclarationType.BLOCK; }
     | {isCssPreprocessorSource()}? at_rule { declarationType = DeclarationType.BLOCK; }
     | {isScssSource()}? sass_control { declarationType = DeclarationType.COMMAND; }

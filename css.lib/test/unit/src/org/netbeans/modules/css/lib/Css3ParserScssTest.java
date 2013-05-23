@@ -968,7 +968,6 @@ public class Css3ParserScssTest extends CssTestBase {
 ////        TestUtil.dumpResult(result);
 //        assertResult(result, 0);
 //    }
-
     public void testLocalVariableDeclaration() {
         String source =
                 "p {\n"
@@ -1374,15 +1373,33 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "); "
                 + "}");
     }
-    
+
     public void testNestedRules2() throws ParseException, BadLocationException {
         assertParses("x { y {} z {} }");
         assertParses("x { y {} }");
     }
-    
+
     public void testNestedIfs() throws ParseException, BadLocationException {
         assertParses("x { @if true {} }");
         assertParses("x { @if $a==10 {} }");
         assertParses("x { @if true {} @if false {} }");
     }
+
+    public void testNestedRuleNotParsedAsDeclaration() {
+        String cssCode = "x {\n"
+                + "    a, a:hover {\n"
+                + "    }\n"
+                + "}";
+        
+        CssParserResult result = TestUtil.parse(cssCode);
+        Node tree = result.getParseTree();
+//        NodeUtil.dumpTree(tree);
+        Node node = NodeUtil.query(tree, "styleSheet/body/bodyItem/rule/declarations/declaration/rule");
+        assertNotNull(node);
+        assertEquals(NodeType.rule, node.type());
+        
+        assertResultOK(result);
+        
+    }
+   
 }

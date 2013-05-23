@@ -331,7 +331,7 @@ public class RefactoringUtils {
         try {
             new DefaultVisitor() {
 
-                private Stack<ASTNode> s = new Stack<ASTNode>();
+                private Stack<ASTNode> s = new Stack<>();
 
                 @Override
                 public void scan(ASTNode node) {
@@ -347,7 +347,7 @@ public class RefactoringUtils {
                 }
             }.scan(RefactoringUtils.getRoot(info));
         } catch (Result r) {
-            return new LinkedList<ASTNode>(r.result);
+            return new LinkedList<>(r.result);
         }
 
         return Collections.emptyList();

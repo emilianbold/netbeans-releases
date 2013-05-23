@@ -179,7 +179,7 @@ public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
     }
     
     public void testPropertyNames_04() throws Exception {
-        checkAppliedCompletion("testfiles/completion/propertyNames.js", "    ^    // here cc 02", "                        ^", "success", false);
+        checkAppliedCompletion("testfiles/completion/propertyNames02.js", "    ^    // here cc 02", "                        ^", "success", false);
     }
     
     @Override
