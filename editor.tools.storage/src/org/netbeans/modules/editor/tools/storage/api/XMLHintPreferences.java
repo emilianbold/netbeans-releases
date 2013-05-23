@@ -65,6 +65,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
+import org.openide.xml.EntityCatalog;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -224,7 +225,7 @@ class XMLHintPreferences extends AbstractPreferences {
         
         if (file.canRead()) {
             try(InputStream in = new BufferedInputStream(new FileInputStream(file))) {
-                doc = XMLUtil.parse(new InputSource(in), false, false, null, null);
+                doc = XMLUtil.parse(new InputSource(in), false, false, null, EntityCatalog.getDefault());
             } catch (SAXException | IOException ex) {
                 LOG.log(Level.FINE, null, ex);
             }

@@ -71,10 +71,9 @@ import org.openide.util.MutexException;
 public final class J2SEDeployProperties {
 
     // Deployment - native packaging
-    public static final String JAVASE_NATIVE_BUNDLING_ENABLED = "native.bundling.enabled"; //NOI18N
+    public static final String NATIVE_BUNDLING_ENABLED = "native.bundling.enabled"; //NOI18N
     // copied from JFXProjectProperties
     public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
-
     private static final String J2SEDEPLOY_EXTENSION = "j2sedeploy";    //NOI18N
     private static final String BUILD_SCRIPT_PROTOTYPE = String.format(
         "%s/resources/build-native-prototype.xml",  //NOI18N
@@ -145,7 +144,7 @@ public final class J2SEDeployProperties {
         if (project != null) {
             j2sePropEval = project.getLookup().lookup(J2SEPropertyEvaluator.class);
             evaluator = j2sePropEval.evaluator();
-            nativeBundlingEnabled = isTrue(evaluator.getProperty(JAVASE_NATIVE_BUNDLING_ENABLED));
+            nativeBundlingEnabled = isTrue(evaluator.getProperty(NATIVE_BUNDLING_ENABLED));
         }
     }
     
@@ -167,7 +166,7 @@ public final class J2SEDeployProperties {
                     try (final InputStream is = projPropsFO.getInputStream()) {
                         ep.load(is);
                     }
-                    setOrRemove(ep, JAVASE_NATIVE_BUNDLING_ENABLED, nativeBundlingEnabled ? "true" : null); //NOI18N
+                    setOrRemove(ep, NATIVE_BUNDLING_ENABLED, nativeBundlingEnabled ? "true" : null); //NOI18N
                     FileLock lock = projPropsFO.lock();
                     try (OutputStream os = projPropsFO.getOutputStream(lock)) {
                         ep.store(os);

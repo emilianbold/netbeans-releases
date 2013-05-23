@@ -198,8 +198,8 @@ public final class JFXProjectProperties {
     public static final String JAVAFX_SIGNING_BLOB = "javafx.signing.blob"; //NOI18N
     
     // Deployment - native packaging
-    public static final String JAVAFX_NATIVE_BUNDLING_ENABLED = "javafx.native.bundling.enabled"; //NOI18N
-    public static final String JAVAFX_NATIVE_BUNDLING_TYPE = "javafx.native.bundling.type"; //NOI18N
+    public static final String NATIVE_BUNDLING_ENABLED = "native.bundling.enabled"; //NOI18N
+    public static final String NATIVE_BUNDLING_TYPE = "native.bundling.type"; //NOI18N
     //public static final String JAVASE_NATIVE_BUNDLING_ENABLED = "native.bundling.enabled"; //NOI18N
 
     // Deployment - common and SE specific
@@ -472,27 +472,11 @@ public final class JFXProjectProperties {
     }
 
     boolean nativeBundlingEnabled;
-    BundlingType nativeBundlingType;
     public boolean getNativeBundlingEnabled() {
         return nativeBundlingEnabled;
     }
     public void setNativeBundlingEnabled(boolean enabled) {
         this.nativeBundlingEnabled = enabled;
-    }
-    public BundlingType getNativeBundlingType() {
-        return nativeBundlingType;
-    }
-    public void setNativeBundlingType(BundlingType type) {
-        this.nativeBundlingType = type;
-    }
-    public boolean setNativeBundlingType(String type) {
-        for (BundlingType bundleType : BundlingType.values()) {
-            if(bundleType.getValue().equalsIgnoreCase(type)) {
-                this.nativeBundlingType = bundleType;
-                return true;
-            }
-        }
-        return false;
     }
     
     // in SE project - keep jfxrt.jar on classpath
@@ -1238,8 +1222,7 @@ public final class JFXProjectProperties {
         setOrRemove(privProps, JAVAFX_SIGNING_KEYSTORE_PASSWORD, signingKeyStorePassword);
         setOrRemove(privProps, JAVAFX_SIGNING_KEY_PASSWORD, signingKeyPassword);        
         // store native bundling info
-        editableProps.setProperty(JAVAFX_NATIVE_BUNDLING_ENABLED, nativeBundlingEnabled ? "true" : "false"); //NOI18N
-        editableProps.setProperty(JAVAFX_NATIVE_BUNDLING_TYPE, nativeBundlingType.getValue().toLowerCase());
+        editableProps.setProperty(NATIVE_BUNDLING_ENABLED, nativeBundlingEnabled ? "true" : "false"); //NOI18N
         // store icons
         setOrRemove(editableProps, ICON_FILE, wsIconPath);
         setOrRemove(editableProps, SPLASH_IMAGE_FILE, splashImagePath);
@@ -1449,46 +1432,8 @@ public final class JFXProjectProperties {
     private void initNativeBundling(PropertyEvaluator eval) {
         String fxEnabled = evaluator.getProperty(JFXProjectProperties.JAVAFX_ENABLED);
         if(isTrue(fxEnabled)) {
-            String enabled = eval.getProperty(JAVAFX_NATIVE_BUNDLING_ENABLED);
-            String bundleProp = eval.getProperty(JAVAFX_NATIVE_BUNDLING_TYPE);
+            String enabled = eval.getProperty(NATIVE_BUNDLING_ENABLED);
             nativeBundlingEnabled = isTrue(enabled);
-            nativeBundlingType = BundlingType.NONE;
-            if(bundleProp != null) {
-                if(bundleProp.equalsIgnoreCase(BundlingType.ALL.getValue())) {
-                    nativeBundlingType = BundlingType.ALL;
-                } else {
-                    if(bundleProp.equalsIgnoreCase(BundlingType.IMAGE.getValue())) {
-                        nativeBundlingType = BundlingType.IMAGE;
-                    } else {
-                        if(bundleProp.equalsIgnoreCase(BundlingType.INSTALLER.getValue())) {
-                            nativeBundlingType = BundlingType.INSTALLER;
-                        } else {
-                            if(bundleProp.equalsIgnoreCase(BundlingType.DEB.getValue())) {
-                                nativeBundlingType = BundlingType.DEB;
-                            } else {
-                                if(bundleProp.equalsIgnoreCase(BundlingType.DMG.getValue())) {
-                                    nativeBundlingType = BundlingType.DMG;
-                                } else {
-                                    if(bundleProp.equalsIgnoreCase(BundlingType.EXE.getValue())) {
-                                        nativeBundlingType = BundlingType.EXE;
-                                    } else {
-                                        if(bundleProp.equalsIgnoreCase(BundlingType.MSI.getValue())) {
-                                            nativeBundlingType = BundlingType.MSI;
-                                        } else {
-                                            if(bundleProp.equalsIgnoreCase(BundlingType.RPM.getValue())) {
-                                                nativeBundlingType = BundlingType.RPM;
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-//        } else {
-//            String enabled = eval.getProperty(JAVASE_NATIVE_BUNDLING_ENABLED);
-//            nativeBundlingEnabled = isTrue(enabled);
         }
     }
     

@@ -74,6 +74,8 @@ import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.modules.javafx2.platform.api.JavaFxRuntimeInclusion;
 import org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.WizardType;
+import org.netbeans.modules.javafx2.project.ui.JSEApplicationClassChooser;
+import org.netbeans.spi.project.ProjectIconAnnotator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -85,9 +87,9 @@ import org.openide.cookies.CloseCookie;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -121,6 +123,9 @@ public final class JFXProjectUtils {
     private static volatile String currentJfxImplCRCCache;
     private static final String JFXRT_JAR_NAME = "jfxrt.jar"; // NOI18N
     private static final String JFXRT_RELATIVE_LOCATIONS[] = new String[]{"lib", "lib" + File.separatorChar + "ext"}; // NOI18N
+    // from J2SEDeployProperties
+    private static final String J2SEDEPLOY_EXTENSION = "j2sedeploy";    //NOI18N
+    private static final String EXTENSION_BUILD_SCRIPT_PATH = "nbproject/build-native.xml";        //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
     
@@ -554,7 +559,7 @@ public final class JFXProjectUtils {
      * @param preloader
      * @throws MissingResourceException 
      */
-    static void initializeJavaFXProperties(@NonNull EditableProperties ep, @NonNull WizardType type, @NonNull String platformName, @NonNull String mainClass, String preloader) throws MissingResourceException {
+    static void initializeJavaFXProperties(@NonNull EditableProperties ep, @NonNull WizardType type, String targetPlatformName, @NonNull String mainClass, String preloader) throws MissingResourceException {
         ep.setProperty(JFXProjectProperties.JAVAFX_ENABLED, "true");
         ep.setComment(JFXProjectProperties.JAVAFX_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_javafx")}, false);
         ep.setProperty("jnlp.enabled", "false");
@@ -573,7 +578,10 @@ public final class JFXProjectUtils {
         ep.setProperty(JFXProjectProperties.UPDATE_MODE_BACKGROUND, "false");
         ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, type == WizardType.SWING ? "COMMENT_updatemode_swing" : "COMMENT_updatemode")}, false);
         ep.setProperty(JFXProjectProperties.ALLOW_OFFLINE, "true");
-        Collection<String> extensions = JavaFxRuntimeInclusion.getProjectClassPathExtension(JavaFXPlatformUtils.findJavaPlatform(platformName));
+        if(targetPlatformName == null) {
+            targetPlatformName = ep.getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
+        }
+        Collection<String> extensions = JavaFxRuntimeInclusion.getProjectClassPathExtension(JavaFXPlatformUtils.findJavaPlatform(targetPlatformName));
         if (extensions != null && !extensions.isEmpty()) {
             ep.setProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION, JFXProjectUtils.getPaths(extensions));
             ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, new String[]{JavaFXPlatformUtils.getClassPathExtensionProperty()});
@@ -627,6 +635,8 @@ public final class JFXProjectUtils {
         }
         ep.setProperty(JFXProjectProperties.IMPLEMENTATION_VERSION, JFXProjectProperties.IMPLEMENTATION_VERSION_DEFAULT);
         ep.setProperty(JFXProjectProperties.FALLBACK_CLASS, "com.javafx.main.NoJavaFXFallback");
+        // SE->FX conversion cleanup
+        ep.remove(JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH);
     }
 
     /**
@@ -634,8 +644,7 @@ public final class JFXProjectUtils {
      * @param project
      * @throws IOException 
      */
-    public static void resetJavaFXProjectProperties(@NonNull final Project project, @NonNull final WizardType type, @NonNull final String platformName, @NonNull final String mainClass, final String preloader) throws IOException {
-        final boolean hasDefaultJavaFXPlatform[] = new boolean[1];
+    public static void resetJavaFXProjectProperties(@NonNull final Project project, @NonNull final WizardType type, final String targetPlatformName, @NonNull final String mainClass, final String preloader) throws IOException {
         final EditableProperties ep = new EditableProperties(true);
         final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         try {
@@ -644,17 +653,25 @@ public final class JFXProjectUtils {
                 public Void run() throws Exception {
                     final Lookup lookup = project.getLookup();
                     final J2SEPropertyEvaluator eval = lookup.lookup(J2SEPropertyEvaluator.class);
+                    String platformNameToCheck = null;
                     if (eval != null) {
-                        // if project has platform without FX, change it
-                        String platformName = eval.evaluator().getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
-                        
-                        // TODO
-                    }
-                    if(hasDefaultJavaFXPlatform[0]) {
-                        final J2SEProjectPlatform platformSetter = lookup.lookup(J2SEProjectPlatform.class);
-                        if(platformSetter != null) {
-                            // TODO
-                            platformSetter.setProjectPlatform(JavaPlatformManager.getDefault().getDefaultPlatform());
+                        String currentPlatformName = eval.evaluator().getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
+                        platformNameToCheck = currentPlatformName;
+                        JavaPlatform platform = null;
+                        if(targetPlatformName == null) {
+                            platform = JavaFXPlatformUtils.findJavaPlatform(currentPlatformName);
+                        } else {
+                            platform = JavaFXPlatformUtils.findJavaPlatform(targetPlatformName);
+                        }
+                        if(platform == null || !JavaFXPlatformUtils.isJavaFXEnabled(platform)) {
+                            platform = JavaFXPlatformUtils.findJavaFXPlatform();
+                        }
+                        if(platform != null && !JFXProjectProperties.isEqual(currentPlatformName, JavaFXPlatformUtils.getPlatformAntName(platform))) {
+                            final J2SEProjectPlatform platformSetter = lookup.lookup(J2SEProjectPlatform.class);
+                            if(platformSetter != null) {
+                                platformSetter.setProjectPlatform(platform);
+                                platformNameToCheck = JavaFXPlatformUtils.getPlatformAntName(platform);
+                            }
                         }
                     }
                     final InputStream is = projPropsFO.getInputStream();
@@ -665,7 +682,7 @@ public final class JFXProjectUtils {
                             is.close();
                         }
                     }
-                    initializeJavaFXProperties(ep, type, platformName, mainClass, preloader);
+                    initializeJavaFXProperties(ep, type, platformNameToCheck, mainClass, preloader);
                     OutputStream os = null;
                     FileLock lock = null;
                     try {
@@ -752,51 +769,74 @@ public final class JFXProjectUtils {
     }
 
     /**
+     * Remove SE native packaging extension and build script
+     * @param project 
+     */
+    static void removeSENativeBundlerExtension(@NonNull Project project) throws IOException {
+        final AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
+        if (extender != null) {
+            AntBuildExtender.Extension extension = extender.getExtension(J2SEDEPLOY_EXTENSION);
+            if (extension != null) {
+                extender.removeExtension(J2SEDEPLOY_EXTENSION);
+            }
+            final FileObject buildExFo = project.getProjectDirectory().getFileObject(EXTENSION_BUILD_SCRIPT_PATH);
+            if (buildExFo != null) {
+                buildExFo.delete();
+            }
+        }
+    }
+    
+    /**
      * Modify Java Application (SE) project to become JavaFX Application, i.e.,
      * set Application class, create FX build scripts, modify properties,
      * and turn on FX mode by setting property javafx.enabled=true;
      * @param project
      * @throws IOException 
      */
-    public static void switchProjectToFX(@NonNull final Project project) throws IOException {
+    public static void switchProjectToFX(@NonNull final Project project, @NonNull final JSEApplicationClassChooser chooser) throws IOException {
         final FileObject dirFO = project.getProjectDirectory();
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
+                removeSENativeBundlerExtension(project);
                 createJfxExtension(project, dirFO, WizardType.APPLICATION);
+                ProjectManager.getDefault().saveProject(project);
                 updateJFXExtension(project);
-                // TODO
-                resetJavaFXProjectProperties(project, WizardType.APPLICATION, "default_platform", "mainClass", null); // NOI18N
-//                try {
-//                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-//                        @Override
-//                        public Void run() throws Exception {
-//                            copyRequiredLibraries(h[0], refHelper);
-//                            return null;
-//                        }
-//                    });
-//                } catch (MutexException ex) {
-//                    Exceptions.printStackTrace(ex.getException());
-//                }
-//                FileObject srcFolder = dirFO.createFolder("src"); // NOI18N
-////                dirFO.createFolder("test"); // NOI18N
-//                createFiles(mainClass, fxmlName, srcFolder, type);
+                
+                //set main class
+                String appClass = chooser.getSelectedExistingClass();
+                if(appClass == null) {
+                    FileObject dirController = chooser.getCurrentPackageFolder(true);
+                    DataFolder packageDataFolder = DataFolder.findFolder(dirController);
+                    String newClassName = chooser.getCurrentFileName();
+                    if (packageDataFolder != null) {
+                        FileObject javaTemplate = FileUtil.getConfigFile("Templates/javafx/FXMain.java"); // NOI18N
+                        DataObject dJavaTemplate = DataObject.find(javaTemplate);
+                        DataObject dobj = dJavaTemplate.createFromTemplate(packageDataFolder, newClassName);
+                    }
+                    appClass = chooser.getPackageName() + "." + newClassName; // NOI18N
+                }
+                resetJavaFXProjectProperties(project, WizardType.APPLICATION, null, appClass, null); // NOI18N
+                
+                for (ProjectIconAnnotator annotator : Lookup.getDefault().lookupAll(ProjectIconAnnotator.class)) {
+                    if(annotator instanceof JFXProjectIconAnnotator) {
+                        JFXProjectIconAnnotator fxAnnotator = (JFXProjectIconAnnotator) annotator;
+                        fxAnnotator.fireChange(project, true);
+                    }
+                }
             }
         });
-        if(true) {
-            // TODO notify that project type has changed
-            final String headerTemplate = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_DEFAULT_PLATFORM_HEADER"); //NOI18N
-            final String header = MessageFormat.format(headerTemplate, new Object[] {ProjectUtils.getInformation(project).getDisplayName()});
-            final String content = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_DEFAULT_PLATFORM_CONTENT"); //NOI18N
-            Notification notePlatformChange = NotificationDisplayer.getDefault().notify(
-                    header, 
-                    ImageUtilities.loadImageIcon("org/netbeans/modules/javafx2/project/ui/resources/jfx_project.png", true), //NOI18N
-                    content, 
-                    null, 
-                    NotificationDisplayer.Priority.LOW, 
-                    NotificationDisplayer.Category.INFO);
-            JFXProjectOpenedHook.addNotification(project, notePlatformChange);
-        }
+        final String headerTemplate = NbBundle.getMessage(JFXProjectUtils.class, "TXT_SWITCHED_SE_TO_FX_HEADER"); //NOI18N
+        final String header = MessageFormat.format(headerTemplate, new Object[] {ProjectUtils.getInformation(project).getDisplayName()});
+        final String content = NbBundle.getMessage(JFXProjectUtils.class, "TXT_SWITCHED_SE_TO_FX_CONTENT"); //NOI18N
+        Notification notePlatformChange = NotificationDisplayer.getDefault().notify(
+                header, 
+                ImageUtilities.loadImageIcon("org/netbeans/modules/javafx2/project/ui/resources/jfx_project.png", true), //NOI18N
+                content, 
+                null, 
+                NotificationDisplayer.Priority.LOW, 
+                NotificationDisplayer.Category.INFO);
+        JFXProjectOpenedHook.addNotification(project, notePlatformChange);
     }
     
     /**
