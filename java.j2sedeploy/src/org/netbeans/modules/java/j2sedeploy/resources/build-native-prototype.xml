@@ -52,7 +52,18 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
          xmlns:j2seproject3="http://www.netbeans.org/ns/j2se-project/3" xmlns:fx="javafx:com.sun.javafx.tools.ant">
     <description>Native Packager Ant calls based on SE support in JavaFX packager</description>
 
+    <target name="-j2sedeploy-extend-manifest" depends="init,-do-jar-create-manifest,-do-jar-copy-manifest,-j2sedeploy-extend-manifest-init" if="j2sedeploy.extend.manifest.true">
+        <manifest file="${tmp.manifest.file}" mode="update">
+            <attribute name="JavaFX-Application-Class" value="${main.class}"/>
+        </manifest>
+    </target>
 
+    <target name="-j2sedeploy-extend-manifest-init">
+        <condition property="j2sedeploy.extend.manifest.true">
+            <istrue value="${j2sedeploy.extend.manifest}"/>
+        </condition>
+    </target>
+    
     <!-- Check system and JDK version -->
 
     <target name="-check-operating-system">
@@ -292,7 +303,11 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
         
     <!-- Native Packaging main target -->    
     
-    <target name="build-native" depends="-set-do-build-native-package, -check-ant-jre-supports-native-packaging, -check-native-packager-external-tools, fx-jar-impl, build-native-impl"/>
+    <target name="build-native" depends="-set-do-build-native-package, -check-ant-jre-supports-native-packaging, -check-native-packager-external-tools, jar, -build-native-impl, -post-build-native-cleanup"/>
+
+    <target name="build-native-noscript">
+        <fail message="Java Application Native Packager requires JDK JavaScript support but has not found any."/>
+    </target>
 
     <target name="-check-do-jar">
         <condition property="do-jar-false">
@@ -442,253 +457,9 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
     </target>
 
     
-    <!-- Copy dependent libraries -->
-    
-    <target name="-jfx-copylibs" depends="init,compile,-pre-pre-jar,-pre-jar,-jfx-copylibs-warning" unless="fallback.no.javascript">
-        <jfx-copylibs-js-impl/>
-    </target>
-    <target name="-jfx-copylibs-warning" if="fallback.no.javascript">
-        <echo message="Warning: Dependent Libraries copy (-jfx-copylibs) skipped in fallback build mode due to JDK missing JavaScript support."/>
-    </target>
-    <macrodef name="jfx-copylibs-js-impl">
-        <sequential>
-            <local name="run.classpath.without.build.classes.and.dist.dir"/>
-            <pathconvert property="run.classpath.without.build.classes.and.dist.dir">
-                <path path="${run.classpath}"/>
-                <map from="${basedir}${file.separator}${build.classes.dir}" to=""/>
-                <map from="${basedir}${file.separator}${dist.jar}" to=""/>
-                <scriptmapper language="javascript">
-                    self.addMappedName(
-                        (source.indexOf("jfxrt.jar") >= 0) ||
-                        (source.indexOf("deploy.jar") >= 0) ||
-                        (source.indexOf("javaws.jar") >= 0) ||
-                        (source.indexOf("plugin.jar") >= 0)
-                        ? "" : source
-                    );
-                </scriptmapper>
-            </pathconvert>
-            <!-- add possibly missing dependencies at distance 2 (build system logic thus provides transitive closure) -->
-            <local name="run.and.lib.classpath"/>
-            <echo message="JavaScript: -jfx-copylibs" level="verbose"/>
-            <script language="javascript">
-                <![CDATA[
-                    function prefix(s, len) {
-                        if(s == null || len <= 0 || s.length == 0) {
-                            return new String("");
-                        }
-                        return new String(s.substr(0, len));
-                    }
-                    function defined(s) {
-                        return (s != null) && (s != "null") && (s.length > 0);
-                    }
-                    var classPath = new String(project.getProperty("run.classpath.without.build.classes.and.dist.dir"));
-                    if(defined(classPath)) {
-                        var fileSeparator = new String(project.getProperty("file.separator"));
-                        var pathConvert = project.createTask("pathconvert");
-                        pathConvert.setProperty("run.and.lib.classpath");
-                        var classPathCopy = pathConvert.createPath();
-                        classPathCopy.setPath(classPath);
-                        var pathArray;
-                        if(classPath.indexOf(";") != -1) {
-                            pathArray = classPath.split(";");
-                        } else {
-                            pathArray = classPath.split(":");
-                        }
-                        var added = new java.lang.StringBuilder();
-                        for (var i = 0; i < pathArray.length; i++) {
-                            var index = pathArray[i].lastIndexOf(fileSeparator);
-                            if (index >= 0) {
-                                var onePath = prefix(pathArray[i], index+1).concat("lib");
-                                var oneDir = new java.io.File(onePath);
-                                if(oneDir.exists()) {
-                                    var fs = project.createDataType( "fileset" );
-                                    fs.setDir( oneDir );
-                                    fs.setIncludes("*.jar");
-                                    var ds = fs.getDirectoryScanner(project);
-                                    var srcFiles = ds.getIncludedFiles();
-                                    for (var j = 0; j < srcFiles.length; j++) {
-                                        if(classPath.indexOf( srcFiles[j] ) == -1 && added.indexOf( srcFiles[j] ) == -1) {
-                                            var path = pathConvert.createPath();
-                                            path.setPath( onePath.concat(fileSeparator).concat(srcFiles[j]) );
-                                            added.append( srcFiles[j] );
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        pathConvert.perform();
-                    }
-                ]]>
-            </script>
-            <echo message="run.and.lib.classpath = ${run.and.lib.classpath}" level="verbose"/>
-            <property name="run.and.lib.classpath" value=""/> <!-- fallback -->
-            <delete dir="${dist.dir}${file.separator}lib" includeEmptyDirs="true" quiet="true"/>
-            <copy todir="${dist.dir}${file.separator}lib" flatten="true" preservelastmodified="true" overwrite="true">
-                <path>
-                    <pathelement path="${run.and.lib.classpath}"/>
-                </path>
-            </copy>
-        </sequential>
-    </macrodef>
-
-
-    <!-- <fx:jar> replacing standard jar, because native packager up to JDK7u21 refuses to package standard jars -->    
-    
-    <target name="fx-jar-impl" depends="-check-jfx-sdk-version, -check-ant-javafx-version, -check-ant-jre-version, clean, compile, -jfx-copylibs">
-        <echo message="javafx.ant.classpath = ${javafx.ant.classpath}" level="verbose"/>
-        <typedef name="fx_jar" classname="com.sun.javafx.tools.ant.FXJar" classpath="${javafx.ant.classpath}"/>
-        <echo message="Launching &lt;fx:jar&gt; task from ${ant-javafx.jar.location}" level="info"/>
-        <property name="deployment.dir" location="${dist.dir}"/>
-        <basename property="deployment.jar" file="${dist.jar}"/>
-        <property name="pp_jar_destfile" value="${deployment.dir}${file.separator}${deployment.jar}"/>
-        <property name="pp_jar_buildclasses" value="${basedir}${file.separator}${build.classes.dir}"/>
-        <property name="pp_jar_dir" value="${deployment.dir}"/>
-        <property name="pp_jar_fs2" value="lib${file.separator}*.jar"/>
-        <echo message="fx_jar: pp_jar_destfile = ${pp_jar_destfile}" level="verbose"/>
-        <echo message="fx_jar: pp_jar_buildclasses = ${pp_jar_buildclasses}" level="verbose"/>
-        <echo message="fx_jar: pp_jar_dir = ${pp_jar_dir}" level="verbose"/>
-        <echo message="fx_jar: pp_jar_fs2 = ${pp_jar_fs2}" level="verbose"/>
-        <echo message="JavaScript: fx-jar" level="verbose"/>
-        <script language="javascript">
-            <![CDATA[
-                function isTrue(prop) {
-                    return prop != null &&
-                       ( prop.toLowerCase() == "true" || prop.toLowerCase() == "yes" || prop.toLowerCase() == "on" );
-                }                    
-                function prefix(s, len) {
-                    if(s == null || len <= 0 || s.length == 0) {
-                        return new String("");
-                    }
-                    return new String(s.substr(0, len));
-                }
-                function replaceSuffix(s, os, ns) {
-                    return prefix(s, s.indexOf(os)).concat(ns);
-                }
-                function startsWith(s, prefix) {
-                    return (s != null) && (s.indexOf(prefix) == 0);
-                }
-                function endsWith(s, suffix) {
-                    var i = s.lastIndexOf(suffix);
-                    return  (i != -1) && (i == (s.length - suffix.length));
-                }
-                function defined(s) {
-                    return (s != null) && (s != "null") && (s.length > 0);
-                }
-                function contains(array, prop) {
-                    for (var i = 0; i < array.length; i++) {
-                        var s1 = new String(array[i]);
-                        var s2 = new String(prop);
-                        if( s1.toLowerCase() == s2.toLowerCase() ) {
-                            return true;
-                        }
-                    }
-                    return false;
-                }
-                var S = new String(java.io.File.separator);
-                var JFXLAZY = "download.mode.lazy.jar";
-                var fx_ant_api_1_1 = new String(project.getProperty("have-fx-ant-api-1.1"));
-                var fx_ant_api_1_2 = new String(project.getProperty("have-fx-ant-api-1.2"));
-
-                // get jars with lazy download mode property set
-                function getLazyJars() {
-                    var jars = new Array();
-                    var keys = project.getProperties().keys();
-                    while(keys.hasMoreElements()) {
-                        var pn = new String(keys.nextElement());
-                        if(startsWith(pn, JFXLAZY)) {
-                            var fname = new String(pn.substring(JFXLAZY.length+1));
-                            jars.push(fname);
-                        }
-                    }
-                    return jars.length > 0 ? jars : null;
-                }
-                // set download mode of dependent libraries
-                function setDownloadMode(fsEager, fsLazy, jars) {
-                    for(var i = 0; i < jars.length; i++) {
-                        fsEager.setExcludes("lib" + S + jars[i]);
-                        fsLazy.setIncludes("lib" + S + jars[i]);
-                    }
-                }
-
-                // fx:jar
-                var jar = project.createTask("fx_jar");
-                jar.setProject(project);
-                var destfile = new String(project.getProperty("pp_jar_destfile"));
-                jar.setDestfile(destfile);
-
-                // fx:application
-                var app = jar.createApplication();
-                app.setProject(project);
-                var title = new String(project.getProperty("application.title"));
-                var mainclass;
-                mainclass = new String(project.getProperty("main.class"));
-                if(isTrue(fx_ant_api_1_2)) {
-                    app.setToolkit("swing");
-                }
-                app.setName(title);
-                app.setMainClass(mainclass);
-                var appversion = new String(project.getProperty("application.implementation.version"));
-                if(defined(appversion)) {
-                    app.setVersion(appversion);
-                } else {
-                    app.setVersion("1.0");
-                }
-
-                // fx:resources
-                var res = jar.createResources();
-                res.setProject(project);
-                var pdir = new String(project.getProperty("pp_jar_dir"));
-                var fn = res.createFileSet();
-                fn.setProject(project);
-                fn.setDir(new java.io.File(pdir));
-                var ia = new String(project.getProperty("deployment.jar"));
-                var ib = new String(project.getProperty("pp_jar_fs2"));
-                fn.setIncludes(ia);
-                fn.setIncludes(ib);
-                fn.setRequiredFor("startup");
-                var lazyjars = getLazyJars();
-                if(lazyjars != null) {
-                    var fn2 = res.createFileSet();
-                    fn2.setProject(project);
-                    fn2.setDir(new java.io.File(pdir));
-                    fn2.setRequiredFor("runtime");
-                    setDownloadMode(fn,fn2,lazyjars);
-                }
-
-                // fileset to include classes
-                var fs = jar.createFileSet();
-                fs.setProject(project);
-                var buildcls = new String(project.getProperty("pp_jar_buildclasses"));
-                fs.setDir(new java.io.File(buildcls));
-
-                // manifest
-                var man = jar.createManifest();
-                var a1val = new String(project.getProperty("application.vendor"));
-                var a1 = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
-                a1.setName("Implementation-Vendor");
-                a1.setValue(a1val);
-                man.addConfiguredAttribute(a1);
-                var a2val = new String(project.getProperty("application.title"));
-                var a2 = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
-                a2.setName("Implementation-Title");
-                a2.setValue(a2val);
-                man.addConfiguredAttribute(a2);
-                if(defined(appversion)) {
-                    var a3 = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
-                    a3.setName("Implementation-Version");
-                    a3.setValue(appversion);
-                    man.addConfiguredAttribute(a3);
-                }
-
-                jar.perform();
-            ]]>
-        </script>
-    </target>
-
-    
     <!-- Native Packaging main implementation -->    
     
-    <target name="build-native-impl" depends="-check-ant-jre-supports-native-packaging, -check-native-packager-external-tools, fx-jar-impl">
+    <target name="-build-native-impl" depends="-check-ant-jre-supports-native-packaging, -check-native-packager-external-tools, jar">
 
         <!--<property name="runtime.jre.home" value="${platform.home}"/>-->
         <echo message="javafx.ant.classpath = ${javafx.ant.classpath}" level="verbose"/>
@@ -930,5 +701,11 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
                 deploy.perform();
             ]]>
         </script>
+    </target>
+    
+    <target name="-post-build-native-cleanup">
+        <delete file="${basedir}${file.separator}${dist.dir}${file.separator}${deployment.base}.html" quiet="true"/>
+        <delete file="${basedir}${file.separator}${dist.dir}${file.separator}${deployment.base}.jnlp" quiet="true"/>
+        <delete file="${basedir}${file.separator}${dist.dir}${file.separator}${deployment.base}_browser.jnlp" quiet="true"/>
     </target>
 </project>

@@ -178,6 +178,7 @@ public final class J2SEProject implements Project {
         "-do-compile",          //NOI18N
         "-do-compile-single",   //NOI18N
         "jar",                  //NOI18N
+        "-do-jar-extend-manifest",   //NOI18N
         "-post-jar",            //NOI18N
         "run",                  //NOI18N
         "debug",                //NOI18N
