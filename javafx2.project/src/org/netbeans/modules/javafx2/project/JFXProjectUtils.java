@@ -86,7 +86,6 @@ import org.openide.cookies.CloseCookie;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -122,6 +121,9 @@ public final class JFXProjectUtils {
     private static volatile String currentJfxImplCRCCache;
     private static final String JFXRT_JAR_NAME = "jfxrt.jar"; // NOI18N
     private static final String JFXRT_RELATIVE_LOCATIONS[] = new String[]{"lib", "lib" + File.separatorChar + "ext"}; // NOI18N
+    // from J2SEDeployProperties
+    private static final String J2SEDEPLOY_EXTENSION = "j2sedeploy";    //NOI18N
+    private static final String EXTENSION_BUILD_SCRIPT_PATH = "nbproject/build-native.xml";        //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
     
@@ -628,6 +630,8 @@ public final class JFXProjectUtils {
         }
         ep.setProperty(JFXProjectProperties.IMPLEMENTATION_VERSION, JFXProjectProperties.IMPLEMENTATION_VERSION_DEFAULT);
         ep.setProperty(JFXProjectProperties.FALLBACK_CLASS, "com.javafx.main.NoJavaFXFallback");
+        // SE->FX conversion cleanup
+        ep.remove(JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH);
     }
 
     /**
@@ -753,6 +757,24 @@ public final class JFXProjectUtils {
     }
 
     /**
+     * Remove SE native packaging extension and build script
+     * @param project 
+     */
+    static void removeSENativeBundlerExtension(@NonNull Project project) throws IOException {
+        final AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
+        if (extender != null) {
+            AntBuildExtender.Extension extension = extender.getExtension(J2SEDEPLOY_EXTENSION);
+            if (extension != null) {
+                extender.removeExtension(J2SEDEPLOY_EXTENSION);
+            }
+            final FileObject buildExFo = project.getProjectDirectory().getFileObject(EXTENSION_BUILD_SCRIPT_PATH);
+            if (buildExFo != null) {
+                buildExFo.delete();
+            }
+        }
+    }
+    
+    /**
      * Modify Java Application (SE) project to become JavaFX Application, i.e.,
      * set Application class, create FX build scripts, modify properties,
      * and turn on FX mode by setting property javafx.enabled=true;
@@ -764,6 +786,7 @@ public final class JFXProjectUtils {
         dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
             @Override
             public void run() throws IOException {
+                removeSENativeBundlerExtension(project);
                 createJfxExtension(project, dirFO, WizardType.APPLICATION);
                 ProjectManager.getDefault().saveProject(project);
                 updateJFXExtension(project);
