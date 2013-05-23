@@ -77,7 +77,6 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
-import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.api.FormattingSupport;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.EncapsulateFieldRefactoring;
@@ -611,7 +610,8 @@ public final class EncapsulateFieldRefactoringPlugin extends CsmModificationRefa
                 DeclarationGenerator.Kind declKind;
                 if (refactoring.isMethodInline()) {
                     declKind = DeclarationGenerator.Kind.INLINE_DEFINITION;
-                    if (CodeStyle.getDefault(CodeStyle.Language.CPP).getUseInlineKeyword()) {
+                    Document doc = CsmUtilities.getDocument(fo);
+                    if (CodeStyle.getDefault(CodeStyle.Language.CPP, doc).getUseInlineKeyword()) {
                         declKind = DeclarationGenerator.Kind.INLINE_DEFINITION_MAKRED_INLINE;
                     }
                 } else {

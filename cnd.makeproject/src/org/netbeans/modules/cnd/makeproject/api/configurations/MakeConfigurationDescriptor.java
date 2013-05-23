@@ -1323,6 +1323,42 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             data.appendChild(nativeProjectType);
         }
 
+        // Remove old formatting node
+        nodeList = data.getElementsByTagName(MakeProjectTypeImpl.FORMATTING_STYLE_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                data.removeChild(node);
+            }
+        }
+        
+        // Create new formatting node
+        element = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.FORMATTING_STYLE_ELEMENT);
+        Node n = doc.createElement(MakeProjectTypeImpl.FORMATTING_STYLE_PROJECT_ELEMENT);
+        boolean isProject;
+        if (((MakeProject) getProject()).isProjectFormattingStyle()) {
+            n.appendChild(doc.createTextNode("true"));
+            isProject = true;
+        } else {
+            n.appendChild(doc.createTextNode("false"));
+            isProject = false;
+        }
+        element.appendChild(n);
+        if (isProject) {
+            n = doc.createElement(MakeProjectTypeImpl.C_FORMATTING_STYLE_ELEMENT);
+            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.C_MIME_TYPE)));
+            element.appendChild(n);
+
+            n = doc.createElement(MakeProjectTypeImpl.CPP_FORMATTING_STYLE_ELEMENT);
+            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.CPLUSPLUS_MIME_TYPE)));
+            element.appendChild(n);
+
+            n = doc.createElement(MakeProjectTypeImpl.HEADER_FORMATTING_STYLE_ELEMENT);
+            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.HEADER_MIME_TYPE)));
+            element.appendChild(n);
+        }
+        data.appendChild(element);
+        
         helper.putPrimaryConfigurationData(data, true);
     }
 
