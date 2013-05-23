@@ -243,7 +243,7 @@ public class SaasServicesModel {
             }
             if(service != null)
                 service.upgrade();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             Exceptions.printStackTrace(Exceptions.attachMessage(ex, "Error loading saas file: " + saasFile.getPath()));
         }
     }
