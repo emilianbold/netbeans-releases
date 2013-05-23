@@ -55,7 +55,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.util.Exceptions;
@@ -375,7 +375,7 @@ public class WindowsSupport {
         }
 
         private String getRemoteFolder(ExecutionEnvironment execEnv) {
-            return execEnv == null ? remoteFolder : CndPathUtilitities.naturalizeSlashes(FileSystemProvider.getFileSystem(execEnv), remoteFolder);
+            return execEnv == null ? remoteFolder : CndPathUtilities.naturalizeSlashes(FileSystemProvider.getFileSystem(execEnv), remoteFolder);
         }
     }
 }
