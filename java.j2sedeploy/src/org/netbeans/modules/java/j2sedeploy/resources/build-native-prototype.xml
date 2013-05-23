@@ -935,8 +935,8 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
     </target>
     
     <target name="-post-build-native-cleanup">
-        <delete file="${basedir}${file.separator}${dist.dir}${file.separator}${deployment.base}.html" quiet="true"/>
-        <delete file="${basedir}${file.separator}${dist.dir}${file.separator}${deployment.base}.jnlp" quiet="true"/>
-        <delete file="${basedir}${file.separator}${dist.dir}${file.separator}${deployment.base}_browser.jnlp" quiet="true"/>
+        <delete file="${dist.dir}/${application.title}.html" quiet="true"/>
+        <delete file="${dist.dir}/${application.title}.jnlp" quiet="true"/>
+        <delete file="${dist.dir}/${application.title}_browser.jnlp" quiet="true"/>
     </target>
 </project>
