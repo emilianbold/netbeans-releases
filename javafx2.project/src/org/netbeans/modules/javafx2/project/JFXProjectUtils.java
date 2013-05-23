@@ -764,9 +764,10 @@ public final class JFXProjectUtils {
             @Override
             public void run() throws IOException {
                 createJfxExtension(project, dirFO, WizardType.APPLICATION);
+                ProjectManager.getDefault().saveProject(project);
                 updateJFXExtension(project);
-                // TODO
                 resetJavaFXProjectProperties(project, WizardType.APPLICATION, "default_platform", "mainClass", null); // NOI18N
+                // TODO
 //                try {
 //                    ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
 //                        @Override
@@ -785,9 +786,9 @@ public final class JFXProjectUtils {
         });
         if(true) {
             // TODO notify that project type has changed
-            final String headerTemplate = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_DEFAULT_PLATFORM_HEADER"); //NOI18N
+            final String headerTemplate = NbBundle.getMessage(JFXProjectUtils.class, "TXT_SWITCHED_SE_TO_FX_HEADER"); //NOI18N
             final String header = MessageFormat.format(headerTemplate, new Object[] {ProjectUtils.getInformation(project).getDisplayName()});
-            final String content = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_DEFAULT_PLATFORM_CONTENT"); //NOI18N
+            final String content = NbBundle.getMessage(JFXProjectUtils.class, "TXT_SWITCHED_SE_TO_FX_CONTENT"); //NOI18N
             Notification notePlatformChange = NotificationDisplayer.getDefault().notify(
                     header, 
                     ImageUtilities.loadImageIcon("org/netbeans/modules/javafx2/project/ui/resources/jfx_project.png", true), //NOI18N
