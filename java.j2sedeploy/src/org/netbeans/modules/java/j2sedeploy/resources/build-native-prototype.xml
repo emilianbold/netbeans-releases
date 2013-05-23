@@ -682,6 +682,13 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
                     a3.setValue(appversion);
                     man.addConfiguredAttribute(a3);
                 }
+                var profileAvailable = new String(project.getProperty("profile.available"));
+                if (defined(profileAvailable)) {
+                    var profileAttribute = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
+                    profileAttribute.setName("Profile");
+                    profileAttribute.setValue(new String(project.getProperty("javac.profile")));
+                    man.addConfiguredAttribute(profileAttribute);
+                }
                 jar.perform();
             ]]>
         </script>
