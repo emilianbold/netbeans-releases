@@ -470,16 +470,8 @@ public final class SyncController implements Cancellable {
             if (fileObject == null || !fileObject.isValid()) {
                 return false;
             }
-            InputStream inputStream = source.getInputStream();
-            try {
-                OutputStream outputStream = fileObject.getOutputStream();
-                try {
-                    FileUtil.copy(inputStream, outputStream);
-                } finally {
-                    outputStream.close();
-                }
-            } finally {
-                inputStream.close();
+            try (InputStream inputStream = source.getInputStream(); OutputStream outputStream = fileObject.getOutputStream()) {
+                FileUtil.copy(inputStream, outputStream);
             }
             return true;
         }

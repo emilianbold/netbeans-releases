@@ -577,8 +577,7 @@ public class FtpClient implements RemoteClient {
             long now = tmpFile.lastModified();
 
             final String remotePath = configuration.getInitialDirectory() + "/" + tmpFile.getName(); // NOI18N
-            InputStream is = new FileInputStream(tmpFile);
-            try {
+            try (InputStream is = new FileInputStream(tmpFile)) {
                 if (storeFile(remotePath, is)) {
                     FTPFile remoteFile = getFile(remotePath);
                     if (remoteFile != null) {
@@ -587,12 +586,11 @@ public class FtpClient implements RemoteClient {
                     deleteFile(remotePath);
                 }
             } finally {
-                is.close();
                 if (!tmpFile.delete()) {
                     tmpFile.deleteOnExit();
                 }
             }
-        } catch (Exception ex) {
+        } catch (IOException | RemoteException ex) {
             LOGGER.log(Level.INFO, "Unable to calculate time difference", ex);
         } finally {
             addProtocolCommandListener();

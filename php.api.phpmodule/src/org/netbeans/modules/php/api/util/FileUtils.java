@@ -417,8 +417,7 @@ public final class FileUtils {
         if (zipEntryFilter == null) {
             zipEntryFilter = DUMMY_ZIP_ENTRY_FILTER;
         }
-        ZipFile zipFile = new ZipFile(zipPath);
-        try {
+        try (ZipFile zipFile = new ZipFile(zipPath)) {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry zipEntry = entries.nextElement();
@@ -429,8 +428,6 @@ public final class FileUtils {
                 ensureParentExists(destinationFile);
                 copyZipEntry(zipFile, zipEntry, destinationFile);
             }
-        } finally {
-            zipFile.close();
         }
     }
 
@@ -447,16 +444,8 @@ public final class FileUtils {
         if (zipEntry.isDirectory()) {
             return;
         }
-        InputStream inputStream = zipFile.getInputStream(zipEntry);
-        try {
-            FileOutputStream outputStream = new FileOutputStream(destinationFile);
-            try {
-                FileUtil.copy(inputStream, outputStream);
-            } finally {
-                outputStream.close();
-            }
-        } finally {
-            inputStream.close();
+        try (InputStream inputStream = zipFile.getInputStream(zipEntry); FileOutputStream outputStream = new FileOutputStream(destinationFile)) {
+            FileUtil.copy(inputStream, outputStream);
         }
     }
 

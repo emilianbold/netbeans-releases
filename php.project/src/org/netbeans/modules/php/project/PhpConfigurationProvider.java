@@ -210,16 +210,13 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
                     continue;
                 }
                 try {
-                    InputStream is = kid.getInputStream();
-                    try {
+                    try (InputStream is = kid.getInputStream()) {
                         Properties p = new Properties();
                         p.load(is);
                         String name = kid.getName();
                         String label = p.getProperty("$label"); // NOI18N
 
                         configs.put(name, new Config(name, label != null ? label : name));
-                    } finally {
-                        is.close();
                     }
                 } catch (IOException x) {
                     LOGGER.log(Level.INFO, null, x);
