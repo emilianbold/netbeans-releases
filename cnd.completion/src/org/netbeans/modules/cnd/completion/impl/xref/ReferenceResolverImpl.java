@@ -52,6 +52,8 @@ import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmOffsetable;
+import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
@@ -71,7 +73,35 @@ public class ReferenceResolverImpl extends CsmReferenceResolver {
 
     @Override
     public boolean isKindOf(CsmReference ref, Set<CsmReferenceKind> kinds) {
-        return kinds.equals(CsmReferenceKind.ALL) || kinds.contains(ref.getKind());
+        if (kinds.equals(CsmReferenceKind.ALL) || kinds.contains(ref.getKind())) {
+            return true;
+        }
+        CsmFile file = ref.getContainingFile();
+        int offset = ref.getStartOffset();
+        if (kinds.contains(CsmReferenceKind.IN_DEAD_BLOCK)) {
+            if (isIn(CsmFileInfoQuery.getDefault().getUnusedCodeBlocks(file), offset)) {
+                return true;
+            }
+        }
+        if (kinds.contains(CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE)) {
+            if (isIn(file.getIncludes(), offset)) {
+                return true;
+            }
+            if (isIn(file.getMacros(), offset)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    private static boolean isIn(Collection<? extends CsmOffsetable> collection, int offset) {
+        for (CsmOffsetable element : collection) {
+            if (element.getStartOffset() <= offset &&
+                element.getEndOffset() >= offset){
+                return true;
+            }
+        }
+        return false;
     }
     
     @Override

@@ -67,6 +67,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     protected final static String SLASH = "/"; // NOI18N
     protected final static String PARENT_COLOR_TAG = "<font color=\"#557755\">"; // NOI18N
     private final int substitutionOffset;
+    private final int substitutionOffsetDelta;
     private final int priority;
     private final String item;
     private final String parentFolder;
@@ -78,11 +79,12 @@ public class CsmIncludeCompletionItem implements CompletionItem {
     private static final int FILE_PRIORITY = 10;
     private static final int SYS_VS_USR = 5;
 
-    protected CsmIncludeCompletionItem(int substitutionOffset, int priority,
+    protected CsmIncludeCompletionItem(int substitutionOffset, int substitutionDelta, int priority,
             String parentFolder, String childSubdir, String item,
             boolean sysInclude, boolean isFolder,
             boolean supportInstantSubst) {
         this.substitutionOffset = substitutionOffset;
+        this.substitutionOffsetDelta = substitutionDelta;
         this.priority = priority;
         this.parentFolder = parentFolder == null ? "" : parentFolder;
         this.childSubdir = childSubdir == null ? "" : childSubdir;
@@ -93,7 +95,8 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         this.supportInstantSubst = supportInstantSubst;
     }
 
-    public static CsmIncludeCompletionItem createItem(int substitutionOffset,
+    public static CsmIncludeCompletionItem createItem(int substitutionOffset, 
+            int substitutionDelta,
             String relFileName,
             String dirPrefix, String childSubdir,
             boolean sysInclude,
@@ -115,7 +118,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
             }
         }
         String item = relFileName;
-        return new CsmIncludeCompletionItem(substitutionOffset, priority,
+        return new CsmIncludeCompletionItem(substitutionOffset, substitutionDelta, priority,
                 dirPrefix, childSubdir, item, sysInclude, isFolder, supportInstantSubst);
     }
 
@@ -259,7 +262,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
         return CsmDisplayUtilities.shrinkPath(this.getParentFolder() + separator + getChildSubdir(), shrink, separator, 35, 2, 2);
     }
     
-    protected void substituteText(final JTextComponent c, final int offset, final int origLen, final String toAdd) {
+    protected void substituteText(final JTextComponent c, final int origOffset, final int origLen, final String toAdd) {
         final BaseDocument doc = (BaseDocument) c.getDocument();
         final String itemText = getItemText();
         if (itemText != null) {
@@ -268,6 +271,7 @@ public class CsmIncludeCompletionItem implements CompletionItem {
                 @Override
                 public void run() {
                     try {
+                        int offset = origOffset + substitutionOffsetDelta;
                         int len = origLen;
                         String text = itemText;
                         if (toAdd != null) {

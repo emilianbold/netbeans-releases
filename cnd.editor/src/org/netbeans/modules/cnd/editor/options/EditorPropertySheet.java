@@ -588,7 +588,8 @@ public class EditorPropertySheet extends javax.swing.JPanel
     private void refreshPreview(JEditorPane pane, Preferences p) {
         pane.setText(getPreviewText());
         final BaseDocument bd = (BaseDocument) pane.getDocument();
-        final CodeStyle codeStyle = EditorOptions.createCodeStyle(language, p, false);
+        EntryWrapper entry = (EntryWrapper) styleComboBox.getSelectedItem();
+        final CodeStyle codeStyle = EditorOptions.createCodeStyle(language, entry.name, p, false);
         bd.runAtomicAsUser(new Runnable() {
 
             @Override
