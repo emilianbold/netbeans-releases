@@ -46,7 +46,6 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
-import java.io.File;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.StringWriter;
@@ -214,17 +213,11 @@ class SftpSupport {
 
     private class Uploader implements Callable<UploadStatus> {
 
-        private final int mask;
-        private final boolean checkMd5;
-        protected final String srcFileName;
-        protected final String dstFileName;
+        private final CommonTasksSupport.UploadParameters parameters;
         protected StatInfo statInfo;
 
-        public Uploader(String srcFileName, String dstFileName, int mask, boolean checkMd5) {
-            this.srcFileName = srcFileName;
-            this.dstFileName = dstFileName;
-            this.mask = mask;
-            this.checkMd5 = checkMd5;
+        public Uploader(CommonTasksSupport.UploadParameters parameters) {
+            this.parameters = parameters;
         }
 
         @Override
@@ -290,18 +283,18 @@ class SftpSupport {
 
         private void work(StringBuilder err) throws IOException, CancellationException, JSchException, SftpException, InterruptedException, ExecutionException {
             boolean checkDir = false;
-            if (checkMd5) {
+            if (parameters.checkMd5) {
                 if (LOG.isLoggable(Level.FINE)) {
-                    LOG.log(Level.FINE, "Md5 check for {0}:{1} started", new Object[]{execEnv, dstFileName});
+                    LOG.log(Level.FINE, "Md5 check for {0}:{1} started", new Object[]{execEnv, parameters.dstFileName});
                 }
                 Result res = null;
                 try {
-                    res = new Md5checker(execEnv).check(new File(srcFileName), dstFileName);
+                    res = new Md5checker(execEnv).check(parameters.srcFile, parameters.dstFileName);
                 } catch (NoSuchAlgorithmException ex) {
                     if (LOG.isLoggable(Level.WARNING)) {
                         LOG.log(Level.WARNING, "Can not perform md5 check for {0}: {1}", new Object[]{execEnv.getDisplayName(), ex.getMessage()});
                     }
-                    if (HostInfoUtils.fileExists(execEnv, dstFileName)) {
+                    if (HostInfoUtils.fileExists(execEnv, parameters.dstFileName)) {
                         res = Md5checker.Result.UPTODATE;
                     } else {
                         res = Md5checker.Result.INEXISTENT;
@@ -318,7 +311,7 @@ class SftpSupport {
                 switch (res) {
                     case UPTODATE:
                         if (LOG.isLoggable(Level.FINE)) {
-                            LOG.log(Level.FINE, "{0}:{1} up to date - skipped", new Object[]{execEnv, dstFileName});
+                            LOG.log(Level.FINE, "{0}:{1} up to date - skipped", new Object[]{execEnv, parameters.dstFileName});
                         }
                         return;
                     case DIFFERS:
@@ -336,33 +329,33 @@ class SftpSupport {
             ChannelSftp cftp = getChannel();
             try {
                 if (checkDir) {
-                    int slashPos = dstFileName.lastIndexOf('/'); //NOI18N
+                    int slashPos = parameters.dstFileName.lastIndexOf('/'); //NOI18N
                     if (slashPos >= 0) {
-                        String remoteDir = dstFileName.substring(0, slashPos);
+                        String remoteDir = parameters.dstFileName.substring(0, slashPos);
                         StringWriter swr = new StringWriter();
                         CommonTasksSupport.mkDir(execEnv, remoteDir, swr).get();
                         err.append(swr.getBuffer()).append(' ');
                     }
                 }
                 put(cftp);
-                if (mask >= 0) {
-                    cftp.chmod(mask, dstFileName);
+                if (parameters.mask >= 0) {
+                    cftp.chmod(parameters.mask, parameters.dstFileName);
                 }
-                SftpATTRS attrs = cftp.lstat(dstFileName);
+                SftpATTRS attrs = cftp.lstat(parameters.dstFileName);
                 // can't use PathUtilities since we are in ide cluster
-                int slashPos = dstFileName.lastIndexOf('/');
+                int slashPos = parameters.dstFileName.lastIndexOf('/');
                 String dirName, baseName;
                 if (slashPos < 0) {
-                    dirName = dstFileName;
+                    dirName = parameters.dstFileName;
                     baseName = "";
                 } else {
-                    dirName = dstFileName.substring(0, slashPos);
-                    baseName = dstFileName.substring(slashPos + 1);
+                    dirName = parameters.dstFileName.substring(0, slashPos);
+                    baseName = parameters.dstFileName.substring(slashPos + 1);
                 }
                 statInfo = createStatInfo(dirName, baseName, attrs, cftp);
             } catch (SftpException e) {
                 cftp.quit();
-                throw decorateSftpException(e, dstFileName);
+                throw decorateSftpException(e, parameters.dstFileName);
             } finally {
                 releaseChannel(cftp);
             }
@@ -377,21 +370,21 @@ class SftpSupport {
             while (true) {
                 attempt++;
                 try {
-                    cftp.put(srcFileName, dstFileName);
+                    cftp.put(parameters.srcFile.getAbsolutePath(), parameters.dstFileName);
                     if (attempt > 1) {
                         if (LOG.isLoggable(Level.FINE)) {
                             LOG.log(Level.FINE, "Success on attempt {0} to copy {1} to {2}:{3} :\n",
-                                    new Object[]{attempt, srcFileName, execEnv, dstFileName});
+                                    new Object[] {attempt, parameters.srcFile.getAbsolutePath(), execEnv, parameters.dstFileName});
                         }
                     }
                     return;
                 } catch (SftpException e) {
                     if (attempt > PUT_RETRY_COUNT) {
-                        throw decorateSftpException(e, dstFileName);
+                        throw decorateSftpException(e, parameters.dstFileName);
                     } else {
                         if (LOG.isLoggable(Level.FINE) || attempt == 2) {
                             String message = String.format("Error on attempt %d to copy %s to %s:%s :\n", // NOI18N
-                                    attempt, srcFileName, execEnv, dstFileName);
+                                    attempt, parameters.srcFile.getAbsolutePath(), execEnv, parameters.dstFileName);
                             LOG.log(Level.FINE, message, e);
                             if (attempt == 2) {
                                 Logger.fullThreadDump(message);
@@ -404,7 +397,7 @@ class SftpSupport {
         }
 
         protected String getTraceName() {
-            return "Uploading " + srcFileName + " to " + execEnv + ":" + dstFileName; // NOI18N
+            return "Uploading " + parameters.srcFile.getAbsolutePath() + " to " + execEnv + ":" + parameters.dstFileName; // NOI18N
         }
     }
 
@@ -498,9 +491,7 @@ class SftpSupport {
 
     /*package*/ Future<UploadStatus> uploadFile(CommonTasksSupport.UploadParameters parameters) {
         Logger.assertTrue(parameters.dstExecEnv.equals(execEnv));
-        Uploader uploader = new Uploader(
-                parameters.srcFile.getAbsolutePath(),
-                parameters.dstFileName, parameters.mask, parameters.checkMd5);
+        Uploader uploader = new Uploader(parameters);
         final FutureTask<UploadStatus> ftask = new FutureTask<UploadStatus>(uploader);
         RequestProcessor.Task requestProcessorTask = getWriteRuestProcessor().create(ftask);
         if (parameters.callback != null) {
