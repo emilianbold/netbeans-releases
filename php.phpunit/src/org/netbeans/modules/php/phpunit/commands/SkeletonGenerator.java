@@ -127,7 +127,7 @@ public final class SkeletonGenerator {
             return null;
         }
         String testClassName = PhpUnit.makeTestClass(sourceClassName);
-        List<String> params = new ArrayList<String>();
+        List<String> params = new ArrayList<>();
         if (PhpUnitPreferences.isBootstrapEnabled(phpModule)
                 && PhpUnitPreferences.isBootstrapForCreateTests(phpModule)) {
             params.add(BOOTSTRAP_PARAM);

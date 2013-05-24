@@ -201,7 +201,7 @@ public final class Composer {
 
     @NbBundle.Messages("Composer.run.requireDev=Composer (require dev)")
     public Future<Integer> requireDev(PhpModule phpModule, String... packages) {
-        List<String> params = new ArrayList<String>(packages.length + 1);
+        List<String> params = new ArrayList<>(packages.length + 1);
         params.add(DEV_PARAM);
         params.addAll(Arrays.asList(packages));
         return runCommand(phpModule, REQUIRE_COMMAND, Bundle.Composer_run_require(), params);
@@ -224,9 +224,9 @@ public final class Composer {
             return null;
         }
         // params
-        List<String> defaultParams = new ArrayList<String>(DEFAULT_PARAMS);
+        List<String> defaultParams = new ArrayList<>(DEFAULT_PARAMS);
         defaultParams.remove(ANSI_PARAM);
-        List<String> params = new ArrayList<String>(2);
+        List<String> params = new ArrayList<>(2);
         if (onlyName) {
             params.add(ONLY_NAME_PARAM);
         }
@@ -262,7 +262,7 @@ public final class Composer {
             return null;
         }
         // params
-        List<String> defaultParams = new ArrayList<String>(DEFAULT_PARAMS);
+        List<String> defaultParams = new ArrayList<>(DEFAULT_PARAMS);
         defaultParams.remove(ANSI_PARAM);
         composer = composer
                 .additionalParameters(mergeParameters(SHOW_COMMAND, defaultParams, Collections.singletonList(name)))
@@ -322,7 +322,7 @@ public final class Composer {
     }
 
     private List<String> mergeParameters(String command, List<String> defaultParams, List<String> commandParams) {
-        List<String> allParams = new ArrayList<String>(defaultParams.size() + commandParams.size() + 1);
+        List<String> allParams = new ArrayList<>(defaultParams.size() + commandParams.size() + 1);
         allParams.addAll(defaultParams);
         allParams.add(command);
         allParams.addAll(commandParams);

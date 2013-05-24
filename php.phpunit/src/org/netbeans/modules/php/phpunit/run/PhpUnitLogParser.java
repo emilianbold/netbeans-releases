@@ -66,7 +66,7 @@ public final class PhpUnitLogParser extends DefaultHandler {
 
     private final XMLReader xmlReader;
     private final TestSessionVo testSession;
-    private Stack<TestSuiteVo> testSuites = new Stack<TestSuiteVo>();
+    private Stack<TestSuiteVo> testSuites = new Stack<>();
     private TestCaseVo testCase;
     private String file; // actual file
     private Content content = Content.NONE;

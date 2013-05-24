@@ -96,7 +96,7 @@ public class CommandsLineProcessorTest extends NbTestCase {
     }
 
     private List<String> getCommands() {
-        List<String> commands = new LinkedList<String>();
+        List<String> commands = new LinkedList<>();
         commands.add("Usage:");
         commands.add("  symfony [options] task_name [arguments]");
         commands.add("");

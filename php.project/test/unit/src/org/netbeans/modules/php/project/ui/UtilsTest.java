@@ -92,13 +92,13 @@ public class UtilsTest extends NbTestCase {
 
     // #131023
     public void testValidateSourcesAndCopyTarget() throws Exception {
-        final Map<String, String> correctDirs = new HashMap<String, String>();
+        final Map<String, String> correctDirs = new HashMap<>();
         correctDirs.put("/home/test/NetBeansProjects/PHPProject", "/home/test/NetBeansProjects/PHPProjectCopy");
         correctDirs.put("/home/test/NetBeansProjects/a", "/home/test/NetBeansProjects/b");
         correctDirs.put("/home/test/NetBeansProjects/PHPProject", "/var/www/PHPProject");
         correctDirs.put("/tmp/PHPProject", "/PHPProject");
         correctDirs.put("C:\\test", "D:\\test");
-        final Map<String, String> incorrectDirs = new HashMap<String, String>();
+        final Map<String, String> incorrectDirs = new HashMap<>();
         incorrectDirs.put("/tmp/PHPProject", "/tmp/PHPProject/copy");
         incorrectDirs.put("/tmp/PHPProject/web", "/tmp/PHPProject");
 

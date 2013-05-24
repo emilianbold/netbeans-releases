@@ -198,8 +198,8 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
         this.project = project;
         this.remoteConfigurationName = remoteConfigurationName;
-        this.allItems = new CopyOnWriteArrayList<SyncItem>(items);
-        displayedItems = new ArrayList<SyncItem>(items);
+        this.allItems = new CopyOnWriteArrayList<>(items);
+        displayedItems = new ArrayList<>(items);
         this.remoteClient = remoteClient;
         tableModel = new FileTableModel(displayedItems);
         defaultInfoMessage = getDefaultInfoMessage(forProject, firstRun);
@@ -265,7 +265,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     public List<SyncItem> getItems() {
         assert SwingUtilities.isEventDispatchThread();
-        return new ArrayList<SyncItem>(allItems);
+        return new ArrayList<>(allItems);
     }
 
     private List<ViewCheckBox> getViewCheckBoxes() {
@@ -794,7 +794,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
             }
             return Collections.emptyList();
         }
-        List<SyncItem> selectedItems = new ArrayList<SyncItem>(selectedRows.length);
+        List<SyncItem> selectedItems = new ArrayList<>(selectedRows.length);
         for (int index : selectedRows) {
             SyncItem syncItem = displayedItems.get(itemTable.convertRowIndexToModel(index));
             selectedItems.add(syncItem);
@@ -804,7 +804,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     void reselectItems(List<SyncItem> selectedItems) {
         assert SwingUtilities.isEventDispatchThread();
-        List<Integer> selectedRows = new ArrayList<Integer>(selectedItems.size());
+        List<Integer> selectedRows = new ArrayList<>(selectedItems.size());
         Map<SyncItem, Integer> itemsToIndex = itemsToIndex(displayedItems);
         if (!itemsToIndex.isEmpty()) {
             for (SyncItem item : selectedItems) {
@@ -931,7 +931,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     void updateSyncInfo() {
         assert SwingUtilities.isEventDispatchThread();
         syncInfoLabel.setText(Bundle.SyncPanel_collectingInformation());
-        final List<SyncItem> selectedItems = new CopyOnWriteArrayList<SyncItem>(getSelectedItems(false));
+        final List<SyncItem> selectedItems = new CopyOnWriteArrayList<>(getSelectedItems(false));
         RP.post(new Runnable() {
             @Override
             public void run() {
@@ -1108,8 +1108,8 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
      * Adjust possible sort keys to new column order.
      */
     private List<? extends RowSorter.SortKey> adjustSortKeys(List<? extends RowSorter.SortKey> sortKeys) {
-        List<RowSorter.SortKey> currentKeys = new ArrayList<RowSorter.SortKey>(sortKeys);
-        List<RowSorter.SortKey> newKeys = new ArrayList<RowSorter.SortKey>(currentKeys.size());
+        List<RowSorter.SortKey> currentKeys = new ArrayList<>(sortKeys);
+        List<RowSorter.SortKey> newKeys = new ArrayList<>(currentKeys.size());
         for (RowSorter.SortKey sortKey : currentKeys) {
             int column = sortKey.getColumn();
             RowSorter.SortKey newSortKey;
@@ -1126,7 +1126,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
     }
 
     private List<ViewCheckBox> getSelectedViewCheckBoxes() {
-        List<ViewCheckBox> selected = new ArrayList<ViewCheckBox>(viewCheckBoxes.size());
+        List<ViewCheckBox> selected = new ArrayList<>(viewCheckBoxes.size());
         for (ViewCheckBox button : viewCheckBoxes) {
             if (button.isSelected()) {
                 selected.add(button);
@@ -1137,7 +1137,7 @@ public final class SyncPanel extends JPanel implements HelpCtx.Provider {
 
     private Map<SyncItem, Integer> itemsToIndex(List<SyncItem> items) {
         int i = 0;
-        Map<SyncItem, Integer> map = new HashMap<SyncItem, Integer>(items.size() * 2);
+        Map<SyncItem, Integer> map = new HashMap<>(items.size() * 2);
         for (SyncItem syncItem : items) {
             map.put(syncItem, i++);
         }

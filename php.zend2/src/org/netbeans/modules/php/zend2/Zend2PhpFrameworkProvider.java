@@ -120,7 +120,7 @@ public final class Zend2PhpFrameworkProvider extends PhpFrameworkProvider {
         }
         FileObject config = sourceDirectory.getFileObject("config");
         assert config != null : "Config dir not found?!";
-        List<File> files = new ArrayList<File>();
+        List<File> files = new ArrayList<>();
         Enumeration<? extends FileObject> children = config.getChildren(true);
         while (children.hasMoreElements()) {
             FileObject child = children.nextElement();

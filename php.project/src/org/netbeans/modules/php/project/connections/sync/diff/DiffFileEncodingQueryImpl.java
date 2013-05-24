@@ -57,7 +57,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=FileEncodingQueryImplementation.class, position=2)
 public class DiffFileEncodingQueryImpl extends FileEncodingQueryImplementation {
 
-    private static final Map<FileObject, Charset> CHARSETS = new ConcurrentHashMap<FileObject, Charset>();
+    private static final Map<FileObject, Charset> CHARSETS = new ConcurrentHashMap<>();
 
 
     @Override

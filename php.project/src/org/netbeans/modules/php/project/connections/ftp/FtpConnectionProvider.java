@@ -74,7 +74,7 @@ public final class FtpConnectionProvider implements RemoteConnectionProvider {
     static final String PASSIVE_MODE = "passiveMode"; // NOI18N
     static final String IGNORE_DISCONNECT_ERRORS = "ignoreDisconnectErrors"; // NOI18N
 
-    private static final Set<String> PROPERTIES = new HashSet<String>(Arrays.asList(
+    private static final Set<String> PROPERTIES = new HashSet<>(Arrays.asList(
         TYPE,
         HOST,
         PORT,

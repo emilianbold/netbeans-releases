@@ -155,7 +155,7 @@ public final class MessDetector {
     }
 
     private List<String> getParameters(List<String> ruleSets, List<FileObject> files) {
-        List<String> params = new ArrayList<String>();
+        List<String> params = new ArrayList<>();
         // paths
         params.add(joinFilePaths(files));
         // report format

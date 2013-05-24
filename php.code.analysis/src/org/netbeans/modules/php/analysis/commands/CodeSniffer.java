@@ -89,7 +89,7 @@ public final class CodeSniffer {
     private static final String NO_RECURSION_PARAM = "-l"; // NOI18N
 
     // cache
-    private static final List<String> CACHED_STANDARDS = new CopyOnWriteArrayList<String>();
+    private static final List<String> CACHED_STANDARDS = new CopyOnWriteArrayList<>();
 
     private final String codeSnifferPath;
 
@@ -202,7 +202,7 @@ public final class CodeSniffer {
 
     private List<String> getParameters(String standard, FileObject file, boolean noRecursion) {
         Charset encoding = FileEncodingQuery.getEncoding(file);
-        List<String> params = new ArrayList<String>();
+        List<String> params = new ArrayList<>();
         params.add(String.format(STANDARD_PARAM, standard));
         params.add(REPORT_PARAM);
         params.add(REPORT_FILE_PARAM);
@@ -233,7 +233,7 @@ public final class CodeSniffer {
 
         static final String LINE_START = "The installed coding standards are "; // NOI18N
 
-        private final List<String> standards = new CopyOnWriteArrayList<String>();
+        private final List<String> standards = new CopyOnWriteArrayList<>();
 
         private volatile boolean hasOutput = false;
 
@@ -276,7 +276,7 @@ public final class CodeSniffer {
         public static List<String> parseStandards(String line) {
             assert line.startsWith(LINE_START) : line;
             line = line.substring(LINE_START.length());
-            List<String> standards = new ArrayList<String>();
+            List<String> standards = new ArrayList<>();
             List<String> tmp = StringUtils.explode(line, " and "); // NOI18N
             if (tmp.isEmpty()) {
                 LOGGER.log(Level.WARNING, "Standards cannot be parsed from: {0}", line);

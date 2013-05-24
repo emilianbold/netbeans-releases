@@ -319,7 +319,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             return;
         }
         int size = documentRoots.size();
-        List<LocalServer> localServers = new ArrayList<LocalServer>(size);
+        List<LocalServer> localServers = new ArrayList<>(size);
         LocalServer selected = null;
         for (DocumentRoot root : documentRoots) {
             String srcRoot = new File(root.getDocumentRoot(), sourcesFolderProvider.getSourcesFolderName()).getAbsolutePath();

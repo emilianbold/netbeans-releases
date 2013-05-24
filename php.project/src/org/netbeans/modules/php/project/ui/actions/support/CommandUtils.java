@@ -122,7 +122,7 @@ public final class CommandUtils {
             return Collections.<FileObject>emptyList();
         }
 
-        final List<FileObject> files = new ArrayList<FileObject>(nodes.length);
+        final List<FileObject> files = new ArrayList<>(nodes.length);
         for (Node node : nodes) {
             FileObject fo = getFileObject(node);
             // #156939
@@ -554,7 +554,7 @@ public final class CommandUtils {
     }
 
     private static FileObject[] filterValidFiles(Collection<? extends FileObject> files, FileObject dir) {
-        Collection<FileObject> retval = new LinkedHashSet<FileObject>();
+        Collection<FileObject> retval = new LinkedHashSet<>();
         for (FileObject file : files) {
             if (!FileUtil.isParentOf(dir, file) || FileUtil.toFile(file) == null) {
                 return null;

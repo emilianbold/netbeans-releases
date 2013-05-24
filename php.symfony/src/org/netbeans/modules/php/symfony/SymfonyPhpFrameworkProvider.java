@@ -75,7 +75,7 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
 
     private static final String ICON_PATH = "org/netbeans/modules/php/symfony/ui/resources/symfony_badge_8.png"; // NOI18N
     private static final SymfonyPhpFrameworkProvider INSTANCE = new SymfonyPhpFrameworkProvider();
-    private static final Set<String> CONFIG_FILE_EXTENSIONS = new HashSet<String>();
+    private static final Set<String> CONFIG_FILE_EXTENSIONS = new HashSet<>();
 
     private final BadgeIcon badgeIcon;
 
@@ -148,7 +148,7 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
             return new File[0];
         }
 
-        List<File> files = new LinkedList<File>();
+        List<File> files = new LinkedList<>();
         FileObject appConfig = sourceDirectory.getFileObject("config"); // NOI18N
         if (appConfig != null) {
             List<FileObject> fileObjects = getConfigFilesRecursively(appConfig);
@@ -184,7 +184,7 @@ public final class SymfonyPhpFrameworkProvider extends PhpFrameworkProvider {
     }
 
     private List<FileObject> getConfigFilesRecursively(FileObject parent) {
-        List<FileObject> result = new LinkedList<FileObject>();
+        List<FileObject> result = new LinkedList<>();
         for (FileObject child : parent.getChildren()) {
             if (VisibilityQuery.getDefault().isVisible(child)) {
                 if (child.isData() && (CONFIG_FILE_EXTENSIONS.contains(child.getExt().toLowerCase()) || FileUtils.isPhpFile(child))) {

@@ -52,7 +52,7 @@ import org.netbeans.modules.php.spi.testing.coverage.FileMetrics;
  */
 public final class CoverageImpl implements Coverage {
 
-    private final List<File> files = new ArrayList<File>();
+    private final List<File> files = new ArrayList<>();
     private long generated = -1;
     private String phpUnitVersion;
     private CoverageMetricsImpl metrics;
@@ -101,8 +101,8 @@ public final class CoverageImpl implements Coverage {
     public static final class FileImpl implements Coverage.File {
 
         private final String path;
-        private final List<ClassImpl> classes = new ArrayList<ClassImpl>();
-        private final List<Line> lines = new ArrayList<Line>();
+        private final List<ClassImpl> classes = new ArrayList<>();
+        private final List<Line> lines = new ArrayList<>();
         private FileMetrics metrics;
 
 

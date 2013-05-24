@@ -71,7 +71,7 @@ class ThrowsLineParser implements AnnotationLineParser {
 
     private AnnotationParsedLine handleAnnotation() {
         String description = "";
-        Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+        Map<OffsetRange, String> types = new HashMap<>();
         if (tokens.length > 1) {
             description = tokens[1];
             int start = ANNOTATION_NAME.length() + countSpacesToFirstNonWhitespace(line.substring(ANNOTATION_NAME.length()));

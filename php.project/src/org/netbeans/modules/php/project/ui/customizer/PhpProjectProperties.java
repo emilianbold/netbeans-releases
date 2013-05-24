@@ -463,7 +463,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
 
     public void addCustomizerExtender(PhpModuleCustomizerExtender customizerExtender) {
         if (customizerExtenders == null) {
-            customizerExtenders = new HashSet<PhpModuleCustomizerExtender>();
+            customizerExtenders = new HashSet<>();
         }
         customizerExtenders.add(customizerExtender);
     }
@@ -660,7 +660,13 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
                 fo = FileUtil.toFileObject(file);
             }
             try (OutputStream out = fo.getOutputStream()) {
-                FileUtil.copy(new ByteArrayInputStream(changedLicensePathContent.getBytes()), out);
+                String charsetName;
+                if (encoding != null) {
+                    charsetName = encoding;
+                } else {
+                    charsetName = ProjectPropertiesSupport.getEncoding(project);
+                }
+                FileUtil.copy(new ByteArrayInputStream(changedLicensePathContent.getBytes(charsetName)), out);
             }
         }
 
@@ -799,7 +805,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
      */
     Map<String/*|null*/, Map<String, String>> readRunConfigs() {
         Map<String, Map<String, String>> m = ConfigManager.createEmptyConfigs();
-        Map<String, String> def = new TreeMap<String, String>();
+        Map<String, String> def = new TreeMap<>();
         EditableProperties privateProperties = getProject().getHelper().getProperties(
                 AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         EditableProperties projectProperties = getProject().getHelper().getProperties(
@@ -821,7 +827,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
                     continue;
                 }
                 String path = FileUtil.getRelativePath(project.getProjectDirectory(), kid);
-                m.put(kid.getName(), new TreeMap<String, String>(getProject().getHelper().getProperties(path)));
+                m.put(kid.getName(), new TreeMap<>(getProject().getHelper().getProperties(path)));
             }
         }
         configs = project.getProjectDirectory().getFileObject("nbproject/private/configs"); // NOI18N
@@ -835,7 +841,7 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
                     continue;
                 }
                 String path = FileUtil.getRelativePath(project.getProjectDirectory(), kid);
-                c.putAll(new HashMap<String, String>(getProject().getHelper().getProperties(path)));
+                c.putAll(new HashMap<>(getProject().getHelper().getProperties(path)));
             }
         }
         //System.err.println("readRunConfigs: " + m);

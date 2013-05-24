@@ -85,7 +85,7 @@ public final class PhpTesting {
      * @return a list of all registered {@link PhpTestingProvider}s; never {@code null}.
      */
     public static List<PhpTestingProvider> getTestingProviders() {
-        return new ArrayList<PhpTestingProvider>(TESTING_PROVIDERS.allInstances());
+        return new ArrayList<>(TESTING_PROVIDERS.allInstances());
     }
 
     /**

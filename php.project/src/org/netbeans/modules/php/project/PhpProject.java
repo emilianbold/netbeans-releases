@@ -201,7 +201,7 @@ public final class PhpProject implements Project {
     public static final String PROP_FRAMEWORKS = "frameworks"; // NOI18N
     public static final String PROP_WEB_ROOT = "webRoot"; // NOI18N
     final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
-    private final Set<PropertyChangeListener> propertyChangeListeners = new WeakSet<PropertyChangeListener>();
+    private final Set<PropertyChangeListener> propertyChangeListeners = new WeakSet<>();
 
     // css preprocessors
     final CssPreprocessorsListener cssPreprocessorsListener = new CssPreprocessorsListener() {
@@ -478,7 +478,7 @@ public final class PhpProject implements Project {
     }
 
     public Set<File> getIgnoredFiles() {
-        Set<File> ignored = new HashSet<File>();
+        Set<File> ignored = new HashSet<>();
         addIgnoredProjectFiles(ignored);
         addIgnoredFrameworkFiles(ignored);
         return ignored;
@@ -486,7 +486,7 @@ public final class PhpProject implements Project {
 
     // #172139 caused NPE in GlobalVisibilityQueryImpl
     public Set<FileObject> getIgnoredFileObjects() {
-        Set<FileObject> ignoredFileObjects = new HashSet<FileObject>();
+        Set<FileObject> ignoredFileObjects = new HashSet<>();
         for (File file : getIgnoredFiles()) {
             FileObject fo = FileUtil.toFileObject(file);
             if (fo != null) {
@@ -548,7 +548,7 @@ public final class PhpProject implements Project {
 
     private Set<BasePathSupport.Item> resolveIgnoredFolders() {
         IgnorePathSupport ignorePathSupport = new IgnorePathSupport(eval, refHelper, helper);
-        Set<BasePathSupport.Item> ignored = new HashSet<BasePathSupport.Item>();
+        Set<BasePathSupport.Item> ignored = new HashSet<>();
         EditableProperties properties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
         Iterator<BasePathSupport.Item> itemsIterator = ignorePathSupport.itemsIterator(properties.getProperty(PhpProjectProperties.IGNORE_PATH));
         while (itemsIterator.hasNext()) {
@@ -1051,7 +1051,7 @@ public final class PhpProject implements Project {
         }
 
         private FileObject[] getRoots() {
-            List<FileObject> roots = new LinkedList<FileObject>();
+            List<FileObject> roots = new LinkedList<>();
             addRoots(roots, project.getSourceRoots());
             addRoots(roots, project.getTestRoots());
             addRoots(roots, project.getSeleniumRoots());
@@ -1137,8 +1137,7 @@ public final class PhpProject implements Project {
         }
 
         private List<SearchFilterDefinition> createList() {
-            List<SearchFilterDefinition> list =
-                    new ArrayList<SearchFilterDefinition>(2);
+            List<SearchFilterDefinition> list = new ArrayList<>(2);
             list.add(getSearchFilterDefinition());
             list.add(SearchInfoDefinitionFactory.SHARABILITY_FILTER);
             return Collections.unmodifiableList(list);
