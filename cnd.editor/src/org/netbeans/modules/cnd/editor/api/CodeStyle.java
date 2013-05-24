@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.cnd.editor.api;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.text.Document;
 import org.netbeans.lib.editor.util.swing.DocumentUtilities;
@@ -58,40 +60,50 @@ public final class CodeStyle {
         EditorOptions.codeStyleFactory = new FactoryImpl();
     }
 
-    private static CodeStyle INSTANCE_C;
-    private static CodeStyle INSTANCE_H;
-    private static CodeStyle INSTANCE_CPP;
-    private Language language;
+    private static Map<String, CodeStyle> INSTANCE_C = new HashMap<String, CodeStyle>();
+    private static Map<String, CodeStyle> INSTANCE_H = new HashMap<String, CodeStyle>();
+    private static Map<String, CodeStyle> INSTANCE_CPP = new HashMap<String, CodeStyle>();
+    private final Language language;
+    private final String profileId;
     private Preferences preferences;
     private final boolean useOverrideOptions;
 
-    private CodeStyle(Language language, Preferences preferences, boolean useOverrideOptions) {
+    private CodeStyle(Language language, String profileId, Preferences preferences, boolean useOverrideOptions) {
         this.language = language;
+        this.profileId = profileId;
         this.preferences = preferences;
         this.useOverrideOptions = useOverrideOptions;
     }
-
-    public synchronized static CodeStyle getDefault(Language language) {
+    
+    public synchronized static CodeStyle getDefault(Language language, Document doc) {
+        String profileId = EditorOptions.getCurrentProfileId(language, doc);
+        CodeStyle c;
         switch(language) {
             case C:
-                if (INSTANCE_C == null) {
-                    INSTANCE_C = create(language);
-                    setSimplePreferences(language, INSTANCE_C);
+                c = INSTANCE_C.get(profileId);
+                if (c == null) {
+                    c = create(language, profileId);
+                    setSimplePreferences(language, c);
+                    INSTANCE_C.put(profileId, c);
                 }
-                return INSTANCE_C;
+                return c;
             case HEADER:
-                if (INSTANCE_H == null) {
-                    INSTANCE_H = create(language);
-                    setSimplePreferences(language, INSTANCE_H);
+                c = INSTANCE_H.get(profileId);
+                if (c == null) {
+                    c = create(language, profileId);
+                    setSimplePreferences(language, c);
+                    INSTANCE_H.put(profileId, c);
                 }
-                return INSTANCE_H;
+                return c;
             case CPP:
             default:
-                if (INSTANCE_CPP == null) {
-                    INSTANCE_CPP = create(language);
-                    setSimplePreferences(language, INSTANCE_CPP);
+                c = INSTANCE_CPP.get(profileId);
+                if (c == null) {
+                    c = create(language, profileId);
+                    setSimplePreferences(language, c);
+                    INSTANCE_CPP.put(profileId, c);
                 }
-                return INSTANCE_CPP;
+                return c;
         }
     }
     
@@ -110,16 +122,16 @@ public final class CodeStyle {
             //}
         } else {
             if (mimeType.equals(MIMENames.C_MIME_TYPE)) {
-                return getDefault(Language.C);
+                return getDefault(Language.C, doc);
             } else if (mimeType.equals(MIMENames.HEADER_MIME_TYPE)) {
-                return getDefault(Language.HEADER);
+                return getDefault(Language.HEADER, doc);
             }
         }
-        return getDefault(Language.CPP);
+        return getDefault(Language.CPP, doc);
     }
 
-    private static CodeStyle create(Language language) {
-        return new CodeStyle(language, EditorOptions.getPreferences(language, EditorOptions.getCurrentProfileId(language)), true);
+    private static CodeStyle create(Language language, String profileId) {
+        return new CodeStyle(language, profileId, EditorOptions.getPreferences(language, profileId), true);
     }
 
     // General indents ------------------------------------------------
@@ -522,17 +534,17 @@ public final class CodeStyle {
 //    }
 
     private boolean getOption(String key, boolean defaultValue) {
-        defaultValue = (Boolean)EditorOptions.getDefault(language, EditorOptions.getCurrentProfileId(language), key);
+        defaultValue = (Boolean)EditorOptions.getDefault(language, profileId, key);
         return getPreferences().getBoolean(key, defaultValue);
     }
 
     private int getOption(String key, int defaultValue) {
-        defaultValue = (Integer)EditorOptions.getDefault(language, EditorOptions.getCurrentProfileId(language), key);
+        defaultValue = (Integer)EditorOptions.getDefault(language, profileId, key);
         return getPreferences().getInt(key, defaultValue);
     }
 
     private String getOption(String key, String defaultValue) {
-        defaultValue = (String)EditorOptions.getDefault(language, EditorOptions.getCurrentProfileId(language), key);
+        defaultValue = (String)EditorOptions.getDefault(language, profileId, key);
         return getPreferences().get(key, defaultValue);
     }
 
@@ -551,13 +563,34 @@ public final class CodeStyle {
 
     // Nested classes ----------------------------------------------------------
     public enum Language {
-        C,
-        CPP,
-        HEADER;
+        C(MIMENames.C_MIME_TYPE, "C_CodeStyles", "C_Style"), // NOI18N
+        CPP(MIMENames.CPLUSPLUS_MIME_TYPE, "CPP_CodeStyles", "CPP_Style"), // NOI18N
+        HEADER(MIMENames.HEADER_MIME_TYPE, "H_CodeStyles", "H_Style"); // NOI18N
         
+        private final String mime;
+        private final String node;
+        private final String current;
+        private Language(String mime, String node, String current) {
+            this.mime = mime;
+            this.node = node;
+            this.current = current;
+        }
+
         @Override
         public String toString() {
             return NbBundle.getMessage(CodeStyle.class, "LBL_Language_"+name()); // NOI18N
+        }
+        
+        public String toMime() {
+            return mime;
+        }
+
+        public String prefNodeName() {
+            return node;
+        }
+
+        public String currentPropertyName() {
+            return node;
         }
     }
 
@@ -598,7 +631,7 @@ public final class CodeStyle {
     private static class FactoryImpl implements EditorOptions.CodeStyleFactory {
         @Override
         public CodeStyle create(Language language, Preferences preferences, boolean useOverrideOptions) {
-            return new CodeStyle(language, preferences, useOverrideOptions);
+            return new CodeStyle(language, null, preferences, useOverrideOptions);
         }
         @Override
         public Preferences getPreferences(CodeStyle codeStyle) {

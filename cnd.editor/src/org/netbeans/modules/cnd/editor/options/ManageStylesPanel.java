@@ -56,12 +56,12 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.NotifyDescriptor.InputLine;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -192,7 +192,7 @@ private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     String displayName = getString("Custom_Name"); // NOI18N
     displayName = getDisplayName(displayName);
     if (displayName != null && checkUniqueStyleName(displayName)) {
-        NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put(resourceId, displayName); // NOI18N
+        CodeStylePreferencesProvider.INSTANCE.forDocument(null, MIMENames.C_MIME_TYPE).node(EditorOptions.CODE_STYLE_NODE).put(resourceId, displayName); // NOI18N
         PreviewPreferences np = new PreviewPreferences(pp, language, id);
         np.makeAllKeys(pp);
         preferences.put(id, np);
@@ -210,7 +210,7 @@ private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
         String displayName = NbBundle.getMessage(ManageStylesPanel.class, "CopyOfStyle", item.name); // NOI18N
         displayName = getDisplayName(displayName);
         if (displayName != null && checkUniqueStyleName(displayName)) {
-            NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put(resourceId, displayName); // NOI18N
+            CodeStylePreferencesProvider.INSTANCE.forDocument(null, MIMENames.C_MIME_TYPE).node(EditorOptions.CODE_STYLE_NODE).put(resourceId, displayName); // NOI18N
             PreviewPreferences np = new PreviewPreferences(pp, language, id);
             np.makeAllKeys(pp);
             preferences.put(id, np);
@@ -246,7 +246,7 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     private String nextId(){
         int maxId = 0;
         try {
-            for (String key : NbPreferences.forModule(ManageStylesPanel.class).node("CodeStyle").keys()) {// NOI18N
+            for (String key : CodeStylePreferencesProvider.INSTANCE.forDocument(null, MIMENames.C_MIME_TYPE).node(EditorOptions.CODE_STYLE_NODE).keys()) {// NOI18N
                 if (key.endsWith("_Style_Name") && key.startsWith("Style_")) { // NOI18N
                     String v = key.substring(6, key.length() - 11);
                     int n = 0;

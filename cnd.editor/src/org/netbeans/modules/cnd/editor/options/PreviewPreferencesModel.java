@@ -77,7 +77,7 @@ public class PreviewPreferencesModel {
         }
         String def = defaultStyles.get(language);
         if (def == null) {
-            def = EditorOptions.getCurrentProfileId(language);
+            def = EditorOptions.getCurrentProfileId(language, null);
             defaultStyles.put(language, def);
         }
     }

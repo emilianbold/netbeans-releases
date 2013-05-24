@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,9 +37,8 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.cnd.remote.mapper;
 
 import java.util.Map;
@@ -49,21 +48,28 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
  *
- * @author Sergey Grinev
+ * @author Masha
  */
-public class HostMappingProviderWindows implements HostMappingProvider {
+public class HostMappingProviderWindowsUnixNFS  implements HostMappingProvider
+{
 
-   
+    /**
+     * 
+     * @param execEnv - remote solaris
+     * @param otherExecEnv local and Windows
+     * @return 
+     */
+    @Override
+    public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {        
+     return WindowsSupport.findMappings(execEnv, otherExecEnv, WindowsSupport.NFS_NETWORK_PROVIDER_NAME, true);
+       
+    }
+
+    
     @Override
     public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {
         return PlatformTypes.PLATFORM_WINDOWS == hostPlatform.getPlatform()
-                && hostPlatform.isLocalhost(); // Windows is only supported as client platform
+                && hostPlatform.isLocalhost() ; // Windows is only supported as client platform
     }
-
-    @Override
-    public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {
-        return WindowsSupport.findMappings(execEnv, otherExecEnv, null, false);
-    }
-
     
 }

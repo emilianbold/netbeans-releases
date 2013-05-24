@@ -42,7 +42,13 @@
 
 package org.netbeans.modules.cnd.remote.mapper;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.StringReader;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeMap;
@@ -56,6 +62,7 @@ import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -82,6 +89,61 @@ public class MappingsTestCase extends RemoteTestBase {
             System.err.printf("Mappings for %s:%s\n", execEnv, sortedMappings);
         }
     }
+    
+    public void testWindowsNFSHostAnalyzer() {
+        try {
+            Map<String, String> mapping = new HashMap<>();
+            getMappingsImpl("localhost", "serverOne", mapping, WindowsSupport.NFS_NETWORK_PROVIDER_NAME, true);
+            for (Map.Entry<String, String> entry : mapping.entrySet()) {
+                assert "P:".equals(entry.getKey()) && "/pub".equals(entry.getValue());
+            }
+            mapping.clear();
+            getMappingsImpl("localhost", "sErvEr_22_", mapping, WindowsSupport.NFS_NETWORK_PROVIDER_NAME, true);            
+            assert mapping.isEmpty();
+            
+            mapping.clear();;
+            getMappingsImpl("localhost", "serverTwo", mapping, WindowsSupport.NFS_NETWORK_PROVIDER_NAME, true);            
+            for (Map.Entry<String, String> entry : mapping.entrySet()) {
+                System.out.println("NFS: LocalPath:" + entry.getKey() + " RemotePath:" + entry.getValue());
+                assert "D:".equals(entry.getKey()) && "/Тестовая папка".equals(entry.getValue());
+            }            
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+    }
+    
+    public void testWindowsSambaHostAnalyzer() {
+        try {
+            Map<String, String> mapping = new HashMap<>();
+            getMappingsImpl("localhost", "serverOne", mapping, null, false);
+            assert mapping.size () == 1;
+            for (Map.Entry<String, String> entry : mapping.entrySet()) {
+                assert "P:".equals(entry.getValue()) && "/pub".equals(entry.getKey());
+            }
+            mapping.clear();            
+            getMappingsImpl("localhost", "sErvEr_22_", mapping, null, false);
+            assert mapping.size() == 1;
+            for (Map.Entry<String, String> entry : mapping.entrySet()) {
+                assert "Y:".equals(entry.getValue()) && "/long name".equals(entry.getKey());
+            }
+            mapping.clear();
+            getMappingsImpl("localhost", "name.domen.domen2.zone", mapping, null, false);
+            assert mapping.size () == 1;
+            for (Map.Entry<String, String> entry : mapping.entrySet()) {
+                assert "Z:".equals(entry.getValue()) && "/sg155630".equals(entry.getKey());
+            }            
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        
+    }    
+    
+    private void getMappingsImpl(String firstHost, String secondHost, Map<String, String> mappingsFirst2Second, String providerName,boolean localToRemoteMap) throws IOException{
+        // all maps are host network name -> host local name
+        Map<String, String> firstNetworkNames2Inner = WindowsSupport.parseWmicNetUseOutput(secondHost, getWmicOutput(), providerName, true, localToRemoteMap);
+        mappingsFirst2Second.putAll(firstNetworkNames2Inner);        
+    }    
 
     private String getReferenceMappingSortedString() throws Exception {
         RcFile rcFile = NativeExecutionTestSupport.getRcFile();
@@ -115,6 +177,164 @@ public class MappingsTestCase extends RemoteTestBase {
         }
         return sb.toString();
     }
+    
+    
+    private static List<String> getList(String string) {
+        final List<String> result = new LinkedList<String>();
+        final BufferedReader br = new BufferedReader(new StringReader(string));
+
+        try {
+            String line;            
+                while ((line = br.readLine()) != null) {
+                    result.add(line);
+                }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        } finally {
+            try {
+                br.close();
+            } catch (IOException ex) {
+                //Exceptions.printStackTrace(ex);
+            }
+        }
+
+        return result;        
+    }
+    
+    private static List<String> getWmicOutput() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("AccessMask=1179785\n");
+        sb.append("Comment=\n");
+        sb.append("ConnectionState=Connected\n");
+        sb.append("ConnectionType=Current Connection\n");
+        sb.append("Description=NFS Network\n");
+        sb.append("DisplayType=Share\n");
+        sb.append("InstallDate=\n");
+        sb.append("LocalName=P:\n");
+        sb.append("Name=\\\\serverOne\\pub (P:)\n");
+        sb.append("Persistent=FALSE\n");
+        sb.append("ProviderName=NFS Network\n");
+        sb.append("RemoteName=\\\\serverOne\\pub\n");
+        sb.append("RemotePath=\\\\serverOne\\pub\n");
+        sb.append("ResourceType=Disk\n");
+        sb.append("Status=Available\n");
+        sb.append("UserName=\n");
+        sb.append("\n");
+        sb.append("AccessMask=1179785\n");
+        sb.append("Comment=\n");
+        sb.append("ConnectionState=Connected\n");
+        sb.append("ConnectionType=Current Connection\n");
+        sb.append("Description=NFS Network\n");
+        sb.append("DisplayType=Share\n");
+        sb.append("InstallDate=\n");
+        sb.append("LocalName=D:\n");
+        sb.append("Name=\\\\serverTwo\\Тестовая папка (D:)\n");
+        sb.append("Persistent=FALSE\n");
+        sb.append("ProviderName=NFS Network\n");
+        sb.append("RemoteName=\\\\serverTwo\\Тестовая папка\n");
+        sb.append("RemotePath=\\\\serverTwo\\Тестовая папка\n");
+        sb.append("ResourceType=Disk\n");
+        sb.append("Status=Available\n");
+        sb.append("UserName=\n");
+        sb.append("\n");        
+        sb.append("AccessMask=1179785\n");
+        sb.append("Comment=\n");
+        sb.append("ConnectionState=Connected\n");
+        sb.append("ConnectionType=Current Connection\n");
+        sb.append("Description=RESOURCE CONNECTED - VirtualBox Shared Folders\n");
+        sb.append("DisplayType=Share\n");
+        sb.append("InstallDate=\n");
+        sb.append("LocalName=Y:\n");
+        sb.append("Name=\\\\sErvEr_22_\\long name (Y:)\n");
+        sb.append("Persistent=FALSE\n");
+        sb.append("ProviderName=VirtualBox Shared Folders\n");
+        sb.append("RemoteName=\\\\sErvEr_22_\\long name\n");
+        sb.append("RemotePath=\\\\sErvEr_22_\\long name\n");
+        sb.append("ResourceType=Disk\n");
+        sb.append("Status=Available\n");
+        sb.append("UserName=\n");        
+        sb.append("\n");
+        sb.append("AccessMask=1179785\n");
+        sb.append("Comment=\n");
+        sb.append("ConnectionState=Connected\n");
+        sb.append("ConnectionType=Current Connection\n");
+        sb.append("Description=RESOURCE CONNECTED - VirtualBox Shared Folders\n");
+        sb.append("DisplayType=Share\n");
+        sb.append("InstallDate=\n");
+        sb.append("LocalName=Z:\n");
+        sb.append("Name=\\\\name.domen.domen2.zone\\sg155630 (Z:)\n");
+        sb.append("Persistent=FALSE\n");
+        sb.append("ProviderName=VirtualBox Shared Folders\n");
+        sb.append("RemoteName=\\\\name.domen.domen2.zone\\sg155630\n");
+        sb.append("RemotePath=\\\\name.domen.domen2.zone\\sg155630\n");
+        sb.append("ResourceType=Disk\n");
+        sb.append("Status=Available\n");
+        sb.append("UserName=\n"); 
+        return getList(sb.toString());
+    }
+    
+    public void testHostMappingProviderWindows_English_WMIC () throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append("AccessMask=1179785\n");
+        sb.append("Comment=\n");
+        sb.append("ConnectionState=Connected\n");
+        sb.append("ConnectionType=Current Connection\n");
+        sb.append("Description=RESOURCE CONNECTED - VirtualBox Shared Folders\n");
+        sb.append("DisplayType=Share\n");
+        sb.append("InstallDate=\n");
+        sb.append("LocalName=P:\n");
+        sb.append("Name=\\\\serverOne\\pub (P:)\n");
+        sb.append("Persistent=FALSE\n");
+        sb.append("ProviderName=VirtualBox Shared Folders\n");
+        sb.append("RemoteName=\\\\serverOne\\pub\n");
+        sb.append("RemotePath=\\\\serverOne\\pub\n");
+        sb.append("ResourceType=Disk\n");
+        sb.append("Status=Available\n");
+        sb.append("UserName=\n");
+        sb.append("\n");
+        sb.append("AccessMask=1179785\n");
+        sb.append("Comment=\n");
+        sb.append("ConnectionState=Connected\n");
+        sb.append("ConnectionType=Current Connection\n");
+        sb.append("Description=RESOURCE CONNECTED - VirtualBox Shared Folders\n");
+        sb.append("DisplayType=Share\n");
+        sb.append("InstallDate=\n");
+        sb.append("LocalName=Y:\n");
+        sb.append("Name=\\\\sErvEr_22_\\long name (Y:)\n");
+        sb.append("Persistent=FALSE\n");
+        sb.append("ProviderName=VirtualBox Shared Folders\n");
+        sb.append("RemoteName=\\\\sErvEr_22_\\long name\n");
+        sb.append("RemotePath=\\\\sErvEr_22_\\long name\n");
+        sb.append("ResourceType=Disk\n");
+        sb.append("Status=Available\n");
+        sb.append("UserName=\n");        
+        sb.append("\n");
+        sb.append("AccessMask=1179785\n");
+        sb.append("Comment=\n");
+        sb.append("ConnectionState=Connected\n");
+        sb.append("ConnectionType=Current Connection\n");
+        sb.append("Description=RESOURCE CONNECTED - VirtualBox Shared Folders\n");
+        sb.append("DisplayType=Share\n");
+        sb.append("InstallDate=\n");
+        sb.append("LocalName=Z:\n");
+        sb.append("Name=\\\\name.domen.domen2.zone\\sg155630 (Z:)\n");
+        sb.append("Persistent=FALSE\n");
+        sb.append("ProviderName=VirtualBox Shared Folders\n");
+        sb.append("RemoteName=\\\\name.domen.domen2.zone\\sg155630\n");
+        sb.append("RemotePath=\\\\name.domen.domen2.zone\\sg155630\n");
+        sb.append("ResourceType=Disk\n");
+        sb.append("Status=Available\n");
+        sb.append("UserName=\n");                
+        Map<String, String> map;
+        map = WindowsSupport.parseWmicNetUseOutput("serverOne", getList(sb.toString()), null, true, false);
+        assert map != null && map.size() == 1 && "P:".equals(map.get("/pub"));
+
+        map = WindowsSupport.parseWmicNetUseOutput("sErvEr_22_", getList(sb.toString()), null, true, false);
+        assert map != null && map.size() == 1 && "Y:".equals(map.get("/long name"));
+
+        map = WindowsSupport.parseWmicNetUseOutput("name.domen.domen2.zone", getList(sb.toString()), null,true, false);
+        assert map != null && map.size() == 1 && "Z:".equals(map.get("/sg155630"));        
+    }
 
     public void testHostMappingProviderWindows_English() throws Exception {
         StringBuilder sb = new StringBuilder();
@@ -129,14 +349,14 @@ public class MappingsTestCase extends RemoteTestBase {
         sb.append("OK           Z:        \\\\name.domen.domen2.zone\\sg155630   Microsoft Windows Network\n");
         sb.append("The command completed successfully.\n");
         Map<String, String> map;
-        map = HostMappingProviderWindows.parseNetUseOutput("serverOne", new StringReader(sb.toString()));
-        assert map != null && map.size() == 1 && "p:".equals(map.get("pub"));
+        map = WindowsSupport.parseNetUseOutput("serverOne", getList(sb.toString()), false);
+        assert map != null && map.size() == 1 && "P:".equals(map.get("/pub"));
 
-        map = HostMappingProviderWindows.parseNetUseOutput("sErvEr_22_", new StringReader(sb.toString()));
-        assert map != null && map.size() == 1 && "y:".equals(map.get("long name"));
+        map = WindowsSupport.parseNetUseOutput("sErvEr_22_", getList(sb.toString()), false);
+        assert map != null && map.size() == 1 && "Y:".equals(map.get("/long name"));
 
-        map = HostMappingProviderWindows.parseNetUseOutput("name.domen.domen2.zone", new StringReader(sb.toString()));
-        assert map != null && map.size() == 1 && "z:".equals(map.get("sg155630"));
+        map = WindowsSupport.parseNetUseOutput("name.domen.domen2.zone", getList(sb.toString()), false);
+        assert map != null && map.size() == 1 && "Z:".equals(map.get("/sg155630"));
     }
 
     public void testHostMappingProviderWindows_English2() throws Exception {
@@ -154,10 +374,10 @@ public class MappingsTestCase extends RemoteTestBase {
         sb.append("             Z:        \\\\vboxsvr\\exchange        VirtualBox Shared Folders\n");
         sb.append("The command completed successfully.\n");
         Map<String, String> map;
-        map = HostMappingProviderWindows.parseNetUseOutput("amkar.russia.sun.com", new StringReader(sb.toString()));
-        assert map != null && map.size() == 1 && "k:".equals(map.get("home"));
+        map = WindowsSupport.parseNetUseOutput("amkar.russia.sun.com", getList(sb.toString()), false);
+        assert map != null && map.size() == 1 && "K:".equals(map.get("/home"));
 
-        map = HostMappingProviderWindows.parseNetUseOutput("vboxsvr", new StringReader(sb.toString()));
+        map = WindowsSupport.parseNetUseOutput("vboxsvr", getList(sb.toString()), false);
         assert map != null && map.size() == 2;
     }
     
@@ -176,11 +396,11 @@ public class MappingsTestCase extends RemoteTestBase {
         sb.append("             Z:        \\\\vboxsvr\\exchange        VirtualBox Shared Folders\n");
         sb.append("The command completed successfully.\n");
         Map<String, String> map;
-        map = HostMappingProviderWindows.parseNetUseOutput("amkar.rus.sun.com", new StringReader(sb.toString()));
-        assert map != null && map.size() == 1 && "k:".equals(map.get("home"));
+        map = WindowsSupport.parseNetUseOutput("amkar.rus.sun.com", getList(sb.toString()), false);
+        assert map != null && map.size() == 1 && "K:".equals(map.get("/home"));
 
-        map = HostMappingProviderWindows.parseNetUseOutput("vboxsvr", new StringReader(sb.toString()));
-        assert map != null && map.size() == 2;
+        map = WindowsSupport.parseNetUseOutput("vboxsvr", getList(sb.toString()), false);
+        assert map != null && map.size() == 2 && "X:".equals(map.get("/cnd-main")) && "Z:".equals(map.get("/exchange"));
     }
 
     public void testHostMappingProviderWindows_Russian() throws Exception {
@@ -196,14 +416,15 @@ public class MappingsTestCase extends RemoteTestBase {
         sb.append("OK           Z:        \\\\name.domen.domen2.zone\\sg155630   Microsoft Windows Network\n");
         sb.append("Команда выполнена успешно.\n");
         Map<String, String> map;
-        map = HostMappingProviderWindows.parseNetUseOutput("serverOne", new StringReader(sb.toString()));
-        assert map != null && map.size() == 1 && "p:".equals(map.get("pub"));
+        map = WindowsSupport.parseNetUseOutput("serverOne", getList(sb.toString()), false);
+        assert map != null && map.size() == 1 && "P:".equals(map.get("/pub"));
 
-        map = HostMappingProviderWindows.parseNetUseOutput("sErvEr_22_", new StringReader(sb.toString()));
-        assert map != null && map.size() == 1 && "y:".equals(map.get("long name"));
+        map = WindowsSupport.parseNetUseOutput("sErvEr_22_", getList(sb.toString()), false);
+        assert map != null && map.size() == 1 && "Y:".equals(map.get("/long name"));
 
-        map = HostMappingProviderWindows.parseNetUseOutput("name.domen.domen2.zone", new StringReader(sb.toString()));
-        assert map != null && map.size() == 1 && "z:".equals(map.get("sg155630"));
+        map = WindowsSupport.parseNetUseOutput("name.domen.domen2.zone", getList(sb.toString()), false);
+        assert map != null && map.size() == 1 && "Z:".equals(map.get("/sg155630"));
+        System.out.println("Everything is OK for Russian output");
     }
 
     public void testHostMappingProviderWindows_German() throws Exception {
@@ -219,14 +440,14 @@ public class MappingsTestCase extends RemoteTestBase {
         sb.append("OK               Z:        \\\\name.domen.domen2.zone\\sg155630   Microsoft Windows-Netzwerk\n");
         sb.append("Der Befehl wurde erfolgreich ausgefÃ¼hrt.\n");
         Map<String, String> map;
-        map = HostMappingProviderWindows.parseNetUseOutput("serverOne", new StringReader(sb.toString()));
-        assert map != null && map.size() == 1 && "p:".equals(map.get("pub"));
+        map = WindowsSupport.parseNetUseOutput("serverOne", getList(sb.toString()), false);
+        assert map != null && map.size() == 1 && "P:".equals(map.get("/pub"));
 
-        map = HostMappingProviderWindows.parseNetUseOutput("sErvEr_22_", new StringReader(sb.toString()));
-        assert map != null && map.size() == 1 && "y:".equals(map.get("long name"));
+        map = WindowsSupport.parseNetUseOutput("sErvEr_22_", getList(sb.toString()), false);
+        assert map != null && map.size() == 1 && "Y:".equals(map.get("/long name"));
 
-        map = HostMappingProviderWindows.parseNetUseOutput("name.domen.domen2.zone", new StringReader(sb.toString()));
-        assert map != null && map.size() == 1 && "z:".equals(map.get("sg155630"));
+        map = WindowsSupport.parseNetUseOutput("name.domen.domen2.zone", getList(sb.toString()), false);
+        assert map != null && map.size() == 1 && "Z:".equals(map.get("/sg155630"));
     }
 
     public void testHostMappingProviderWindows_Unexpected() throws Exception {
@@ -237,21 +458,21 @@ public class MappingsTestCase extends RemoteTestBase {
         String netUseOutput_1 =
                 "-------------------------------------------------------------------\n" +
                 "OK       P:     \\\\server_1\\pub      Microsoft Windows-Netzwerk\n";
-        HostMappingProviderWindows.parseNetUseOutput("server_1", new StringReader(netUseOutput_1));
+        WindowsSupport.parseNetUseOutput("server_1", getList(netUseOutput_1), false);
 
         // 2. No "-----------------" line
         String netUseOutput_2 =
                 "Status   Local  Remote               Network\n" +
                 "OK       P:     \\\\server_1\\pub      Microsoft Windows-Netzwerk\n";
-        HostMappingProviderWindows.parseNetUseOutput("server_1", new StringReader(netUseOutput_2));
+        WindowsSupport.parseNetUseOutput("server_1", getList(netUseOutput_2), false);
 
         // 3. short host
         String netUseOutput_3 =
                 "\n" +
                 "Status   Local  Remote               Network\n" +
                 "-------------------------------------------------------------------\n" +
-                "OK       P:     xx                     Microsoft Windows-Netzwerk\n";
-        HostMappingProviderWindows.parseNetUseOutput("server_1", new StringReader(netUseOutput_3));
+                "         P:     xx                     Microsoft Windows-Netzwerk\n";
+        WindowsSupport.parseNetUseOutput("server_1", getList(netUseOutput_3), false);
 
         // 4. server without "\\"
         String netUseOutput_4 =
@@ -259,22 +480,22 @@ public class MappingsTestCase extends RemoteTestBase {
                 "Status   Local  Remote               Network\n" +
                 "-------------------------------------------------------------------\n" +
                 "OK       P:     server_1_pub           Microsoft Windows-Netzwerk\n";
-        HostMappingProviderWindows.parseNetUseOutput("server_1", new StringReader(netUseOutput_4));
+        WindowsSupport.parseNetUseOutput("server_1", getList(netUseOutput_4), false);
 
         // 5. empty line
-        HostMappingProviderWindows.parseNetUseOutput("server_1", new StringReader(""));
+        WindowsSupport.parseNetUseOutput("server_1", getList(""), false);
 
         // 6. just some crap
         String netUseOutput_6 = "qwe\nasd\n---------------\nzxc\n123\n456\n\n\n";
-        HostMappingProviderWindows.parseNetUseOutput("server_1", new StringReader(netUseOutput_6));
+        WindowsSupport.parseNetUseOutput("server_1", getList(netUseOutput_6), false);
     }
 
-    public void testHostMappingProviderSamba() throws Exception {
-        Map<String, String> map;
-        map = HostMappingProviderSamba.parseOutput(new StringReader(getConfigFile().toString()));
-        assert map != null && map.size() == 1 && "/export/pub".equals(map.get("pub"));
-    }
-    
+//    public void testHostMappingProviderSamba() throws Exception {
+//        Map<String, String> map;
+//        map = HostMappingProviderSamba.parseOutput(new StringReader(getConfigFile().toString()));
+//        assert map != null && map.size() == 1 && "/export/pub".equals(map.get("pub"));
+//    }
+//    
     
     private static StringBuilder getConfigFile() {
         StringBuilder sb = new StringBuilder();

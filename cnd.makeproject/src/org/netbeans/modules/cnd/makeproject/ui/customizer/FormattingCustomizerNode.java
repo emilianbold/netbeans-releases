@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,33 +37,45 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.makeproject.ui.customizer;
 
-package org.netbeans.modules.cnd.remote.mapper;
-
-import java.util.Map;
-import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import javax.swing.JPanel;
+import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ui.CustomizerNode;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.FormattingPropPanel;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Sergey Grinev
+ * @author alsimon
  */
-public class HostMappingProviderWindows implements HostMappingProvider {
+public class FormattingCustomizerNode extends CustomizerNode {
 
-   
-    @Override
-    public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {
-        return PlatformTypes.PLATFORM_WINDOWS == hostPlatform.getPlatform()
-                && hostPlatform.isLocalhost(); // Windows is only supported as client platform
+    private FormattingPropPanel formattingPropPanel;
+
+    public FormattingCustomizerNode(String name, String displayName, CustomizerNode[] children, Lookup lookup) {
+        super(name, displayName, children, lookup);
     }
 
     @Override
-    public Map<String, String> findMappings(ExecutionEnvironment execEnv, ExecutionEnvironment otherExecEnv) {
-        return WindowsSupport.findMappings(execEnv, otherExecEnv, null, false);
+    public JPanel getPanel(Configuration configuration) {
+        if (formattingPropPanel == null) {
+            formattingPropPanel = new FormattingPropPanel(getContext().getProject(), getContext().getConfigurationDescriptor());
+            getContext().registerSavable(formattingPropPanel);
+        }
+        return formattingPropPanel;
     }
 
-    
+    @Override
+    public CustomizerStyle customizerStyle() {
+        return CustomizerStyle.PANEL;
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("ProjectProperties"); // NOI18N
+    }
 }
