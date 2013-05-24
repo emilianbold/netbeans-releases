@@ -2655,18 +2655,19 @@ direct_declarator[int kind, int level]
 function_like_var_declarator
 {String id; TypeQualifier tq;}
     :
-		// TODO: refactor the grammar and use function_declarator here
-		(options {greedy=true;} :function_attribute_specification)?
-		id = idInBalanceParensHard
-		{declaratorID(id, qiFun);}
-		LPAREN //{declaratorParameterList(false);}
-		(parameter_list[false])?
-		RPAREN //{declaratorEndParameterList(false);}
-		(tq = cv_qualifier)*
-		(exception_specification)?
-		(options {greedy=true;} :function_attribute_specification)?
-		(asm_block!)?
+        // TODO: refactor the grammar and use function_declarator here
         (options {greedy=true;} :function_attribute_specification)?
+        id = idInBalanceParensHard
+        {declaratorID(id, qiFun);}
+        LPAREN //{declaratorParameterList(false);}
+        (parameter_list[false])?
+        RPAREN //{declaratorEndParameterList(false);}
+        (tq = cv_qualifier)*
+        (exception_specification)?
+        (options {greedy=true;} :function_attribute_specification)?
+        (asm_block!)?
+        (options {greedy=true;} :function_attribute_specification)?
+        (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)*                
     ;
 
 declarator_suffixes
@@ -2701,7 +2702,7 @@ function_declarator [boolean definition, boolean allowParens, boolean symTabChec
         {_td || (_ts != tsTYPEID && _ts != tsInvalid) || allowParens}? (LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN (SEMICOLON | RPAREN)) =>
         LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN
     |
-        function_direct_declarator[definition, symTabCheck] (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)?
+        function_direct_declarator[definition, symTabCheck] (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)*
     ;
 
 function_direct_declarator [boolean definition, boolean symTabCheck] 
