@@ -556,6 +556,11 @@ public enum CppTokenId implements TokenId {
         Token<CppTokenId> token, LanguagePath languagePath, InputAttributes inputAttributes) {
             // Test language embedding in the block comment and string literal
             switch (token.id()) {
+                case BLOCK_COMMENT:
+                    return LanguageEmbedding.create(DoxygenTokenId.language(), 2,
+                            (token.partType() == PartType.COMPLETE) ? 2 : 0);
+                case LINE_COMMENT:
+                    return LanguageEmbedding.create(DoxygenTokenId.language(), 2, 0);
                 case DOXYGEN_COMMENT:
                     return LanguageEmbedding.create(DoxygenTokenId.language(), 3,
                             (token.partType() == PartType.COMPLETE) ? 2 : 0);

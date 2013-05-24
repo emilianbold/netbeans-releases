@@ -257,7 +257,6 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
                     try {
                         n = Integer.parseInt(v);
                     } catch (NumberFormatException e) {
-                        e.printStackTrace(System.err);
                     }
                     if (maxId <= n) {
                         maxId = n + 1;

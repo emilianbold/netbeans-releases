@@ -74,7 +74,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
     private static final String MYSQL_PROFILE = "MySQL"; // NOI18N
     private static final String WHITESMITHS_PROFILE = "Whitesmiths"; // NOI18N
 
-    static final String[] PREDEFINED_STYLES = new String[] {
+    private static final String[] PREDEFINED_STYLES = new String[] {
                         DEFAULT_PROFILE, APACHE_PROFILE, GNU_PROFILE,
                         LUNIX_PROFILE, ANSI_PROFILE, OPEN_SOLARIS_PROFILE,
                         K_AND_R_PROFILE, MYSQL_PROFILE, WHITESMITHS_PROFILE
@@ -132,7 +132,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         }
     }
     
-    private Map<String,String> getAllStyles(String mimeType) {
+    public static Map<String,String> getAllStyles(String mimeType) {
         Preferences pref = null;
         CodeStylePreferences.Provider myProvider = null;
         for(CodeStylePreferences.Provider p : Lookup.getDefault().lookupAll(CodeStylePreferences.Provider.class)) {
@@ -145,7 +145,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         StringBuilder def = new StringBuilder();
         for(String s: PREDEFINED_STYLES){
             if (def.length() > 0){
-                def.append(',');
+                def.append(','); //NOI18N
             }
             def.append(s);
         }
@@ -169,7 +169,19 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         return res;
     }
     
-    private String getStyleDisplayName(Preferences pref, CodeStylePreferences.Provider myProvider, String styleId) {
+    public static String getStyleDisplayName(String styleId, String mimeType) {
+        Preferences pref = null;
+        CodeStylePreferences.Provider myProvider = null;
+        for(CodeStylePreferences.Provider p : Lookup.getDefault().lookupAll(CodeStylePreferences.Provider.class)) {
+            if (p.getClass().getName().equals("org.netbeans.modules.cnd.editor.options.CodeStylePreferencesProvider")) { //NOI18N
+                myProvider = p;
+                pref = p.forDocument(null, mimeType);
+            }
+        }
+        return getStyleDisplayName(pref, myProvider, styleId);
+    }
+    
+    private static String getStyleDisplayName(Preferences pref, CodeStylePreferences.Provider myProvider, String styleId) {
         for (String name : PREDEFINED_STYLES) {
             if (styleId.equals(name)) {
                 return NbBundle.getMessage(myProvider.getClass(), styleId+"_Name");

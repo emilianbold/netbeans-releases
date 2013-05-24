@@ -692,6 +692,8 @@ private void manageStylesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     if (dd.getValue() == DialogDescriptor.OK_OPTION) {
         preferencesModel.resetPreferences(language, clone);
         initLanguageCategory();
+        //change();
+        topController.changed();
     }
 }//GEN-LAST:event_manageStylesActionPerformed
 

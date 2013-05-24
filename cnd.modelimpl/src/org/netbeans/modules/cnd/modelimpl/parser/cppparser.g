@@ -2513,10 +2513,13 @@ conversion_function_decl_or_def returns [boolean definition = false]
                 (LESSTHAN template_parameter_list GREATERTHAN)?
 		LPAREN (parameter_list[false])? RPAREN	
 		(tq = cv_qualifier)*
-                (LITERAL_override | LITERAL_final | LITERAL_new)?
+                (LITERAL_override | LITERAL_final | LITERAL_new)*
+                ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?
 		(exception_specification)?
 		(	compound_statement { definition = true; }
-		|	SEMICOLON! //{end_of_stmt();}
+                    |	
+                        ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?
+                        SEMICOLON! //{end_of_stmt();}
 		)
 	;
 
@@ -2655,18 +2658,19 @@ direct_declarator[int kind, int level]
 function_like_var_declarator
 {String id; TypeQualifier tq;}
     :
-		// TODO: refactor the grammar and use function_declarator here
-		(options {greedy=true;} :function_attribute_specification)?
-		id = idInBalanceParensHard
-		{declaratorID(id, qiFun);}
-		LPAREN //{declaratorParameterList(false);}
-		(parameter_list[false])?
-		RPAREN //{declaratorEndParameterList(false);}
-		(tq = cv_qualifier)*
-		(exception_specification)?
-		(options {greedy=true;} :function_attribute_specification)?
-		(asm_block!)?
+        // TODO: refactor the grammar and use function_declarator here
         (options {greedy=true;} :function_attribute_specification)?
+        id = idInBalanceParensHard
+        {declaratorID(id, qiFun);}
+        LPAREN //{declaratorParameterList(false);}
+        (parameter_list[false])?
+        RPAREN //{declaratorEndParameterList(false);}
+        (tq = cv_qualifier)*
+        (exception_specification)?
+        (options {greedy=true;} :function_attribute_specification)?
+        (asm_block!)?
+        (options {greedy=true;} :function_attribute_specification)?
+        (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)*                
     ;
 
 declarator_suffixes
@@ -2701,7 +2705,7 @@ function_declarator [boolean definition, boolean allowParens, boolean symTabChec
         {_td || (_ts != tsTYPEID && _ts != tsInvalid) || allowParens}? (LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN (SEMICOLON | RPAREN)) =>
         LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN
     |
-        function_direct_declarator[definition, symTabCheck] (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)?
+        function_direct_declarator[definition, symTabCheck] (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)*
     ;
 
 function_direct_declarator [boolean definition, boolean symTabCheck] 
@@ -2969,10 +2973,11 @@ dtor_declarator[boolean definition]
 	//{declaratorParameterList(definition);}
         // VV: /06/06/06 ~dtor(void) is valid construction
 	LPAREN (LITERAL_void)? RPAREN
-        (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)?
+        (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)*
         //{declaratorEndParameterList(definition);}
         ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?	
 	(exception_specification)?        
+        ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?	
 	;
 
 // This matches a generic qualified identifier ::T::B::foo
