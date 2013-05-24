@@ -193,7 +193,7 @@ public final class ApiGenScript {
     }
 
     private List<String> getParams(PhpModule phpModule) {
-        List<String> params = new ArrayList<String>();
+        List<String> params = new ArrayList<>();
         if (ApiGenPreferences.getBoolean(phpModule, ApiGenPreferences.HAS_CONFIG)) {
             addConfig(phpModule, params);
         } else {

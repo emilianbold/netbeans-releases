@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.api.jslibs;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -61,7 +62,9 @@ import java.util.prefs.Preferences;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
@@ -69,7 +72,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
@@ -81,6 +83,7 @@ import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -169,8 +172,6 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
         if (storedJsLibsFolder != null) {
             javaScriptLibrarySelection.setLibrariesFolder(storedJsLibsFolder);
         }
-        // add to placeholder
-        placeholderPanel.add(javaScriptLibrarySelection, BorderLayout.CENTER);
         // set store listener
         category.setStoreListener(new ActionListener() {
             @Override
@@ -188,9 +189,18 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
     }
 
     private void initPanel() {
+        initPanelContent(loadingLabel);
         File webRoot = getValidWebRoot();
         setBrowseButtonVisible(webRoot);
         setJsFiles(webRoot);
+    }
+
+    private void initPanelContent(Component component) {
+        assert EventQueue.isDispatchThread();
+        placeholderPanel.removeAll();
+        placeholderPanel.add(component, BorderLayout.CENTER);
+        placeholderPanel.revalidate();
+        placeholderPanel.repaint();
     }
 
     @CheckForNull
@@ -208,16 +218,27 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
         javaScriptLibrarySelection.setBrowseButtonVisible(webRoot);
     }
 
-    private void setJsFiles(File webRoot) {
+    private void setJsFiles(final File webRoot) {
         assert EventQueue.isDispatchThread();
-        // set js files
-        Collection<String> jsFiles;
-        if (webRoot == null) {
-            jsFiles = Collections.<String>emptyList();
-        } else {
-            jsFiles = findProjectJsFiles(FileUtil.toFileObject(webRoot));
-        }
-        javaScriptLibrarySelection.updateDefaultLibraries(jsFiles);
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                // set js files
+                final Collection<String> jsFiles;
+                if (webRoot == null) {
+                    jsFiles = Collections.<String>emptyList();
+                } else {
+                    jsFiles = Collections.synchronizedCollection(findProjectJsFiles(FileUtil.toFileObject(webRoot)));
+                }
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        javaScriptLibrarySelection.updateDefaultLibraries(jsFiles);
+                        initPanelContent(javaScriptLibrarySelection);
+                    }
+                });
+            }
+        });
     }
 
     void validateAndSetData() {
@@ -333,21 +354,16 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
         return names;
     }
 
-    @NbBundle.Messages("JavaScriptLibraryCustomizerPanel.progress.detectingJsFiles=Detecting JavaScript files...")
     private Collection<String> findProjectJsFiles(final FileObject siteRoot) {
-        final Set<String> jsFiles = Collections.synchronizedSortedSet(new TreeSet<String>());
-        ProgressUtils.showProgressDialogAndRun(new Runnable() {
-            @Override
-            public void run() {
-                Enumeration<? extends FileObject> children = siteRoot.getChildren(true);
-                while (children.hasMoreElements()) {
-                    FileObject child = children.nextElement();
-                    if (JS_MIME_TYPE.equals(FileUtil.getMIMEType(child, JS_MIME_TYPE))) {
-                        jsFiles.add(FileUtil.getRelativePath(siteRoot, child));
-                    }
-                }
+        assert !EventQueue.isDispatchThread();
+        final Set<String> jsFiles = new TreeSet<>();
+        Enumeration<? extends FileObject> children = siteRoot.getChildren(true);
+        while (children.hasMoreElements()) {
+            FileObject child = children.nextElement();
+            if (JS_MIME_TYPE.equals(FileUtil.getMIMEType(child, JS_MIME_TYPE))) {
+                jsFiles.add(FileUtil.getRelativePath(siteRoot, child));
             }
-        }, Bundle.JavaScriptLibraryCustomizerPanel_progress_detectingJsFiles());
+        }
         return jsFiles;
     }
 
@@ -364,8 +380,13 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
     private void initComponents() {
 
         placeholderPanel = new JPanel();
+        loadingLabel = new JLabel();
 
         placeholderPanel.setLayout(new BorderLayout());
+
+        loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        Mnemonics.setLocalizedText(loadingLabel, NbBundle.getMessage(JavaScriptLibraryCustomizerPanel.class, "JavaScriptLibraryCustomizerPanel.loadingLabel.text")); // NOI18N
+        placeholderPanel.add(loadingLabel, BorderLayout.CENTER);
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -380,6 +401,7 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JLabel loadingLabel;
     private JPanel placeholderPanel;
     // End of variables declaration//GEN-END:variables
 

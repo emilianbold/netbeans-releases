@@ -143,9 +143,9 @@ public final class FileUtils {
             return Collections.<String>emptyList();
         }
         // on linux there are usually duplicities in PATH
-        Set<String> dirs = new LinkedHashSet<String>(Arrays.asList(path.split(File.pathSeparator)));
+        Set<String> dirs = new LinkedHashSet<>(Arrays.asList(path.split(File.pathSeparator)));
         LOGGER.log(Level.FINE, "PATH dirs: {0}", dirs);
-        List<String> found = new ArrayList<String>(dirs.size() * filenames.length);
+        List<String> found = new ArrayList<>(dirs.size() * filenames.length);
         for (String filename : filenames) {
             Parameters.notNull("filename", filename); // NOI18N
             for (String dir : dirs) {
@@ -417,8 +417,7 @@ public final class FileUtils {
         if (zipEntryFilter == null) {
             zipEntryFilter = DUMMY_ZIP_ENTRY_FILTER;
         }
-        ZipFile zipFile = new ZipFile(zipPath);
-        try {
+        try (ZipFile zipFile = new ZipFile(zipPath)) {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements()) {
                 ZipEntry zipEntry = entries.nextElement();
@@ -429,8 +428,6 @@ public final class FileUtils {
                 ensureParentExists(destinationFile);
                 copyZipEntry(zipFile, zipEntry, destinationFile);
             }
-        } finally {
-            zipFile.close();
         }
     }
 
@@ -447,16 +444,8 @@ public final class FileUtils {
         if (zipEntry.isDirectory()) {
             return;
         }
-        InputStream inputStream = zipFile.getInputStream(zipEntry);
-        try {
-            FileOutputStream outputStream = new FileOutputStream(destinationFile);
-            try {
-                FileUtil.copy(inputStream, outputStream);
-            } finally {
-                outputStream.close();
-            }
-        } finally {
-            inputStream.close();
+        try (InputStream inputStream = zipFile.getInputStream(zipEntry); FileOutputStream outputStream = new FileOutputStream(destinationFile)) {
+            FileUtil.copy(inputStream, outputStream);
         }
     }
 

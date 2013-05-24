@@ -136,7 +136,7 @@ public class IncludePathNodeFactory implements NodeFactory {
 
         @Override
         protected List<Node> getNodes() {
-            List<Node> list = new ArrayList<Node>();
+            List<Node> list = new ArrayList<>();
             // #172092
             List<FileObject> includePath = ProjectManager.mutex().readAccess(new Mutex.Action<List<FileObject>>() {
                 @Override

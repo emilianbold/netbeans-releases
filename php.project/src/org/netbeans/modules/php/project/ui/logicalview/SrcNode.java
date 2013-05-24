@@ -148,7 +148,7 @@ public class SrcNode extends FilterNode {
 
     @Override
     public Action[] getActions(boolean context) {
-        List<Action> actions = new ArrayList<Action>();
+        List<Action> actions = new ArrayList<>();
         actions.add(CommonProjectActions.newFileAction());
         actions.add(null);
         if (!isTest) {
@@ -260,7 +260,7 @@ public class SrcNode extends FilterNode {
 
         @Override
         public Action[] getActions(boolean context) {
-            List<Action> actions = new ArrayList<Action>();
+            List<Action> actions = new ArrayList<>();
             actions.addAll(Arrays.asList(getOriginal().getActions(context)));
             Action[] commonActions = getCommonActions();
             // find first separator and add actions there
@@ -326,7 +326,7 @@ public class SrcNode extends FilterNode {
 
         @Override
         public Action[] getActions(boolean context) {
-            List<Action> actions = new ArrayList<Action>();
+            List<Action> actions = new ArrayList<>();
             actions.addAll(Arrays.asList(getOriginal().getActions(context)));
             // find first separator and add actions there
             int idx = actions.indexOf(null);
@@ -355,7 +355,7 @@ public class SrcNode extends FilterNode {
         }
 
         private Action[] getCommonActions() {
-            List<Action> toAdd = new ArrayList<Action>();
+            List<Action> toAdd = new ArrayList<>();
             if (CommandUtils.isPhpOrHtmlFile(getFileObject())) {
                 // not available for multiple selected nodes => create new instance every time
                 toAdd.add(null);
@@ -366,7 +366,7 @@ public class SrcNode extends FilterNode {
                 }
             }
 
-            List<Action> actions = new ArrayList<Action>(COMMON_ACTIONS.length + toAdd.size());
+            List<Action> actions = new ArrayList<>(COMMON_ACTIONS.length + toAdd.size());
             actions.addAll(toAdd);
             if (!isTest) {
                 actions.addAll(Arrays.asList(COMMON_ACTIONS));

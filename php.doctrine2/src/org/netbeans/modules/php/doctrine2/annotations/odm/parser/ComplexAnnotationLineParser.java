@@ -56,11 +56,11 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  */
 public class ComplexAnnotationLineParser implements AnnotationLineParser {
 
-    private static final Set<ComplexAnnotation> ANNOTATIONS = new HashSet<ComplexAnnotation>();
+    private static final Set<ComplexAnnotation> ANNOTATIONS = new HashSet<>();
     static {
-        Set<String> inlineAnnotations = new HashSet<String>();
+        Set<String> inlineAnnotations = new HashSet<>();
         inlineAnnotations.add("Index"); //NOI18N
-        Set<String> typedParamRegexs = new HashSet<String>();
+        Set<String> typedParamRegexs = new HashSet<>();
         typedParamRegexs.add("repositoryClass"); //NOI18N
         ANNOTATIONS.add(new ComplexAnnotation("Document", inlineAnnotations, typedParamRegexs)); //NOI18N
     }
@@ -73,7 +73,7 @@ public class ComplexAnnotationLineParser implements AnnotationLineParser {
             if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], annotation.getName())) {
                 String annotationName = tokens[0].trim();
                 String description = line.substring(annotationName.length()).trim();
-                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                Map<OffsetRange, String> types = new HashMap<>();
                 types.put(new OffsetRange(0, annotationName.length()), annotationName);
                 types.putAll(AnnotationUtils.extractInlineAnnotations(line, annotation.getInlineAnnotations()));
                 types.putAll(AnnotationUtils.extractTypesFromParameters(line, annotation.getTypedParamRegexs()));

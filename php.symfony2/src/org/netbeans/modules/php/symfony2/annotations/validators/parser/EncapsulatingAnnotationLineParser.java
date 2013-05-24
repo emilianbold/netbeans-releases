@@ -56,9 +56,9 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  */
 public class EncapsulatingAnnotationLineParser implements AnnotationLineParser {
 
-    private static final Map<String, Set<String>> ANNOTATIONS = new HashMap<String, Set<String>>();
+    private static final Map<String, Set<String>> ANNOTATIONS = new HashMap<>();
     static {
-        Set<String> inlineAnnotations = new HashSet<String>();
+        Set<String> inlineAnnotations = new HashSet<>();
         inlineAnnotations.add("NotBlank"); //NOI18N
         inlineAnnotations.add("Blank"); //NOI18N
         inlineAnnotations.add("NotNull"); //NOI18N
@@ -97,7 +97,7 @@ public class EncapsulatingAnnotationLineParser implements AnnotationLineParser {
             if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], entry.getKey())) {
                 String annotation = tokens[0].trim();
                 String description = line.substring(annotation.length()).trim();
-                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                Map<OffsetRange, String> types = new HashMap<>();
                 types.put(new OffsetRange(0, annotation.length()), annotation);
                 types.putAll(AnnotationUtils.extractInlineAnnotations(line, entry.getValue()));
                 result = new AnnotationParsedLine.ParsedLine(entry.getKey(), types, description, true);

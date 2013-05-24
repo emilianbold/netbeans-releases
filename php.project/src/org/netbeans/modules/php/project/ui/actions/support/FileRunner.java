@@ -41,24 +41,20 @@
  */
 package org.netbeans.modules.php.project.ui.actions.support;
 
-import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.extexecution.print.LineConvertors;
-import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpInterpreter;
@@ -66,16 +62,11 @@ import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
-import org.netbeans.modules.php.spi.executable.DebugStarter;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.openide.awt.HtmlBrowser;
-import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Cancellable;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
@@ -91,8 +82,6 @@ public final class FileRunner {
 
     private static final RequestProcessor RP = new RequestProcessor(FileRunner.class);
     private static final ExecutionDescriptor.LineConvertorFactory PHP_LINE_CONVERTOR_FACTORY = new PhpLineConvertorFactory();
-    // for debugger, let's treat all the files withour project under one dbg session
-    private static final Project DUMMY_PROJECT = new DummyProject();
 
     final File file;
 
@@ -142,96 +131,43 @@ public final class FileRunner {
         RP.post(new Runnable() {
             @Override
             public void run() {
-                try {
-                    getRunCallable(Bundle.FileRunner_run_displayName(getDisplayName()), false).call();
-                } catch (Exception ex) {
-                    LOGGER.log(Level.WARNING, null, ex);
-                }
+                PhpExecutable executable = getExecutable(Bundle.FileRunner_run_displayName(getDisplayName()));
+                executable.run(getDescriptor(getPostExecution(executable)));
             }
         });
     }
 
+    @NbBundle.Messages({
+        "# {0} - project or file name",
+        "FileRunner.debug.displayName={0} (debug)",
+    })
     public void debug() {
         RP.post(new Runnable() {
             @Override
             public void run() {
+                PhpExecutable executable = getExecutable(Bundle.FileRunner_debug_displayName(getDisplayName()));
                 try {
-                    debugInternal();
-                } catch (Exception ex) {
-                    LOGGER.log(Level.WARNING, null, ex);
+                    executable.debug(FileUtil.toFileObject(file), getDescriptor(getPostExecution(executable)));
+                } catch (ExecutionException ex) {
+                    UiUtils.processExecutionException(ex);
                 }
             }
         });
     }
 
-    Callable<Cancellable> getRunCallable(final String displayName, final boolean debug) {
-        return new Callable<Cancellable>() {
-            @Override
-            public Cancellable call() {
-                assert !EventQueue.isDispatchThread();
-
-                PhpExecutable executable = new PhpExecutable(command);
-                if (StringUtils.hasText(workDir)) {
-                    executable.workDir(new File(workDir));
-                } else {
-                    executable.workDir(file.getParentFile());
-                }
-                // open in browser or editor?
-                Runnable postExecution = null;
-                if (getRedirectToFile()) {
-                    File tmpFile = createTempFile();
-                    if (tmpFile != null) {
-                        executable.fileOutput(tmpFile, false);
-                        postExecution = new PostExecution(tmpFile);
-                    }
-                }
-                executable
-                        .displayName(displayName)
-                        .viaAutodetection(false)
-                        .viaPhpInterpreter(false)
-                        .additionalParameters(getParams());
-                if (debug) {
-                    executable
-                            .environmentVariables(Collections.singletonMap("XDEBUG_CONFIG", "idekey=" + PhpOptions.getInstance().getDebuggerSessionId())); // NOI18N
-                }
-                // run!
-                final Future<Integer> result = executable
-                        .run(getDescriptor(postExecution, !debug));
-                return new Cancellable() {
-                    @Override
-                    public boolean cancel() {
-                        return result.cancel(true);
-                    }
-                };
-            }
-        };
-    }
-
-    // XXX use php api executable for debugging
-    @NbBundle.Messages({
-        "# {0} - project or file name",
-        "FileRunner.debug.displayName={0} (debug)"
-    })
-    private void debugInternal() {
-        DebugStarter dbgStarter =  DebugStarterFactory.getInstance();
-        assert dbgStarter != null;
-        if (dbgStarter.isAlreadyRunning()) {
-            if (CommandUtils.warnNoMoreDebugSession()) {
-                dbgStarter.stop();
-                debugInternal();
-            }
+    PhpExecutable getExecutable(String displayName) {
+        PhpExecutable executable = new PhpExecutable(command);
+        if (StringUtils.hasText(workDir)) {
+            executable.workDir(new File(workDir));
         } else {
-            Callable<Cancellable> callable = getRunCallable(Bundle.FileRunner_debug_displayName(getDisplayName()), true);
-            DebugStarter.Properties props = new DebugStarter.Properties.Builder()
-                    .setStartFile(FileUtil.toFileObject(file))
-                    .setCloseSession(true)
-                    // #209682 - "run as script" always from project files
-                    .setPathMapping(Collections.<Pair<String, String>>emptyList())
-                    .setDebugProxy(null) // no debug proxy for files (valid only for server urls)
-                    .setEncoding(getEncoding())
-                    .build();
-            dbgStarter.start(project != null ? project : DUMMY_PROJECT, callable, props);
+            executable.workDir(file.getParentFile());
         }
+        executable
+                .displayName(displayName)
+                .viaAutodetection(false)
+                .viaPhpInterpreter(false)
+                .additionalParameters(getParams());
+        return executable;
     }
 
     synchronized String getDisplayName() {
@@ -239,7 +175,7 @@ public final class FileRunner {
     }
 
     private List<String> getParams() {
-        List<String> params = new ArrayList<String>();
+        List<String> params = new ArrayList<>();
         if (StringUtils.hasText(phpArgs)) {
             params.addAll(Arrays.asList(Utilities.parseParameters(phpArgs)));
         }
@@ -250,10 +186,10 @@ public final class FileRunner {
         return params;
     }
 
-    ExecutionDescriptor getDescriptor(Runnable postExecution, boolean controllable) {
+    ExecutionDescriptor getDescriptor(Runnable postExecution) {
         ExecutionDescriptor descriptor = PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .charset(Charset.forName(getEncoding()))
-                .controllable(controllable)
+                .controllable(true)
                 .optionsPath(UiUtils.OPTIONS_PATH)
                 .outConvertorFactory(PHP_LINE_CONVERTOR_FACTORY);
         if (!getPhpOptions().isOpenResultInOutputWindow()) {
@@ -265,6 +201,19 @@ public final class FileRunner {
             descriptor = descriptor.postExecution(postExecution);
         }
         return descriptor;
+    }
+
+    private Runnable getPostExecution(PhpExecutable executable) {
+        // open in browser or editor?
+        if (getRedirectToFile()) {
+            File tmpFile = createTempFile();
+            if (tmpFile != null) {
+                String charset = FileEncodingQuery.getEncoding(FileUtil.toFileObject(file)).name();
+                executable.fileOutput(tmpFile, charset, false);
+                return new PostExecution(tmpFile);
+            }
+        }
+        return null;
     }
 
     private String getEncoding() {
@@ -329,20 +278,6 @@ public final class FileRunner {
             }
         }
 
-    }
-
-    // needed for php debugger, used as a key in session map
-    private static final class DummyProject implements Project {
-
-        @Override
-        public FileObject getProjectDirectory() {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public Lookup getLookup() {
-            return Lookup.EMPTY;
-        }
     }
 
 }

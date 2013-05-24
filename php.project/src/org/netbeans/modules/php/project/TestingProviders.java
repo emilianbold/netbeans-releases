@@ -62,7 +62,7 @@ public final class TestingProviders implements PropertyChangeListener {
     private static final Logger LOGGER = Logger.getLogger(TestingProviders.class.getName());
 
     private final PhpProject project;
-    private final List<PhpTestingProvider> testingProviders = new CopyOnWriteArrayList<PhpTestingProvider>();
+    private final List<PhpTestingProvider> testingProviders = new CopyOnWriteArrayList<>();
 
     private volatile boolean providersDirty = true;
 

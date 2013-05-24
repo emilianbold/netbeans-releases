@@ -95,7 +95,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         this.name = name;
 
         if (FRAMEWORKS.equals(name)) {
-            frameworkCategories = new LinkedHashMap<ProjectCustomizer.Category, PhpModuleCustomizerExtender>();
+            frameworkCategories = new LinkedHashMap<>();
         } else {
             frameworkCategories = null;
         }
@@ -150,7 +150,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             if (frameworkCategories.isEmpty()) {
                 return null;
             }
-            List<ProjectCustomizer.Category> subcategories = new ArrayList<ProjectCustomizer.Category>(frameworkCategories.keySet());
+            List<ProjectCustomizer.Category> subcategories = new ArrayList<>(frameworkCategories.keySet());
             toReturn = ProjectCustomizer.Category.create(
                     FRAMEWORKS,
                     NbBundle.getMessage(CustomizerProviderImpl.class, "LBL_Config_Frameworks"),

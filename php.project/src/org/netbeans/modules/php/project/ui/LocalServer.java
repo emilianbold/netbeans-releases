@@ -346,7 +346,7 @@ public class LocalServer implements Comparable<LocalServer> {
                 // prevent NPE
                 defaultLocalServers = new LocalServer[] {getEmpty()};
             }
-            data = new ArrayList<LocalServer>(2 * defaultLocalServers.length);
+            data = new ArrayList<>(2 * defaultLocalServers.length);
             data.addAll(Arrays.asList(defaultLocalServers));
             selected = data.get(0);
         }

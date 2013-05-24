@@ -136,7 +136,7 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
         configTextField.setText(ApiGenPreferences.get(phpModule, ApiGenPreferences.CONFIG));
         charsetsTextField.setText(StringUtils.implode(ApiGenPreferences.getMore(phpModule, ApiGenPreferences.CHARSETS), SEPARATOR));
         excludesTextField.setText(StringUtils.implode(ApiGenPreferences.getMore(phpModule, ApiGenPreferences.EXCLUDES), SEPARATOR));
-        Set<String> accessLevels = new HashSet<String>(ApiGenPreferences.getMore(phpModule, ApiGenPreferences.ACCESS_LEVELS));
+        Set<String> accessLevels = new HashSet<>(ApiGenPreferences.getMore(phpModule, ApiGenPreferences.ACCESS_LEVELS));
         accessLevelPublicCheckBox.setSelected(accessLevels.contains(ApiGenScript.ACCESS_LEVEL_PUBLIC));
         accessLevelProtectedCheckBox.setSelected(accessLevels.contains(ApiGenScript.ACCESS_LEVEL_PROTECTED));
         accessLevelPrivateCheckBox.setSelected(accessLevels.contains(ApiGenScript.ACCESS_LEVEL_PRIVATE));
@@ -206,7 +206,7 @@ final class ApiGenPanel extends JPanel implements HelpCtx.Provider {
     }
 
     private List<String> getAccessLevels() {
-        List<String> levels = new ArrayList<String>(3);
+        List<String> levels = new ArrayList<>(3);
         if (accessLevelPublicCheckBox.isSelected()) {
             levels.add(ApiGenScript.ACCESS_LEVEL_PUBLIC);
         }

@@ -74,7 +74,7 @@ public final class SftpConnectionProvider implements RemoteConnectionProvider {
     static final String TIMEOUT = "timeout"; // NOI18N
     static final String KEEP_ALIVE_INTERVAL = "keepAliveInterval"; // NOI18N
 
-    private static final Set<String> PROPERTIES = new HashSet<String>(Arrays.asList(
+    private static final Set<String> PROPERTIES = new HashSet<>(Arrays.asList(
         TYPE,
         HOST,
         PORT,

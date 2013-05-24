@@ -68,8 +68,7 @@ public class CliParserTest extends NbTestCase {
         File searchResults = new File(getDataDir(), "output/search-results-legacy.txt");
         assertTrue(searchResults.isFile());
         int count = 0;
-        BufferedReader reader = new BufferedReader(new FileReader(searchResults));
-        try {
+        try (BufferedReader reader = new BufferedReader(new FileReader(searchResults))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 count++;
@@ -82,8 +81,6 @@ public class CliParserTest extends NbTestCase {
                     assertEquals("Sends your logs to files, sockets, inboxes, databases and various web services", result.getDescription());
                 }
             }
-        } finally {
-            reader.close();
         }
         assertEquals(14, count);
     }
@@ -92,15 +89,12 @@ public class CliParserTest extends NbTestCase {
         File searchResults = new File(getDataDir(), "output/search-results.txt");
         assertTrue(searchResults.isFile());
         StringBuilder content = new StringBuilder(500);
-        BufferedReader reader = new BufferedReader(new FileReader(searchResults));
-        try {
+        try (BufferedReader reader = new BufferedReader(new FileReader(searchResults))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 content.append(line);
                 content.append("\n");
             }
-        } finally {
-            reader.close();
         }
         List<SearchResult> results = cliParser.parseSearch(content.toString());
         assertNotNull(results);

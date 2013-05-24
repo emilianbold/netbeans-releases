@@ -55,7 +55,7 @@ import org.openide.windows.OutputWriter;
 
 public final class TestSessionVo {
 
-    private final List<TestSuiteVo> testSuites = new ArrayList<TestSuiteVo>();
+    private final List<TestSuiteVo> testSuites = new ArrayList<>();
     private final String customSuitePath;
 
     private long time = -1;

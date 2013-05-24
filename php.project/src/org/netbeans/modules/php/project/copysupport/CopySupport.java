@@ -97,7 +97,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     private static final int PROPERTY_CHANGE_DELAY = 500; // ms
     private static final int PROGRESS_INITIAL_DELAY = 1000; // ms
 
-    static final Queue<Callable<Boolean>> OPERATIONS_QUEUE = new ConcurrentLinkedQueue<Callable<Boolean>>();
+    static final Queue<Callable<Boolean>> OPERATIONS_QUEUE = new ConcurrentLinkedQueue<>();
     static final RequestProcessor.Task COPY_TASK = createCopyTask();
 
     final PhpProject project;
@@ -111,7 +111,7 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
     // #187060
     final AtomicInteger opened = new AtomicInteger();
     final AtomicInteger closed = new AtomicInteger();
-    final Stack<Exception> callStack = new Stack<Exception>();
+    final Stack<Exception> callStack = new Stack<>();
 
     final AtomicBoolean sourcesValid = new AtomicBoolean(true);
 
@@ -501,8 +501,8 @@ public final class CopySupport extends FileChangeAdapter implements PropertyChan
 
         final FileOperationFactory localFactory;
         final FileOperationFactory remoteFactory;
-        final List<String> localFailedFiles = new CopyOnWriteArrayList<String>();
-        final List<String> remoteFailedFiles = new CopyOnWriteArrayList<String>();
+        final List<String> localFailedFiles = new CopyOnWriteArrayList<>();
+        final List<String> remoteFailedFiles = new CopyOnWriteArrayList<>();
         final RequestProcessor.Task showFailedFilesTask;
 
         // failed files (local and remote copying)

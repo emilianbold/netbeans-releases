@@ -73,7 +73,7 @@ import org.openide.util.NbBundle;
 public final class ProjectPropertiesProblemProvider implements ProjectProblemsProvider {
 
     // set would be better but it is fine to use a list for small number of items
-    static final List<String> WATCHED_PROPERTIES = new CopyOnWriteArrayList<String>(Arrays.asList(
+    static final List<String> WATCHED_PROPERTIES = new CopyOnWriteArrayList<>(Arrays.asList(
             PhpProjectProperties.SRC_DIR,
             PhpProjectProperties.TEST_SRC_DIR,
             PhpProjectProperties.SELENIUM_SRC_DIR,
@@ -113,7 +113,7 @@ public final class ProjectPropertiesProblemProvider implements ProjectProblemsPr
         return problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
             @Override
             public Collection<ProjectProblemsProvider.ProjectProblem> collectProblems() {
-                Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<ProjectProblem>(5);
+                Collection<ProjectProblemsProvider.ProjectProblem> currentProblems = new ArrayList<>(5);
                 checkSrcDir(currentProblems);
                 if (currentProblems.isEmpty()) {
                     // check other problems only if sources are correct (other problems are fixed in customizer but customizer needs correct sources)

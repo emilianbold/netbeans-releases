@@ -205,7 +205,7 @@ public final class PhpCoverageProvider implements CoverageProvider {
             return null;
         }
 
-        List<FileCoverageSummary> result = new ArrayList<FileCoverageSummary>(cov.getFiles().size());
+        List<FileCoverageSummary> result = new ArrayList<>(cov.getFiles().size());
         for (Coverage.File file : cov.getFiles()) {
             if (isUnderneathSourcesOnlyAndVisible(file.getPath())) {
                 result.add(getFileCoverageSummary(file));
