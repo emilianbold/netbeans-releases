@@ -326,36 +326,59 @@ class SftpSupport {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, "{0} started", getTraceName());
             }
+            long time = System.currentTimeMillis();
             ChannelSftp cftp = getChannel();
+            if (LOG.isLoggable(Level.FINEST)) { LOG.log(Level.FINEST, "Getting channel for {0} took {1}", new Object[] {parameters.dstFileName, System.currentTimeMillis() - time}); }
+            String dstFileName = parameters.dstFileName; // will change after rename
             try {
                 if (checkDir) {
                     int slashPos = parameters.dstFileName.lastIndexOf('/'); //NOI18N
                     if (slashPos >= 0) {
                         String remoteDir = parameters.dstFileName.substring(0, slashPos);
                         StringWriter swr = new StringWriter();
+                        time = System.currentTimeMillis();
                         CommonTasksSupport.mkDir(execEnv, remoteDir, swr).get();
                         err.append(swr.getBuffer()).append(' ');
+                        if (LOG.isLoggable(Level.FINEST)) { LOG.log(Level.FINEST, "Creating directory {0} took {1}", new Object[] {remoteDir, System.currentTimeMillis() - time}); }
                     }
                 }
+                time = System.currentTimeMillis();
                 put(cftp);
-                if (parameters.mask >= 0) {
-                    cftp.chmod(parameters.mask, parameters.dstFileName);
+                if (LOG.isLoggable(Level.FINEST)) { LOG.log(Level.FINEST, "Uploading {0} took {1}", new Object[] {dstFileName, System.currentTimeMillis() - time}); }
+                if (parameters.dstFileToRename != null) {
+                    time = System.currentTimeMillis();
+                    ProcessUtils.ExitStatus rc = ProcessUtils.execute(execEnv,
+                            "/bin/sh", "-c", "cp " + parameters.dstFileName + ' ' + parameters.dstFileToRename + // NOI18N
+                            " && rm " + parameters.dstFileName); // NOI18N
+                    if (!rc.isOK()) {
+                        throw new ExecutionException(rc.error, null);
+                    }
+                    if (LOG.isLoggable(Level.FINEST)) { LOG.log(Level.FINEST, "cp&&rm {0} to {1} took {2}", new Object[]{parameters.dstFileName, parameters.dstFileToRename, System.currentTimeMillis() - time}); }
+
+                    dstFileName = parameters.dstFileToRename;
                 }
-                SftpATTRS attrs = cftp.lstat(parameters.dstFileName);
+                if (parameters.mask >= 0) {
+                    time = System.currentTimeMillis();
+                    cftp.chmod(parameters.mask, dstFileName);
+                    if (LOG.isLoggable(Level.FINEST)) { LOG.log(Level.FINEST, "Chmod {0} took {1}", new Object[] {dstFileName, System.currentTimeMillis() - time}); }
+                }
+                time = System.currentTimeMillis();
+                SftpATTRS attrs = cftp.lstat(dstFileName);
+                if (LOG.isLoggable(Level.FINEST)) { LOG.log(Level.FINEST, "Getting stat for {0} took {1}", new Object[] {dstFileName, System.currentTimeMillis() - time}); }
                 // can't use PathUtilities since we are in ide cluster
-                int slashPos = parameters.dstFileName.lastIndexOf('/');
+                int slashPos = dstFileName.lastIndexOf('/');
                 String dirName, baseName;
                 if (slashPos < 0) {
-                    dirName = parameters.dstFileName;
+                    dirName = dstFileName;
                     baseName = "";
                 } else {
-                    dirName = parameters.dstFileName.substring(0, slashPos);
-                    baseName = parameters.dstFileName.substring(slashPos + 1);
+                    dirName = dstFileName.substring(0, slashPos);
+                    baseName = dstFileName.substring(slashPos + 1);
                 }
                 statInfo = createStatInfo(dirName, baseName, attrs, cftp);
             } catch (SftpException e) {
                 cftp.quit();
-                throw decorateSftpException(e, parameters.dstFileName);
+                throw decorateSftpException(e, dstFileName);
             } finally {
                 releaseChannel(cftp);
             }
