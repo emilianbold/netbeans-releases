@@ -75,9 +75,6 @@ public class NameHolder {
 
     private NameHolder(AST ast, int kind) {
         switch (kind) {
-            case DESTRUCTOR:
-                name = "~"+findFunctionName(ast); // NOI18N
-                break;
             case DESTRUCTOR_DEFINITION:
                 name =findDestructorDefinitionName(ast);
                 break;
@@ -87,6 +84,7 @@ public class NameHolder {
             case ENUM:
                 name =findEnumName(ast);
                 break;
+            case DESTRUCTOR:                
             case FUNCTION:
             default:
                 name = findFunctionName(ast);
@@ -362,7 +360,8 @@ public class NameHolder {
             end = OffsetableBase.getEndOffset(token);
             return AstUtil.getText(token);
         } else if( type == CPPTokenTypes.CSM_QUALIFIED_ID ) {
-            AST last = AstUtil.getLastChild(token);
+            AST tildeToken = AstUtil.findChildOfType(token, CPPTokenTypes.TILDE); // in case of destructor tilde token is not null
+            AST last = tildeToken != null ? tildeToken.getNextSibling() : AstUtil.getLastChild(token);
             if( last != null) {
                 if (last.getType() == CPPTokenTypes.GREATERTHAN) {
                     AST lastId = null;
@@ -390,10 +389,11 @@ public class NameHolder {
                     }
                 }
                 if( last.getType() == CPPTokenTypes.IDENT ) {
-                    start = OffsetableBase.getStartOffset(last);
-                    isMacroExpanded = isMacroExpandedToken(last);
+                    start = OffsetableBase.getStartOffset(tildeToken != null ? tildeToken : last);
+                    isMacroExpanded = isMacroExpandedToken(tildeToken != null ? tildeToken : last);
                     end = OffsetableBase.getEndOffset(last);
-                    return AstUtil.getText(last);
+                    CharSequence lastName = AstUtil.getText(last);
+                    return tildeToken != null ? "~" + lastName : lastName; // NOI18N
                 } else {
 //		    if( first.getType() == CPPTokenTypes.LITERAL_OPERATOR ) {
                     AST operator = AstUtil.findChildOfType(token, CPPTokenTypes.LITERAL_OPERATOR);
