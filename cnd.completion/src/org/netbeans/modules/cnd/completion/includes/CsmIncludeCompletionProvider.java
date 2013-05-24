@@ -38,6 +38,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.completion.Completion;
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -56,7 +57,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  * @author Vladimir Voskresensky
  */
 public class CsmIncludeCompletionProvider implements CompletionProvider {
-
+    
     private final static boolean TRACE = Boolean.getBoolean("cnd.completion.includes.trace");
 
     @Override
@@ -130,6 +131,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
         private int creationCaretOffset;
         private int resultSetAnchorOffset;
         private int queryAnchorOffset;
+        private int queryAnchorOffsetDelta; // sometimes we adjust anchor but we still must take real unchor into account during completion
         private String dirPrefix;
         private String filterPrefix;
         private Boolean usrInclude;
@@ -248,7 +250,7 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
             try {
                 if (init(doc, caretOffset)) {
                     CsmIncludeCompletionQuery query = new CsmIncludeCompletionQuery(null);
-                    items = query.query(doc, dirPrefix, queryAnchorOffset, usrInclude, showAll);
+                    items = query.query(doc, dirPrefix, queryAnchorOffset, queryAnchorOffsetDelta, usrInclude, showAll);
                 }
             } catch (BadLocationException ex) {
             }
@@ -278,6 +280,10 @@ public class CsmIncludeCompletionProvider implements CompletionProvider {
                                     usrInclude = Boolean.TRUE;
                                     queryAnchorOffset = tok.offset();
                                     filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
+                                    if (tok.partType() == PartType.COMPLETE || tok.partType() == PartType.START) {
+                                        queryAnchorOffset++;
+                                        queryAnchorOffsetDelta = -1; // old queryAnchorOffset - new queryAnchorOffset
+                                    }
                                     break;
                                 case PREPROCESSOR_IDENTIFIER:
                                     usrInclude = Boolean.TRUE;
