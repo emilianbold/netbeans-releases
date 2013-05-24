@@ -1,3 +1,8 @@
+package org.netbeans.modules.css.visual.spi;
+
+
+import org.openide.filesystems.FileObject;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -39,63 +44,37 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.visual;
-
-import org.netbeans.modules.css.model.api.Element;
-import org.netbeans.modules.css.model.api.Model;
-import org.netbeans.modules.css.model.api.Rule;
-import org.netbeans.modules.css.model.api.SelectorsGroup;
-import org.netbeans.modules.parsing.api.Snapshot;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 
 /**
  *
  * @author marekfukala
  */
-public class RuleHandle extends Location {
-    
-    private String selectorsImage;
-    private Rule rule;
+public class Location {
 
-    /**
-     * Must be called under model's read lock!
-     */
-    static RuleHandle createRuleHandle(Rule rule) {
-        Model model = rule.getModel();
-        Lookup lookup = model.getLookup();
-        Snapshot snapshot = lookup.lookup(Snapshot.class);
-        FileObject file = lookup.lookup(FileObject.class);
-        //in case of very erroneous rule the selectorgroup node may not be present,
-        //use the rule node itself for getting the rule name.
-        SelectorsGroup selectorsGroup = rule.getSelectorsGroup();
-        Element element = selectorsGroup == null ? rule : selectorsGroup;
-        String img = model.getElementSource(element).toString();
-        
-        int offset = snapshot.getOriginalOffset(rule.getStartOffset());
-        
-        return new RuleHandle(file, rule, offset, img);
+    private FileObject file;
+    private int offset = -1;
+
+    public Location(FileObject file) {
+        this.file = file;
     }
     
-    private RuleHandle(FileObject styleSheet, Rule rule, int offset, String selectorsImage) {
-        super(styleSheet, offset);
-        this.rule = rule;
-        this.selectorsImage = selectorsImage;
+    public Location(FileObject file, int offset) {
+        this(file);
+        this.offset = offset;
     }
 
-    public Rule getRule() {
-        return rule;
+    public FileObject getFile() {
+        return file;
     }
-    
-    public String getDisplayName() {
-        return selectorsImage;
+
+    public int getOffset() {
+        return offset;
     }
 
     @Override
     public int hashCode() {
-        int hash = 7;
-        hash = 43 * hash + (this.selectorsImage != null ? this.selectorsImage.hashCode() : 0);
-        hash = 43 * hash + super.hashCode();
+        int hash = 5;
+        hash = 97 * hash + (this.file != null ? this.file.hashCode() : 0);
         return hash;
     }
 
@@ -107,12 +86,12 @@ public class RuleHandle extends Location {
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final RuleHandle other = (RuleHandle) obj;
-        if ((this.selectorsImage == null) ? (other.selectorsImage != null) : !this.selectorsImage.equals(other.selectorsImage)) {
+        final Location other = (Location) obj;
+        if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
             return false;
         }
-        return super.equals(obj);
+        return true;
     }
-  
- 
+
+   
 }

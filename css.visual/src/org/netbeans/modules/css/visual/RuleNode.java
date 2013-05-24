@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.visual;
 
+import org.netbeans.modules.css.visual.spi.RuleHandle;
 import javax.swing.Action;
 import org.netbeans.modules.css.visual.actions.OpenLocationAction;
 import org.openide.nodes.AbstractNode;

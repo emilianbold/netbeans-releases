@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.css.visual;
 
-import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.css.visual.spi.RuleHandle;
 import org.netbeans.modules.css.visual.spi.CssStylesListener;
 import org.openide.util.Lookup;
 
@@ -51,9 +51,9 @@ import org.openide.util.Lookup;
  */
 public class CssStylesListenerSupport {
     
-    public static void fireRuleSelected(Rule rule) {
+    public static void fireRuleSelected(RuleHandle ruleHandle) {
         for(CssStylesListener l : Lookup.getDefault().lookupAll(CssStylesListener.class)) {
-            l.ruleSelected(rule);
+            l.ruleSelected(ruleHandle);
         }
     }
     
