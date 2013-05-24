@@ -1,12 +1,7 @@
-package org.netbeans.modules.css.visual;
-
-
-import org.openide.filesystems.FileObject;
-
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,56 +37,25 @@ import org.openide.filesystems.FileObject;
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.model.api;
 
 /**
+ * Acts as a handle for {@link Element}s objects from {@link Model}.
+ * Can be later resolved back to {@link Element}.
  *
  * @author marekfukala
  */
-public class Location {
-
-    private FileObject file;
-    private int offset = -1;
-
-    Location(FileObject file) {
-        this.file = file;
-    }
+public interface ElementHandle {
     
-    Location(FileObject file, int offset) {
-        this(file);
-        this.offset = offset;
-    }
-
-    public FileObject getFile() {
-        return file;
-    }
-
-    public int getOffset() {
-        return offset;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 97 * hash + (this.file != null ? this.file.hashCode() : 0);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final Location other = (Location) obj;
-        if (this.file != other.file && (this.file == null || !this.file.equals(other.file))) {
-            return false;
-        }
-        return true;
-    }
-
-   
+    /**
+     * Resolves the {@link ElementHandle} to an instance of {@link Model}.
+     * 
+     * @param model
+     * @return instance of {@link Element} or null if no corresponding element
+     * can be found in the given model.
+     */
+    public Element resolve(Model model);
+    
 }
