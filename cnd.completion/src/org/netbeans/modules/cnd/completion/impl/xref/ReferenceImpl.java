@@ -50,6 +50,7 @@ import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmObject;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmFileInfoQuery;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
@@ -233,7 +234,10 @@ public class ReferenceImpl extends DocOffsetableImpl implements CsmReference {
                     assert targetDecl != null;
                     outKind = CsmReferenceKind.DIRECT_USAGE;
                     if (anOwner != null) {
-                        if (anOwner.equals(targetDef)) {
+                        if (CsmKindUtilities.isClassForwardDeclaration(owner) || 
+                            CsmClassifierResolver.getDefault().isForwardClassifier(owner)) {
+                            outKind = CsmReferenceKind.DIRECT_USAGE;
+                        } else if (anOwner.equals(targetDef)) {
                             outKind = CsmReferenceKind.DEFINITION;
                         } else if (CsmReferenceSupport.sameDeclaration(anOwner, targetDecl)) {
                             outKind = CsmReferenceKind.DECLARATION;
