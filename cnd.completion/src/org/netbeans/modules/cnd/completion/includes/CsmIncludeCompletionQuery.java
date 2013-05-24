@@ -70,7 +70,7 @@ public class CsmIncludeCompletionQuery {
         this.file = file;
     }
 
-    public Collection<CsmIncludeCompletionItem> query(BaseDocument doc, String childSubDir, int substitutionOffset, Boolean usrInclude, boolean showAll) {
+    public Collection<CsmIncludeCompletionItem> query(BaseDocument doc, String childSubDir, int substitutionOffset, int substitutionDelta, Boolean usrInclude, boolean showAll) {
         results = new HashMap<String, CsmIncludeCompletionItem>(100);
         CsmFile docFile = this.file;
         if (docFile == null) {
@@ -104,7 +104,7 @@ public class CsmIncludeCompletionQuery {
             addFolderItems(FSPath.toFSPath(docFileSystem.getRoot()),
                     "",
                     childSubDir, true, (usrInclude != null ? usrInclude : false),
-                    true, substitutionOffset);
+                    true, substitutionOffset, substitutionDelta);
             return results.values();
         }
         if (docFile != null) {
@@ -114,29 +114,29 @@ public class CsmIncludeCompletionQuery {
         FileObject usrDir = baseFile.getParent();
         if (usrDir != null && usrDir.isValid()) {
             if (usrInclude == null || usrInclude == Boolean.TRUE) {
-                addFolderItems(FSPath.toFSPath(usrDir), ".", childSubDir, false, false, true, substitutionOffset); // NOI18N
+                addFolderItems(FSPath.toFSPath(usrDir), ".", childSubDir, false, false, true, substitutionOffset, substitutionDelta); // NOI18N
                 if (showAll) {
                     for (FSPath usrPath : usrPaths) {
-                        addFolderItems(usrPath, usrPath.getPath(), childSubDir, false, false, true, substitutionOffset);
+                        addFolderItems(usrPath, usrPath.getPath(), childSubDir, false, false, true, substitutionOffset, substitutionDelta);
                     }
                     for (FSPath sysPath : sysPaths) {
-                        addFolderItems(sysPath, sysPath.getPath(), childSubDir, false, true, false, substitutionOffset);
+                        addFolderItems(sysPath, sysPath.getPath(), childSubDir, false, true, false, substitutionOffset, substitutionDelta);
                     }
                 }
                 if (usrDir.getParent() != null) {
-                    addParentFolder(substitutionOffset, childSubDir, false);
+                    addParentFolder(substitutionOffset, substitutionDelta, childSubDir, false);
                 }
             } else {
                 for (FSPath sysPath : sysPaths) {
-                    addFolderItems(sysPath, sysPath.getPath(), childSubDir, false, true, false, substitutionOffset);
+                    addFolderItems(sysPath, sysPath.getPath(), childSubDir, false, true, false, substitutionOffset, substitutionDelta);
                 }
                 if (showAll) {
                     for (FSPath usrPath : usrPaths) {
-                        addFolderItems(usrPath, usrPath.getPath(), childSubDir, false, false, true, substitutionOffset);
+                        addFolderItems(usrPath, usrPath.getPath(), childSubDir, false, false, true, substitutionOffset, substitutionDelta);
                     }
-                    addFolderItems(FSPath.toFSPath(usrDir), ".", childSubDir, false, false, true, substitutionOffset); // NOI18N
+                    addFolderItems(FSPath.toFSPath(usrDir), ".", childSubDir, false, false, true, substitutionOffset, substitutionDelta); // NOI18N
                     if (usrDir.getParent() != null) {
-                        addParentFolder(substitutionOffset, childSubDir, true);
+                        addParentFolder(substitutionOffset, substitutionDelta, childSubDir, true);
                     }
                 }
             }
@@ -145,7 +145,7 @@ public class CsmIncludeCompletionQuery {
     }
 
     private void addFolderItems(FSPath parentFolder, String parentFolderPresentation,
-            String childSubDir, boolean highPriority, boolean system, boolean filtered, int substitutionOffset) {
+            String childSubDir, boolean highPriority, boolean system, boolean filtered, int substitutionOffset, int substitutionDelta) {
         FileObject parentFO = parentFolder.getFileObject();
         if (parentFO != null) {
             FileObject dir = parentFO.getFileObject(childSubDir);
@@ -156,7 +156,7 @@ public class CsmIncludeCompletionQuery {
                     for (FileObject curFile : list) {
                         relFileName = curFile.getNameExt();
                         CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(
-                                substitutionOffset, relFileName, parentFolderPresentation, childSubDir,
+                                substitutionOffset, substitutionDelta, relFileName, parentFolderPresentation, childSubDir,
                                 system, highPriority, curFile.isFolder(), true);
                         if (!results.containsKey(relFileName)) {
                             results.put(relFileName, item);
@@ -181,12 +181,12 @@ public class CsmIncludeCompletionQuery {
         return result.toArray(new FileObject[result.size()]);
     }
 
-    private void addParentFolder(int substitutionOffset, String childSubDir, boolean system) {
+    private void addParentFolder(int substitutionOffset, int substitutionDelta, String childSubDir, boolean system) {
         // IZ#128044: Completion in #include should switch to 2-nd mode if there are no files in the list
         // doesn't append ".." item for empty lists
         if (!results.isEmpty()) {
             CsmIncludeCompletionItem item = CsmIncludeCompletionItem.createItem(
-                    substitutionOffset, "..", ".", childSubDir, system, false, true, false); // NOI18N
+                    substitutionOffset, substitutionDelta, "..", ".", childSubDir, system, false, true, false); // NOI18N
             results.put("..", item);//NOI18N
         }
     }

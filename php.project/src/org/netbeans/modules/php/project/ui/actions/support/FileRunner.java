@@ -85,8 +85,7 @@ public final class FileRunner {
 
     final File file;
 
-    // @GuardedBy("this")
-    PhpProject project;
+    volatile PhpProject project;
     volatile String command;
     volatile String phpArgs;
     volatile String fileArgs;
@@ -98,7 +97,7 @@ public final class FileRunner {
         this.file = file;
     }
 
-    public synchronized FileRunner project(PhpProject project) {
+    public FileRunner project(PhpProject project) {
         this.project = project;
         return this;
     }
@@ -170,7 +169,7 @@ public final class FileRunner {
         return executable;
     }
 
-    synchronized String getDisplayName() {
+    String getDisplayName() {
         return project != null ? project.getName() : file.getName();
     }
 

@@ -1323,6 +1323,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         }
 
         private void handleProjectParamsChanges() {
+            synchronized (wizardValidationExecutorLock) {
+                if (wizardValidationExecutor.isShutdown()) {
+                    return;
+                }
+            }
             //will handle next event
             if (projectParams != null) {                
                 projectParams.setRequestID(++lastEventID);

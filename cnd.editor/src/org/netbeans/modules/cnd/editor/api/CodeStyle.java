@@ -630,8 +630,8 @@ public final class CodeStyle {
     // Communication with non public packages ----------------------------------
     private static class FactoryImpl implements EditorOptions.CodeStyleFactory {
         @Override
-        public CodeStyle create(Language language, Preferences preferences, boolean useOverrideOptions) {
-            return new CodeStyle(language, null, preferences, useOverrideOptions);
+        public CodeStyle create(Language language, String profileID, Preferences preferences, boolean useOverrideOption) {
+            return new CodeStyle(language, profileID, preferences, useOverrideOption);
         }
         @Override
         public Preferences getPreferences(CodeStyle codeStyle) {

@@ -243,7 +243,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     
     private JComponent treeViewPanel;
     
-    private InputBlocker blocker;
+    //private InputBlocker blocker;
     
     private JFileChooserEx fileChooser;
     
@@ -1875,16 +1875,17 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                 window.setCursor(cursor);
                 window.setFocusable(true);
             }
+            //do not block root pane. at all
 
-            JRootPane pane = fileChooser.getRootPane();
-            if( null == blocker )
-                blocker = new InputBlocker();
-
-            if(type == Cursor.WAIT_CURSOR) {
-                blocker.block(pane);
-            } else if (type == Cursor.DEFAULT_CURSOR){
-                blocker.unBlock(pane);
-            }
+//            JRootPane pane = fileChooser.getRootPane();
+//            if( null == blocker )
+//                blocker = new InputBlocker();
+//
+//            if(type == Cursor.WAIT_CURSOR) {
+//                blocker.block(pane);
+//            } else if (type == Cursor.DEFAULT_CURSOR){
+//                blocker.unBlock(pane);
+//            }
         }
     }
     
@@ -2312,7 +2313,9 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                 File file = node.getFile();
                 
                 if(file != null) {
-                    setSelected(getSelectedNodes(tree.getSelectionPaths()));
+                    //should I change the current Selection now?
+                    //setSelected(getSelectedNodes(tree.getSelectionPaths()));
+                    FileChooserUIImpl.this.filenameTextField.setText(file.getPath());
                     newFolderAction.setEnabled(false);
                     
                     if(!node.isLeaf()) {
