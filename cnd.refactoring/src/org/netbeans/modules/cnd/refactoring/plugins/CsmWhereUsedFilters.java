@@ -47,10 +47,10 @@ package org.netbeans.modules.cnd.refactoring.plugins;
  * @author Egor Ushakov <gorrus@netbeans.org>
  */
 public enum CsmWhereUsedFilters {
-    COMMENTS("filter-comments"),
-    DEAD_CODE("filter-deadcode"),
-    MACROS("filter-macros"),
-    DECLARATIONS("filter-declarations");
+    COMMENTS("filter-comments"), // NOI18N
+    DEAD_CODE("filter-deadcode"), // NOI18N
+    MACROS("filter-macros"), // NOI18N
+    DECLARATIONS("filter-declarations"); // NOI18N
     
     private final String key;
 
