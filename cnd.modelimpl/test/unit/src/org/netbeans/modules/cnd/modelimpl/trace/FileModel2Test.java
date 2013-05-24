@@ -469,6 +469,11 @@ public class FileModel2Test extends TraceModelTestBase {
         performTest("bug229069.c"); // NOI18N
     }    
     
+    public void testBug224027() throws Exception {
+        // Bug 224027 - 'friend' is unexpected token
+        performTest("bug224027.cpp"); // NOI18N
+    }    
+    
     public void testCNamespaces() throws Exception {
         // Error with existing namespaces in C language
         performTest("c_namespaces.c");

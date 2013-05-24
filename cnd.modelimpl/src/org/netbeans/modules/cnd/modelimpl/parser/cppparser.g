@@ -1468,7 +1468,7 @@ member_declaration_template
 	;
 
 member_declaration
-	{String q; boolean definition;boolean ctrName=false;StorageClass sc = scInvalid;int ts = 0;boolean friend = false;}
+	{String q; boolean definition;boolean ctrName=false;boolean dtrName=false;StorageClass sc = scInvalid;int ts = 0;boolean friend = false;}
 	:
 	(
 		// Class definition
@@ -1572,34 +1572,50 @@ member_declaration
         {if (ctrName && !friend) { #member_declaration = #(#[CSM_CTOR_DEFINITION, "CSM_CTOR_DEFINITION"], #member_declaration);}
          else { #member_declaration = #(#[CSM_FUNCTION_DEFINITION, "CSM_FUNCTION_DEFINITION"], #member_declaration);}}
     |
-		// No template_head allowed for dtor member
-		// Backtrack if not a dtor (no TILDE)
-		(dtor_head[false] (EOF|SEMICOLON))=>
-		{if (statementTrace>=1) 
-			printf("member_declaration_5a[%d]: Destructor declaration\n",
-				LT(1).getLine());
-		}
-		dtor_head[false] 
-        ( EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
-        | SEMICOLON ) //{end_of_stmt();}	// Declaration
-		{ #member_declaration = #(#[CSM_DTOR_DECLARATION, "CSM_DTOR_DECLARATION"], #member_declaration); }
-	|
-		// No template_head allowed for dtor member
-		// Backtrack if not a dtor (no TILDE)
-		(   dtor_head[true] 
-                    (   LCURLY
-                    |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
-                    )
-                )=>
-		{if (statementTrace>=1) 
-			printf("member_declaration_5b[%d]: Destructor definition\n",
-				LT(1).getLine());
-		}
+        // Destructor declarator
+        // No template_head allowed for dtor member
+        // Backtrack if not a dtor (no TILDE)
+        (dtor_head[false] (EOF|SEMICOLON))=>
+        {if (statementTrace>=1) 
+                printf("member_declaration_5a[%d]: Destructor declaration\n",
+                        LT(1).getLine());
+        }
+
+        // This is inlined dtor_head rule (here it is necessary to know if destructor is friend)
+        friend = dtor_decl_spec        
+        {dtrName = qualifiedItemIsOneOf(qiDtor);}
+        dtor_declarator[false]
+
+        ( 
+            EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); }
+        | 
+            SEMICOLON 
+        ) //{end_of_stmt();}	// Declaration        
+        {
+            if (dtrName && !friend) {
+                #member_declaration = #(#[CSM_DTOR_DECLARATION, "CSM_DTOR_DECLARATION"], #member_declaration); //end_of_stmt();
+            } else {
+                #member_declaration = #(#[CSM_FUNCTION_DECLARATION, "CSM_FUNCTION_DECLARATION"], #member_declaration); //end_of_stmt();
+            }
+        }
+    |
+        // Destructor definition
+        // No template_head allowed for dtor member
+        // Backtrack if not a dtor (no TILDE)
+        (   dtor_head[true] 
+            (   LCURLY
+            |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+            )
+        )=>
+        {if (statementTrace>=1) 
+                printf("member_declaration_5b[%d]: Destructor definition\n",
+                        LT(1).getLine());
+        }
 		dtor_head[true] 
-                (   dtor_body
-                |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
-                )
-		{ #member_declaration = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #member_declaration); }
+        (   dtor_body
+        |   ASSIGNEQUAL (LITERAL_default | LITERAL_delete)
+        )
+	{ #member_declaration = #(#[CSM_DTOR_DEFINITION, "CSM_DTOR_DEFINITION"], #member_declaration); }
     |
         // Function declaration
         (   (LITERAL___extension__)?
@@ -2892,15 +2908,17 @@ dtor_definition
 	;
 
 
-dtor_head[boolean definition]
-	:
-	dtor_decl_spec
-	dtor_declarator[definition]
-	;
+dtor_head[boolean definition] 
+    {boolean friend;}
+    :
+        friend = dtor_decl_spec
+        dtor_declarator[definition]
+    ;
 
-dtor_decl_spec
+dtor_decl_spec returns [boolean friend = false]
 	:
-	((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_virtual)*
+        // TODO: think about flag if destructor is friend
+	((options {greedy=true;} :function_attribute_specification)|literal_inline|LITERAL_friend {friend = true;} |LITERAL_virtual)*
 	;
 
 /* ********

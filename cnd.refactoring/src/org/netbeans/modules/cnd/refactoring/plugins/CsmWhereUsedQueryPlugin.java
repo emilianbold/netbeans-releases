@@ -76,6 +76,7 @@ import org.netbeans.modules.cnd.support.Interrupter;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
+import org.netbeans.modules.cnd.modelutil.CsmImageName;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
 import org.netbeans.modules.cnd.refactoring.elements.CsmRefactoringElementImpl;
 import org.netbeans.modules.cnd.refactoring.spi.CsmWhereUsedExtraObjectsProvider;
@@ -87,8 +88,10 @@ import org.netbeans.modules.refactoring.api.ProgressEvent;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
+import org.netbeans.modules.refactoring.spi.ui.FiltersDescription;
 import org.openide.util.CharSequences;
 import org.openide.util.Exceptions;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -101,7 +104,7 @@ import org.openide.util.lookup.Lookups;
  * 
  * @author Vladimir Voskresensky
  */
-public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
+public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements FiltersDescription.Provider {
     private final WhereUsedQuery refactoring;
     private final CsmObject startReferenceObject;
     
@@ -415,6 +418,32 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin {
             }
         }
         return elements;
+    }
+
+    @Override
+    public void addFilters(FiltersDescription filtersDescription) {
+        filtersDescription.addFilter(CsmWhereUsedFilters.COMMENTS.getKey(), 
+                NbBundle.getMessage(this.getClass(), "TXT_Filter_Comments"), true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/refactoring/resources/found_item_comment.png", false)); //NOI18N
+        filtersDescription.addFilter(CsmWhereUsedFilters.DEAD_CODE.getKey(),
+                NbBundle.getMessage(this.getClass(), "TXT_Filter_DeadCode"), true,
+                ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/refactoring/resources/found_item_dead.png", false)); //NOI18N
+        filtersDescription.addFilter(CsmWhereUsedFilters.DECLARATIONS.getKey(),
+                NbBundle.getMessage(this.getClass(), "TXT_Filter_Declarations"), false,
+                ImageUtilities.loadImageIcon(CsmImageName.METHOD_PUBLIC, false));
+        filtersDescription.addFilter(CsmWhereUsedFilters.MACROS.getKey(),
+                NbBundle.getMessage(this.getClass(), "TXT_Filter_Macros"), true,
+                ImageUtilities.loadImageIcon(CsmImageName.MACRO, false));
+    }
+
+    @Override
+    public void enableFilters(FiltersDescription filtersDescription) {
+        //filtersDescription.enable(CsmWhereUsedFilters.COMMENTS.getKey());
+        filtersDescription.enable(CsmWhereUsedFilters.DEAD_CODE.getKey());
+        if (isFindOverridingMethods()) {
+            filtersDescription.enable(CsmWhereUsedFilters.DECLARATIONS.getKey());
+        }
+        filtersDescription.enable(CsmWhereUsedFilters.MACROS.getKey());
     }
     
     private final class OneFileWorker implements Runnable {

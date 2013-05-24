@@ -57,9 +57,9 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.utils.MIMENames;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
-import org.openide.NotifyDescriptor.InputLine;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
@@ -186,16 +186,18 @@ public class ManageStylesPanel extends javax.swing.JPanel
     }// </editor-fold>//GEN-END:initComponents
 
 private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
-    PreviewPreferences pp = preferences.get("Default"); // NOI18N
-    String id = nextId();
-    String resourceId = id+"_Style_Name"; // NOI18N
+    String prefix = "Default"; // NOI18N
+    PreviewPreferences pp = preferences.get(prefix);
+    String id = nextId(prefix);
     String displayName = getString("Custom_Name"); // NOI18N
-    displayName = getDisplayName(displayName);
-    if (displayName != null && checkUniqueStyleName(displayName)) {
-        CodeStylePreferencesProvider.INSTANCE.forDocument(null, MIMENames.C_MIME_TYPE).node(EditorOptions.CODE_STYLE_NODE).put(resourceId, displayName); // NOI18N
-        PreviewPreferences np = new PreviewPreferences(pp, language, id);
+    String res[] = getDisplayName(displayName, prefix, id);
+    if (res != null && checkUniqueStyleName(prefix, res)) {
+        String styleId = prefix+"_"+res[1]; // NOI18N
+        String resourceId = styleId+"_Style_Name"; // NOI18N
+        CodeStylePreferencesProvider.INSTANCE.forDocument(null, MIMENames.C_MIME_TYPE).node(EditorOptions.CODE_STYLE_NODE).put(resourceId, res[0]); // NOI18N
+        PreviewPreferences np = new PreviewPreferences(pp, language, styleId);
         np.makeAllKeys(pp);
-        preferences.put(id, np);
+        preferences.put(styleId, np);
         initListModel();
     }
 }//GEN-LAST:event_newButtonActionPerformed
@@ -204,16 +206,18 @@ private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
     int i = stylesList.getSelectedIndex();
     if (i >= 0) {
         MyListItem item = (MyListItem) stylesList.getModel().getElementAt(i);
-        PreviewPreferences pp = preferences.get(item.id);
-        String id = nextId();
-        String resourceId = id+"_Style_Name"; // NOI18N
+        String prefix = item.id; // NOI18N
+        PreviewPreferences pp = preferences.get(prefix);
+        String id = nextId(prefix); // NOI18N
         String displayName = NbBundle.getMessage(ManageStylesPanel.class, "CopyOfStyle", item.name); // NOI18N
-        displayName = getDisplayName(displayName);
-        if (displayName != null && checkUniqueStyleName(displayName)) {
-            CodeStylePreferencesProvider.INSTANCE.forDocument(null, MIMENames.C_MIME_TYPE).node(EditorOptions.CODE_STYLE_NODE).put(resourceId, displayName); // NOI18N
-            PreviewPreferences np = new PreviewPreferences(pp, language, id);
+        String res[] = getDisplayName(displayName, prefix, id);
+        if (res != null && checkUniqueStyleName(prefix, res)) {
+            String styleId = prefix+"_"+res[1]; // NOI18N
+            String resourceId = styleId+"_Style_Name"; // NOI18N
+            CodeStylePreferencesProvider.INSTANCE.forDocument(null, MIMENames.C_MIME_TYPE).node(EditorOptions.CODE_STYLE_NODE).put(resourceId, res[0]); // NOI18N
+            PreviewPreferences np = new PreviewPreferences(pp, language, styleId);
             np.makeAllKeys(pp);
-            preferences.put(id, np);
+            preferences.put(styleId, np);
             initListModel();
         }
     }    
@@ -233,21 +237,21 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         return NbBundle.getMessage(ManageStylesPanel.class, key);
     }
 
-    private String getDisplayName(String previous){
-        InputLine notifyDescriptor = new NotifyDescriptor.InputLine(getString("EDIT_DIALOG_LABEL_TXT"), getString("EDIT_DIALOG_TITLE_TXT"));
-        notifyDescriptor.setInputText(previous);
-        DialogDisplayer.getDefault().notify(notifyDescriptor);
-        if (notifyDescriptor.getValue() == NotifyDescriptor.OK_OPTION) {
-            return notifyDescriptor.getInputText();
-        }
+    private String[] getDisplayName(String previous, String prefix, String id){
+        NewStyleName namePanel = new NewStyleName(previous, prefix, id);
+        DialogDescriptor dd = new DialogDescriptor(namePanel, getString("EDIT_DIALOG_TITLE_TXT")); // NOI18N
+        DialogDisplayer.getDefault().notify(dd);
+        if (dd.getValue() == DialogDescriptor.OK_OPTION) {
+            return namePanel.getResult();
+        }        
         return null;
     }
 
-    private String nextId(){
+    private String nextId(String prefix){
         int maxId = 0;
         try {
             for (String key : CodeStylePreferencesProvider.INSTANCE.forDocument(null, MIMENames.C_MIME_TYPE).node(EditorOptions.CODE_STYLE_NODE).keys()) {// NOI18N
-                if (key.endsWith("_Style_Name") && key.startsWith("Style_")) { // NOI18N
+                if (key.endsWith("_Style_Name") && key.startsWith(prefix+"_")) { // NOI18N
                     String v = key.substring(6, key.length() - 11);
                     int n = 0;
                     try {
@@ -263,15 +267,22 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         } catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);
         }
-        return "Style_" + maxId; // NOI18N
+        return "" + maxId; // NOI18N
     }
 
-    private boolean checkUniqueStyleName(String styleName) {
+    private boolean checkUniqueStyleName(String prefix, String res[]) {
         for (String key : preferences.keySet()) {
             String name = EditorOptions.getStyleDisplayName(language, key);
-            if (name.equals(styleName)) {
+            if (name.equals(res[0])) {
                 NotifyDescriptor descriptor = new NotifyDescriptor.Message(
-                        NbBundle.getMessage(ManageStylesPanel.class, "Duplicate_Style_Warning", styleName), // NOI18N
+                        NbBundle.getMessage(ManageStylesPanel.class, "Duplicate_Style_Warning", res[0]), // NOI18N
+                        NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(descriptor);
+                return false;
+            }
+            if (key.equals(prefix+"_"+res[1])) { // NOI18N
+                NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(ManageStylesPanel.class, "Duplicate_Style_Warning", res[0]), // NOI18N
                         NotifyDescriptor.WARNING_MESSAGE);
                 DialogDisplayer.getDefault().notify(descriptor);
                 return false;
