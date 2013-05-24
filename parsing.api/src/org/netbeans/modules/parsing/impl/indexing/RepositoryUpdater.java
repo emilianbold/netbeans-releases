@@ -2193,8 +2193,21 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         protected int allResourceCount;
         
         private Preferences indexerProfileNode(SourceIndexerFactory srcFactory) {
+            String nn = srcFactory.getIndexerName();
+            if (nn.length() >= Preferences.MAX_NAME_LENGTH) {
+                // such long nodes are constructer e.g. from class names
+                int i = nn.lastIndexOf('.');
+                if (i >= 0) {
+                    nn = nn.substring(i + 1);
+                }
+                if (nn.length() < 3 || nn.length() >= Preferences.MAX_NAME_LENGTH) {
+                    String hashCode = Integer.toHexString(nn.hashCode());
+                    // attempt to derive +- unique node name
+                    nn = srcFactory.getClass().getSimpleName() + "_" + hashCode; // NOI18N
+                }
+            }
             return NbPreferences.forModule(srcFactory.getClass()).node("RepositoryUpdater"). // NOI18N
-                    node(srcFactory.getIndexerName());
+                    node(nn);
         }
         
         // because of multiplexing in CSL, the node path must include mime type or indexer name, so
