@@ -64,17 +64,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import org.netbeans.modules.cnd.api.model.CsmObject;
-import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
-import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
 import org.netbeans.modules.cnd.refactoring.test.RefactoringBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
-import org.netbeans.modules.refactoring.api.WhereUsedQuery;
+import org.netbeans.modules.refactoring.spi.FiltersManager;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
 import org.openide.util.Parameters;
-import org.openide.util.lookup.Lookups;
 
 /**
  *
@@ -93,21 +89,37 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
         CsmWhereUsedQueryPlugin.LOG.setLevel(Level.WARNING);
     }
 
-    protected void performWhereUsed(String source, int line, int column, Map<Object, Boolean> params) throws Exception {
-        performWhereUsed(source, line, column, getName() + ".ref", params);
-    }
-
     protected void performWhereUsed(String source, int line, int column) throws Exception {
-        performWhereUsed(source, line, column, getName() + ".ref", Collections.<Object, Boolean>emptyMap());
+        performWhereUsed(source, line, column, Collections.<Object, Boolean>emptyMap());
     }
-
-    protected void performWhereUsed(String source, int line, int column, String goldenFileName, Map<Object, Boolean> params) throws Exception {
+    
+    protected void performWhereUsed(String source, int line, int column, Map<Object, Boolean> params) throws Exception {
+        performWhereUsed(source, line, column, params, Collections.<String>emptyList());
+    }
+    
+    protected void performWhereUsed(String source, int line, int column, 
+            Map<Object, Boolean> params, List<String> selectedFilters) throws Exception {
         CsmReference ref = super.getReference(source, line, column);
         assertNotNull(ref);
         CsmObject targetObject = ref.getReferencedObject();
         assertNotNull(targetObject);
         Collection<RefactoringElementImplementation> elements = CsmWhereUsedQueryPlugin.getWhereUsed(ref, params);
-        dumpAndCheckResults(elements, goldenFileName);
+        
+        // do filtering
+        if (!selectedFilters.isEmpty()) {
+            TestFiltersManager filtersManager = new TestFiltersManager(selectedFilters);
+            ArrayList<RefactoringElementImplementation> res = new ArrayList<>();
+            for (RefactoringElementImplementation elem : elements) {
+                if (elem instanceof FiltersManager.Filterable) {
+                    if (((FiltersManager.Filterable)elem).filter(filtersManager)) {
+                        res.add(elem);
+                    }
+                }
+            }
+            elements = res;
+        }
+        
+        dumpAndCheckResults(elements, getName() + ".ref");
     }
 
     private void dumpAndCheckResults(Collection<RefactoringElementImplementation> elements, String goldenFileName) throws Exception {
@@ -166,4 +178,17 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
             return res;
         }
     };
+    
+    private static class TestFiltersManager extends FiltersManager {
+        private final Collection<String> selectedFilters;
+
+        public TestFiltersManager(Collection<String> selectedFilters) {
+            this.selectedFilters = selectedFilters;
+        }
+        
+        @Override
+        public boolean isSelected(String filterName) {
+            return selectedFilters.contains(filterName);
+        }
+    }
 }
