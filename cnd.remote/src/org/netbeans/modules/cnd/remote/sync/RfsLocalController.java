@@ -566,7 +566,7 @@ class RfsLocalController extends NamedRunnable {
         try {
             clockSkew = getTimeSkew();
             if (logger .isLoggable(Level.FINE)) {
-                logger .log(Level.FINE, "HostInfo skew={0} calculated skew={1}", //NOI18N
+                logger .log(Level.FINE, "HostInfo skew=%d calculated skew=%d", //NOI18N
                         new Object[]{HostInfoUtils.getHostInfo(execEnv).getClockSkew(), clockSkew}); 
             }
         } catch (FormatException ex) {
