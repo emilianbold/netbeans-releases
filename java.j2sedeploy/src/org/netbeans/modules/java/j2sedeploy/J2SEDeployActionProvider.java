@@ -45,10 +45,13 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.List;
 import java.util.Properties;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.script.ScriptEngineFactory;
+import javax.script.ScriptEngineManager;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -77,6 +80,7 @@ import org.openide.util.TaskListener;
 /**
  *
  * @author Tomas Zezula
+ * @author Petr Somol
  */
 @ProjectServiceProvider(
     service = ActionProvider.class,
@@ -84,13 +88,17 @@ import org.openide.util.TaskListener;
 public class J2SEDeployActionProvider implements ActionProvider {
 
     private static final String TARGET_BUILD_NATIVE = "build-native";               //NOI18N
-    private static final String PACKAGE_TYPE = "native.bundling.type";              //NOI18N
+    private static final String NOSCRIPT_SUFFIX = "-noscript";                      //NOI18N
+    private static final String PROP_PACKAGE_TYPE = "native.bundling.type";              //NOI18N
+    private static final String PROP_DISABLE_JAR_CREATION = "jar.archive.disabled";//NOI18N
     private static final String PROP_BUILD_FILE = "buildfile";                      //NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(J2SEDeployActionProvider.class);
 
 
     private final Listener listener;
+    private boolean isJSAvailable = true;
+    private boolean isJSAvailableChecked = false;
 
 
     public J2SEDeployActionProvider(@NonNull final Project prj) {
@@ -134,10 +142,12 @@ public class J2SEDeployActionProvider implements ActionProvider {
         boolean success = false;
         try {
             final Properties p = new Properties();
-            p.setProperty(PACKAGE_TYPE, nbt.getAntProperyValue());
+            p.setProperty(PROP_PACKAGE_TYPE, nbt.getAntProperyValue());
+            p.setProperty(PROP_DISABLE_JAR_CREATION, Boolean.TRUE.toString());
+            String noScript = isJavaScriptAvailable() ? "" : NOSCRIPT_SUFFIX; // NOI18N
             final ExecutorTask task = ActionUtils.runTarget(
                 buildScript,
-                new String[] {TARGET_BUILD_NATIVE},
+                new String[] {TARGET_BUILD_NATIVE.concat(noScript)},
                 p);
             task.addTaskListener(new TaskListener() {
                 @Override
@@ -160,6 +170,27 @@ public class J2SEDeployActionProvider implements ActionProvider {
         return supportsCommand(command) &&
                listener.getProject().equals(context.lookup(Project.class)) &&
                listener.isEnabled();
+    }
+
+    private boolean isJavaScriptAvailable() {
+        if(isJSAvailableChecked) {
+            return isJSAvailable;
+        }
+        ScriptEngineManager mgr = new ScriptEngineManager();
+        List<ScriptEngineFactory> factories = mgr.getEngineFactories();
+        for (ScriptEngineFactory factory: factories) {
+            List<String> engNames = factory.getNames();
+            for(String name: engNames) {
+                if(name.equalsIgnoreCase("js") || name.equalsIgnoreCase("javascript")) { //NOI18N
+                    isJSAvailableChecked = true;
+                    isJSAvailable = true;
+                    return isJSAvailable;
+                }
+            }
+        }
+        isJSAvailableChecked = true;
+        isJSAvailable = false;
+        return isJSAvailable;
     }
 
     private boolean supportsCommand (@NonNull final String command) {
@@ -218,7 +249,7 @@ public class J2SEDeployActionProvider implements ActionProvider {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             final String propName = evt.getPropertyName();
-            if (propName == null || J2SEDeployProperties.JAVASE_NATIVE_BUNDLING_ENABLED.equals(propName)) {
+            if (propName == null || J2SEDeployProperties.NATIVE_BUNDLING_ENABLED.equals(propName)) {
                 cachedEnabled = null;
                 refresh.schedule(0);
             }
@@ -237,7 +268,7 @@ public class J2SEDeployActionProvider implements ActionProvider {
                 if (initialized.compareAndSet(false, true)) {
                     eval.addPropertyChangeListener(this);
                 }
-                cachedEnabled = res = isTrue(eval.getProperty(J2SEDeployProperties.JAVASE_NATIVE_BUNDLING_ENABLED));
+                cachedEnabled = res = isTrue(eval.getProperty(J2SEDeployProperties.NATIVE_BUNDLING_ENABLED));
             }
             return res;
         }

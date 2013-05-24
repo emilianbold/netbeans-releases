@@ -256,7 +256,7 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
             return;
         }
         final ClassMemberPanelUI cmpUi = cmp.getClassMemberPanelUI();
-        if (!cmpUi.isAuto()) {
+        if (!cmpUi.isAutomaticRefresh()) {
             cmpUi.getTask().runImpl(ci, false);
             lastEhForNavigator = null;
         }

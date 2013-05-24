@@ -164,7 +164,7 @@ public class JSEApplicationClassChooser extends javax.swing.JPanel implements Ac
         updateText();
         updateResult();
     }
-
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -560,7 +560,7 @@ public class JSEApplicationClassChooser extends javax.swing.JPanel implements Ac
             @Override
             public void mouseClicked (MouseEvent e) {
                 if (MouseUtils.isDoubleClick (e)) {
-                    if (getSelectedClass () != null) {
+                    if (getSelectedExistingClass () != null) {
                         fireChange(e);
 //                        if (changeListener != null) {
 //                            changeListener.stateChanged (new ChangeEvent (e));
@@ -617,7 +617,7 @@ public class JSEApplicationClassChooser extends javax.swing.JPanel implements Ac
      *
      * @return name of class or null if no class is selected
      */    
-    public String getSelectedClass () {
+    public String getSelectedExistingClass () {
         Object sel = listAppClasses.getSelectedValue();
         if(sel == null) {
             return null;
@@ -628,28 +628,35 @@ public class JSEApplicationClassChooser extends javax.swing.JPanel implements Ac
         return null;
     }
 
+    public String getNewClassName() {
+        String text = textFieldClassName.getText().trim();
+        return text.length() == 0 ? null : text;
+    }
+
     public FileObject getLocationFolder() {
         final Object selectedItem  = comboBoxSourceRoot.getSelectedItem();
         return (selectedItem instanceof SourceGroupSupport.SourceGroupProxy) ? ((SourceGroupSupport.SourceGroupProxy)selectedItem).getRootFolder() : null;
     }
 
     public String getPackageFileName() {
-        String packageName = comboBoxPackage.getEditor().getItem().toString();
-        return packageName.replace('.', '/'); // NOI18N
+        return getPackageName().replace('.', '/'); // NOI18N
     }
 
     /**
      * Name of selected package, or "" for default package.
      */
-    String getPackageName() {
+    public String getPackageName() {
         return comboBoxPackage.getEditor().getItem().toString();
     }
 
-    String getNewClassName() {
-        String text = textFieldClassName.getText().trim();
-        return text.length() == 0 ? null : text;
+    public FileObject getCurrentPackageFolder(boolean create) {
+        return support.getCurrentPackageFolder(create);
     }
-
+    
+    public String getCurrentFileName() {
+        return support.getCurrentFileName();
+    }
+    
     /**
      * Returns error message or null if no error occurred
      */
@@ -686,7 +693,7 @@ public class JSEApplicationClassChooser extends javax.swing.JPanel implements Ac
             return errorMessage == null;
         } else {
             labelMessage.setText(null);
-            return getSelectedClass() != null;
+            return getSelectedExistingClass() != null;
         }
     }
 

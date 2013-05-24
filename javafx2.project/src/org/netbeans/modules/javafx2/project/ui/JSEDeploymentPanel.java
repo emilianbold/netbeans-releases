@@ -258,7 +258,7 @@ public class JSEDeploymentPanel extends javax.swing.JPanel {
                              @Override
                              public void run() {
                                  try {
-                                     JFXProjectUtils.switchProjectToFX(project);
+                                     JFXProjectUtils.switchProjectToFX(project, panel);
                                  } catch (IOException ex) {
                                      Exceptions.printStackTrace(ex);
                                  }

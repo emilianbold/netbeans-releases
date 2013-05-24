@@ -49,7 +49,7 @@ import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -63,8 +63,13 @@ import javax.swing.text.StyledDocument;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.apache.tools.ant.module.api.AntProjectCookie;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.cookies.EditorCookie;
+import org.openide.filesystems.FileAttributeEvent;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -80,7 +85,7 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 
-public class AntProjectSupport implements AntProjectCookie.ParseStatus, DocumentListener, PropertyChangeListener {
+public class AntProjectSupport implements AntProjectCookie.ParseStatus, DocumentListener, PropertyChangeListener, FileChangeListener {
 
     private static final Logger LOG = Logger.getLogger(AntProjectSupport.class.getName());
     
@@ -96,6 +101,8 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
     private Reference<EditorCookie.Observable> editorRef;
     
     private DocumentBuilder documentBuilder;
+    //@GuardedBy("parseLock")
+    private FileChangeListener fileListener;
     
     // milliseconds of quiet time after a textual document change after which
     // changes will be fired and the XML may be reparsed
@@ -266,38 +273,45 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
                 documentBuilder = createDocumentBuilder();
             }
             EditorCookie ed = getEditor ();
-            Document doc;
+            Document doc = null;
             if (ed != null) {
-                final StyledDocument document = ed.openDocument();
-                // add only one Listener (listeners for doc are hold in a List!)
-                if ((styledDocRef != null && styledDocRef.get () != document) || styledDocRef == null) {
-                    document.addDocumentListener(this);
-                    styledDocRef = new WeakReference<StyledDocument>(document);
-                }
-                InputSource in = createInputSource(file, document);
-                try {
-                    doc = documentBuilder.parse(in);
-                } finally {
-                    if (in.getByteStream() != null) {
-                        in.getByteStream().close();
+                final StyledDocument document = ed.getDocument();
+                if (document != null) {
+                    if (file != null && fileListener != null) {
+                        file.removeFileChangeListener(fileListener);
                     }
-                }
-            } else if (file != null) {
-                InputStream is = file.getInputStream();
-                try {
-                    InputSource in = new InputSource(is);
+                    // add only one Listener (listeners for doc are hold in a List!)
+                    if ((styledDocRef != null && styledDocRef.get () != document) || styledDocRef == null) {
+                        document.addDocumentListener(this);
+                        styledDocRef = new WeakReference<StyledDocument>(document);
+                    }
+                    InputSource in = createInputSource(file, document);
                     try {
-                        in.setSystemId(file.getURL().toExternalForm());
-                    } catch (FileStateInvalidException e) {
-                        assert false : e;
+                        doc = documentBuilder.parse(in);
+                    } finally {
+                        if (in.getByteStream() != null) {
+                            in.getByteStream().close();
+                        }
                     }
-                    doc = documentBuilder.parse(in);
-                } finally {
-                    is.close();
                 }
-            } else {
-                exception = new FileNotFoundException("Ant script probably deleted"); // NOI18N
-                return;
+            } 
+            if (doc == null) {
+                if (file != null) {
+                    if (fileListener == null) {
+                        fileListener = FileUtil.weakFileChangeListener(this, file);
+                        file.addFileChangeListener(fileListener);
+                    }
+                    try (InputStreamReader reader = new InputStreamReader(
+                        file.getInputStream(),
+                        FileEncodingQuery.getEncoding(file))) {
+                        InputSource in = new InputSource(reader);
+                        in.setSystemId(file.toURL().toExternalForm());
+                        doc = documentBuilder.parse(in);
+                    }
+                } else {
+                    exception = new FileNotFoundException("Ant script probably deleted"); // NOI18N
+                    return;
+                }
             }
             projDoc = doc;
             exception = null;
@@ -400,6 +414,32 @@ public class AntProjectSupport implements AntProjectCookie.ParseStatus, Document
         if (EditorCookie.Observable.PROP_DOCUMENT.equals(e.getPropertyName())) {
             invalidate();
         }
+    }
+
+    @Override
+    public void fileChanged(FileEvent fe) {
+        invalidate();
+    }
+
+    @Override
+    public void fileDeleted(FileEvent fe) {
+        invalidate();
+    }
+
+    @Override
+    public void fileRenamed(FileRenameEvent fe) {
+    }
+
+    @Override
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+    }
+
+    @Override
+    public void fileFolderCreated(FileEvent fe) {
+    }
+
+    @Override
+    public void fileDataCreated(FileEvent fe) {
     }
     
     protected final void invalidate () {

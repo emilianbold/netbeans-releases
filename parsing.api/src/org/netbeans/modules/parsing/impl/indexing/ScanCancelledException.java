@@ -47,15 +47,21 @@ package org.netbeans.modules.parsing.impl.indexing;
  * @author sdedic
  */
 public class ScanCancelledException extends Exception {
-
-    public ScanCancelledException(String message, StackTraceElement[] stack) {
+    private String location;
+    
+    public ScanCancelledException(String message, String location, StackTraceElement[] stack) {
         super(message);
         setStackTrace(stack);
-
+        this.location = location;
     }
     
-    public ScanCancelledException(String msg, Throwable orig, StackTraceElement[] stack) {
+    public ScanCancelledException(String msg, String location, Throwable orig, StackTraceElement[] stack) {
         super(msg, orig);
         setStackTrace(stack);
+        this.location = location;
+    }
+    
+    public String getLocation() {
+        return location;
     }
 }

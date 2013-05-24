@@ -151,33 +151,10 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         checkBoxBLOB.setEnabled(jfxProps.getSigningEnabled());
         checkBoxBLOB.setSelected(jfxProps.getBLOBSigningEnabled());
         buttonSigning.setEnabled(jfxProps.getSigningEnabled());
+        checkBoxBundle.setSelected(jfxProps.getNativeBundlingEnabled());
         refreshSigningLabel();
         refreshIconsLabel();
-        setupNativeBundlingCombo();
         initComboRT();
-    }
-    
-    private void setupNativeBundlingCombo() {
-        comboBoxNativeBundlingActionRunning = true;
-        comboBoxBundle.removeAllItems ();
-        BundlingType.OS bundlingOS = 
-                Utilities.isWindows() ? BundlingType.OS.WIN : 
-                (Utilities.isMac() ? BundlingType.OS.MAC :
-                (Utilities.getOperatingSystem() == Utilities.OS_LINUX ? BundlingType.OS.LINUX :
-                BundlingType.OS.NONE));
-        for (BundlingType bundleType : BundlingType.values()) {
-            if(bundleType != BundlingType.NONE) {
-                if(bundleType.getExtent() == BundlingType.OS.ALL || bundleType.getExtent() == bundlingOS) {
-                    comboBoxBundle.addItem(bundleType);
-                }
-            }
-        }
-        BundlingType bundleType = jfxProps.getNativeBundlingType();
-        boolean sel = jfxProps.getNativeBundlingEnabled();
-        comboBoxBundle.setSelectedItem(bundleType);
-        comboBoxBundle.setEnabled(sel && bundleType != BundlingType.NONE);
-        checkBoxBundle.setSelected(sel && bundleType != BundlingType.NONE);
-        comboBoxNativeBundlingActionRunning = false;
     }
     
     private void initComboRT() {
@@ -222,7 +199,6 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         labelIconsMessage = new javax.swing.JLabel();
         buttonIcons = new javax.swing.JButton();
         checkBoxBundle = new javax.swing.JCheckBox();
-        comboBoxBundle = new javax.swing.JComboBox();
         labelSigning = new javax.swing.JLabel();
         labelSigningMessage = new javax.swing.JLabel();
         warningSigning = new javax.swing.JLabel();
@@ -353,23 +329,6 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
         panelBottom.add(checkBoxBundle, gridBagConstraints);
         checkBoxBundle.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.checkBoxBundle.text")); // NOI18N
         checkBoxBundle.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.checkBoxBundle.text")); // NOI18N
-
-        comboBoxBundle.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "All", "Image", "Installer", " " }));
-        comboBoxBundle.setEnabled(false);
-        comboBoxBundle.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                comboBoxBundleActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 10, 0);
-        panelBottom.add(comboBoxBundle, gridBagConstraints);
-        comboBoxBundle.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AN_JFXDeploymentPanel.comboBoxBundle.text")); // NOI18N
-        comboBoxBundle.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "AD_JFXDeploymentPanel.comboBoxBundle.text")); // NOI18N
 
         labelSigning.setLabelFor(labelSigningMessage);
         org.openide.awt.Mnemonics.setLocalizedText(labelSigning, org.openide.util.NbBundle.getMessage(JFXDeploymentPanel.class, "JFXDeploymentPanel.labelSigning.text")); // NOI18N
@@ -749,22 +708,8 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
 
     private void checkBoxBundleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_checkBoxBundleActionPerformed
         boolean sel = checkBoxBundle.isSelected();
-        comboBoxBundle.setEnabled(sel);
         jfxProps.setNativeBundlingEnabled(sel);
-        if(jfxProps.getNativeBundlingEnabled() && jfxProps.getNativeBundlingType() == JFXProjectProperties.BundlingType.NONE) {
-            jfxProps.setNativeBundlingType(JFXProjectProperties.BundlingType.ALL);
-            comboBoxBundle.setSelectedItem(JFXProjectProperties.BundlingType.ALL);
-        }
     }//GEN-LAST:event_checkBoxBundleActionPerformed
-
-    private void comboBoxBundleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_comboBoxBundleActionPerformed
-        if(!comboBoxNativeBundlingActionRunning) {
-            comboBoxNativeBundlingActionRunning = true;
-            JFXProjectProperties.BundlingType sel = (JFXProjectProperties.BundlingType)comboBoxBundle.getSelectedItem();
-            jfxProps.setNativeBundlingType(sel);
-            comboBoxNativeBundlingActionRunning = false;
-        }
-    }//GEN-LAST:event_comboBoxBundleActionPerformed
 
     private void buttonIconsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonIconsActionPerformed
         JFXIconsPanel panel = new JFXIconsPanel(jfxProps, lastImageFolder);
@@ -846,7 +791,6 @@ public class JFXDeploymentPanel extends javax.swing.JPanel implements HelpCtx.Pr
     private javax.swing.JCheckBox checkBoxNoInternet;
     private javax.swing.JCheckBox checkBoxUnrestrictedAcc;
     private javax.swing.JCheckBox checkBoxUpgradeBackground;
-    private javax.swing.JComboBox comboBoxBundle;
     private org.netbeans.modules.javafx2.project.ui.RuntimeComboBox comboBoxRT;
     private javax.swing.Box.Filler filler2;
     private javax.swing.Box.Filler keepInfoMessageHeight;

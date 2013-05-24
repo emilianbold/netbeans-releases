@@ -250,6 +250,15 @@ public final class JavaFXPlatformUtils {
     }
     
     /**
+     * Returns platform's Ant name or null if such does not exist
+     * @param platform
+     * @return 
+     */
+    public static String getPlatformAntName(@NonNull final JavaPlatform platform) {
+        return platform.getProperties().get(JavaFXPlatformUtils.PLATFORM_ANT_NAME);
+    }
+    
+    /**
      * Searches for JavaPlatform of given name
      * @param platformName name of platform to search for
      * @return found JavaPlatform or null if no platform found
