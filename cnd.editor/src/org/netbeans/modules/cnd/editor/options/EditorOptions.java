@@ -52,6 +52,7 @@ import java.util.StringTokenizer;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.settings.SimpleValueNames;
@@ -59,8 +60,8 @@ import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.editor.api.CodeStyle;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.BracePlacement;
 import org.netbeans.modules.cnd.editor.api.CodeStyle.PreprocessorIndent;
+import org.netbeans.modules.cnd.source.spi.CndDocumentCodeStyleProvider;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 
 /**
  *
@@ -68,6 +69,8 @@ import org.openide.util.NbPreferences;
  */
 public class EditorOptions {
     public static CodeStyleFactory codeStyleFactory;
+    /*package*/static final String CODE_STYLE_NODE = "CodeStyle"; //NOI18N
+    private static final String LIST_OF_STYLES_PROPERTY = "List_Of_Styles"; //NOI18N
     static {
         Class<?> c = CodeStyle.class;
         try {
@@ -617,31 +620,22 @@ public class EditorOptions {
         return defaults.get(id);
     }
     
-    public static String getCurrentProfileId(CodeStyle.Language language) {
-        switch(language){
-            case C:
-                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("C_Style", DEFAULT_PROFILE); // NOI18N
-            case HEADER:
-                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("H_Style", DEFAULT_PROFILE); // NOI18N
-            case CPP:
-            default:
-                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get("CPP_Style", DEFAULT_PROFILE); // NOI18N
+    public static String getCurrentProfileId(CodeStyle.Language language, Document doc) {
+        CndDocumentCodeStyleProvider csProvider = null;
+        if (doc != null) {
+            csProvider = (CndDocumentCodeStyleProvider) doc.getProperty(CndDocumentCodeStyleProvider.class);
         }
+        if (csProvider != null) {
+            String currentCodeStyle = csProvider.getCurrentCodeStyle(language.toMime(), doc);
+            if (currentCodeStyle != null) {
+                return currentCodeStyle;
+            }
+        }
+        return CodeStylePreferencesProvider.INSTANCE.forDocument(doc, language.toMime()).node(CODE_STYLE_NODE).get(language.currentPropertyName(), DEFAULT_PROFILE); // NOI18N
     }
 
     public static void setCurrentProfileId(CodeStyle.Language language, String style) {
-        switch(language){
-            case C:
-                NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("C_Style", style); // NOI18N
-                break;
-            case HEADER:
-                NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("H_Style", style); // NOI18N
-                break;
-            case CPP:
-            default:
-                NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put("CPP_Style", style); // NOI18N
-                break;
-        }
+        CodeStylePreferencesProvider.INSTANCE.forDocument(null, language.toMime()).node(CODE_STYLE_NODE).put(language.currentPropertyName(), style); // NOI18N
     }
 
     private static String getString(String key) {
@@ -654,27 +648,11 @@ public class EditorOptions {
                 return getString(style + "_Name"); // NOI18N
             }
         }
-        switch(language){
-            case C:
-                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get(style+"_Style_Name", style); // NOI18N
-            case HEADER:
-                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get(style+"_Style_Name", style); // NOI18N
-            case CPP:
-            default:
-                return NbPreferences.forModule(CodeStyle.class).node("CodeStyle").get(style+"_Style_Name", style); // NOI18N
-        }
+        return CodeStylePreferencesProvider.INSTANCE.forDocument(null, language.toMime()).node(CODE_STYLE_NODE).get(style+"_Style_Name", style); // NOI18N
     }
     
     public static Preferences getPreferences(CodeStyle.Language language, String profileId) {
-        switch(language){
-            case C:
-                return NbPreferences.forModule(CodeStyle.class).node("C_CodeStyles").node(profileId); // NOI18N
-            case HEADER:
-                return NbPreferences.forModule(CodeStyle.class).node("H_CodeStyles").node(profileId); // NOI18N
-            case CPP:
-            default:
-                return NbPreferences.forModule(CodeStyle.class).node("CPP_CodeStyles").node(profileId); // NOI18N
-        }
+        return CodeStylePreferencesProvider.INSTANCE.forDocument(null, language.toMime()).node(language.prefNodeName()).node(profileId); // NOI18N
     }
 
     public static List<String> getAllStyles(CodeStyle.Language language) {
@@ -686,18 +664,7 @@ public class EditorOptions {
             }
             def.append(s);
         }
-        switch(language){
-            case C:
-                styles = NbPreferences.forModule(CodeStyle.class).node("C_CodeStyles").get("List_Of_Styles", def.toString()); // NOI18N
-                break;
-            case HEADER:
-                styles = NbPreferences.forModule(CodeStyle.class).node("H_CodeStyles").get("List_Of_Styles", def.toString()); // NOI18N
-                break;
-            case CPP:
-            default:
-                styles = NbPreferences.forModule(CodeStyle.class).node("CPP_CodeStyles").get("List_Of_Styles", def.toString()); // NOI18N
-                break;
-        }
+        styles = CodeStylePreferencesProvider.INSTANCE.forDocument(null, language.toMime()).node(language.prefNodeName()).get(LIST_OF_STYLES_PROPERTY, def.toString()); // NOI18N
         List<String> res = new ArrayList<String>();
         StringTokenizer st = new StringTokenizer(styles,","); // NOI18N
         while(st.hasMoreTokens()) {
@@ -707,22 +674,10 @@ public class EditorOptions {
     }
 
     public static void setAllStyles(CodeStyle.Language language, String list) {
-        switch(language){
-            case C:
-                NbPreferences.forModule(CodeStyle.class).node("C_CodeStyles").put("List_Of_Styles", list); // NOI18N
-                break;
-            case HEADER:
-                NbPreferences.forModule(CodeStyle.class).node("H_CodeStyles").put("List_Of_Styles", list); // NOI18N
-                break;
-            case CPP:
-            default:
-                NbPreferences.forModule(CodeStyle.class).node("CPP_CodeStyles").put("List_Of_Styles", list); // NOI18N
-                break;
-        }
+        CodeStylePreferencesProvider.INSTANCE.forDocument(null, language.toMime()).node(language.prefNodeName()).put(LIST_OF_STYLES_PROPERTY, list); // NOI18N
     }
 
     public static CodeStyle createCodeStyle(CodeStyle.Language language, Preferences p, boolean useOverrideOption) {
-        CodeStyle.getDefault(language);
         return codeStyleFactory.create(language, p, useOverrideOption);
     }
 
@@ -765,18 +720,7 @@ public class EditorOptions {
     }
 
     public static void updateSimplePreferences(CodeStyle.Language language, CodeStyle codeStyle) {
-        switch (language){
-            case C:
-                updateSimplePreferences(MimeLookup.getLookup(MIMENames.C_MIME_TYPE).lookup(Preferences.class), codeStyle);
-                break;
-            case HEADER:
-                updateSimplePreferences(MimeLookup.getLookup(MIMENames.HEADER_MIME_TYPE).lookup(Preferences.class), codeStyle);
-                break;
-            case CPP:
-            default:
-                updateSimplePreferences(MimeLookup.getLookup(MIMENames.CPLUSPLUS_MIME_TYPE).lookup(Preferences.class), codeStyle);
-                break;
-        }
+        updateSimplePreferences(MimeLookup.getLookup(language.toMime()).lookup(Preferences.class), codeStyle);
     }
 
     private static Set<String> set = new HashSet<String>();

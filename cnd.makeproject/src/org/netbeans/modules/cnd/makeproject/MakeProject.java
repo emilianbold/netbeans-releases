@@ -69,6 +69,7 @@ import java.util.regex.Pattern;
 import javax.swing.Icon;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.text.Document;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.project.Project;
@@ -105,6 +106,7 @@ import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
 import org.netbeans.modules.cnd.makeproject.ui.FolderSearchInfo.FileObjectNameMatcherImpl;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.options.FullFileIndexer;
+import org.netbeans.modules.cnd.source.spi.CndDocumentCodeStyleProvider;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
 import org.netbeans.modules.cnd.spi.toolchain.ToolchainProject;
 import org.netbeans.modules.cnd.support.Interrupter;
@@ -184,6 +186,10 @@ public final class MakeProject implements Project, MakeProjectListener {
     private final Set<String> cExtensions = MakeProject.createExtensionSet();
     private final Set<String> cppExtensions = MakeProject.createExtensionSet();
     private String sourceEncoding = null;
+    private AtomicBoolean projectFormattingStyle;
+    private String cFormattingSytle;
+    private String cppFormattingSytle;
+    private String headerFormattingSytle;
     // lock and open/close state of make project
     private final AtomicBoolean openStateAndLock = new AtomicBoolean(false);
     private final AtomicBoolean isDeleted = new AtomicBoolean(false);
@@ -346,6 +352,7 @@ public final class MakeProject implements Project, MakeProjectListener {
                     new CPPImpl(sources, openStateAndLock),
                     new CacheDirectoryProviderImpl(helper.getProjectDirectory()),
                     BrokenReferencesSupport.createPlatformVersionProblemProvider(this, helper, projectDescriptorProvider, makeProjectConfigurationProvider),
+                    new CndDocumentCodeStyleProviderImpl(),
                     this
                 };
         
@@ -778,6 +785,83 @@ public final class MakeProject implements Project, MakeProjectListener {
         }
 
         return null;
+    }
+
+    public boolean isProjectFormattingStyle() {
+        if (projectFormattingStyle == null) {
+            Element data = helper.getPrimaryConfigurationData(true);
+            NodeList nodeList = data.getElementsByTagName(MakeProjectTypeImpl.FORMATTING_STYLE_PROJECT_ELEMENT);
+            if (nodeList != null && nodeList.getLength() > 0) {
+                for (int i = 0; i < nodeList.getLength(); i++) {
+                    Node node = nodeList.item(i);
+                    projectFormattingStyle = new AtomicBoolean("true".equals(node.getTextContent())); //NOI18N
+                    break;
+                }
+            }
+            if (projectFormattingStyle == null) {
+                projectFormattingStyle = new AtomicBoolean(false);
+            }
+        } else {
+            return projectFormattingStyle.get();
+        }
+        return false;
+    }
+
+    public void setProjectFormattingStyle(boolean isProject) {
+        if (projectFormattingStyle != null) {
+            projectFormattingStyle.set(isProject);
+        } else {
+            projectFormattingStyle = new AtomicBoolean(isProject);
+        }
+    }
+
+    public String getProjectFormattingStyle(String mime) {
+        NodeList nodeList = null;
+        if (MIMENames.C_MIME_TYPE.equals(mime)) {
+            if (cFormattingSytle != null) {
+                return cFormattingSytle;
+            }
+            nodeList = helper.getPrimaryConfigurationData(true).getElementsByTagName(MakeProjectTypeImpl.C_FORMATTING_STYLE_ELEMENT);
+        } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+            if (cppFormattingSytle != null) {
+                return cppFormattingSytle;
+            }
+            nodeList = helper.getPrimaryConfigurationData(true).getElementsByTagName(MakeProjectTypeImpl.CPP_FORMATTING_STYLE_ELEMENT);
+        } else if (MIMENames.HEADER_MIME_TYPE.equals(mime)) {
+            if (headerFormattingSytle != null) {
+                return headerFormattingSytle;
+            }
+            nodeList = helper.getPrimaryConfigurationData(true).getElementsByTagName(MakeProjectTypeImpl.HEADER_FORMATTING_STYLE_ELEMENT);
+        }
+        String res = null;
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                res = node.getTextContent();
+                break;
+            }
+        }
+        if (res != null) {
+            if (MIMENames.C_MIME_TYPE.equals(mime)) {
+                cFormattingSytle = res;
+            } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+                cppFormattingSytle = res;
+            } else if (MIMENames.HEADER_MIME_TYPE.equals(mime)) {
+                headerFormattingSytle = res;
+            }
+            return res;
+        }
+        return null;
+    }
+    
+    public void setProjectFormattingStyle(String mime, String style) {
+        if (MIMENames.C_MIME_TYPE.equals(mime)) {
+            cFormattingSytle = style;
+        } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
+            cppFormattingSytle = style;
+        } else if (MIMENames.HEADER_MIME_TYPE.equals(mime)) {
+            headerFormattingSytle = style;
+        }
     }
 
     public String getSourceEncoding() {
@@ -1889,6 +1973,18 @@ public final class MakeProject implements Project, MakeProjectListener {
         public boolean cancel() {
             cancelled.set(true);
             return true;
+        }
+    }
+    
+    private final class CndDocumentCodeStyleProviderImpl implements CndDocumentCodeStyleProvider {
+
+        @Override
+        public String getCurrentCodeStyle(String mimeType, Document doc) {
+            if (MakeProject.this.isProjectFormattingStyle()) {
+                return MakeProject.this.getProjectFormattingStyle(mimeType);
+            } else {
+                return null;
+            }
         }
     }
 }

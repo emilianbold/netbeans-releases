@@ -407,7 +407,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
             PreviewPreferences pref = prefEntry.getValue();
             Preferences toSave = EditorOptions.getPreferences(language, style);
             if (style.equals(preferencesModel.getLanguageDefaultStyle(language))){
-                EditorOptions.setPreferences(CodeStyle.getDefault(language), toSave);
+                EditorOptions.setPreferences(CodeStyle.getDefault(language, null), toSave);
             }
             for(String key : EditorOptions.keys()){
                 Object o = EditorOptions.getDefault(language, style, key);
@@ -435,7 +435,7 @@ public class EditorPropertySheet extends javax.swing.JPanel
                 }
             }
             if (style.equals(preferencesModel.getLanguageDefaultStyle(language))){
-                EditorOptions.updateSimplePreferences(language, CodeStyle.getDefault(language));
+                EditorOptions.updateSimplePreferences(language, CodeStyle.getDefault(language, null));
             }
         }
         EditorOptions.setAllStyles(language, buf.toString());
