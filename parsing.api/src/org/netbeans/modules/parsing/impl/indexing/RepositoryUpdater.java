@@ -181,6 +181,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
         synchronized (this) {
             if (state == State.CREATED || state == State.STOPPED) {
                 state = State.STARTED;
+                getWorker().allCancelled = false;
                 LOGGER.fine("Initializing..."); //NOI18N
                 this.indexingActivityInterceptors = Lookup.getDefault().lookupResult(IndexingActivityInterceptor.class);
                 PathRegistry.getDefault().addPathRegistryListener(this);
