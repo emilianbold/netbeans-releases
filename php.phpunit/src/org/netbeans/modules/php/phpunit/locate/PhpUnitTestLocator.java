@@ -85,7 +85,7 @@ public class PhpUnitTestLocator implements TestLocator {
         EditorSupport editorSupport = Lookup.getDefault().lookup(EditorSupport.class);
         assert editorSupport != null : "Editor support must exist";
 
-        Set<Locations.Offset> phpFiles = new TreeSet<Locations.Offset>(new Comparator<Locations.Offset>() {
+        Set<Locations.Offset> phpFiles = new TreeSet<>(new Comparator<Locations.Offset>() {
             @Override
             public int compare(Locations.Offset o1, Locations.Offset o2) {
                 return o1.getFile().getPath().compareTo(o2.getFile().getPath());
@@ -93,7 +93,7 @@ public class PhpUnitTestLocator implements TestLocator {
         });
         for (PhpClass phpClass : editorSupport.getClasses(file)) {
             //        name,   FQ name
-            List<Pair<String, String>> classes = new ArrayList<Pair<String, String>>();
+            List<Pair<String, String>> classes = new ArrayList<>();
             if (searchTest) {
                 // FooTest
                 classes.add(Pair.of(PhpUnit.makeTestClass(phpClass.getName()), PhpUnit.makeTestClass(phpClass.getFullyQualifiedName())));
@@ -126,7 +126,7 @@ public class PhpUnitTestLocator implements TestLocator {
     }
 
     private List<Locations.Offset> filterPhpFiles(FileObject sourceRoot, Collection<Pair<FileObject, Integer>> files) {
-        List<Locations.Offset> results = new ArrayList<Locations.Offset>(files.size());
+        List<Locations.Offset> results = new ArrayList<>(files.size());
         for (Pair<FileObject, Integer> pair : files) {
             FileObject fileObject = pair.first();
             if (FileUtils.isPhpFile(fileObject)

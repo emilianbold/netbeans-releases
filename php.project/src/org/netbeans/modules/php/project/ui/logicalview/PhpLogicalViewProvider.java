@@ -373,7 +373,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public Action[] getActions(boolean context) {
-            List<Action> actions = new LinkedList<Action>(Arrays.asList(CommonProjectActions.forType("org-netbeans-modules-php-phpproject"))); // NOI18N
+            List<Action> actions = new LinkedList<>(Arrays.asList(CommonProjectActions.forType("org-netbeans-modules-php-phpproject"))); // NOI18N
             // XXX code coverage cannot be added since it already is ContextAwareAction (but the Factory needs to be ContextAwareAction as well)
             addCodeCoverageAction(actions);
             // XXX similarly for frameworks - they are directly in the context menu, not in any submenu
@@ -423,7 +423,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
                     RunCommandAction runCommandAction = actionsExtender.getRunCommandAction();
                     List<? extends Action> frameworkActions = actionsExtender.getActions();
                     if (runCommandAction != null || !frameworkActions.isEmpty()) {
-                        List<Action> allActions = new ArrayList<Action>(frameworkActions.size() + 2);
+                        List<Action> allActions = new ArrayList<>(frameworkActions.size() + 2);
                         if (runCommandAction != null) {
                             allActions.add(runCommandAction);
                             if (!frameworkActions.isEmpty()) {
@@ -597,7 +597,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             }
 
             PhpModule phpModule = phpProject.getPhpModule();
-            List<PhpDocumentationProvider> projectDocProviders = new ArrayList<PhpDocumentationProvider>(docProviders.size());
+            List<PhpDocumentationProvider> projectDocProviders = new ArrayList<>(docProviders.size());
             for (PhpDocumentationProvider docProvider : docProviders) {
                 if (docProvider.isInPhpModule(phpModule)) {
                     projectDocProviders.add(docProvider);
@@ -638,7 +638,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public JMenuItem getPopupPresenter() {
-            List<PhpDocAction> docActions = new ArrayList<PhpDocAction>(docProviders.size());
+            List<PhpDocAction> docActions = new ArrayList<>(docProviders.size());
             for (PhpDocumentationProvider docProvider : docProviders) {
                 docActions.add(new PhpDocAction(docProvider.getDisplayName(), phpProject, docProvider));
             }

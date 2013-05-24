@@ -95,9 +95,9 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     private final SourceRoots selenium;
 
     // if new item is added to this map, do not forget to update propertyChange() method as well
-    private final ConcurrentMap<String, List<FileObject>> dirCache = new ConcurrentHashMap<String, List<FileObject>>();
+    private final ConcurrentMap<String, List<FileObject>> dirCache = new ConcurrentHashMap<>();
     // GuardedBy(cache)
-    private final Map<ClassPathCache, ClassPath> cache = new EnumMap<ClassPathCache, ClassPath>(ClassPathCache.class);
+    private final Map<ClassPathCache, ClassPath> cache = new EnumMap<>(ClassPathCache.class);
 
     public ClassPathProviderImpl(PhpProject project, SourceRoots sources, SourceRoots tests, SourceRoots selenium) {
         assert project != null;
@@ -125,7 +125,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
                 return Collections.<FileObject>emptyList();
             }
             String[] paths = PropertyUtils.tokenizePath(prop);
-            dirs = new ArrayList<FileObject>(paths.length);
+            dirs = new ArrayList<>(paths.length);
             for (String path : paths) {
                 FileObject resolvedFile = helper.resolveFileObject(path);
                 if (resolvedFile != null) {
@@ -197,7 +197,7 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
 
     @Override
     public List<FileObject> getIncludePath() {
-        return new ArrayList<FileObject>(getPlatformPath());
+        return new ArrayList<>(getPlatformPath());
     }
 
     @Override

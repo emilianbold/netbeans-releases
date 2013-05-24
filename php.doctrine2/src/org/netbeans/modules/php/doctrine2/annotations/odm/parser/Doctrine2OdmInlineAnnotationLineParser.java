@@ -58,7 +58,7 @@ public class Doctrine2OdmInlineAnnotationLineParser implements AnnotationLinePar
 
     private static final AnnotationLineParser INSTANCE = new Doctrine2OdmInlineAnnotationLineParser();
 
-    private static final Set<String> INLINE_ANNOTATIONS = new HashSet<String>();
+    private static final Set<String> INLINE_ANNOTATIONS = new HashSet<>();
     static {
         INLINE_ANNOTATIONS.add("Index"); //NOI18N
     }

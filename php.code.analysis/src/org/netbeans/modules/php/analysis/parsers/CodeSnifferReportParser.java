@@ -67,7 +67,7 @@ public final class CodeSnifferReportParser extends DefaultHandler {
 
     private static final Logger LOGGER = Logger.getLogger(CodeSnifferReportParser.class.getName());
 
-    private final List<Result> results = new ArrayList<Result>();
+    private final List<Result> results = new ArrayList<>();
     private final XMLReader xmlReader;
 
     private Result currentResult = null;
@@ -89,11 +89,8 @@ public final class CodeSnifferReportParser extends DefaultHandler {
     @CheckForNull
     public static List<Result> parse(File file) {
         try {
-            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8")); // NOI18N
-            try {
+            try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))) { // NOI18N
                 return create(reader).getResults();
-            } finally {
-                reader.close();
             }
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);

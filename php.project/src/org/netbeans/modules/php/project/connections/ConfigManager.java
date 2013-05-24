@@ -70,7 +70,7 @@ public final class ConfigManager {
 
     private final Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs;
     // error messages for configruations
-    private final Map<String/*|null*/, String/*|null*/> configErrors = new HashMap<String, String>();
+    private final Map<String/*|null*/, String/*|null*/> configErrors = new HashMap<>();
     private final ConfigProvider configProvider;
     private final String[] propertyNames;
     private final ChangeSupport changeSupport;
@@ -88,7 +88,7 @@ public final class ConfigManager {
         configs.putAll(configProvider.getConfigs());
         this.currentConfig = currentConfig;
 
-        List<String> tmp = new ArrayList<String>(Arrays.asList(configProvider.getConfigProperties()));
+        List<String> tmp = new ArrayList<>(Arrays.asList(configProvider.getConfigProperties()));
         tmp.add(PROP_DISPLAY_NAME);
         propertyNames = tmp.toArray(new String[tmp.size()]);
     }
@@ -98,7 +98,7 @@ public final class ConfigManager {
      * @return empty map for configurations.
      */
     public static Map<String, Map<String, String>> createEmptyConfigs() {
-        Map<String, Map<String, String>> configs = new TreeMap<String, Map<String, String>>(new Comparator<String>() {
+        Map<String, Map<String, String>> configs = new TreeMap<>(new Comparator<String>() {
             @Override
             public int compare(String s1, String s2) {
                 return s1 != null ? (s2 != null ? s1.compareTo(s2) : 1) : (s2 != null ? -1 : 0);

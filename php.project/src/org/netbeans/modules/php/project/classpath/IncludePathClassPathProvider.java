@@ -66,7 +66,7 @@ public class IncludePathClassPathProvider implements ClassPathProvider {
     private static final boolean RUNNING_IN_TEST = Boolean.getBoolean("nb.php.test.run"); // NOI18N
 
     // @GuardedBy(PROJECT_INCLUDES_LOCK)
-    private static final Set<ClassPath> PROJECT_INCLUDES = new WeakSet<ClassPath>();
+    private static final Set<ClassPath> PROJECT_INCLUDES = new WeakSet<>();
     private static final ReadWriteLock PROJECT_INCLUDES_LOCK = new ReentrantReadWriteLock();
 
     // @GuardedBy("IncludePathClassPathProvider.class")

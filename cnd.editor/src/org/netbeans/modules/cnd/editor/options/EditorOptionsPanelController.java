@@ -144,18 +144,7 @@ public class EditorOptionsPanelController extends OptionsPanelController impleme
             previewPane.getAccessibleContext().setAccessibleName(NbBundle.getMessage(EditorOptionsPanelController.class, "AN_Preview")); //NOI18N
             previewPane.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(EditorOptionsPanelController.class, "AD_Preview")); //NOI18N
             previewPane.putClientProperty("HighlightsLayerIncludes", "^org\\.netbeans\\.modules\\.editor\\.lib2\\.highlighting\\.SyntaxHighlighting$"); //NOI18N
-            switch (language){
-                case C:
-                    previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(MIMENames.C_MIME_TYPE));
-                    break;
-                case HEADER:
-                    previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(MIMENames.HEADER_MIME_TYPE));
-                    break;
-                case CPP:
-                default:
-                    previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(MIMENames.CPLUSPLUS_MIME_TYPE));
-                    break;
-            }
+            previewPane.setEditorKit(CloneableEditorSupport.getEditorKit(language.toMime()));
             previewPane.setEditable(false);
         }
         return previewPane;

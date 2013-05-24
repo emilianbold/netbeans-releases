@@ -191,7 +191,7 @@ public class GoToTest implements TestLocator {
             Locations.Offset source = phpFiles.values().iterator().next();
             return new LocationResult(source.getFile(), source.getOffset());
         }
-        List<FileObject> files = new ArrayList<FileObject>(phpFiles.size());
+        List<FileObject> files = new ArrayList<>(phpFiles.size());
         for (Locations.Offset location : phpFiles.values()) {
             files.add(location.getFile());
         }

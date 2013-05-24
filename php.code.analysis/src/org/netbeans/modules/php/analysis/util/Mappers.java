@@ -69,7 +69,7 @@ public final class Mappers {
     }
 
     public static Collection<? extends ErrorDescription> map(List<Result> results) {
-        List<ErrorDescription> errorDescriptions = new ArrayList<ErrorDescription>(results.size());
+        List<ErrorDescription> errorDescriptions = new ArrayList<>(results.size());
         FileObject file = null;
         String filePath = null;
         int[] lineMap = null;

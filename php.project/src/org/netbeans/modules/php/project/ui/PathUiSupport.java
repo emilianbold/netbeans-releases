@@ -84,7 +84,7 @@ public final class PathUiSupport {
     }
 
     public static DefaultListModel<BasePathSupport.Item> createListModel(Iterator<BasePathSupport.Item> it) {
-        DefaultListModel<BasePathSupport.Item> model = new DefaultListModel<BasePathSupport.Item>();
+        DefaultListModel<BasePathSupport.Item> model = new DefaultListModel<>();
         while (it.hasNext()) {
             model.addElement(it.next());
         }
@@ -218,7 +218,7 @@ public final class PathUiSupport {
         private final PropertyEvaluator evaluator;
         private final FileObject projectFolder;
 
-        private static final Map<String, String> WELL_KNOWN_PATHS_NAMES = new HashMap<String, String>();
+        private static final Map<String, String> WELL_KNOWN_PATHS_NAMES = new HashMap<>();
         static {
             WELL_KNOWN_PATHS_NAMES.put(PhpProjectProperties.GLOBAL_INCLUDE_PATH,
                     NbBundle.getMessage(PathUiSupport.class, "LBL_GlobalIncludePath_DisplayName"));

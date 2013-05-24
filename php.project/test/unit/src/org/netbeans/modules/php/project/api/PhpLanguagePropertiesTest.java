@@ -142,7 +142,7 @@ public class PhpLanguagePropertiesTest extends PhpTestCase {
 
     private static final class PropertyChangeListenerImpl implements PropertyChangeListener {
 
-        final List<String> events = new CopyOnWriteArrayList<String>();
+        final List<String> events = new CopyOnWriteArrayList<>();
         final CountDownLatch latch = new CountDownLatch(3);
 
 

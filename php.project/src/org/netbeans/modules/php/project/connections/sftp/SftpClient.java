@@ -89,9 +89,9 @@ public class SftpClient implements RemoteClient {
     // #226820
     private static final boolean NO_PROXY_PROPERTY = Boolean.getBoolean("nb.php.sftp.noProxy"); // NOI18N
 
-    private static final Map<Integer, String> PASSWORDS = new HashMap<Integer, String>();
-    private static final Map<Integer, String> PASSPHRASES = new HashMap<Integer, String>();
-    private static final Map<Integer, Set<String>> MESSAGES = new HashMap<Integer, Set<String>>();
+    private static final Map<Integer, String> PASSWORDS = new HashMap<>();
+    private static final Map<Integer, String> PASSPHRASES = new HashMap<>();
+    private static final Map<Integer, Set<String>> MESSAGES = new HashMap<>();
 
     private static final SftpLogger DEV_NULL_LOGGER = new DevNullLogger();
     private final SftpConfiguration configuration;
@@ -360,7 +360,7 @@ public class SftpClient implements RemoteClient {
 
             @SuppressWarnings("unchecked")
             Collection<ChannelSftp.LsEntry> files = sftpClient.ls(pwd);
-            result = new ArrayList<RemoteFile>(files.size());
+            result = new ArrayList<>(files.size());
             for (ChannelSftp.LsEntry entry : files) {
                 result.add(new RemoteFileImpl(entry, pwd));
             }
@@ -569,7 +569,7 @@ public class SftpClient implements RemoteClient {
         synchronized (MESSAGES) {
             messages = MESSAGES.get(configuration.hashCode());
             if (messages == null) {
-                messages = new HashSet<String>();
+                messages = new HashSet<>();
                 MESSAGES.put(configuration.hashCode(), messages);
             }
         }

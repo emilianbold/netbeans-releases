@@ -87,7 +87,7 @@ public final class InternalWebServer implements PropertyChangeListener {
     private static final String WEB_SERVER_PARAM = "-S"; // NOI18N
     private static final String DOCUMENT_ROOT_PARAM = "-t"; // NOI18N
 
-    private static final Set<String> RELATED_EVENT_NAMES = new HashSet<String>(Arrays.asList(
+    private static final Set<String> RELATED_EVENT_NAMES = new HashSet<>(Arrays.asList(
             PhpProject.PROP_WEB_ROOT,
             PhpProjectProperties.HOSTNAME,
             PhpProjectProperties.PORT,
@@ -258,7 +258,7 @@ public final class InternalWebServer implements PropertyChangeListener {
     }
 
     private List<String> getParameters(RunConfigInternal runConfig) {
-        List<String> params = new ArrayList<String>(3);
+        List<String> params = new ArrayList<>(3);
         params.add(WEB_SERVER_PARAM);
         params.add(runConfig.getServer());
         String relativeDocumentRoot = runConfig.getRelativeDocumentRoot();

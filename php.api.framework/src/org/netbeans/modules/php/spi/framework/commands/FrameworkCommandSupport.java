@@ -67,7 +67,7 @@ public abstract class FrameworkCommandSupport {
 
     private static final Logger LOGGER = Logger.getLogger(FrameworkCommandSupport.class.getName());
     // @GuardedBy(COMMANDS_CACHE)
-    private static final Map<PhpModule, Map<String, List<FrameworkCommand>>> COMMANDS_CACHE = new WeakHashMap<PhpModule, Map<String, List<FrameworkCommand>>>();
+    private static final Map<PhpModule, Map<String, List<FrameworkCommand>>> COMMANDS_CACHE = new WeakHashMap<>();
 
     private static final RequestProcessor RP = new RequestProcessor(FrameworkCommandSupport.class);
 
@@ -163,7 +163,7 @@ public abstract class FrameworkCommandSupport {
         synchronized (COMMANDS_CACHE) {
             Map<String, List<FrameworkCommand>> moduleCommands = COMMANDS_CACHE.get(phpModule);
             if (moduleCommands == null) {
-                moduleCommands = new HashMap<String, List<FrameworkCommand>>();
+                moduleCommands = new HashMap<>();
             }
             moduleCommands.put(getFrameworkName(), freshCommands);
             COMMANDS_CACHE.put(phpModule, moduleCommands);

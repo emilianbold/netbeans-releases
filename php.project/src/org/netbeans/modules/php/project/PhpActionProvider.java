@@ -81,7 +81,7 @@ public class PhpActionProvider implements ActionProvider {
     private final Map<String, Command> commands;
 
     PhpActionProvider(PhpProject project) {
-        commands = new LinkedHashMap<String, Command>();
+        commands = new LinkedHashMap<>();
         Command[] commandArray = new Command[] {
             // project sensitive actions
             new RunProjectCommand(project),

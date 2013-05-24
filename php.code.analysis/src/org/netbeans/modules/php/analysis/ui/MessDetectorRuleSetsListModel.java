@@ -60,7 +60,7 @@ public final class MessDetectorRuleSetsListModel extends AbstractListModel<Strin
     }
 
     public static List<String> getAllRuleSets() {
-        return new ArrayList<String>(MessDetector.RULE_SETS);
+        return new ArrayList<>(MessDetector.RULE_SETS);
     }
 
     @Override

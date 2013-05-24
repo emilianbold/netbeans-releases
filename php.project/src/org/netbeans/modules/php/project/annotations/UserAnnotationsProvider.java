@@ -89,7 +89,7 @@ public final class UserAnnotationsProvider extends AnnotationCompletionTagProvid
 
     private List<AnnotationCompletionTag> getAnnotationsForType(UserAnnotationTag.Type type) {
         List<UserAnnotationTag> annotations = UserAnnotations.getInstance().getAnnotations();
-        List<AnnotationCompletionTag> result = new ArrayList<AnnotationCompletionTag>(annotations.size());
+        List<AnnotationCompletionTag> result = new ArrayList<>(annotations.size());
         for (UserAnnotationTag userAnnotationTag : annotations) {
             if (userAnnotationTag.getTypes().contains(type)) {
                 result.add(userAnnotationTag);

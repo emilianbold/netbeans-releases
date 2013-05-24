@@ -228,11 +228,28 @@ public abstract class CsmRefactoringPlugin extends ProgressProviderAdapter imple
                 CsmProject prj = startFile.getProject();
                 relevantPrjs.add(prj);
             } else {
-                CsmProject declPrj = declFile.getProject();
-                for (CsmProject csmProject : prjs) {
-                    // if the same project or declaration from shared library
-                    if (csmProject.equals(declPrj) || csmProject.getLibraries().contains(declPrj)) {
-                        relevantPrjs.add(csmProject);
+                Collection<FileObject> toCheck = new HashSet<FileObject>();
+                for (FileObject curFO : Arrays.asList(declFile.getFileObject(), startFile.getFileObject())) {
+                    if (curFO != null) {
+                        toCheck.add(curFO);
+                    }
+                }
+                Collection<CsmProject> declProjects = new HashSet<CsmProject>();
+                for (FileObject curFO : toCheck) {
+                    CsmFile[] csmFiles = CsmModelAccessor.getModel().findFiles(FSPath.toFSPath(curFO), false, false);
+                    for (CsmFile csmFile : csmFiles) {
+                        CsmProject declPrj = csmFile.getProject();
+                        if (declPrj != null) {
+                            declProjects.add(declPrj);
+                        }
+                    }
+                }
+                for (CsmProject declPrj : declProjects) {
+                    for (CsmProject csmProject : prjs) {
+                        // if the same project or declaration from shared library
+                        if (csmProject.equals(declPrj) || csmProject.getLibraries().contains(declPrj)) {
+                            relevantPrjs.add(csmProject);
+                        }
                     }
                 }
             }

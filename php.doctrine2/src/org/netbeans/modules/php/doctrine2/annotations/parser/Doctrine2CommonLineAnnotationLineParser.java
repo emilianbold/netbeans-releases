@@ -58,14 +58,14 @@ public class Doctrine2CommonLineAnnotationLineParser implements AnnotationLinePa
 
     private static final AnnotationLineParser INSTANCE = new Doctrine2CommonLineAnnotationLineParser();
 
-    private static final Set<String> INLINE_ANNOTATIONS = new HashSet<String>();
+    private static final Set<String> INLINE_ANNOTATIONS = new HashSet<>();
     static {
         INLINE_ANNOTATIONS.add("Index"); //NOI18N
         INLINE_ANNOTATIONS.add("UniqueConstraint"); //NOI18N
         INLINE_ANNOTATIONS.add("JoinColumn"); //NOI18N
     }
 
-    private static final Set<String> TYPED_PARAMETERS = new HashSet<String>();
+    private static final Set<String> TYPED_PARAMETERS = new HashSet<>();
     static {
         TYPED_PARAMETERS.add("targetDocument"); //NOI18N
         TYPED_PARAMETERS.add("repositoryClass"); //NOI18N
@@ -80,7 +80,7 @@ public class Doctrine2CommonLineAnnotationLineParser implements AnnotationLinePa
     @Override
     public AnnotationParsedLine parse(String line) {
         AnnotationParsedLine result = null;
-        Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+        Map<OffsetRange, String> types = new HashMap<>();
         types.putAll(AnnotationUtils.extractInlineAnnotations(line, INLINE_ANNOTATIONS));
         types.putAll(AnnotationUtils.extractTypesFromParameters(line, TYPED_PARAMETERS));
         if (!types.isEmpty()) {

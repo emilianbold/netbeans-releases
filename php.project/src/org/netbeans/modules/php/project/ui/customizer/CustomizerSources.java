@@ -254,7 +254,7 @@ public final class CustomizerSources extends JPanel implements SourcesFolderProv
     void initCopyTargets(final List<DocumentRoot> roots, LocalServer initialLocalServer) {
         assert initialLocalServer != null;
         int size = roots.size() + 1;
-        List<LocalServer> localServers = new ArrayList<LocalServer>(size);
+        List<LocalServer> localServers = new ArrayList<>(size);
         localServers.add(initialLocalServer);
         for (DocumentRoot root : roots) {
             LocalServer ls = new LocalServer(root.getDocumentRoot());

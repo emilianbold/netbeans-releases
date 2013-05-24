@@ -74,7 +74,7 @@ public final class PhpDocumentations {
      * @return a list of all registered {@link PhpDocumentationProvider}s; never {@code null}.
      */
     public static List<PhpDocumentationProvider> getDocumentations() {
-        return new ArrayList<PhpDocumentationProvider>(DOCUMENTATIONS.allInstances());
+        return new ArrayList<>(DOCUMENTATIONS.allInstances());
     }
 
     /**

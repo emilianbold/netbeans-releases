@@ -127,12 +127,12 @@ public class AskForUrlPanel extends JPanel {
         }
         boolean ok = descriptor.getValue() == NotifyDescriptor.OK_OPTION;
         if (ok) {
-            Set<String> urls = new LinkedHashSet<String>();
+            Set<String> urls = new LinkedHashSet<>();
             urls.add((String) urlComboBox.getSelectedItem());
             for (int i = 0; i < urlComboBox.getItemCount(); ++i) {
                 urls.add(urlComboBox.getItemAt(i));
             }
-            ProjectSettings.setDebugUrls(project, new ArrayList<String>(urls));
+            ProjectSettings.setDebugUrls(project, new ArrayList<>(urls));
         }
         return ok;
     }

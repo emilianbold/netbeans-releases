@@ -63,9 +63,7 @@ public abstract class RunConfigWeb<T extends RunConfigWeb<?>> extends BaseRunCon
             if (fullUrl != null) {
                 return fullUrl.toExternalForm();
             }
-        } catch (MalformedURLException ex) {
-            // ignored
-        } catch (URISyntaxException ex) {
+        } catch (MalformedURLException | URISyntaxException ex) {
             // ignored
         }
         return null;
