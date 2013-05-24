@@ -77,7 +77,7 @@ public class ElementHandleImpl implements ElementHandle {
                 assert(st.hasMoreTokens()); //at least the styleSheet element
                 //skip the first stylesheet element
                 String styleSheetId = st.nextToken();
-                assert styleSheetId.equals(getElementID((ModelElement)styleSheet));
+                assert styleSheetId.equals(getFQElementID((ModelElement)styleSheet));
                 
                 while (st.hasMoreTokens()) {
                     String token = st.nextToken();
@@ -93,7 +93,7 @@ public class ElementHandleImpl implements ElementHandle {
                     Iterator<Element> childrenIterator = base.childrenIterator();
                     while(childrenIterator.hasNext()) {
                         ModelElement child = (ModelElement)childrenIterator.next();
-                        if(lightId.equals(getLightElementID(child)) && ++count == index) {
+                        if(lightId.equals(getElementID(child)) && ++count == index) {
                             foundLocal = child;
                             break;
                         }
@@ -128,7 +128,7 @@ public class ElementHandleImpl implements ElementHandle {
 
         Iterator<ModelElement> elementsItr = elements.iterator();
         while (elementsItr.hasNext()) {
-            sb.append(getElementID(elementsItr.next()));
+            sb.append(getFQElementID(elementsItr.next()));
             if (elementsItr.hasNext()) {
                 sb.append(DELIMITER);
             }
@@ -144,21 +144,20 @@ public class ElementHandleImpl implements ElementHandle {
      * @return non null element's id
      */
     @NonNull
-    /* test */ static String getElementID(ModelElement element) {
+    /* test */ static String getFQElementID(ModelElement element) {
         StringBuilder sb = new StringBuilder();
-        sb.append(getLightElementID(element));
-
+        sb.append(getElementID(element));
         int index = getIndexInSimilarNodes(element);
         if (index > 1) {
             sb.append(INDEX_DELIMITER);
             sb.append(index);
         }
-
         return sb.toString();
     }
 
-    /* test */ static String getLightElementID(ModelElement element) {
-        return element.getModelClass().getSimpleName();
+    /* test */ static String getElementID(ModelElement element) {
+        String customElementId = element.getCustomElementID();
+        return customElementId != null ? customElementId : element.getModelClass().getSimpleName();
     }
 
     /* test */ static int getIndexInSimilarNodes(ModelElement element) {
@@ -166,12 +165,12 @@ public class ElementHandleImpl implements ElementHandle {
         if (parent == null) {
             return -1;
         }
-        String elementLightID = getLightElementID(element);
+        String elementLightID = getElementID(element);
         int index = 0;
         Iterator<Element> childrenIterator = parent.childrenIterator();
         while (childrenIterator.hasNext()) {
             ModelElement child = (ModelElement) childrenIterator.next();
-            String childLightID = getLightElementID(child);
+            String childLightID = getElementID(child);
             if (childLightID.equals(elementLightID)) {
                 index++;
             }

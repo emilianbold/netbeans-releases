@@ -60,19 +60,19 @@ public class ElementHandleImplTest extends ModelTestBase {
         super(name);
     }
 
-    public void testGetElementId() {
-        Model model = createModel("div { color: red }\n .clz { color:blue } ");
-        StyleSheet styleSheet = getStyleSheet(model);
-        
-        Rule rule = styleSheet.getBody().getRules().get(0);
-        String path = ElementHandleImpl.createPath((ModelElement)rule);
-        assertEquals("StyleSheet/Body/BodyItem/Rule", path);
-
-        rule = styleSheet.getBody().getRules().get(1);
-        path = ElementHandleImpl.createPath((ModelElement)rule);
-        assertEquals("StyleSheet/Body/BodyItem|2/Rule", path);
-        
-    }
+//    public void testGetElementId() {
+//        Model model = createModel("div { color: red }\n .clz { color:blue } ");
+//        StyleSheet styleSheet = getStyleSheet(model);
+//        
+//        Rule rule = styleSheet.getBody().getRules().get(0);
+//        String path = ElementHandleImpl.createPath((ModelElement)rule);
+//        assertEquals("StyleSheet/Body/BodyItem/Rule", path);
+//
+//        rule = styleSheet.getBody().getRules().get(1);
+//        path = ElementHandleImpl.createPath((ModelElement)rule);
+//        assertEquals("StyleSheet/Body/BodyItem|2/Rule", path);
+//        
+//    }
     
     public void testResolveElementHandle_to_same_model() {
         String code = "div { color: red }\n .clz { color:blue }";

@@ -89,6 +89,19 @@ public class RuleI extends ModelElement implements Rule {
     }
 
     @Override
+    protected String getCustomElementID() {
+        SelectorsGroup sGroup = getSelectorsGroup();
+        if(sGroup != null) {
+            return new StringBuilder()
+                    .append(getModelClass().getSimpleName())
+                    .append('-')
+                    .append(model.getElementSource(sGroup).toString().hashCode())
+                    .toString();
+        }
+        return null;
+    }
+    
+    @Override
     public boolean isValid() {
         if(!super.isValid()) {
             return false; //parsing error

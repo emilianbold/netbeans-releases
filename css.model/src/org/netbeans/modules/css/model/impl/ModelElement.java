@@ -81,6 +81,14 @@ public abstract class ModelElement implements Element {
         this(model);
         this.node = node;
     }
+    
+    /**
+     * Overriding classes may define their own way of identification of the element in a String form.
+     * @see ElementHandleImpl
+     */
+    protected String getCustomElementID() {
+        return null;
+    }
 
     @Override
     public ElementHandle getElementHandle() {
