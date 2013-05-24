@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.css.visual;
 
+import org.netbeans.modules.css.visual.spi.Location;
+import org.netbeans.modules.css.visual.spi.RuleHandle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;

@@ -46,7 +46,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import org.netbeans.api.actions.Openable;
-import org.netbeans.modules.css.visual.Location;
+import org.netbeans.modules.css.visual.spi.Location;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;

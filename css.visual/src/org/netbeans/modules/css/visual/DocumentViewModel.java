@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.visual;
 
+import org.netbeans.modules.css.visual.spi.RuleHandle;
 import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.ArrayList;
