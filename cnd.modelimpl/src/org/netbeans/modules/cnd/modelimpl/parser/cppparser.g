@@ -2513,10 +2513,13 @@ conversion_function_decl_or_def returns [boolean definition = false]
                 (LESSTHAN template_parameter_list GREATERTHAN)?
 		LPAREN (parameter_list[false])? RPAREN	
 		(tq = cv_qualifier)*
-                (LITERAL_override | LITERAL_final | LITERAL_new)?
+                (LITERAL_override | LITERAL_final | LITERAL_new)*
+                ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?
 		(exception_specification)?
 		(	compound_statement { definition = true; }
-		|	SEMICOLON! //{end_of_stmt();}
+                    |	
+                        ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?
+                        SEMICOLON! //{end_of_stmt();}
 		)
 	;
 
@@ -2970,10 +2973,11 @@ dtor_declarator[boolean definition]
 	//{declaratorParameterList(definition);}
         // VV: /06/06/06 ~dtor(void) is valid construction
 	LPAREN (LITERAL_void)? RPAREN
-        (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)?
+        (options {greedy=true;} : LITERAL_override | LITERAL_final | LITERAL_new)*
         //{declaratorEndParameterList(definition);}
         ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?	
 	(exception_specification)?        
+        ((ASSIGNEQUAL OCTALINT) => ASSIGNEQUAL OCTALINT)?	
 	;
 
 // This matches a generic qualified identifier ::T::B::foo
