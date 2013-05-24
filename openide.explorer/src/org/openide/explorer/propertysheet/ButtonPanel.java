@@ -268,7 +268,9 @@ class ButtonPanel extends javax.swing.JComponent implements InplaceEditor {
 
         //We're painting in a PropertyRenderer, no parent present
         Graphics cg = g.create(0, 0, width - button.getWidth(), getHeight());
-
+        if( cg instanceof Graphics2D ) {
+            ((Graphics2D)cg).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
         try {
             if (comp instanceof InplaceEditor) {
                 comp.paint(cg);
@@ -282,7 +284,9 @@ class ButtonPanel extends javax.swing.JComponent implements InplaceEditor {
         }
 
         cg = g.create(width - button.getWidth(), 0, button.getWidth(), getHeight());
-
+        if( cg instanceof Graphics2D ) {
+            ((Graphics2D)cg).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
         try {
             button.paint(cg);
         } finally {
