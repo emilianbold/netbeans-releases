@@ -70,6 +70,10 @@ public class SchemaBasedCompletionProvider implements CompletionProvider {
 	if ( typedText ==null || typedText.trim().length() ==0 ){
             return 0;
         }
+        // do not pop up if the end of text contains some whitespaces.
+        if (Character.isWhitespace(typedText.charAt(typedText.length() - 1) )) {
+            return 0;
+        }
         if(doc == null)
             return 0;
         XMLSyntaxSupport support = ((XMLSyntaxSupport)doc.getSyntaxSupport());
