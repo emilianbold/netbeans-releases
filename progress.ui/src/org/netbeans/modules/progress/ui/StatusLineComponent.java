@@ -642,9 +642,10 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
                 Image icon = (Image)UIManager.get("nb.progress.cancel.icon");
                 if (icon == null) {
                        // for custom L&F?
-                   icon = ImageUtilities.loadImage("org/netbeans/progress/module/resources/buton.png");
+                    putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/progress/module/resources/buton.png", true));
+                } else {
+                    putValue(Action.SMALL_ICON, new ImageIcon(icon));
                 }
-                putValue(Action.SMALL_ICON, new ImageIcon(icon));
             }
             setEnabled(handle == null ? false : handle.isAllowCancel());
         }

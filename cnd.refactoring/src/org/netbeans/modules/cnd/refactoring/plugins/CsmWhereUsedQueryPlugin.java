@@ -57,6 +57,15 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
+import javax.swing.text.Document;
+import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import static org.netbeans.cnd.api.lexer.CndLexerUtilities.isCppLanguage;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.DoxygenTokenId;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -77,6 +86,7 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceSupport;
 import org.netbeans.modules.cnd.api.model.xref.CsmTypeHierarchyResolver;
 import org.netbeans.modules.cnd.modelutil.CsmImageName;
+import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
 import org.netbeans.modules.cnd.refactoring.elements.CsmRefactoringElementImpl;
 import org.netbeans.modules.cnd.refactoring.spi.CsmWhereUsedExtraObjectsProvider;
@@ -482,6 +492,10 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                             if (accept) {
                                 fileElems.add(CsmRefactoringElementImpl.create(csmReference, true));
                             }
+                        }
+                        if (false/*need comments*/ && !fileElems.isEmpty()) {
+                            Collection<CsmReference> comments = CsmRefactoringUtils.getComments(file, "");
+                            refs.addAll(comments);
                         }
                     } finally {
                         Thread.currentThread().setName(oldName);

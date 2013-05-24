@@ -51,6 +51,8 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
+import java.awt.image.FilteredImageSource;
+import java.awt.image.RGBImageFilter;
 import org.netbeans.swing.plaf.util.GuaranteedValue;
 import org.netbeans.swing.plaf.util.UIUtils;
 
@@ -129,7 +131,7 @@ public final class MetalLFCustoms extends LFCustoms {
             //#48951 invisible unfocused selection background in Metal L&F
             "nb.explorer.unfocusedSelBg", unfocusedSelBg,
                     
-            PROGRESS_CANCEL_BUTTON_ICON, UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_win_linux_mac.png"),
+            PROGRESS_CANCEL_BUTTON_ICON, filterImage( UIUtils.loadImage("org/netbeans/swing/plaf/resources/cancel_task_linux_mac.png") ),
                     
 
             // progress component related
@@ -167,4 +169,14 @@ public final class MetalLFCustoms extends LFCustoms {
         }
     }
 
+    private static Image filterImage( Image image ) {
+        if( null == image )
+            return image;
+        Object obj = UIManager.get("nb.imageicon.filter");
+        if( obj instanceof RGBImageFilter && null != image ) {
+            RGBImageFilter imageIconFilter = ( RGBImageFilter ) obj;
+            image = Toolkit.getDefaultToolkit().createImage( new FilteredImageSource( image.getSource(), imageIconFilter ) );
+        }
+        return image;
+    }
 }
