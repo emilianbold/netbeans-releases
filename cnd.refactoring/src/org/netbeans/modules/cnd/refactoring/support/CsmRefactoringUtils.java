@@ -34,7 +34,12 @@ import java.util.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Position;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.Project;
+import org.netbeans.cnd.api.lexer.CppTokenId;
+import org.netbeans.cnd.api.lexer.DoxygenTokenId;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmConstructor;
@@ -70,6 +75,7 @@ import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.spi.CsmRefactoringNameProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
+import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
@@ -79,6 +85,7 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
+import org.openide.util.CharSequences;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -93,7 +100,7 @@ public final class CsmRefactoringUtils {
     public static final String FROM_EDITOR_TRACKING = "FROM_EDITOR"; // NOI18N
 
     public static final boolean REFACTORING_EXTRA = CndUtils.getBoolean("cnd.refactoring.extra", false); // NOI18N
-    
+
     private CsmRefactoringUtils() {
     }
 
@@ -546,6 +553,32 @@ public final class CsmRefactoringUtils {
         return containingFile;
     } 
     
+    public static Collection<CsmReference> getComments(final CsmFile file, String text) {
+        Collection<CsmReference> comments = new ArrayList<CsmReference>();
+        Document doc = CsmUtilities.getDocument(file);
+        if (doc != null) {
+            TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
+            TokenSequence<?> ts = hi.tokenSequence();
+            while (ts.moveNext()) {
+                Token<?> token = ts.token();
+                if (CppTokenId.COMMENT_CATEGORY.equals(token.id().primaryCategory())) {
+                    TokenSequence<?> te = ts.embedded();
+                    if (te != null) {
+                        while (te.moveNext()) {
+                            Token<?> commentToken = te.token();
+                            if (commentToken.id() == DoxygenTokenId.IDENT) {
+                                if (text.contentEquals(commentToken.text())) {
+                                    comments.add(null);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+        }
+        return comments;
+    }
     
     @ServiceProvider(service=CsmRefactoringNameProvider.class, position=100)
     public static final class CsmRefactoringNameProviderImpl implements CsmRefactoringNameProvider {
