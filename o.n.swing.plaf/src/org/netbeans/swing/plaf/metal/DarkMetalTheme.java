@@ -146,6 +146,8 @@ public class DarkMetalTheme extends DefaultMetalTheme {
         UIManager.put( "nb.formdesigner.gap.fixed.color", new Color(112,112,112) ); //NOI18N
         UIManager.put( "nb.formdesigner.gap.resizing.color", new Color(116,116,116) ); //NOI18N
         UIManager.put( "nb.formdesigner.gap.min.color", new Color(104,104,104) ); //NOI18N
+
+        UIManager.put( "nbProgressBar.Foreground", black );
     }
 
     @Override
