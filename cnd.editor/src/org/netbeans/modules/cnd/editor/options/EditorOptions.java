@@ -617,6 +617,16 @@ public class EditorOptions {
                 return res;
             }
         }
+        if (styleId.indexOf('_') > 0) {
+            styleId = styleId.substring(0, styleId.indexOf('_'));
+            map = namedDefaults.get(styleId);
+            if (map != null){
+                Object res = map.get(id);
+                if (res != null){
+                    return res;
+                }
+            }
+        }
         return defaults.get(id);
     }
     
@@ -677,8 +687,8 @@ public class EditorOptions {
         CodeStylePreferencesProvider.INSTANCE.forDocument(null, language.toMime()).node(language.prefNodeName()).put(LIST_OF_STYLES_PROPERTY, list); // NOI18N
     }
 
-    public static CodeStyle createCodeStyle(CodeStyle.Language language, Preferences p, boolean useOverrideOption) {
-        return codeStyleFactory.create(language, p, useOverrideOption);
+    public static CodeStyle createCodeStyle(CodeStyle.Language language, String profileID, Preferences p, boolean useOverrideOption) {
+        return codeStyleFactory.create(language, profileID, p, useOverrideOption);
     }
 
     public static Preferences getPreferences(CodeStyle codeStyle){
@@ -793,7 +803,7 @@ public class EditorOptions {
     }
 
     public static interface CodeStyleFactory {
-        CodeStyle create(CodeStyle.Language language, Preferences preferences, boolean useOverrideOption);
+        CodeStyle create(CodeStyle.Language language, String profileID, Preferences preferences, boolean useOverrideOption);
         Preferences getPreferences(CodeStyle codeStyle);
         void setPreferences(CodeStyle codeStyle, Preferences preferences);
     }
