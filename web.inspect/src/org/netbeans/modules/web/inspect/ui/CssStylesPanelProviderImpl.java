@@ -49,6 +49,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -58,13 +59,21 @@ import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.visual.spi.RuleHandle;
 import org.netbeans.modules.css.visual.api.CssStylesTC;
 import org.netbeans.modules.css.visual.spi.CssStylesListener;
 import org.netbeans.modules.css.visual.spi.CssStylesPanelProvider;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.browser.api.Page;
+import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
 import org.netbeans.spi.project.ActionProvider;
@@ -72,6 +81,7 @@ import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
@@ -476,7 +486,7 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
     public static class WebCssStylesPanelListener implements CssStylesListener {
 
         @Override
-        public void ruleSelected(final Rule rule) {
+        public void ruleSelected(final RuleHandle handle) {
             //rule selected in document view...
             final PageModel pageModel = PageInspectorImpl.getDefault().getPage();
             if (pageModel != null) {
@@ -485,25 +495,43 @@ public abstract class CssStylesPanelProviderImpl extends JPanel implements CssSt
                     public void run() {
                         FileObject file = Utilities.inspectedFileObject(pageModel);
                         if (file != null) {
-                            final Model model = rule.getModel();
-                            model.runReadTask(new Model.ModelTask() {
-                                @Override
-                                public void run(StyleSheet styleSheet) {
-                                    final String elementSource = model.getElementSource(rule.getSelectorsGroup()).toString();
-                                    RP.post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            pageModel.setSelectedSelector(elementSource);
+                            try {
+                                Source source = Source.create(file);
+                                ParserManager.parse(Collections.singleton(source), new UserTask() {
+                                    @Override
+                                    public void run(ResultIterator resultIterator) throws Exception {
+                                        ResultIterator ri = WebUtils.getResultIterator(resultIterator, "text/css"); //NOI18N
+                                        if (ri != null) {
+                                            final CssParserResult result = (CssParserResult) ri.getParserResult();
+                                            final Model model = Model.getModel(result);
+                                            final Rule rule = handle.getRule(model);
+                                            
+                                            if(rule != null) {
+                                                model.runReadTask(new Model.ModelTask() {
+                                                    @Override
+                                                    public void run(StyleSheet styleSheet) {
+                                                        final String elementSource = model.getElementSource(rule.getSelectorsGroup()).toString();
+                                                        RP.post(new Runnable() {
+                                                            @Override
+                                                            public void run() {
+                                                                pageModel.setSelectedSelector(elementSource);
+                                                            }
+                                                        });
+                                                    }
+                                                });
+                                            }
                                         }
-                                    });
-                                }
-                            });
+                                    }
+                                });
+
+                            } catch (ParseException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
                         }
                     }
                 });
             }
         }
-
     }
 
     /**
