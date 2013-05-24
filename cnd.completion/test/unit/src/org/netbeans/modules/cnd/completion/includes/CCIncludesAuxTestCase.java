@@ -49,28 +49,28 @@ public class CCIncludesAuxTestCase extends CndBaseTestCase {
 
     public void testTextShrinking() throws Exception {
         String text = "/very/long/path/to/include/dir";
-        CsmIncludeCompletionItem item = new CsmIncludeCompletionItem(0, 0, text, "on/Unix/system", "", false, true, false);
+        CsmIncludeCompletionItem item = new CsmIncludeCompletionItem(0, 0, 0, text, "on/Unix/system", "", false, true, false);
         String shrinked = item.getRightText(true, "/");
         if (TRACE) {
             System.err.println("shrinked is " + shrinked);
         }
         assertEquals("/very/long.../Unix/system", shrinked);
         text = "C:\\very\\long\\path\\to\\include\\dir";
-        item = new CsmIncludeCompletionItem(0, 0, text, "on\\Windows\\system", "", false, true, false);
+        item = new CsmIncludeCompletionItem(0, 0, 0, text, "on\\Windows\\system", "", false, true, false);
         shrinked = item.getRightText(true, "\\");
         if (TRACE) {
             System.err.println("shrinked is " + shrinked);
         }
         assertEquals("C:\\very\\long...\\Windows\\system", shrinked);
         text = "C:\\very\\long\\path\\to\\mixed/include/dir";
-        item = new CsmIncludeCompletionItem(0, 0, text, "on/Windows//mixed", "", false, true, false);
+        item = new CsmIncludeCompletionItem(0, 0, 0, text, "on/Windows//mixed", "", false, true, false);
         shrinked = item.getRightText(true, "\\");
         if (TRACE) {
             System.err.println("shrinked is " + shrinked);
         }
         assertEquals("C:\\very\\long...\\\\mixed", shrinked);
         text = "/very/long/path/to\\include\\mixed\\dir";
-        item = new CsmIncludeCompletionItem(0, 0, text, "on/unix/mixed", "", false, true, false);
+        item = new CsmIncludeCompletionItem(0, 0, 0, text, "on/unix/mixed", "", false, true, false);
         shrinked = item.getRightText(true, "/");
         if (TRACE) {
             System.err.println("shrinked is " + shrinked);

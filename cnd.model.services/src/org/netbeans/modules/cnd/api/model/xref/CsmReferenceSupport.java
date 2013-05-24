@@ -106,6 +106,8 @@ public final class CsmReferenceSupport {
     public static boolean sameDeclaration(CsmObject checkDecl, CsmObject targetDecl) {
         if (checkDecl.equals(targetDecl)) {
             return true;
+        } else if (isSameOffsetables(checkDecl, targetDecl)) {
+            return true;
         } else if (CsmKindUtilities.isConstructor(checkDecl)) {
             return false;
         } else if (CsmKindUtilities.isQualified(checkDecl) && CsmKindUtilities.isQualified(targetDecl)) {
@@ -119,30 +121,6 @@ public final class CsmReferenceSupport {
                 } else {
                     if (((CsmQualifiedNamedElement) checkDecl).getName().equals(fqnCheck)) {
                         // if this is just simple name of local declarations => check of such 'fqn' is not enough
-                        
-                        // special check for classes which are in different projects, but physically in the same file
-                        if (CsmKindUtilities.isClassifier(checkDecl) && CsmKindUtilities.isClassifier(targetDecl) &&
-                            CsmKindUtilities.isOffsetable(checkDecl) && CsmKindUtilities.isOffsetable(targetDecl)) {
-                            CsmOffsetable offsCheckDecl = (CsmOffsetable) checkDecl;
-                            CsmOffsetable offsTargetDecl = (CsmOffsetable) targetDecl;
-                            if (offsCheckDecl.getStartOffset() == offsTargetDecl.getStartOffset()) {
-                                CsmFile checkDeclFile = offsCheckDecl.getContainingFile();
-                                CsmFile targetDeclFile = offsTargetDecl.getContainingFile();
-                                if (checkDeclFile != null && targetDeclFile != null) {
-                                    if (checkDeclFile.equals(targetDeclFile)) {
-                                        return true;
-                                    }
-                                    if (checkDeclFile.getAbsolutePath().equals(targetDeclFile.getAbsolutePath())) {
-                                        FileObject checkDeclFO = checkDeclFile.getFileObject();
-                                        FileObject targetDeclFO = targetDeclFile.getFileObject();
-                                        if (checkDeclFO != null && targetDeclFO != null) {
-                                            return checkDeclFO.equals(targetDeclFO);
-                                        }
-                                        return true;
-                                    }
-                                }
-                            }
-                        }
                         return false;
                     }
                     return true;
@@ -151,4 +129,29 @@ public final class CsmReferenceSupport {
         }
         return false;
     }
+    
+    private static boolean isSameOffsetables(CsmObject checkDecl, CsmObject targetDecl) {
+        if (CsmKindUtilities.isOffsetable(checkDecl) && CsmKindUtilities.isOffsetable(targetDecl)) {
+            CsmOffsetable offsCheckDecl = (CsmOffsetable) checkDecl;
+            CsmOffsetable offsTargetDecl = (CsmOffsetable) targetDecl;
+            if (offsCheckDecl.getStartOffset() == offsTargetDecl.getStartOffset()) {
+                CsmFile checkDeclFile = offsCheckDecl.getContainingFile();
+                CsmFile targetDeclFile = offsTargetDecl.getContainingFile();
+                if (checkDeclFile != null && targetDeclFile != null) {
+                    if (checkDeclFile.equals(targetDeclFile)) {
+                        return true;
+                    }
+                    if (checkDeclFile.getAbsolutePath().equals(targetDeclFile.getAbsolutePath())) {
+                        FileObject checkDeclFO = checkDeclFile.getFileObject();
+                        FileObject targetDeclFO = targetDeclFile.getFileObject();
+                        if (checkDeclFO != null && targetDeclFO != null) {
+                            return checkDeclFO.equals(targetDeclFO);
+                        }
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }    
 }
