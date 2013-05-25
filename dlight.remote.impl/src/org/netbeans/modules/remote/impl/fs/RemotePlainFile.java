@@ -49,7 +49,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.ref.SoftReference;
 import java.net.ConnectException;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -61,6 +60,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import org.netbeans.modules.dlight.libs.common.DLightLibsCommonLogger;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
@@ -488,8 +488,24 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             try {
                 delegate.close();
                 file.setPendingRemoteDelivery(true);
+
+                String pathToRename, pathToUpload;
+
+                if (file.getParent().canWrite()) {
+                    // that's what emacs does:
+                    pathToRename = file.getPath();
+                    pathToUpload = PathUtilities.getDirName(pathToRename) +
+                            "/#" + PathUtilities.getBaseName(pathToRename) + "#"; //NOI18N
+                } else {
+                    if (!ConnectionManager.getInstance().isConnectedTo(file.getExecutionEnvironment())) {
+                        throw new ConnectException();
+                    }
+                    pathToRename = null;
+                    pathToUpload = file.getPath(); //NOI18N
+                }
+
                 CommonTasksSupport.UploadParameters params = new CommonTasksSupport.UploadParameters(
-                        file.getCache(), file.getExecutionEnvironment(), file.getPath(), -1, false, null);
+                        file.getCache(), file.getExecutionEnvironment(), pathToUpload, pathToRename, -1, false, null);
                 Future<UploadStatus> task = CommonTasksSupport.uploadFile(params);
                 try {
                     UploadStatus uploadStatus = task.get();

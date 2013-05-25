@@ -45,12 +45,14 @@ import com.jcraft.jsch.Channel;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.jsch.MeasurableSocketFactory;
 import org.netbeans.modules.nativeexecution.jsch.MeasurableSocketFactory.IOListener;
 import org.openide.modules.OnStop;
@@ -63,6 +65,7 @@ public final class RemoteStatistics implements Callable<Boolean> {
 
     public static final boolean COLLECT_STATISTICS = Boolean.parseBoolean(System.getProperty("jsch.statistics", "false")); // NOI18N
     public static final boolean COLLECT_STACKS = COLLECT_STATISTICS && Boolean.parseBoolean(System.getProperty("jsch.statistics.stacks", "false")); // NOI18N
+    private static final String BREAK_UPLOADS_FLAG_FILE = System.getProperty("break.uploads"); // NOI18N
     private static final TrafficCounters trafficCounters = new TrafficCounters();
     private static final RemoteMeasurementsRef unnamed = new RemoteMeasurementsRef("uncategorized", new RemoteMeasurements("uncategorized"), null, 0); // NOI18N
     private static final AtomicReference<RemoteMeasurementsRef> currentStatRef = new AtomicReference<RemoteMeasurementsRef>(unnamed);
@@ -275,7 +278,28 @@ public final class RemoteStatistics implements Callable<Boolean> {
         public void bytesUploaded(int bytes) {
             RemoteMeasurementsRef stat = reschedule();
             stat.stat.bytesUploaded(bytes);
+            checkBreakUploads();
+        }
 
+        /** Allows broken upload testing  */
+        private void checkBreakUploads() {
+            if (BREAK_UPLOADS_FLAG_FILE != null && new File(BREAK_UPLOADS_FLAG_FILE).exists()) {
+                boolean isOpenW = false;
+                for (StackTraceElement el : Thread.currentThread().getStackTrace()) {
+                    if (el.getClassName().endsWith(".ChannelSftp")) { // NOI18N
+                        if (el.getMethodName().equals("sendOPENW")) { // NOI18N
+                            isOpenW = true;
+                            break;
+                        }
+                    }
+                }
+                if (isOpenW) {
+                    List<ExecutionEnvironment> recentConnections = ConnectionManager.getInstance().getRecentConnections();
+                    for (ExecutionEnvironment env : recentConnections) {
+                        ConnectionManager.getInstance().disconnect(env);
+                    }
+                }
+            }
         }
 
         @Override
