@@ -278,7 +278,7 @@ public class NPECheck {
         private Map<VariableElement, State> variable2State = new HashMap<VariableElement, NPECheck.State>();
         private final Map<Tree, Collection<Map<VariableElement, State>>> resumeBefore = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
         private final Map<Tree, Collection<Map<VariableElement, State>>> resumeAfter = new IdentityHashMap<Tree, Collection<Map<VariableElement, State>>>();
-        private       Map<TypeMirror, Collection<Map<VariableElement, State>>> resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<VariableElement, State>>>();
+        private       Map<TypeMirror, Map<VariableElement, State>> resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Map<VariableElement, State>>();
         private final Map<Tree, State> expressionState = new IdentityHashMap<Tree, State>();
         private final List<TreePath> pendingFinally = new LinkedList<TreePath>();
         private boolean not;
@@ -681,9 +681,9 @@ public class NPECheck {
 
         @Override
         public State visitMethod(MethodTree node, Void p) {
-            Map<TypeMirror, Collection<Map<VariableElement, State>>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
+            Map<TypeMirror, Map<VariableElement, State>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
 
-            resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<VariableElement, State>>>();
+            resumeOnExceptionHandler = new IdentityHashMap<>();
             
             try {
                 variable2State = new HashMap<VariableElement, NPECheck.State>();
@@ -813,9 +813,9 @@ public class NPECheck {
         }
         
         public State visitTry(TryTree node, Void p) {
-            Map<TypeMirror, Collection<Map<VariableElement, State>>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
+            Map<TypeMirror, Map<VariableElement, State>> oldResumeOnExceptionHandler = resumeOnExceptionHandler;
 
-            resumeOnExceptionHandler = new IdentityHashMap<TypeMirror, Collection<Map<VariableElement, State>>>();
+            resumeOnExceptionHandler = new IdentityHashMap<>();
             
             try {
             if (node.getFinallyBlock() != null) {
@@ -850,13 +850,11 @@ public class NPECheck {
                     }
                     
                     for (TypeMirror caughtException : caughtExceptions) {
-                        for (Iterator<Entry<TypeMirror, Collection<Map<VariableElement, State>>>> it = resumeOnExceptionHandler.entrySet().iterator(); it.hasNext();) {
-                            Entry<TypeMirror, Collection<Map<VariableElement, State>>> e = it.next();
+                        for (Iterator<Entry<TypeMirror, Map<VariableElement, State>>> it = resumeOnExceptionHandler.entrySet().iterator(); it.hasNext();) {
+                            Entry<TypeMirror, Map<VariableElement, State>> e = it.next();
 
                             if (info.getTypes().isSubtype(e.getKey(), caughtException)) {
-                                for (Map<VariableElement, State> s : e.getValue()) {
-                                    mergeIntoVariable2State(s);
-                                }
+                                mergeIntoVariable2State(e.getValue());
 
                                 it.remove();
                             }
@@ -881,12 +879,10 @@ public class NPECheck {
                 scan(node.getFinallyBlock(), null);
             }
             } finally {
-                Map<TypeMirror, Collection<Map<VariableElement, State>>> remainingException = resumeOnExceptionHandler;
+                Map<TypeMirror, Map<VariableElement, State>> remainingException = resumeOnExceptionHandler;
                 resumeOnExceptionHandler = oldResumeOnExceptionHandler;
-                for (Entry<TypeMirror, Collection<Map<VariableElement, State>>> e : remainingException.entrySet()) {
-                    for (Map<VariableElement, State> v2s : e.getValue()) {
-                        recordResumeOnExceptionHandler(e.getKey(), v2s);
-                    }
+                for (Entry<TypeMirror, Map<VariableElement, State>> e : remainingException.entrySet()) {
+                    recordResumeOnExceptionHandler(e.getKey(), e.getValue());
                 }
             }
             
@@ -917,13 +913,13 @@ public class NPECheck {
         private void recordResumeOnExceptionHandler(TypeMirror thrown, Map<VariableElement, State> variable2State) {
             if (thrown == null || thrown.getKind() == TypeKind.ERROR) return;
             
-            Collection<Map<VariableElement, State>> r = resumeOnExceptionHandler.get(thrown);
+            Map<VariableElement, State> r = resumeOnExceptionHandler.get(thrown);
 
             if (r == null) {
-                resumeOnExceptionHandler.put(thrown, r = new ArrayList<Map<VariableElement, State>>());
+                resumeOnExceptionHandler.put(thrown, r = new HashMap<>());
             }
 
-            r.add(new HashMap<VariableElement, State>(variable2State));
+            mergeInto(r, variable2State);
         }
         
         private void resumeAfter(Tree target, Map<VariableElement, State> state) {
@@ -958,15 +954,19 @@ public class NPECheck {
         }
 
         private void mergeIntoVariable2State(Map<VariableElement, State> other) {
+            mergeInto(variable2State, other);
+        }
+        
+        private void mergeInto(Map<VariableElement, State> target, Map<VariableElement, State> other) {
             for (Entry<VariableElement, State> e : other.entrySet()) {
                 State t = e.getValue();
                 
-                if (variable2State.containsKey(e.getKey())) {
-                    State el = variable2State.get(e.getKey());
+                if (target.containsKey(e.getKey())) {
+                    State el = target.get(e.getKey());
 
-                    variable2State.put(e.getKey(), State.collect(t, el));
+                    target.put(e.getKey(), State.collect(t, el));
                 } else {
-                    variable2State.put(e.getKey(), t);
+                    target.put(e.getKey(), t);
                 }
             }
         }

@@ -1339,6 +1339,26 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings("8:13-8:21:verifier:DN", "16:13-16:21:verifier:DN");
     }
     
+    public void testResumeOnExceptionHandleMemory230238() throws Exception {
+        StringBuilder code = new StringBuilder();
+        code.append("package test;\n" +
+                    "class Test {\n" +
+                    "    private void t(int i) throws java.io.IOException { }\n" +
+                    "    private void c() throws Exception {\n");
+        for (int v = 0; v < 1000; v++) {
+            code.append("String str" + v + " = null;");
+        }
+        for (int c = 0; c < 20000; c++) {
+            code.append("t(0);");
+        }
+        code.append("    }\n" +
+                    "}\n");
+        HintTest.create()
+                .input(code.toString())
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
