@@ -1359,6 +1359,27 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testRecordExceptionsFromNoArgMethod() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "class Test {\n" +
+                       "    private void test() throws java.io.IOException {\n" +
+                       "    }\n" +
+                       "    private void test2() {\n" +
+                       "        String str = \"\";\n" +
+                       "        try {\n" +
+                       "            str = null;\n" +
+                       "            test();\n" +
+                       "            str = \"\";\n" +
+                       "        } catch (java.io.IOException ex) {\n" +
+                       "        }\n" +
+                       "        str.toString();\n" +
+                       "    }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings("12:12-12:20:verifier:Possibly Dereferencing null");
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)
