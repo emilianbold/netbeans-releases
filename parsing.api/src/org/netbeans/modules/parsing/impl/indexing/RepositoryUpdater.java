@@ -2931,7 +2931,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                         new FileObjectCrawler(rootFo, checkTimeStamps, entry, getCancelRequest(), getSuspendStatus()) : // rescan the whole root (no timestamp check)
                         new FileObjectCrawler(rootFo, files.toArray(new FileObject[files.size()]), checkTimeStamps, entry, getCancelRequest(), getSuspendStatus()); // rescan selected files (no timestamp check)
                     if (lctx != null) {
-                        lctx.noteRootScanning(root);
+                        lctx.noteRootScanning(root, true);
                     }
                     long t = System.currentTimeMillis();
                     final List<Indexable> resources = crawler.getResources();
@@ -3526,7 +3526,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
 //            updateProgress(root);
             LogContext lctx = getLogContext();
             if (lctx != null) {
-                lctx.noteRootScanning(root);
+                lctx.noteRootScanning(root, false);
             }
             try {
                 final List<Indexable> indexables = new ArrayList<Indexable>();
@@ -3634,7 +3634,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 LogContext lctx = getLogContext();
                 
                 if (lctx != null) {
-                    lctx.noteRootScanning(root);
+                    lctx.noteRootScanning(root, false);
                 }
                 this.updateProgress(root, true);
                 try {
@@ -3804,7 +3804,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                 }                
                 LogContext lctx = getLogContext();
                 if (lctx != null) {
-                    lctx.noteRootScanning(root);
+                    lctx.noteRootScanning(root, false);
                 }
                 this.updateProgress(root, true);
                 try {
@@ -4629,7 +4629,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
             final BitSet startedIndexers = new BitSet(contexts.size());
             LogContext lctx = getLogContext();
             if (lctx != null) {
-                lctx.noteRootScanning(root);
+                lctx.noteRootScanning(root, false);
             }
             try {
                 createBinaryContexts(root, binaryIndexers, contexts);
@@ -4718,7 +4718,7 @@ public final class RepositoryUpdater implements PathRegistryListener, PropertyCh
                     LogContext lctx = getLogContext();
                     try {
                         if (lctx != null) {
-                            lctx.noteRootScanning(source);
+                            lctx.noteRootScanning(source, false);
                         }
                         if (scanSource (source, ctx.fullRescanSourceRoots.contains(source), ctx.sourcesForBinaryRoots.contains(source), indexers, outOfDateFiles, deletedFiles, recursiveListenersTime)) {
                             ctx.scannedRoots.add(source);
