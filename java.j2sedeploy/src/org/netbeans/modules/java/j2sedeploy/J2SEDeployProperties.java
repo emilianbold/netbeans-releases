@@ -41,11 +41,15 @@
  */
 package org.netbeans.modules.java.j2sedeploy;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.zip.CRC32;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -60,6 +64,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
+import org.openide.util.Parameters;
 
 /**
  *  Java SE Deployment panel Project Properties support
@@ -79,6 +84,8 @@ public final class J2SEDeployProperties {
         "%s/resources/build-native-prototype.xml",  //NOI18N
         J2SEDeployProperties.class.getPackage().getName().replace('.','/'));   //NOI18N
     private static final String EXTENSION_BUILD_SCRIPT_PATH = "nbproject/build-native.xml";        //NOI18N
+
+    private static final Logger LOG = Logger.getLogger(J2SEDeployProperties.class.getName());
     
     // Project related references
     private J2SEPropertyEvaluator j2sePropEval;
@@ -138,6 +145,84 @@ public final class J2SEDeployProperties {
         propInstance.remove(projDir);
     }
 
+    static String getCurrentExtensionName() {
+        return J2SEDEPLOY_EXTENSION;
+    }
+
+    static boolean isBuildNativeUpToDate(@NonNull final Project project) {
+        Parameters.notNull("project", project); //NOI18N
+        final FileObject buildNativeXml = project.getProjectDirectory().getFileObject(EXTENSION_BUILD_SCRIPT_PATH);
+        if (buildNativeXml == null) {
+            return false;
+        }
+        try (
+            final InputStream buildIn = new BufferedInputStream(buildNativeXml.getInputStream());
+            final InputStream protoIn = new BufferedInputStream(J2SEDeployProperties.class.getClassLoader().getResourceAsStream(BUILD_SCRIPT_PROTOTYPE))) {
+            final long buildNativeCRC = computeCRC(buildIn);
+            final long prototypeCRC = computeCRC(protoIn);
+            return buildNativeCRC == prototypeCRC;
+        } catch (IOException ioe) {
+            LOG.log(
+                Level.INFO,
+                "Cannot read: {0}", //NOI18N
+                FileUtil.getFileDisplayName(buildNativeXml));
+            return false;
+        }
+    }
+
+    static FileObject copyBuildNativeTemplate(@NonNull final Project project) throws IOException {
+        Parameters.notNull("project", project); //NOI18N
+        final FileObject buildExFoBack = project.getProjectDirectory().getFileObject(String.format(
+            "%s~",  //NOI18N
+            EXTENSION_BUILD_SCRIPT_PATH));
+        if (buildExFoBack != null) {
+            buildExFoBack.delete();
+        }
+        FileObject buildExFo = project.getProjectDirectory().getFileObject(EXTENSION_BUILD_SCRIPT_PATH);
+        FileLock lock;
+        if (buildExFo != null) {
+            lock = buildExFo.lock();
+            try {
+                buildExFo.rename(
+                    lock,
+                    buildExFo.getName(),
+                    String.format(
+                        "%s~",  //NOI18N
+                        buildExFo.getExt()));
+            } finally {
+                lock.releaseLock();
+            }
+        }
+        buildExFo = FileUtil.createData(project.getProjectDirectory(), EXTENSION_BUILD_SCRIPT_PATH);
+        lock = buildExFo.lock();
+        try (final InputStream in = J2SEDeployProperties.class.getClassLoader().getResourceAsStream(BUILD_SCRIPT_PROTOTYPE);
+             final OutputStream out = buildExFo.getOutputStream(lock)) {
+            FileUtil.copy(in, out);
+        } finally {
+            lock.releaseLock();
+        }
+        return buildExFo;
+    }
+
+    private static long computeCRC(@NonNull final InputStream in) throws IOException {
+        final CRC32 crc = new CRC32();
+        int last = -1;
+        int curr;
+        while ((curr = in.read()) != -1) {
+            if (curr != '\n' && last == '\r') { //NOI18N
+                crc.update('\n');               //NOI18N
+            }
+            if (curr != '\r') {                 //NOI18N
+                crc.update(curr);
+            }
+            last = curr;
+        }
+        if (last == '\r') {                     //NOI18N
+            crc.update('\n');                   //NOI18N
+        }        
+        return crc.getValue();
+    }
+
     /** Creates a new instance of J2SEDeployProperties */
     private J2SEDeployProperties(Lookup context) {       
         project = context.lookup(Project.class);
@@ -175,42 +260,15 @@ public final class J2SEDeployProperties {
                     }
                     final AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
                     if (extender != null) {
-                        AntBuildExtender.Extension extension = extender.getExtension(J2SEDEPLOY_EXTENSION);
+                        AntBuildExtender.Extension extension = extender.getExtension(getCurrentExtensionName());
                         if (nativeBundlingEnabled) {
                             if (extension == null) {
-                                final FileObject buildExFoBack = project.getProjectDirectory().getFileObject(String.format(
-                                    "%s~",  //NOI18N
-                                    EXTENSION_BUILD_SCRIPT_PATH));
-                                if (buildExFoBack != null) {
-                                    buildExFoBack.delete();
-                                }
-                                FileObject buildExFo = project.getProjectDirectory().getFileObject(EXTENSION_BUILD_SCRIPT_PATH);
-                                if (buildExFo != null) {
-                                    lock = buildExFo.lock();
-                                    try {
-                                        buildExFo.rename(
-                                            lock,
-                                            buildExFo.getName(),
-                                            String.format(
-                                                "%s~",  //NOI18N
-                                                buildExFo.getExt()));
-                                    } finally {
-                                        lock.releaseLock();
-                                    }
-                                }
-                                buildExFo = FileUtil.createData(project.getProjectDirectory(), EXTENSION_BUILD_SCRIPT_PATH);
-                                lock = buildExFo.lock();
-                                try (final InputStream in = getClass().getClassLoader().getResourceAsStream(BUILD_SCRIPT_PROTOTYPE);
-                                     final OutputStream out = buildExFo.getOutputStream(lock)) {
-                                    FileUtil.copy(in, out);
-                                } finally {
-                                    lock.releaseLock();
-                                }
-                                extension = extender.addExtension(J2SEDEPLOY_EXTENSION, buildExFo);
+                                final FileObject buildExFo = copyBuildNativeTemplate(project);
+                                extension = extender.addExtension(getCurrentExtensionName(), buildExFo);
                             }
                         } else {
                             if (extension != null) {
-                                extender.removeExtension(J2SEDEPLOY_EXTENSION);
+                                extender.removeExtension(getCurrentExtensionName());
                             }
                             final FileObject buildExFo = project.getProjectDirectory().getFileObject(EXTENSION_BUILD_SCRIPT_PATH);
                             if (buildExFo != null) {
