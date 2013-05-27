@@ -87,42 +87,42 @@ public final class Kenai implements Comparable<Kenai> {
      * getOldValue() returns old PasswordAuthentication or null
      * getNewValue() returns new PasswordAuthentication or null
      */
-    public static final String PROP_LOGIN = "login";
+    public static final String PROP_LOGIN = "login"; // NOI18N
 
     /**
      * fired when user logs int xmpp server
      */
-    public static final String PROP_XMPP_LOGIN = "xmpp_login";
+    public static final String PROP_XMPP_LOGIN = "xmpp_login"; // NOI18N
 
     /**
      * fired when user login started
      */
-    public static final String PROP_LOGIN_STARTED = "login_started";
+    public static final String PROP_LOGIN_STARTED = "login_started"; // NOI18N
 
     /**
      * fired when user login started
      */
-    public static final String PROP_XMPP_LOGIN_STARTED = "xmpp_login_started";
+    public static final String PROP_XMPP_LOGIN_STARTED = "xmpp_login_started"; // NOI18N
 
 
     /**
      * fired when user login failed
      */
-    public static final String PROP_LOGIN_FAILED = "login_failed";
+    public static final String PROP_LOGIN_FAILED = "login_failed"; // NOI18N
 
     /**
      * fired when log into xmpp failed
      */
-    public static final String PROP_XMPP_LOGIN_FAILED = "xmpp_login_failed";
+    public static final String PROP_XMPP_LOGIN_FAILED = "xmpp_login_failed"; // NOI18N
 
     /**
      * never fired
      */
     @Deprecated
-    public static final String PROP_URL_CHANGED = "url";
+    public static final String PROP_URL_CHANGED = "url"; // NOI18N
 
     private PasswordAuthentication auth = null;
-    private KenaiImpl impl;
+    private final KenaiImpl impl;
     private XMPPConnection xmppConnection;
     private PacketListener packetListener;
 
@@ -138,13 +138,13 @@ public final class Kenai implements Comparable<Kenai> {
 
     final HashMap<String, WeakReference<KenaiProject>> projectsCache = new HashMap<String, WeakReference<KenaiProject>>();
 
-    private java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
+    private final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
      static synchronized Kenai createInstance(String name, String urlString) throws MalformedURLException {
-         if (!urlString.startsWith("https://")) {
-             throw new MalformedURLException("the only supported protocol is https: " + urlString);
+         if (!urlString.startsWith("https://")) { // NOI18N
+             throw new MalformedURLException("the only supported protocol is https: " + urlString); // NOI18N
          }
-         if (urlString.endsWith("/")) {
+         if (urlString.endsWith("/")) { // NOI18N
              urlString = urlString.substring(0, urlString.length() - 1);
          }
          URL url = new URL(urlString);
@@ -169,15 +169,15 @@ public final class Kenai implements Comparable<Kenai> {
         //http://kenai.com/jira/browse/KENAI-1761
         if (icon == null) {
             if (getUrl().getHost().contains("netbeans.org")) { //NOI18N
-                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/netbeans-small.png", false);
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/netbeans-small.png", false); // NOI18N
             } else if (getUrl().getHost().contains("testkenai.com")) { //NOI18N
-                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/testkenai-small.png", false);
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/testkenai-small.png", false); // NOI18N
             } else if (getUrl().getHost().contains("odftoolkit.org")) { //NOI18N
-                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/odftoolkit-small.png", false);
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/odftoolkit-small.png", false); // NOI18N
             } else if (getUrl().getHost().contains("java.net")) { //NOI18N
-                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/javanet.png", false);
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/javanet.png", false); // NOI18N
             } else {
-                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/kenai-small.png", false);
+                icon = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/resources/kenai-small.png", false); // NOI18N
             }
         }
         return icon;
@@ -465,7 +465,7 @@ public final class Kenai implements Comparable<Kenai> {
             String tags
             ) throws KenaiException {
         if (auth.getUserName()== null) {
-            throw new KenaiException("Guest user is not allowed to create new domains");
+            throw new KenaiException("Guest user is not allowed to create new domains"); // NOI18N
         }
         ProjectData prj = impl.createProject(name, displayName, description, licenses, tags, auth);
         final KenaiProject result = KenaiProject.get(this, prj);
@@ -500,7 +500,7 @@ public final class Kenai implements Comparable<Kenai> {
             String browse_url
             ) throws KenaiException {
         if (getPasswordAuthentication() == null) {
-            throw new KenaiException("Guest user is not allowed to create new domains");
+            throw new KenaiException("Guest user is not allowed to create new domains"); // NOI18N
         }
         FeatureData prj = impl.createProjectFeature(
                 projectName,
@@ -542,7 +542,7 @@ public final class Kenai implements Comparable<Kenai> {
      * Getter for PasswordAuthentication of logged in user. Returns null of user
      * is not logged in. 
      * @return instance of PasswordAuthentication class holding current name
-     * and passord. If user is not logged in, method returns null;
+     * and password. If user is not logged in, method returns null;
      */
     public PasswordAuthentication getPasswordAuthentication() {
         return auth;
@@ -641,7 +641,7 @@ public final class Kenai implements Comparable<Kenai> {
 
     private class LazyCollection<I,O> extends AbstractCollection<O> {
 
-        private Collection<I> delegate;
+        private final Collection<I> delegate;
 
         private LazyCollection(Collection<I> delegate) {
             this.delegate = delegate;
@@ -650,6 +650,7 @@ public final class Kenai implements Comparable<Kenai> {
         @Override
         public Iterator<O> iterator() {
             return Iterators.translating(delegate.iterator(), new Factory<O,I>() {
+                @Override
                 public O create(I param) {
                     if (param instanceof ProjectData) {
                         return (O) KenaiProject.get(Kenai.this, (ProjectData) param);
@@ -757,12 +758,13 @@ public final class Kenai implements Comparable<Kenai> {
         return hash;
     }
 
+    @Override
     public int compareTo(Kenai o) {
         return this.getName().compareToIgnoreCase(o.getName());
     }
 
     @Override
     public String toString() {
-        return getName() + " (" + getUrl().toString() + ")";
+        return getName() + " (" + getUrl().toString() + ")"; // NOI18N
     }
 }
