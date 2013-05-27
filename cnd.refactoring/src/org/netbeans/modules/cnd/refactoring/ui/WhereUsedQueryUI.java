@@ -103,9 +103,6 @@ public class WhereUsedQueryUI implements RefactoringUI {
             assert panel != null;
             query.putValue(WhereUsedQuery.SEARCH_IN_COMMENTS,panel.isSearchInComments());
             
-            // initially set this to true, users may filter it later with filters
-            query.putValue(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
-            
             Collection<CsmProject> prjs = CsmRefactoringUtils.getRelatedCsmProjects(this.origObject, panel.getScopeProject());
             CsmProject[] ar = prjs.toArray(new CsmProject[prjs.size()]);
             query.getContext().add(ar);

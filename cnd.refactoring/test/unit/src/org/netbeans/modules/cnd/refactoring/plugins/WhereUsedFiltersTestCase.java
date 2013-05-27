@@ -56,48 +56,39 @@ public class WhereUsedFiltersTestCase extends CsmWhereUsedQueryPluginTestCaseBas
         super(testName);
     }
     
+    public void testDeclarationsFilterDefault() throws Exception {
+        performWhereUsed("testFUFilters.c", 13, 7);
+    }
+    
     public void testDeclarationsFilterSelected() throws Exception {
-        Map<Object, Boolean> props = new HashMap<>();
-        props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
-        performWhereUsed("testFUFilters.c", 13, 7, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey()));
+        performWhereUsed("testFUFilters.c", 13, 7, null, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey()));
     }
     
     public void testDeclarationsFilterDeselected() throws Exception {
-        Map<Object, Boolean> props = new HashMap<>();
-        props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
         // Only comments filter enabled
-        performWhereUsed("testFUFilters.c", 13, 7, props, Arrays.asList(CsmWhereUsedFilters.COMMENTS.getKey()));
+        performWhereUsed("testFUFilters.c", 13, 7, null, Arrays.asList(CsmWhereUsedFilters.COMMENTS.getKey()));
     }
     
     public void testDeadcodeFilterSelected() throws Exception {
-        Map<Object, Boolean> props = new HashMap<>();
-        props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
-        performWhereUsed("testFUFilters.c", 16, 5, props, Arrays.asList(CsmWhereUsedFilters.DEAD_CODE.getKey()));
+        performWhereUsed("testFUFilters.c", 16, 5, null, Arrays.asList(CsmWhereUsedFilters.DEAD_CODE.getKey()));
     }
     
     public void testDeadcodeFilterDeselected() throws Exception {
-        Map<Object, Boolean> props = new HashMap<>();
-        props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
         // Only comments filter enabled
-        performWhereUsed("testFUFilters.c", 16, 5, props, Arrays.asList(CsmWhereUsedFilters.COMMENTS.getKey()));
+        performWhereUsed("testFUFilters.c", 16, 5, null, Arrays.asList(CsmWhereUsedFilters.COMMENTS.getKey()));
     }
     
     public void testMacrosFilterSelected() throws Exception {
-        Map<Object, Boolean> props = new HashMap<>();
-        props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
-        performWhereUsed("testFUFilters.c", 16, 5, props, Arrays.asList(CsmWhereUsedFilters.MACROS.getKey()));
+        performWhereUsed("testFUFilters.c", 16, 5, null, Arrays.asList(CsmWhereUsedFilters.MACROS.getKey()));
     }
     
     public void testMacrosFilterDeselected() throws Exception {
-        Map<Object, Boolean> props = new HashMap<>();
-        props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
         // Only declarations filter selected
-        performWhereUsed("testFUFilters.c", 16, 5, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey()));
+        performWhereUsed("testFUFilters.c", 16, 5, null, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey()));
     }
     
     public void testCommentsFilterSelected() throws Exception {
         Map<Object, Boolean> props = new HashMap<>();
-        props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
         props.put(WhereUsedQuery.SEARCH_IN_COMMENTS, true);
         // Only declarations filter selected
         performWhereUsed("testFUFilters.c", 29, 7, props, Arrays.asList(CsmWhereUsedFilters.COMMENTS.getKey(), CsmWhereUsedFilters.DECLARATIONS.getKey()));
@@ -105,7 +96,6 @@ public class WhereUsedFiltersTestCase extends CsmWhereUsedQueryPluginTestCaseBas
     
     public void testCommentsFilterDeselected() throws Exception {
         Map<Object, Boolean> props = new HashMap<>();
-        props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
         props.put(WhereUsedQuery.SEARCH_IN_COMMENTS, true);
         // Only declarations filter selected
         performWhereUsed("testFUFilters.c", 29, 7, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey()));

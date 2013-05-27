@@ -113,6 +113,12 @@ public class WhereUsedInQuoteTestCase extends CsmWhereUsedQueryPluginTestCaseBas
         props.put(WhereUsedQuery.FIND_REFERENCES, false);
         performWhereUsed("memory.h", 46, 25, props);
     }
+    
+    public void testModuleGetType() throws Exception {
+        Map<Object, Boolean> props = new HashMap<Object, Boolean>();
+        props.put(WhereUsedQuery.FIND_REFERENCES, true);
+        performWhereUsed("module.h", 68, 25, props);
+    }
 
     public void testModuleGetTypeNoOverriden() throws Exception {
         Map<Object, Boolean> props = new HashMap<Object, Boolean>();

@@ -106,6 +106,9 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
         assertNotNull(targetObject);
         
         FiltersDescription filtersDescription = new FiltersDescription();
+        if (params == null) {
+            params = Collections.emptyMap();
+        }
         Collection<RefactoringElementImplementation> elements = CsmWhereUsedQueryPlugin.getWhereUsed(ref, params, filtersDescription);
         
         // do filtering

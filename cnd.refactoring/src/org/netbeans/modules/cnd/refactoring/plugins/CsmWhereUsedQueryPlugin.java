@@ -355,7 +355,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                                                             final Collection<CsmFile> files,
                                                             final RefactoringElementsBag bagToAdd) {
         assert isFindUsages() : "must be find usages mode";
-        final boolean onlyUsages = !isFindOverridingMethods();
+        final boolean onlyUsages = false;
         final CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
         //Set<CsmReferenceKind> kinds = isFindOverridingMethods() ? CsmReferenceKind.ALL : CsmReferenceKind.ANY_USAGE;
         final Set<CsmReferenceKind> kinds = CsmReferenceKind.ALL;
@@ -460,7 +460,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
             filtersDescription.enable(CsmWhereUsedFilters.COMMENTS.getKey());
         }
         filtersDescription.enable(CsmWhereUsedFilters.DEAD_CODE.getKey());
-        if (isFindOverridingMethods() && !isFindDirectSubclassesOnly() && !isFindSubclasses()) {
+        if (!isFindDirectSubclassesOnly() && !isFindSubclasses()) {
             filtersDescription.enable(CsmWhereUsedFilters.DECLARATIONS.getKey());
         }
         filtersDescription.enable(CsmWhereUsedFilters.MACROS.getKey());
