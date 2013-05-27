@@ -583,7 +583,10 @@ public class ModelUtils {
                                 boolean addAsType = lObject.getJSKind() == JsElement.Kind.OBJECT_LITERAL;
                                 if (lObject instanceof JsObjectReference) {
                                     // translate reference objects to the original objects / type
-                                    name = ((JsObjectReference)lObject).getOriginal().getDeclarationName().getName();
+                                    JsObject original = ((JsObjectReference)lObject).getOriginal();
+                                    if (original != null){
+                                        name = original.getDeclarationName() != null ? original.getDeclarationName().getName() : original.getName();
+                                    }
                                 }
                                 if(addAsType) {
                                     // here it doesn't have to be real type, it's possible that it's just an object name

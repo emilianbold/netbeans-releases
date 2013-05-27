@@ -431,7 +431,12 @@ public class UnusedVariableHint extends HintRule implements CustomisableRule {
         @Override
         public void visit(ReflectionVariable node) {
             forceVariableAsUsed = true;
-            scan(node.getName());
+            Expression name = node.getName();
+            if (name instanceof Scalar) {
+                handleScalar((Scalar) name);
+            } else {
+                scan(name);
+            }
             forceVariableAsUsed = false;
         }
 

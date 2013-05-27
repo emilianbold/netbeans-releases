@@ -156,8 +156,9 @@ public class CordovaPerformer implements BuildPerformer {
                                     if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
                                         return;
                                     }
+                                } else {
+                                    startDebugging(device, project, Lookups.singleton(mapper), false);
                                 }
-                                startDebugging(device, project, Lookups.singleton(mapper), false);
                             }
                         }
                     }
