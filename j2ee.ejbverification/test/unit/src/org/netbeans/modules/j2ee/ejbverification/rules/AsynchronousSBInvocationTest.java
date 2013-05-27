@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.j2ee.ejbverification.rules;
 
+import java.io.IOException;
 import org.netbeans.modules.j2ee.ejbverification.TestBase;
 import static org.netbeans.modules.j2ee.ejbverification.TestBase.copyStringToFileObject;
+import org.netbeans.modules.j2ee.ejbverification.TestEJBProblemFinder;
+import org.netbeans.modules.parsing.impl.indexing.RepositoryUpdater;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -52,23 +55,61 @@ import org.openide.filesystems.FileUtil;
  */
 public class AsynchronousSBInvocationTest extends TestBase {
 
+    FileObject testBean;
+
     public AsynchronousSBInvocationTest(String name) {
         super(name);
     }
 
     public void createTestBeanWithAsynchronousMethod(TestModule testModule) throws Exception {
-        String testBeanContent = "package pkg; @javax.ejb.Stateless @javax.ejb.LocalBean public class TestBean {\n"
-                + "@javax.ejb.Asynchronous public void businessMethod() {}"
+        String testBeanContent = "package pkg;\n"
+                + "@javax.ejb.Stateless\n"
+                + "@javax.ejb.LocalBean\n"
+                + "public class TestBean {\n"
+                + "  @javax.ejb.Asynchronous\n"
+                + "  public void businessMethod() {}\n"
                 + "}";
-        FileObject testBean = FileUtil.createData(testModule.getSources()[0], "pkg/TestBean.java");
+        testBean = FileUtil.createData(testModule.getSources()[0], "pkg/TestBean.java");
         copyStringToFileObject(testBean, testBeanContent);
+        RepositoryUpdater.getDefault().refreshAll(true, true, true, null, (Object[]) testModule.getSources());
     }
 
     public void testAsynchronousSBInvocationEE6Lite() throws Exception {
         TestModule testModule = createWeb30Module();
         assertNotNull(testModule);
         createTestBeanWithAsynchronousMethod(testModule);
+        checkAsynchronousSBInvocation(true);
+    }
 
-        
+    public void testAsynchronousSBInvocationEE7Lite() throws Exception {
+        TestModule testModule = createWeb31Module();
+        assertNotNull(testModule);
+        createTestBeanWithAsynchronousMethod(testModule);
+        checkAsynchronousSBInvocation(false);
+    }
+
+    public void testAsynchronousSBInvocationEE6Full() throws Exception {
+        TestModule testModule = createEjb31Module();
+        assertNotNull(testModule);
+        createTestBeanWithAsynchronousMethod(testModule);
+        checkAsynchronousSBInvocation(false);
+    }
+
+    public void testAsynchronousSBInvocationEE7Full() throws Exception {
+        TestModule testModule = createEjb32Module();
+        assertNotNull(testModule);
+        createTestBeanWithAsynchronousMethod(testModule);
+        checkAsynchronousSBInvocation(false);
+    }
+
+    private void checkAsynchronousSBInvocation(boolean ruleExists) throws IOException {
+        TestEJBProblemFinder finder = new TestEJBProblemFinder(testBean, new AsynchronousSBInvocation());
+        finder.run();
+        if (ruleExists) {
+            assertEquals("TestBean[line 5] (ERROR) Asynchronous Session Bean invocation is not allowed in project targeting JavaEE 6 Lite profile",
+                    errorDescriptionToString(finder.getProblemsFound()));
+        } else {
+            assertTrue("Errors/Hints of the file are not empty for given hint", finder.getProblemsFound().isEmpty());
+        }
     }
 }

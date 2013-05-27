@@ -60,14 +60,15 @@ import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.source.CompilationController;
-import org.netbeans.api.project.Project;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
 import org.netbeans.modules.j2ee.common.method.MethodModelSupport;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.java.source.usages.IndexUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.java.queries.SourceLevelQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -87,9 +88,6 @@ public class TestBase extends NbTestCase {
     protected static final String EJB_3_0 = "3.0"; // NOI18N
     protected static final String EJB_3_1 = "3.1"; // NOI18N
     protected static final String EJB_3_2 = "3.2"; // NOI18N
-
-    protected static final String WEB_3_0 = "3.0"; // NOI18N
-    protected static final String WEB_3_1 = "3.1"; // NOI18N
     
     private EjbJarProviderImpl ejbJarProvider;
     private ClassPathProviderImpl classPathProvider;
@@ -97,6 +95,7 @@ public class TestBase extends NbTestCase {
 
     protected FileObject dataDir;
     protected FileObject testFO;
+
     static {
         setLookups();
     }
@@ -126,7 +125,7 @@ public class TestBase extends NbTestCase {
      * and returns TestModule wrapper for that
      */
     public TestWebModule createWeb30Module(TestEjbModule... modulesOnClasspath) throws IOException {
-        return createTestWebModule("WebModule_6_0", WEB_3_0, modulesOnClasspath);
+        return createTestWebModule("WebModule_6_0", EJB_3_1, modulesOnClasspath);
     }
 
     /**
@@ -134,7 +133,7 @@ public class TestBase extends NbTestCase {
      * and returns TestModule wrapper for that
      */
     public TestWebModule createWeb31Module(TestEjbModule... modulesOnClasspath) throws IOException {
-        return createTestWebModule("WebModule_7_0", WEB_3_1, modulesOnClasspath);
+        return createTestWebModule("WebModule_7_0", EJB_3_2, modulesOnClasspath);
     }
 
     /**
@@ -173,6 +172,16 @@ public class TestBase extends NbTestCase {
         activate(testModule, false, modulesOnClasspath);
 
         return testModule;
+    }
+
+    protected String errorDescriptionToString(List<? extends ErrorDescription> eds) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        for (ErrorDescription ed : eds) {
+            sb.append(ed.getFile().getName()).append("[line ")
+                    .append(ed.getRange().getBegin().getLine()).append("]")
+                    .append(" (").append(ed.getSeverity()). append(") ").append(ed.getDescription());
+        }
+        return sb.toString();
     }
 
     protected void setUp() throws IOException {
@@ -228,7 +237,7 @@ public class TestBase extends NbTestCase {
                 return Profile.J2EE_14;
             }
         } else {
-            if (version >= 3.1) {
+            if (version >= 3.2) {
                 return Profile.JAVA_EE_7_WEB;
             } else {
                 return Profile.JAVA_EE_6_WEB;
@@ -278,8 +287,12 @@ public class TestBase extends NbTestCase {
 
     protected static class TestEjbModule extends TestModule {
 
+        public TestEjbModule(FileObject projectDir, String level, EnterpriseReferenceContainerImpl erci, boolean webProject) {
+            super(projectDir, level, erci, webProject);
+        }
+
         public TestEjbModule(FileObject projectDir, String ejbLevel) {
-            super(projectDir, ejbLevel, new EnterpriseReferenceContainerImpl());
+            super(projectDir, ejbLevel, new EnterpriseReferenceContainerImpl(), false);
             project.setProjectDirectory(projectDir);
         }
 
@@ -292,12 +305,12 @@ public class TestBase extends NbTestCase {
         }
     }
 
-    protected static class TestWebModule extends TestModule {
+    protected static class TestWebModule extends TestEjbModule {
 
         private final FileObject[] webSources;
 
         public TestWebModule(FileObject projectDir, String webLevel) {
-            super(projectDir, webLevel, null);
+            super(projectDir, webLevel, new EnterpriseReferenceContainerImpl(), true);
             this.webSources = new FileObject[]{projectDir.getFileObject("web")};
             project.setProjectDirectory(projectDir);
         }
@@ -367,10 +380,14 @@ public class TestBase extends NbTestCase {
         protected final EnterpriseReferenceContainerImpl erci;
         protected final String level;
 
-        public TestModule(FileObject projectDir, String level, EnterpriseReferenceContainerImpl erci) {
+        public TestModule(FileObject projectDir, String level, EnterpriseReferenceContainerImpl erci, boolean webProject) {
             this.projectDir = projectDir;
             this.sources = new FileObject[]{projectDir.getFileObject("src/java")};
-            this.project = new ProjectImpl(level, erci);
+            if (webProject) {
+                this.project = new ProjectImpl(level, J2eeModule.Type.WAR, erci);
+            } else {
+                this.project = new ProjectImpl(level, J2eeModule.Type.EJB, erci);
+            }
             this.erci = erci;
             this.level = level;
         }

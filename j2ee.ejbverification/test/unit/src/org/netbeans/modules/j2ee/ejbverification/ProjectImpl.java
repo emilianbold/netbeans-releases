@@ -79,20 +79,13 @@ public final class ProjectImpl implements Project {
     private final Lookup lookup;
     private FileObject projectDirectory;
 
-    public ProjectImpl(String moduleVersion, EnterpriseReferenceContainer erContainer) {
-        if (erContainer == null) {
-            lookup = Lookups.fixed(
-                    new ClassPathProviderImpl(),
-                    new J2eeModuleProviderImpl(moduleVersion),
-                    new SourcesImpl());
-        } else {
-            lookup = Lookups.fixed(
-                    new ClassPathProviderImpl(),
-                    new J2eeModuleProviderImpl(moduleVersion),
-                    new SourcesImpl(),
-                    erContainer,
-                    new EjbJarsInProjectImpl());
-        }
+    public ProjectImpl(String moduleVersion, J2eeModule.Type type, EnterpriseReferenceContainer erContainer) {
+        lookup = Lookups.fixed(
+                new ClassPathProviderImpl(),
+                new J2eeModuleProviderImpl(moduleVersion, type),
+                new SourcesImpl(),
+                erContainer,
+                new EjbJarsInProjectImpl());
     }
 
     public FileObject getProjectDirectory() {
@@ -158,13 +151,15 @@ public final class ProjectImpl implements Project {
     private static class J2eeModuleProviderImpl extends J2eeModuleProvider {
 
         private final String moduleVersion;
+        private final J2eeModule.Type type;
 
-        public J2eeModuleProviderImpl(String moduleVersion) {
+        public J2eeModuleProviderImpl(String moduleVersion, J2eeModule.Type type) {
             this.moduleVersion = moduleVersion;
+            this.type = type;
         }
 
         public J2eeModule getJ2eeModule() {
-            J2eeModuleImplementation2 j2eeModuleImpl = new J2eeModuleImpl(moduleVersion);
+            J2eeModuleImplementation2 j2eeModuleImpl = new J2eeModuleImpl(moduleVersion, type);
             return J2eeModuleFactory.createJ2eeModule(j2eeModuleImpl);
         }
 
@@ -195,9 +190,11 @@ public final class ProjectImpl implements Project {
     private static class J2eeModuleImpl implements J2eeModuleImplementation2 {
 
         private final String moduleVersion;
+        private final J2eeModule.Type type;
 
-        public J2eeModuleImpl(String moduleVersion) {
+        public J2eeModuleImpl(String moduleVersion, J2eeModule.Type type) {
             this.moduleVersion = moduleVersion;
+            this.type = type;
         }
 
         public String getModuleVersion() {
@@ -205,7 +202,7 @@ public final class ProjectImpl implements Project {
         }
 
         public J2eeModule.Type getModuleType() {
-            return J2eeModule.Type.EJB;
+            return type;
         }
 
         public String getUrl() {
