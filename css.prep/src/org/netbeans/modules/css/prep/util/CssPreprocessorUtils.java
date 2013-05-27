@@ -50,20 +50,20 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public final class MappingUtils {
+public final class CssPreprocessorUtils {
 
     private static final String MAPPINGS_DELIMITER = ","; // NOI18N
     private static final String MAPPING_DELIMITER = ":"; // NOI18N
 
 
-    private MappingUtils() {
+    private CssPreprocessorUtils() {
     }
 
-    public static String encode(List<String> mappings) {
+    public static String encodeMappings(List<String> mappings) {
         return StringUtils.implode(mappings, MAPPINGS_DELIMITER);
     }
 
-    public static List<String> decode(String mappings) {
+    public static List<String> decodeMappings(String mappings) {
         return StringUtils.explode(mappings, MAPPINGS_DELIMITER);
     }
 
