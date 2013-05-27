@@ -59,7 +59,8 @@ public class ToggleBlockCommentActionTest extends LatteActionsTestBase {
         super(testName);
     }
 
-    public void testDummy() throws Exception {
+    public void testHtml() throws Exception {
+        testInFile("testfiles/actions/toggleComment/testHtml.latte");
     }
 
     private void testInFile(String file) throws Exception {

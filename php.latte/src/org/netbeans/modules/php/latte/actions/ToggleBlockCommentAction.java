@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.ext.ExtKit;
+import org.netbeans.modules.csl.api.CslActions;
 
 /**
  *
@@ -63,7 +64,19 @@ public class ToggleBlockCommentAction extends BaseAction {
 
     @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        LOGGER.info("TOGGLE COMMENT - not implemented");
+        LOGGER.info("TOGGLE COMMENT - not implemented for Latte parts");
+        performDefaultAction(evt, target);
+    }
+
+    private void performDefaultAction(ActionEvent evt, JTextComponent target) {
+        BaseAction action = (BaseAction) CslActions.createToggleBlockCommentAction();
+        if (getValue(FORCE_COMMENT) != null) {
+            action.putValue(FORCE_COMMENT, getValue(FORCE_COMMENT));
+        }
+        if (getValue(FORCE_UNCOMMENT) != null) {
+            action.putValue(FORCE_UNCOMMENT, getValue(FORCE_UNCOMMENT));
+        }
+        action.actionPerformed(evt, target);
     }
 
 }
