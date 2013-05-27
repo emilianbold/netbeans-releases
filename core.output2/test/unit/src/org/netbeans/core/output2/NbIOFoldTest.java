@@ -309,4 +309,46 @@ public class NbIOFoldTest {
         foldB.setExpanded(false);
         assertEquals(2, lines.getVisibleLineCount());
     }
+
+    @Test
+    public void testCollapseAll() {
+        AbstractLines l = createTestLines();
+        assertEquals(14, l.getVisibleLineCount());
+        l.hideAllFolds();
+        assertEquals(4, l.getVisibleLineCount());
+    }
+
+    @Test
+    public void testExpandAll() {
+        AbstractLines l = createTestLines();
+        l.hideAllFolds();
+        assertEquals(4, l.getVisibleLineCount());
+        l.showAllFolds();
+        assertEquals(14, l.getVisibleLineCount());
+    }
+
+    @Test
+    public void testCollapseTree() {
+        AbstractLines l = createTestLines();
+        l.hideFoldTree(3);
+        assertEquals(9, l.getVisibleLineCount());
+        l.showFold(3);
+        assertEquals(12, l.getVisibleLineCount());
+    }
+
+    @Test
+    public void testExpandTree() {
+        AbstractLines l = createTestLines();
+        l.hideAllFolds();
+        l.showFold(1);
+        assertEquals(8, l.getVisibleLineCount());
+        l.showFoldTree(3);
+        assertEquals(13, l.getVisibleLineCount());
+    }
+
+    @Test
+    public void testExpandFoldFreeInNonFoldLine() {
+        AbstractLines l = createTestLines();
+        l.hideFoldTree(0);
+    }
 }
