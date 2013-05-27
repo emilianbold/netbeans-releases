@@ -64,7 +64,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 import java.util.StringTokenizer;
 import jdk.nashorn.internal.ir.TernaryNode;
 import org.netbeans.api.lexer.Token;
@@ -961,7 +960,7 @@ public class ModelUtils {
                     if (!(path.size() > 0 && path.get(path.size() - 1) instanceof CallNode)) {
                         sb.append("@this."); //NOI18N
                         sb.append(aNode.getProperty().getName());
-                        add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+                        add(new TypeUsageImpl(sb.toString(), iNode.getStart(), false));                //NOI18N
                         // plus five due to this.
                     }
                 } else {
@@ -1055,7 +1054,7 @@ public class ModelUtils {
             if (callNode.getFunction() instanceof ReferenceNode) {
                 FunctionNode function = (FunctionNode)((ReferenceNode)callNode.getFunction()).getReference();
                 String name = function.getIdent().getName();
-                add(new TypeUsageImpl("@call;" + name, LexUtilities.getLexerOffset(parserResult, function.getStart()), false)); //NOI18N
+                add(new TypeUsageImpl("@call;" + name, function.getStart(), false)); //NOI18N
             } else {
                 int pathSize = getPath().size();
                 if (pathSize > 1) {
@@ -1093,9 +1092,9 @@ public class ModelUtils {
 
             if (getPath().isEmpty()) {
                 if (iNode.getName().equals("this")) {   //NOI18N
-                    add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+                    add(new TypeUsageImpl("@this", iNode.getStart(), false));                //NOI18N
                 } else {
-                    add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                    add(new TypeUsageImpl("@var;" + iNode.getName(), iNode.getStart(), false));
                 }
             } else {
                 int pathSize = getPath().size();
@@ -1110,12 +1109,12 @@ public class ModelUtils {
                     if (addFunctionName) {
                         sb.append(iNode.getName());
                     }
-                    add(new TypeUsageImpl(sb.toString(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                    add(new TypeUsageImpl(sb.toString(), iNode.getStart(), false));
                 } else if (!(lastNode instanceof AccessNode)) {
                     if (iNode.getName().equals("this")) {   //NOI18N
-                        add(new TypeUsageImpl("@this", LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));                //NOI18N
+                        add(new TypeUsageImpl("@this", iNode.getStart(), false));                //NOI18N
                     } else {
-                        add(new TypeUsageImpl("@var;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                        add(new TypeUsageImpl("@var;" + iNode.getName(), iNode.getStart(), false));
                     }
                 }
             }
@@ -1148,7 +1147,7 @@ public class ModelUtils {
 
         @Override
         public Node enter(ObjectNode objectNode) {
-            add(new TypeUsageImpl("@anonym;" + objectNode.getStart(), LexUtilities.getLexerOffset(parserResult, objectNode.getStart()), false));
+            add(new TypeUsageImpl("@anonym;" + objectNode.getStart(), objectNode.getStart(), false));
             return null;
         }
 
@@ -1158,7 +1157,7 @@ public class ModelUtils {
                 if (uNode.rhs() instanceof CallNode
                     && ((CallNode)uNode.rhs()).getFunction() instanceof IdentNode) {
                         IdentNode iNode = ((IdentNode)((CallNode)uNode.rhs()).getFunction());
-                        add(new TypeUsageImpl("@new;" + iNode.getName(), LexUtilities.getLexerOffset(parserResult, iNode.getStart()), false));
+                        add(new TypeUsageImpl("@new;" + iNode.getName(), iNode.getStart(), false));
                         return null;
                 }
             }
