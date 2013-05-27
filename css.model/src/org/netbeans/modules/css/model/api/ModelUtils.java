@@ -228,14 +228,16 @@ public class ModelUtils {
             if(cancelled) {
                 return ;
             }
-            
-            CharSequence foundRuleId = LexerUtils.trim(model.getElementSource(rule.getSelectorsGroup()));
-            if (LexerUtils.equals(getRuleId(), foundRuleId, false, false)) {
-                ruleIndex++;
-            }
-            
-            if(this.rule == rule) {
-                cancelled = true;
+            SelectorsGroup selectorsGroup = rule.getSelectorsGroup();
+            if(selectorsGroup != null) {
+                CharSequence foundRuleId = LexerUtils.trim(model.getElementSource(selectorsGroup));
+                if (LexerUtils.equals(getRuleId(), foundRuleId, false, false)) {
+                    ruleIndex++;
+                }
+
+                if(this.rule == rule) {
+                    cancelled = true;
+                }
             }
             
         }
@@ -246,7 +248,8 @@ public class ModelUtils {
         
         public synchronized CharSequence getRuleId() {
             if(ruleId == null) {
-                ruleId = LexerUtils.trim(model.getElementSource(rule.getSelectorsGroup()));
+                SelectorsGroup selectorsGroup = rule.getSelectorsGroup();
+                ruleId = selectorsGroup == null ? null : LexerUtils.trim(model.getElementSource(selectorsGroup));
             }
             return ruleId;
         }
@@ -277,14 +280,16 @@ public class ModelUtils {
             if(cancelled) {
                 return ;
             }
-            
-            CharSequence foundRuleId = LexerUtils.trim(model.getElementSource(rule.getSelectorsGroup()));
-            if (LexerUtils.equals(ruleId, foundRuleId, false, false)) {
-                if(index == ruleIndex) {
-                    this.rule = rule;
-                    cancelled = true;
-                } else {
-                    index++;
+            SelectorsGroup selectorsGroup = rule.getSelectorsGroup();
+            if(selectorsGroup != null) {
+                CharSequence foundRuleId = LexerUtils.trim(model.getElementSource(selectorsGroup));
+                if (LexerUtils.equals(ruleId, foundRuleId, false, false)) {
+                    if(index == ruleIndex) {
+                        this.rule = rule;
+                        cancelled = true;
+                    } else {
+                        index++;
+                    }
                 }
             }
         }
@@ -321,16 +326,17 @@ public class ModelUtils {
             if(cancelled) {
                 return ;
             }
-            
-            CharSequence foundRuleId = LexerUtils.trim(model.getElementSource(rule.getMediaQueryList()));
-            if (LexerUtils.equals(getMediaId(), foundRuleId, false, false)) {
-                ruleIndex++;
+            MediaQueryList mediaQueryList = rule.getMediaQueryList();
+            if(mediaQueryList != null) {
+                CharSequence foundRuleId = LexerUtils.trim(model.getElementSource(mediaQueryList));
+                if (LexerUtils.equals(getMediaId(), foundRuleId, false, false)) {
+                    ruleIndex++;
+                }
+
+                if(this.media == rule) {
+                    cancelled = true;
+                }
             }
-            
-            if(this.media == rule) {
-                cancelled = true;
-            }
-            
         }
         
         public int getMediaIndex() {
@@ -339,7 +345,8 @@ public class ModelUtils {
         
         public synchronized CharSequence getMediaId() {
             if(ruleId == null) {
-                ruleId = LexerUtils.trim(model.getElementSource(media.getMediaQueryList()));
+                MediaQueryList mediaQueryList = media.getMediaQueryList();
+                ruleId = mediaQueryList == null ? null : LexerUtils.trim(model.getElementSource(mediaQueryList));
             }
             return ruleId;
         }
