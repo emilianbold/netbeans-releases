@@ -380,7 +380,7 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
         private static boolean isValidTokenId(LatteMarkupTokenId id) {
             return LatteMarkupTokenId.T_SYMBOL.equals(id) || LatteMarkupTokenId.T_VARIABLE.equals(id)
                     || LatteMarkupTokenId.T_MACRO_START.equals(id) || LatteMarkupTokenId.T_MACRO_END.equals(id)
-                    || LatteMarkupTokenId.T_ERROR.equals(id);
+                    || LatteMarkupTokenId.T_ERROR.equals(id) || LatteMarkupTokenId.T_CHAR.equals(id);
         }
 
     }
