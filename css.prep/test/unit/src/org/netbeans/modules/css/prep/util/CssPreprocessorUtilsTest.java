@@ -47,7 +47,7 @@ import java.util.List;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
-public class MappingUtilsTest {
+public class CssPreprocessorUtilsTest {
 
     @Test
     public void testResolveTarget() {
@@ -57,15 +57,15 @@ public class MappingUtilsTest {
                 "/another/scss:/another/css",
                 " /space/at/beginning : /space/in/output ");
         File file1 = new File(root, "scss/file1.scss");
-        assertEquals(new File(root, "css/file1.css"), MappingUtils.resolveTarget(root, mappings, file1, "file1"));
+        assertEquals(new File(root, "css/file1.css"), CssPreprocessorUtils.resolveTarget(root, mappings, file1, "file1"));
         File file2 = new File(root, "another/scss/file2.scss");
-        assertEquals(new File(root, "another/css/file2.css"), MappingUtils.resolveTarget(root, mappings, file2, "file2"));
+        assertEquals(new File(root, "another/css/file2.css"), CssPreprocessorUtils.resolveTarget(root, mappings, file2, "file2"));
         File file3 = new File(root, "file3.scss");
-        assertEquals(new File(root, "file3.css"), MappingUtils.resolveTarget(root, mappings, file3, "file3"));
+        assertEquals(new File(root, "file3.css"), CssPreprocessorUtils.resolveTarget(root, mappings, file3, "file3"));
         File file4 = new File("/file4.scss");
-        assertEquals(null, MappingUtils.resolveTarget(root, mappings, file4, "file4"));
+        assertEquals(null, CssPreprocessorUtils.resolveTarget(root, mappings, file4, "file4"));
         File file5 = new File(root, "/space/at/beginning/file5.scss");
-        assertEquals(new File(root, "/space/in/output/file5.css"), MappingUtils.resolveTarget(root, mappings, file5, "file5"));
+        assertEquals(new File(root, "/space/in/output/file5.css"), CssPreprocessorUtils.resolveTarget(root, mappings, file5, "file5"));
     }
 
     @Test
@@ -74,7 +74,7 @@ public class MappingUtilsTest {
                 "/scss:/css",
                 "/another/scss:/another/css",
                 ".:.");
-        ValidationResult validationResult = new MappingUtils.MappingsValidator()
+        ValidationResult validationResult = new CssPreprocessorUtils.MappingsValidator()
                 .validate(mappings)
                 .getResult();
         assertTrue(validationResult.isFaultless());
@@ -85,7 +85,7 @@ public class MappingUtilsTest {
         String mapping1 = "/sc:ss:/css";
         String mapping2 = " :/css";
         List<String> mappings = Arrays.asList(mapping1, mapping2);
-        ValidationResult validationResult = new MappingUtils.MappingsValidator()
+        ValidationResult validationResult = new CssPreprocessorUtils.MappingsValidator()
                 .validate(mappings)
                 .getResult();
         assertEquals(2, validationResult.getWarnings().size());

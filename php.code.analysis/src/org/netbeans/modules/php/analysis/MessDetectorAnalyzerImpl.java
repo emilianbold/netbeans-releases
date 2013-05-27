@@ -237,7 +237,7 @@ public class MessDetectorAnalyzerImpl implements Analyzer {
                 }
                 @Override
                 public MessDetectorCustomizerPanel createComponent(CustomizerContext<Void, MessDetectorCustomizerPanel> context) {
-                    return new MessDetectorCustomizerPanel(context.getSettings());
+                    return new MessDetectorCustomizerPanel(context);
                 }
             };
         }

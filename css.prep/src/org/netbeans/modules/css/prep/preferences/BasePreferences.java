@@ -46,7 +46,7 @@ import java.util.List;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.css.prep.util.MappingUtils;
+import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 
 abstract class BasePreferences {
 
@@ -66,11 +66,11 @@ abstract class BasePreferences {
         if (mappings == null) {
             return Collections.emptyList();
         }
-        return MappingUtils.decode(mappings);
+        return CssPreprocessorUtils.decodeMappings(mappings);
     }
 
     public static void setMappings(Project project, String propertyName, List<String> mappings) {
-        getPreferences(project).put(propertyName, MappingUtils.encode(mappings));
+        getPreferences(project).put(propertyName, CssPreprocessorUtils.encodeMappings(mappings));
     }
 
     protected static Preferences getPreferences(Project project) {

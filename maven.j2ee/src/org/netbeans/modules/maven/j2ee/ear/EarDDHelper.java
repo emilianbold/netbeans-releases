@@ -43,6 +43,8 @@
 package org.netbeans.modules.maven.j2ee.ear;
 
 import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -88,6 +90,7 @@ public final class EarDDHelper {
             final Profile j2eeProfile,
             final FileObject docBase,
             final Project project,
+            final Set<Project> childProjects,
             boolean force) {
 
         try {
@@ -101,13 +104,9 @@ public final class EarDDHelper {
                 app.setDisplayName(ProjectUtils.getInformation(project).getDisplayName());
 
                 if (app.getModule().length == 0) {
-                    EarModuleProviderImpl earProvider = project.getLookup().lookup(EarModuleProviderImpl.class);
-                    if (earProvider != null) {
-                        J2eeModuleProvider[] moduleProviders = earProvider.getChildModuleProviders();
 
-                        for (J2eeModuleProvider moduleProvider : moduleProviders) {
-                            addModuleToDD(app, moduleProvider);
-                        }
+                    for (J2eeModuleProvider moduleProvider : getChildModuleProviders(childProjects)) {
+                        addModuleToDD(app, moduleProvider);
                     }
                 }
 
@@ -117,6 +116,20 @@ public final class EarDDHelper {
         } catch (IOException ex) {
             return null;
         }
+    }
+
+    private static Set<J2eeModuleProvider> getChildModuleProviders(Set<Project> childProjects) {
+        Set<J2eeModuleProvider> moduleProviders = new HashSet<J2eeModuleProvider>();
+
+        for (Project project : childProjects) {
+            J2eeModuleProvider moduleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
+
+            if (moduleProvider != null) {
+                moduleProviders.add(moduleProvider);
+            }
+        }
+
+        return moduleProviders;
     }
 
     private static void addModuleToDD(Application app, J2eeModuleProvider moduleProvider) {

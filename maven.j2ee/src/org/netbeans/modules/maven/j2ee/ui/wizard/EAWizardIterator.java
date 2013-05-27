@@ -45,6 +45,7 @@ package org.netbeans.modules.maven.j2ee.ui.wizard;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.project.Project;
@@ -130,9 +131,44 @@ public class EAWizardIterator extends BaseWizardIterator {
                 saveServerToPom(project);
                 MavenProjectSupport.changeServer(project, true);
             }
+
+            // See issue #229465
+            if (projectDirName.endsWith("-ear")) {
+                generateApplicationXML(projects);
+            }
         }
 
         return projects;
+    }
+
+    private void generateApplicationXML(Set<FileObject> projects) throws IOException {
+        Set<Project> childProjects = new HashSet<Project>();
+        Project earProject = null;
+
+        for (FileObject projectFile : projects) {
+            Project project = ProjectManager.getDefault().findProject(projectFile);
+            if (project == null) {
+                continue;
+            }
+
+            // Collecting child subprojects to be able to correctly generate contain of application.xml
+            String projectDirName = projectFile.getName();
+            if (projectDirName.endsWith("-web") || projectDirName.endsWith("-ejb")) {
+                childProjects.add(project);
+            }
+
+            if (projectDirName.endsWith("-ear")) {
+                earProject = project;
+            }
+        }
+
+        if (earProject == null) {
+            return; // This should not happen, just to be sure for HR 7.3.1
+        }
+
+        String serverID = MavenProjectSupport.readServerID(earProject);
+        String javaeeVersion = (String) wiz.getProperty(MavenJavaEEConstants.HINT_J2EE_VERSION);
+        MavenProjectSupport.createApplicationXMLIfRequired(earProject, childProjects, serverID, javaeeVersion);
     }
 
     @Override
