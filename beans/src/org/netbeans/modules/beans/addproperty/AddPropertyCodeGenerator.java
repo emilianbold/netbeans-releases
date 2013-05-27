@@ -203,7 +203,7 @@ public class AddPropertyCodeGenerator implements CodeGenerator {
                         }
                         
                         if(enumconstantEnd == -1) {
-                            enumconstantEnd = (int) trees.getSourcePositions().getStartPosition(cut, clazz);
+                            enumconstantEnd = treeUtils.findBodySpan(clazz)[0] + 1;
                         }
                         
                         if(otherStart == -1) {
