@@ -352,7 +352,7 @@ public class Reformatter implements ReformatTask {
             }
             start = controller.getSnapshot().getOriginalOffset(start);
             end = controller.getSnapshot().getOriginalOffset(end);
-            if (start == (-1) || end == (-1)) continue;
+            if (start == (-1) || end == (-1) || start < region.getStartOffset() || end > region.getEndOffset()) continue;
             if (end - start > 0)
                 doc.remove(start, end - start);
             if (text != null && text.length() > 0)

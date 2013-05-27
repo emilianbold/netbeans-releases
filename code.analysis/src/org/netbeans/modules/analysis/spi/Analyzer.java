@@ -236,7 +236,7 @@ public interface Analyzer extends Cancellable {
         }
 
         private int computeProgress(int unit) {
-            return (int) (bucketStart + ((double) unit / totalWork) * bucketSize);
+            return bucketStart + (int) (((double) unit / totalWork) * bucketSize);
         }
 
         public void progress(String message) {

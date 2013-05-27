@@ -55,7 +55,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
@@ -80,6 +82,7 @@ import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.NbPreferences;
+import org.openide.util.WeakSet;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -89,9 +92,11 @@ import org.openide.util.lookup.ServiceProvider;
 public class AnalyzerImpl implements Analyzer {
 
     private static final int DEFAULT_DIRECTORY_SIZE = 100;
+    private final AnalyzerFactoryImpl factory;
     private final Context ctx;
 
-    public AnalyzerImpl(Context ctx) {
+    public AnalyzerImpl(AnalyzerFactoryImpl factory, Context ctx) {
+        this.factory = factory;
         this.ctx = ctx;
     }
 
@@ -191,7 +196,19 @@ public class AnalyzerImpl implements Analyzer {
                 ctx.reportAnalysisProblem(Bundle.ERR_CompiledWithErrors(), Bundle.DESC_CompiledWithErrors(sb.toString()));
             }
         }
+        
         ctx.finish();
+        
+        Set<FileObject> files2Clear = new HashSet<>();
+        
+        synchronized (factory.filesWithOpenedWarnings) {
+            files2Clear.addAll(factory.filesWithOpenedWarnings);
+            factory.filesWithOpenedWarnings.clear();
+        }
+        
+        for (FileObject file : files2Clear) {
+            HintsController.setErrors(file, RunInEditor.HINTS_KEY, Collections.<ErrorDescription>emptyList());
+        }
 
         return result;
     }
@@ -288,6 +305,8 @@ public class AnalyzerImpl implements Analyzer {
     @ServiceProvider(service=AnalyzerFactory.class, supersedes="org.netbeans.modules.findbugs.installer.FakeAnalyzer$FakeAnalyzerFactory")
     public static final class AnalyzerFactoryImpl extends AnalyzerFactory {
 
+        private final Set<FileObject> filesWithOpenedWarnings = new WeakSet<>();
+        
         @Messages("DN_FindBugs=FindBugs")
         public AnalyzerFactoryImpl() {
             super("findbugs", Bundle.DN_FindBugs(), makeTransparent());
@@ -334,14 +353,20 @@ public class AnalyzerImpl implements Analyzer {
 
         @Override
         public Analyzer createAnalyzer(Context context) {
-            return new AnalyzerImpl(context);
+            return new AnalyzerImpl(this, context);
         }
 
         @Override
         public void warningOpened(ErrorDescription warning) {
             if (NbPreferences.forModule(RunInEditor.class).getBoolean(RunInEditor.RUN_IN_EDITOR, RunInEditor.RUN_IN_EDITOR_DEFAULT)) return;
+            
+            FileObject file = warning.getFile();
 
-            HintsController.setErrors(warning.getFile(), RunInEditor.HINTS_KEY, Collections.singleton(warning));
+            synchronized(filesWithOpenedWarnings) {
+                filesWithOpenedWarnings.add(file);
+            }
+            
+            HintsController.setErrors(file, RunInEditor.HINTS_KEY, Collections.singleton(warning));
         }
 
     }
