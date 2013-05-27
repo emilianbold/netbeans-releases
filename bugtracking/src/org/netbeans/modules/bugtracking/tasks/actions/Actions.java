@@ -83,15 +83,17 @@ public class Actions {
 
     public static List<Action> getDefaultActions(TreeListNode... nodes) {
         List<Action> actions = new ArrayList<Action>();
-        Action markSeen = MarkSeenAction.createAction(nodes);
-        if (markSeen != null) {
-            actions.add(markSeen);
-        }
 
         Action refresh = RefreshAction.createAction(nodes);
         if (refresh != null) {
             actions.add(refresh);
         }
+        
+        Action markSeen = MarkSeenAction.createAction(nodes);
+        if (markSeen != null) {
+            actions.add(markSeen);
+        }
+
         return actions;
     }
 
@@ -643,6 +645,7 @@ public class Actions {
 
     public static List<Action> getQueryPopupActions(QueryNode... queryNodes) {
         List<Action> actions = new ArrayList<Action>();
+        actions.add(new EditQueryAction(queryNodes));  
         actions.add(new OpenQueryAction(queryNodes));
         actions.add(new DeleteQueryAction(queryNodes));
         //actions.add(new NotificationQueryAction(queryNodes));
@@ -700,6 +703,26 @@ public class Actions {
 
         public OpenQueryAction(QueryController.QueryMode mode, QueryNode... queryNodes) {
             super(NbBundle.getMessage(OpenQueryAction.class, "CTL_Open"), queryNodes); //NOI18N
+            this.mode = mode;
+        }
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            for (QueryNode queryNode : getQueryNodes()) {
+                queryNode.getQuery().open(false, mode);
+            }
+        }
+    }
+    public static class EditQueryAction extends QueryAction {
+
+        private QueryController.QueryMode mode;
+
+        public EditQueryAction(QueryNode... queryNodes) {
+            this(QueryController.QueryMode.EDIT, queryNodes);
+        }
+
+        public EditQueryAction(QueryController.QueryMode mode, QueryNode... queryNodes) {
+            super(NbBundle.getMessage(OpenQueryAction.class, "CTL_Edit"), queryNodes); //NOI18N
             this.mode = mode;
         }
 

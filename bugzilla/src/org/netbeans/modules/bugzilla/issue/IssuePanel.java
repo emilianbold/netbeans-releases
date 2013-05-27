@@ -1890,7 +1890,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         viewLogButton.addActionListener(formListener);
 
         org.openide.awt.Mnemonics.setLocalizedText(btnSaveChanges, org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnSaveChanges.text")); // NOI18N
-        btnSaveChanges.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.jButton1.TTtext")); // NOI18N
+        btnSaveChanges.setToolTipText(org.openide.util.NbBundle.getMessage(IssuePanel.class, "IssuePanel.btnSaveChanges.TTtext")); // NOI18N
         btnSaveChanges.setEnabled(false);
         btnSaveChanges.addActionListener(formListener);
 
@@ -2327,14 +2327,14 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             else if (evt.getSource() == btnSaveChanges) {
                 IssuePanel.this.btnSaveChangesActionPerformed(evt);
             }
+            else if (evt.getSource() == btnDeleteTask) {
+                IssuePanel.this.btnDeleteTaskActionPerformed(evt);
+            }
             else if (evt.getSource() == resolutionCombo) {
                 IssuePanel.this.resolutionComboActionPerformed(evt);
             }
             else if (evt.getSource() == assignedCombo) {
                 IssuePanel.this.assignedComboActionPerformed(evt);
-            }
-            else if (evt.getSource() == btnDeleteTask) {
-                IssuePanel.this.btnDeleteTaskActionPerformed(evt);
             }
         }
 

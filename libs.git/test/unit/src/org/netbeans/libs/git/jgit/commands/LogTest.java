@@ -46,8 +46,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Date;
 import java.util.Map;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
+import org.eclipse.jgit.revwalk.RevCommit;
+import org.eclipse.jgit.revwalk.RevWalk;
+import org.eclipse.jgit.revwalk.filter.AndRevFilter;
+import org.eclipse.jgit.revwalk.filter.MessageRevFilter;
+import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.netbeans.libs.git.ApiUtils;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
@@ -431,7 +438,7 @@ public class LogTest extends AbstractGitTestCase {
         add(files);
 
         GitClient client = getClient(workDir);
-        GitRevisionInfo revision1 = client.commit(files, "modification1\non master\n", null, null, NULL_PROGRESS_MONITOR);
+        GitRevisionInfo revision1 = client.commit(files, "modification1\non master", null, null, NULL_PROGRESS_MONITOR);
         
         SearchCriteria crit = new SearchCriteria();
         GitRevisionInfo[] revisions = client.log(crit, NULL_PROGRESS_MONITOR);
@@ -453,6 +460,55 @@ public class LogTest extends AbstractGitTestCase {
         revisions = client.log(crit, NULL_PROGRESS_MONITOR);
         assertEquals(1, revisions.length);
         assertRevisions(revision1, revisions[0]);
+        
+        // see bug #228905
+        crit = new SearchCriteria();
+        crit.setMessage("on master");
+        revisions = client.log(crit, NULL_PROGRESS_MONITOR);
+        assertEquals(1, revisions.length);
+        assertRevisions(revision1, revisions[0]);
+    }
+    
+    public void testSubstringFilter () throws Exception {
+        Git git = new Git(repository);
+        RevCommit c = git.commit().setMessage("abcd").call();
+
+        RevWalk walk = new RevWalk(repository);
+        {
+            walk.setRevFilter(AndRevFilter.create(RevFilter.ALL, MessageRevFilter.create("ab")));
+            walk.markStart(c);
+            RevCommit next = walk.next();
+            assertNotNull(next);
+            walk.reset();
+        }
+
+        {
+            walk.setRevFilter(AndRevFilter.create(RevFilter.ALL, MessageRevFilter.create("bc")));
+            walk.markStart(c);
+            RevCommit next = walk.next();
+            assertNotNull(next);
+            walk.reset();
+        }
+
+        {
+            walk.setRevFilter(AndRevFilter.create(RevFilter.ALL, MessageRevFilter.create("cd")));
+            walk.markStart(c);
+            RevCommit next = walk.next();
+            // when starts failing, the JGit bug is fixed: https://bugs.eclipse.org/bugs/show_bug.cgi?id=409144
+            // remove the WA in LogCommand
+            assertNull(next);
+            walk.reset();
+        }
+
+        {
+            walk.setRevFilter(AndRevFilter.create(RevFilter.ALL, MessageRevFilter.create("abcd")));
+            walk.markStart(c);
+            RevCommit next = walk.next();
+            // when starts failing, the JGit bug is fixed: https://bugs.eclipse.org/bugs/show_bug.cgi?id=409144
+            // remove the WA in LogCommand
+            assertNull(next);
+            walk.reset();
+        }
     }
     
     public void testLogShowMerges () throws Exception {
