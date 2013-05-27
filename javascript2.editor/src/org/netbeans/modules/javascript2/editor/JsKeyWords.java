@@ -54,6 +54,7 @@ import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 public class JsKeyWords {
 
     protected static enum CompletionType {
+        SIMPLE,
         CURSOR_INSIDE_BRACKETS,
         ENDS_WITH_CURLY_BRACKETS,
         ENDS_WITH_SPACE,
@@ -73,6 +74,7 @@ public class JsKeyWords {
         KEYWORDS.put(JsTokenId.KEYWORD_DELETE.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put(JsTokenId.KEYWORD_DO.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put(JsTokenId.KEYWORD_ELSE.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
+        KEYWORDS.put(JsTokenId.KEYWORD_FALSE.fixedText(), CompletionType.SIMPLE);
         KEYWORDS.put(JsTokenId.KEYWORD_FINALLY.fixedText(), CompletionType.ENDS_WITH_CURLY_BRACKETS);
         KEYWORDS.put(JsTokenId.KEYWORD_FOR.fixedText(), CompletionType.CURSOR_INSIDE_BRACKETS);
         KEYWORDS.put(JsTokenId.KEYWORD_FUNCTION.fixedText(), CompletionType.ENDS_WITH_SPACE);
@@ -85,6 +87,7 @@ public class JsKeyWords {
         // XXX this keyword is missing here
         KEYWORDS.put(JsTokenId.KEYWORD_THIS.fixedText(), CompletionType.ENDS_WITH_DOT);
         KEYWORDS.put(JsTokenId.KEYWORD_THROW.fixedText(), CompletionType.ENDS_WITH_SPACE);
+        KEYWORDS.put(JsTokenId.KEYWORD_TRUE.fixedText(), CompletionType.SIMPLE);
         KEYWORDS.put(JsTokenId.KEYWORD_TRY.fixedText(), CompletionType.ENDS_WITH_CURLY_BRACKETS);
         KEYWORDS.put(JsTokenId.KEYWORD_TYPEOF.fixedText(), CompletionType.ENDS_WITH_SPACE);
         KEYWORDS.put(JsTokenId.KEYWORD_VAR.fixedText(), CompletionType.ENDS_WITH_SPACE);
