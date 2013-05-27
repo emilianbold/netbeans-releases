@@ -119,7 +119,7 @@ public class CreateTestTest extends JunitTestCase {
                 "|" + TEST_PACKAGE_NAME+ "|" + Utilities.TEST_CLASS_NAME);
         
 //        Utilities.pushCreateTestsPopup(n);
-        n.performPopupActionNoBlock("Tools|Create JUnit Tests");
+        n.performPopupActionNoBlock("Tools|Create Tests");
         
         NbDialogOperator ndo = new NbDialogOperator(CREATE_TESTS_DIALOG);
         ndo.btOK().push(); //defaults checked

@@ -85,6 +85,10 @@ public abstract class EJBProblemFinder {
         assert file != null;
         this.file = file;
     }
+
+    protected EJBVerificationRule forRule() {
+        return null;
+    }
     
     public void run(final CompilationInfo info) throws Exception{
 
@@ -137,8 +141,12 @@ public abstract class EJBProblemFinder {
                             Ejb ejb = metadata.findByEjbClass(javaClass.getQualifiedName().toString());
                             
                             EJBProblemContext ctx = new EJBProblemContext(info, prj, ejbModule, file, javaClass, ejb, metadata);
-                            
-                            problemsFound.addAll(EJBRulesRegistry.check(ctx));
+
+                            if (forRule() == null) {
+                                problemsFound.addAll(EJBRulesRegistry.check(ctx));
+                            } else {
+                                problemsFound.addAll(forRule().check(ctx));
+                            }
                             
                             if (LOG.isLoggable(Level.FINE)){
                                 long timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;

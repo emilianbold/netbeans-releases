@@ -51,8 +51,7 @@ import javax.swing.LayoutStyle;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
-import org.netbeans.modules.css.prep.util.MappingUtils;
+import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -105,12 +104,12 @@ public class MappingPanel extends JPanel {
     }
 
     public List<String> getMappings() {
-        return MappingUtils.decode(mapping);
+        return CssPreprocessorUtils.decodeMappings(mapping);
     }
 
     public void setMappings(List<String> mappings) {
         assert EventQueue.isDispatchThread();
-        mappingTextField.setText(MappingUtils.encode(mappings));
+        mappingTextField.setText(CssPreprocessorUtils.encodeMappings(mappings));
     }
 
     public void addChangeListener(ChangeListener listener) {

@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CPFileType;
 import org.netbeans.modules.css.prep.CPIndex;
+import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
 import org.netbeans.spi.project.ui.ProjectProblemResolver;
@@ -96,7 +97,7 @@ abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
         if (!isEnabled(project)) {
             return Collections.emptyList();
         }
-        if (!hasAnyFilesForCompiling(project)) {
+        if (!CssPreprocessorUtils.hasAnyFilesForCompiling(project, getFileType())) {
             return Collections.emptyList();
         }
         return problemsProviderSupport.getProblems(new ProjectProblemsProviderSupport.ProblemsCollector() {
@@ -108,16 +109,6 @@ abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
                 return currentProblems;
             }
         });
-    }
-
-    protected boolean hasAnyFilesForCompiling(Project project) {
-        try {
-            return !CPIndex.get(project).findFiles(getFileType()).isEmpty();
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        }
-        // presume we have some files for processing
-        return true;
     }
 
     @NbBundle.Messages({

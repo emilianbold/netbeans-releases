@@ -299,6 +299,7 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
     }
 
     private static final class PrefixResolver {
+        private static final String VARIABLE_PREFIX = "$"; //NOI18N
         private final ParserResult info;
         private final int offset;
         private final boolean upToOffset;
@@ -364,8 +365,7 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
         }
 
         private void processSelectedToken(TokenSequence<LatteMarkupTokenId> ts) {
-            LatteMarkupTokenId id = ts.token().id();
-            if (isValidTokenId(id)) {
+            if (isValidTokenId(ts.token())) {
                 createResult(ts);
             }
         }
@@ -377,10 +377,12 @@ public class LatteCompletionHandler implements CodeCompletionHandler {
             }
         }
 
-        private static boolean isValidTokenId(LatteMarkupTokenId id) {
+        private static boolean isValidTokenId(Token<LatteMarkupTokenId> token) {
+            assert token != null;
+            LatteMarkupTokenId id = token.id();
             return LatteMarkupTokenId.T_SYMBOL.equals(id) || LatteMarkupTokenId.T_VARIABLE.equals(id)
                     || LatteMarkupTokenId.T_MACRO_START.equals(id) || LatteMarkupTokenId.T_MACRO_END.equals(id)
-                    || LatteMarkupTokenId.T_ERROR.equals(id);
+                    || LatteMarkupTokenId.T_ERROR.equals(id) || (LatteMarkupTokenId.T_CHAR.equals(id) && VARIABLE_PREFIX.equals(token.text()));
         }
 
     }

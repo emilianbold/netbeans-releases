@@ -380,8 +380,12 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
             public void run() {
                 if (active) {
                     TopComponent tc = WindowManager.getDefault().findTopComponent("CssStylesTC"); // NOI18N
-                    FileObject fob = getContext();
-                    ((CssStylesTC)tc).setTitle(fob.getNameExt());
+                    if(tc != null) {
+                        FileObject fob = getContext();
+                        if(fob != null) {
+                            ((CssStylesTC)tc).setTitle(fob.getNameExt());
+                        }
+                    }
                 }
             }
         });
