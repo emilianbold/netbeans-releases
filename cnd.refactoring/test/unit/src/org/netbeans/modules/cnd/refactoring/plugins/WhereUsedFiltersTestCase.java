@@ -45,6 +45,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.modules.cnd.refactoring.api.WhereUsedQueryConstants;
+import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 
 /**
  *
@@ -92,6 +93,22 @@ public class WhereUsedFiltersTestCase extends CsmWhereUsedQueryPluginTestCaseBas
         props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
         // Only declarations filter selected
         performWhereUsed("testFUFilters.c", 16, 5, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey()));
+    }
+    
+    public void testCommentsFilterSelected() throws Exception {
+        Map<Object, Boolean> props = new HashMap<>();
+        props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
+        props.put(WhereUsedQuery.SEARCH_IN_COMMENTS, true);
+        // Only declarations filter selected
+        performWhereUsed("testFUFilters.c", 29, 7, props, Arrays.asList(CsmWhereUsedFilters.COMMENTS.getKey(), CsmWhereUsedFilters.DECLARATIONS.getKey()));
+    }
+    
+    public void testCommentsFilterDeselected() throws Exception {
+        Map<Object, Boolean> props = new HashMap<>();
+        props.put(WhereUsedQueryConstants.FIND_OVERRIDING_METHODS, true);
+        props.put(WhereUsedQuery.SEARCH_IN_COMMENTS, true);
+        // Only declarations filter selected
+        performWhereUsed("testFUFilters.c", 29, 7, props, Arrays.asList(CsmWhereUsedFilters.DECLARATIONS.getKey()));
     }
 }
 
