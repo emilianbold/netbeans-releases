@@ -49,8 +49,11 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
+import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.php.analysis.options.AnalysisOptions;
+import org.netbeans.modules.php.analysis.options.AnalysisOptionsValidator;
 import org.netbeans.modules.php.analysis.ui.CodeSnifferStandardsComboBoxModel;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -61,13 +64,15 @@ public class CodeSnifferCustomizerPanel extends JPanel {
     public static final String STANDARD = "codeSniffer.standard"; // NOI18N
 
     final CodeSnifferStandardsComboBoxModel standardsModel = new CodeSnifferStandardsComboBoxModel();
+    final Analyzer.CustomizerContext<Void, CodeSnifferCustomizerPanel> context;
     final Preferences settings;
 
 
-    public CodeSnifferCustomizerPanel(Preferences settings) {
-        assert settings != null;
+    public CodeSnifferCustomizerPanel(Analyzer.CustomizerContext<Void, CodeSnifferCustomizerPanel> context) {
+        assert context != null;
 
-        this.settings = settings;
+        this.context = context;
+        this.settings = context.getSettings();
 
         initComponents();
         init();
@@ -81,11 +86,35 @@ public class CodeSnifferCustomizerPanel extends JPanel {
         standardComboBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
-                if (e.getStateChange() == ItemEvent.SELECTED) {
-                    settings.put(STANDARD, standardsModel.getSelectedStandard());
-                }
+                validateAndSetData();
             }
         });
+    }
+
+    void validateAndSetData() {
+        if (validateData()) {
+            setData();
+        }
+    }
+
+    private boolean validateData() {
+        ValidationResult result = new AnalysisOptionsValidator()
+                .validateCodeSnifferStandard(standardsModel.getSelectedStandard())
+                .getResult();
+        if (result.hasErrors()) {
+            context.setError(result.getErrors().get(0).getMessage());
+            return false;
+        }
+        if (result.hasWarnings()) {
+            context.setError(result.getWarnings().get(0).getMessage());
+            return false;
+        }
+        context.setError(null);
+        return true;
+    }
+
+    private void setData() {
+        settings.put(STANDARD, standardsModel.getSelectedStandard());
     }
 
     /**
