@@ -151,10 +151,12 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
         Element element = properties.getPreSelectedMembers()[0].resolveElement(info);
         TreePath path = info.getTrees().getPath(element);
         if (path != null) {
-            TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(info, path, true, true, true, true, false);
+            TreePath enclosingClassPath = JavaRefactoringUtils.findEnclosingClass(info, path, true, true, false, true, false);
             if (enclosingClassPath != null) {
                 Element typeElement = info.getTrees().getElement(enclosingClassPath);
-                if (typeElement == null || !typeElement.getKind().isClass() || enclosingClassPath.getLeaf().getKind() == Tree.Kind.INTERFACE) {
+                if (typeElement == null || !typeElement.getKind().isClass() ||
+                        enclosingClassPath.getLeaf().getKind() == Tree.Kind.INTERFACE ||
+                        typeElement.getKind() == ElementKind.ENUM) {
                     return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveFromClass"));
                 }
             } else {
@@ -236,7 +238,7 @@ public class MoveMembersRefactoringPlugin extends JavaRefactoringPlugin {
             return p;
         }
 
-        TreePath sourceClass = JavaRefactoringUtils.findEnclosingClass(javac, sourceTph.resolve(javac), true, true, true, true, true);
+        TreePath sourceClass = JavaRefactoringUtils.findEnclosingClass(javac, sourceTph.resolve(javac), true, true, false, false, false);
         TypeMirror sourceType = javac.getTrees().getTypeMirror(sourceClass);
         if (sourceType.equals(targetType)) { // [f] target is the same as source
             return new Problem(true, NbBundle.getMessage(MoveMembersRefactoringPlugin.class, "ERR_MoveToSameClass")); //NOI18N
