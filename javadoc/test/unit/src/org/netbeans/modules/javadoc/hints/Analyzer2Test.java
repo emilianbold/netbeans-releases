@@ -55,6 +55,28 @@ public class Analyzer2Test extends NbTestCase {
     public Analyzer2Test(String name) {
         super(name);
     }
+    
+    // "4:7-4:38:warning:Unknown throwable: @throws java.io.IOException"
+    
+    public void testExceptionInheritanceAnalyzer() throws Exception {
+        HintTest.create()
+                .input(
+                "package test;\n"
+                + "import java.nio.file.NoSuchFileException;\n"
+                + "import java.io.IOException;\n"
+                + "class ZimaImpl {\n"
+                + "    /**\n"
+                + "     * @throws NoSuchFileException Subclass of declared exception\n"
+                + "     */\n"
+                + "    public void leden() throws IOException {\n"
+                + "    }\n"
+                + "}\n")
+                .preference(AVAILABILITY_KEY + true, true)
+                .preference(SCOPE_KEY, "private")
+                .run(JavadocHint.class)
+                .assertNotContainsWarnings("Missing @throws tag for java.io.IOException")
+                .assertNotContainsWarnings("Unknown throwable: @throws java.nio.file.NoSuchFileException");
+    }
        
     public void testInheritanceAnalyzer() throws Exception {
         HintTest.create()
