@@ -78,4 +78,6 @@ public interface VCSFileProxyOperations {
     ProcessBuilder createProcessBuilder(VCSFileProxy file);
 
     void refreshFor(VCSFileProxy ... files);
+
+    long lastModified(VCSFileProxy file);
 }
