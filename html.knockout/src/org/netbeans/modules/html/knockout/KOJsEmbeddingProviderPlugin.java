@@ -106,9 +106,9 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
     @Override
     public void endProcessing() {
-        if (hasKnockout) {
-            addEmbedding("});\n"); // NOI18N
-        }
+//        if (hasKnockout) {
+//            addEmbedding("});\n"); // NOI18N
+//        }
         hasKnockout = false;
         stack.clear();
         lastTagOpen = null;
@@ -202,7 +202,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     
     private void addEmbedding(String value) {
         if (!hasKnockout) {
-            embeddings.add(snapshot.create("(function(){\n", KOUtils.JAVASCRIPT_MIMETYPE));
+            //embeddings.add(snapshot.create("(function(){\n", KOUtils.JAVASCRIPT_MIMETYPE));
             embeddings.add(snapshot.create("var $root = ko.$bindings;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
             embeddings.add(snapshot.create("var $data = $root;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
             embeddings.add(snapshot.create("var $parent = undefined;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
