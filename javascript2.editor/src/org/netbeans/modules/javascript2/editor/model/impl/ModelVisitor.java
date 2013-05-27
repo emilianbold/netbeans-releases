@@ -1106,8 +1106,10 @@ public class ModelVisitor extends PathNodeVisitor {
 
     private boolean fillName(AccessNode node, List<String> result) {
         List<Identifier> fqn = getName(node, parserResult);
-        for (int i = fqn.size() - 1; i >= 0; i--) {
-            result.add(0, fqn.get(i).getName());
+        if (fqn != null) {
+            for (int i = fqn.size() - 1; i >= 0; i--) {
+                result.add(0, fqn.get(i).getName());
+            }
         }
 
         JsObject current = modelBuilder.getCurrentObject();
