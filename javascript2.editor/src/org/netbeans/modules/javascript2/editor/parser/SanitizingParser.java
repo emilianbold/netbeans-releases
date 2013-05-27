@@ -60,10 +60,10 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class SanitizingParser extends Parser {
 
-    private static final Logger LOGGER = Logger.getLogger(JsParser.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(SanitizingParser.class.getName());
 
     private static final long MAX_FILE_SIZE_TO_PARSE = 1024 * 1024;
-    
+
     private final Language<JsTokenId> language;
 
     private JsParserResult lastResult = null;
@@ -74,6 +74,9 @@ public abstract class SanitizingParser extends Parser {
 
     @Override
     public final void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.log(Level.FINEST, snapshot.getText().toString());
+        }
         try {
             JsErrorManager errorManager = new JsErrorManager(snapshot, language);
             lastResult = parseSource(snapshot, event, Sanitize.NONE, errorManager);
