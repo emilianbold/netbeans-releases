@@ -437,10 +437,28 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                         "DUPLICATE_THROWS_DESC=Duplicate @{0} tag: {1}",
                         "# {0} - [@throws|@exception]", "# {1} - @throws name",
                         "UNKNOWN_THROWABLE_DESC=Unknown throwable: @{0} {1}"})
-    private void checkThrowsDeclared(ThrowsTree tree, String fqn, List<? extends TypeMirror> list, DocTreePathHandle dtph, Position[] positions, List<ErrorDescription> errors) {
+    private void checkThrowsDeclared(ThrowsTree tree, Element ex, String fqn, List<? extends TypeMirror> list, DocTreePathHandle dtph, Position[] positions, List<ErrorDescription> errors) {
         boolean found = false;
+        final TypeMirror type;
+        if(ex != null) {
+            type = ex.asType();
+        } else {
+            TypeElement typeElement = javac.getElements().getTypeElement(fqn);
+            if(typeElement != null) {
+                type = typeElement.asType();
+            } else {
+                type = null;
+            }
+        }
         for (TypeMirror t: list) {
-            if (fqn.equals(t.toString())) {
+            if(type != null && javac.getTypes().isAssignable(type, t)) {
+                if(!foundThrows.add(type)) {
+                    errors.add(createErrorDescription(DUPLICATE_THROWS_DESC(tree.getTagName(), fqn),
+                    Collections.singletonList(new RemoveTagFix(dtph, "@" + tree.getTagName()).toEditorFix()), positions));
+                }
+                found = true;
+            }
+            if (type == null && fqn.equals(t.toString())) {
                 if(!foundThrows.add(t)) {
                     errors.add(createErrorDescription(DUPLICATE_THROWS_DESC(tree.getTagName(), fqn),
                     Collections.singletonList(new RemoveTagFix(dtph, "@" + tree.getTagName()).toEditorFix()), positions));
@@ -462,13 +480,22 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
             if (!foundThrows.contains(e) && !inheritedThrows.contains(e.toString())
                     && (!(types.isAssignable(e, javac.getElements().getTypeElement("java.lang.Error").asType())
                 || types.isAssignable(e, javac.getElements().getTypeElement("java.lang.RuntimeException").asType())))) {
-                try {
-                    Position[] poss = createPositions(t, javac, doc);
-                    DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
-                    errors.add(createErrorDescription(NbBundle.getMessage(Analyzer.class, "MISSING_THROWS_DESC", e.toString()),
-                            Collections.singletonList(AddTagFix.createAddThrowsTagFix(dtph, e.toString(), i).toEditorFix()), poss));
-                } catch (BadLocationException ex) {
-                    Exceptions.printStackTrace(ex);
+                boolean found = false;
+                for (TypeMirror typeMirror : foundThrows) {
+                    if(types.isAssignable(typeMirror, e)) {
+                        found = true;
+                        break;
+                    }
+                }
+                if(!found) {
+                    try {
+                        Position[] poss = createPositions(t, javac, doc);
+                        DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
+                        errors.add(createErrorDescription(NbBundle.getMessage(Analyzer.class, "MISSING_THROWS_DESC", e.toString()),
+                                Collections.singletonList(AddTagFix.createAddThrowsTagFix(dtph, e.toString(), i).toEditorFix()), poss));
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                 }
             }
         }
@@ -585,7 +612,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                                 || types.isAssignable(ex.asType(), runtime))) {
                             ExecutableElement ee = (ExecutableElement) currentElement;
                             String fqn = ex != null ? ((TypeElement) ex).getQualifiedName().toString() : javac.getTreeUtilities().getReferenceClass(new DocTreePath(currentDocPath, exName)).toString();
-                            checkThrowsDeclared(tree, fqn, ee.getThrownTypes(), dtph, positions, errors);
+                            checkThrowsDeclared(tree, ex, fqn, ee.getThrownTypes(), dtph, positions, errors);
                         }
                         break;
                     default:
