@@ -448,7 +448,9 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
 
     @Override
     public void enableFilters(FiltersDescription filtersDescription) {
-        //filtersDescription.enable(CsmWhereUsedFilters.COMMENTS.getKey());
+        if (isSearchInComments()) {
+            filtersDescription.enable(CsmWhereUsedFilters.COMMENTS.getKey());
+        }
         filtersDescription.enable(CsmWhereUsedFilters.DEAD_CODE.getKey());
         if (isFindOverridingMethods()) {
             filtersDescription.enable(CsmWhereUsedFilters.DECLARATIONS.getKey());
@@ -482,8 +484,16 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                     String oldName = Thread.currentThread().getName();
                     try {
                         Thread.currentThread().setName("FindUsagesQuery: Analyzing " + file.getAbsolutePath()); //NOI18N
+                        // get find usages
                         Collection<CsmReference> refs = xRef.getReferences(objs, file, kinds, interrupter);
-                        fileElems = new ArrayList<RefactoringElementImplementation>(refs.size());
+                        
+                        // get usages in comments if needed
+                        if (isSearchInComments() && objs.length > 0 && !refs.isEmpty()) {
+                            Collection<CsmReference> comments = CsmRefactoringUtils.getComments(file, CsmRefactoringUtils.getSimpleText(objs[0]));
+                            refs.addAll(comments);
+                        }
+                        
+                        fileElems = new ArrayList<>(refs.size());
                         for (CsmReference csmReference : refs) {
                             boolean accept = true;
                             if (onlyUsages) {
@@ -492,10 +502,6 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                             if (accept) {
                                 fileElems.add(CsmRefactoringElementImpl.create(csmReference, true));
                             }
-                        }
-                        if (false/*need comments*/ && !fileElems.isEmpty()) {
-                            Collection<CsmReference> comments = CsmRefactoringUtils.getComments(file, "");
-                            refs.addAll(comments);
                         }
                     } finally {
                         Thread.currentThread().setName(oldName);
