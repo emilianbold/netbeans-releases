@@ -64,7 +64,6 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.Stack;
 import java.util.StringTokenizer;
 import jdk.nashorn.internal.ir.TernaryNode;
 import org.netbeans.api.lexer.Token;
