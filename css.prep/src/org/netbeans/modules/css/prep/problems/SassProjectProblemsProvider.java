@@ -43,7 +43,7 @@ package org.netbeans.modules.css.prep.problems;
 
 import java.util.Collection;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.CPFileType;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.preferences.SassPreferencesValidator;
 import org.netbeans.modules.css.prep.sass.SassExecutable;
@@ -69,8 +69,8 @@ public final class SassProjectProblemsProvider extends BaseProjectProblemsProvid
     }
 
     @Override
-    CPFileType getFileType() {
-        return CPFileType.SASS;
+    CssPreprocessorType getFileType() {
+        return CssPreprocessorType.SASS;
     }
 
     @NbBundle.Messages({

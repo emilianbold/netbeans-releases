@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.CPFileType;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.less.LessCssPreprocessor;
 import org.netbeans.modules.css.prep.preferences.LessPreferences;
 import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
@@ -143,7 +143,7 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
     }
 
     private ValidationResult getValidationResult() {
-        if (!CssPreprocessorUtils.hasAnyFilesForCompiling(project, CPFileType.LESS)) {
+        if (!CssPreprocessorUtils.hasAnyFilesForCompiling(project, CssPreprocessorType.LESS)) {
             // no less files -> no validation needed
             return new ValidationResult();
         }

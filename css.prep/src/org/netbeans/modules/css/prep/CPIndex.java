@@ -99,7 +99,7 @@ public class CPIndex {
      * @param type
      * @return 
      */
-    public Collection<FileObject> findFiles(CPFileType type) {
+    public Collection<FileObject> findFiles(CssPreprocessorType type) {
         try {
             Collection<FileObject> files = new ArrayList<FileObject>();
             

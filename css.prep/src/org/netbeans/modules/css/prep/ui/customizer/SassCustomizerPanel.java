@@ -51,6 +51,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -68,7 +69,7 @@ public class SassCustomizerPanel extends JPanel {
 
     public SassCustomizerPanel() {
         assert EventQueue.isDispatchThread();
-        this.mappingPanel = new MappingPanel(MappingPanel.Type.SASS);
+        this.mappingPanel = new MappingPanel(CssPreprocessorType.SASS);
         initComponents();
         init();
     }

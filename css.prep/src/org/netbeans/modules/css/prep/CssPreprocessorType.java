@@ -43,32 +43,51 @@ package org.netbeans.modules.css.prep;
 
 import java.util.Arrays;
 import java.util.Collection;
+import org.openide.util.NbBundle;
 
-/**
- * Represents a type of CSS preprocessor file.
- *
- * @author marekfukala
- */
-public enum CPFileType {
-    
-    /**
-     * CP file type for LESS sources.
-     */
-    LESS("text/less"), 
-    
-    /**
-     * CP file type for SASS sources.
-     */
-    SASS("text/scss", "text/sass");
-    
-    private final Collection<String> mimeTypes;
-    
-    private CPFileType(String... mimes) {
-        mimeTypes = Arrays.asList(mimes);
-    }
+@NbBundle.Messages({
+    "CssPreprocessorType.sass.displayName=Sass",
+    "CssPreprocessorType.less.displayName=LESS",
+})
+public enum CssPreprocessorType {
 
-    public Collection<String> getMimeTypes() {
-        return mimeTypes;
-    }
-    
+    SASS() {
+        @Override
+        public String getDisplayName() {
+            return Bundle.CssPreprocessorType_sass_displayName();
+        }
+
+        @Override
+        public String getFileExtension() {
+            return "scss"; // NOI18N
+        }
+
+        @Override
+        public Collection<String> getMimeTypes() {
+            return Arrays.asList("text/scss", "text/sass"); // NOI18N
+        }
+
+    },
+    LESS() {
+        @Override
+        public String getDisplayName() {
+            return Bundle.CssPreprocessorType_less_displayName();
+        }
+
+        @Override
+        public String getFileExtension() {
+            return "less"; // NOI18N
+        }
+
+        @Override
+        public Collection<String> getMimeTypes() {
+            return Arrays.asList("text/less"); // NOI18N
+        }
+
+    };
+
+    public abstract String getDisplayName();
+    public abstract String getFileExtension();
+    public abstract Collection<String> getMimeTypes();
+
 }
