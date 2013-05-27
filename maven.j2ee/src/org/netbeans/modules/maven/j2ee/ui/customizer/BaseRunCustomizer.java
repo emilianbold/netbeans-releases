@@ -117,7 +117,7 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
     }
 
     protected void initVersionModel(JComboBox javaeeVersionCBox, JLabel javaeeVersionLabel) {
-        JavaEEVersionComboBoxUpdater.create(handle, javaeeVersionCBox, javaeeVersionLabel);
+        JavaEEVersionComboBoxUpdater.create(project, handle, javaeeVersionCBox, javaeeVersionLabel);
     }
 
     @Messages({

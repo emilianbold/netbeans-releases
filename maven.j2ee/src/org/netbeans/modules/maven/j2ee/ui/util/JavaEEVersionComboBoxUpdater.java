@@ -52,12 +52,15 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import static org.netbeans.modules.maven.j2ee.ui.util.Bundle.*;
+import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
+import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -69,6 +72,7 @@ public final class JavaEEVersionComboBoxUpdater extends ComboBoxUpdater<Profile>
     private static final Set<Profile> WEB_PROFILES;
     private static final Set<Profile> FULL_PROFILES;
 
+    private final Project project;
     private final ModelHandle2 handle;
     private final Profile defaultValue;
 
@@ -88,7 +92,7 @@ public final class JavaEEVersionComboBoxUpdater extends ComboBoxUpdater<Profile>
         FULL_PROFILES.add(Profile.JAVA_EE_7_FULL);
     }
 
-    private JavaEEVersionComboBoxUpdater(ModelHandle2 handle, JComboBox javaeeCBox, JLabel javaeeLabel) {
+    private JavaEEVersionComboBoxUpdater(Project project, ModelHandle2 handle, JComboBox javaeeCBox, JLabel javaeeLabel) {
         super(javaeeCBox, javaeeLabel);
         assert (handle != null);
         assert (javaeeCBox != null);
@@ -100,6 +104,7 @@ public final class JavaEEVersionComboBoxUpdater extends ComboBoxUpdater<Profile>
             javaeeCBox.setModel(new DefaultComboBoxModel(FULL_PROFILES.toArray()));
         }
 
+        this.project = project;
         this.handle = handle;
         this.defaultValue = getValue();
 
@@ -123,8 +128,8 @@ public final class JavaEEVersionComboBoxUpdater extends ComboBoxUpdater<Profile>
      * @param javaeeCBox Java EE version combo box for which we want to create updater
      * @param javaeeLabel Java EE label typically just before combo box
      */
-    public static void create(ModelHandle2 handle, JComboBox javaeeCBox, JLabel javaeeLabel) {
-        new JavaEEVersionComboBoxUpdater(handle, javaeeCBox, javaeeLabel);
+    public static void create(Project project, ModelHandle2 handle, JComboBox javaeeCBox, JLabel javaeeLabel) {
+        new JavaEEVersionComboBoxUpdater(project, handle, javaeeCBox, javaeeLabel);
     }
 
     @Override
@@ -134,7 +139,20 @@ public final class JavaEEVersionComboBoxUpdater extends ComboBoxUpdater<Profile>
 
     @Override
     public Profile getValue() {
-        return Profile.fromPropertiesString(handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_J2EE_VERSION, true));
+        Profile javaeeProfile = Profile.fromPropertiesString(handle.getRawAuxiliaryProperty(MavenJavaEEConstants.HINT_J2EE_VERSION, true));
+        if (javaeeProfile != null) {
+            return javaeeProfile;
+        }
+
+        WebModuleProviderImpl webModuleProvider = project.getLookup().lookup(WebModuleProviderImpl.class);
+        if (webModuleProvider != null) {
+            WebModuleImpl webModule = webModuleProvider.getModuleImpl();
+            if (webModule != null) {
+                return webModule.getJ2eeProfile();
+            }
+        }
+
+        return null;
     }
 
     @Messages({
