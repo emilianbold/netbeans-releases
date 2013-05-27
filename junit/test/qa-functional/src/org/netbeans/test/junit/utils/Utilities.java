@@ -86,13 +86,13 @@ public class Utilities {
     
     /** 'Run File' action label from j2se project bundle */
     public static final String RUN_FILE =
-            Bundle.getString("org.netbeans.modules.java.j2seproject.Bundle",
+            Bundle.getString("org.netbeans.modules.java.api.common.project.Bundle",
             "ACTION_run.single");
     
     /** Test project label (j2se project context menu) */
     public static final String TEST_PROJECT =
-            Bundle.getString("org.netbeans.modules.java.j2seproject.ui.Bundle",
-            "LBL_TestAction_Name");
+            Bundle.getString("org.netbeans.modules.project.ui.actions.Bundle",
+            "LBL_TestProjectAction_Name");
     
     /** 'Source Packages' string from j2se project bundle */
     public static final String SRC_PACKAGES_PATH =
