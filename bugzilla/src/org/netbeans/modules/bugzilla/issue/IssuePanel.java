@@ -2543,7 +2543,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }//GEN-LAST:event_submitButtonActionPerformed
 
     private void storeCCValue() {
-        Set<String> oldCCs = ccs(issue.getFieldValue(IssueField.CC));
+        Set<String> oldCCs = ccs(issue.getRepositoryFieldValue(IssueField.CC));
         Set<String> newCCs = ccs(ccField.getText());
 
         String removedCCs = getMissingCCs(oldCCs, newCCs);

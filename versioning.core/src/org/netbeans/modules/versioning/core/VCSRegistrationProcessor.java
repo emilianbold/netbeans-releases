@@ -80,7 +80,7 @@ public class VCSRegistrationProcessor extends LayerGeneratingProcessor {
             
             File f = layer(e).instanceFile("Services/VersioningSystem", null, r, null); // NOI18N
             f.methodvalue("instanceCreate", DelegatingVCS.class.getName(), "create");    // NOI18N
-            f.stringvalue("instanceOf", DelegatingVCS.class.getName());                  // NOI18N
+            f.stringvalue("instanceOf", VersioningSystem.class.getName()); 
             String[] folderNames = r.metadataFolderNames();
             for (int i = 0; i < folderNames.length; i++) {
                 f.stringvalue("metadataFolderName" + i, folderNames[i]);        // NOI18N

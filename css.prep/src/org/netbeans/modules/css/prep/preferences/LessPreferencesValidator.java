@@ -43,7 +43,7 @@ package org.netbeans.modules.css.prep.preferences;
 
 import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.util.MappingUtils;
+import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 
 public class LessPreferencesValidator {
@@ -61,7 +61,7 @@ public class LessPreferencesValidator {
 
     public LessPreferencesValidator validate(boolean enabled, List<String> mappings) {
         if (enabled) {
-            result.merge(new MappingUtils.MappingsValidator()
+            result.merge(new CssPreprocessorUtils.MappingsValidator()
                     .validate(mappings)
                     .getResult());
         }

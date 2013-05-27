@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.php.analysis.ui.analyzer;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.prefs.Preferences;
 import javax.swing.GroupLayout;
@@ -53,9 +52,12 @@ import javax.swing.LayoutStyle;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.php.analysis.options.AnalysisOptions;
+import org.netbeans.modules.php.analysis.options.AnalysisOptionsValidator;
 import org.netbeans.modules.php.analysis.ui.MessDetectorRuleSetsListModel;
 import org.netbeans.modules.php.analysis.util.AnalysisUtils;
+import org.netbeans.modules.php.api.validation.ValidationResult;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 
@@ -66,13 +68,15 @@ public class MessDetectorCustomizerPanel extends JPanel {
     public static final String RULE_SETS = "messDetector.ruleSets"; // NOI18N
 
     private final MessDetectorRuleSetsListModel ruleSetsListModel = new MessDetectorRuleSetsListModel();
+    final Analyzer.CustomizerContext<Void, MessDetectorCustomizerPanel> context;
     final Preferences settings;
 
 
-    public MessDetectorCustomizerPanel(Preferences settings) {
-        assert settings != null;
+    public MessDetectorCustomizerPanel(Analyzer.CustomizerContext<Void, MessDetectorCustomizerPanel> context) {
+        assert context != null;
 
-        this.settings = settings;
+        this.context = context;
+        this.settings = context.getSettings();
 
         initComponents();
         init();
@@ -107,7 +111,7 @@ public class MessDetectorCustomizerPanel extends JPanel {
                 if (e.getValueIsAdjusting()) {
                     return;
                 }
-                settings.put(RULE_SETS, AnalysisUtils.serialize(getSelectedRuleSets()));
+                validateAndSetData();
             }
         });
     }
@@ -123,6 +127,32 @@ public class MessDetectorCustomizerPanel extends JPanel {
             assert indexOf != -1 : "Rule set not found: " + ruleSet;
             ruleSetsList.addSelectionInterval(indexOf, indexOf);
         }
+    }
+
+    void validateAndSetData() {
+        if (validateData()) {
+            setData();
+        }
+    }
+
+    private boolean validateData() {
+        ValidationResult result = new AnalysisOptionsValidator()
+                .validateMessDetectorRuleSets(getSelectedRuleSets())
+                .getResult();
+        if (result.hasErrors()) {
+            context.setError(result.getErrors().get(0).getMessage());
+            return false;
+        }
+        if (result.hasWarnings()) {
+            context.setError(result.getWarnings().get(0).getMessage());
+            return false;
+        }
+        context.setError(null);
+        return true;
+    }
+
+    private void setData() {
+        settings.put(RULE_SETS, AnalysisUtils.serialize(getSelectedRuleSets()));
     }
 
     /**

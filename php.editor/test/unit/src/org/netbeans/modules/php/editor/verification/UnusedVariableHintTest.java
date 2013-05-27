@@ -69,6 +69,10 @@ public class UnusedVariableHintTest extends PHPHintsTestBase {
         checkHints(new UnusedVariableHintStub(false), "testUnusedInGlobalNamespaceContext.php");
     }
 
+    public void testIssue230297() throws Exception {
+        checkHints(new UnusedVariableHintStub(false), "testIssue230297.php");
+    }
+
     private class UnusedVariableHintStub extends UnusedVariableHint {
         private final boolean unusedFormalParameters;
 

@@ -10,6 +10,7 @@ FIELD      frameElement: Element           [PUBLIC]   JS Platform
 FIELD      frames: Array                   [PUBLIC]   JS Platform
 FIELD      fullScreen: Boolean             [PUBLIC]   JS Platform
 VARIABLE   formatter                       [PUBLIC]   Formatter.js
+KEYWORD    false                                      null
 KEYWORD    finally                                    null
 KEYWORD    for                                        null
 KEYWORD    function                                   null

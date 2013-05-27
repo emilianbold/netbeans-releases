@@ -311,8 +311,11 @@ public class JsCompletionItem implements CompletionProposal {
             if (type == null) {
                 return getName();
             }
-
+            
             switch(type) {
+                case SIMPLE:
+                    builder.append(getName());
+                    break;
                 case ENDS_WITH_SPACE:
                     builder.append(getName());
                     builder.append(" ${cursor}"); //NOI18N

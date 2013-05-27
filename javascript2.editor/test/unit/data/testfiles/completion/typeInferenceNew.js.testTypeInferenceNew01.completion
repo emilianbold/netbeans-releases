@@ -16,6 +16,7 @@ KEYWORD    default                                    null
 KEYWORD    delete                                     null
 KEYWORD    do                                         null
 KEYWORD    else                                       null
+KEYWORD    false                                      null
 KEYWORD    finally                                    null
 KEYWORD    for                                        null
 KEYWORD    function                                   null
@@ -27,6 +28,7 @@ KEYWORD    return                                     null
 KEYWORD    switch                                     null
 KEYWORD    this                                       null
 KEYWORD    throw                                      null
+KEYWORD    true                                       null
 KEYWORD    try                                        null
 KEYWORD    typeof                                     null
 KEYWORD    var                                        null

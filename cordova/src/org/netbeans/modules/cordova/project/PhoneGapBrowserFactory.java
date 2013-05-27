@@ -106,7 +106,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
 
         @Override
         public boolean hasNetBeansIntegration() {
-            return true;
+            return false;
         }
     }
 

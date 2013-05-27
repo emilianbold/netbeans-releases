@@ -50,7 +50,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
-import org.netbeans.modules.css.prep.util.MappingUtils;
+import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -180,7 +180,7 @@ abstract class BaseProcessor {
             cssPreprocessor.fireProcessingErrorOccured(project, Bundle.BaseProcessor_error_mappings_empty(cssPreprocessor.getDisplayName()));
             return null;
         }
-        File target = MappingUtils.resolveTarget(webRoot, mappings, fileObject);
+        File target = CssPreprocessorUtils.resolveTarget(webRoot, mappings, fileObject);
         if (target == null) {
             LOGGER.log(Level.INFO, "Not compiling, file {0} not matched within current mappings {1}",
                     new Object[] {FileUtil.getFileDisplayName(fileObject), mappings});
