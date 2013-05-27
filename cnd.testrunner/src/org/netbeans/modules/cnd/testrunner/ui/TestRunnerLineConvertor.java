@@ -89,6 +89,10 @@ public final class TestRunnerLineConvertor implements LineConvertor {
                 }
                 try {
                     handler.updateUI(manager, session);
+                    if (handler.isPerformOutput()) {
+                        session.addOutput(line);
+                        manager.displayOutput(session, line, false);
+                    }
                     return asConvertedLines(handler.getRecognizedOutput());
                 } catch (IllegalStateException ise) {
                     // ISE is thrown when mathing a group fails, should be enough to log a warning
