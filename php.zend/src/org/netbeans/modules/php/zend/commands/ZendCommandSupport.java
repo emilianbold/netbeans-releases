@@ -82,7 +82,7 @@ public class ZendCommandSupport extends FrameworkCommandSupport {
     public void runCommand(CommandDescriptor commandDescriptor, Runnable postExecution) {
         String[] commands = commandDescriptor.getFrameworkCommand().getCommands();
         String[] commandParams = commandDescriptor.getCommandParams();
-        List<String> params = new ArrayList<String>(commands.length + commandParams.length);
+        List<String> params = new ArrayList<>(commands.length + commandParams.length);
         params.addAll(Arrays.asList(commands));
         params.addAll(Arrays.asList(commandParams));
         try {

@@ -110,7 +110,7 @@ final class SourcePathImplementation implements ClassPathImplementation, Propert
         final URL[] urls = sources.getRootURLs();
         synchronized (this) {
             if (resources == null) {
-                List<PathResourceImplementation> result = new ArrayList<PathResourceImplementation>(urls.length);
+                List<PathResourceImplementation> result = new ArrayList<>(urls.length);
                 for (URL root : urls) {
                     result.add(new FilteringPathResource(project, root));
                 }

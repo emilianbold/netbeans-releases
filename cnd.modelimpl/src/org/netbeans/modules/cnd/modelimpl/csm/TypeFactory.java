@@ -470,7 +470,10 @@ public class TypeFactory {
         }
         if(type instanceof TypeImpl) {
             return new TypeImpl((TypeImpl)type, pointerDepth, reference, arrayDepth, _const);
-        }
+        }        
+        if (type instanceof CsmTemplateParameterType) {
+            return new TemplateParameterTypeWrapper(type, pointerDepth, reference, arrayDepth, _const);
+        }        
         return new TypeWrapper(type, pointerDepth, reference, arrayDepth, _const);
     }
 
@@ -651,8 +654,31 @@ public class TypeFactory {
             }
             return sb.toString();
         }
+
+        @Override
+        public String toString() {
+            return "WRAPPED TYPE: " + format();  // NOI18N
+        }        
+        
     }
     
+    private static class TemplateParameterTypeWrapper extends TypeWrapper implements CsmTemplateParameterType {
+
+        public TemplateParameterTypeWrapper(CsmType type, int pointerDepth, int reference, int arrayDepth, boolean _const) {
+            super(type, pointerDepth, reference, arrayDepth, _const);
+        }
+
+        @Override
+        public CsmTemplateParameter getParameter() {
+            return ((CsmTemplateParameterType) type).getParameter();
+        }
+
+        @Override
+        public CsmType getTemplateType() {
+            return ((CsmTemplateParameterType) type).getTemplateType();
+        }
+
+    }        
     
     private static class ASTPointerDepthCounter implements TypeImpl.ASTTokenVisitor {
     

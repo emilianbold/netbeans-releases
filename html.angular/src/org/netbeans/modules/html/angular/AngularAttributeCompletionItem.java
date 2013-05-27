@@ -56,25 +56,25 @@ public class AngularAttributeCompletionItem extends HtmlCompletionItem.Attribute
     
 //    public AngularAttributeCompletionItem(String value, int offset, boolean required, String helpId, boolean autoCompleteValue, boolean isInAngularPage) {
     public AngularAttributeCompletionItem(CustomAttribute ca, int offset, boolean isInAngularPage) {
-        super(ca.getName(), offset, ca.isValueRequired(), ca.getHelp());
+        super(ca.getName(), offset, false, ca.getHelp());
         this.isInAngularPage = isInAngularPage;
     }
 
-    @Override
-    protected ImageIcon getIcon() {
-        return Constants.ANGULAR_ICON;
-    }
+//    @Override
+//    protected ImageIcon getIcon() {
+//        return Constants.ANGULAR_ICON;
+//    }
 
     @Override
     protected Color getAttributeColor() {
         return Constants.ANGULAR_COLOR;
     }
 
-    //move the angular results to the top of the completion list if the page
-    //already contains angular stuff
+    //move the angular results to the bottom of the completion list if the page
+    //doesn't contain angular stuff
     @Override
     public int getSortPriority() {
-        return super.getSortPriority() - (isInAngularPage ? 10 : 0);
+        return super.getSortPriority() - (isInAngularPage ? 0 : -10);
     }
 
     @Override

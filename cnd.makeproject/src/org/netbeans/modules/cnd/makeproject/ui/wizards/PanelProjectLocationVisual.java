@@ -76,7 +76,7 @@ import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -506,7 +506,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
     @Override
     public void removeNotify() {
         super.removeNotify();    
-        validationWorker.cancel();
+        validationWorker.shutdown();
     }
 
     private boolean isValidMakeFile(String text) {
@@ -608,7 +608,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         Boolean valid = currentState.validationResult.isValid;
         //will check only if valid already, otherwise just write as it is
         if (valid) {            
-            if (CndPathUtilitities.isPathAbsolute(folder)) {
+            if (CndPathUtilities.isPathAbsolute(folder)) {
                 String normalizeAbsolutePath = RemoteFileUtil.normalizeAbsolutePath(folder, env);
                 FSPath path = new FSPath(fileSystem, normalizeAbsolutePath);
                 d.putProperty(WizardConstants.PROPERTY_PROJECT_FOLDER, path);
@@ -619,7 +619,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         d.putProperty(WizardConstants.PROPERTY_NAME, projectName);
         d.putProperty(WizardConstants.PROPERTY_GENERATED_MAKEFILE_NAME, makefileTextField.getText());
         if (valid) {
-            if (CndPathUtilitities.isPathAbsolute(projectLocationTextField.getText())) {
+            if (CndPathUtilities.isPathAbsolute(projectLocationTextField.getText())) {
                 if (env.isLocal()) {
                     File projectsDir = CndFileUtils.createLocalFile(projectLocationTextField.getText());
                     if (projectsDir.isDirectory()) {
@@ -746,11 +746,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                 if (workingDir != null && workingDir.length() > 0
                         && (templateName.equals(NewMakeProjectWizardIterator.MAKEFILEPROJECT_PROJECT_NAME)
                         || templateName.equals(NewMakeProjectWizardIterator.FULL_REMOTE_PROJECT_NAME))) {
-                    name = CndPathUtilitities.getBaseName(workingDir);
+                    name = CndPathUtilities.getBaseName(workingDir);
                 } else {
                     String sourcesPath = (String) settings.getProperty(WizardConstants.PROPERTY_SOURCE_FOLDER_PATH); // NOI18N
                     if (sourcesPath != null && sourcesPath.length() > 0) {
-                        name = CndPathUtilitities.getBaseName(sourcesPath);
+                        name = CndPathUtilities.getBaseName(sourcesPath);
                     }
                 }
             }
@@ -836,7 +836,7 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         if (!isValidProjectName(projectNameTextField)) {
             return new ValidationResult(Boolean.FALSE, NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectName")); // Display name not specified
         }
-        if (!CndPathUtilitities.isPathAbsolute(projectLocationTextField)) { // empty field imcluded
+        if (!CndPathUtilities.isPathAbsolute(projectLocationTextField)) { // empty field imcluded
             String message = NbBundle.getMessage(PanelProjectLocationVisual.class, "MSG_IllegalProjectLocation"); // NOI18N
             return new ValidationResult(Boolean.FALSE, message);
         }
@@ -1323,6 +1323,11 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
         }
 
         private void handleProjectParamsChanges() {
+            synchronized (wizardValidationExecutorLock) {
+                if (wizardValidationExecutor.isShutdown()) {
+                    return;
+                }
+            }
             //will handle next event
             if (projectParams != null) {                
                 projectParams.setRequestID(++lastEventID);
@@ -1345,6 +1350,15 @@ public class PanelProjectLocationVisual extends SettingsPanel implements HelpCtx
                     wizardValidationTask.cancel(true);
                 }
             }            
+        }
+        
+        void shutdown() {
+            synchronized (wizardValidationExecutorLock) {
+                if (wizardValidationTask != null) {
+                    wizardValidationTask.cancel(true);
+                }
+                wizardValidationExecutor.shutdown();
+            }                        
         }
        
 

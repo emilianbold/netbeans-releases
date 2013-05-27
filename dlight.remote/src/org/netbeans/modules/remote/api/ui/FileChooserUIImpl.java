@@ -243,7 +243,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     
     private JComponent treeViewPanel;
     
-    private InputBlocker blocker;
+    //private InputBlocker blocker;
     
     private JFileChooserEx fileChooser;
     
@@ -285,7 +285,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     @Override
     public void installUI(JComponent c) {
         super.installUI(c);
-    }
+    }   
     
     @Override
     public void uninstallComponents(JFileChooser fc) {
@@ -1375,6 +1375,8 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             public void propertyChange(PropertyChangeEvent evt) {
                 if (DIRECTORY_CHANGED_PROPERTY.equals(evt.getPropertyName()) && fc == fileChooser) {
                     rescanCurrentDirectory(fileChooser);
+                } else if (DIALOG_IS_CLOSING.equals(evt.getPropertyName()) && fc == fileChooser) {
+                    updateWorker.shutdown();
                 }
             }
         });
@@ -1391,14 +1393,13 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             @Override
             public void actionPerformed(ActionEvent e) {
                 getFileChooser().cancelSelection();
-                updateWorker.cancel();
             }
             @Override
             public boolean isEnabled(){
                 return getFileChooser().isEnabled();
             }
         };
-        ActionMap map = new ActionMapUIResource();
+        ActionMap map = new ActionMapUIResource();        
         map.put("approveSelection", getApproveSelectionAction());//NOI18N
         map.put("cancelSelection", escAction);//NOI18N
         map.put("Go Up", getChangeToParentDirectoryAction());//NOI18N
@@ -1519,7 +1520,7 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         JFileChooser fc = getFileChooser();
         if (files != null
                 && files.length > 0
-                && (files.length > 1 || fc.isDirectorySelectionEnabled() || !files[0].isDirectory())) {
+                && (files.length > 1 || fc.isDirectorySelectionEnabled() || (files[0] != null && !files[0].isDirectory()))) {
             setFileName(getStringOfFileNames(files));
         }
     }
@@ -1550,6 +1551,8 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     
     private void fireFilterChanged(PropertyChangeEvent e) {
         clearIconCache();
+        //re-run updater
+        updateWorker.handleValidationParamasChanges();
     }
     
     private void fireFileSelectionModeChanged(PropertyChangeEvent e) {
@@ -1872,16 +1875,17 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                 window.setCursor(cursor);
                 window.setFocusable(true);
             }
+            //do not block root pane. at all
 
-            JRootPane pane = fileChooser.getRootPane();
-            if( null == blocker )
-                blocker = new InputBlocker();
-
-            if(type == Cursor.WAIT_CURSOR) {
-                blocker.block(pane);
-            } else if (type == Cursor.DEFAULT_CURSOR){
-                blocker.unBlock(pane);
-            }
+//            JRootPane pane = fileChooser.getRootPane();
+//            if( null == blocker )
+//                blocker = new InputBlocker();
+//
+//            if(type == Cursor.WAIT_CURSOR) {
+//                blocker.block(pane);
+//            } else if (type == Cursor.DEFAULT_CURSOR){
+//                blocker.unBlock(pane);
+//            }
         }
     }
     
@@ -2309,7 +2313,9 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                 File file = node.getFile();
                 
                 if(file != null) {
-                    setSelected(getSelectedNodes(tree.getSelectionPaths()));
+                    //should I change the current Selection now?
+                    //setSelected(getSelectedNodes(tree.getSelectionPaths()));
+                    FileChooserUIImpl.this.filenameTextField.setText(file.getPath());
                     newFolderAction.setEnabled(false);
                     
                     if(!node.isLeaf()) {
@@ -2931,7 +2937,8 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                         if (Thread.interrupted()) {
                             return new ValidationResult(Boolean.FALSE, null, false, curDir);
                         }                        
-                        file = fileChooser.getFileSystemView().createFileObject(currentDir);
+                        file = currentDir == null ? fileChooser.getFileSystemView().getDefaultDirectory() : 
+                                fileChooser.getFileSystemView().createFileObject(currentDir);
                         if (Thread.interrupted()) {
                             return new ValidationResult(Boolean.FALSE, null, false, curDir);
                         }
@@ -2997,6 +3004,15 @@ class FileChooserUIImpl extends BasicFileChooserUI{
         }        
         private void restoreCursor () {
             ui.setCursor(fileChooser, Cursor.DEFAULT_CURSOR);
+        }
+
+        private void shutdown() {
+            synchronized (updateTaskLock) {
+                if (updateTask != null) {
+                    updateTask.cancel(true);
+                }
+                executor.shutdown();
+            }            
         }
 
     } // end of UpdateWorker

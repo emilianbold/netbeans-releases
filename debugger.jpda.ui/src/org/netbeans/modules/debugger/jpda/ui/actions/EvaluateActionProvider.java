@@ -44,26 +44,13 @@
 
 package org.netbeans.modules.debugger.jpda.ui.actions;
 
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Set;
-import javax.swing.AbstractAction;
-import javax.swing.Action;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
-import org.netbeans.api.debugger.DebuggerEngine;
-import org.netbeans.api.debugger.DebuggerManager;
-import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.modules.debugger.jpda.ui.CodeEvaluator;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ContextProvider;
-import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /**
  * Invokes the expression evaluator GUI

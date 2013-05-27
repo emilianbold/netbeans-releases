@@ -45,6 +45,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.localhistory.utils.FileUtils;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 
 /**
  *
@@ -92,7 +93,7 @@ public class LHTestCase extends NbTestCase {
 
     public static void assertFile(File file, LocalHistoryTestStore store, long ts, long storeFileLastModified, int versions, int parentChildren, String data, int action, boolean containsLabel) throws Exception {
 
-        File storeFolder = store.getStoreFolder(file);
+        File storeFolder = store.getStoreFolder(VCSFileProxy.createFileProxy(file));
         String[] files = storeFolder.list();
         if (files == null || files.length == 0) {
             fail("no files in store folder for file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
@@ -113,7 +114,7 @@ public class LHTestCase extends NbTestCase {
             fail("wrong amount of files in store folder " + count + " instead of expected " + versions + " : file " + file.getAbsolutePath() + " store folder " + storeFolder.getAbsolutePath());
         }
 
-        File storeParent = store.getStoreFolder(file.getParentFile());
+        File storeParent = store.getStoreFolder(VCSFileProxy.createFileProxy(file.getParentFile()));
         files = storeParent.list();
         if (parentChildren > 0) {
             if (files == null || files.length == 0) {        
@@ -126,7 +127,7 @@ public class LHTestCase extends NbTestCase {
         
 
         if (file.isFile()) {
-            File storeFile = store.getStoreFile(file, ts, false);
+            File storeFile = store.getStoreFile(VCSFileProxy.createFileProxy(file), ts, false);
             if (!storeFile.exists()) {
                 fail("store file doesn't exist for file");
             }
@@ -144,7 +145,7 @@ public class LHTestCase extends NbTestCase {
             }
         }
 
-        File dataFile = store.getDataFile(file);
+        File dataFile = store.getDataFile(VCSFileProxy.createFileProxy(file));
         assertTrue(dataFile.exists());
         assertValuesInFile(dataFile, file.isFile(), action, ts, file.getAbsolutePath());
         if (storeFileLastModified != -1) {
@@ -187,11 +188,11 @@ public class LHTestCase extends NbTestCase {
     }
         
     public static void assertEntries(StoreEntry[] entries, File[] files, String[] data) throws Exception {
-        assertEquals(entries.length, files.length);
+        assertEquals(files.length, entries.length);
         for(int i = 0; i < files.length; i++) {                        
             boolean blContinue = false;
             for(StoreEntry entry : entries) {
-                if(entry.getFile().equals(files[i])) {
+                if(entry.getFile().equals(VCSFileProxy.createFileProxy(files[i]))) {
                     assertDataInStream(entry.getStoreFileInputStream(), data[i].getBytes());
                     blContinue = true;                    
                     break;
@@ -208,7 +209,7 @@ public class LHTestCase extends NbTestCase {
         for(int i = 0; i < ts.length; i++) {                        
             boolean blContinue = false;
             for(StoreEntry entry : entries) {
-                assertEquals(entry.getFile(), file);
+                assertEquals(entry.getFile(), VCSFileProxy.createFileProxy(file));
                 if(entry.getTimestamp() == ts[i]) {
                     assertDataInStream(entry.getStoreFileInputStream(), data[i].getBytes());
                     blContinue = true;                    
@@ -227,13 +228,13 @@ public class LHTestCase extends NbTestCase {
         } else {
             file.mkdirs();
         }
-        store.fileCreate(file, ts);        
+        store.fileCreate(VCSFileProxy.createFileProxy(file), ts);        
     }
     
     static void createSymlink(LocalHistoryStore store, File file, long ts, File fileSym) throws Exception {
         Process p = Runtime.getRuntime().exec(new String[] {"ln", "-s", file.getAbsolutePath(), fileSym.getAbsolutePath()});
         p.waitFor();
-        store.fileCreate(fileSym, ts);        
+        store.fileCreate(VCSFileProxy.createFileProxy(fileSym), ts);        
     }
 
     static void changeFile(LocalHistoryStore store, File file, long ts, String data) throws Exception {
@@ -241,7 +242,7 @@ public class LHTestCase extends NbTestCase {
         // what we do here is that we write something into the file and then invoke store.filechange(file)
         // to get the files contents stored...
         write(file, data.getBytes());
-        store.fileChange(file, ts);        
+        store.fileChange(VCSFileProxy.createFileProxy(file), ts);        
     }
     
     static String read(InputStream is, int length) throws Exception {        

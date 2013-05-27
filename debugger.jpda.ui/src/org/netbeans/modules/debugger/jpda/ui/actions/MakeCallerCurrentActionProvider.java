@@ -45,22 +45,17 @@
 package org.netbeans.modules.debugger.jpda.ui.actions;
 
 import com.sun.jdi.AbsentInformationException;
-import com.sun.jdi.ThreadReference;
 
 import java.util.Collections;
 import java.util.Set;
-import javax.swing.SwingUtilities;
+
 import org.netbeans.api.debugger.ActionsManager;
-
-
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.CallStackFrame;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-
-import org.netbeans.modules.debugger.jpda.ui.SourcePath;
 import org.netbeans.spi.debugger.ActionsProvider;
+
 import org.openide.util.RequestProcessor;
 
 
@@ -83,10 +78,12 @@ public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
             (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
     }
     
+    @Override
     public Set getActions () {
         return Collections.singleton (ActionsManager.ACTION_MAKE_CALLER_CURRENT);
     }
 
+    @Override
     public void doAction (Object action) {
         JPDAThread t = getDebuggerImpl ().getCurrentThread ();
         if (t == null) return;
@@ -95,8 +92,9 @@ public class MakeCallerCurrentActionProvider extends JPDADebuggerAction {
         setCurrentCallStackFrameIndex (getDebuggerImpl (), ++i);
     }
     
+    @Override
     protected void checkEnabled (int debuggerState) {
-        if (debuggerState == getDebuggerImpl ().STATE_STOPPED) {
+        if (debuggerState == JPDADebugger.STATE_STOPPED) {
             JPDAThread t = getDebuggerImpl ().getCurrentThread ();
             if (t != null) {
                 checkEnabledLazySingleAction(debuggerState, rp);

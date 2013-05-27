@@ -59,6 +59,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
@@ -69,10 +70,12 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.FormattingPropPanel;
 import org.netbeans.modules.cnd.makeproject.ui.BrokenLinks;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.ResolveEnvVarPanel;
 import org.netbeans.modules.cnd.makeproject.ui.ResolveReferencePanel;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
@@ -217,6 +220,74 @@ public final class BrokenReferencesSupport {
     }
 
     @NonNull
+    private static Set<? extends ProjectProblemsProvider.ProjectProblem> getFormattingStyleProblems(@NonNull final MakeProject project) {
+        Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<ProjectProblemsProvider.ProjectProblem>();
+        List<Style> styles = getUndefinedFormattingStyles(project);
+        if (styles != null && !styles.isEmpty()) {
+            for(Style style : styles) {
+                String source = "";
+                if (MIMENames.C_MIME_TYPE.equals(style.mime)) {
+                    source = NbBundle.getMessage(ResolveReferencePanel.class, "style_c"); //NOI18N
+                } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(style.mime)) {
+                    source = NbBundle.getMessage(ResolveReferencePanel.class, "style_cpp"); //NOI18N
+                } else if (MIMENames.HEADER_MIME_TYPE.equals(style.mime)) {
+                    source = NbBundle.getMessage(ResolveReferencePanel.class, "style_header"); //NOI18N
+                }
+                int i = style.aStyle.indexOf('_'); //NOI18N
+                String base = "?"; //NOI18N
+                String id = "0"; //NOI18N
+                if (i > 0) {
+                    base = FormattingPropPanel.getStyleDisplayName(style.aStyle.substring(0,i), style.mime);
+                    id = style.aStyle.substring(i+1);
+                }
+                String message = NbBundle.getMessage(ResolveReferencePanel.class, "style_resolve_description", style.aStyle, source, base, id); //NOI18N
+                final ProjectProblemsProvider.ProjectProblem error =
+                        ProjectProblemsProvider.ProjectProblem.createError(
+                        NbBundle.getMessage(ResolveReferencePanel.class, "style_resolve_name"), //NOI18N
+                        message,
+                        new StyleResolverImpl(project, style));
+                set.add(error);
+            }
+        }
+        return set;
+    }
+
+    private static Style undefinedStyle(MakeProject project, String mime) {
+        String aStyle = project.getProjectFormattingStyle(mime);
+        if (aStyle == null) {
+            return null;
+        }
+        Map<String, String> allStyles = FormattingPropPanel.getAllStyles(mime);
+        for(Map.Entry<String, String> entry : allStyles.entrySet()) {
+            if (aStyle.equals(entry.getValue())) {
+                return null;
+            }
+        }
+        return new Style(aStyle, mime);
+    }
+        
+    
+    private static List<Style> getUndefinedFormattingStyles(MakeProject project) {
+        if (!project.isProjectFormattingStyle()) {
+            return null;
+        }
+        List<Style> list = new ArrayList<Style>();
+        Style s = undefinedStyle(project, MIMENames.C_MIME_TYPE);
+        if (s != null) {
+            list.add(s);
+        }
+        s = undefinedStyle(project, MIMENames.CPLUSPLUS_MIME_TYPE);
+        if (s != null) {
+            list.add(s);
+        }
+        s = undefinedStyle(project, MIMENames.HEADER_MIME_TYPE);
+        if (s != null) {
+            list.add(s);
+        }
+        return list;
+    }
+
+    @NonNull
     private static Set<? extends ProjectProblemsProvider.ProjectProblem> getVersionProblems(@NonNull final MakeProject project) {
         Set<ProjectProblemsProvider.ProjectProblem> set = new LinkedHashSet<ProjectProblemsProvider.ProjectProblem>();
         if (BrokenReferencesSupport.isIncorectVersion(project)) {
@@ -308,6 +379,7 @@ public final class BrokenReferencesSupport {
                                 newProblems.addAll(getReferenceProblems(project));
                                 newProblems.addAll(getPlatformProblems(project));
                                 newProblems.addAll(getEnvProblems(project));
+                                newProblems.addAll(getFormattingStyleProblems(project));
                             }
                             return Collections.unmodifiableSet(newProblems);
                         }
@@ -588,4 +660,68 @@ public final class BrokenReferencesSupport {
         }
     }
     
+    
+    public static final class Style {
+        private final String aStyle;
+        private final String mime;
+        
+        Style(String aStyle, String mime) {
+            this.aStyle = aStyle;
+            this.mime = mime;
+        }
+
+        @Override
+        public int hashCode() {
+            return aStyle.hashCode() + mime.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final Style other = (Style) obj;
+            return aStyle.equals(other.aStyle) && mime.equals(other.mime);
+        }
+    }
+    
+    private static class StyleResolverImpl implements ProjectProblemResolver {
+        private final MakeProject project;
+        private final Style style;
+
+        private StyleResolverImpl(MakeProject project, Style style) {
+            this.project = project;
+            this.style = style;
+        }
+        
+        @Override
+        public Future<ProjectProblemsProvider.Result> resolve() {
+            OptionsDisplayer.getDefault().open("Editor/Formatting", true); // NOI18N
+            ProjectProblemsProvider pp = project.getLookup().lookup(ProjectProblemsProvider.class);
+            if(pp instanceof ProjectProblemsProviderImpl) {
+                ((ProjectProblemsProviderImpl)pp).propertyChange(null);
+            }
+            return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED));
+        }
+        
+        @Override
+        public int hashCode() {
+            return style.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final StyleResolverImpl other = (StyleResolverImpl) obj;
+            return style.equals(other.style);
+        }
+    }
 }

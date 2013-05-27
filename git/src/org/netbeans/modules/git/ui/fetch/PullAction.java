@@ -47,8 +47,11 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -138,11 +141,23 @@ public class PullAction extends SingleRepositoryAction {
         }
 
         @Override
+        @NbBundle.Messages({
+            "# {0} - branch name", "MSG_PullAction.branchDeleted=Branch {0} deleted."
+        })
         protected void perform () {
             final File repository = getRepositoryRoot();
             LOG.log(Level.FINE, "Pulling {0}/{1} from {2}", new Object[] { fetchRefSpecs, branchToMerge, target }); //NOI18N
             try {
                 final GitClient client = getClient();
+                final Set<String> toDelete = new HashSet<String>();
+                for(ListIterator<String> it = fetchRefSpecs.listIterator(); it.hasNext(); ) {
+                    String refSpec = it.next();
+                    if (refSpec.startsWith(GitUtils.REF_SPEC_DEL_PREFIX)) {
+                        // branches are deleted separately
+                        it.remove();
+                        toDelete.add(refSpec.substring(GitUtils.REF_SPEC_DEL_PREFIX.length()));
+                    }
+                }
                 if (remoteNameToUpdate != null) {
                     GitRemoteConfig config = client.getRemote(remoteNameToUpdate, getProgressMonitor());
                     if (isCanceled()) {
@@ -157,6 +172,10 @@ public class PullAction extends SingleRepositoryAction {
                 GitUtils.runWithoutIndexing(new Callable<Void>() {
                     @Override
                     public Void call () throws Exception {
+                        for (String branch : toDelete) {
+                            client.deleteBranch(branch, true, getProgressMonitor());
+                            getLogger().output(Bundle.MSG_PullAction_branchDeleted(branch));
+                        }
                         setProgress(Bundle.MSG_PullAction_fetching());
                         Map<String, GitTransportUpdate> fetchResult = client.fetch(target, fetchRefSpecs, getProgressMonitor());
                         FetchUtils.log(fetchResult, getLogger());

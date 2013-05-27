@@ -55,7 +55,7 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
  */
 public class IncludePathSupport extends BaseProjectPathSupport {
 
-    private static final Set<String> WELL_KNOWN_PATHS = new HashSet<String>(Arrays.asList(
+    private static final Set<String> WELL_KNOWN_PATHS = new HashSet<>(Arrays.asList(
             "${" + PhpProjectProperties.GLOBAL_INCLUDE_PATH + "}"));
 
     public IncludePathSupport(PropertyEvaluator evaluator, ReferenceHelper referenceHelper, AntProjectHelper antProjectHelper) {

@@ -171,4 +171,16 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     public void testIssue228564() throws Exception {
         checkCompletion("testfiles/completion/issue228564.js", "y(\"d\").^", false);
     }
+    
+    public void testIssue229717_01() throws Exception {
+        checkCompletion("testfiles/model/issue229717.js", "test.^types", false);
+    }
+    
+    public void testIssue229717_02() throws Exception {
+        checkCompletion("testfiles/model/issue229717.js", "this.^types;", false);
+    }
+    
+    public void testIssue229717_03() throws Exception {
+        checkCompletion("testfiles/model/issue229717.js", "self.^types.push(type);", false);
+    }
 }

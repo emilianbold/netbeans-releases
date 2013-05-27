@@ -142,7 +142,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
 
     @Override
     public List<OffsetRange> findLogicalRanges(ParserResult info, final int caretOffset) {
-        final Set<OffsetRange> ranges = new LinkedHashSet<OffsetRange>();
+        final Set<OffsetRange> ranges = new LinkedHashSet<>();
         final DefaultVisitor pathVisitor = new DefaultVisitor() {
             @Override
             public void scan(ASTNode node) {
@@ -155,7 +155,7 @@ public class PHPBracketCompleter implements KeystrokeHandler {
         if (info instanceof PHPParseResult) {
             pathVisitor.scan(((PHPParseResult) info).getProgram());
         }
-        final ArrayList<OffsetRange> retval = new ArrayList<OffsetRange>(ranges);
+        final ArrayList<OffsetRange> retval = new ArrayList<>(ranges);
         Collections.reverse(retval);
         return retval;
     }

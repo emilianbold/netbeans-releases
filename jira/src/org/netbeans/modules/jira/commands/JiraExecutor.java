@@ -126,17 +126,17 @@ public class JiraExecutor {
                 Throwable cause = ioe.getCause();
                 if(cause instanceof JiraException) {
                     JiraException je = (JiraException) cause;
-                    Jira.LOG.log(Level.FINE, null, je);
+                    Jira.LOG.log(Level.INFO, null, je);
                     throw new WrapperException(je.getMessage(), je);
                 }
                 throw ioe;
             } catch (CoreException ce) {
-                Jira.LOG.log(Level.FINE, null, ce);
+                Jira.LOG.log(Level.INFO, null, ce);
                 throw new WrapperException(ce.getMessage(), ce);
             } catch(IllegalStateException ise) {
                 String msg = ise.getMessage();
                 if(msg != null && msg.equals("Connection is not open")) {       // NOI18N
-                    Jira.LOG.log(Level.FINE, null, ise);
+                    Jira.LOG.log(Level.INFO, null, ise);
                     throw new WrapperException(msg, ise);
                 } else {
                     throw ise;

@@ -80,6 +80,11 @@ public final class MakeProjectTypeImpl implements NativeProjectType {
     public final static String CONFIGURATION_ELEMENT = "confElem"; // NOI18N
     public final static String CONFIGURATION_NAME_ELEMENT = "name"; // NOI18N
     public final static String CONFIGURATION_TYPE_ELEMENT = "type"; // NOI18N
+    public final static String FORMATTING_STYLE_ELEMENT = "formatting"; // NOI18N
+    public final static String FORMATTING_STYLE_PROJECT_ELEMENT = "project-formatting-style"; // NOI18N
+    public final static String C_FORMATTING_STYLE_ELEMENT = "c-style"; // NOI18N
+    public final static String CPP_FORMATTING_STYLE_ELEMENT = "cpp-style"; // NOI18N
+    public final static String HEADER_FORMATTING_STYLE_ELEMENT = "header-style"; // NOI18N
     public final static String CUSTOMIZERID_ELEMENT = "customizerid"; // NOI18N
     public final static String ACTIVE_CONFIGURATION_TYPE_ELEMENT = "activeConfTypeElem"; // NOI18N
     public final static String ACTIVE_CONFIGURATION_INDEX_ELEMENT = "activeConfIndexElem"; // NOI18N

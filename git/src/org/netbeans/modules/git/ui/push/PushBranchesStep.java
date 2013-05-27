@@ -47,8 +47,10 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -56,6 +58,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTag;
 import org.netbeans.modules.git.Git;
@@ -96,6 +99,13 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
         setValid(true, null);
         if (localObjects.getSelectedBranches().isEmpty()) {
             setValid(false, new Message(NbBundle.getMessage(PushBranchesStep.class, "MSG_PushBranchesPanel.errorNoBranchSelected"), false)); //NOI18N
+        } else if (isDeleteUpdateConflict(localObjects.getSelectedBranches())) {
+            setValid(false, new Message(NbBundle.getMessage(PushBranchesStep.class, "MSG_PushBranchesPanel.errorMixedSeletion"), false)); //NOI18N
+        } else {
+            String msgDeletedBranches = getDeletedBranchesMessage(localObjects.getSelectedBranches());
+            if (msgDeletedBranches != null) {
+                setValid(true, new Message(msgDeletedBranches, true));
+            }
         }
     }
 
@@ -109,7 +119,8 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
         return new HelpCtx(PushBranchesStep.class);
     }
 
-    public void fillRemoteBranches (final Map<String, GitBranch> branches, final Map<String, String> tags) {
+    public void fillRemoteBranches (final GitRemoteConfig cfg, final Map<String, GitBranch> branches,
+            final Map<String, String> tags) {
         new GitProgressSupport.NoOutputLogging() {
             @Override
             protected void perform () {
@@ -155,6 +166,18 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
                                 branch, conflicted, preselected));
                     }
                 }
+                if (cfg != null) {
+                    // deletions
+                    for (GitBranch branch : branches.values()) {
+                        String branchName = cfg.getRemoteName() + "/" + branch.getName();
+                        GitBranch local = localBranches.get(branchName);
+                        if (local == null || !local.isRemote()) {
+                            // mirror deleted or simply not present locally => offer to delete in the remote repo
+                            l.add(new PushMapping.PushBranchMapping(branch.getName(), branch.getId(), false));
+                        }
+                    }
+                }
+                
                 for (GitTag tag : localTags.values()) {
                     if (!tags.containsKey(tag.getTagName())) {
                         l.add(new PushMapping.PushTagMapping(tag));
@@ -191,5 +214,35 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
 
     Collection<PushMapping> getSelectedMappings () {
         return localObjects.getSelectedBranches();
+    }
+    
+    public static String getDeletedBranchesMessage (List<PushMapping> selectedObjects) {
+        StringBuilder sb = new StringBuilder(100);
+        for (PushMapping m : selectedObjects) {
+            if (m.isDeletion()) {
+                sb.append(m.getInfoMessage()).append("<br>");
+            }
+        }
+        if (sb.length() == 0) {
+            return null;
+        } else {
+            sb.delete(sb.length() - 4, sb.length());
+            return sb.toString();
+        }
+    }
+
+    private boolean isDeleteUpdateConflict (List<PushMapping> selectedObjects) {
+        Set<String> toDelete = new HashSet<String>(selectedObjects.size());
+        Set<String> toUpdate = new HashSet<String>(selectedObjects.size());
+        for (PushMapping m : selectedObjects) {
+            if (m.isDeletion()) {
+                toDelete.add(m.getRemoteName());
+            } else {
+                toUpdate.add(m.getRemoteName());
+            }
+        }
+        // is there an intersection between the sets?
+        toDelete.retainAll(toUpdate);
+        return !toDelete.isEmpty();
     }
 }

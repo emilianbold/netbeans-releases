@@ -173,7 +173,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
     /** This field is for fast access top level elemnts. */
     public static final String FIELD_TOP_LEVEL = "top"; //NOI18N
 
-    private static final List<String> ALL_FIELDS = new LinkedList<String>(
+    private static final List<String> ALL_FIELDS = new LinkedList<>(
             Arrays.asList(
                 new String[] {
                     FIELD_BASE,
@@ -199,7 +199,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
     );
 
     public static List<String> getAllFields() {
-        return new LinkedList<String>(ALL_FIELDS);
+        return new LinkedList<>(ALL_FIELDS);
     }
 
     public String getPersistentUrl(File file) {
@@ -239,7 +239,7 @@ public final class PHPIndexer extends EmbeddingIndexer {
             }
             IndexQueryImpl.clearNamespaceCache();
             PhpTypeCompletionProvider.getInstance().clearCache();
-            List<IndexDocument> documents = new LinkedList<IndexDocument>();
+            List<IndexDocument> documents = new LinkedList<>();
             IndexingSupport support = IndexingSupport.getInstance(context);
             Model model = r.getModel(Type.COMMON);
             final FileScope fileScope = model.getFileScope();

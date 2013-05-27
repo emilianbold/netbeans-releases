@@ -64,7 +64,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.api.project.ProjectUtils;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.NativeDebuggerManager;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 
 /**
@@ -196,7 +196,7 @@ class CapturePanel extends JPanel {
      */
 
     private boolean match(Project candidate, String executable) {
-	String baseName = CndPathUtilitities.getBaseName(executable);
+	String baseName = CndPathUtilities.getBaseName(executable);
 	String projectName = ProjectUtils.getInformation(candidate).getName();
 
 	// LATER: strip possible serial number from project name

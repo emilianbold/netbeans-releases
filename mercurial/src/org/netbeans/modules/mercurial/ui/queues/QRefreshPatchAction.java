@@ -55,8 +55,6 @@ import org.openide.NotifyDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
-import org.openide.util.Mutex;
-import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
 
 /**
@@ -104,14 +102,7 @@ public class QRefreshPatchAction extends CreateRefreshAction {
                         }
                     }
                 }
-                final String message = commitMessage;
-                final QPatch patch = currentPatch;
-                return Mutex.EVENT.readAccess(new Action<QCommitPanel>() {
-                    @Override
-                    public QCommitPanel run () {
-                        return QCommitPanel.createRefreshPanel(roots, root, message, patch, parent, QRefreshPatchAction.class.getName());
-                    }
-                });
+                return QCommitPanel.createRefreshPanel(roots, root, commitMessage, currentPatch, parent, QRefreshPatchAction.class.getName());
             }
         } catch (HgException.HgCommandCanceledException ex) {
             // canceled by user, do nothing
@@ -123,11 +114,15 @@ public class QRefreshPatchAction extends CreateRefreshAction {
     }
 
     @Override
-    CreateRefreshPatchCmd createHgCommand (File root, List<File> candidates, OutputLogger logger, String message, String patchName, String bundleKeyPostfix, List<File> roots, Set<File> excludedFiles, Set<File> filesToRefresh) {
-        return new CreateRefreshPatchCmd(root, candidates, logger, message, patchName, bundleKeyPostfix, roots, excludedFiles, filesToRefresh) {
+    CreateRefreshPatchCmd createHgCommand (File root, List<File> candidates, OutputLogger logger,
+            String message, String patchName, String user, String bundleKeyPostfix,
+            List<File> roots, Set<File> excludedFiles, Set<File> filesToRefresh) {
+        return new CreateRefreshPatchCmd(root, candidates, logger, message, patchName, user, bundleKeyPostfix,
+                roots, excludedFiles, filesToRefresh) {
             @Override
-            protected void runHgCommand (File repository, List<File> candidates, Set<File> excludedFiles, String patchId, String msg, OutputLogger logger) throws HgException {
-                HgCommand.qRefreshPatch(repository, candidates, excludedFiles, msg, logger);
+            protected void runHgCommand (File repository, List<File> candidates, Set<File> excludedFiles,
+                    String patchId, String msg, String user, OutputLogger logger) throws HgException {
+                HgCommand.qRefreshPatch(repository, candidates, excludedFiles, msg, user, logger);
             }
         };
     }

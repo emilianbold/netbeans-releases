@@ -99,7 +99,7 @@ public class ZendEditorExtender extends EditorExtender {
         if (action == null) {
             return Collections.emptySet();
         }
-        final Set<PhpVariable> phpVariables = new HashSet<PhpVariable>();
+        final Set<PhpVariable> phpVariables = new HashSet<>();
         try {
             ParserManager.parse(Collections.singleton(Source.create(action)), new UserTask() {
                 @Override
@@ -147,7 +147,7 @@ public class ZendEditorExtender extends EditorExtender {
             this.actionParseResult = actionParseResult;
             actionName = ZendUtils.getActionName(viewFile);
             action = ZendUtils.getAction(viewFile);
-            this.addedFields = new HashSet<String>();
+            this.addedFields = new HashSet<>();
         }
 
         @Override

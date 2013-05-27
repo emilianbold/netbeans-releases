@@ -654,7 +654,7 @@ public class BugzillaIssue {
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.WARNING, null, ex);
         }
-        return null;
+        return td;
     }
 
     public String getRepositoryFieldValue (IssueField f) {

@@ -62,7 +62,7 @@ public class SymfonyCommandsXmlParserTest extends NbTestCase {
     public void testParseCommands() throws Exception {
         Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "symfony-commands.xml")));
 
-        List<SymfonyCommandVO> commands = new ArrayList<SymfonyCommandVO>();
+        List<SymfonyCommandVO> commands = new ArrayList<>();
         SymfonyCommandsXmlParser.parse(reader, commands);
 
         assertFalse(commands.isEmpty());
@@ -84,7 +84,7 @@ public class SymfonyCommandsXmlParserTest extends NbTestCase {
     public void testParseCommandsIssue179717() throws Exception {
         Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "symfony-commands-issue179717.xml")));
 
-        List<SymfonyCommandVO> commands = new ArrayList<SymfonyCommandVO>();
+        List<SymfonyCommandVO> commands = new ArrayList<>();
         SymfonyCommandsXmlParser.parse(reader, commands);
 
         assertFalse(commands.isEmpty());

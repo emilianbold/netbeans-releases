@@ -146,7 +146,7 @@ public final class NewProjectConfigurationPanel extends JPanel implements Change
 
     // < app-name , params[] >
     public List<Pair<String, String[]>> getApps() {
-        List<Pair<String, String[]>> apps = new LinkedList<Pair<String, String[]>>();
+        List<Pair<String, String[]>> apps = new LinkedList<>();
         if (frontendCheckBox.isSelected()) {
             apps.add(Pair.of(APP_FRONTEND, Utilities.parseParameters(frontendParamsTextField.getText().trim()))); // NOI18N
         }

@@ -56,28 +56,28 @@ import org.netbeans.modules.php.spi.annotation.AnnotationParsedLine;
  */
 public class TypedParametersAnnotationLineParser implements AnnotationLineParser {
 
-    private static final Map<String, Set<String>> ANNOTATIONS = new HashMap<String, Set<String>>();
+    private static final Map<String, Set<String>> ANNOTATIONS = new HashMap<>();
     static {
-        Set<String> discriminatorMapRegexs = new HashSet<String>();
+        Set<String> discriminatorMapRegexs = new HashSet<>();
         discriminatorMapRegexs.add("\\\"\\s*\\w+\\s*\\\""); //NOI18N
         ANNOTATIONS.put("DiscriminatorMap", discriminatorMapRegexs); //NOI18N
 
-        Set<String> embedManyRegexs = new HashSet<String>();
+        Set<String> embedManyRegexs = new HashSet<>();
         embedManyRegexs.add("targetDocument"); //NOI18N
         embedManyRegexs.add("\\\"\\s*\\w+\\s*\\\""); //NOI18N
         ANNOTATIONS.put("EmbedMany", embedManyRegexs); //NOI18N
 
-        Set<String> embedOneRegexs = new HashSet<String>();
+        Set<String> embedOneRegexs = new HashSet<>();
         embedOneRegexs.add("targetDocument"); //NOI18N
         embedOneRegexs.add("\\\"\\s*\\w+\\s*\\\""); //NOI18N
         ANNOTATIONS.put("EmbedOne", embedOneRegexs); //NOI18N
 
-        Set<String> referenceManyRegexs = new HashSet<String>();
+        Set<String> referenceManyRegexs = new HashSet<>();
         referenceManyRegexs.add("targetDocument"); //NOI18N
         referenceManyRegexs.add("\\\"\\s*\\w+\\s*\\\""); //NOI18N
         ANNOTATIONS.put("ReferenceMany", referenceManyRegexs); //NOI18N
 
-        Set<String> referenceOneRegexs = new HashSet<String>();
+        Set<String> referenceOneRegexs = new HashSet<>();
         referenceOneRegexs.add("targetDocument"); //NOI18N
         referenceOneRegexs.add("\\\"\\s*\\w+\\s*\\\""); //NOI18N
         ANNOTATIONS.put("ReferenceOne", referenceOneRegexs); //NOI18N
@@ -91,7 +91,7 @@ public class TypedParametersAnnotationLineParser implements AnnotationLineParser
             if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], entry.getKey())) {
                 String annotation = tokens[0].trim();
                 String description = line.substring(annotation.length()).trim();
-                Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+                Map<OffsetRange, String> types = new HashMap<>();
                 types.put(new OffsetRange(0, annotation.length()), annotation);
                 types.putAll(AnnotationUtils.extractTypesFromParameters(line, entry.getValue()));
                 result = new AnnotationParsedLine.ParsedLine(entry.getKey(), types, description, true);

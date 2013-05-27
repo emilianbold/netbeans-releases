@@ -54,7 +54,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.LibraryItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.explorer.propertysheet.PropertyEnv;
@@ -199,8 +199,8 @@ public class RequiredProjectsPanel extends javax.swing.JPanel implements HelpCtx
                 for (int i = 0; i < artifacts.length; i++) {
                     String location = ProjectSupport.toProperPath(baseDir.getFileObject(), artifacts[i].getProjectLocation(), project);
                     String workingdir = ProjectSupport.toProperPath(baseDir.getFileObject(), artifacts[i].getWorkingDirectory(), project);
-                    location = CndPathUtilitities.normalizeSlashes(location);
-                    workingdir = CndPathUtilitities.normalizeSlashes(workingdir);
+                    location = CndPathUtilities.normalizeSlashes(location);
+                    workingdir = CndPathUtilities.normalizeSlashes(workingdir);
                     artifacts[i].setProjectLocation(location);
                     artifacts[i].setWorkingDirectory(workingdir);
                     artifacts[i].setBuild(false);

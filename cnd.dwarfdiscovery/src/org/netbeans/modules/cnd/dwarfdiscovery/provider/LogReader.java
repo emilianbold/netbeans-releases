@@ -77,7 +77,7 @@ import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PackageConfiguration;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.PkgConfigManager.PkgConfig;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.MIMESupport;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
@@ -989,7 +989,7 @@ public class LogReader {
         }
         if (artifacts.output != null) {
             String what = artifacts.output;
-            String baseName = CndPathUtilitities.getBaseName(what);
+            String baseName = CndPathUtilities.getBaseName(what);
             if (!(baseName.endsWith(".exe") || baseName.indexOf(".") < 0)) { //NOI18N
                 return;
             }
@@ -1021,7 +1021,7 @@ public class LogReader {
         }
     }
     
-    //copy of CndPathUtilitities.isPathAbsolute(CharSequence)
+    //copy of CndPathUtilities.isPathAbsolute(CharSequence)
     // except checking on windows
     private boolean isPathAbsolute(CharSequence path) {
         if (path == null || path.length() == 0) {
@@ -1095,7 +1095,7 @@ public class LogReader {
             this.compiler = li.compiler;
             this.compilePath =compilePath;
             sourceName = sourcePath;
-            if (CndPathUtilitities.isPathAbsolute(sourceName)){
+            if (CndPathUtilities.isPathAbsolute(sourceName)){
                 fullName = sourceName;
                 sourceName = DiscoveryUtils.getRelativePath(compilePath, sourceName);
             } else {
@@ -1285,7 +1285,7 @@ public class LogReader {
             if (isStoped.cancelled()) {
                 return;
             }
-            if (CndPathUtilitities.isIgnoredFolder(d)){
+            if (CndPathUtilities.isIgnoredFolder(d)){
                 return;
             }
             String canPath;

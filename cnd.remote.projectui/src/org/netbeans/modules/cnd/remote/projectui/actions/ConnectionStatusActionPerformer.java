@@ -147,6 +147,7 @@ public class ConnectionStatusActionPerformer implements ActionListener, Property
                             ServerRecord prevRecord = ServerList.get(prevEnv);
                             prevRecord.removePropertyChangeListener(ConnectionStatusActionPerformer.this);
                         }
+                        prevEnv = executionEnvironment;
                     }
                     presenter.setEnabled(!executionEnvironment.isLocal());
                     boolean connectedTo = ConnectionManager.getInstance().isConnectedTo(executionEnvironment);

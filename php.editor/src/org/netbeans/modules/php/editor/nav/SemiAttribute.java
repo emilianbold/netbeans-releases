@@ -66,7 +66,6 @@ import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.NameKind;
-import org.netbeans.modules.php.editor.api.PhpModifiers;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.ConstantElement;
 import org.netbeans.modules.php.editor.api.elements.FieldElement;
@@ -121,11 +120,11 @@ public class SemiAttribute extends DefaultVisitor {
             "_COOKIE", "_SESSION", "_REQUEST", "_ENV"); //NOI18N
 
     public DefinitionScope global;
-    private Stack<DefinitionScope> scopes = new Stack<DefinitionScope>();
-    private Map<ASTNode, AttributedElement> node2Element = new HashMap<ASTNode, AttributedElement>();
+    private Stack<DefinitionScope> scopes = new Stack<>();
+    private Map<ASTNode, AttributedElement> node2Element = new HashMap<>();
     private int offset;
     private ParserResult info;
-    private Stack<ASTNode> nodes = new Stack<ASTNode>();
+    private Stack<ASTNode> nodes = new Stack<>();
 
     public SemiAttribute(ParserResult info) {
         this(info, -1);
@@ -259,7 +258,7 @@ public class SemiAttribute extends DefaultVisitor {
     @Override
     public void visit(CatchClause node) {
         Identifier className = (node.getClassName() != null) ? CodeUtils.extractUnqualifiedIdentifier(node.getClassName()) : null;
-        AttributedElement ae = null;
+        AttributedElement ae;
         if (className != null) {
             String name = className.getName();
             Collection<AttributedElement> namedGlobalElements =
@@ -365,10 +364,15 @@ public class SemiAttribute extends DefaultVisitor {
                     Collection<AttributedElement> nn = getNamedGlobalElements(Kind.CLASS, clsName);
                     if (!nn.isEmpty()) {
                         String contextClassName = clsName;
-                        if ("parent".equals(clsName)) { //NOI18N
-                            contextClassName = getContextSuperClassName();
-                        } else if ("self".equals(clsName)) { //NOI18N
-                            contextClassName = getContextClassName();
+                        switch (clsName) {
+                            case "parent": //NOI18N
+                                contextClassName = getContextSuperClassName();
+                                break;
+                            case "self": //NOI18N
+                                contextClassName = getContextClassName();
+                                break;
+                            default:
+                                // no-op
                         }
                         for (AttributedElement ell : nn) {
                             ClassElementAttribute ce = (ClassElementAttribute) ell;
@@ -539,19 +543,26 @@ public class SemiAttribute extends DefaultVisitor {
     @Override
     public void visit(StaticConstantAccess node) {
         String clsName = CodeUtils.extractUnqualifiedClassName(node);
-        if (clsName.equals("self")) { //NOI18N
-            ClassElementAttribute c = getCurrentClassElement();
-            if (c != null) {
-                clsName = c.getName();
-            }
-        } else if (clsName.equals("parent")) { //NOI18N
-            ClassElementAttribute c = getCurrentClassElement();
-            if (c != null) {
-                c = c.getSuperClass();
-                if (c != null) {
-                    clsName = c.getName();
+        switch (clsName) {
+            case "self": //NOI18N
+                {
+                    ClassElementAttribute c = getCurrentClassElement();
+                    if (c != null) {
+                        clsName = c.getName();
+                    }
+                    break;
                 }
-            }
+            case "parent": //NOI18N
+                {
+                    ClassElementAttribute c = getCurrentClassElement();
+                    if (c != null) {
+                        c = c.getSuperClass();
+                        if (c != null) {
+                            clsName = c.getName();
+                        }
+                    }
+                    break;
+                }
         }
         Collection<AttributedElement> nn = getNamedGlobalElements(Kind.CLASS, clsName); //NOI18N
         if (!nn.isEmpty()) {
@@ -577,10 +588,15 @@ public class SemiAttribute extends DefaultVisitor {
                 CodeUtils.extractUnqualifiedClassName(node));
         if (!nn.isEmpty()) {
             String contextClassName = CodeUtils.extractUnqualifiedClassName(node);
-            if ("parent".equals(contextClassName)) {
-                contextClassName = getContextSuperClassName();
-            } else if ("self".equals(contextClassName)) {
-                contextClassName = getContextClassName();
+            switch (contextClassName) {
+                case "parent": //NOI18N
+                    contextClassName = getContextSuperClassName();
+                    break;
+                case "self": //NOI18N
+                    contextClassName = getContextClassName();
+                    break;
+                default:
+                    // no-op
             }
             for (AttributedElement ell : nn) {
                 ClassElementAttribute ce = (ClassElementAttribute) ell;
@@ -705,7 +721,7 @@ public class SemiAttribute extends DefaultVisitor {
     }
 
     public Collection<AttributedElement> getNamedGlobalElements(Kind k, String fName) {
-        final List<AttributedElement> retval = new ArrayList<AttributedElement>();
+        final List<AttributedElement> retval = new ArrayList<>();
         final Map<String, AttributedElement> name2El = global.name2Writes.get(k);
         if (global != null && StringUtils.hasText(fName)) {
             if (fName.equals("self")) { //NOI18N
@@ -754,7 +770,7 @@ public class SemiAttribute extends DefaultVisitor {
     public void enterAllIndexedClasses() {
         if (name2ElementCache == null) {
             Index index = ElementQueryFactory.getIndexQuery(info);
-            name2ElementCache = new LinkedList<PhpElement>();
+            name2ElementCache = new LinkedList<>();
             name2ElementCache.addAll(index.getClasses(NameKind.empty()));
         }
 
@@ -814,7 +830,7 @@ public class SemiAttribute extends DefaultVisitor {
 
         }
     }
-    private static Map<ParserResult, SemiAttribute> info2Attr = new WeakHashMap<ParserResult, SemiAttribute>();
+    private static Map<ParserResult, SemiAttribute> info2Attr = new WeakHashMap<>();
 
     public static SemiAttribute semiAttribute(ParserResult info) {
         SemiAttribute a = info2Attr.get(info);
@@ -947,8 +963,8 @@ public class SemiAttribute extends DefaultVisitor {
         }
 
         public AttributedElement(Union2<ASTNode, PhpElement> n, String name, Kind k, AttributedType type) {
-            this.writes = new LinkedList<Union2<ASTNode, PhpElement>>();
-            this.writesTypes = new LinkedList<AttributedType>();
+            this.writes = new LinkedList<>();
+            this.writesTypes = new LinkedList<>();
             this.writes.add(n);
 
             this.writesTypes.add(type);
@@ -1178,7 +1194,7 @@ public class SemiAttribute extends DefaultVisitor {
 
         private final DefinitionScope enclosedElements;
         private ClassElementAttribute superClass;
-        private Set<ClassElementAttribute> ifaces = new HashSet<ClassElementAttribute>();
+        private Set<ClassElementAttribute> ifaces = new HashSet<>();
         private boolean initialized;
 
         public ClassElementAttribute(Union2<ASTNode, PhpElement> n, String name, Kind k) {
@@ -1219,7 +1235,7 @@ public class SemiAttribute extends DefaultVisitor {
         }
 
         public Collection<AttributedElement> getElements(Kind k) {
-            List<AttributedElement> elements = new ArrayList<AttributedElement>();
+            List<AttributedElement> elements = new ArrayList<>();
 
             getElements0(elements, k);
 
@@ -1228,7 +1244,7 @@ public class SemiAttribute extends DefaultVisitor {
 
         public Collection<AttributedElement> getNamedElements(Kind k, String... filterNames) {
             Collection<AttributedElement> elements = getElements(k);
-            List<AttributedElement> retval = new ArrayList<AttributedElement>();
+            List<AttributedElement> retval = new ArrayList<>();
             for (String fName : filterNames) {
                 for (AttributedElement el : elements) {
                     if (el.getName().equals(fName)) {
@@ -1245,7 +1261,7 @@ public class SemiAttribute extends DefaultVisitor {
 
         public Collection<AttributedElement> getFields() {
             Collection<AttributedElement> elems = getElements(Kind.VARIABLE);
-            List<AttributedElement> retval = new ArrayList<AttributedElement>();
+            List<AttributedElement> retval = new ArrayList<>();
             for (AttributedElement elm : elems) {
                 if (!elm.getName().equals("this")) {
                     retval.add(elm);
@@ -1326,7 +1342,7 @@ public class SemiAttribute extends DefaultVisitor {
         }
 
         public Collection<AttributedElement> getElements(Kind k) {
-            List<AttributedElement> elements = new ArrayList<AttributedElement>();
+            List<AttributedElement> elements = new ArrayList<>();
 
             getElements0(elements, k);
 
@@ -1335,7 +1351,7 @@ public class SemiAttribute extends DefaultVisitor {
 
         public Collection<AttributedElement> getNamedElements(Kind k, String... filterNames) {
             Collection<AttributedElement> elements = getElements(k);
-            List<AttributedElement> retval = new ArrayList<AttributedElement>();
+            List<AttributedElement> retval = new ArrayList<>();
             for (String fName : filterNames) {
                 for (AttributedElement el : elements) {
                     if (el.getName().equals(fName)) {
@@ -1391,7 +1407,7 @@ public class SemiAttribute extends DefaultVisitor {
 
     public class DefinitionScope {
 
-        private final Map<Kind, Map<String, AttributedElement>> name2Writes = new EnumMap<Kind, Map<String, AttributedElement>>(Kind.class);
+        private final Map<Kind, Map<String, AttributedElement>> name2Writes = new EnumMap<>(Kind.class);
         private boolean classScope;
         private boolean functionScope;
         private AttributedElement thisVar;
@@ -1437,7 +1453,7 @@ public class SemiAttribute extends DefaultVisitor {
             Map<String, AttributedElement> name2El = name2Writes.get(k);
 
             if (name2El == null) {
-                name2El = new HashMap<String, AttributedElement>();
+                name2El = new HashMap<>();
                 name2Writes.put(k, name2El);
             }
 
@@ -1482,7 +1498,7 @@ public class SemiAttribute extends DefaultVisitor {
         public AttributedElement enter(String name, Kind k, AttributedElement el) {
             Map<String, AttributedElement> name2El = name2Writes.get(k);
             if (name2El == null) {
-                name2El = new HashMap<String, AttributedElement>();
+                name2El = new HashMap<>();
                 name2Writes.put(k, name2El);
             }
             name2El.put(name, el);
@@ -1532,7 +1548,7 @@ public class SemiAttribute extends DefaultVisitor {
         }
 
         public Collection<ClassElementAttribute> getClasses() {
-            Collection<ClassElementAttribute> retval = new LinkedHashSet<ClassElementAttribute>();
+            Collection<ClassElementAttribute> retval = new LinkedHashSet<>();
             Collection<AttributedElement> elements = getElements(Kind.CLASS);
             for (AttributedElement el : elements) {
                 assert el instanceof ClassElementAttribute;

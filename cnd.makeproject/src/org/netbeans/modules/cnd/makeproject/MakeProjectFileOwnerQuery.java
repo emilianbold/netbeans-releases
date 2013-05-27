@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.utils.CndVisibilityQuery;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.spi.project.FileOwnerQueryImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
@@ -135,7 +135,7 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
             Exceptions.printStackTrace(ex);
             return null;
         }        
-        String path = CndPathUtilitities.normalizeSlashes(fo.getPath());
+        String path = CndPathUtilities.normalizeSlashes(fo.getPath());
         for(NativeProject nativeProject : NativeProjectRegistry.getDefault().getOpenProjects()) {
             Provider project = nativeProject.getProject();
             if (project instanceof Project) {
@@ -200,7 +200,7 @@ public class MakeProjectFileOwnerQuery implements FileOwnerQueryImplementation {
                 }
             }
             for (String srcPath : list) {
-                srcPath = CndPathUtilitities.normalizeSlashes(srcPath);
+                srcPath = CndPathUtilities.normalizeSlashes(srcPath);
                 if (!srcPath.endsWith(PATH_SEPARATOR)) {
                     srcPath = srcPath + PATH_SEPARATOR;
                 }

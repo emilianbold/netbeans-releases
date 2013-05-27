@@ -86,6 +86,7 @@ public class DOM {
      * Creates a new wrapper for the DOM domain of WebKit Remote Debugging Protocol.
      * 
      * @param transport transport to use.
+     * @param webKit WebKit remote debugging API wrapper to use.
      */
     public DOM(TransportHelper transport, WebKitDebugging webKit) {
         this.transport = transport;
@@ -572,12 +573,12 @@ public class DOM {
      * Notify listeners about {@code attributeModified} event.
      * 
      * @param node node whose attribute has been modified.
-     * @param attrName name of the modified attribute (the new value
-     * is already set in the node).
+     * @param attrName name of the modified attribute.
+     * @param attrValue new value of the attribute.
      */
-    private void notifyAttributeModified(Node node, String attrName) {
+    private void notifyAttributeModified(Node node, String attrName, String attrValue) {
         for (Listener listener : listeners) {
-            listener.attributeModified(node, attrName);
+            listener.attributeModified(node, attrName, attrValue);
         }
     }
 
@@ -688,6 +689,7 @@ public class DOM {
     void handleAttributeModified(JSONObject params) {
         Node node;
         String name;
+        String value;
         synchronized (this) {
             int nodeId = ((Number)params.get("nodeId")).intValue(); // NOI18N
             node = nodes.get(nodeId);
@@ -695,7 +697,7 @@ public class DOM {
                 return;
             }
             name = (String)params.get("name"); // NOI18N
-            String value = (String)params.get("value"); // NOI18N
+            value = (String)params.get("value"); // NOI18N
             if ("class".equals(name)) { // NOI18N
                 String clazz = getClassForHover();
                 if (clazz != null && value.contains(clazz)) {
@@ -704,7 +706,7 @@ public class DOM {
             }
             node.setAttribute(name, value);
         }
-        notifyAttributeModified(node, name);
+        notifyAttributeModified(node, name, value);
     }
 
     void handleAttributeRemoved(JSONObject params) {
@@ -777,8 +779,9 @@ public class DOM {
          * 
          * @param node node whose attribute has been modified.
          * @param attrName name of the modified attribute.
+         * @param attrValue new value of the attribute.
          */
-        void attributeModified(Node node, String attrName);
+        void attributeModified(Node node, String attrName, String attrValue);
         
         /**
          * Attribute has been removed.

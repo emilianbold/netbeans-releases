@@ -49,6 +49,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JOptionPane;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.queries.VersioningQuery;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.CreatedProjectInfo;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.subversion.api.Subversion;
@@ -102,7 +103,7 @@ public final class ShareAction extends AbstractAction {
                     for (Node node : nodes) {
                         final Project prj = node.getLookup().lookup(Project.class);
                         if (prj != null) {
-                            if (Boolean.TRUE.equals(prj.getProjectDirectory().getAttribute("ProvidedExtensions.VCSManaged"))) { //NOI18N
+                            if (VersioningQuery.isManaged(prj.getProjectDirectory().toURI())) { 
                                 EventQueue.invokeLater(new Runnable() {
                                     @Override
                                     public void run () {

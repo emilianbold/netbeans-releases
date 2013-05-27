@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -52,7 +53,7 @@ import java.util.List;
  */
 public class ArrayCreation extends Expression {
 
-    private final ArrayList<ArrayElement> elements = new ArrayList<ArrayElement>();
+    private final ArrayList<ArrayElement> elements = new ArrayList<>();
 
     private ArrayCreation(int start, int end, ArrayElement[] elements) {
         super(start, end);
@@ -60,11 +61,7 @@ public class ArrayCreation extends Expression {
         if (elements == null) {
             throw new IllegalArgumentException();
         }
-
-        for (ArrayElement arrayElement : elements) {
-//            arrayElement.setParent(this);
-            this.elements.add(arrayElement);
-        }
+        this.elements.addAll(Arrays.asList(elements));
     }
 
     public ArrayCreation(int start, int end, List<ArrayElement> elements) {

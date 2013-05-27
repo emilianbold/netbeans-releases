@@ -117,12 +117,14 @@ public class ActionsSynchronizer {
             logger.log(Level.FINE, "actionStarts({0})", action);
             scheduledActions.remove(action);
             Set<Object> waitingFor = ACTIONS_WAITING_FOR_OTHERS.get(action);
-            while(containsAny(scheduledActions, waitingFor) ||
-                  containsAny(runningActions, waitingFor)) {
-                logger.log(Level.FINE, "action {0} is blocked.", action);
-                try {
-                    runningActions.wait();
-                } catch (InterruptedException ex) {}
+            if (waitingFor != null) {
+                while(containsAny(scheduledActions, waitingFor) ||
+                      containsAny(runningActions, waitingFor)) {
+                    logger.log(Level.FINE, "action {0} is blocked.", action);
+                    try {
+                        runningActions.wait();
+                    } catch (InterruptedException ex) {}
+                }
             }
             runningActions.add(action);
             logger.log(Level.FINE, "action {0} can proceed. Running actions = {1}", new Object[] { action, runningActions});

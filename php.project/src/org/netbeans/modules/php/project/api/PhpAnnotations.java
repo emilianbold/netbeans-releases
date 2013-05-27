@@ -64,7 +64,7 @@ public final class PhpAnnotations implements PropertyChangeListener {
     private static final PhpAnnotations INSTANCE = new PhpAnnotations();
 
     // @GuardedBy(this)
-    private final Map<FileObject, List<AnnotationCompletionTagProvider>> cache = new WeakHashMap<FileObject, List<AnnotationCompletionTagProvider>>();
+    private final Map<FileObject, List<AnnotationCompletionTagProvider>> cache = new WeakHashMap<>();
 
 
     private PhpAnnotations() {
@@ -99,7 +99,7 @@ public final class PhpAnnotations implements PropertyChangeListener {
     private List<AnnotationCompletionTagProvider> computeProviders(FileObject fileObject) {
         assert Thread.holdsLock(this);
 
-        List<AnnotationCompletionTagProvider> result = new ArrayList<AnnotationCompletionTagProvider>();
+        List<AnnotationCompletionTagProvider> result = new ArrayList<>();
         // first, add global providers
         result.addAll(org.netbeans.modules.php.api.annotation.PhpAnnotations.getCompletionTagProviders());
         // next, add providers from php frameworks

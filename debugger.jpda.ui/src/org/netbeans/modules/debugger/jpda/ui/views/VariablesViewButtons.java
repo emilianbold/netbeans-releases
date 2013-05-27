@@ -64,11 +64,11 @@ import org.openide.util.NbPreferences;
 public class VariablesViewButtons {
 
     public static final String PREFERENCES_NAME = "variables_view"; // NOI18N
-    public static final String SHOW_VALUE_AS_STRING = "show_value_as_string"; // NOI18N
+    public static final String SHOW_VALUE_PROPERTY_EDITORS = "show_value_property_editors"; // NOI18N
     private static final String SHOW_FORMATTERS_PROP_NAME = "org.netbeans.modules.debugger.jpda.ui.options.SHOW_FORMATTERS"; // NOI18N
     private static final String OPTIONS_JAVA_DEBUGGER_ID = "org-netbeans-modules-debugger-jpda-ui-options-JavaDebuggerOptionsPanelController"; // NOI18N
 
-    private static JToggleButton showValueAsStringToggle = null;
+    private static JToggleButton showValuePropertyEditorsToggle = null;
 
     public static JButton createOpenOptionsButton() {
         JButton button = createButton(
@@ -84,17 +84,17 @@ public class VariablesViewButtons {
         return button;
     }
 
-    public static synchronized JToggleButton createShowValueAsStringButton() {
-        if (showValueAsStringToggle != null) {
-            return showValueAsStringToggle;
+    public static synchronized JToggleButton createShowValuePropertyEditorsButton() {
+        if (showValuePropertyEditorsToggle != null) {
+            return showValuePropertyEditorsToggle;
         }
-        showValueAsStringToggle = createToggleButton(
-                SHOW_VALUE_AS_STRING,
-                "org/netbeans/modules/debugger/jpda/resources/show_variable_values_16.png",
-                NbBundle.getMessage (VariablesViewButtons.class, "Hint_Show_Value_As_String")
+        showValuePropertyEditorsToggle = createToggleButton(
+                SHOW_VALUE_PROPERTY_EDITORS,
+                "org/netbeans/modules/debugger/jpda/resources/show_property_editors_16.png",
+                NbBundle.getMessage (VariablesViewButtons.class, "Hint_Show_Value_Property_Editors")
             );
-        showValueAsStringToggle.addActionListener(new ShowValueAsStringActionListener(showValueAsStringToggle));
-        return showValueAsStringToggle;
+        showValuePropertyEditorsToggle.addActionListener(new ShowValuePropertyEditorsActionListener(showValuePropertyEditorsToggle));
+        return showValuePropertyEditorsToggle;
     }
 
     private static JButton createButton (String iconPath, String tooltip) {
@@ -127,36 +127,40 @@ public class VariablesViewButtons {
         return toggleButton;
     }
 
-    public static boolean isShowValuesAsString() {
-        Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(PREFERENCES_NAME);
-        return preferences.getBoolean(SHOW_VALUE_AS_STRING, false);
+    public static boolean isShowValuePropertyEditors() {
+        return isButtonSelected(SHOW_VALUE_PROPERTY_EDITORS);
     }
 
     private static boolean isButtonSelected(String name) {
-        if (name.equals(SHOW_VALUE_AS_STRING)) {
-            return isShowValuesAsString();
-        }
-        return false;
+        Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(PREFERENCES_NAME);
+        return preferences.getBoolean(name, getDefaultSelected(name));
     }
 
     private static void setButtonSelected(String name, boolean selected) {
         Preferences preferences = NbPreferences.forModule(VariablesViewButtons.class).node(PREFERENCES_NAME);
         preferences.putBoolean(name, selected);
     }
+    
+    private static boolean getDefaultSelected(String name) {
+        if (SHOW_VALUE_PROPERTY_EDITORS.equals(name)) {
+            return true;
+        }
+        return false;
+    }
 
     // **************************************************************************
 
-    private static class ShowValueAsStringActionListener implements ActionListener {
+    private static class ShowValuePropertyEditorsActionListener implements ActionListener {
 
         private JToggleButton button;
 
-        ShowValueAsStringActionListener(JToggleButton toggleButton) {
+        ShowValuePropertyEditorsActionListener(JToggleButton toggleButton) {
             this.button = toggleButton;
         }
 
         public void actionPerformed(ActionEvent e) {
             boolean isSelected = button.isSelected();
-            setButtonSelected(SHOW_VALUE_AS_STRING, isSelected);
+            setButtonSelected(SHOW_VALUE_PROPERTY_EDITORS, isSelected);
         }
 
     }

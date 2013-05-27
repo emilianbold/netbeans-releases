@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -422,19 +422,19 @@ public class DiscoveryProjectGeneratorImpl {
             added = projectBridge.createFolder(folder, name);
             //if (!folder.isDiskFolder()) {
             //    String additionalPath = used.getFolder();
-            //    added.setRoot(CndPathUtilitities.toRelativePath(folder.getConfigurationDescriptor().getBaseDir(), additionalPath));
+            //    added.setRoot(CndPathUtilities.toRelativePath(folder.getConfigurationDescriptor().getBaseDir(), additionalPath));
             //    projectBridge.addSourceRoot(additionalPath);
             //}
             folder.addFolder(added, true);
         } else {
             if (added.isDiskFolder()) {
                 String additionalPath = used.getFolder();
-                String folderPath = CndPathUtilitities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDirFileObject(), added.getRootPath());
+                String folderPath = CndPathUtilities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDirFileObject(), added.getRootPath());
                 Folder logicalCandidate = null;
                 if (!additionalPath.equals(folderPath)) {
                     for (Folder candidate : folder.getFolders()) {
                         if (candidate.isDiskFolder()) {
-                            folderPath = CndPathUtilitities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDirFileObject(), candidate.getRootPath());
+                            folderPath = CndPathUtilities.toAbsolutePath(folder.getConfigurationDescriptor().getBaseDirFileObject(), candidate.getRootPath());
                             if (additionalPath.equals(folderPath)) {
                                 added = candidate;
                                 break;
@@ -447,7 +447,7 @@ public class DiscoveryProjectGeneratorImpl {
                 if (!additionalPath.equals(folderPath)) {
                     if (logicalCandidate == null) {
                         added = projectBridge.createFolder(folder, name);
-                        //added.setRoot(CndPathUtilitities.toRelativePath(folder.getConfigurationDescriptor().getBaseDir(), additionalPath));
+                        //added.setRoot(CndPathUtilities.toRelativePath(folder.getConfigurationDescriptor().getBaseDir(), additionalPath));
                         //projectBridge.addSourceRoot(additionalPath);
                         folder.addFolder(added, true);
                     } else {

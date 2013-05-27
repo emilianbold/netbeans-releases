@@ -66,6 +66,7 @@ public class UtilsTest extends NbTestCase {
             "https://localhost/phpProject1/subdir1/subdir2",
             "https://localhost/phpProject1/subdir1/subdir2/",
             "https://user:pwd@localhost/phpProject1",
+            "http://[::1]/",
         };
         final String[] incorrectUrls = new String[] {
             null,
@@ -79,26 +80,25 @@ public class UtilsTest extends NbTestCase {
             "test",
             "https://user : pwd @ localhost/phpProject1",
             "https://localhost/phpProject1/s u b d i r 1 / s u b  d i r 2 /",
-            "http://:/", // #141991
         };
 
         for (String url : correctUrls) {
-            assertTrue("incorrect url: [" + url + "]", Utils.isValidUrl(url));
+            assertTrue("should be correct url: [" + url + "]", Utils.isValidUrl(url));
         }
         for (String url : incorrectUrls) {
-            assertFalse("correct url: [" + url + "]", Utils.isValidUrl(url));
+            assertFalse("should be incorrect url: [" + url + "]", Utils.isValidUrl(url));
         }
     }
 
     // #131023
     public void testValidateSourcesAndCopyTarget() throws Exception {
-        final Map<String, String> correctDirs = new HashMap<String, String>();
+        final Map<String, String> correctDirs = new HashMap<>();
         correctDirs.put("/home/test/NetBeansProjects/PHPProject", "/home/test/NetBeansProjects/PHPProjectCopy");
         correctDirs.put("/home/test/NetBeansProjects/a", "/home/test/NetBeansProjects/b");
         correctDirs.put("/home/test/NetBeansProjects/PHPProject", "/var/www/PHPProject");
         correctDirs.put("/tmp/PHPProject", "/PHPProject");
         correctDirs.put("C:\\test", "D:\\test");
-        final Map<String, String> incorrectDirs = new HashMap<String, String>();
+        final Map<String, String> incorrectDirs = new HashMap<>();
         incorrectDirs.put("/tmp/PHPProject", "/tmp/PHPProject/copy");
         incorrectDirs.put("/tmp/PHPProject/web", "/tmp/PHPProject");
 

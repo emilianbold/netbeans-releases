@@ -46,9 +46,12 @@ import java.awt.EventQueue;
 import java.io.File;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
@@ -58,6 +61,7 @@ import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.modules.versioning.util.Utils;
 import org.openide.awt.ActionID;
@@ -108,27 +112,43 @@ public class FetchAction extends SingleRepositoryAction {
     }
     
     @NbBundle.Messages({
-        "# {0} - repository name", "LBL_FetchAction.progressName=Fetching - {0}"
+        "# {0} - repository name", "LBL_FetchAction.progressName=Fetching - {0}",
+        "# {0} - branch name", "MSG_FetchAction.branchDeleted=Branch {0} deleted."
     })
     public Task fetch (File repository, final String target, final List<String> fetchRefSpecs, final String remoteNameToUpdate) {
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             protected void perform () {
                 try {
-                    GitClient client = getClient();
-                    if (remoteNameToUpdate != null) {
-                        GitRemoteConfig config = client.getRemote(remoteNameToUpdate, getProgressMonitor());
-                        if (isCanceled()) {
-                            return;
-                        }
-                        config = prepareConfig(config, remoteNameToUpdate, target, fetchRefSpecs);
-                        client.setRemote(config, getProgressMonitor());
-                        if (isCanceled()) {
-                            return;
+                    Set<String> toDelete = new HashSet<String>();
+                    for(ListIterator<String> it = fetchRefSpecs.listIterator(); it.hasNext(); ) {
+                        String refSpec = it.next();
+                        if (refSpec.startsWith(GitUtils.REF_SPEC_DEL_PREFIX)) {
+                            // branches are deleted separately
+                            it.remove();
+                            toDelete.add(refSpec.substring(GitUtils.REF_SPEC_DEL_PREFIX.length()));
                         }
                     }
-                    Map<String, GitTransportUpdate> updates = client.fetch(target, fetchRefSpecs, getProgressMonitor());
-                    FetchUtils.log(updates, getLogger());
+                    GitClient client = getClient();
+                    for (String branch : toDelete) {
+                        client.deleteBranch(branch, true, getProgressMonitor());
+                        getLogger().output(Bundle.MSG_FetchAction_branchDeleted(branch));
+                    }
+                    if (!fetchRefSpecs.isEmpty() && !isCanceled()) {
+                        if (remoteNameToUpdate != null) {
+                            GitRemoteConfig config = client.getRemote(remoteNameToUpdate, getProgressMonitor());
+                            if (isCanceled()) {
+                                return;
+                            }
+                            config = prepareConfig(config, remoteNameToUpdate, target, fetchRefSpecs);
+                            client.setRemote(config, getProgressMonitor());
+                            if (isCanceled()) {
+                                return;
+                            }
+                        }
+                        Map<String, GitTransportUpdate> updates = client.fetch(target, fetchRefSpecs, getProgressMonitor());
+                        FetchUtils.log(updates, getLogger());
+                    }
                 } catch (GitException ex) {
                     GitClientExceptionHandler.notifyException(ex, true);
                 }

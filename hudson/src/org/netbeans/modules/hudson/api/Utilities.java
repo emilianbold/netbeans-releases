@@ -51,7 +51,11 @@ import java.util.logging.Logger;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
-import org.netbeans.modules.hudson.api.HudsonVersion;
+import org.netbeans.modules.hudson.Installer;
+import static org.netbeans.modules.hudson.api.HudsonJobBuild.Result.FAILURE;
+import static org.netbeans.modules.hudson.api.HudsonJobBuild.Result.SUCCESS;
+import static org.netbeans.modules.hudson.api.HudsonJobBuild.Result.UNSTABLE;
+import org.netbeans.modules.hudson.impl.HudsonInstanceImpl;
 import org.openide.util.Parameters;
 import org.w3c.dom.Element;
 
@@ -116,4 +120,42 @@ public class Utilities {
         }
         private static final XPath xpath = XPathFactory.newInstance().newXPath();
 
+    /**
+     * Quickly check whether Hudson support is in use.
+     *
+     * @return True if Hudson support is in use, false otherwise.
+     */
+    public static boolean isHudsonSupportActive() {
+        return Installer.active();
+    }
+
+    /**
+     * Make an instance persistent.
+     *
+     * @param instance Hudson instance to persist.
+     */
+    public static void persistInstance(HudsonInstance instance) {
+        if (instance instanceof HudsonInstanceImpl) {
+            ((HudsonInstanceImpl) instance).makePersistent();
+        }
+    }
+
+    /**
+     * Get appropriate {@link HudsonJob.Color} instance for a build.
+     *
+     * @param build Hudson Job Build.
+     * @return Appropriate color, depending on the result of the build.
+     */
+    public static HudsonJob.Color getColorForBuild(HudsonJobBuild build) {
+        switch (build.getResult()) {
+            case SUCCESS:
+                return HudsonJob.Color.blue;
+            case UNSTABLE:
+                return HudsonJob.Color.yellow;
+            case FAILURE:
+                return HudsonJob.Color.red;
+            default:
+                return HudsonJob.Color.grey;
+        }
+    }
 }

@@ -69,8 +69,12 @@ import org.netbeans.modules.analysis.spi.Analyzer.AnalyzerFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.openide.awt.ActionID;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.openide.cookies.EditCookie;
+import org.openide.cookies.OpenCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.nodes.Node;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
@@ -154,6 +158,25 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         descriptionPanel.addHyperlinkListener(new HyperlinkListener() {
             @Override public void hyperlinkUpdate(HyperlinkEvent e) {
                 if (e.getEventType() == EventType.ACTIVATED && e.getURL() != null) {
+                    if ("file".equals(e.getURL().getProtocol())) {
+                        FileObject file = URLMapper.findFileObject(e.getURL());
+                        
+                        if (file != null) {
+                            EditCookie ec = file.getLookup().lookup(EditCookie.class);
+                            
+                            if (ec != null) {
+                                ec.edit();
+                                return ;
+                            }
+                            
+                            OpenCookie oc = file.getLookup().lookup(OpenCookie.class);
+                            
+                            if (oc != null) {
+                                oc.open();
+                                return ;
+                            }
+                        }
+                    }
                     URLDisplayer.getDefault().showURL(e.getURL());
                 }
             }

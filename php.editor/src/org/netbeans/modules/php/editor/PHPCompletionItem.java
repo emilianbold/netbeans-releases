@@ -146,7 +146,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
     protected QualifiedNameKind generateAs;
     private static ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
     private static final Cache<FileObject, PhpLanguageProperties> PROPERTIES_CACHE
-            = new Cache<FileObject, PhpLanguageProperties>(new WeakHashMap<FileObject, PhpLanguageProperties>());
+            = new Cache<>(new WeakHashMap<FileObject, PhpLanguageProperties>());
     private final boolean isPlatform;
     private final boolean isDeprecated;
 
@@ -421,7 +421,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
          * @return more than one instance in case if optional parameters exists
          */
         static List<NewClassItem> getNewClassItems(final MethodElement methodElement, CompletionRequest request) {
-            final List<NewClassItem> retval = new ArrayList<NewClassItem>();
+            final List<NewClassItem> retval = new ArrayList<>();
             List<FunctionElementItem> items = FunctionElementItem.getItems(methodElement, request);
             for (FunctionElementItem functionElementItem : items) {
                 retval.add(new NewClassItem(functionElementItem));
@@ -470,7 +470,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
          * @return more than one instance in case if optional parameters exists
          */
         static List<MethodElementItem> getItems(final MethodElement methodElement, CompletionRequest request) {
-            final List<MethodElementItem> retval = new ArrayList<MethodElementItem>();
+            final List<MethodElementItem> retval = new ArrayList<>();
             List<FunctionElementItem> items = FunctionElementItem.getItems(methodElement, request);
             for (FunctionElementItem functionElementItem : items) {
                 retval.add(new MethodElementItem(functionElementItem));
@@ -487,7 +487,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         private final CompletionRequest request;
         private final int caretOffset;
-        private final List<VariableName> usedVariables = new LinkedList<VariableName>();
+        private final List<VariableName> usedVariables = new LinkedList<>();
         private static final RequestProcessor RP = new RequestProcessor("ExistingVariableResolver"); //NOI18N
         private static final Logger LOGGER = Logger.getLogger(ExistingVariableResolver.class.getName());
         private static final int RESOLVING_TIMEOUT = 300;
@@ -592,8 +592,8 @@ public abstract class PHPCompletionItem implements CompletionProposal {
          * @return more than one instance in case if optional parameters exists
          */
         static List<FunctionElementItem> getItems(final BaseFunctionElement function, CompletionRequest request) {
-            final List<FunctionElementItem> retval = new ArrayList<FunctionElementItem>();
-            final List<ParameterElement> parameters = new ArrayList<ParameterElement>();
+            final List<FunctionElementItem> retval = new ArrayList<>();
+            final List<ParameterElement> parameters = new ArrayList<>();
             for (ParameterElement param : function.getParameters()) {
                 if (!param.isMandatory()) {
                     if (retval.isEmpty()) {
@@ -615,7 +615,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
 
         FunctionElementItem(BaseFunctionElement function, CompletionRequest request, List<ParameterElement> parameters) {
             super(function, request);
-            this.parameters = new ArrayList<ParameterElement>(parameters);
+            this.parameters = new ArrayList<>(parameters);
         }
 
         public BaseFunctionElement getBaseFunctionElement() {
@@ -698,7 +698,7 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         public List<String> getInsertParams() {
-            List<String> insertParams = new LinkedList<String>();
+            List<String> insertParams = new LinkedList<>();
             final ExistingVariableResolver existingVariableResolver = new ExistingVariableResolver(request);
             for (ParameterElement parameter : parameters) {
                 insertParams.add(existingVariableResolver.resolveVariable(parameter).getName());
@@ -1101,18 +1101,28 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 case CURSOR_INSIDE_BRACKETS:
                     name = getName();
                     builder.append(name);
-                    if (name.equals("foreach") || name.equals("for")) { //NOI18N
-                        appendSpace = codeStyle.spaceBeforeForParen();
-                    } else if (name.equals("if")) { //NOI18N
-                        appendSpace = codeStyle.spaceBeforeIfParen();
-                    } else if (name.equals("switch")) { //NOI18N
-                        appendSpace = codeStyle.spaceBeforeSwitchParen();
-                    } else if (name.equals("array")) { //NOI18N
-                        appendSpace = codeStyle.spaceBeforeArrayDeclParen();
-                    } else if (name.equals("while")) { //NOI18N
-                        appendSpace = codeStyle.spaceBeforeWhileParen();
-                    } else if (name.equals("catch")) { //NOI18N
-                        appendSpace = codeStyle.spaceBeforeCatchParen();
+                    switch (name) {
+                        case "foreach": //NOI18N
+                        case "for": //NOI18N
+                            appendSpace = codeStyle.spaceBeforeForParen();
+                            break;
+                        case "if": //NOI18N
+                            appendSpace = codeStyle.spaceBeforeIfParen();
+                            break;
+                        case "switch": //NOI18N
+                            appendSpace = codeStyle.spaceBeforeSwitchParen();
+                            break;
+                        case "array": //NOI18N
+                            appendSpace = codeStyle.spaceBeforeArrayDeclParen();
+                            break;
+                        case "while": //NOI18N
+                            appendSpace = codeStyle.spaceBeforeWhileParen();
+                            break;
+                        case "catch": //NOI18N
+                            appendSpace = codeStyle.spaceBeforeCatchParen();
+                            break;
+                        default:
+                            // no-op
                     }
                     if (appendSpace) {
                         builder.append(" "); //NOI18N
@@ -1122,12 +1132,18 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 case ENDS_WITH_CURLY_BRACKETS:
                     name = getName();
                     builder.append(name);
-                    if (name.equals("try")) { //NOI18N
-                        appendSpace = codeStyle.spaceBeforeTryLeftBrace();
-                    } else if (name.equals("do")) { //NOI18N
-                        appendSpace = codeStyle.spaceBeforeDoLeftBrace();
-                    } else if (name.equals("else")) { //NOI18N
-                        appendSpace = codeStyle.spaceBeforeElseLeftBrace();
+                    switch (name) {
+                        case "try": //NOI18N
+                            appendSpace = codeStyle.spaceBeforeTryLeftBrace();
+                            break;
+                        case "do": //NOI18N
+                            appendSpace = codeStyle.spaceBeforeDoLeftBrace();
+                            break;
+                        case "else": //NOI18N
+                            appendSpace = codeStyle.spaceBeforeElseLeftBrace();
+                            break;
+                        default:
+                            // no-op
                     }
                     if (appendSpace) {
                         builder.append(" "); //NOI18N

@@ -45,10 +45,14 @@
 package org.netbeans.modules.cnd.apt.impl.support;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Level;
+import java.util.zip.Adler32;
+import java.util.zip.Checksum;
 import org.netbeans.modules.cnd.apt.support.APTIncludeHandler;
 import org.netbeans.modules.cnd.apt.support.APTMacroMap;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
+import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -62,18 +66,26 @@ import org.openide.filesystems.FileSystem;
 public class APTPreprocHandlerImpl implements APTPreprocHandler {
     private boolean compileContext;
     private boolean isValid = true;
+    private CharSequence lang;
+    private CharSequence flavor;
+    private long cuCRC;
     private APTMacroMap macroMap;
     private APTIncludeHandler inclHandler;
     
     /**
-     * @param compileContext determine wether state created for real parse-valid
+     * @param compileContext determine whether state created for real parse-valid
      * context, i.e. source file has always correct state, but header itself has
-     * not correct state untill it was included into any source file (may be recursively)
+     * not correct state until it was included into any source file (may be recursively)
      */
-    public APTPreprocHandlerImpl(APTMacroMap macroMap, APTIncludeHandler inclHandler, boolean compileContext) {
+    public APTPreprocHandlerImpl(APTMacroMap macroMap, APTIncludeHandler inclHandler, boolean compileContext, CharSequence lang, CharSequence flavor) {
         this.macroMap = macroMap;
         this.inclHandler = inclHandler;
         this.compileContext = compileContext;
+        assert lang != null;
+        this.lang = lang;
+        assert flavor != null;
+        this.flavor = flavor;
+        this.cuCRC = countCompilationUnitCRC();
     }
     
     @Override
@@ -122,11 +134,51 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
     private void setCompileContext(boolean state) {
         this.compileContext = state;
     }
+
+    @Override
+    public CharSequence getLanguage() {
+        return lang;
+    }
+
+    @Override
+    public CharSequence getLanguageFlavor() {
+        return flavor;
+    }
+
+    long getCompilationUnitCRC() {
+        return cuCRC;
+    }
     
+    private long countCompilationUnitCRC() {
+	Checksum checksum = new Adler32();
+	updateCrc(checksum, lang.toString());
+	updateCrc(checksum, flavor.toString());
+	updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getSystemIncludePaths());
+	updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getUserIncludePaths());
+	updateCrcByFSPaths(checksum, ((APTIncludeHandlerImpl)inclHandler).getUserIncludeFilePaths());
+        long value = checksum.getValue();
+        value += APTHandlersSupportImpl.getCompilationUnitCRC(macroMap);
+	return value;
+        
+    }
+
+    private void updateCrc(Checksum checksum, String s) {
+	checksum.update(s.getBytes(), 0, s.length());
+    }
+    
+    private void updateCrcByFSPaths(Checksum checksum, List<IncludeDirEntry> paths) {
+	for( IncludeDirEntry path : paths ) {
+	    updateCrc(checksum, path.getPath());
+	}
+    }
+
     public final static class StateImpl implements State {
+        /*package*/ final CharSequence lang;
+        /*package*/ final CharSequence flavor;
         /*package*/ final APTMacroMap.State macroState;
         /*package*/ final APTIncludeHandler.State inclState;
         private final byte attributes;
+        private final long cuCRC;
         
         private final static byte COMPILE_CONTEXT_FLAG = 1 << 0;
         private final static byte CLEANED_FLAG = 1 << 1;
@@ -164,6 +216,9 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
                 this.inclState = null;
             }
             this.attributes = createAttributes(handler.isCompileContext(), false, handler.isValid());
+            this.lang = handler.lang;
+            this.flavor = handler.flavor;
+            this.cuCRC = handler.cuCRC;
         }
         
         private StateImpl(StateImpl other, boolean cleanState, boolean compileContext, boolean valid) {
@@ -181,6 +236,9 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
                 this.inclState = other.inclState;
             }
             this.attributes = createAttributes(compileContext, cleaned, valid);
+            this.lang = other.lang;
+            this.flavor = other.flavor;
+            this.cuCRC = other.cuCRC;
         }
         
         private void restoreTo(APTPreprocHandlerImpl handler) {
@@ -191,7 +249,9 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
                 handler.getIncludeHandler().setState(this.inclState);
             }
             handler.setCompileContext(this.isCompileContext());
-
+            handler.lang = this.lang;
+            handler.flavor = this.flavor;
+            handler.cuCRC = this.cuCRC;
             handler.setValid(this.isValid());
             if (!isValid()) {
                 APTUtils.LOG.log(Level.SEVERE, "setting invalid state {0}", new Object[] { this } ); // NOI18N
@@ -296,12 +356,32 @@ public class APTPreprocHandlerImpl implements APTPreprocHandler {
             output.writeByte(this.attributes);
             APTSerializeUtils.writeIncludeState(this.inclState, output, unitIndex);
             APTSerializeUtils.writeMacroMapState(this.macroState, output);
+            output.writeCharSequenceUTF(lang);
+            output.writeCharSequenceUTF(flavor);
+            output.writeLong(cuCRC);
         }
 
         public StateImpl(FileSystem fs, RepositoryDataInput input, int unitIndex) throws IOException {
             this.attributes = input.readByte();
             this.inclState = APTSerializeUtils.readIncludeState(fs, input, unitIndex);
             this.macroState = APTSerializeUtils.readMacroMapState(input);
+            this.lang = input.readCharSequenceUTF();
+            this.flavor = input.readCharSequenceUTF();
+            this.cuCRC = input.readLong();
+        }
+
+        @Override
+        public CharSequence getLanguage() {
+            return lang;
+        }
+
+        @Override
+        public CharSequence getLanguageFlavor() {
+            return flavor;
+        }
+
+        public long getCRC() {
+            return cuCRC;
         }
     }    
     

@@ -92,7 +92,7 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension.ProjectKind;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -166,12 +166,12 @@ public class ImportExecutable implements PropertyChangeListener {
             projectFolder = new FSPath(projectFolder.getFileSystem(), RemoteFileUtil.normalizeAbsolutePath(projectFolder.getPath(), FileSystemProvider.getExecutionEnvironment(projectFolder.getFileSystem())));
             baseDir = projectFolder.getPath();
             if (projectName == null) {
-                projectName = CndPathUtilitities.getBaseName(baseDir);
+                projectName = CndPathUtilities.getBaseName(baseDir);
             }
         } else {
             String projectParentFolder = ProjectGenerator.getDefaultProjectFolder();
             if (projectName == null) {
-                projectName = ProjectGenerator.getValidProjectName(projectParentFolder, CndPathUtilitities.getBaseName(binaryPath));
+                projectName = ProjectGenerator.getValidProjectName(projectParentFolder, CndPathUtilities.getBaseName(binaryPath));
             }
             ExecutionEnvironment ee = ExecutionEnvironmentFactory.getLocal();
             baseDir = projectParentFolder + File.separator + projectName;
@@ -181,17 +181,17 @@ public class ImportExecutable implements PropertyChangeListener {
         CompilerSet toolchain = (CompilerSet) map.get(WizardConstants.PROPERTY_TOOLCHAIN);
         boolean defaultToolchain = Boolean.TRUE.equals(map.get(WizardConstants.PROPERTY_TOOLCHAIN_DEFAULT));
         MakeConfiguration conf = MakeConfiguration.createMakefileConfiguration(projectFolder, "Default",  hostUID, toolchain, defaultToolchain); // NOI18N
-        String workingDirRel = ProjectSupport.toProperPath(CndPathUtilitities.naturalizeSlashes(baseDir),  sourcesPath,
+        String workingDirRel = ProjectSupport.toProperPath(CndPathUtilities.naturalizeSlashes(baseDir),  sourcesPath,
                 MakeProjectOptions.getPathMode()); // it's better to pass project source mode here (once full remote is supprted here)
         conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(workingDirRel);
         // Executable
         String exe = binaryPath;
-        exe = CndPathUtilitities.toRelativePath(CndPathUtilitities.naturalizeSlashes(baseDir), exe);
-        exe = CndPathUtilitities.normalizeSlashes(exe);
+        exe = CndPathUtilities.toRelativePath(CndPathUtilities.naturalizeSlashes(baseDir), exe);
+        exe = CndPathUtilities.normalizeSlashes(exe);
         conf.getMakefileConfiguration().getOutput().setValue(exe);
         String exePath = new File(binaryPath).getParentFile().getAbsolutePath();
-        exePath = CndPathUtilitities.toRelativePath(CndPathUtilitities.naturalizeSlashes(baseDir), exePath);
-        exePath = CndPathUtilitities.normalizeSlashes(exePath);
+        exePath = CndPathUtilities.toRelativePath(CndPathUtilities.naturalizeSlashes(baseDir), exePath);
+        exePath = CndPathUtilities.normalizeSlashes(exePath);
         conf.getProfile().setRunDirectory(exePath);
         conf.getProfile().setBuildFirst(false);
 
@@ -320,13 +320,13 @@ public class ImportExecutable implements PropertyChangeListener {
                         String mainFilePath = mainFunction.getFilePath();
                         if (sourcesPath != null) {
                             if (!mainFilePath.startsWith(sourcesPath)) {
-                                String mainFileName = CndPathUtilitities.getBaseName(mainFilePath);
+                                String mainFileName = CndPathUtilities.getBaseName(mainFilePath);
                                 NativeProject np = lastSelectedProject.getLookup().lookup(NativeProject.class);
                                 List<NativeFileItem> items = new ArrayList<NativeFileItem>();
                                 if (np != null) {
                                     for(NativeFileItem item : np.getAllFiles()) {
                                         String itemPath = item.getAbsolutePath();
-                                        String name = CndPathUtilitities.getBaseName(itemPath);
+                                        String name = CndPathUtilities.getBaseName(itemPath);
                                         if (name.equals(mainFileName)) {
                                             items.add(item);
                                         }
@@ -415,7 +415,7 @@ public class ImportExecutable implements PropertyChangeListener {
             }
         }
         if (configure.script == null || configure.makefile == null) {
-            String binaryName = CndPathUtilitities.getBaseName(binary);
+            String binaryName = CndPathUtilities.getBaseName(binary);
             if (binaryName.indexOf('.') > 0 ) {
                 binaryName = binaryName.substring(0, binaryName.lastIndexOf('.'));
             }
@@ -570,7 +570,7 @@ public class ImportExecutable implements PropertyChangeListener {
             }
             
             StringBuilder buf = new StringBuilder();
-            String binaryDir = CndPathUtilitities.getDirName(binary);
+            String binaryDir = CndPathUtilities.getDirName(binary);
             for(Map.Entry<String, String> entry : dllPaths.entrySet()) {
                 if (entry.getValue() != null) {
                     if (isMyDll(entry.getValue(), root) || isMyDll(entry.getValue(), binaryDir)) {
@@ -739,7 +739,7 @@ public class ImportExecutable implements PropertyChangeListener {
         while(!down.isEmpty()) {
             ArrayList<File> next = new ArrayList<File>();
             for (File file : down) {
-                if (CndPathUtilitities.isIgnoredFolder(file)){
+                if (CndPathUtilities.isIgnoredFolder(file)){
                     continue;
                 }
                 if (file.exists() && file.isDirectory() && file.canRead()){
@@ -804,7 +804,7 @@ public class ImportExecutable implements PropertyChangeListener {
             return null;
         }
         if (root.isDiskFolder()) {
-            String AbsRootPath = CndPathUtilitities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), root.getRoot());
+            String AbsRootPath = CndPathUtilities.toAbsolutePath(configurationDescriptor.getBaseDirFileObject(), root.getRoot());
             return RemoteFileUtil.normalizeAbsolutePath(AbsRootPath, configurationDescriptor.getProject());
         }
         List<String> candidates = new ArrayList<String>();

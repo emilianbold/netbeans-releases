@@ -81,7 +81,7 @@ public class TapParserTest extends NbTestCase {
         TestCaseVo testCase2 = testCases1.get(1);
         assertEquals("testFail", testCase2.getName());
         assertEquals(TestCase.Status.FAILED, testCase2.getStatus());
-        assertEquals("object(stdClass) is not null", testCase2.getMessage());
+        assertEquals("object(stdClass) is not null; second line of the message", testCase2.getMessage());
         assertEquals("/home/gapon/NetBeansProjects/atoum-sample/tests/unit/StdClass.php", testCase2.getFile());
         assertEquals(19, testCase2.getLine());
         assertEquals(100L, testCase2.getTime());
@@ -98,8 +98,9 @@ public class TapParserTest extends NbTestCase {
         assertEquals("testSkipped", testCase4.getName());
         assertEquals(TestCase.Status.SKIPPED, testCase4.getStatus());
         assertEquals("This test was skipped", testCase4.getMessage());
-        assertNull(testCase4.getFile());
-        assertEquals(-1, testCase4.getLine());
+        assertEquals(Arrays.asList("/home/gapon/NetBeansProjects/atoum-sample/tests/unit/StdClass.php:29"), testCase4.getStackTrace());
+        assertEquals("/home/gapon/NetBeansProjects/atoum-sample/tests/unit/StdClass.php", testCase4.getFile());
+        assertEquals(29, testCase4.getLine());
         assertEquals(100L, testCase4.getTime());
 
         TestCaseVo testCase5 = testCases1.get(4);

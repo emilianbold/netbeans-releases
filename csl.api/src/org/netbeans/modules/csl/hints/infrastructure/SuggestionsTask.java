@@ -78,7 +78,12 @@ import org.openide.filesystems.FileObject;
 public class SuggestionsTask extends ParserResultTask<ParserResult> {
     
     private static final Logger LOG = Logger.getLogger(SuggestionsTask.class.getName());
-    private boolean cancelled = false;
+    private volatile boolean cancelled = false;
+
+    /**
+     * Tracks the HintsProvider being executed, so it can be cancelled.
+     */
+    private volatile HintsProvider pendingProvider;
 
     public SuggestionsTask() {
     }
@@ -139,7 +144,17 @@ public class SuggestionsTask extends ParserResultTask<ParserResult> {
                     List<Hint> hints = new ArrayList<Hint>();
 
                     OffsetRange linerange = findLineBoundaries(resultIterator.getSnapshot().getText(), pos);
-                    provider.computeSuggestions(manager, ruleContext, hints, pos);
+                    try {
+                        synchronized (this) {
+                            pendingProvider = provider;
+                            if (isCancelled()) {
+                                return;
+                            }
+                        }
+                        provider.computeSuggestions(manager, ruleContext, hints, pos);                        
+                    } finally {
+                        pendingProvider = null;
+                    }
 
                     for (int i = 0; i < hints.size(); i++) {
                         Hint hint = hints.get(i);
@@ -194,8 +209,14 @@ public class SuggestionsTask extends ParserResultTask<ParserResult> {
         return Scheduler.CURSOR_SENSITIVE_TASK_SCHEDULER;
     }
 
-    public @Override synchronized void cancel() {
-        cancelled = true;
+    public @Override void cancel() {
+        synchronized (this) {
+            cancelled = true;
+        }
+        HintsProvider p = pendingProvider;
+        if (p != null) {
+            p.cancel();
+        }
     }
 
     private synchronized void resume() {

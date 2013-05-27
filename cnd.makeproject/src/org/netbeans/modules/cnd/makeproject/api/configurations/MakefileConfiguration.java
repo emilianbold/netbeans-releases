@@ -59,7 +59,7 @@ import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
@@ -160,7 +160,7 @@ public class MakefileConfiguration implements Cloneable {
 
     public String getAbsBuildCommandWorkingDir() {
         String wd;
-        if (getBuildCommandWorkingDirValue().length() > 0 && CndPathUtilitities.isPathAbsolute(getBuildCommandWorkingDirValue())) {
+        if (getBuildCommandWorkingDirValue().length() > 0 && CndPathUtilities.isPathAbsolute(getBuildCommandWorkingDirValue())) {
             wd = getBuildCommandWorkingDirValue();
         } else {
             wd = getMakeConfiguration().getSourceBaseDir() + "/" + getBuildCommandWorkingDirValue(); // NOI18N
@@ -177,7 +177,7 @@ public class MakefileConfiguration implements Cloneable {
     public String getAbsOutput() {
         if (getOutput().getValue().length() == 0) {
             return ""; // NOI18N
-        } else if (CndPathUtilitities.isPathAbsolute(getOutput().getValue())) {
+        } else if (CndPathUtilities.isPathAbsolute(getOutput().getValue())) {
             return getOutput().getValue();
         } else {
             return getMakeConfiguration().getBaseDir() + "/" + getOutput().getValue(); // NOI18N
@@ -227,8 +227,8 @@ public class MakefileConfiguration implements Cloneable {
         
         @Override
         public void setValue(String v) {
-            String path = CndPathUtilitities.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
-            path = CndPathUtilitities.normalizeSlashes(path);
+            String path = CndPathUtilities.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
+            path = CndPathUtilities.normalizeSlashes(path);
             super.setValue(path);
         }
         
@@ -245,8 +245,8 @@ public class MakefileConfiguration implements Cloneable {
         
         @Override
         public void setValue(String v) {
-            String path = CndPathUtilitities.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
-            path = CndPathUtilitities.normalizeSlashes(path);
+            String path = CndPathUtilities.toRelativePath(getMakeConfiguration().getBaseDir(), v); // FIXUP: not always relative path
+            path = CndPathUtilities.normalizeSlashes(path);
             super.setValue(path);
         }
         
@@ -336,8 +336,8 @@ public class MakefileConfiguration implements Cloneable {
             public void propertyChange(PropertyChangeEvent evt) {
                 if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID) {
                     File selectedFile= chooser.getSelectedFile();
-                    String path = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), selectedFile.getPath()); // FIXUP: not always relative path
-                    path = CndPathUtilitities.normalizeSlashes(path);
+                    String path = CndPathUtilities.toRelativePath(makeConfiguration.getBaseDir(), selectedFile.getPath()); // FIXUP: not always relative path
+                    path = CndPathUtilities.normalizeSlashes(path);
                     editor.setValue(path);
                 }
             }
@@ -443,8 +443,8 @@ public class MakefileConfiguration implements Cloneable {
             public void propertyChange(PropertyChangeEvent evt) {
                 File selectedFile = chooser.getSelectedFile();
                 if (PropertyEnv.PROP_STATE.equals(evt.getPropertyName()) && evt.getNewValue() == PropertyEnv.STATE_VALID && selectedFile != null) {
-                    String path = CndPathUtilitities.toRelativePath(makeConfiguration.getBaseDir(), selectedFile.getPath()); // FIXUP: not always relative path
-                    path = CndPathUtilitities.normalizeSlashes(path);
+                    String path = CndPathUtilities.toRelativePath(makeConfiguration.getBaseDir(), selectedFile.getPath()); // FIXUP: not always relative path
+                    path = CndPathUtilities.normalizeSlashes(path);
                     editor.setValue(path);
                 }
             }

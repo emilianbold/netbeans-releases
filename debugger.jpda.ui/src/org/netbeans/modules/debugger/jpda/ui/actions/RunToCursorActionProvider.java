@@ -43,21 +43,15 @@
  */
 package org.netbeans.modules.debugger.jpda.ui.actions;
 
-import com.sun.jdi.VMDisconnectedException;
-import com.sun.jdi.request.EventRequestManager;
-import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-
 import java.util.Collections;
 import java.util.Set;
+
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.ActionsManagerListener;
-
-
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.Session;
-import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
@@ -65,7 +59,6 @@ import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.actions.JPDADebuggerActionProvider;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
 import org.netbeans.spi.debugger.ActionsProvider;
-import org.netbeans.spi.debugger.ActionsProviderSupport;
 
 
 /**
@@ -77,7 +70,6 @@ public class RunToCursorActionProvider extends JPDADebuggerActionProvider
                                        implements PropertyChangeListener,
                                                   ActionsManagerListener {
 
-    private JPDADebugger debugger;
     private Session session;
     private LineBreakpoint breakpoint;
     private ActionsManager lastActionsManager;
@@ -85,7 +77,6 @@ public class RunToCursorActionProvider extends JPDADebuggerActionProvider
     
     public RunToCursorActionProvider (ContextProvider lookupProvider) {
         super((JPDADebuggerImpl) lookupProvider.lookupFirst(null, JPDADebugger.class));
-        debugger = lookupProvider.lookupFirst(null, JPDADebugger.class);
         session = lookupProvider.lookupFirst(null, Session.class);
         EditorContextBridge.getContext().addPropertyChangeListener (this);
     }
@@ -136,16 +127,20 @@ public class RunToCursorActionProvider extends JPDADebuggerActionProvider
         }
     }
     
+    @Override
     public Set getActions () {
         return Collections.singleton (ActionsManager.ACTION_RUN_TO_CURSOR);
     }
     
+    @Override
     public void doAction (Object action) {
         runToCursor();
     }
     
+    @Override
     public void postAction(Object action, final Runnable actionPerformedNotifier) {
         doLazyAction(action, new Runnable() {
+            @Override
             public void run() {
                 try {
                     runToCursor();
@@ -181,17 +176,19 @@ public class RunToCursorActionProvider extends JPDADebuggerActionProvider
         }
     }
 
+    @Override
     public void actionPerformed(Object action) {
         // Is never called
     }
 
     /** Sync up with continue action state. */
+    @Override
     public void actionStateChanged(Object action, boolean enabled) {
         if (ActionsManager.ACTION_CONTINUE == action) {
             setEnabled (
                 ActionsManager.ACTION_RUN_TO_CURSOR,
                 enabled &&
-                (debugger.getState () == debugger.STATE_STOPPED) &&
+                (debugger.getState () == JPDADebugger.STATE_STOPPED) &&
                 (EditorContextBridge.getContext().getCurrentLineNumber () >= 0) && 
                 (EditorContextBridge.getContext().getCurrentURL ().endsWith (".java") ||
                  EditorContextBridge.getContext().getCurrentURL ().endsWith (".scala"))

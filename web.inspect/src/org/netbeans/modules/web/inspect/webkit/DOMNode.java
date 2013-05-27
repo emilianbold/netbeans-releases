@@ -59,7 +59,6 @@ import org.openide.nodes.Children;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
@@ -70,8 +69,6 @@ import org.openide.util.lookup.ProxyLookup;
  * @author Jan Stola
  */
 public class DOMNode extends AbstractNode {
-    /** Request processor used by this class. */
-    private static final RequestProcessor RP = new RequestProcessor(DOMNode.class.getName());
     /** Lookup path with context actions. */
     private static final String ACTIONS_PATH = "Navigation/DOM/Actions"; // NOI18N
     /** Icon base of the node. */
@@ -226,23 +223,22 @@ public class DOMNode extends AbstractNode {
      * Forces update of the children/sub-nodes.
      */
     void updateChildren(final Node node) {
-        // 221712: This method is called under WebKitPageModel lock
-        // and in WebSocketServer thread => moving the update
-        // into another thread to avoid blocking of these resources.
-        RP.post(new Runnable() {
-            @Override
-            public void run() {
-                DOMNode.this.node = node;
-                boolean shouldBeLeaf = shouldBeLeaf(node);
-                if (shouldBeLeaf != isLeaf()) {
-                    setChildren(shouldBeLeaf ? Children.LEAF : new DOMChildren(model));
-                }
-                if (!shouldBeLeaf) {
-                    DOMChildren children = (DOMChildren)getChildren();
-                    children.updateKeys(node);
-                }
-            }
-        });
+        updateChildren(node, null);
+    }
+
+    /**
+     * Forces update of the children/sub-nodes.
+     */
+    void updateChildren(Node node, Node childToRefresh) {
+        DOMNode.this.node = node;
+        boolean shouldBeLeaf = shouldBeLeaf(node);
+        if (shouldBeLeaf != isLeaf()) {
+            setChildren(shouldBeLeaf ? Children.LEAF : new DOMChildren(model));
+        }
+        if (!shouldBeLeaf) {
+            DOMChildren children = (DOMChildren)getChildren();
+            children.updateKeys(node, childToRefresh);
+        }
     }
 
     /**
@@ -257,7 +253,9 @@ public class DOMNode extends AbstractNode {
             return false;
         }
         List<Node> subNodes = node.getChildren();
-        if (subNodes != null) {
+        if (subNodes == null) {
+            return false;
+        } else {
             for (Node subNode : subNodes) {
                 boolean isElement = (subNode.getNodeType() == org.w3c.dom.Node.ELEMENT_NODE);
                 if (isElement && !subNode.isInjectedByNetBeans()) {
@@ -313,8 +311,9 @@ public class DOMNode extends AbstractNode {
          * Forces update of the keys/sub-nodes from the model.
          * 
          * @param node parent node of this children object.
+         * @param childToRefresh child that may need refresh.
          */
-        void updateKeys(Node node) {
+        void updateKeys(Node node, Node childToRefresh) {
             List<Integer> keys = new ArrayList<Integer>();
             List<Node> subNodes = node.getChildren();
             if (subNodes != null) {
@@ -330,6 +329,10 @@ public class DOMNode extends AbstractNode {
                 keys.add(contentDocument.getNodeId());
             }
             setKeys(keys);
+            // Issue 230038: make sure the node for the key is up to date
+            if (childToRefresh != null) {
+                refreshKey(childToRefresh.getNodeId());
+            }
             getNodes(true);
         }
 

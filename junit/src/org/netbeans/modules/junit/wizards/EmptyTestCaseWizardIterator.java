@@ -182,7 +182,12 @@ public class EmptyTestCaseWizardIterator
         }
     }
 
+    @NbBundle.Messages("MSG_WizardInitializationError=There was an error initializing the wizard.")
     private WizardDescriptor.Panel<WizardDescriptor> getTargetPanel() {
+	if(wizard == null) {
+	    targetPanel = new StepProblemMessage(null, Bundle.MSG_WizardInitializationError());
+	    return targetPanel;
+	}
         final Project project = Templates.getProject(wizard);
         if (targetPanel == null || project != lastSelectedProject) {
             Collection<SourceGroup> sourceGroups = Utils.getTestTargets(project, true);

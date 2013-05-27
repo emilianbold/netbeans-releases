@@ -49,7 +49,7 @@ import org.openide.filesystems.FileUtil;
 
 public final class TestSuiteVo {
 
-    private final List<TestCaseVo> testCases = new ArrayList<TestCaseVo>();
+    private final List<TestCaseVo> testCases = new ArrayList<>();
     private final String name;
     private final String file;
     private final long time;

@@ -35,6 +35,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Set;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.util.VersioningListener;
 
 /**
@@ -57,7 +58,7 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
     }
 
     @Override
-    public StoreEntry setLabel(File file, long ts, String label) {
+    public StoreEntry setLabel(VCSFileProxy file, long ts, String label) {
         return store.setLabel(file, ts, label);
     }
 
@@ -69,43 +70,43 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
         store.addVersioningListener(l);    
     }
     
-    public org.netbeans.modules.localhistory.store.StoreEntry getStoreEntry(File file, long ts) {
+    public org.netbeans.modules.localhistory.store.StoreEntry getStoreEntry(VCSFileProxy file, long ts) {
         return store.getStoreEntry(file, ts);
     }
 
-    public org.netbeans.modules.localhistory.store.StoreEntry[] getStoreEntries(File file) {
+    public org.netbeans.modules.localhistory.store.StoreEntry[] getStoreEntries(VCSFileProxy file) {
         return store.getStoreEntries(file);
     }
 
-    public org.netbeans.modules.localhistory.store.StoreEntry[] getFolderState(File root, File[] files, long ts) {
+    public org.netbeans.modules.localhistory.store.StoreEntry[] getFolderState(VCSFileProxy root, VCSFileProxy[] files, long ts) {
         return store.getFolderState(root, files, ts);
     }
 
-    public org.netbeans.modules.localhistory.store.StoreEntry[] getDeletedFiles(File root) {
+    public org.netbeans.modules.localhistory.store.StoreEntry[] getDeletedFiles(VCSFileProxy root) {
         return store.getDeletedFiles(root);
     }
 
-    public void fileDeleteFromMove(File from, File to, long ts) {
+    public void fileDeleteFromMove(VCSFileProxy from, VCSFileProxy to, long ts) {
         store.fileDeleteFromMove(from, to, ts);
     }
 
-    public void fileDelete(File file, long ts) {
+    public void fileDelete(VCSFileProxy file, long ts) {
         store.fileDelete(file, ts);
     }
 
-    public void fileCreateFromMove(File from, File to, long ts) {
+    public void fileCreateFromMove(VCSFileProxy from, VCSFileProxy to, long ts) {
         store.fileCreateFromMove(from, to, ts);
     }
 
-    public void fileCreate(File file, long ts) {
+    public void fileCreate(VCSFileProxy file, long ts) {
         store.fileCreate(file, ts);
     }
 
-    public void fileChange(File file, long ts) {
+    public void fileChange(VCSFileProxy file, long ts) {
         store.fileChange(file, ts);
     }
 
-    public void deleteEntry(File file, long ts) {
+    public void deleteEntry(VCSFileProxy file, long ts) {
         store.deleteEntry(file, ts);
     }
     
@@ -122,41 +123,41 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
         }
     }
 
-    File getHistoryFile(File file) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    File getHistoryFile(VCSFileProxy file) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         if(getHistoryFileMethod == null) {            
-            getHistoryFileMethod = store.getClass().getDeclaredMethod("getHistoryFile", new Class[] {File.class});
+            getHistoryFileMethod = store.getClass().getDeclaredMethod("getHistoryFile", new Class[] {VCSFileProxy.class});
             getHistoryFileMethod.setAccessible(true);            
         }
         return (File) getHistoryFileMethod.invoke(store, new Object[]{file});           
     }
         
-    File getStoreFolder(File file) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {             
+    File getStoreFolder(VCSFileProxy file) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {             
         if(getStoreFolderMethod == null) {            
-            getStoreFolderMethod = store.getClass().getDeclaredMethod("getStoreFolder", new Class[] {File.class});
+            getStoreFolderMethod = store.getClass().getDeclaredMethod("getStoreFolder", new Class[] {VCSFileProxy.class});
             getStoreFolderMethod.setAccessible(true);            
         }
         return (File) getStoreFolderMethod.invoke(store, new Object[]{file});           
     }    
 
-    File getDataFile(File file) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {             
+    File getDataFile(VCSFileProxy file) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {             
         if(getDataFileMethod == null) {            
-            getDataFileMethod = store.getClass().getDeclaredMethod("getDataFile", new Class[] {File.class});
+            getDataFileMethod = store.getClass().getDeclaredMethod("getDataFile", new Class[] {VCSFileProxy.class});
             getDataFileMethod.setAccessible(true);            
         }
         return (File) getDataFileMethod.invoke(store, new Object[]{file});           
     }    
 
-    File getLabelsFile(File file) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {             
+    File getLabelsFile(VCSFileProxy file) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {             
         if(getLabelsFileMethod == null) {            
-            getLabelsFileMethod = store.getClass().getDeclaredMethod("getLabelsFile", new Class[] {File.class});
+            getLabelsFileMethod = store.getClass().getDeclaredMethod("getLabelsFile", new Class[] {VCSFileProxy.class});
             getLabelsFileMethod.setAccessible(true);            
         }
         return (File) getLabelsFileMethod.invoke(store, new Object[]{file});           
     }    
     
-    File getStoreFile(File file, long ts, boolean forceCreate) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    File getStoreFile(VCSFileProxy file, long ts, boolean forceCreate) throws ClassNotFoundException, NoSuchMethodException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         if(getStoreFileMethod == null) {            
-            getStoreFileMethod = store.getClass().getDeclaredMethod("getStoreFile", new Class[] {File.class, String.class, boolean.class});
+            getStoreFileMethod = store.getClass().getDeclaredMethod("getStoreFile", new Class[] {VCSFileProxy.class, String.class, boolean.class});
             getStoreFileMethod.setAccessible(true);            
         }
         return (File) getStoreFileMethod.invoke(store, new Object[]{file, Long.toString(ts), forceCreate});
@@ -171,7 +172,7 @@ public class LocalHistoryTestStore implements LocalHistoryStore {
     }
     
     @Override
-    public void waitForProcessedStoring(File file, String caller) {
+    public void waitForProcessedStoring(VCSFileProxy file, String caller) {
         store.waitForProcessedStoring(file, caller);
     }
     

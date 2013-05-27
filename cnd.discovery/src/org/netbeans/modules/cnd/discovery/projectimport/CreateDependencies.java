@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.api.wizards.CommonUtilities;
 import org.netbeans.modules.cnd.makeproject.api.wizards.IteratorExtension;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -212,8 +212,8 @@ public class CreateDependencies implements PropertyChangeListener {
         runProfile.setArgs(arguments);
         // Working dir
         String wd = dir;
-        wd = CndPathUtilitities.toRelativePath(baseDir, wd);
-        wd = CndPathUtilitities.normalizeSlashes(wd);
+        wd = CndPathUtilities.toRelativePath(baseDir, wd);
+        wd = CndPathUtilities.normalizeSlashes(wd);
         runProfile.setRunDirectory(wd);
         // Environment
         Env env = runProfile.getEnvironment();
@@ -328,13 +328,13 @@ public class CreateDependencies implements PropertyChangeListener {
         MakeConfiguration conf =  MakeConfiguration.createDefaultHostMakefileConfiguration(baseDir, "Default"); // NOI18N
         // Working dir
         String wd = new File(executablePath).getParentFile().getPath();
-        wd = CndPathUtilitities.toRelativePath(baseDir, wd);
-        wd = CndPathUtilitities.normalizeSlashes(wd);
+        wd = CndPathUtilities.toRelativePath(baseDir, wd);
+        wd = CndPathUtilities.normalizeSlashes(wd);
         conf.getMakefileConfiguration().getBuildCommandWorkingDir().setValue(wd);
         // Executable
         String exe = executablePath;
-        exe = CndPathUtilitities.toRelativePath(baseDir, exe);
-        exe = CndPathUtilitities.normalizeSlashes(exe);
+        exe = CndPathUtilities.toRelativePath(baseDir, exe);
+        exe = CndPathUtilities.normalizeSlashes(exe);
         conf.getMakefileConfiguration().getOutput().setValue(exe);
         updateRunProfile(baseDir, conf.getProfile(), arguments, dir, envText);
         ProjectGenerator.ProjectParameters prjParams = new ProjectGenerator.ProjectParameters(projectName, CndFileUtils.createLocalFile(projectParentFolder, projectName));

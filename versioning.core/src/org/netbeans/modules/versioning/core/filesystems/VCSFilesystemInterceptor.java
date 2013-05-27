@@ -415,6 +415,10 @@ public final class VCSFilesystemInterceptor {
     
 
     private static boolean needsLH(String... methodNames) {
+        if(Boolean.getBoolean("versioning.no.localhistory.interceptor")) {
+            // do not intercept file events in LH
+            return false;
+        }
         for (String methodName : methodNames) {
             if(master.needsLocalHistory(methodName)) {
                 return true;

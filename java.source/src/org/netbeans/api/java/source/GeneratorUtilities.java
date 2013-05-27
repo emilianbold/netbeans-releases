@@ -431,6 +431,24 @@ public final class GeneratorUtilities {
      * @since 0.20
      */
     public MethodTree createConstructor(TypeElement clazz, Iterable<? extends VariableElement> fields, ExecutableElement constructor) {
+        return createConstructor(clazz, fields, constructor, false);
+    }
+    
+    /**
+     * Creates a class default constructor. Fields and the inherited constructor
+     * are initialized/called with default values.
+     *
+     * @param clazz the class to create the constructor for
+     * @param fields fields to be initialized by the constructor
+     * @param constructor inherited constructor to be called
+     * @return the constructor
+     * @since 0.126
+     */
+    public MethodTree createDefaultConstructor(TypeElement clazz, Iterable<? extends VariableElement> fields, ExecutableElement constructor) {
+        return createConstructor(clazz, fields, constructor, true);
+    }
+
+    private MethodTree createConstructor(TypeElement clazz, Iterable<? extends VariableElement> fields, ExecutableElement constructor, boolean isDefault) {
         assert clazz != null && fields != null;
         TreeMaker make = copy.getTreeMaker();
         Set<Modifier> mods = EnumSet.of(clazz.getKind() == ElementKind.ENUM ? Modifier.PRIVATE : Modifier.PUBLIC);
@@ -441,8 +459,12 @@ public final class GeneratorUtilities {
         List<TypeParameterTree> typeParams = new LinkedList<TypeParameterTree>();
         for (VariableElement ve : fields) {
             TypeMirror type = copy.getTypes().asMemberOf((DeclaredType)clazz.asType(), ve);
-            parameters.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(type), null));
-            statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName())))); //NOI18N
+            if (isDefault) {
+                statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Literal(defaultValue(type))))); //NOI18N
+            } else {
+                parameters.add(make.Variable(parameterModifiers, ve.getSimpleName(), make.Type(type), null));
+                statements.add(make.ExpressionStatement(make.Assignment(make.MemberSelect(make.Identifier("this"), ve.getSimpleName()), make.Identifier(ve.getSimpleName())))); //NOI18N
+            }
         }
         if (constructor != null) {
             ExecutableType constructorType = clazz.getSuperclass().getKind() == TypeKind.DECLARED ? (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) clazz.getSuperclass(), constructor) : null;
@@ -454,9 +476,12 @@ public final class GeneratorUtilities {
                     VariableElement ve = parameterElements.next();
                     Name simpleName = ve.getSimpleName();
                     TypeMirror type = parameterTypes != null ? parameterTypes.next() : ve.asType();
-
-                    parameters.add(make.Variable(parameterModifiers, simpleName, make.Type(type), null));
-                    arguments.add(make.Identifier(simpleName));
+                    if (isDefault) {
+                        arguments.add(make.Literal(defaultValue(type)));
+                    } else {
+                        parameters.add(make.Variable(parameterModifiers, simpleName, make.Type(type), null));
+                        arguments.add(make.Identifier(simpleName));
+                    }
                 }
                 statements.addFirst(make.ExpressionStatement(make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier("super"), arguments))); //NOI18N
             }
@@ -1175,6 +1200,22 @@ public final class GeneratorUtilities {
         }
         
         return method;
+    }
+
+    private static Object defaultValue(TypeMirror type) {
+        switch(type.getKind()) {
+            case BOOLEAN:
+                return false;
+            case BYTE:
+            case CHAR:
+            case DOUBLE:
+            case FLOAT:
+            case INT:
+            case LONG:
+            case SHORT:
+                return 0;
+        }
+        return null;
     }
 
     private static boolean supportsOverride(CompilationInfo info) {

@@ -55,7 +55,7 @@ import org.netbeans.spi.debugger.ActionsProvider;
 
 /**
  * Implements non visual part of stepping through code in JPDA debugger.
- * It supports standart debugging actions StepInto, Over, Out, RunToCursor, 
+ * It supports standard debugging actions StepInto, Over, Out, RunToCursor, 
  * and Go. And advanced "smart tracing" action.
  *
  * @author  Jan Jancura
@@ -77,12 +77,14 @@ public class StepIntoNextMethodActionProvider extends JPDADebuggerActionProvider
 
     // ActionProviderSupport ...................................................
     
+    @Override
     public Set getActions () {
         return new HashSet<Object>(Arrays.asList (new Object[] {
             "stepIntoNextMethod", // [TODO] add constatnt
         }));
     }
     
+    @Override
     public void doAction (Object action) {
         stepInto.runAction();
     }
@@ -90,6 +92,7 @@ public class StepIntoNextMethodActionProvider extends JPDADebuggerActionProvider
     @Override
     public void postAction(Object action, final Runnable actionPerformedNotifier) {
         doLazyAction(action, new Runnable() {
+            @Override
             public void run() {
                 try {
                     stepInto.runAction();
@@ -100,6 +103,7 @@ public class StepIntoNextMethodActionProvider extends JPDADebuggerActionProvider
         });
     }
     
+    @Override
     protected void checkEnabled (int debuggerState) {
         Iterator i = getActions ().iterator ();
         while (i.hasNext ())

@@ -52,8 +52,10 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.Lookups;
 
 /**
  * @author Tomas Stupka
@@ -94,6 +96,23 @@ public class FileUtils {
         }
     }
 
+    public static void copy(VCSFileProxy file, OutputStream os) throws IOException {
+        if (file == null ) {
+            throw new NullPointerException("file must not be null"); // NOI18N
+        }        
+        if (os == null ) {
+            throw new NullPointerException("output stream must not be null"); // NOI18N
+        }        
+        InputStream is = null;
+        try {
+            is = createInputStream(file);            
+            FileUtil.copy(is, os);
+        } finally {
+            if (is != null) { try { is.close(); } catch (IOException ex) { } }
+            if (os != null) { try { os.close(); } catch (IOException ex) { } }
+        }
+    }
+    
     /**
      * Copies the specified file to the specified outputstream.
      * It <b>closes</b> the output stream.
@@ -255,6 +274,33 @@ public class FileUtils {
         }
     }
     
+    private static BufferedInputStream createInputStream(VCSFileProxy fileProxy) throws IOException {
+        File file = fileProxy.toFile();
+        if(file != null) {
+            return createInputStream(file);
+        }
+        int retry = 0;
+        while (true) {   
+            try {
+                FileObject fo = fileProxy.toFileObject();
+                if(fo == null) {
+                    return null;
+                }
+                return new BufferedInputStream(fo.getInputStream());
+            } catch (IOException ex) {
+                retry++;
+                if (retry > 7) {
+                    throw ex;
+                }
+                try {
+                    Thread.sleep(retry * 34);
+                } catch (InterruptedException iex) {
+                    throw ex;
+                }
+            }
+        }       
+    }
+
     private static BufferedInputStream createInputStream(File file) throws IOException {
         int retry = 0;
         while (true) {   

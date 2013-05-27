@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.refactoring;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.modules.cnd.refactoring.actions.InstantRenamePerformerTestCase;
+import org.netbeans.modules.cnd.refactoring.plugins.WhereUsedFiltersTestCase;
 import org.netbeans.modules.cnd.refactoring.plugins.WhereUsedInQuoteTestCase;
 import org.netbeans.modules.cnd.refactoring.plugins.WhereUsedTestCase;
 import org.netbeans.modules.cnd.test.CndBaseTestSuite;
@@ -61,6 +62,7 @@ public class RefactoringTest extends CndBaseTestSuite {
         addTestSuite(InstantRenamePerformerTestCase.class);
         addTestSuite(WhereUsedInQuoteTestCase.class);
         addTestSuite(WhereUsedTestCase.class);
+        addTestSuite(WhereUsedFiltersTestCase.class);
     }
 
     public static Test suite() {

@@ -42,10 +42,10 @@
 
 #define COMPANY "Oracle Corporation"
 #define COMPONENT "NetBeans Platform Launcher"
-#define VER "8.0.0.0"
-#define FVER 8,0,0,0
-#define BUILD_ID "02062013"
+#define VER "7.4.0.0"
+#define FVER 7,4,0,0
+#define BUILD_ID "05172013"
 #define INTERNAL_NAME "nbexec"
 #define COPYRIGHT "\xA9 2007, 2013 Oracle and/or its affiliates. All rights reserved."
-#define NAME "NetBeans Platform Launcher 8.0"
+#define NAME "NetBeans Platform Launcher 7.4"
 

@@ -131,11 +131,6 @@ public class PhpTestingProviderRegistrationTest extends NbTestCase {
         }
 
         @Override
-        public boolean isInPhpModule(PhpModule phpModule) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
         public boolean isTestFile(PhpModule phpModule, FileObject fileObj) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
@@ -167,11 +162,6 @@ public class PhpTestingProviderRegistrationTest extends NbTestCase {
 
         @Override
         public TestLocator getTestLocator(PhpModule phpModule) {
-            throw new UnsupportedOperationException("Not supported yet.");
-        }
-
-        @Override
-        public String getCustomizerCategoryIdent() {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 

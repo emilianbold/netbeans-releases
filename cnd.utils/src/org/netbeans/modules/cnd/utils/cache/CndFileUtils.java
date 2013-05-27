@@ -59,7 +59,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import org.netbeans.modules.cnd.spi.utils.CndFileExistSensitiveCache;
 import org.netbeans.modules.cnd.spi.utils.CndFileSystemProvider;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
@@ -230,7 +230,7 @@ public final class CndFileUtils {
     }
 
     public static boolean isValidLocalFile(String absolutePath) {
-        if (CndPathUtilitities.isPathAbsolute(absolutePath)) {
+        if (CndPathUtilities.isPathAbsolute(absolutePath)) {
             return new File(absolutePath).exists();
         } else {
             return false;
@@ -238,7 +238,7 @@ public final class CndFileUtils {
     }
 
     public static boolean isValidLocalFile(String base, String name) {
-        if (CndPathUtilitities.isPathAbsolute(base)) {
+        if (CndPathUtilities.isPathAbsolute(base)) {
             return new File(base, name).exists();
         } else {
             return false;
@@ -246,7 +246,7 @@ public final class CndFileUtils {
     }
 
     public static boolean isValidLocalFile(File base, String name) {
-        if (CndPathUtilitities.isPathAbsolute(base.getPath())) {
+        if (CndPathUtilities.isPathAbsolute(base.getPath())) {
             return new File(base, name).exists();
         } else {
             return false;
@@ -372,7 +372,7 @@ public final class CndFileUtils {
         ConcurrentMap<String, Flags> files = getFilesMap(fs);
         exists = files.get(absolutePath);
         if (exists == null) {
-            String parent = CndPathUtilitities.getDirName(absolutePath);
+            String parent = CndPathUtilities.getDirName(absolutePath);
             if (parent != null) {
                 Flags parentDirFlags = files.get(parent);
                 if (parentDirFlags == null || parentDirFlags == Flags.DIRECTORY) {

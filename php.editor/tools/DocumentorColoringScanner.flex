@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.php.editor.lexer;
 
-import org.netbeans.modules.php.editor.PHPVersion;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 

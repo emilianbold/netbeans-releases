@@ -165,7 +165,7 @@ public final class RemoteConnections {
     }
 
     public List<String> getRemoteConnectionTypes() {
-        List<String> names = new ArrayList<String>();
+        List<String> names = new ArrayList<>();
         for (RemoteConnectionProvider provider : getConnectionProviders()) {
             names.add(provider.getDisplayName());
         }
@@ -220,7 +220,7 @@ public final class RemoteConnections {
         List<Configuration> configs = getConfigurations();
 
         // convert them to remote connections
-        List<RemoteConfiguration> remoteConfigs = new ArrayList<RemoteConfiguration>(configs.size());
+        List<RemoteConfiguration> remoteConfigs = new ArrayList<>(configs.size());
         for (Configuration cfg : configs) {
             RemoteConfiguration configuration = getRemoteConfiguration(cfg);
             if (configuration == null) {
@@ -262,7 +262,7 @@ public final class RemoteConnections {
 
     private List<Configuration> getConfigurations() {
         Collection<String> cfgNames = configManager.configurationNames();
-        List<Configuration> configs = new ArrayList<Configuration>(cfgNames.size() - 1); // without default config
+        List<Configuration> configs = new ArrayList<>(cfgNames.size() - 1); // without default config
 
         for (String name : cfgNames) {
             if (name == null) {
@@ -334,7 +334,7 @@ public final class RemoteConnections {
 
         @Override
         public String[] getConfigProperties() {
-            Set<String> properties = new HashSet<String>();
+            Set<String> properties = new HashSet<>();
             for (RemoteConnectionProvider provider : getConnectionProviders()) {
                 properties.addAll(provider.getPropertyNames());
             }

@@ -58,7 +58,7 @@ public class TypeAnnotationLineParser implements AnnotationLineParser {
 
     private static final String ANNOTATION_NAME = "Type"; //NOI18N
 
-    private static final Set<String> PARAM_REGEX = new HashSet<String>();
+    private static final Set<String> PARAM_REGEX = new HashSet<>();
     static {
         PARAM_REGEX.add("type"); //NOI18N
     }
@@ -70,7 +70,7 @@ public class TypeAnnotationLineParser implements AnnotationLineParser {
         if (tokens.length > 0 && AnnotationUtils.isTypeAnnotation(tokens[0], ANNOTATION_NAME)) {
             String annotation = tokens[0].trim();
             String description = line.substring(annotation.length()).trim();
-            Map<OffsetRange, String> types = new HashMap<OffsetRange, String>();
+            Map<OffsetRange, String> types = new HashMap<>();
             types.put(new OffsetRange(0, annotation.length()), annotation);
             types.putAll(extractTypes(line));
             result = new AnnotationParsedLine.ParsedLine(ANNOTATION_NAME, types, description, true);

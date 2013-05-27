@@ -527,7 +527,7 @@ final class CoverageReportTopComponent extends TopComponent {
             FileObject file = summary.getFile();
 
             setText(summary.getDisplayName());
-            if (file != null) {
+            if (file != null && file.isValid()) {
                 try {
                     DataObject dobj = DataObject.find(file);
                     Node node = dobj.getNodeDelegate();

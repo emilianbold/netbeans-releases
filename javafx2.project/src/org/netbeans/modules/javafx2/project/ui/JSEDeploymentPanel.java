@@ -45,17 +45,22 @@ import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.io.IOException;
 import javax.swing.JButton;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.java.api.common.project.ui.customizer.CustomizerProvider3;
 import org.netbeans.modules.javafx2.project.JFXProjectProperties;
+import org.netbeans.modules.javafx2.project.JFXProjectUtils;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.MouseUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -239,9 +244,28 @@ public class JSEDeploymentPanel extends javax.swing.JPanel {
              dlg.setVisible (true);
              if (desc.getValue() == options[0]) {
                  
-                 CustomizerProvider3 canceller = project.getLookup().lookup(CustomizerProvider3.class);
-                 if(canceller != null) {
-                     canceller.cancelCustomizer();
+                 NotifyDescriptor d =
+                     new NotifyDescriptor.Confirmation(
+                         NbBundle.getMessage (JSEDeploymentPanel.class, "JSEDeploymentPanel.confirmSwitchToFX.text" ),  // NOI18N
+                         NbBundle.getMessage (JSEDeploymentPanel.class, "JSEDeploymentPanel.confirmSwitchToFX.title" ),  // NOI18N
+                         NotifyDescriptor.OK_CANCEL_OPTION);
+                 if (DialogDisplayer.getDefault().notify(d) == NotifyDescriptor.OK_OPTION) {
+
+                     CustomizerProvider3 canceller = project.getLookup().lookup(CustomizerProvider3.class);
+                     if(canceller != null) {
+                         canceller.cancelCustomizer();
+                         ProgressUtils.showProgressDialogAndRun(new Runnable() {
+                             @Override
+                             public void run() {
+                                 try {
+                                     JFXProjectUtils.switchProjectToFX(project, panel);
+                                 } catch (IOException ex) {
+                                     Exceptions.printStackTrace(ex);
+                                 }
+                             }
+                         }, NbBundle.getMessage (JSEDeploymentPanel.class, "JSEDeploymentPanel.confirmSwitchToFX.progress.title" ) // NOI18N
+                         );
+                     }
                  }
                  
              } 

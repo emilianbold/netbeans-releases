@@ -402,6 +402,8 @@ public final class DesktopImpl {
                     ? tcPreferred.height
                     : slideBounds.height;
             result.x = viewRect.x;
+            SlidingView view = findView(Constants.LEFT);
+            result.x += (view != null ? view.getComponent().getSize().width : 0);
             result.y = (height < minThick)
                         ? lowerLimit - splitRootRect.height / 3 : lowerLimit - height;
             if (result.y < 0) {
@@ -417,6 +419,8 @@ public final class DesktopImpl {
                     ? tcPreferred.height
                     : slideBounds.height;
             result.x = viewRect.x;
+            SlidingView view = findView(Constants.LEFT);
+            result.x += (view != null ? view.getComponent().getSize().width : 0);
             result.y = viewRect.y + Math.max(viewRect.height, viewPreferred.height);
             result.height = (height < minThick)
                         ? splitRootRect.height / 3 : height;

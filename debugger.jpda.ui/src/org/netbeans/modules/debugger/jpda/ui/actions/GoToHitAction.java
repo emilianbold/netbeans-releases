@@ -61,6 +61,7 @@ public class GoToHitAction extends AbstractAction {
         putValue (NAME, NbBundle.getMessage(GoToHitAction.class, "CTL_GoToBreakpointHit")); // NOI18N
     }
     
+    @Override
     public void actionPerformed (ActionEvent evt) {
         DebuggerEngine de = DebuggerManager.getDebuggerManager().getCurrentEngine();
         if (de == null) return;

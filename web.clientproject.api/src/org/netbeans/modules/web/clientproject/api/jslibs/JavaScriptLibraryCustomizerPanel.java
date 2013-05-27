@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.api.jslibs;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -57,17 +58,22 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.api.util.JsLibUtilities;
@@ -77,6 +83,7 @@ import org.netbeans.modules.web.clientproject.api.validation.ValidationResult;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
@@ -101,10 +108,12 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
     static final Logger LOGGER = Logger.getLogger(JavaScriptLibraryCustomizerPanel.class.getName());
 
     static final String JS_MIME_TYPE = "text/javascript"; // NOI18N
+    private static final String JS_LIBS_FOLDER = "js.libs.folder"; // NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(JavaScriptLibraryCustomizerPanel.class);
 
     private final ProjectCustomizer.Category category;
+    private final Project project;
     final JavaScriptLibraries.CustomizerSupport customizerSupport;
     // @GuardedBy("EDT")
     private final JavaScriptLibrarySelectionPanel javaScriptLibrarySelection;
@@ -126,6 +135,8 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
         this.category = category;
         this.customizerSupport = customizerSupport;
         this.context = context;
+        project = context.lookup(Project.class);
+        assert project != null : "No project found in lookup: " + context;
         javaScriptLibrarySelection = new JavaScriptLibrarySelectionPanel(new LibraryValidator(customizerSupport, context));
 
         initComponents();
@@ -156,8 +167,11 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
                 validateAndSetData();
             }
         });
-        // add to placeholder
-        placeholderPanel.add(javaScriptLibrarySelection, BorderLayout.CENTER);
+        // set initial data
+        String storedJsLibsFolder = getProjectPreferences().get(JS_LIBS_FOLDER, null);
+        if (storedJsLibsFolder != null) {
+            javaScriptLibrarySelection.setLibrariesFolder(storedJsLibsFolder);
+        }
         // set store listener
         category.setStoreListener(new ActionListener() {
             @Override
@@ -170,23 +184,61 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
     @Override
     public void addNotify() {
         super.addNotify();
-        setJsFiles();
+        initPanel();
         validateData();
     }
 
-    private void setJsFiles() {
+    private void initPanel() {
+        initPanelContent(loadingLabel);
+        File webRoot = getValidWebRoot();
+        setBrowseButtonVisible(webRoot);
+        setJsFiles(webRoot);
+    }
+
+    private void initPanelContent(Component component) {
         assert EventQueue.isDispatchThread();
-        // set js files
+        placeholderPanel.removeAll();
+        placeholderPanel.add(component, BorderLayout.CENTER);
+        placeholderPanel.revalidate();
+        placeholderPanel.repaint();
+    }
+
+    @CheckForNull
+    private File getValidWebRoot() {
         File webRoot = customizerSupport.getWebRoot(context);
         ValidationResult result = validateWebRoot(webRoot);
-        Collection<String> jsFiles;
         if (result.hasErrors()) {
-            jsFiles = Collections.<String>emptyList();
-        } else {
-            assert webRoot != null;
-            jsFiles = findProjectJsFiles(FileUtil.toFileObject(webRoot));
+            return null;
         }
-        javaScriptLibrarySelection.updateDefaultLibraries(jsFiles);
+        return webRoot;
+    }
+
+    private void setBrowseButtonVisible(File webRoot) {
+        assert EventQueue.isDispatchThread();
+        javaScriptLibrarySelection.setBrowseButtonVisible(webRoot);
+    }
+
+    private void setJsFiles(final File webRoot) {
+        assert EventQueue.isDispatchThread();
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                // set js files
+                final Collection<String> jsFiles;
+                if (webRoot == null) {
+                    jsFiles = Collections.<String>emptyList();
+                } else {
+                    jsFiles = Collections.synchronizedCollection(findProjectJsFiles(FileUtil.toFileObject(webRoot)));
+                }
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        javaScriptLibrarySelection.updateDefaultLibraries(jsFiles);
+                        initPanelContent(javaScriptLibrarySelection);
+                    }
+                });
+            }
+        });
     }
 
     void validateAndSetData() {
@@ -231,16 +283,23 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
 
     void storeData() {
         assert !EventQueue.isDispatchThread();
+        final String librariesFolder = javaScriptLibrarySelection.getLibrariesFolder();
+        getProjectPreferences()
+                .put(JS_LIBS_FOLDER, librariesFolder);
         RP.post(new Runnable() {
             @Override
             public void run() {
                 try {
-                    addNewJsLibraries(javaScriptLibrarySelection.getLibrariesFolder(), javaScriptLibrarySelection.getSelectedLibraries());
+                    addNewJsLibraries(librariesFolder, javaScriptLibrarySelection.getSelectedLibraries());
                 } catch (IOException ex) {
                     LOGGER.log(Level.WARNING, null, ex);
                 }
             }
         });
+    }
+
+    private Preferences getProjectPreferences() {
+        return ProjectUtils.getPreferences(project, JavaScriptLibraryCustomizerPanel.class, true);
     }
 
     @NbBundle.Messages({
@@ -295,21 +354,16 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
         return names;
     }
 
-    @NbBundle.Messages("JavaScriptLibraryCustomizerPanel.progress.detectingJsFiles=Detecting JavaScript files...")
     private Collection<String> findProjectJsFiles(final FileObject siteRoot) {
-        final Set<String> jsFiles = Collections.synchronizedSortedSet(new TreeSet<String>());
-        ProgressUtils.showProgressDialogAndRun(new Runnable() {
-            @Override
-            public void run() {
-                Enumeration<? extends FileObject> children = siteRoot.getChildren(true);
-                while (children.hasMoreElements()) {
-                    FileObject child = children.nextElement();
-                    if (JS_MIME_TYPE.equals(FileUtil.getMIMEType(child, JS_MIME_TYPE))) {
-                        jsFiles.add(FileUtil.getRelativePath(siteRoot, child));
-                    }
-                }
+        assert !EventQueue.isDispatchThread();
+        final Set<String> jsFiles = new TreeSet<>();
+        Enumeration<? extends FileObject> children = siteRoot.getChildren(true);
+        while (children.hasMoreElements()) {
+            FileObject child = children.nextElement();
+            if (JS_MIME_TYPE.equals(FileUtil.getMIMEType(child, JS_MIME_TYPE))) {
+                jsFiles.add(FileUtil.getRelativePath(siteRoot, child));
             }
-        }, Bundle.JavaScriptLibraryCustomizerPanel_progress_detectingJsFiles());
+        }
         return jsFiles;
     }
 
@@ -326,8 +380,13 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
     private void initComponents() {
 
         placeholderPanel = new JPanel();
+        loadingLabel = new JLabel();
 
         placeholderPanel.setLayout(new BorderLayout());
+
+        loadingLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        Mnemonics.setLocalizedText(loadingLabel, NbBundle.getMessage(JavaScriptLibraryCustomizerPanel.class, "JavaScriptLibraryCustomizerPanel.loadingLabel.text")); // NOI18N
+        placeholderPanel.add(loadingLabel, BorderLayout.CENTER);
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -342,6 +401,7 @@ final class JavaScriptLibraryCustomizerPanel extends JPanel implements HelpCtx.P
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JLabel loadingLabel;
     private JPanel placeholderPanel;
     // End of variables declaration//GEN-END:variables
 

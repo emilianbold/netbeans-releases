@@ -63,9 +63,8 @@ import java.util.concurrent.Future;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+
 import org.netbeans.api.debugger.ActionsManager;
-
-
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
@@ -84,11 +83,11 @@ import org.netbeans.modules.debugger.jpda.ui.JavaUtils;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.jpda.EditorContext;
+
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
-
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Exceptions;
@@ -127,6 +126,7 @@ implements PropertyChangeListener {
         EditorContextBridge.getContext().removePropertyChangeListener (this);
     }
     
+    @Override
     public void propertyChange (PropertyChangeEvent evt) {
         String url = EditorContextBridge.getContext().getCurrentURL();
         FileObject fo;
@@ -147,10 +147,12 @@ implements PropertyChangeListener {
             destroy ();
     }
     
+    @Override
     public Set getActions () {
         return Collections.singleton (ActionsManager.ACTION_TOGGLE_BREAKPOINT);
     }
     
+    @Override
     public void doAction (Object action) {
         JPDADebugger dbg = debugger;
         if (dbg == null) {
@@ -231,8 +233,8 @@ implements PropertyChangeListener {
             lineNumber
         );
         lb.setPrintText (
-            NbBundle.getBundle (ToggleBreakpointActionProvider.class).getString 
-                ("CTL_Line_Breakpoint_Print_Text")
+            NbBundle.getMessage 
+                (ToggleBreakpointActionProvider.class, "CTL_Line_Breakpoint_Print_Text")
         );
         d.addBreakpoint (lb);
     }
@@ -250,6 +252,7 @@ implements PropertyChangeListener {
             ActionsSynchronizer.get(dbg).actionScheduled(action);
         }
         RP.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     doAction(action);
@@ -275,7 +278,7 @@ implements PropertyChangeListener {
         } catch (DataObjectNotFoundException ex) {
         }
         if (dobj == null) return lineNumber;
-        final EditorCookie ec = (EditorCookie)dobj.getCookie(EditorCookie.class);
+        final EditorCookie ec = dobj.getLookup().lookup(EditorCookie.class);
         if (ec == null) return lineNumber;
         final BaseDocument doc = (BaseDocument)ec.getDocument();
         if (doc == null) return lineNumber;
@@ -297,6 +300,7 @@ implements PropertyChangeListener {
         } else {
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
                     public void run() {
                         JEditorPane[] openedPanes = ec.getOpenedPanes();
                         if (openedPanes != null && openedPanes.length > 0) {
@@ -315,8 +319,10 @@ implements PropertyChangeListener {
         final Future<Void> scanFinished;
         try {
             scanFinished = JavaUtils.runWhenScanFinishedReallyLazy(js, new CancellableTask<CompilationController>() {
+                @Override
                 public void cancel() {
                 }
+                @Override
                 public void run(CompilationController ci) throws Exception {
                     if (ci.toPhase(Phase.RESOLVED).compareTo(Phase.RESOLVED) < 0) {
                         ErrorManager.getDefault().log(ErrorManager.WARNING,

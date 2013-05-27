@@ -44,12 +44,17 @@
 
 package org.netbeans.modules.cnd.editor.cplusplus;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.cnd.api.lexer.CppStringTokenId;
 import org.netbeans.cnd.api.lexer.CppTokenId;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
@@ -75,6 +80,17 @@ public class CppBracesMatcher implements BracesMatcher, BracesMatcherFactory {
         , CppTokenId.LBRACE, CppTokenId.RBRACE
         //, CppTokenId.LT, CppTokenId.GT
         };
+    
+    // Tokens where we should use standard matcher
+    private static final Set<TokenId> SPECIAL_TOKENS = new HashSet(Arrays.asList(new TokenId[]{
+        CppTokenId.STRING_LITERAL,
+        CppTokenId.RAW_STRING_LITERAL,
+        CppTokenId.BLOCK_COMMENT,
+        CppTokenId.LINE_COMMENT,
+        CppTokenId.DOXYGEN_LINE_COMMENT,
+        CppTokenId.DOXYGEN_COMMENT,
+        CppStringTokenId.TEXT
+    }));
 
     private final MatcherContext context;
 
@@ -136,25 +152,13 @@ public class CppBracesMatcher implements BracesMatcher, BracesMatcherFactory {
                 seq = sequences.get(sequences.size() - 2);
                 seq.move(originOffset);
                 if (seq.moveNext()) {
-                    switch ((CppTokenId)seq.token().id()) {
-                        case BLOCK_COMMENT:
-                        case LINE_COMMENT:
-                        case DOXYGEN_LINE_COMMENT:
-                        case DOXYGEN_COMMENT:
-                            return null;
-                    }
+                    return seq;
                 }
             } else {
                 return null;
             }
         } else {
-            switch ((CppTokenId)seq.token().id()) {
-                case BLOCK_COMMENT:
-                case LINE_COMMENT:
-                case DOXYGEN_LINE_COMMENT:
-                case DOXYGEN_COMMENT:
-                    return null;
-            }
+            return seq;
         }
         return seq;
     }
@@ -168,20 +172,17 @@ public class CppBracesMatcher implements BracesMatcher, BracesMatcherFactory {
             }
             // Check special tokens
             seq.move(originOffset);
-            if (seq.moveNext()) {
-                Object id = seq.token().id();
-                if (id == CppTokenId.STRING_LITERAL || id == CppTokenId.RAW_STRING_LITERAL) {
-                    int offset = BracesMatcherSupport.matchChar(
-                        context.getDocument(),
-                        backward ? originOffset : originOffset + 1,
-                        backward ? seq.offset() : seq.offset() + seq.token().length(),
-                        originChar,
-                        matchingChar);
-                    if (offset != -1) {
-                        return new int [] { offset, offset + 1 };
-                    } else {
-                        return null;
-                    }
+            if (seq.moveNext() && SPECIAL_TOKENS.contains(seq.token().id())) {
+                int offset = BracesMatcherSupport.matchChar(
+                    context.getDocument(),
+                    backward ? originOffset : originOffset + 1,
+                    backward ? seq.offset() : seq.offset() + seq.token().length(),
+                    originChar,
+                    matchingChar);
+                if (offset != -1) {
+                    return new int [] { offset, offset + 1 };
+                } else {
+                    return null;
                 }
             }
             // We are in plain c/c++

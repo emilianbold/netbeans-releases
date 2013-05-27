@@ -51,6 +51,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -71,6 +72,7 @@ import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.SingleRepositoryAction;
 import org.netbeans.modules.git.ui.output.OutputLogger;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.versioning.hooks.GitHook;
 import org.netbeans.modules.versioning.hooks.GitHookContext;
 import org.netbeans.modules.versioning.hooks.VCSHooks;
@@ -116,7 +118,21 @@ public class PushAction extends SingleRepositoryAction {
     }
     
     @NbBundle.Messages({
-        "# {0} - repository name", "LBL_PushAction.progressName=Pushing - {0}"
+        "# {0} - repository name", "LBL_PushAction.progressName=Pushing - {0}",
+        "# {0} - branch name", "MSG_PushAction.branchDeleted=Branch {0} deleted in the local repository.",
+        "# {0} - branch name", "# {1} - branch head id", "# {2} - result of the update",
+        "MSG_PushAction.updates.deleteBranch=Branch Delete : {0}\n"
+            + "Id            : {1}\n"
+            + "Result        : {2}\n",
+        "# {0} - branch name", "# {1} - branch head id", "# {2} - result of the update",
+        "MSG_PushAction.updates.addBranch=Branch Add : {0}\n"
+            + "Id         : {1}\n"
+            + "Result     : {2}\n",
+        "# {0} - branch name", "# {1} - branch old head id", "# {2} - branch new head id", "# {3} - result of the update",
+        "MSG_PushAction.updates.updateBranch=Branch Update : {0}\n"
+            + "Old Id        : {1}\n"
+            + "New Id        : {2}\n"
+            + "Result        : {3}\n"
     })
     public Task push (File repository, final String remote, final Collection<PushMapping> pushMappins, final List<String> fetchRefSpecs) {
         GitProgressSupport supp = new GitProgressSupport() {
@@ -126,6 +142,15 @@ public class PushAction extends SingleRepositoryAction {
                 for (PushMapping b : pushMappins) {
                     pushRefSpecs.add(b.getRefSpec());
                 }
+                final Set<String> toDelete = new HashSet<String>();
+                for(ListIterator<String> it = fetchRefSpecs.listIterator(); it.hasNext(); ) {
+                    String refSpec = it.next();
+                    if (refSpec.startsWith(GitUtils.REF_SPEC_DEL_PREFIX)) {
+                        // branches are deleted separately
+                        it.remove();
+                        toDelete.add(refSpec.substring(GitUtils.REF_SPEC_DEL_PREFIX.length()));
+                    }
+                }
                 LOG.log(Level.FINE, "Pushing {0}/{1} to {2}", new Object[] { pushRefSpecs, fetchRefSpecs, remote }); //NOI18N
                 try {
                     GitClient client = getClient();
@@ -134,6 +159,10 @@ public class PushAction extends SingleRepositoryAction {
                     beforePush(hooks, pushMappins);
                     if (isCanceled()) {
                         return;
+                    }
+                    for (String branch : toDelete) {
+                        client.deleteBranch(branch, true, getProgressMonitor());
+                        getLogger().output(Bundle.MSG_PushAction_branchDeleted(branch));
                     }
                     // push
                     GitPushResult result = client.push(remote, pushRefSpecs, fetchRefSpecs, getProgressMonitor());
@@ -160,12 +189,18 @@ public class PushAction extends SingleRepositoryAction {
                     for (Map.Entry<String, GitTransportUpdate> e : updates.entrySet()) {
                         GitTransportUpdate update = e.getValue();
                         if (update.getType() == Type.BRANCH) {
-                            logger.output(NbBundle.getMessage(PushAction.class, "MSG_PushAction.updates.updateBranch", new Object[] { //NOI18N
-                                update.getLocalName(), 
-                                update.getOldObjectId(),
-                                update.getNewObjectId(),
-                                update.getResult(),
-                            }));
+                            if (update.getNewObjectId() == null && update.getOldObjectId() != null) {
+                                // delete
+                                logger.output(Bundle.MSG_PushAction_updates_deleteBranch(update.getRemoteName(),
+                                        update.getOldObjectId(), update.getResult()));
+                            } else if (update.getNewObjectId() != null && update.getOldObjectId() == null) {
+                                // add
+                                logger.output(Bundle.MSG_PushAction_updates_addBranch(update.getLocalName(),
+                                        update.getNewObjectId(), update.getResult()));
+                            } else {
+                                logger.output(Bundle.MSG_PushAction_updates_updateBranch(update.getLocalName(),
+                                        update.getOldObjectId(), update.getNewObjectId(), update.getResult()));
+                            }
                         } else {
                             logger.output(NbBundle.getMessage(PushAction.class, "MSG_PushAction.updates.updateTag", new Object[] { //NOI18N
                                 update.getLocalName(), 

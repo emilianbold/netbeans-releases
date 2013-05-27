@@ -45,7 +45,7 @@ package org.netbeans.modules.hudson.maven;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.hudson.spi.ProjectHudsonProvider.Association;
+import org.netbeans.modules.hudson.ui.spi.ProjectHudsonProvider.Association;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;

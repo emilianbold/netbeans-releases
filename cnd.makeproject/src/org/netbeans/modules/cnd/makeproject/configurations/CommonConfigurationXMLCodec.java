@@ -83,7 +83,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
@@ -746,13 +746,13 @@ public abstract class CommonConfigurationXMLCodec
 
     private void writeSourceRoots(XMLEncoderStream xes) {
         MakeConfigurationDescriptor makeProjectDescriptor = (MakeConfigurationDescriptor) projectDescriptor;
+        // Filter
+        if (!makeProjectDescriptor.getFolderVisibilityQuery().getRegEx().equals(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN)) {
+            xes.element(SOURCE_FOLDERS_FILTER_ELEMENT, makeProjectDescriptor.getFolderVisibilityQuery().getRegEx());
+        }
+
         List<String> list = makeProjectDescriptor.getSourceRoots();
         if (list.size() > 0) {
-            // Filter
-            if (!makeProjectDescriptor.getFolderVisibilityQuery().getRegEx().equals(MakeConfigurationDescriptor.DEFAULT_IGNORE_FOLDERS_PATTERN)) {
-                xes.element(SOURCE_FOLDERS_FILTER_ELEMENT, makeProjectDescriptor.getFolderVisibilityQuery().getRegEx());
-            }
-
             // Source Root
             xes.elementOpen(SOURCE_ROOT_LIST_ELEMENT);
             for (String l : list) {
@@ -1290,7 +1290,7 @@ public abstract class CommonConfigurationXMLCodec
                     String toReplace = environment.get(envVariableName);
                     // for now we support abs paths replacements
                     if (toReplace != null && !toReplace.isEmpty() && 
-                        CndPathUtilitities.isPathAbsolute(toReplace)) { 
+                        CndPathUtilities.isPathAbsolute(toReplace)) { 
                         replacements.put(toReplace, "${" + envVariableName + "}"); // NOI18N
                         toReplace = toReplace.replace('\\', '/');
                         replacements.put(toReplace, "${" + envVariableName + "}"); // NOI18N

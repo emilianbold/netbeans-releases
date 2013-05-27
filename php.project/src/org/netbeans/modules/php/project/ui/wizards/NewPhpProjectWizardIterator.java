@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -165,7 +166,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
     @NbBundle.Messages("NewPhpProjectWizardIterator.project.alreadyExists=Project was not created because it already exists (maybe only in memory).")
     @Override
     public Set<FileObject> instantiate(ProgressHandle handle) throws IOException {
-        final Set<FileObject> resultSet = new HashSet<FileObject>();
+        final Set<FileObject> resultSet = new HashSet<>();
 
         final Map<PhpFrameworkProvider, PhpModuleExtender> frameworkExtenders = getFrameworkExtenders();
 
@@ -371,7 +372,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
             default:
                 throw new IllegalArgumentException("Unknown wizard type: " + wizardType);
         }
-        List<String> steps = new ArrayList<String>(3);
+        List<String> steps = new ArrayList<>(3);
         steps.add(NbBundle.getMessage(NewPhpProjectWizardIterator.class, "LBL_ProjectNameLocation"));
         steps.add(NbBundle.getMessage(NewPhpProjectWizardIterator.class, step2));
         if (step3 != null) {
@@ -394,7 +395,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         }
         ConfigureProjectPanel configureProjectPanel = new ConfigureProjectPanel(stepsArray, wizardType);
 
-        List<WizardDescriptor.Panel<WizardDescriptor>> pnls = new ArrayList<Panel<WizardDescriptor>>(steps.size());
+        List<WizardDescriptor.Panel<WizardDescriptor>> pnls = new ArrayList<>(steps.size());
         pnls.add(configureProjectPanel);
         pnls.add(new RunConfigurationPanel(stepsArray, configureProjectPanel, wizardType));
         if (panel3 != null) {
@@ -476,7 +477,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return indexName;
     }
 
-    @org.netbeans.api.annotations.common.SuppressWarnings("NP_BOOLEAN_RETURN_NULL")
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "Null means that it is not set")
     private Boolean isCopyFiles() {
         PhpProjectProperties.RunAsType runAs = getRunAsType();
         if (runAs == null) {
@@ -508,6 +509,8 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         return null;
     }
 
+    @org.netbeans.api.annotations.common.SuppressWarnings(value = "NP_BOOLEAN_RETURN_NULL", justification = "Null means that it is not set")
+    @CheckForNull
     private Boolean getCopySrcOnOpen() {
         if (getRunAsType() == null) {
             return null;
@@ -602,7 +605,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         if (frameworkExtenders.isEmpty()) {
             return Collections.emptyList();
         }
-        List<PhpModuleProperties> phpModuleProperties = new ArrayList<PhpModuleProperties>(frameworkExtenders.size());
+        List<PhpModuleProperties> phpModuleProperties = new ArrayList<>(frameworkExtenders.size());
         for (PhpFrameworkProvider frameworkProvider : frameworkExtenders.keySet()) {
             phpModuleProperties.add(frameworkProvider.getPhpModuleProperties(phpModule));
         }
@@ -697,7 +700,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
         for (PhpModuleProperties properties : phpModuleProperties) {
             List<String> customIncludePath = properties.getIncludePath();
             if (customIncludePath != null && !customIncludePath.isEmpty()) {
-                Set<String> includePath = new LinkedHashSet<String>();
+                Set<String> includePath = new LinkedHashSet<>();
                 String current = projectProperties.getProperty(PhpProjectProperties.INCLUDE_PATH);
                 if (StringUtils.hasText(current)) {
                     includePath.add(current);
@@ -706,7 +709,7 @@ public class NewPhpProjectWizardIterator implements WizardDescriptor.ProgressIns
                 IncludePathSupport includePathSupport = new IncludePathSupport(
                         ProjectPropertiesSupport.getPropertyEvaluator(project), project.getRefHelper(), project.getHelper());
                 Iterator<Item> itemsIterator = includePathSupport.itemsIterator(
-                        StringUtils.implode(new ArrayList<String>(includePath), ":")); // NOI18N
+                        StringUtils.implode(new ArrayList<>(includePath), ":")); // NOI18N
                 String[] encoded = includePathSupport.encodeToStrings(itemsIterator);
                 projectProperties.setProperty(PhpProjectProperties.INCLUDE_PATH, encoded);
             }

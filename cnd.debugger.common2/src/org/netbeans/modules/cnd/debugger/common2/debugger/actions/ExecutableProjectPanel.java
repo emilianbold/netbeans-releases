@@ -73,7 +73,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.remote.Host;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -577,7 +577,7 @@ public final class ExecutableProjectPanel extends javax.swing.JPanel {
                 }
             }
 
-            filePath = CndPathUtilitities.getDirName(filePath);
+            filePath = CndPathUtilities.getDirName(filePath);
         } while (filePath != null);
 
         if (f == null) {

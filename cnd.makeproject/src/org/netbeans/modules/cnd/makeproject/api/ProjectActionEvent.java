@@ -55,7 +55,7 @@ import org.netbeans.modules.cnd.api.remote.RemoteSyncSupport;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
@@ -181,7 +181,7 @@ public final class ProjectActionEvent {
             result = getExecutableFromRunCommand();
             if (result != null && result.length() > 0) {
                 ExecutionEnvironment execEnv = configuration.getDevelopmentHost().getExecutionEnvironment();                                
-                if (!CndPathUtilitities.isPathAbsolute(result)) {
+                if (!CndPathUtilities.isPathAbsolute(result)) {
                     CndUtils.assertTrueInConsole(false, "getExecutableFromRunCommand() returned non-absolute path", result); //NOI18N
                     String baseDir = configuration.getProfile().getRunDirectory();
                     if (execEnv.isRemote()) {
@@ -221,7 +221,7 @@ public final class ProjectActionEvent {
         }
 
         if (configuration.getPlatformInfo().isLocalhost()) {
-            command = CndPathUtilitities.expandAllMacroses(command, MakeConfiguration.CND_OUTPUT_PATH_MACRO, outputValue); // NOI18N
+            command = CndPathUtilities.expandAllMacroses(command, MakeConfiguration.CND_OUTPUT_PATH_MACRO, outputValue); // NOI18N
         } else { //            if (!configuration.getDevelopmentHost().isLocalhost()) {
             if (!outputValue.isEmpty()) {
                 if (mapper != null) {
@@ -234,7 +234,7 @@ public final class ProjectActionEvent {
                 }
             }
 
-            command = CndPathUtilitities.expandAllMacroses(command, "${OUTPUT_PATH}", outputValue); // NOI18N
+            command = CndPathUtilities.expandAllMacroses(command, "${OUTPUT_PATH}", outputValue); // NOI18N
         }
 
         return configuration.expandMacros(command);

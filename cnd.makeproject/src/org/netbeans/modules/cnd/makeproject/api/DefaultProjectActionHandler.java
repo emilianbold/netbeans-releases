@@ -71,7 +71,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.spi.toolchain.CompilerLineConvertor;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
@@ -82,7 +82,6 @@ import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionDescrip
 import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService;
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.netbeans.modules.nativeexecution.api.util.ExternalTerminalProvider;
-import org.netbeans.modules.nativeexecution.api.util.Shell.ShellType;
 import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -261,7 +260,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
                 String qmakePath = cs.getTool(PredefinedToolKind.QMakeTool).getPath();
                 qmakePath = CppUtils.normalizeDriveLetter(cs, qmakePath.replace('\\', '/')); // NOI18N
                 args = pae.getArguments();
-                args.add("QMAKE=" + CndPathUtilitities.escapeOddCharacters(qmakePath)); // NOI18N
+                args.add("QMAKE=" + CndPathUtilities.escapeOddCharacters(qmakePath)); // NOI18N
             }
             if (conf.isMakefileConfiguration() && !CompileConfiguration.AUTO_COMPILE.equals(conf.getCompileConfiguration().getCompileCommand().getValue())) {
                 commandLine = pae.getRunCommandAsString();
@@ -269,7 +268,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
 
             // See bug #228730
             if (conf.getDevelopmentHost().isLocalhost() && Utilities.isWindows()
-                    && cs.getCompilerFlavor().getToolchainDescriptor().getName().toLowerCase().startsWith("mingw") // NOI18N
+                    && cs.getCompilerFlavor().isMinGWCompiler()
                     && pae.getExecutable().contains("make")) { // NOI18N
                 env.put("MAKE", WindowsSupport.getInstance().convertToMSysPath(pae.getExecutable())); // NOI18N
             }
@@ -343,7 +342,7 @@ public class DefaultProjectActionHandler implements ProjectActionHandler {
             String termPath = pae.getProfile().getTerminalPath();
             CndUtils.assertNotNull(termPath, "null terminal path"); // NOI18N; should be checked above
             if (termPath != null) {
-                String termBaseName = CndPathUtilitities.getBaseName(termPath);
+                String termBaseName = CndPathUtilities.getBaseName(termPath);
                 if (ExternalTerminalProvider.getSupportedTerminalIDs().contains(termBaseName)) {
                     npb.useExternalTerminal(ExternalTerminalProvider.getTerminal(execEnv, termBaseName));
                 }

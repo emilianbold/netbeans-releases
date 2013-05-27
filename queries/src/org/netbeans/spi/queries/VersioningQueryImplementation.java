@@ -69,7 +69,7 @@ public interface VersioningQueryImplementation {
      * meaningful value. 
      * 
      * @param uri a {@link org.openide.filesystems.FileUtil#normalizeFile normalized} file to check if managed
-     * @return value describing the remote location or null if not available or provided
+     * @return value describing the remote location or null if not available or not provided
      * @since 1.35
      */    
     String getRemoteLocation(URI uri);

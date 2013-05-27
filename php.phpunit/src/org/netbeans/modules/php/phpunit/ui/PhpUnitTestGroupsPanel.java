@@ -77,7 +77,7 @@ public final class PhpUnitTestGroupsPanel extends JPanel {
         assert allGroups != null;
         assert selectedGroups != null;
 
-        this.selectedGroups = new HashSet<String>(selectedGroups);
+        this.selectedGroups = new HashSet<>(selectedGroups);
         tableModel = new GroupsTableModel(allGroups, this.selectedGroups);
 
         initComponents();
@@ -87,8 +87,8 @@ public final class PhpUnitTestGroupsPanel extends JPanel {
     @NbBundle.Messages("PhpUnitTestGroupsPanel.dialog.title=Test Groups")
     @CheckForNull
     public static List<String> showDialog(List<String> allGroups, List<String> selectedGroups) {
-        final List<String> allGroupsCopy = new CopyOnWriteArrayList<String>(allGroups);
-        final List<String> selectedGroupsCopy = new CopyOnWriteArrayList<String>(selectedGroups);
+        final List<String> allGroupsCopy = new CopyOnWriteArrayList<>(allGroups);
+        final List<String> selectedGroupsCopy = new CopyOnWriteArrayList<>(selectedGroups);
         return Mutex.EVENT.readAccess(new Mutex.Action<List<String>>() {
             @Override
             public List<String> run() {
@@ -119,7 +119,7 @@ public final class PhpUnitTestGroupsPanel extends JPanel {
 
     private List<String> getSelectedGroups() {
         assert EventQueue.isDispatchThread();
-        return new ArrayList<String>(selectedGroups);
+        return new ArrayList<>(selectedGroups);
     }
 
     /** This method is called from within the constructor to

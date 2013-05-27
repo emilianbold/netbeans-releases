@@ -46,7 +46,7 @@ package org.netbeans.modules.cnd.makeproject.ui;
 
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.MakeSources;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
@@ -81,7 +81,7 @@ public class RemoveItemAction extends NodeAction {
                 }
 
             folder.removeItemAction(item);
-            if (CndPathUtilitities.isPathAbsolute(item.getPath())) {
+            if (CndPathUtilities.isPathAbsolute(item.getPath())) {
                 ((MakeSources)ProjectUtils.getSources(project)).descriptorChanged();
             }
         }

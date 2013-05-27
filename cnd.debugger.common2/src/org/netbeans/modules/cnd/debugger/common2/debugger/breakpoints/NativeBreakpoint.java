@@ -94,7 +94,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.Line
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpoint;
 import org.netbeans.modules.cnd.debugger.common2.debugger.breakpoints.types.InstructionBreakpointType;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 import org.netbeans.spi.debugger.ContextAwareSupport;
 import org.openide.filesystems.FileObject;
@@ -2471,7 +2471,7 @@ public abstract class NativeBreakpoint
 	    return null;
 	if (Log.Bpt.embellish)
 	    System.out.printf("embellishedContext(%s)\n", contextPropertyValue); // NOI18N
-	String basename = CndPathUtilitities.getBaseName(contextPropertyValue);
+	String basename = CndPathUtilities.getBaseName(contextPropertyValue);
 	long pid = getPid();
 	if (pid != -1)
 	    return "[" + pid + "] " + basename; // NOI18N

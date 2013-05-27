@@ -88,7 +88,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.runprofiles.ui.RerunArguments;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.api.terminal.TerminalSupport;
@@ -690,7 +690,7 @@ public class ProjectActionSupport {
                 return false;
             }
             // Check existence of executable
-            if (!CndPathUtilitities.isPathAbsolute(executable)) { // NOI18N
+            if (!CndPathUtilities.isPathAbsolute(executable)) { // NOI18N
                 //executable is relative to run directory - convert to absolute and check. Should be safe (?).
                 String runDir = pae.getProfile().getRunDir();
                 if (runDir != null) {
@@ -710,19 +710,19 @@ public class ProjectActionSupport {
                     }
                 }
                 if (runDir == null || runDir.length() == 0) {
-                    executable = CndPathUtilitities.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
+                    executable = CndPathUtilities.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
                 } else {
-                    runDir = CndPathUtilitities.toAbsolutePath(pae.getConfiguration().getBaseDir(), runDir);
+                    runDir = CndPathUtilities.toAbsolutePath(pae.getConfiguration().getBaseDir(), runDir);
                     if (pae.getConfiguration().getBaseDir().equals(runDir)) {
                         // In case if runDir is .
-                        executable = CndPathUtilitities.toAbsolutePath(runDir, executable);
+                        executable = CndPathUtilities.toAbsolutePath(runDir, executable);
                     } else {
-                        executable = CndPathUtilitities.toAbsolutePath(runDir, CndPathUtilitities.getBaseName(executable));
+                        executable = CndPathUtilities.toAbsolutePath(runDir, CndPathUtilities.getBaseName(executable));
                     }
                 }
-                executable = CndPathUtilitities.normalizeSlashes(executable);
+                executable = CndPathUtilities.normalizeSlashes(executable);
             }
-            if (CndPathUtilitities.isPathAbsolute(executable)) {
+            if (CndPathUtilities.isPathAbsolute(executable)) {
                 MakeConfiguration conf = pae.getConfiguration();
                 boolean ok = true;
 

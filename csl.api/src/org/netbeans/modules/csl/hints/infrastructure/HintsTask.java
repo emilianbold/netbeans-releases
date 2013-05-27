@@ -74,8 +74,13 @@ import org.netbeans.spi.editor.hints.HintsController;
 public class HintsTask extends ParserResultTask<ParserResult> {
 
     private static final Logger LOG = Logger.getLogger(HintsTask.class.getName());
-    private boolean cancelled = false;
+    private volatile boolean cancelled = false;
     
+    /**
+     * Tracks the HintsProvider being executed, so it can be cancelled.
+     */
+    private volatile HintsProvider pendingProvider;
+
     public HintsTask() {
     }
     
@@ -123,7 +128,17 @@ public class HintsTask extends ParserResultTask<ParserResult> {
                     }
                     
                     List<Hint> hints = new ArrayList<Hint>();
-                    provider.computeHints(manager, ruleContext, hints);
+                    try {
+                        synchronized (HintsTask.this) {
+                            pendingProvider = provider;
+                            if (isCancelled()) {
+                                return;
+                            }
+                        }
+                        provider.computeHints(manager, ruleContext, hints);
+                    } finally {
+                        pendingProvider = null;
+                    }
 
                     if (isCancelled()) {
                         return;
@@ -151,8 +166,15 @@ public class HintsTask extends ParserResultTask<ParserResult> {
         return Scheduler.EDITOR_SENSITIVE_TASK_SCHEDULER;
     }
 
-    public @Override synchronized void cancel() {
-        cancelled = true;
+    public @Override void cancel() {
+        HintsProvider proc;
+        synchronized  (this) {
+            proc = pendingProvider;
+            cancelled = true;
+        }
+        if (proc != null) {
+            proc.cancel();
+        }
     }
 
     private synchronized void resume() {

@@ -53,7 +53,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
 import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.filesystems.FileObject;
@@ -144,7 +144,7 @@ public class LibraryItem implements Cloneable {
 
 	public Project getProject(FSPath baseDir) {
 	    if (project == null) {
-		String location = CndPathUtilitities.toAbsolutePath(baseDir.getFileObject(), getMakeArtifact().getProjectLocation());
+		String location = CndPathUtilities.toAbsolutePath(baseDir.getFileObject(), getMakeArtifact().getProjectLocation());
 		try {
 		    FileObject fo = RemoteFileUtil.getFileObject(baseDir.getFileObject(), location);
                     if (fo != null && fo.isValid()) {
@@ -177,7 +177,7 @@ public class LibraryItem implements Cloneable {
 
         @Override
         public String toString() {
-            String ret = CndPathUtilitities.getBaseName(getMakeArtifact().getProjectLocation());
+            String ret = CndPathUtilities.getBaseName(getMakeArtifact().getProjectLocation());
             if (getMakeArtifact().getOutput() != null && getMakeArtifact().getOutput().length() > 0) {
                 ret = ret + " (" + getMakeArtifact().getOutput() + ")"; // NOI18N
             }
@@ -192,7 +192,7 @@ public class LibraryItem implements Cloneable {
         @Override
         public String getPath() {
             String libPath = getMakeArtifact().getOutput();
-            if (!CndPathUtilitities.isPathAbsolute(libPath)) {
+            if (!CndPathUtilities.isPathAbsolute(libPath)) {
                 libPath = getMakeArtifact().getProjectLocation() + '/' + libPath; // UNIX path
             }
             return libPath;
@@ -203,8 +203,8 @@ public class LibraryItem implements Cloneable {
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             Platform platform = Platforms.getPlatform(conf.getDevelopmentHost().getBuildPlatform());
             String libPath = getPath();
-            String libDir = CndPathUtilitities.getDirName(libPath);
-            String libName = CndPathUtilitities.getBaseName(libPath);
+            String libDir = CndPathUtilities.getDirName(libPath);
+            String libName = CndPathUtilities.getBaseName(libPath);
             return platform.getLibraryLinkOption(libName, libDir, libPath, compilerSet);
         }
 

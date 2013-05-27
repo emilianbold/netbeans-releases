@@ -143,7 +143,7 @@ public class Symfony2PhpModuleExtender extends PhpModuleExtender {
     }
 
     private Set<FileObject> getInitialFiles(PhpModule phpModule) {
-        Set<FileObject> files = new HashSet<FileObject>();
+        Set<FileObject> files = new HashSet<>();
         addSourceFile(files, phpModule, "app/config/parameters.ini"); // NOI18N
         addSourceFile(files, phpModule, "src/Acme/DemoBundle/Controller/DemoController.php"); // NOI18N
         addSourceFile(files, phpModule, "src/Acme/DemoBundle/Resources/views/Demo/index.html.twig"); // NOI18N

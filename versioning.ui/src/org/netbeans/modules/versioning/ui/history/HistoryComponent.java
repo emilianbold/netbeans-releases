@@ -50,7 +50,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.*;
@@ -140,15 +139,11 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         activatedNodesContent = new InstanceContent();
     }
     
-    public HistoryComponent(File... files) {
+    public HistoryComponent(VCSFileProxy... files) {
         this();
 
         if(files != null && files.length > 0) {
-            VCSFileProxy[] proxies = new VCSFileProxy[files.length];
-            for (int i = 0; i < proxies.length; i++) {
-                proxies[i] = VCSFileProxy.createFileProxy(files[i]);
-            }
-            initFiles(proxies);
+            initFiles(files);
         }
         init();
     }

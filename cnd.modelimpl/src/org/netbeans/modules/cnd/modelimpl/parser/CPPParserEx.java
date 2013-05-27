@@ -823,6 +823,7 @@ public class CPPParserEx extends CPPParser {
 
     @Override
     protected final void beginClassDefinition(/*TypeSpecifier*/int ts, String tag) {
+        super.beginClassDefinition(ts, tag);
 
         if (statementTrace >= 2) {
             CPPSymbol c = null;
@@ -883,6 +884,8 @@ public class CPPParserEx extends CPPParser {
 
     @Override
     protected final void endClassDefinition() {
+        super.endClassDefinition();
+        
         /* TODO: revive the original code:
         symbols->dumpScope(stdout);
         symbols->removeScope();

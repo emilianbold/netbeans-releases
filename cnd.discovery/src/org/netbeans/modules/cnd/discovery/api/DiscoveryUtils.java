@@ -632,7 +632,7 @@ public class DiscoveryUtils {
         return path;
     }
 
-    // reverse of the CndPathUtilitities.escapeOddCharacters(String s)
+    // reverse of the CndPathUtilities.escapeOddCharacters(String s)
     public static String removeEscape(String s) {
         int n = s.length();
         StringBuilder ret = new StringBuilder(n);

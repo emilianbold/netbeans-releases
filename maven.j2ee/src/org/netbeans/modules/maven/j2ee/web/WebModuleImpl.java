@@ -191,7 +191,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
             }
             return null;
         } else {
-            return Profile.JAVA_EE_7_WEB;
+            return Profile.JAVA_EE_6_WEB;
         }
     }
 

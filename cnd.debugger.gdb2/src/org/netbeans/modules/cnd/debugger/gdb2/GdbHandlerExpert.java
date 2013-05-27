@@ -73,7 +73,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.props.Property;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIResult;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITList;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIValue;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 public class GdbHandlerExpert implements HandlerExpert {
     private static final boolean sendShortPaths = Boolean.getBoolean("gdb.breakpoints.shortpaths"); // NOI18N
@@ -233,7 +233,7 @@ public class GdbHandlerExpert implements HandlerExpert {
                 if (file.startsWith(baseDir + '/')) {
                     file = file.substring(baseDir.length() + 1);
                 } else {
-                    file = CndPathUtilitities.getBaseName(file);
+                    file = CndPathUtilities.getBaseName(file);
                 }
             }
 

@@ -217,7 +217,7 @@ public class CndUtils {
 
     public static void assertAbsolutePathInConsole(String path) {
         if (CndUtils.isDebugMode()) {
-            if (! CndPathUtilitities.isPathAbsolute(path)) {
+            if (! CndPathUtilities.isPathAbsolute(path)) {
                 CndUtils.assertTrueInConsole(false, "path must be absolute " + path);
             }
         }
@@ -225,7 +225,7 @@ public class CndUtils {
 
     public static void assertAbsolutePathInConsole(String path, String message) {
         if (CndUtils.isDebugMode()) {
-            if (! CndPathUtilitities.isPathAbsolute(path)) {
+            if (! CndPathUtilities.isPathAbsolute(path)) {
                 CndUtils.assertTrueInConsole(false, message + ' ' + path);
             }
         }

@@ -50,7 +50,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FileFilterFactory;
 import org.netbeans.modules.cnd.utils.ui.FileChooser;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -237,7 +237,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                     return false;
                 }
 
-                if (!CndPathUtilitities.isPathAbsolute(makefileNameTextField.getText()) 
+                if (!CndPathUtilities.isPathAbsolute(makefileNameTextField.getText()) 
                         || !NewProjectWizardUtils.fileExists(makefileNameTextField.getText(), controller.getWizardDescriptor())
                         || NewProjectWizardUtils.isDirectory(makefileNameTextField.getText(), controller.getWizardDescriptor())) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "MAKEFILEDOESNOTEXIST"); // NOI18N
@@ -267,7 +267,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                     controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
                 }
-                if (!CndPathUtilitities.isPathAbsolute(configureNameTextField.getText())) {
+                if (!CndPathUtilities.isPathAbsolute(configureNameTextField.getText())) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "CONFIGUREFILEDOESNOTEXIST"); // NOI18N
                     controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, msg);
                     return false;
@@ -582,7 +582,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        path = CndPathUtilitities.normalizeSlashes(path);
+        path = CndPathUtilities.normalizeSlashes(path);
         configureNameTextField.setText(path);
     }//GEN-LAST:event_configureBrowseButtonActionPerformed
     
@@ -612,7 +612,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             return;
         }
         String path = fileChooser.getSelectedFile().getPath();
-        path = CndPathUtilitities.normalizeSlashes(path);
+        path = CndPathUtilities.normalizeSlashes(path);
         makefileNameTextField.setText(path);
     }//GEN-LAST:event_makefileBrowseButtonActionPerformed
 

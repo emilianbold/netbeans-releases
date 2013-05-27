@@ -286,6 +286,10 @@ implements DocumentListener, LookupListener
         
         @Override
         public boolean moveNext() {
+            int docTextLen = docText.length();
+            if (endOffset > docTextLen) {
+                endOffset = docTextLen;
+            }
             if (hltEndOffset >= endOffset) {
                 return false;
             }
@@ -294,7 +298,6 @@ implements DocumentListener, LookupListener
             }
             hltStartOffset = hltEndOffset;
             // hltStartOffset < endOffset (see above)
-            int docTextLen = docText.length();
             do {
                 switch (state) {
                     case FIRST_CHAR:

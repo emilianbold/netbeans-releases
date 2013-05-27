@@ -44,6 +44,10 @@
 
 package org.netbeans.modules.javadoc.hints;
 
+import com.sun.javadoc.MethodDoc;
+import com.sun.javadoc.ParamTag;
+import com.sun.javadoc.ThrowsTag;
+import com.sun.javadoc.Type;
 import static org.netbeans.modules.javadoc.hints.JavadocUtilities.*;
 import com.sun.source.doctree.AttributeTree;
 import com.sun.source.doctree.AuthorTree;
@@ -81,7 +85,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.DocSourcePositions;
 import com.sun.source.util.DocTreePath;
 import com.sun.source.util.DocTreePathScanner;
-import com.sun.source.util.DocTrees;
 import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -95,7 +98,6 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
-import javax.lang.model.element.NestingKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -106,6 +108,7 @@ import javax.swing.text.Document;
 import javax.swing.text.Position;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.DocTreePathHandle;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
@@ -213,15 +216,35 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
             }
             DocTreePath docTreePath = new DocTreePath(currentPath, docCommentTree);
             scan(docTreePath, errors);
-
+            Set<String> inheritedParams = new HashSet<>();
+            Set<String> inheritedTypeParams = new HashSet<>();
+            Set<String> inheritedThrows = new HashSet<>();
             switch (currentElement.getKind()) {
-                case METHOD:
+                case METHOD: {
+                    ExecutableElement method = (ExecutableElement) currentElement;
+                    ElementUtilities elUtils = javac.getElementUtilities();
+                    ExecutableElement overridden = method;
+                    do {
+                        MethodDoc methodDoc = (MethodDoc) elUtils.javaDocFor(overridden);
+                        if(methodDoc != null) {
+                            for (ParamTag paramTag : methodDoc.paramTags()) {
+                                inheritedParams.add(paramTag.parameterName());
+                            }
+                            for (ParamTag paramTag : methodDoc.typeParamTags()) {
+                                inheritedTypeParams.add(paramTag.parameterName());
+                            }
+                        }
+                        
+                    } while((overridden = elUtils.getOverriddenMethod(overridden)) != null);
+                    TypeElement typeElement = elUtils.enclosingTypeElement(currentElement);
+                    findInheritedParams(method, typeElement, inheritedParams, inheritedTypeParams, inheritedThrows);
+                }
                 case CONSTRUCTOR: {
                     MethodTree methodTree = (MethodTree)currentPath.getLeaf();
                     ExecutableElement ee = (ExecutableElement) currentElement;
-                    checkParamsDocumented(ee.getTypeParameters(), methodTree.getTypeParameters(), docTreePath, errors);
-                    checkParamsDocumented(ee.getParameters(), methodTree.getParameters(), docTreePath, errors);
-                    checkThrowsDocumented(ee.getThrownTypes(), methodTree.getThrows(), docTreePath, errors);
+                    checkParamsDocumented(ee.getTypeParameters(), methodTree.getTypeParameters(), docTreePath, inheritedTypeParams, errors);
+                    checkParamsDocumented(ee.getParameters(), methodTree.getParameters(), docTreePath, inheritedParams, errors);
+                    checkThrowsDocumented(ee.getThrownTypes(), methodTree.getThrows(), docTreePath, inheritedThrows, errors);
                     switch (ee.getReturnType().getKind()) {
                         case VOID:
                         case NONE:
@@ -251,368 +274,13 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                 case ANNOTATION_TYPE: {
                     ClassTree classTree = (ClassTree) currentPath.getLeaf();
                     TypeElement typeElement = (TypeElement) currentElement;
-                    checkParamsDocumented(typeElement.getTypeParameters(), classTree.getTypeParameters(), docTreePath, errors);
+                    checkParamsDocumented(typeElement.getTypeParameters(), classTree.getTypeParameters(), docTreePath, inheritedParams, errors);
                     break;
                 }
             }
         }
         return errors;
     }
-
-    /*
-    private void processDeprecatedAnnotation(Element elm, Doc jDoc, List<ErrorDescription> errors) {
-        if (SourceVersion.RELEASE_5.compareTo(sourceVersion) > 0
-                // #150550: under some unexplained conditions java.lang.Deprecated may not be available
-                || javac.getElements().getTypeElement("java.lang.Deprecated") == null) { //NOI18N
-            // jdks older than 1.5 do not support annotations
-            return;
-        }
-
-        Tag[] deprTags = jDoc.tags("@deprecated"); // NOI18N
-        AnnotationMirror annMirror = JavadocUtilities.findDeprecated(javac, elm);
-
-        if (annMirror != null) {
-            // is deprecated
-            if (deprTags.length == 0) {
-                // missing tag
-                try {
-                    Position[] poss = createPositions(javac.getTrees().getTree(elm, annMirror), javac, doc);
-                    ErrorDescription err = createErrorDescription(
-                            NbBundle.getMessage(Analyzer.class, "MISSING_DEPRECATED_DESC"), // NOI18N
-                            Collections.<Fix>singletonList(AddTagFix.createAddDeprecatedTagFix(elm, file, sourceVersion)),
-                            poss);
-                    addTagHint(errors, err);
-                } catch (BadLocationException ex) {
-                    Logger.getLogger(Analyzer.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-                }
-            } else if (deprTags.length > 1) {
-                // duplicates
-                boolean isFirst = true;
-                for (Tag tag : deprTags) {
-                    if (isFirst) {
-                        isFirst = false;
-                        continue;
-                    }
-                    addRemoveTagFix(tag,
-                            NbBundle.getMessage(Analyzer.class, "DUPLICATE_DEPRECATED_DESC"), // NOI18N
-                            elm, errors);
-                }
-            }
-        } else {
-            // not annotated
-            if (deprTags.length > 1) {
-                // duplicates
-                boolean isFirst = true;
-                for (Tag tag : deprTags) {
-                    if (isFirst) {
-                        isFirst = false;
-                        continue;
-                    }
-                    addRemoveTagFix(tag,
-                            NbBundle.getMessage(Analyzer.class, "DUPLICATE_DEPRECATED_DESC"), // NOI18N
-                            elm, errors);
-                }
-            }
-            if (deprTags.length > 0) {
-                // XXX ignore for now; we could offer to annotate the element if @deprecate tag exists
-                // or remove tag
-            }
-        }
-    }
-
-    private void processReturn(ExecutableElement exec, MethodTree node, ExecutableMemberDoc jdoc, List<ErrorDescription> errors) {
-        final TypeMirror returnType = exec.getReturnType();
-        final Tree returnTree = node.getReturnType();
-        final Tag[] tags = jdoc.tags("@return"); // NOI18N
-
-        if (returnType.getKind() == TypeKind.VOID) {
-            // void has @return
-            for (int i = 0; i < tags.length; i++) {
-                Tag tag = tags[i];
-                addRemoveTagFix(tag,
-                        NbBundle.getMessage(Analyzer.class,
-                        jdoc.isMethod()? "WRONG_RETURN_DESC": "WRONG_CONSTRUCTOR_RETURN_DESC"), // NOI18N
-                        exec, errors);
-            }
-        } else {
-            for (int i = 0; i < tags.length; i++) {
-                // check duplicate @return
-                Tag tag = tags[i];
-                if (i > 0) {
-                    addRemoveTagFix(tag,
-                            NbBundle.getMessage(Analyzer.class, "DUPLICATE_RETURN_DESC"), // NOI18N
-                            exec, errors);
-                }
-            }
-        }
-
-        if (returnType.getKind() != TypeKind.VOID && tags.length == 0 &&
-                JavadocUtilities.findReturnTag(javac, (MethodDoc) jdoc, true) == null) {
-            // missing @return
-            try {
-                Position[] poss = createPositions(returnTree, javac, doc);
-                ErrorDescription err = createErrorDescription(
-                        NbBundle.getMessage(Analyzer.class, "MISSING_RETURN_DESC"), // NOI18N
-                        Collections.<Fix>singletonList(AddTagFix.createAddReturnTagFix(exec, file, sourceVersion)),
-                        poss);
-                addTagHint(errors, err);
-            } catch (BadLocationException ex) {
-                Logger.getLogger(Analyzer.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-            }
-        }
-
-    }
-
-    private void processThrows(ExecutableElement exec, MethodTree node, ExecutableMemberDoc jdoc, List<ErrorDescription> errors) {
-        final List<? extends ExpressionTree> throwz = node.getThrows();
-        final ThrowsTag[] tags = jdoc.throwsTags();
-
-        Map<String, ThrowsTag> tagNames = new HashMap<String, ThrowsTag>();
-        for (ThrowsTag throwsTag : tags) {
-            com.sun.javadoc.Type tagType = throwsTag.exceptionType();
-            String tagFQN = null;
-            if (tagType != null) { // unresolvable type
-                tagFQN = throwsTag.exceptionType().qualifiedTypeName();
-            } else {
-                tagFQN = throwsTag.exceptionName();
-            }
-            if (tagNames.containsKey(tagFQN)) {
-                // duplicate throws error
-                addRemoveTagFix(throwsTag,
-                        NbBundle.getMessage(Analyzer.class, "DUPLICATE_THROWS_DESC", throwsTag.name(), throwsTag.exceptionName()), // NOI18N
-                        exec, errors);
-            } else {
-                tagNames.put(tagFQN, throwsTag);
-            }
-        }
-
-        // resolve existing and missing tags
-        int index = 0;
-        for (ExpressionTree throwTree : throwz) {
-            TreePath path = new TreePath(currentPath, throwTree);
-            Element el = javac.getTrees().getElement(path);
-            String fqn;
-            if (ElementKind.CLASS == el.getKind()) {
-                TypeElement tel = (TypeElement) el;
-                fqn = tel.getQualifiedName().toString();
-            } else if (ElementKind.TYPE_PARAMETER == el.getKind()) {
-                // ExceptionType of throws clause may contain TypeVariable see JLS 8.4.6
-                fqn = el.getSimpleName().toString();
-            } else {
-                // skip processing of invalid throws declaration
-                Logger.getLogger(Analyzer.class.getName()).log(
-                        Level.FINE,
-                        "Illegal throw kind: {0} of {1} in {2}", // NOI18N
-                        new Object[] {el.getKind(), el, exec});
-                return;
-            }
-
-            boolean exists = tagNames.remove(fqn) != null;
-            if (!exists && (jdoc.isConstructor() ||
-                    jdoc.isMethod() &&
-                    JavadocUtilities.findThrowsTag(javac, (MethodDoc) jdoc, fqn, true) == null)) {
-                // missing @throws
-                try {
-                    Position[] poss = createPositions(throwTree, javac, doc);
-                    String insertName = resolveThrowsName(el, fqn, throwTree);
-                    ErrorDescription err = createErrorDescription(
-                            NbBundle.getMessage(Analyzer.class, "MISSING_THROWS_DESC", fqn), // NOI18N
-                            Collections.<Fix>singletonList(AddTagFix.createAddThrowsTagFix(exec, insertName, index, file, sourceVersion)),
-                            poss);
-                    addTagHint(errors, err);
-                } catch (BadLocationException ex) {
-                    Logger.getLogger(Analyzer.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-                }
-            }
-            ++index;
-        }
-
-        TypeMirror rtException = javac.getElements().getTypeElement("java.lang.RuntimeException").asType(); // NOI18N
-        TypeMirror error = javac.getElements().getTypeElement("java.lang.Error").asType(); // NOI18N
-
-        // resolve leftovers
-        for (ThrowsTag throwsTag : tagNames.values()) {
-            // redundant @throws
-            com.sun.javadoc.Type throwsType = throwsTag.exceptionType();
-            Doc throwClassDoc = null;
-            if (throwsType != null) {
-                throwClassDoc = throwsType.asClassDoc();
-            }
-            if (throwClassDoc != null) {
-                Element throwEl = javac.getElementUtilities().elementFor(throwClassDoc);
-                if (throwEl != null && (javac.getTypes().isSubtype(throwEl.asType(), rtException) || javac.getTypes().isSubtype(throwEl.asType(), error))) {
-                    // ignore RuntimeExceptions and Errors
-                    continue;
-                }
-            }
-            addRemoveTagFix(throwsTag,
-                    NbBundle.getMessage(Analyzer.class, "UNKNOWN_THROWABLE_DESC", throwsTag.name(), throwsTag.exceptionName()), // NOI18N
-                    exec, errors);
-        }
-
-    }
-
-    private void processAnnTypeThrows(ExecutableElement exec, MethodTree node, AnnotationTypeElementDoc jdoc, List<ErrorDescription> errors) {
-        // this surprisingly gets both @throws and @exception tags
-        Tag[] tags = jdoc.tags("@throws"); //NOI18N
-
-        for (Tag tag : tags) {
-            // annotation type element cannot contain throwables
-            ThrowsTag throwsTag = (ThrowsTag) tag;
-            addRemoveTagFix(throwsTag,
-                    NbBundle.getMessage(Analyzer.class, "ILLEGAL_ANNOTATION_TYPE_THROWS_DESC", // NOI18N
-                    throwsTag.name(),
-                    throwsTag.exceptionName()),
-                    exec, errors);
-        }
-    }
-
-    private void processAnnTypeParameters(Element elm, Tree node, Doc jdoc, List<ErrorDescription> errors) {
-        final Tag[] tags = jdoc.tags("@param"); //NOI18N
-
-        for (Tag tag : tags) {
-            // annotation type element cannot contain params
-            ParamTag paramTag = (ParamTag) tag;
-            addRemoveTagFix(paramTag,
-                    NbBundle.getMessage(Analyzer.class, "ILLEGAL_ANNOTATION_TYPE_PARAM_DESC", paramTag.parameterName()), // NOI18N
-                    elm, errors);
-        }
-    }
-
-    private void processParameters(ExecutableElement exec, MethodTree node, ExecutableMemberDoc jdoc, List<ErrorDescription> errors) {
-        final List<? extends VariableTree> params = node.getParameters();
-        final ParamTag[] tags = jdoc.paramTags();
-
-        Map<String, ParamTag> tagNames = new HashMap<String, ParamTag>();
-        // create param tag names set and reveal duplicates
-        for (ParamTag paramTag : tags) {
-            if (tagNames.containsKey(paramTag.parameterName())) {
-                // duplicate @param error
-                addRemoveTagFix(paramTag,
-                        NbBundle.getMessage(Analyzer.class, "DUPLICATE_PARAM_DESC", paramTag.parameterName()), // NOI18N
-                        exec, errors);
-            } else {
-                tagNames.put(paramTag.parameterName(), paramTag);
-            }
-        }
-
-        // resolve existing and missing tags
-        for (VariableTree param : params) {
-            boolean exists = tagNames.remove(param.getName().toString()) != null;
-            if (!exists && (jdoc.isConstructor() ||
-                    jdoc.isMethod() &&
-                    JavadocUtilities.findParamTag(javac, (MethodDoc) jdoc, param.getName().toString(), false, true) == null)) {
-                // missing @param
-                try {
-                    Position[] poss = createPositions(param, javac, doc);
-                    ErrorDescription err = createErrorDescription(
-                            NbBundle.getMessage(Analyzer.class, "MISSING_PARAM_DESC", param.getName()), // NOI18N
-                            Collections.<Fix>singletonList(AddTagFix.createAddParamTagFix(exec, param.getName().toString(), file, sourceVersion)),
-                            poss);
-                    addTagHint(errors, err);
-                } catch (BadLocationException ex) {
-                    Logger.getLogger(Analyzer.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-                }
-            }
-        }
-
-        // resolve leftovers
-        for (ParamTag paramTag : tagNames.values()) {
-            // redundant @param
-            addRemoveTagFix(paramTag,
-                    NbBundle.getMessage(Analyzer.class, "UNKNOWN_PARAM_DESC", paramTag.parameterName()), // NOI18N
-                    exec, errors);
-        }
-
-    }
-
-    private void processParameters(TypeElement elm, ClassTree node, ClassDoc jdoc, List<ErrorDescription> errors) {
-        // other than type parameters are unsupported in class javadoc
-        for (Tag tag : jdoc.tags("@param")) { // NOI18N
-            ParamTag paramTag = (ParamTag) tag;
-            if (!paramTag.isTypeParameter()) {
-                // redundant @param
-                addRemoveTagFix(paramTag,
-                        NbBundle.getMessage(Analyzer.class, "UNKNOWN_PARAM_DESC", paramTag.parameterName()), // NOI18N
-                        elm, errors);
-            }
-        }
-    }
-
-    private void processTypeParameters(TypeElement elm, ClassTree node, ClassDoc jdoc, List<ErrorDescription> errors) {
-        processTypeParameters(elm, node.getTypeParameters(), jdoc.typeParamTags(), jdoc, errors);
-    }
-
-    private void processTypeParameters(ExecutableElement elm, MethodTree node, ExecutableMemberDoc jdoc, List<ErrorDescription> errors) {
-        processTypeParameters(elm, node.getTypeParameters(), jdoc.typeParamTags(), jdoc, errors);
-    }
-    
-    private void processTypeParameters(Element elm, List<? extends TypeParameterTree> params, ParamTag[] tags, Doc jdoc, List<ErrorDescription> errors) {
-        Map<String, ParamTag> tagNames = new HashMap<String, ParamTag>();
-        // create param tag names set and reveal duplicates
-        for (ParamTag paramTag : tags) {
-            if (tagNames.containsKey(paramTag.parameterName())) {
-                // duplicate @param error
-                String typeParamName = '<' + paramTag.parameterName() + '>';
-                addRemoveTagFix(paramTag,
-                        NbBundle.getMessage(Analyzer.class, "DUPLICATE_TYPEPARAM_DESC", typeParamName), // NOI18N
-                        elm, errors);
-            } else {
-                tagNames.put(paramTag.parameterName(), paramTag);
-            }
-        }
-
-        // resolve existing and missing tags
-        for (TypeParameterTree param : params) {
-            boolean exists = tagNames.remove(param.getName().toString()) != null;
-            if (!exists && (!jdoc.isMethod() || jdoc.isMethod() &&
-                    JavadocUtilities.findParamTag(javac, (MethodDoc) jdoc, param.getName().toString(), true, true) == null)) {
-                // missing @param
-                try {
-                    Position[] poss = createPositions(param, javac, doc);
-                    String paramName = param.getName().toString();
-                    String typeParamName = '<' + paramName + '>';
-                    ErrorDescription err = createErrorDescription(
-                            NbBundle.getMessage(Analyzer.class, "MISSING_TYPEPARAM_DESC", typeParamName), // NOI18N
-                            Collections.<Fix>singletonList(AddTagFix.createAddTypeParamTagFix(elm, paramName, file, sourceVersion)),
-                            poss);
-                    addTagHint(errors, err);
-                } catch (BadLocationException ex) {
-                    Logger.getLogger(Analyzer.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-                }
-            }
-        }
-
-        // resolve leftovers
-        for (ParamTag paramTag : tagNames.values()) {
-            // redundant @param
-            String typeParamName = '<' + paramTag.parameterName() + '>';
-            addRemoveTagFix(paramTag,
-                    NbBundle.getMessage(Analyzer.class, "UNKNOWN_TYPEPARAM_DESC", typeParamName), // NOI18N
-                    elm, errors);
-        }
-    }
-
-    private void addRemoveTagFix(Tag tag, String description, Element elm, List<ErrorDescription> errors) {
-        try {
-            Position[] poss = JavadocUtilities.findTagNameBounds(javac, doc, tag);
-            if (poss == null) {
-                throw new BadLocationException("no position for " + tag, -1); // NOI18N
-            }
-//            ErrorDescription err = createErrorDescription(
-//                    description,
-//                    Collections.<Fix>singletonList(new RemoveTagFix(tag.name(), TagHandle.create(tag), ElementHandle.create(elm), file, spec)),
-//                    poss);
-//            addTagHint(errors, err);
-        } catch (BadLocationException ex) {
-            Logger.getLogger(Analyzer.class.getName()).log(Level.INFO, ex.getMessage(), ex);
-        }
-    }
-
-    private void addTagHint(List<ErrorDescription> errors, ErrorDescription desc) {
-        errors.add(desc);
-    }
-*/
     
     @Override
     public Void visitAttribute(AttributeTree node, List<ErrorDescription> errors) {
@@ -743,14 +411,12 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         }
     }
 
-    private void checkParamsDocumented(List<? extends Element> list, List<? extends Tree> trees, DocTreePath docTreePath, List<ErrorDescription> errors) {
-//        if (foundInheritDoc)
-//            return;
+    private void checkParamsDocumented(List<? extends Element> list, List<? extends Tree> trees, DocTreePath docTreePath, Set<String> inheritedParams, List<ErrorDescription> errors) {
 
         for (int i = 0; i < list.size(); i++) {
             Element e = list.get(i);
             Tree t = trees.get(i);
-            if (!foundParams.contains(e)) {
+            if (!foundParams.contains(e) && !inheritedParams.contains(e.getSimpleName().toString())) {
                 boolean isTypeParam = e.getKind() == ElementKind.TYPE_PARAMETER;
                 CharSequence paramName = (isTypeParam)
                         ? "<" + e.getSimpleName() + ">"
@@ -788,12 +454,12 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         }
     }
     
-    private void checkThrowsDocumented(List<? extends TypeMirror> list, List<? extends ExpressionTree> trees, DocTreePath docTreePath, List<ErrorDescription> errors) {
+    private void checkThrowsDocumented(List<? extends TypeMirror> list, List<? extends ExpressionTree> trees, DocTreePath docTreePath, Set<String> inheritedThrows, List<ErrorDescription> errors) {
         for (int i = 0; i < list.size(); i++) {
             TypeMirror e = list.get(i);
             Tree t = trees.get(i);
             Types types = javac.getTypes();
-            if (!foundThrows.contains(e)
+            if (!foundThrows.contains(e) && !inheritedThrows.contains(e.toString())
                     && (!(types.isAssignable(e, javac.getElements().getTypeElement("java.lang.Error").asType())
                 || types.isAssignable(e, javac.getElements().getTypeElement("java.lang.RuntimeException").asType())))) {
                 try {
@@ -958,5 +624,38 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     @Override
     public Void visitOther(DocTree node, List<ErrorDescription> errors) {
         return super.visitOther(node, errors); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    private void findInheritedParams(ExecutableElement method, TypeElement typeElement, Set<String> inheritedParams, Set<String> inheritedTypeParams, Set<String> inheritedThrows) {
+        if(typeElement == null) return;
+        
+        for (TypeMirror typeMirror : typeElement.getInterfaces()) {
+            for (Element el : javac.getElementUtilities().getMembers(typeMirror, new ElementUtilities.ElementAcceptor() {
+
+                @Override
+                public boolean accept(Element e, TypeMirror type) {
+                    return e.getKind() == ElementKind.METHOD;
+                }
+            })) {
+                if(javac.getElements().overrides(method, (ExecutableElement) el, typeElement)) {
+                    MethodDoc methodDoc = (MethodDoc) javac.getElementUtilities().javaDocFor(el);
+                    if(methodDoc != null) {
+                        for (ParamTag paramTag : methodDoc.paramTags()) {
+                            inheritedParams.add(paramTag.parameterName());
+                        }
+                        for (ParamTag paramTag : methodDoc.typeParamTags()) {
+                            inheritedTypeParams.add(paramTag.parameterName());
+                        }
+                        for (ThrowsTag throwsTag : methodDoc.throwsTags()) {
+                            Type exceptionType = throwsTag.exceptionType();
+                            if(exceptionType != null) {
+                                inheritedThrows.add(exceptionType.qualifiedTypeName());
+                            }
+                        }
+                        returnTypeFound |= methodDoc.tags("return").length > 0;
+                    }
+                }
+            }
+        }
     }
 }

@@ -173,7 +173,7 @@ public final class ZendScript {
         assert !EventQueue.isDispatchThread();
         assert phpModule != null;
 
-        List<String> allParameters = new ArrayList<String>(parameters);
+        List<String> allParameters = new ArrayList<>(parameters);
         allParameters.add(HELP_COMMAND);
         HelpLineProcessor lineProcessor = new HelpLineProcessor();
         Future<Integer> result = createPhpExecutable()
@@ -361,7 +361,7 @@ public final class ZendScript {
         private final PhpModule phpModule;
 
         // @GuardedBy(commands)
-        private final List<FrameworkCommand> commands = new LinkedList<FrameworkCommand>();
+        private final List<FrameworkCommand> commands = new LinkedList<>();
 
 
         public CommandsLineProcessor(PhpModule phpModule) {
@@ -394,7 +394,7 @@ public final class ZendScript {
         public List<FrameworkCommand> getCommands() {
             List<FrameworkCommand> copy;
             synchronized (commands) {
-                copy = new ArrayList<FrameworkCommand>(commands);
+                copy = new ArrayList<>(commands);
             }
             return copy;
         }

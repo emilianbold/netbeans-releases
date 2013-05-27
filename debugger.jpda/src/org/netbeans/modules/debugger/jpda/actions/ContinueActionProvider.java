@@ -73,10 +73,12 @@ public class ContinueActionProvider extends JPDADebuggerActionProvider {
         setProviderToDisableOnLazyAction(this);
     }
     
+    @Override
     public Set getActions () {
         return Collections.singleton (ActionsManager.ACTION_CONTINUE);
     }
     
+    @Override
     public void doAction (Object action) {
         getDebuggerImpl ().resume ();
     }
@@ -84,6 +86,7 @@ public class ContinueActionProvider extends JPDADebuggerActionProvider {
     @Override
     public void postAction(Object action, final Runnable actionPerformedNotifier) {
         doLazyAction(action, new Runnable() {
+            @Override
             public void run() {
                 try {
                     getDebuggerImpl ().resume ();
@@ -94,6 +97,7 @@ public class ContinueActionProvider extends JPDADebuggerActionProvider {
         });
     }
     
+    @Override
     protected void checkEnabled (int debuggerState) {
         setEnabled (
             ActionsManager.ACTION_CONTINUE,

@@ -269,10 +269,14 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
 
     @Override
     public RemoteFileObject findResource(String name) {
+        return findResource(name, new HashSet<String>());
+    }
+
+    public RemoteFileObject findResource(String name, Set<String> antiLoop) {
         if (name.isEmpty() || name.equals("/")) {  // NOI18N
             return getRoot();
         } else {
-            return getRoot().getFileObject(name);
+            return getRoot().getFileObject(name, antiLoop);
         }
     }
 
@@ -318,7 +322,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         throw new IOException("Cannot create temporary file"); // NOI18N
     }
     
-    /*package*/ RemoteFileObjectBase findResource(String name, Set<String> antiloop) {
+    public RemoteFileObjectBase findResourceImpl(String name, Set<String> antiloop) {
         if (name.isEmpty() || name.equals("/")) {  // NOI18N
             return getRoot().getImplementor();
         } else {
@@ -722,7 +726,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
                 RemoteFileObjectBase parentFO = vcsSafeGetFileObject(parentPath);
                 if (parentFO != null) {
                     String childNameExt = PathUtilities.getBaseName(path);
-                    RemoteFileObject childFO = parentFO.getFileObject(childNameExt);
+                    RemoteFileObject childFO = parentFO.getFileObject(childNameExt, new HashSet<String>());
                     return (childFO != null && childFO.isValid()) ? Boolean.TRUE : Boolean.FALSE;
                 }
             }

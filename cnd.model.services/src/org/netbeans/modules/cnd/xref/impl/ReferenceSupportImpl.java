@@ -61,6 +61,7 @@ import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmUID;
+import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
 import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.util.UIDs;
@@ -101,7 +102,10 @@ public class ReferenceSupportImpl {
                 CsmObject targetDecl = decDef[0];
                 CsmObject targetDef = decDef[1];        
                 kind = CsmReferenceKind.DIRECT_USAGE;
-                if (owner.equals(targetDef)) {
+                if (CsmKindUtilities.isClassForwardDeclaration(owner) || 
+                    CsmClassifierResolver.getDefault().isForwardClassifier(owner)) {
+                    kind = CsmReferenceKind.DIRECT_USAGE;
+                } else if (owner.equals(targetDef)) {
                     kind = CsmReferenceKind.DEFINITION;
                 } else if (CsmReferenceSupport.sameDeclaration(owner, targetDecl)) {
                     kind = CsmReferenceKind.DECLARATION;

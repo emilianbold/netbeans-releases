@@ -340,7 +340,7 @@ public class FileInfoProvider {
 
         @Override
         public String toString() {
-            return name + ' ' + uid + ' ' + gid + ' '+ accessToString(getAccess()) + ' ' + isDirectory() + ' ' + lastModified + ' ' + (isLink() ? " -> " + linkTarget : ""); // NOI18N
+            return name + ' ' + uid + ' ' + gid + ' '+ accessToString(getAccess()) + ' ' + isDirectory() + ' ' + lastModified + ' ' + (isLink() ? " -> " + linkTarget : size); // NOI18N
         }
     }
     

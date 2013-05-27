@@ -68,7 +68,7 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
     public PHP5ErrorHandlerImpl(Context context) {
         super();
         this.context = context;
-        syntaxErrors = new ArrayList<SyntaxError>();
+        syntaxErrors = new ArrayList<>();
     }
 
     @Override
@@ -97,7 +97,7 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
 
     @Override
     public List<Error> displaySyntaxErrors(Program program) {
-        List<Error> errors = new ArrayList<Error>();
+        List<Error> errors = new ArrayList<>();
         for (SyntaxError syntaxError : syntaxErrors) {
             errors.add(defaultSyntaxErrorHandling(syntaxError));
         }
@@ -127,7 +127,7 @@ public class PHP5ErrorHandlerImpl implements PHP5ErrorHandler {
     }
 
     private static List<String> getExpectedTokenNames(SyntaxError syntaxError) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (int i = 0; i < syntaxError.getExpectedTokens().length; i += 2) {
             String text = TokenWrapper.getTokenTextForm(syntaxError.getExpectedTokens()[i]);
             if (text != null) {

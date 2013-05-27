@@ -102,7 +102,7 @@ public final class SymfonyUtils {
     }
 
     public static List<FileObject> getViews(FileObject fo, PhpBaseElement phpElement) {
-        List<FileObject> views = new LinkedList<FileObject>();
+        List<FileObject> views = new LinkedList<>();
         if (phpElement instanceof PhpClass.Method) {
             String methodName = phpElement.getName();
             if (methodName.startsWith(ACTION_METHOD_PREFIX)) {
@@ -114,7 +114,7 @@ public final class SymfonyUtils {
     }
 
     private static List<FileObject> getViews(FileObject fo, final String viewName) {
-        List<FileObject> views = new LinkedList<FileObject>();
+        List<FileObject> views = new LinkedList<>();
         File parent = FileUtil.toFile(fo).getParentFile();
         File templatesDir = PropertyUtils.resolveFile(parent, DIR_TEMPLATES_RELATIVE);
         File[] fileViews = templatesDir.listFiles(new FileFilter() {

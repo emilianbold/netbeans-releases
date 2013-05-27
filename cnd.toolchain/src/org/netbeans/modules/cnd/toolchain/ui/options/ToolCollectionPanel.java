@@ -877,8 +877,9 @@ import org.openide.util.Utilities;
         setPreferredSize(new java.awt.Dimension(200, 200));
         setLayout(new java.awt.GridBagLayout());
 
+        lbMakeCommand.setLabelFor(tfMakePath);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/toolchain/ui/options/Bundle"); // NOI18N
-        lbMakeCommand.setText(bundle.getString("ToolCollectionPanel.lbMakeCommand.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lbMakeCommand, bundle.getString("ToolCollectionPanel.lbMakeCommand.text")); // NOI18N
         lbMakeCommand.setToolTipText(bundle.getString("ToolCollectionPanel.lbMakeCommand.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -908,7 +909,8 @@ import org.openide.util.Utilities;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(btMakeBrowse, gridBagConstraints);
 
-        lbDebuggerCommand.setText(bundle.getString("ToolCollectionPanel.lbDebuggerCommand.text")); // NOI18N
+        lbDebuggerCommand.setLabelFor(tfDebuggerPath);
+        org.openide.awt.Mnemonics.setLocalizedText(lbDebuggerCommand, bundle.getString("ToolCollectionPanel.lbDebuggerCommand.text")); // NOI18N
         lbDebuggerCommand.setToolTipText(bundle.getString("ToolCollectionPanel.lbDebuggerCommand.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -938,7 +940,8 @@ import org.openide.util.Utilities;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(btDebuggerBrowse, gridBagConstraints);
 
-        lbCCommand.setText(bundle.getString("ToolCollectionPanel.lbCCommand.text")); // NOI18N
+        lbCCommand.setLabelFor(tfCPath);
+        org.openide.awt.Mnemonics.setLocalizedText(lbCCommand, bundle.getString("ToolCollectionPanel.lbCCommand.text")); // NOI18N
         lbCCommand.setToolTipText(bundle.getString("ToolCollectionPanel.lbCCommand.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -970,7 +973,8 @@ import org.openide.util.Utilities;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(btCBrowse, gridBagConstraints);
 
-        lbCppCommand.setText(bundle.getString("ToolCollectionPanel.lbCppCommand.text")); // NOI18N
+        lbCppCommand.setLabelFor(tfCppPath);
+        org.openide.awt.Mnemonics.setLocalizedText(lbCppCommand, bundle.getString("ToolCollectionPanel.lbCppCommand.text")); // NOI18N
         lbCppCommand.setToolTipText(bundle.getString("ToolCollectionPanel.lbCppCommand.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1002,7 +1006,8 @@ import org.openide.util.Utilities;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(btCppBrowse, gridBagConstraints);
 
-        lbFortranCommand.setText(bundle.getString("ToolCollectionPanel.lbFortranCommand.text")); // NOI18N
+        lbFortranCommand.setLabelFor(tfFortranPath);
+        org.openide.awt.Mnemonics.setLocalizedText(lbFortranCommand, bundle.getString("ToolCollectionPanel.lbFortranCommand.text")); // NOI18N
         lbFortranCommand.setToolTipText(bundle.getString("ToolCollectionPanel.lbFortranCommand.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1130,7 +1135,8 @@ import org.openide.util.Utilities;
         gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 0);
         add(tfBaseDirectory, gridBagConstraints);
 
-        lbAsCommand.setText(bundle.getString("ToolCollectionPanel.lbAsCommand.text")); // NOI18N
+        lbAsCommand.setLabelFor(tfAsPath);
+        org.openide.awt.Mnemonics.setLocalizedText(lbAsCommand, bundle.getString("ToolCollectionPanel.lbAsCommand.text")); // NOI18N
         lbAsCommand.setToolTipText(bundle.getString("ToolCollectionPanel.lbAsCommand.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1162,7 +1168,8 @@ import org.openide.util.Utilities;
         gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
         add(btAsBrowse, gridBagConstraints);
 
-        lbQMakePath.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.lbQMakePath.text")); // NOI18N
+        lbQMakePath.setLabelFor(tfQMakePath);
+        org.openide.awt.Mnemonics.setLocalizedText(lbQMakePath, org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.lbQMakePath.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -1170,7 +1177,8 @@ import org.openide.util.Utilities;
         gridBagConstraints.insets = new java.awt.Insets(6, 10, 0, 0);
         add(lbQMakePath, gridBagConstraints);
 
-        lbCMakePath.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.lbCMakePath.text")); // NOI18N
+        lbCMakePath.setLabelFor(tfCMakePath);
+        org.openide.awt.Mnemonics.setLocalizedText(lbCMakePath, org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "ToolCollectionPanel.lbCMakePath.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
@@ -1273,7 +1281,7 @@ import org.openide.util.Utilities;
         jPanel2.add(lbFamilyValue, gridBagConstraints);
 
         lbEncoding.setLabelFor(encodingComboBox);
-        lbEncoding.setText(org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "EncodingLabelText")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lbEncoding, org.openide.util.NbBundle.getMessage(ToolCollectionPanel.class, "EncodingLabelText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;

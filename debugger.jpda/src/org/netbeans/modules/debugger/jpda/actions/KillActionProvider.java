@@ -71,14 +71,17 @@ public class KillActionProvider extends JPDADebuggerActionProvider {
         );
     }
     
+    @Override
     public Set getActions () {
         return Collections.singleton (ActionsManager.ACTION_KILL);
     }
         
+    @Override
     public void doAction (Object action) {
         getDebuggerImpl ().finish ();
     }
     
+    @Override
     protected void checkEnabled (int debuggerState) {
         setEnabled (ActionsManager.ACTION_KILL, true);
     }

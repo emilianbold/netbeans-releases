@@ -78,7 +78,13 @@ public class GsfHintsFactory extends AbstractTaskFactory {
 
     @Override
     public Collection<? extends SchedulerTask> createTasks(Language l, Snapshot snapshot) {
-        return Collections.singleton(new GsfHintsProvider(snapshot.getSource().getFileObject()));
+        // avoid issue #230209, hint provider is useless without FileObject.
+        FileObject fo = snapshot.getSource().getFileObject();
+        if (fo != null) {
+            return Collections.singleton(new GsfHintsProvider(fo));
+        } else {
+            return null;
+        }
     }
     
     /**

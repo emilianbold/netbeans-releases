@@ -512,3 +512,9 @@ function Rectangle3(width, height) {
  */
 function methodCCTest() {
 }
+
+/**
+ * @class Issue224759 This is not visible in Help
+ */
+function Issue224759() {
+}

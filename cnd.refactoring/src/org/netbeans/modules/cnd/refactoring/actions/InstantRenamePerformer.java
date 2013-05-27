@@ -65,7 +65,9 @@ import javax.swing.text.Position.Bias;
 import javax.swing.text.StyleConstants;
 import javax.swing.undo.AbstractUndoableEdit;
 import javax.swing.undo.CannotUndoException;
-import javax.swing.undo.UndoableEdit;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseKit;
@@ -80,10 +82,12 @@ import org.netbeans.modules.cnd.api.model.xref.CsmReferenceRepository;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceResolver;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.support.CsmRefactoringUtils;
+import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.ui.UIGesturesSupport;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.refactoring.api.ui.RefactoringActionsFactory;
 import org.netbeans.spi.editor.highlighting.support.PositionsBag;
+import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -386,6 +390,49 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
 
             if (perf != null) {
                 perf.release();
+            }
+        }
+    }
+    
+    public static class RenameDeletedTextInterceptor implements DeletedTextInterceptor {
+        
+        @Override
+        public boolean beforeRemove(DeletedTextInterceptor.Context context) throws BadLocationException {
+            Object getObject = context.getComponent().getClientProperty(InstantRenamePerformer.class);
+            if (getObject instanceof InstantRenamePerformer) {
+                InstantRenamePerformer instantRenamePerformer = (InstantRenamePerformer)getObject;
+                MutablePositionRegion region = instantRenamePerformer.region.getRegion(0);
+                return ((context.isBackwardDelete() && region.getStartOffset() == context.getOffset()) || (!context.isBackwardDelete() && region.getEndOffset() == context.getOffset()));
+            } else {
+                return false;
+            }
+        }
+        @Override
+        public void remove(DeletedTextInterceptor.Context context) throws BadLocationException {            
+        }
+
+        @Override
+        public void afterRemove(DeletedTextInterceptor.Context context) throws BadLocationException {
+        }
+
+        @Override
+        public void cancelled(DeletedTextInterceptor.Context context) {
+        }
+
+        @MimeRegistrations({
+            @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = DeletedTextInterceptor.Factory.class),
+            @MimeRegistration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, service = DeletedTextInterceptor.Factory.class),
+            @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = DeletedTextInterceptor.Factory.class),
+            @MimeRegistration(mimeType = MIMENames.DOXYGEN_MIME_TYPE, service = DeletedTextInterceptor.Factory.class),
+            @MimeRegistration(mimeType = MIMENames.STRING_DOUBLE_MIME_TYPE, service = DeletedTextInterceptor.Factory.class),
+            @MimeRegistration(mimeType = MIMENames.STRING_SINGLE_MIME_TYPE, service = DeletedTextInterceptor.Factory.class),
+            @MimeRegistration(mimeType = MIMENames.PREPROC_MIME_TYPE, service = DeletedTextInterceptor.Factory.class)
+        })
+        public static class Factory implements DeletedTextInterceptor.Factory {
+
+            @Override
+            public DeletedTextInterceptor createDeletedTextInterceptor(MimePath mimePath) {
+                return new RenameDeletedTextInterceptor();
             }
         }
     }

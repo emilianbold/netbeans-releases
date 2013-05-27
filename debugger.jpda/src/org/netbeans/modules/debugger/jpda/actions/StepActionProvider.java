@@ -342,7 +342,7 @@ implements Executor {
         while (i.hasNext ())
             setEnabled (
                 i.next (),
-                (debuggerState == getDebuggerImpl ().STATE_STOPPED) &&
+                (debuggerState == JPDADebugger.STATE_STOPPED) &&
                 (getDebuggerImpl ().getCurrentThread () != null)
             );
     }
@@ -423,7 +423,7 @@ implements Executor {
                     stepRequest = null;
                     removeBPListener();
                 }
-                loggerStep.fine("Further step in a synthetic location, depth = "+step);
+                loggerStep.log(Level.FINE, "Further step in a synthetic location, depth = {0}", step);
                 return true;
             }
             if (depth == 1 && "main".equals(methodName) && !"java.lang.Thread".equals(this.className) &&
@@ -462,7 +462,7 @@ implements Executor {
             } else {
                 // Assure that the action does not resume anything. Resume is done by Operator.
                 int origDepth = StepRequestWrapper.depth(sr);
-                loggerStep.fine("Issuing step "+origDepth+", due to smart-stepping.");
+                loggerStep.log(Level.FINE, "Issuing step {0}, due to smart-stepping.", origDepth);
                 if (origDepth == StepRequest.STEP_OVER) {
                     runAction(ActionsManager.ACTION_STEP_OVER, false, lock);
                     //getStepIntoActionProvider ().runAction(StepIntoActionProvider.ACTION_SMART_STEP_INTO, false);
@@ -541,7 +541,7 @@ implements Executor {
             } catch (IllegalThreadStateExceptionWrapper ex) {
                 // A bad state - ignore
             }
-            logger.fine("Incompatible Thread State: "+itsex.getLocalizedMessage());
+            logger.log(Level.FINE, "Incompatible Thread State: {0}", itsex.getLocalizedMessage());
             return 0;
         } catch (IllegalThreadStateExceptionWrapper itsex) {
             return 0;
@@ -665,7 +665,6 @@ implements Executor {
                 }
             }
         } catch (InterruptedException ex) {
-            return;
         }
     }
     

@@ -117,36 +117,36 @@ public class EditorBase extends BaseDocumentUnitTestCase {
     protected final void setDefaultsOptions(){
         // Note due to IZ#130533 the default style is changed. Hence we reset some properties.
         if (isCPP) {
-            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument()));
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBraceNamespace, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBraceClass, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP)).
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument())).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
         } else {
-            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.C));
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
+            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.C, getDocument()));
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C, getDocument())).
                 put(EditorOptions.newLineBeforeBraceNamespace, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C, getDocument())).
                 put(EditorOptions.newLineBeforeBraceClass, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
-            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C)).
+            EditorOptions.getPreferences(CodeStyle.getDefault(CodeStyle.Language.C, getDocument())).
                 put(EditorOptions.newLineBeforeBraceDeclaration, 
                 CodeStyle.BracePlacement.NEW_LINE.name());
         }
     }
     protected final void setDefaultsOptions(String style){
         if (isCPP) {
-            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP));
-            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP), style);
+            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument()));
+            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.CPP, getDocument()), style);
         } else {
-            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.C));
-            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.C), style);
+            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.C, getDocument()));
+            EditorOptions.resetToDefault(CodeStyle.getDefault(CodeStyle.Language.C, getDocument()), style);
         }
     }
 

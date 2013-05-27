@@ -49,7 +49,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JPanel;
 import org.netbeans.modules.cnd.api.toolchain.PlatformTypes;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.platform.Platform;
 import org.netbeans.modules.cnd.makeproject.platform.Platforms;
@@ -427,7 +427,7 @@ public class PackagingConfiguration implements Cloneable {
     }
     
     public String getOutputName() {
-        String outputName = CndPathUtilitities.getBaseName(getMakeConfiguration().getBaseDir());
+        String outputName = CndPathUtilities.getBaseName(getMakeConfiguration().getBaseDir());
         if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION ||
             getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DB_APPLICATION) {
             outputName = outputName.toLowerCase();
@@ -485,7 +485,7 @@ public class PackagingConfiguration implements Cloneable {
 
         @Override
         public void setValue(String v) {
-            if (CndPathUtilitities.hasMakeSpecialCharacters(v)) {
+            if (CndPathUtilities.hasMakeSpecialCharacters(v)) {
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
                 return;
             }
@@ -509,7 +509,7 @@ public class PackagingConfiguration implements Cloneable {
     
     public String expandMacros(String s) {
         s = makeConfiguration.expandMacros(s);
-        s = CndPathUtilitities.expandMacro(s, "${PACKAGE_TOP_DIR}", getTopDirValue().length() > 0 ? getTopDirValue() + "/" : ""); // NOI18N
+        s = CndPathUtilities.expandMacro(s, "${PACKAGE_TOP_DIR}", getTopDirValue().length() > 0 ? getTopDirValue() + "/" : ""); // NOI18N
         return s;
     }
     

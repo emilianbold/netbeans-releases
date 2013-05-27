@@ -73,6 +73,9 @@ import org.netbeans.modules.java.j2seproject.api.J2SEProjectPlatform;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.modules.javafx2.platform.api.JavaFxRuntimeInclusion;
+import org.netbeans.modules.javafx2.project.JavaFXProjectWizardIterator.WizardType;
+import org.netbeans.modules.javafx2.project.ui.JSEApplicationClassChooser;
+import org.netbeans.spi.project.ProjectIconAnnotator;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
@@ -86,6 +89,7 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -111,14 +115,17 @@ public final class JFXProjectUtils {
     private static Set<SearchScope> scopes = new HashSet<SearchScope>(Arrays.asList(SearchScope.SOURCE));
     
     private static final String JFX_BUILD_TEMPLATE = "Templates/JFX/jfx-impl.xml"; //NOI18N
-    private static final String CURRENT_EXTENSION = "jfx";  //NOI18N
-    private static final String[] OLD_EXTENSIONS = new String[0]; // NOI18N
+    private static final String CURRENT_EXTENSION = "jfx2";  //NOI18N
+    private static final String[] OLD_EXTENSIONS = new String[] {"jfx"}; // NOI18N
     private static final String NBPROJECT = "nbproject"; // NOI18N
     private static final String JFX_BUILD_IMPL_NAME = "jfx-impl"; // NOI18N
     private static final String JFX_BUILD_IMPL_PATH = NBPROJECT + "/" + JFX_BUILD_IMPL_NAME + ".xml";   //NOI18N
     private static volatile String currentJfxImplCRCCache;
     private static final String JFXRT_JAR_NAME = "jfxrt.jar"; // NOI18N
     private static final String JFXRT_RELATIVE_LOCATIONS[] = new String[]{"lib", "lib" + File.separatorChar + "ext"}; // NOI18N
+    // from J2SEDeployProperties
+    private static final String J2SEDEPLOY_EXTENSION = "j2sedeploy";    //NOI18N
+    private static final String EXTENSION_BUILD_SCRIPT_PATH = "nbproject/build-native.xml";        //NOI18N
 
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
     
@@ -544,6 +551,195 @@ public final class JFXProjectUtils {
     }
 
     /**
+     * Initialize project properties for JavaFX Application project type
+     * @param ep
+     * @param type
+     * @param platformName
+     * @param mainClass
+     * @param preloader
+     * @throws MissingResourceException 
+     */
+    static void initializeJavaFXProperties(@NonNull EditableProperties ep, @NonNull WizardType type, String targetPlatformName, @NonNull String mainClass, String preloader) throws MissingResourceException {
+        ep.setProperty(JFXProjectProperties.JAVAFX_ENABLED, "true");
+        ep.setComment(JFXProjectProperties.JAVAFX_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_javafx")}, false);
+        ep.setProperty("jnlp.enabled", "false");
+        ep.setComment("jnlp.enabled", new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_oldjnlp")}, false);
+        ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true");
+        ep.setProperty(ProjectProperties.COMPILE_ON_SAVE_UNSUPPORTED_PREFIX + ".javafx", "true");
+        ep.setProperty(JFXProjectProperties.JAVAFX_BINARY_ENCODE_CSS, "false");
+        ep.setProperty(JFXProjectProperties.JAVAFX_DEPLOY_INCLUDEDT, "true");
+        ep.setProperty(JFXProjectProperties.JAVAFX_DEPLOY_EMBEDJNLP, "true");
+        ep.setProperty(JFXProjectProperties.JAVAFX_REBASE_LIBS, "false");
+        ep.setComment(JFXProjectProperties.JAVAFX_REBASE_LIBS, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_rebase_libs")}, false);
+        ep.setProperty(JFXProjectProperties.JAVAFX_DISABLE_CONCURRENT_RUNS, "false");
+        ep.setComment(JFXProjectProperties.JAVAFX_DISABLE_CONCURRENT_RUNS, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_disable_concurrent_runs")}, false);
+        ep.setProperty(JFXProjectProperties.JAVAFX_ENABLE_CONCURRENT_EXTERNAL_RUNS, "false");
+        ep.setComment(JFXProjectProperties.JAVAFX_ENABLE_CONCURRENT_EXTERNAL_RUNS, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_enable_concurrent_external_runs")}, false);
+        ep.setProperty(JFXProjectProperties.UPDATE_MODE_BACKGROUND, "false");
+        ep.setComment(JFXProjectProperties.UPDATE_MODE_BACKGROUND, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, type == WizardType.SWING ? "COMMENT_updatemode_swing" : "COMMENT_updatemode")}, false);
+        ep.setProperty(JFXProjectProperties.ALLOW_OFFLINE, "true");
+        if(targetPlatformName == null) {
+            targetPlatformName = ep.getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
+        }
+        Collection<String> extensions = JavaFxRuntimeInclusion.getProjectClassPathExtension(JavaFXPlatformUtils.findJavaPlatform(targetPlatformName));
+        if (extensions != null && !extensions.isEmpty()) {
+            ep.setProperty(JavaFXPlatformUtils.JAVAFX_CLASSPATH_EXTENSION, JFXProjectUtils.getPaths(extensions));
+            ep.setProperty(ProjectProperties.JAVAC_CLASSPATH, new String[]{JavaFXPlatformUtils.getClassPathExtensionProperty()});
+        }
+        ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, "");
+        ep.setProperty(JFXProjectProperties.RUN_APP_WIDTH, "800");
+        ep.setProperty(JFXProjectProperties.RUN_APP_HEIGHT, "600");
+        if (type == WizardType.PRELOADER) {
+            ep.setProperty(JFXProjectProperties.JAVAFX_PRELOADER, "true");
+            ep.setComment(JFXProjectProperties.JAVAFX_PRELOADER, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_preloader")}, false);
+            ep.setProperty(JFXProjectProperties.PRELOADER_ENABLED, "false");
+            ep.setComment(JFXProjectProperties.PRELOADER_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_prepreloader")}, false);
+        } else {
+            ep.setProperty("jar.archive.disabled", "true");
+            ep.setComment("jar.archive.disabled", new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_oldjar")}, false);
+            ep.setProperty(ProjectProperties.MAIN_CLASS, type == WizardType.SWING ? (mainClass == null ? "" : mainClass) : "com.javafx.main.Main");
+            ep.setComment(ProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_main.class")}, false);
+            if (type != WizardType.LIBRARY) {
+                ep.setProperty(JFXProjectProperties.MAIN_CLASS, mainClass == null ? "" : mainClass);
+                ep.setComment(JFXProjectProperties.MAIN_CLASS, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_main.fxclass")}, false);
+            }
+            if (preloader != null && preloader.length() > 0) {
+                String preloaderProjRelative = "../" + preloader;
+                String preloaderJarFileName = preloader + ".jar";
+                String copiedPreloaderJarPath = "${dist.dir}/lib/${" + JFXProjectProperties.PRELOADER_JAR_FILENAME + "}";
+                ep.setProperty(JFXProjectProperties.PRELOADER_ENABLED, "true");
+                ep.setProperty(JFXProjectProperties.PRELOADER_TYPE, JFXProjectProperties.PreloaderSourceType.PROJECT.getString());
+                ep.setComment(JFXProjectProperties.PRELOADER_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_use_preloader")}, false);
+                ep.setProperty(JFXProjectProperties.PRELOADER_PROJECT, preloaderProjRelative);
+                ep.setProperty(JFXProjectProperties.PRELOADER_CLASS, JavaFXProjectWizardIterator.generatePreloaderClassName(preloader));
+                ep.setProperty(JFXProjectProperties.PRELOADER_JAR_PATH, copiedPreloaderJarPath);
+                ep.setProperty(JFXProjectProperties.PRELOADER_JAR_FILENAME, preloaderJarFileName);
+            } else {
+                ep.setProperty(JFXProjectProperties.PRELOADER_ENABLED, "false");
+                ep.setProperty(JFXProjectProperties.PRELOADER_TYPE, JFXProjectProperties.PreloaderSourceType.NONE.getString());
+                ep.setComment(JFXProjectProperties.PRELOADER_ENABLED, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_dontuse_preloader")}, false);
+                ep.setProperty(JFXProjectProperties.PRELOADER_PROJECT, "");
+                ep.setProperty(JFXProjectProperties.PRELOADER_CLASS, "");
+                ep.setProperty(JFXProjectProperties.PRELOADER_JAR_PATH, "");
+                ep.setProperty(JFXProjectProperties.PRELOADER_JAR_FILENAME, "");
+            }
+            if (type == WizardType.SWING) {
+                ep.setProperty(JFXProjectProperties.JAVAFX_SWING, "true");
+                ep.setComment(JFXProjectProperties.JAVAFX_SWING, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_use_swing")}, false);
+            }
+            if (type == WizardType.FXML || type == WizardType.SWING) {
+                ep.setProperty(JFXProjectProperties.JAVAFX_SIGNING_ENABLED, "true");
+                ep.setProperty(JFXProjectProperties.JAVAFX_SIGNING_TYPE, JFXProjectProperties.SigningType.SELF.getString());
+                ep.setProperty(JFXProjectProperties.PERMISSIONS_ELEVATED, "true");
+            }
+        }
+        ep.setProperty(JFXProjectProperties.IMPLEMENTATION_VERSION, JFXProjectProperties.IMPLEMENTATION_VERSION_DEFAULT);
+        ep.setProperty(JFXProjectProperties.FALLBACK_CLASS, "com.javafx.main.NoJavaFXFallback");
+        // SE->FX conversion cleanup
+        ep.remove(JFXProjectProperties.JAVASE_KEEP_JFXRT_ON_CLASSPATH);
+    }
+
+    /**
+     * Modify project.properties file to contain all javafx relevant properties with initial values
+     * @param project
+     * @throws IOException 
+     */
+    public static void resetJavaFXProjectProperties(@NonNull final Project project, @NonNull final WizardType type, final String targetPlatformName, @NonNull final String mainClass, final String preloader) throws IOException {
+        final EditableProperties ep = new EditableProperties(true);
+        final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    final Lookup lookup = project.getLookup();
+                    final J2SEPropertyEvaluator eval = lookup.lookup(J2SEPropertyEvaluator.class);
+                    String platformNameToCheck = null;
+                    if (eval != null) {
+                        String currentPlatformName = eval.evaluator().getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
+                        platformNameToCheck = currentPlatformName;
+                        JavaPlatform platform = null;
+                        if(targetPlatformName == null) {
+                            platform = JavaFXPlatformUtils.findJavaPlatform(currentPlatformName);
+                        } else {
+                            platform = JavaFXPlatformUtils.findJavaPlatform(targetPlatformName);
+                        }
+                        if(platform == null || !JavaFXPlatformUtils.isJavaFXEnabled(platform)) {
+                            platform = JavaFXPlatformUtils.findJavaFXPlatform();
+                        }
+                        if(platform != null && !JFXProjectProperties.isEqual(currentPlatformName, JavaFXPlatformUtils.getPlatformAntName(platform))) {
+                            final J2SEProjectPlatform platformSetter = lookup.lookup(J2SEProjectPlatform.class);
+                            if(platformSetter != null) {
+                                platformSetter.setProjectPlatform(platform);
+                                platformNameToCheck = JavaFXPlatformUtils.getPlatformAntName(platform);
+                            }
+                        }
+                    }
+                    final InputStream is = projPropsFO.getInputStream();
+                    try {
+                        ep.load(is);
+                    } finally {
+                        if (is != null) {
+                            is.close();
+                        }
+                    }
+                    initializeJavaFXProperties(ep, type, platformNameToCheck, mainClass, preloader);
+                    OutputStream os = null;
+                    FileLock lock = null;
+                    try {
+                        lock = projPropsFO.lock();
+                        os = projPropsFO.getOutputStream(lock);
+                        ep.store(os);
+                    } finally {
+                        if (os != null) {
+                            os.close();
+                        }
+                        if (lock != null) {
+                            lock.releaseLock();
+                        }
+                    }
+                    return null;
+                }
+            });
+        } catch (MutexException mux) {
+            throw (IOException) mux.getException();
+        }
+    }
+
+    /**
+     * Adds FX specific build script jfx-impl.xml to project build system
+     * @param p
+     * @param dirFO
+     * @param type
+     * @throws IOException 
+     */
+    static void createJfxExtension(Project p, FileObject dirFO, WizardType type) throws IOException {
+        FileObject templateFO = FileUtil.getConfigFile("Templates/JFX/jfx-impl.xml");
+        if (templateFO != null) {
+            FileObject nbprojectFO = dirFO.getFileObject("nbproject");
+            FileObject jfxBuildFile = FileUtil.copyFile(templateFO, nbprojectFO, "jfx-impl");
+            if (type == JavaFXProjectWizardIterator.WizardType.SWING) {
+                FileObject templatesFO = nbprojectFO.getFileObject("templates");
+                if (templatesFO == null) {
+                    templatesFO = nbprojectFO.createFolder("templates");
+                }
+                FileObject swingTemplateFO1 = FileUtil.getConfigFile("Templates/JFX/FXSwingTemplate.html");
+                if (swingTemplateFO1 != null) {
+                    FileUtil.copyFile(swingTemplateFO1, templatesFO, "FXSwingTemplate");
+                }
+                FileObject swingTemplateFO2 = FileUtil.getConfigFile("Templates/JFX/FXSwingTemplateApplet.jnlp");
+                if (swingTemplateFO1 != null) {
+                    FileUtil.copyFile(swingTemplateFO2, templatesFO, "FXSwingTemplateApplet");
+                }
+                FileObject swingTemplateFO3 = FileUtil.getConfigFile("Templates/JFX/FXSwingTemplateApplication.jnlp");
+                if (swingTemplateFO1 != null) {
+                    FileUtil.copyFile(swingTemplateFO3, templatesFO, "FXSwingTemplateApplication");
+                }
+            }
+            JFXProjectUtils.addExtension(p);
+        }
+    }
+
+    /**
      * Adds dependencies of build-impl targets on jfx-impl targets
      * @param proj
      * @return true if success
@@ -560,14 +756,8 @@ public final class JFXProjectUtils {
                 AntBuildExtender.Extension ext = extender.addExtension(CURRENT_EXTENSION, jfxBuildFile); // NOI18N
                 // NOTE: change in dependencies = change of metafile updates API;
                 //       do not forget to update CURRENT_EXTENSION and add the old one to OLD_EXTENSIONS
-                // TODO: remove
-                ext.addDependency("-init-check", "-check-javafx"); // NOI18N
                 ext.addDependency("jar", "-jfx-copylibs"); // NOI18N
                 ext.addDependency("jar", "-rebase-libs"); //NOI18N
-                // TODO: remove
-                ext.addDependency("-post-jar", "-jfx-copylibs"); //NOI18N
-                // TODO: remove
-                ext.addDependency("-post-jar", "-rebase-libs"); //NOI18N
                 ext.addDependency("-post-jar", "jfx-deployment"); //NOI18N 
                 ext.addDependency("run", "jar"); //NOI18N
                 ext.addDependency("debug", "jar");//NOI18N
@@ -578,6 +768,77 @@ public final class JFXProjectUtils {
         return res;
     }
 
+    /**
+     * Remove SE native packaging extension and build script
+     * @param project 
+     */
+    static void removeSENativeBundlerExtension(@NonNull Project project) throws IOException {
+        final AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
+        if (extender != null) {
+            AntBuildExtender.Extension extension = extender.getExtension(J2SEDEPLOY_EXTENSION);
+            if (extension != null) {
+                extender.removeExtension(J2SEDEPLOY_EXTENSION);
+            }
+            final FileObject buildExFo = project.getProjectDirectory().getFileObject(EXTENSION_BUILD_SCRIPT_PATH);
+            if (buildExFo != null) {
+                buildExFo.delete();
+            }
+        }
+    }
+    
+    /**
+     * Modify Java Application (SE) project to become JavaFX Application, i.e.,
+     * set Application class, create FX build scripts, modify properties,
+     * and turn on FX mode by setting property javafx.enabled=true;
+     * @param project
+     * @throws IOException 
+     */
+    public static void switchProjectToFX(@NonNull final Project project, @NonNull final JSEApplicationClassChooser chooser) throws IOException {
+        final FileObject dirFO = project.getProjectDirectory();
+        dirFO.getFileSystem().runAtomicAction(new FileSystem.AtomicAction() {
+            @Override
+            public void run() throws IOException {
+                removeSENativeBundlerExtension(project);
+                createJfxExtension(project, dirFO, WizardType.APPLICATION);
+                ProjectManager.getDefault().saveProject(project);
+                updateJFXExtension(project);
+                
+                //set main class
+                String appClass = chooser.getSelectedExistingClass();
+                if(appClass == null) {
+                    FileObject dirController = chooser.getCurrentPackageFolder(true);
+                    DataFolder packageDataFolder = DataFolder.findFolder(dirController);
+                    String newClassName = chooser.getCurrentFileName();
+                    if (packageDataFolder != null) {
+                        FileObject javaTemplate = FileUtil.getConfigFile("Templates/javafx/FXMain.java"); // NOI18N
+                        DataObject dJavaTemplate = DataObject.find(javaTemplate);
+                        DataObject dobj = dJavaTemplate.createFromTemplate(packageDataFolder, newClassName);
+                    }
+                    appClass = chooser.getPackageName() + "." + newClassName; // NOI18N
+                }
+                resetJavaFXProjectProperties(project, WizardType.APPLICATION, null, appClass, null); // NOI18N
+                
+                for (ProjectIconAnnotator annotator : Lookup.getDefault().lookupAll(ProjectIconAnnotator.class)) {
+                    if(annotator instanceof JFXProjectIconAnnotator) {
+                        JFXProjectIconAnnotator fxAnnotator = (JFXProjectIconAnnotator) annotator;
+                        fxAnnotator.fireChange(project, true);
+                    }
+                }
+            }
+        });
+        final String headerTemplate = NbBundle.getMessage(JFXProjectUtils.class, "TXT_SWITCHED_SE_TO_FX_HEADER"); //NOI18N
+        final String header = MessageFormat.format(headerTemplate, new Object[] {ProjectUtils.getInformation(project).getDisplayName()});
+        final String content = NbBundle.getMessage(JFXProjectUtils.class, "TXT_SWITCHED_SE_TO_FX_CONTENT"); //NOI18N
+        Notification notePlatformChange = NotificationDisplayer.getDefault().notify(
+                header, 
+                ImageUtilities.loadImageIcon("org/netbeans/modules/javafx2/project/ui/resources/jfx_project.png", true), //NOI18N
+                content, 
+                null, 
+                NotificationDisplayer.Priority.LOW, 
+                NotificationDisplayer.Category.INFO);
+        JFXProjectOpenedHook.addNotification(project, notePlatformChange);
+    }
+    
     /**
      * Update dependencies of build-impl targets on jfx-impl targets
      * @param project
@@ -1180,7 +1441,7 @@ public final class JFXProjectUtils {
         assert sharedCfgProps != null;
         if(sharedCfgProps.isEmpty()) {
             sharedCfgProps.setProperty("$label", configName); // NOI18N
-            sharedCfgProps.setComment("$label", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_run_as_defaults")}, false); // NOI18N
+            sharedCfgProps.setComment("$label", new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_run_as_defaults")}, false); // NOI18N
             saveToFile(projDir, sharedPath, sharedCfgProps);
             updated = true;
         }
@@ -1191,9 +1452,9 @@ public final class JFXProjectUtils {
         assert privateCfgProps != null;
         if(privateCfgProps.isEmpty() || setBrowserProps) {
             privateCfgProps.setProperty("$label", configName); // NOI18N
-            privateCfgProps.setComment("$label", new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_run_as_defaults")}, false); // NOI18N
+            privateCfgProps.setComment("$label", new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_run_as_defaults")}, false); // NOI18N
             privateCfgProps.setProperty(JFXProjectProperties.RUN_AS, runAs.getString());
-            privateCfgProps.setComment(JFXProjectProperties.RUN_AS, new String[]{"# " + NbBundle.getMessage(JFXProjectGenerator.class, "COMMENT_run_as_defaults")}, false); // NOI18N
+            privateCfgProps.setComment(JFXProjectProperties.RUN_AS, new String[]{"# " + NbBundle.getMessage(JFXProjectUtils.class, "COMMENT_run_as_defaults")}, false); // NOI18N
             if(setBrowserProps) {
                 Map<String,String> browserInfo = getDefaultBrowserInfo();
                 if(browserInfo != null && !browserInfo.isEmpty()) {
@@ -1386,5 +1647,5 @@ public final class JFXProjectUtils {
             }
         }
     }
-
+    
 }

@@ -1886,6 +1886,13 @@
                             }
                         }
                     }
+                    var profileAvailable = new String(project.getProperty("profile.available"));
+                    if (defined(profileAvailable)) {
+                        var profileAttribute = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
+                        profileAttribute.setName("Profile");
+                        profileAttribute.setValue(new String(project.getProperty("javac.profile")));
+                        man.addConfiguredAttribute(profileAttribute);
+                    }
                     
                     jar.perform();
                 ]]>
@@ -3361,6 +3368,15 @@
     <target name="jfx-build-native" depends="-set-do-build-native-package, -check-ant-jre-supports-native-packaging, -check-native-packager-external-tools, jfx-rebuild"/>
     <target name="jfx-build-native-noscript" depends="-set-do-build-native-package, -check-ant-jre-supports-native-packaging, -check-native-packager-external-tools, jfx-rebuild-noscript"/>
 
+    <target name="build-native">
+        <property name="javafx.native.bundling.type" value="${native.bundling.type}"/>
+        <antcall target="jfx-build-native"/>
+    </target>
+    <target name="build-native-noscript">
+        <property name="javafx.native.bundling.type" value="${native.bundling.type}"/>
+        <antcall target="jfx-build-native-noscript"/>
+    </target>
+    
     <target name="-check-do-jar">
         <condition property="do-jar-false">
             <and>

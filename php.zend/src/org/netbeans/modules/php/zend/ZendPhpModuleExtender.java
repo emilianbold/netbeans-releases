@@ -95,7 +95,7 @@ public class ZendPhpModuleExtender extends PhpModuleExtender {
         }
 
         // return files
-        Set<FileObject> files = new HashSet<FileObject>();
+        Set<FileObject> files = new HashSet<>();
         FileObject appConfig = sourceDirectory.getFileObject("application/configs/application.ini"); // NOI18N
         if (appConfig != null) {
             files.add(appConfig);

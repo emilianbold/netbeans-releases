@@ -355,12 +355,7 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
                 urlLabel.setText(url);
                 urlLabel.setVisible(true);
                 replace(noDomLabel, treeView);
-                RP.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        expandNodes();
-                    }
-                });
+                expandNodes();
             }
         } finally {
             updatingView = false;

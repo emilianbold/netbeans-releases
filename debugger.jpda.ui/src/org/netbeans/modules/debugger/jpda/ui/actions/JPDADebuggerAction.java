@@ -68,6 +68,7 @@ PropertyChangeListener {
         debugger.addPropertyChangeListener (debugger.PROP_STATE, this);
     }
     
+    @Override
     public void propertyChange (PropertyChangeEvent evt) {
         try {
             checkEnabled (debugger.getState ());
@@ -96,9 +97,11 @@ PropertyChangeListener {
     protected final void checkEnabledLazySingleAction(final int debuggerState, RequestProcessor rp) {
         canApplyLazyEnabled = true;
         rp.post(new Runnable() {
+            @Override
             public void run() {
                 final boolean enabled = checkEnabledLazyImpl(debuggerState);
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         if (canApplyLazyEnabled) {
                             setEnabledSingleAction(enabled);

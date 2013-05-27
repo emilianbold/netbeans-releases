@@ -118,7 +118,7 @@ public final class NewFileWizardIterator implements WizardDescriptor.Instantiati
     }
 
     private Map<String, Object> getTemplateParams() {
-        Map<String, Object> params = new HashMap<String, Object>();
+        Map<String, Object> params = new HashMap<>();
         params.put(CreateFromTemplateHandler.FREE_FILE_EXTENSION, true);
         params.put("namespace", wizard.getProperty(NewFileNamespacePanel.NAMESPACE)); // NOI18N
         return params;

@@ -47,9 +47,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
@@ -111,7 +113,12 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
         } else if (acceptEmptySelection && branches.isEmpty()) {
             setValid(true, new Message(NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchBranchesPanel.errorNoBranch"), true)); //NOI18N
         } else {
-            setValid(true, null);
+            String msgDeletedBranches = getDeletedBranchesMessage(branches.getSelectedBranches());
+            if (msgDeletedBranches == null) {
+                setValid(true, null);
+            } else {
+                setValid(true, new Message(msgDeletedBranches, true));
+            }
         }
     }
 
@@ -165,10 +172,20 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
 
     private void fillRemoteBranches (Map<String, GitBranch> branches, Map<String, GitBranch> localBranches) {
         List<BranchMapping> l = new ArrayList<BranchMapping>(branches.size());
+        Set<String> displayedBranches = new HashSet<String>(localBranches.size());
         for (GitBranch branch : branches.values()) {
-            GitBranch localBranch = localBranches.get(remote.getRemoteName() + "/" + branch.getName());
+            String branchName = remote.getRemoteName() + "/" + branch.getName();
+            displayedBranches.add(branchName);
+            GitBranch localBranch = localBranches.get(branchName);
             boolean preselected = localBranch != null && !localBranch.getId().equals(branch.getId());
             l.add(new BranchMapping(branch.getName(), branch.getId(), localBranch, remote, preselected));
+        }
+        for (GitBranch branch : localBranches.values()) {
+            if (branch.isRemote() && !displayedBranches.contains(branch.getName())
+                    && branch.getName().startsWith(remote.getRemoteName() + "/")) {
+                // about to be deleted
+                l.add(new BranchMapping(null, null, branch, remote, false));
+            }
         }
         this.branches.setBranches(l);
         validateBeforeNext();
@@ -225,6 +242,24 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
                     supp.start(Git.getInstance().getRequestProcessor(tempRepository), tempRepository, NbBundle.getMessage(FetchBranchesStep.class, "MSG_FetchBranchesPanel.loadingBranches")); //NOI18N
                 }
             });
+        }
+    }
+    
+    @NbBundle.Messages({
+        "# {0} - branch name", "MSG_FetchBranchesStep.toBeDeletedBranch=Branch {0} will be permanently removed."
+    })
+    static String getDeletedBranchesMessage (List<BranchMapping> selectedBranches) {
+        StringBuilder sb = new StringBuilder(100);
+        for (BranchMapping m : selectedBranches) {
+            if (m.isDeletion()) {
+                sb.append(Bundle.MSG_FetchBranchesStep_toBeDeletedBranch(m.getLocalBranch().getName())).append("<br>");
+            }
+        }
+        if (sb.length() == 0) {
+            return null;
+        } else {
+            sb.delete(sb.length() - 4, sb.length());
+            return sb.toString();
         }
     }
 

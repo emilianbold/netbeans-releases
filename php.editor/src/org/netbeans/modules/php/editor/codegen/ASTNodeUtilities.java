@@ -72,7 +72,7 @@ public final class ASTNodeUtilities {
         Collections.reverse(path);
         SemiAttribute attr = SemiAttribute.semiAttribute(info);
         boolean ignoreGlobalScope = false;
-        final Set<String> result = new HashSet<String>();
+        final Set<String> result = new HashSet<>();
         for (ASTNode node : path) {
             if (node instanceof FunctionDeclaration) {
                 ignoreGlobalScope = true;

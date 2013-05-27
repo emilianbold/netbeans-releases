@@ -51,6 +51,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.support.ui.CertPassphraseDlg;
 import org.netbeans.modules.nativeexecution.support.ui.PasswordDlg;
+import org.netbeans.modules.nativeexecution.support.ui.PromptPasswordDialog;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
@@ -62,15 +63,13 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     private final Component parent;
     private final ExecutionEnvironment env;
     private volatile Component parentWindow = null;
-    private String passphrase = null;
-    private volatile char[] password = null;
     private final boolean allowInterraction;
+    private char[] secret = null;
 
     public RemoteUserInfo(ExecutionEnvironment env, boolean allowToAskForPassword) {
         this.env = env;
         this.allowInterraction = allowToAskForPassword;
         Mutex.EVENT.readAccess(new Runnable() {
-
             @Override
             public void run() {
                 parentWindow = WindowManager.getDefault().getMainWindow();
@@ -81,30 +80,40 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
     @Override
     public String getPassphrase() {
-        String result = passphrase;
-        // Never store passphrase in memory
-        // Only for short a period. Between prompt and following get.
-        passphrase = null;
-        return result;
+        return getSecret();
     }
 
     @Override
     public String getPassword() {
-        char[] saved = pm.getPassword(env);
-        if (saved != null) {
-            return new String(saved);
-        }
+        return getSecret();
+    }
 
-        String result = new String(password);
-        // Never store password in memory
-        // Only for short a period. Between prompt and following get.
-        Arrays.fill(password, 'x');
-        password = null;
+    public String getSecret() {
+        String result = null;
+        synchronized (lock) {
+            char[] saved = pm.getPassword(env);
+            if (saved != null) {
+                result = new String(saved);
+            } else if (secret != null) {
+                result = new String(secret);
+                Arrays.fill(secret, 'x');
+                secret = null;
+            }
+        }
         return result;
     }
 
     @Override
     public boolean promptPassword(String message) {
+        return promptSecret(SecretType.PASSWORD, message);
+    }
+
+    @Override
+    public boolean promptPassphrase(String message) {
+        return promptSecret(SecretType.PASSPHRASE, message);
+    }
+
+    private boolean promptSecret(SecretType secretType, String message) {
         synchronized (lock) {
             if (pm.getPassword(env) != null) {
                 return true;
@@ -114,46 +123,28 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                 return false;
             }
 
-            boolean result;
-
-            PasswordDlg pwdDlg = new PasswordDlg();
-
-            synchronized (lock) {
-                result = pwdDlg.askPassword(env);
+            PromptPasswordDialog dlg;
+            switch (secretType) {
+                case PASSWORD:
+                    dlg = new PasswordDlg();
+                    break;
+                case PASSPHRASE:
+                    dlg = new CertPassphraseDlg();
+                    break;
+                default:
+                    throw new InternalError("Wrong secret type"); // NOI18N
             }
 
-            if (result) {
-                password = pwdDlg.getPassword();
-                pm.storePassword(env, password, pwdDlg.isRememberPassword());
-                pwdDlg.clearPassword();
-                return true;
-            } else {
+            if (!dlg.askPassword(env, message)) {
                 throw new CancellationException(loc("USER_AUTH_CANCELED")); // NOI18N
             }
-        }
-    }
 
-    @Override
-    public boolean promptPassphrase(String arg0) {
-        if (!allowInterraction) {
-            return false;
+            secret = dlg.getPassword();
+            pm.storePassword(env, secret, dlg.isRememberPassword());
+            dlg.clearPassword();
         }
 
-        synchronized (lock) {
-            boolean result;
-
-            CertPassphraseDlg pwdDlg = new CertPassphraseDlg();
-
-            result = pwdDlg.askPassword(env, arg0);
-
-            if (result) {
-                passphrase = new String(pwdDlg.getPassword());
-                pwdDlg.clearPassword();
-                return true;
-            } else {
-                throw new CancellationException(loc("USER_AUTH_CANCELED")); // NOI18N
-            }
-        }
+        return true;
     }
 
     @Override
@@ -206,5 +197,11 @@ final public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
 
     private static String loc(String key, String... params) {
         return NbBundle.getMessage(RemoteUserInfo.class, key, params);
+    }
+
+    private static enum SecretType {
+
+        PASSWORD,
+        PASSPHRASE
     }
 }

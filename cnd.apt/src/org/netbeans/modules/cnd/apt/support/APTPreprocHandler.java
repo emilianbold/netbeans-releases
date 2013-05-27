@@ -76,6 +76,10 @@ public interface APTPreprocHandler {
          * check whether state is valid
          */
         public boolean isValid();
+        
+        public CharSequence getLanguage();
+
+        public CharSequence getLanguageFlavor();
     };   
     
     public APTMacroMap getMacroMap();
@@ -83,4 +87,6 @@ public interface APTPreprocHandler {
     
     public boolean isCompileContext();
     public boolean isValid();
+    public CharSequence getLanguage();
+    public CharSequence getLanguageFlavor();
 }

@@ -55,15 +55,12 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.hudson.api.HudsonJob;
 import org.netbeans.modules.hudson.api.HudsonJobBuild;
 import org.netbeans.modules.hudson.api.HudsonView;
+import org.netbeans.modules.hudson.api.ui.OpenableInBrowser;
 import static org.netbeans.modules.hudson.constants.HudsonJobConstants.*;
 import static org.netbeans.modules.hudson.impl.Bundle.*;
 import org.netbeans.modules.hudson.spi.BuilderConnector;
-import org.netbeans.modules.hudson.ui.interfaces.OpenableInBrowser;
 import org.netbeans.modules.hudson.util.HudsonPropertiesSupport;
 import org.openide.filesystems.FileSystem;
-import org.openide.nodes.Node;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.Utilities;
 
@@ -80,8 +77,6 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
     
     private HudsonInstanceImpl instance;
     
-    private Sheet.Set set;
-
     HudsonJobImpl(HudsonInstanceImpl instance) {
         this.instance = instance;
     }
@@ -160,47 +155,6 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
             handle.finish();
         }
         instance.synchronize(false);
-    }
-
-    @Messages({
-        "TXT_Job_Prop_Name=Name",
-        "DESC_Job_Prop_Name=Hudson's job name",
-        "TXT_Job_Prop_Url=URL",
-        "DESC_Job_Prop_Url=Hudson's job URL",
-        "HudsonJobImpl.watched=Watched",
-        "HudsonJobImpl.watched_desc=Whether you wish to be notified of failures in this job."
-    })
-    public Sheet.Set getSheetSet() {
-        if (null == set) {
-            set = Sheet.createPropertiesSet();
-            
-            // Set display name
-            set.setDisplayName(getDisplayName());
-            
-            // Put properties in
-            set.put(new Node.Property<?>[] {
-                new HudsonJobProperty(JOB_NAME,
-                        TXT_Job_Prop_Name(),
-                        DESC_Job_Prop_Name()),
-                new HudsonJobProperty(JOB_URL,
-                        TXT_Job_Prop_Url(),
-                        DESC_Job_Prop_Url()),
-                new PropertySupport.ReadWrite<Boolean>("salient", Boolean.TYPE, // NOI18N
-                        HudsonJobImpl_watched(),
-                        HudsonJobImpl_watched_desc()) {
-                    @Override public Boolean getValue() {
-                        return isSalient();
-                    }
-                    @Override public void setValue(Boolean val) {
-                        if (!getValue().equals(val)) {
-                            setSalient(val);
-                        }
-                    }
-                }
-            });
-        }
-        
-        return set;
     }
 
     @Override public FileSystem getRemoteWorkspace() {
@@ -325,15 +279,6 @@ public class HudsonJobImpl implements HudsonJob, OpenableInBrowser {
         }
         public @Override String toString() {
             return url;
-        }
-    }
-
-    private class HudsonJobProperty extends PropertySupport.ReadOnly<String> {
-        HudsonJobProperty(String key, String name, String desc) {
-            super(key, String.class, name, desc);
-        }
-        public @Override String getValue() {
-            return properties.getProperty(super.getName(), String.class);
         }
     }
 }

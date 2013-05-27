@@ -129,11 +129,15 @@ public interface ElementFactory {
     
     public MediaExpression createMediaExpression();
     
-    public MediaExpression createMediaExpression(MediaFeature mediaFeature, Expression expression);
+    public MediaExpression createMediaExpression(MediaFeature mediaFeature, MediaFeatureValue mediaFeatureValue);
     
     public MediaFeature createMediaFeature();
     
     public MediaFeature createMediaFeature(CharSequence text);
+    
+    public MediaFeatureValue createMediaFeatureValue();
+    
+    public MediaFeatureValue createMediaFeatureValue(Expression expression);
     
     public MediaType createMediaType();
     
@@ -141,9 +145,13 @@ public interface ElementFactory {
     
     public Media createMedia();
     
-    public Media createMedia(MediaQueryList mediaQueryList, Rule... rule);
+    public Media createMedia(MediaQueryList mediaQueryList, MediaBody body);
     
-    public Media createMedia(MediaQueryList mediaQueryList, Page... page);
+    public MediaBody createMediaBody();
+    
+    public MediaBody createMediaBody(Rule... rule);
+    
+    public MediaBody createMediaBody(Page... page);
     
     public Page createPage();
     

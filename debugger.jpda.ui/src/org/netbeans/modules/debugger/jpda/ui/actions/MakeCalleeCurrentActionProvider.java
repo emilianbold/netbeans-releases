@@ -46,11 +46,8 @@ package org.netbeans.modules.debugger.jpda.ui.actions;
 
 import java.util.Collections;
 import java.util.Set;
-import javax.swing.SwingUtilities;
+
 import org.netbeans.api.debugger.ActionsManager;
-
-
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
@@ -77,10 +74,12 @@ public class MakeCalleeCurrentActionProvider extends JPDADebuggerAction {
             (JPDADebugger.PROP_CURRENT_CALL_STACK_FRAME, this);
     }
     
+    @Override
     public Set getActions () {
         return Collections.singleton (ActionsManager.ACTION_MAKE_CALLEE_CURRENT);
     }
 
+    @Override
     public void doAction (Object action) {
         JPDAThread t = getDebuggerImpl ().getCurrentThread ();
         if (t == null) return;
@@ -91,8 +90,9 @@ public class MakeCalleeCurrentActionProvider extends JPDADebuggerAction {
             (getDebuggerImpl (), --i);
     }
     
+    @Override
     protected void checkEnabled (int debuggerState) {
-        if (debuggerState == getDebuggerImpl ().STATE_STOPPED) {
+        if (debuggerState == JPDADebugger.STATE_STOPPED) {
             JPDAThread t = getDebuggerImpl ().getCurrentThread ();
             if (t != null) {
                 checkEnabledLazySingleAction(debuggerState, rp);
