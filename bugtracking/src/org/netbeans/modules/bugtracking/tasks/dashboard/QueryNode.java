@@ -42,6 +42,10 @@
 package org.netbeans.modules.bugtracking.tasks.dashboard;
 
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -150,8 +154,9 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             TreeLabel lbl = new TreeLabel("("); //NOI18N
             labels.add(lbl);
             panel.add(lbl, new GridBagConstraints(2, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 4, 0, 0), 0, 0));
-
-            btnTotal = new LinkButton(getTotalString(), new OpenQueryAction(this));
+            
+            ExpandAction expandAction = new ExpandAction();
+            btnTotal = new LinkButton(getTotalString(), false, expandAction);
             panel.add(btnTotal, new GridBagConstraints(3, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
             buttons.add(btnTotal);
 
@@ -161,7 +166,7 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
             panel.add(lblSeparator, new GridBagConstraints(4, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 2, 0, 2), 0, 0));
             labels.add(lblSeparator);
 
-            btnChanged = new LinkButton(getChangedString(), new OpenQueryAction(QueryController.QueryMode.SHOW_NEW_OR_CHANGED, this)); //NOI18N
+            btnChanged = new LinkButton(getChangedString(), false, expandAction);
             btnChanged.setVisible(showChanged);
             panel.add(btnChanged, new GridBagConstraints(5, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
             buttons.add(btnChanged);
@@ -256,6 +261,13 @@ public class QueryNode extends TaskContainerNode implements Comparable<QueryNode
                     }
                 });
             }
+        }
+    }
+    
+    private class ExpandAction extends AbstractAction {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            setExpanded(!isExpanded());
         }
     }
 }
