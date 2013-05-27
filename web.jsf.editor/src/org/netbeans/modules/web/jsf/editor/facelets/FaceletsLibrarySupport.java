@@ -114,6 +114,7 @@ public class FaceletsLibrarySupport {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    LOGGER.info("Invalidating facelets libraries due to changes in web.xml deployment descriptor."); //NOI18N
                     invalidateLibrariesCache();
                 }
             });
