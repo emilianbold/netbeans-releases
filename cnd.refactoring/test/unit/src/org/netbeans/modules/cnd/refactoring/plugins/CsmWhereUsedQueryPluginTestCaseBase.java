@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.refactoring.test.RefactoringBaseTestCase;
 import org.netbeans.modules.cnd.test.CndCoreTestUtils;
 import org.netbeans.modules.refactoring.spi.FiltersManager;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
+import org.netbeans.modules.refactoring.spi.ui.FiltersDescription;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
@@ -103,23 +104,28 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
         assertNotNull(ref);
         CsmObject targetObject = ref.getReferencedObject();
         assertNotNull(targetObject);
-        Collection<RefactoringElementImplementation> elements = CsmWhereUsedQueryPlugin.getWhereUsed(ref, params);
+        
+        FiltersDescription filtersDescription = new FiltersDescription();
+        Collection<RefactoringElementImplementation> elements = CsmWhereUsedQueryPlugin.getWhereUsed(ref, params, filtersDescription);
         
         // do filtering
+        TestFiltersManager filtersManager;
         if (!selectedFilters.isEmpty()) {
-            TestFiltersManager filtersManager = new TestFiltersManager(selectedFilters);
-            ArrayList<RefactoringElementImplementation> res = new ArrayList<>();
-            for (RefactoringElementImplementation elem : elements) {
-                if (elem instanceof FiltersManager.Filterable) {
-                    if (((FiltersManager.Filterable)elem).filter(filtersManager)) {
-                        res.add(elem);
-                    }
-                }
-            }
-            elements = res;
+            filtersManager = new TestFiltersManager(selectedFilters);
+        } else {
+            filtersManager = new TestFiltersManager(filtersDescription);
         }
         
-        dumpAndCheckResults(elements, getName() + ".ref");
+        ArrayList<RefactoringElementImplementation> res = new ArrayList<>();
+        for (RefactoringElementImplementation elem : elements) {
+            if (elem instanceof FiltersManager.Filterable) {
+                if (((FiltersManager.Filterable) elem).filter(filtersManager)) {
+                    res.add(elem);
+                }
+            }
+        }
+        
+        dumpAndCheckResults(res, getName() + ".ref");
     }
 
     private void dumpAndCheckResults(Collection<RefactoringElementImplementation> elements, String goldenFileName) throws Exception {
@@ -184,6 +190,15 @@ public class CsmWhereUsedQueryPluginTestCaseBase extends RefactoringBaseTestCase
 
         public TestFiltersManager(Collection<String> selectedFilters) {
             this.selectedFilters = selectedFilters;
+        }
+
+        public TestFiltersManager(FiltersDescription filtersDescription) {
+            this.selectedFilters = new ArrayList<>();
+            for (int i = 0; i < filtersDescription.getFilterCount(); i++) {
+                if (filtersDescription.isSelected(i)) {
+                    selectedFilters.add(filtersDescription.getKey(i));
+                }
+            }
         }
         
         @Override
