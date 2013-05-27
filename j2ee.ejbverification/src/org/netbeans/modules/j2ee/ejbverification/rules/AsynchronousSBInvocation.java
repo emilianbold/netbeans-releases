@@ -71,9 +71,9 @@ public class AsynchronousSBInvocation extends EJBVerificationRule {
     public Collection<ErrorDescription> check(EJBProblemContext ctx) {
         List<ErrorDescription> problems = new ArrayList<ErrorDescription>();
         if (ctx.getEjb() instanceof Session) {
-            Session session = (Session) ctx.getEjb();
             J2eeProjectCapabilities capabilities = J2eeProjectCapabilities.forProject(ctx.getProject());
-            if (!capabilities.isEjb31LiteSupported() && !capabilities.isEjb32LiteSupported()) {
+            if (capabilities == null
+                    || (!capabilities.isEjb31LiteSupported() && !capabilities.isEjb32LiteSupported())) {
                 return null;
             }
 
@@ -87,7 +87,10 @@ public class AsynchronousSBInvocation extends EJBVerificationRule {
                 return problems;
             }
 
-            if (capabilities.isEjb31LiteSupported() && !capabilities.isEjb32LiteSupported()) {
+            // EJB 3.1, 3.2 Full Profiles
+            if (!capabilities.isEjb31Supported()
+                    // EJB 3.2 Lite Profile
+                    && !capabilities.isEjb32LiteSupported()) {
                 for (ExecutableElement method : candidates) {
                     problems.add(HintsUtils.createProblem(
                             method,

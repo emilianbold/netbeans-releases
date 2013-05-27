@@ -63,6 +63,62 @@ public class ToggleBlockCommentActionTest extends LatteActionsTestBase {
         testInFile("testfiles/actions/toggleComment/testHtml.latte");
     }
 
+    public void testIssue230261_01() throws Exception {
+        testInFile("testfiles/actions/toggleComment/testIssue230261_01.latte");
+    }
+
+    public void testIssue230261_02() throws Exception {
+        testInFile("testfiles/actions/toggleComment/testIssue230261_02.latte");
+    }
+
+    public void testIssue230261_03() throws Exception {
+        testInFile("testfiles/actions/toggleComment/testIssue230261_03.latte");
+    }
+
+    public void testIssue230261_04() throws Exception {
+        testInFile("testfiles/actions/toggleComment/testIssue230261_04.latte");
+    }
+
+    public void testIssue230261_05() throws Exception {
+        testInFile("testfiles/actions/toggleComment/testIssue230261_05.latte");
+    }
+
+    public void testIssue230261_06() throws Exception {
+        testInFile("testfiles/actions/toggleComment/testIssue230261_06.latte");
+    }
+
+    public void testIssue230261_07() throws Exception {
+        testInFile("testfiles/actions/toggleComment/testIssue230261_07.latte");
+    }
+
+    public void testIssue230261_08() throws Exception {
+        testInFile("testfiles/actions/toggleComment/testIssue230261_08.latte");
+    }
+
+    public void testIssue230261_09() throws Exception {
+        testInFile("testfiles/actions/toggleComment/testIssue230261_09.latte");
+    }
+
+    public void testIssue230261_10() throws Exception {
+        testInFile("testfiles/actions/toggleComment/testIssue230261_10.latte");
+    }
+
+    public void testIssue230261_11() throws Exception {
+        testInFile("testfiles/actions/toggleComment/testIssue230261_11.latte");
+    }
+
+    public void testIssue230261_12() throws Exception {
+        testInFile("testfiles/actions/toggleComment/testIssue230261_12.latte");
+    }
+
+    public void testIssue230261_13() throws Exception {
+        testInFile("testfiles/actions/toggleComment/testIssue230261_13.latte");
+    }
+
+    public void testIssue230261_14() throws Exception {
+        testInFile("testfiles/actions/toggleComment/testIssue230261_14.latte");
+    }
+
     private void testInFile(String file) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
