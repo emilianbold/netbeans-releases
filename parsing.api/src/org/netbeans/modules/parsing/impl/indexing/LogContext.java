@@ -430,7 +430,7 @@ import org.openide.util.Utilities;
      * Checks if enough time has elapsed so the scan cancel can be logged.
      */
     boolean canLogScanCancel() {
-        return !(executed > 0) && (System.currentTimeMillis() - executed) < EXEC_TRESHOLD;
+        return !((executed > 0) && (System.currentTimeMillis() - executed) < EXEC_TRESHOLD);
     }
     
     void log(boolean cancel, boolean logAbsorbed) {
