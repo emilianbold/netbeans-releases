@@ -42,28 +42,49 @@
 package org.netbeans.modules.css.prep.util;
 
 import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.CPIndex;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
-public final class MappingUtils {
+public final class CssPreprocessorUtils {
+
+    private static final Logger LOGGER = Logger.getLogger(CssPreprocessorUtils.class.getName());
 
     private static final String MAPPINGS_DELIMITER = ","; // NOI18N
     private static final String MAPPING_DELIMITER = ":"; // NOI18N
 
 
-    private MappingUtils() {
+    private CssPreprocessorUtils() {
     }
 
-    public static String encode(List<String> mappings) {
+    public static boolean hasAnyFilesForCompiling(Project project, CssPreprocessorType fileType) {
+        try {
+            Collection<FileObject> files = CPIndex.get(project).findFiles(fileType);
+            LOGGER.log(Level.FINE, "Project {0} contains {1} {2} files", new Object[] {project.getProjectDirectory(), files.size(), fileType});
+            return !files.isEmpty();
+        } catch (IOException ex) {
+            LOGGER.log(Level.WARNING, null, ex);
+        }
+        // presume we have some files for processing
+        return true;
+    }
+
+    public static String encodeMappings(List<String> mappings) {
         return StringUtils.implode(mappings, MAPPINGS_DELIMITER);
     }
 
-    public static List<String> decode(String mappings) {
+    public static List<String> decodeMappings(String mappings) {
         return StringUtils.explode(mappings, MAPPINGS_DELIMITER);
     }
 

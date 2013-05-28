@@ -707,6 +707,44 @@ public final class TreeUtilities {
         return set;
     }
     
+    /**Find span of the {@link ClassTree}'s body in the source.
+     * Returns starting and ending offset of the body in the source code that was parsed
+     * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source
+     * document if it has been already altered.
+     * 
+     * @param clazz class which body should be searched for
+     * @return the span of the body, or null if cannot be found
+     * @since 0.127
+     */
+    public int[] findBodySpan(ClassTree clazz) {
+        JCTree jcTree = (JCTree) clazz;
+        int pos = jcTree.pos;
+        
+        if (pos < 0)
+            return null;
+        
+        TokenSequence<JavaTokenId> tokenSequence = info.getTokenHierarchy().tokenSequence(JavaTokenId.language());
+        tokenSequence.move(pos);
+        
+        int startPos = -1;
+        int endPos = (int) info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), clazz);
+        while(tokenSequence.moveNext()) {
+            if(tokenSequence.token().id() == JavaTokenId.LBRACE) {
+                startPos = tokenSequence.offset();
+                break;
+            }
+        }
+        
+        if(startPos == -1 || endPos == -1) {
+            return null;
+        }
+        
+        return new int[] {
+            startPos,
+            endPos
+        };
+    }
+    
     /**Find span of the {@link ClassTree#getSimpleName()} identifier in the source.
      * Returns starting and ending offset of the name in the source code that was parsed
      * (ie. {@link CompilationInfo.getText()}, which may differ from the positions in the source

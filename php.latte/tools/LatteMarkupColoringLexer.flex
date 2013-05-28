@@ -235,13 +235,13 @@ END_MACRO="if" | "ifset" | "ifCurrent" | "for" | "foreach" | "while" | "first" |
         return LatteMarkupTokenId.T_STRING;
     }
     {STRICT_CHAR} {
-        return LatteMarkupTokenId.T_CHAR;
+        return LatteMarkupTokenId.T_STRICT_CHAR;
     }
     {SYMBOL} {
         return LatteMarkupTokenId.T_SYMBOL;
     }
     {GLOBAL_CHAR} {
-        return LatteMarkupTokenId.T_CHAR;
+        return LatteMarkupTokenId.T_GLOBAL_CHAR;
     }
 }
 

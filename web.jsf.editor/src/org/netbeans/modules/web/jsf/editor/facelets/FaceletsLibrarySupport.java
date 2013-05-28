@@ -114,6 +114,7 @@ public class FaceletsLibrarySupport {
             RP.post(new Runnable() {
                 @Override
                 public void run() {
+                    LOGGER.info("Invalidating facelets libraries due to changes in web.xml deployment descriptor."); //NOI18N
                     invalidateLibrariesCache();
                 }
             });
@@ -167,10 +168,8 @@ public class FaceletsLibrarySupport {
     private synchronized void invalidateLibrariesCache() {
         faceletsLibraries = null;
         
-        //nasty workaround for Bug 226968 - Correct file need to be re-saved to make error badge disappear
-        //http://netbeans.org/bugzilla/show_bug.cgi?id=226968
-        //refresh all indexers including the tasklist indexer
-        IndexingManager.getDefault().refreshAllIndices(getJsfSupport().getClassPathRoots());
+        // !!! Can't be used here - leads to issues like issue #230198 !!!
+        // IndexingManager.getDefault().refreshAllIndices(getJsfSupport().getClassPathRoots());
     }
     
     /*

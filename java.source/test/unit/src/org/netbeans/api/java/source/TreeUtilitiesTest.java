@@ -313,6 +313,17 @@ public class TreeUtilitiesTest extends NbTestCase {
         assertNull(span);
     }
     
+    public void testFindClassBodySpan1() throws Exception {
+        prepareTest("Test", "package test; public class Test {public void test() {}}");
+        
+        TreePath tp = info.getTreeUtilities().pathFor(59 - 30);
+        ClassTree ct = (ClassTree) tp.getLeaf();
+        
+        int[] span = info.getTreeUtilities().findBodySpan(ct);
+        
+        assertTrue(Arrays.toString(span), Arrays.equals(span, new int[] {62 - 30, 85 - 30}));
+    }
+    
     public void testFindMethodParameterSpan1() throws Exception {
         prepareTest("Test", "package test; public class Test {public void test() {}}");
         

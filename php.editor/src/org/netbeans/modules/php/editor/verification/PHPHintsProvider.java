@@ -138,6 +138,10 @@ public class PHPHintsProvider implements HintsProvider {
         cancel = true;
     }
 
+    private void resume() {
+        cancel = false;
+    }
+
     @Override
     public List<Rule> getBuiltinRules() {
         return Collections.<Rule>emptyList();
@@ -165,6 +169,7 @@ public class PHPHintsProvider implements HintsProvider {
 
         @Override
         public void run(List<? extends Rule> rules, RuleAdjuster adjuster) {
+            resume();
             for (Rule rule : rules) {
                 if (cancel) {
                     break;

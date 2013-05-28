@@ -1362,6 +1362,7 @@ public class ImportProject implements PropertyChangeListener {
                     done = true;
                     extension.apply(map, makeProject, interrupter);
                     setBuildResults((List<String>) map.get(DiscoveryWizardDescriptor.BUILD_ARTIFACTS));
+                    DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(makeProject, null);
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);
@@ -1453,6 +1454,7 @@ public class ImportProject implements PropertyChangeListener {
                     done = true;
                     extension.apply(map, makeProject, interrupter);
                     setBuildResults((List<String>) map.get(DiscoveryWizardDescriptor.BUILD_ARTIFACTS));
+                    DiscoveryProjectGenerator.saveMakeConfigurationDescriptor(makeProject, null);
                     importResult.put(Step.DiscoveryLog, State.Successful);
                 } catch (IOException ex) {
                     ex.printStackTrace(System.err);

@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.j2ee.utils;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Collections;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -167,9 +168,6 @@ public class MavenProjectSupport {
             J2eeModule.Type type = moduleProvider.getJ2eeModule().getType();
             if (J2eeModule.Type.WAR.equals(type)) {
                 createWebXMLIfRequired(project, serverID);
-            }
-            if (J2eeModule.Type.EAR.equals(type)) {
-                createApplicationXMLIfRequired(project, serverID);
             }
             
             moduleProvider.setServerInstanceID(serverID);
@@ -389,17 +387,22 @@ public class MavenProjectSupport {
      * @param project project for which should DD be generated
      * @param serverID server ID of given project
      */
-    public static void createApplicationXMLIfRequired(Project project, String serverID) {
+    public static void createApplicationXMLIfRequired(
+            Project project,
+            Set<Project> childProjects,
+            String serverID,
+            String javaeeVersion) {
+        
         if (serverID == null) {
             serverID = readServerID(project);
         }
         // TODO change condition to use ConfigSupportImpl.isDescriptorRequired
         if (serverID != null && serverID.contains("WebLogic")) { //NOI18N
-            createApplicationXML(project);
+            createApplicationXML(project, childProjects, javaeeVersion);
         }
     }
     
-    private static void createApplicationXML(Project project) {
+    private static void createApplicationXML(Project project, Set<Project> childProjects, String javaeeVersion) {
         EarModuleProviderImpl earProvider = project.getLookup().lookup(EarModuleProviderImpl.class);
         
         if (earProvider != null) {
@@ -409,10 +412,8 @@ public class MavenProjectSupport {
             FileObject metaInf = earImpl.getMetaInf();
 
             if (applicationXML == null) {
-                String j2eeVersion = readJ2eeVersion(project);
-                if (j2eeVersion != null) {
-                    EarDDHelper.setupDD(Profile.fromPropertiesString(j2eeVersion), metaInf, project, true);
-                }
+                Profile profile = Profile.fromPropertiesString(javaeeVersion);
+                EarDDHelper.setupDD(profile, metaInf, project, childProjects, true);
             }
         }
     }

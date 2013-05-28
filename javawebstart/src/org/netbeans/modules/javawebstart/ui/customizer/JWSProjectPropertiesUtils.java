@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javawebstart.ui.customizer;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -498,9 +499,8 @@ public final class JWSProjectPropertiesUtils {
     }
 
     private static String computeCrc32(final FileObject fo) throws IOException {
-        final Checksum crc = new CRC32();
-        final InputStream in = fo.getInputStream();
-        try {            
+        final Checksum crc = new CRC32();        
+        try (final InputStream in = new BufferedInputStream(fo.getInputStream())) {
             int last = -1;
             int curr;
             while ((curr = in.read()) != -1) {
@@ -515,8 +515,6 @@ public final class JWSProjectPropertiesUtils {
             if (last == '\r') {                     //NOI18N
                 crc.update('\n');                   //NOI18N
             }
-        } finally {
-            in.close();
         }
         int val = (int)crc.getValue();
         String hex = Integer.toHexString(val);

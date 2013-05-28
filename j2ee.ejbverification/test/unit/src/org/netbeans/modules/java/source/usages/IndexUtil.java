@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,6 +24,12 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,41 +40,22 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
- * Contributor(s):
- *
- * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep;
 
-import java.util.Arrays;
-import java.util.Collection;
+package org.netbeans.modules.java.source.usages;
+
+import java.io.File;
+import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Represents a type of CSS preprocessor file.
  *
- * @author marekfukala
+ * @author Tomas Zezula
  */
-public enum CPFileType {
-    
-    /**
-     * CP file type for LESS sources.
-     */
-    LESS("text/less"), 
-    
-    /**
-     * CP file type for SASS sources.
-     */
-    SASS("text/scss", "text/sass");
-    
-    private final Collection<String> mimeTypes;
-    
-    private CPFileType(String... mimes) {
-        mimeTypes = Arrays.asList(mimes);
+public class IndexUtil {
+
+    public static void setCacheFolder (final File cacheFolder) {
+        CacheFolder.setCacheFolder(FileUtil.toFileObject(cacheFolder));
     }
 
-    public Collection<String> getMimeTypes() {
-        return mimeTypes;
-    }
-    
 }

@@ -71,6 +71,7 @@ import javax.swing.Action;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JFileChooser;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -636,14 +637,14 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 }
             }
             if (added) {
-                popup.add(new JSeparator());
+                popup.addSeparator();
             }
         }
 
         List<TabAction> activeActions = new ArrayList<TabAction>(popupItems.length);
         for (int i = 0; i < popupItems.length; i++) {
             if (popupItems[i] == null) {
-                popup.add(new JSeparator());
+                popup.addSeparator();
             } else {
                 TabAction ta = action(popupItems[i]);
                 if (popupItems[i] == ACTION.WRAP) {
@@ -669,6 +670,7 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 }
             }
         }
+        addFoldingActionsToPopUpMenu(popup, activeActions);
         // hack to remove the esc keybinding when doing popup..
         KeyStroke esc = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
         JComponent c = getOutputPane().getTextView();
@@ -679,6 +681,23 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         popup.addPopupMenuListener(new PMListener(activeActions, escHandle));
         popup.show(src, p.x, p.y);
 
+    }
+
+    private void addFoldingActionsToPopUpMenu(JPopupMenu menu,
+            List<TabAction> activeActions) {
+        JMenu submenu = new JMenu(NbBundle.getMessage(
+                OutputTab.class, "LBL_OutputFolds"));                   //NOI18N
+        for (ACTION a : popUpFoldItems) {
+            if (a == null) {
+                submenu.addSeparator();
+            } else {
+                TabAction ta = action(a);
+                activeActions.add(ta);
+                submenu.add(new JMenuItem(ta));
+            }
+        }
+        menu.addSeparator();
+        menu.add(submenu);
     }
 
     void updateActions() {
@@ -827,7 +846,9 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
     static enum ACTION { COPY, WRAP, SAVEAS, CLOSE, NEXT_ERROR, PREV_ERROR,
                          SELECT_ALL, FIND, FIND_NEXT, NAVTOLINE, POSTMENU,
                          FIND_PREVIOUS, CLEAR, NEXTTAB, PREVTAB, LARGER_FONT,
-                         SMALLER_FONT, SETTINGS, FILTER, PASTE }
+                         SMALLER_FONT, SETTINGS, FILTER, PASTE, COLLAPSE_FOLD,
+                         EXPAND_FOLD, COLLAPSE_ALL, EXPAND_ALL, COLLAPSE_TREE,
+                         EXPAND_TREE}
 
     private static final ACTION[] popupItems = new ACTION[] {
         COPY, PASTE, null, FIND, FIND_NEXT, FIND_PREVIOUS, FILTER, null,
@@ -835,9 +856,17 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
         SAVEAS, CLEAR, CLOSE,
     };
 
+    private static final ACTION[] popUpFoldItems = new ACTION[]{
+        COLLAPSE_FOLD, EXPAND_FOLD, null,
+        COLLAPSE_ALL, EXPAND_ALL, null,
+        COLLAPSE_TREE, EXPAND_TREE
+    };
+
     private static final ACTION[] actionsToInstall = new ACTION[] {
             COPY, SELECT_ALL, FIND, FIND_NEXT, FIND_PREVIOUS, WRAP, LARGER_FONT,
             SMALLER_FONT, SAVEAS, CLOSE, COPY, NAVTOLINE, POSTMENU, CLEAR, FILTER,
+            COLLAPSE_FOLD, EXPAND_FOLD, COLLAPSE_ALL, EXPAND_ALL, COLLAPSE_TREE,
+            EXPAND_TREE
     };
 
     private final Map<ACTION, TabAction> actions = new EnumMap<ACTION, TabAction>(ACTION.class);;
@@ -863,6 +892,12 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 case SMALLER_FONT:
                 case SETTINGS:
                 case CLEAR:
+                case COLLAPSE_FOLD:
+                case EXPAND_FOLD:
+                case COLLAPSE_ALL:
+                case EXPAND_ALL:
+                case COLLAPSE_TREE:
+                case EXPAND_TREE:
                     action = new TabAction(a, "ACTION_"+a.name());
                     break;
                 case NAVTOLINE:
@@ -1007,6 +1042,24 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                 case WRAP:
                     return KeyStrokeUtils.getKeyStrokesForAction(
                             OutputKeymapManager.WRAP_ACTION_ID, null);
+                case COLLAPSE_FOLD:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "collapse-fold", null);                     //NOI18N
+                case EXPAND_FOLD:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "expand-fold", null);                       //NOI18N
+                case COLLAPSE_ALL:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "collapse-all-folds", null);                //NOI18N
+                case EXPAND_ALL:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "expand-all-folds", null);                  //NOI18N
+                case COLLAPSE_TREE:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "collapse-fold-tree", null);                //NOI18N
+                case EXPAND_TREE:
+                    return KeyStrokeUtils.getKeyStrokesForAction(
+                            "expand-fold-tree", null);                  //NOI18N
                 default:
                     return null;
             }
@@ -1136,6 +1189,24 @@ final class OutputTab extends AbstractOutputTab implements IOContainer.CallBacks
                             setFilter(pattern, FindDialogPanel.regExp(), FindDialogPanel.matchCase());
                         }
                     }
+                    break;
+                case COLLAPSE_FOLD:
+                    getOutputPane().collapseFold();
+                    break;
+                case EXPAND_FOLD:
+                    getOutputPane().expandFold();
+                    break;
+                case COLLAPSE_ALL:
+                    getOutputPane().collapseAllFolds();
+                    break;
+                case EXPAND_ALL:
+                    getOutputPane().expandAllFolds();
+                    break;
+                case COLLAPSE_TREE:
+                    getOutputPane().collapseFoldTree();
+                    break;
+                case EXPAND_TREE:
+                    getOutputPane().expandFoldTree();
                     break;
                 default:
                     assert false;

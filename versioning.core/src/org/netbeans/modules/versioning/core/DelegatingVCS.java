@@ -91,7 +91,8 @@ public class DelegatingVCS extends VersioningSystem implements VCSSystemProvider
         this.map = map;
         this.displayName = (String) map.get("displayName");
         this.menuLabel = (String) map.get("menuLabel");
-        this.isLocalHistory = (Boolean) map.get("isLocalHistory");
+        Object ilh = map.get("isLocalHistory");
+        this.isLocalHistory = ilh != null ? (Boolean) map.get("isLocalHistory") : false;
         VersioningManager.LOG.log(Level.FINE, "Created DelegatingVCS for : {0}", map.get("displayName")); // NOI18N
     }
 

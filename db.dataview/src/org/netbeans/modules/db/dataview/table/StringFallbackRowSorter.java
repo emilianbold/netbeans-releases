@@ -43,7 +43,7 @@ package org.netbeans.modules.db.dataview.table;
 
 import java.util.Comparator;
 import javax.swing.table.TableModel;
-import javax.swing.table.TableRowSorter;
+import org.jdesktop.swingx.sort.TableSortController;
 
 /**
  * RowSorter that falls back to comparing values by their string representation
@@ -53,7 +53,7 @@ import javax.swing.table.TableRowSorter;
  * ResultSetJXTable are sorted and different types are present (for example
  * string and date)
  */
-public class StringFallbackRowSorter extends TableRowSorter<TableModel> {
+public class StringFallbackRowSorter extends TableSortController<TableModel> {
 
     public StringFallbackRowSorter() {
     }

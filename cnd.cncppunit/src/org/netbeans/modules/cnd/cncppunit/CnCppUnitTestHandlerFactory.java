@@ -100,6 +100,9 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
             if (firstSuite) {
                 firstSuite = false;
                 manager.testStarted(session);
+            } else {
+                manager.displayReport(session, session.getReport(0));
+                manager.sessionFinished(session);
             }
             String suiteName = matcher.group(1);
             session.addSuite(new TestSuite(suiteName));
@@ -146,7 +149,7 @@ public class CnCppUnitTestHandlerFactory implements TestHandlerFactory {
     static class CUnitSuiteFinishedHandler extends TestRecognizerHandler {
 
         public CUnitSuiteFinishedHandler() {
-            super("(--)?Run Summary: "); //NOI18N
+            super("(--)?Run Summary: ", true); //NOI18N
         }
 
         @Override

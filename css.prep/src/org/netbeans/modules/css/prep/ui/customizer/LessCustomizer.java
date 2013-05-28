@@ -45,9 +45,11 @@ import java.io.IOException;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.less.LessCssPreprocessor;
 import org.netbeans.modules.css.prep.preferences.LessPreferences;
 import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
+import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
@@ -141,6 +143,10 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
     }
 
     private ValidationResult getValidationResult() {
+        if (!CssPreprocessorUtils.hasAnyFilesForCompiling(project, CssPreprocessorType.LESS)) {
+            // no less files -> no validation needed
+            return new ValidationResult();
+        }
         return new LessPreferencesValidator()
                 .validate(getComponent().isLessEnabled(), getComponent().getMappings())
                 .getResult();
