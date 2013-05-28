@@ -42,15 +42,12 @@
 package org.netbeans.modules.css.prep.problems;
 
 import java.beans.PropertyChangeListener;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.CPFileType;
-import org.netbeans.modules.css.prep.CPIndex;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.web.common.api.CssPreprocessor;
@@ -77,7 +74,7 @@ abstract class BaseProjectProblemsProvider implements ProjectProblemsProvider {
 
     abstract String getDisplayName();
     abstract boolean isEnabled(Project project);
-    abstract CPFileType getFileType();
+    abstract CssPreprocessorType getFileType();
     abstract void checkCompiler(Collection<ProjectProblem> currentProblems);
     abstract ValidationResult validatePreferences(Project project);
 

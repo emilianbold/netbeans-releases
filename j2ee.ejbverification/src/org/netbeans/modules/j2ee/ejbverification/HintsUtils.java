@@ -111,7 +111,19 @@ public class HintsUtils {
         
         return err;
     }
-    
+
+    /**
+     * Says whether the given version is of the EJB version 3.0 and higher.
+     * BTW, annotation EJB model always returns EJB 3.0.
+     * @param ejbVersion string representation of the EJB version
+     * @return {@code true} if the version is equal or higher than EJB3.0, {@code false} otherwise
+     */
+    public static boolean isEjb30Plus(String ejbVersion) {
+        return org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_3_0.equals(ejbVersion)
+                || org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_3_1.equals(ejbVersion)
+                ||org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_3_2.equals(ejbVersion);
+    }
+
     /**
      * This method returns the part of the syntax tree to be highlighted.
      * It will be usually the class/method/variable identifier.

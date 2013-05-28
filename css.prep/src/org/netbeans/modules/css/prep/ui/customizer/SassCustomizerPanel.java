@@ -51,6 +51,7 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -68,7 +69,7 @@ public class SassCustomizerPanel extends JPanel {
 
     public SassCustomizerPanel() {
         assert EventQueue.isDispatchThread();
-        this.mappingPanel = new MappingPanel(MappingPanel.Type.SASS);
+        this.mappingPanel = new MappingPanel(CssPreprocessorType.SASS);
         initComponents();
         init();
     }
@@ -128,40 +129,40 @@ public class SassCustomizerPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        enabledCheckBox = new javax.swing.JCheckBox();
-        mappingContainerPanel = new javax.swing.JPanel();
+        enabledCheckBox = new JCheckBox();
+        mappingContainerPanel = new JPanel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(enabledCheckBox, org.openide.util.NbBundle.getMessage(SassCustomizerPanel.class, "SassCustomizerPanel.enabledCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(enabledCheckBox, NbBundle.getMessage(SassCustomizerPanel.class, "SassCustomizerPanel.enabledCheckBox.text")); // NOI18N
 
-        mappingContainerPanel.setLayout(new java.awt.BorderLayout());
+        mappingContainerPanel.setLayout(new BorderLayout());
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(enabledCheckBox)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(mappingContainerPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(mappingContainerPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(enabledCheckBox)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(mappingContainerPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(mappingContainerPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JCheckBox enabledCheckBox;
-    private javax.swing.JPanel mappingContainerPanel;
+    private JCheckBox enabledCheckBox;
+    private JPanel mappingContainerPanel;
     // End of variables declaration//GEN-END:variables
 
 }
