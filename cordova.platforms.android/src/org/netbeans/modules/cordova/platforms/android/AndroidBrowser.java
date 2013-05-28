@@ -57,6 +57,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.Device;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
@@ -67,6 +68,8 @@ import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.WindowManager;
 
 /**
@@ -218,7 +221,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
                             Exceptions.printStackTrace(ex);
                         }
                         try {
-                            build.startDebugging(device, project, context, false);
+                            build.startDebugging(device, project, new ProxyLookup(context, Lookups.singleton(BrowserFamilyId.ANDROID)), false);
                         } catch (IllegalStateException ex) {
                             LOGGER.log(Level.INFO, ex.getMessage(), ex);
                             SwingUtilities.invokeLater(new Runnable() {
