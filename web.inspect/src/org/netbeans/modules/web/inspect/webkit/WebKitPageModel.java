@@ -156,6 +156,12 @@ public class WebKitPageModel extends PageModel {
     }
 
     /**
+     * Determines whether there is a dummy page (that will be replaced by
+     * the actual inspected page soon) loaded in the browser pane.
+     */
+    private boolean dummyPage;
+    
+    /**
      * Prepares the page for inspection.
      */
     private void initializePage() {
@@ -172,7 +178,8 @@ public class WebKitPageModel extends PageModel {
             Node webKitNode = node.getLookup().lookup(Node.class);
             webKitNode = convertNode(webKitNode);
             Node.Attribute attr = webKitNode.getAttribute(":netbeans_temporary"); // NOI18N
-            if (attr == null) {
+            dummyPage = (attr != null);
+            if (!dummyPage) {
                 // init
                 String initScript = Files.getScript("initialization"); // NOI18N
                 webKit.getRuntime().evaluate(initScript);
@@ -740,7 +747,9 @@ public class WebKitPageModel extends PageModel {
             }
             this.synchronizeSelection = synchronizeSelection;
         }
-        firePropertyChange(PROP_SYNCHRONIZE_SELECTION, !synchronizeSelection, synchronizeSelection);
+        if (!dummyPage) {
+            firePropertyChange(PROP_SYNCHRONIZE_SELECTION, !synchronizeSelection, synchronizeSelection);
+        }
     }
 
     @Override
