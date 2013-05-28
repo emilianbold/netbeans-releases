@@ -713,11 +713,11 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
                             type = ((ArrayType)type).getComponentType();
                             return type;
                         case DECLARED:
-                            while (type instanceof DeclaredType) {
-                                Iterator<? extends TypeMirror> types = ((DeclaredType)type).getTypeArguments().iterator();
+                            DeclaredType dt = findIterableType(type);
+                            if (dt != null) {
+                                Iterator<? extends TypeMirror> types = dt.getTypeArguments().iterator();
                                 if (types.hasNext())
                                     return types.next();
-                                type = ((TypeElement)((DeclaredType)type).asElement()).getSuperclass();
                             }
                             return cInfo.getElements().getTypeElement("java.lang.Object").asType(); //NOI18N
                     }
@@ -927,7 +927,24 @@ public class JavaCodeTemplateProcessor implements CodeTemplateProcessor {
             return false;
         }
     }
-    
+
+    private DeclaredType findIterableType(TypeMirror type) {
+        if (type == null || type.getKind() != TypeKind.DECLARED) {
+            return null;
+        }
+        TypeElement te = (TypeElement)((DeclaredType)type).asElement();
+        if ("java.lang.Iterable".contentEquals(te.getQualifiedName())) { //NOI18N
+            return (DeclaredType)type;
+        }
+        for (TypeMirror tm : cInfo.getTypes().directSupertypes(type)) {
+            DeclaredType dt = findIterableType(tm);
+            if (dt != null) {
+                return dt;
+            }
+        }
+        return null;
+    }
+
     private boolean isSameType(TypeMirror t1, TypeMirror t2, Types types) {
         if (types.isSameType(t1, t2))
             return true;
