@@ -526,7 +526,7 @@ public class MylynSupport {
             @Override
             public void containersChanged (Set<TaskContainerDelta> deltas) {
                 for (TaskContainerDelta delta : deltas) {
-                    if (!delta.isTransient()) {
+                    if (taskListInitialized && !delta.isTransient()) {
                         synchronized (taskList) {
                             dirty = true;
                         }
