@@ -42,18 +42,13 @@
 
 package org.netbeans.modules.javafx2.samples;
 
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.*;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.PlatformsCustomizer;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
 import org.netbeans.modules.javafx2.project.api.JavaFXProjectUtils;
 import org.openide.WizardDescriptor;
@@ -64,17 +59,12 @@ import org.openide.util.*;
  * @author Anton Chechel 
  */
 // TODO mnemonics
-public class PanelOptionsVisual extends JPanel implements TaskListener {
+public class PanelOptionsVisual extends JPanel {
 
     private static final Logger LOGGER = Logger.getLogger("javafx"); // NOI18N
 
     private PanelConfigureProject panel;
 
-    private volatile RequestProcessor.Task task = null;
-    private DetectPlatformTask detectPlatformTask;
-    boolean detectPlatformTaskPerformed = false;
-    private ProgressHandle progressHandle;
-    
     private ComboBoxModel platformsModel;
     private ListCellRenderer platformsCellRenderer;
     private JavaPlatformChangeListener jpcl;
@@ -84,8 +74,6 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
     PanelOptionsVisual(PanelConfigureProject panel) {
         this.panel = panel;
 
-        detectPlatformTask = new DetectPlatformTask();
-        
         preInitComponents();
         initComponents();
         postInitComponents();
@@ -220,11 +208,9 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
     }
 
     boolean valid(WizardDescriptor wizardDescriptor) {
-        if (task != null || !JavaFXPlatformUtils.isJavaFXEnabled(getSelectedPlatform())) {
-            if(detectPlatformTaskPerformed) {
-                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                        NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.notFXPlatform")); // NOI18N
-            }
+        if (!JavaFXPlatformUtils.isJavaFXEnabled(getSelectedPlatform())) {
+            wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                    NbBundle.getMessage(PanelOptionsVisual.class, "WARN_PanelOptionsVisual.notFXPlatform")); // NOI18N
             return false;
         }
         return true;
@@ -236,9 +222,6 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
     }
 
     void read(WizardDescriptor d) {
-        if (task == null) {
-            checkPlatforms();
-        }
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -249,80 +232,11 @@ public class PanelOptionsVisual extends JPanel implements TaskListener {
     private javax.swing.JLabel progressLabel;
     private javax.swing.JPanel progressPanel;
     // End of variables declaration//GEN-END:variables
-
-    private void checkPlatforms() {
-        if (!JavaFXPlatformUtils.isThereAnyJavaFXPlatform()) {
-            task = RequestProcessor.getDefault().create(detectPlatformTask);
-            task.addTaskListener(this);
-            progressPanel.setVisible (true);
-            progressLabel.setVisible (true);
-            progressHandle = ProgressHandleFactory.createHandle(NbBundle.getMessage(PanelOptionsVisual.class,"TXT_SetupFXPlatformProgress")); // NOI18N
-            progressPanel.removeAll();
-            progressPanel.setLayout (new GridBagLayout ());
-            GridBagConstraints c = new GridBagConstraints ();
-            c.gridx = c.gridy = GridBagConstraints.RELATIVE;
-            c.gridheight = c.gridwidth = GridBagConstraints.REMAINDER;
-            c.fill = GridBagConstraints.HORIZONTAL;
-            c.weightx = 1.0;
-            JComponent pc = ProgressHandleFactory.createProgressComponent(this.progressHandle);
-            ((GridBagLayout)progressPanel.getLayout ()).setConstraints(pc,c);
-            progressPanel.add (pc);
-            progressHandle.start();
-            task.schedule(0);
-        }
-    }
-
-    @Override
-    public synchronized void taskFinished(Task task) {
-        SwingUtilities.invokeLater(new Runnable() {
-
-            @Override
-            public void run() {
-                detectPlatformTaskPerformed = true;
-                assert progressHandle != null;
-                progressHandle.finish();
-                progressPanel.setVisible(false);
-                progressLabel.setVisible(false);
-                JavaPlatform platform = detectPlatformTask.getPlatform();
-                if (platform != null) {
-                    // reload platform combo box model
-                    platformComboBox.setModel(platformsModel);
-
-                    // select javafx platform
-                    selectJavaFXEnabledPlatform();
-                }
-                panel.fireChangeEvent();
-            }
-        });
-        this.task.removeTaskListener(this);
-        this.task = null;
-    }
     
     private class JavaPlatformChangeListener implements PropertyChangeListener {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             PanelOptionsVisual.this.panel.fireChangeEvent();
-        }
-    }
-    
-    private class DetectPlatformTask implements Runnable {
-        private JavaPlatform platform;
-
-        private DetectPlatformTask() {
-            this.platform = null;
-        }
-
-        public JavaPlatform getPlatform() {
-            return platform;
-        }
-
-        @Override
-        public void run() {
-            try {
-                platform = JavaFXPlatformUtils.createDefaultJavaFXPlatform();
-            } catch (Exception ex) {
-                LOGGER.log(Level.WARNING, "Can't create Java Platform instance: {0}", ex); // NOI18N
-            }
         }
     }
     
