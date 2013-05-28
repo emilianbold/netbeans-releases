@@ -215,6 +215,7 @@ public final class ContextAnalyzer {
     private static abstract class TreePathHandleTask implements Runnable, CancellableTask<CompilationController> {
         private Collection<TreePathHandle> handles = new ArrayList<TreePathHandle>();
         private TreePathHandle current;
+        private FileObject file;
         boolean renameFile;
      
         public TreePathHandleTask(Collection<? extends Node> nodes) {
@@ -234,6 +235,9 @@ public final class ContextAnalyzer {
                     }
                 }
             }
+            Node n = nodes.iterator().next();
+            DataObject dob = n.getLookup().lookup(DataObject.class);
+            file = dob != null ? dob.getPrimaryFile() : null;
         }
         
         public TreePathHandleTask(TreePathHandle tph) {
@@ -261,9 +265,13 @@ public final class ContextAnalyzer {
             for (TreePathHandle handle:handles) {
                 FileObject f = handle.getFileObject();
                 if (f==null) {
-                    //ugly workaround for #205142
-                    TopComponent top = (TopComponent) EditorRegistry.lastFocusedComponent().getParent().getParent().getParent().getParent();
-                    f = top.getLookup().lookup(FileObject.class);
+                    if(file != null) {
+                        f = file;
+                    } else {
+                        //ugly workaround for #205142
+                        TopComponent top = (TopComponent) EditorRegistry.lastFocusedComponent().getParent().getParent().getParent().getParent();
+                        f = top.getLookup().lookup(FileObject.class);
+                    }
                 }
                 current = handle;
                 JavaSource source = JavaSource.forFileObject(f);
