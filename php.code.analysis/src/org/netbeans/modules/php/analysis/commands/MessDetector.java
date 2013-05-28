@@ -76,7 +76,6 @@ public final class MessDetector {
     private static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-php-phpmd-log.xml"); // NOI18N
 
     private static final String REPORT_FORMAT_PARAM = "xml"; // NOI18N
-    private static final String REPORT_FILE_PARAM = "--reportfile";
     private static final String SUFFIXES_PARAM = "--suffixes"; // NOI18N
 
     // rule sets
@@ -143,6 +142,7 @@ public final class MessDetector {
     private PhpExecutable getExecutable(String title) {
         return new PhpExecutable(messDetectorPath)
                 .optionsSubcategory(AnalysisOptionsPanelController.OPTIONS_SUB_PATH)
+                .fileOutput(XML_LOG, "UTF-8", false) // NOI18N
                 .displayName(title);
     }
 
@@ -162,9 +162,6 @@ public final class MessDetector {
         params.add(REPORT_FORMAT_PARAM);
         // rule sets
         params.add(StringUtils.implode(ruleSets, ",")); // NOI18N
-        // report file
-        params.add(REPORT_FILE_PARAM);
-        params.add(XML_LOG.getAbsolutePath());
         // extensions
         params.add(SUFFIXES_PARAM);
         params.add(StringUtils.implode(FileUtil.getMIMETypeExtensions(FileUtils.PHP_MIME_TYPE), ",")); // NOI18N

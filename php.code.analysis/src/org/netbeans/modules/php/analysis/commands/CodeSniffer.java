@@ -83,7 +83,6 @@ public final class CodeSniffer {
     private static final String STANDARD_PARAM = "--standard=%s"; // NOI18N
     private static final String LIST_STANDARDS_PARAM = "-i"; // NOI18N
     private static final String REPORT_PARAM = "--report=xml"; // NOI18N
-    private static final String REPORT_FILE_PARAM = "--report-file=" + XML_LOG.getAbsolutePath();
     private static final String EXTENSIONS_PARAM = "--extensions=%s"; // NOI18N
     private static final String ENCODING_PARAM = "--encoding=%s"; // NOI18N
     private static final String NO_RECURSION_PARAM = "-l"; // NOI18N
@@ -188,6 +187,7 @@ public final class CodeSniffer {
 
     private PhpExecutable getExecutable(String title) {
         return new PhpExecutable(codeSnifferPath)
+                .fileOutput(XML_LOG, "UTF-8", false) // NOI18N
                 .optionsSubcategory(AnalysisOptionsPanelController.OPTIONS_SUB_PATH)
                 .displayName(title);
     }
@@ -205,7 +205,6 @@ public final class CodeSniffer {
         List<String> params = new ArrayList<>();
         params.add(String.format(STANDARD_PARAM, standard));
         params.add(REPORT_PARAM);
-        params.add(REPORT_FILE_PARAM);
         params.add(String.format(EXTENSIONS_PARAM, StringUtils.implode(FileUtil.getMIMETypeExtensions(FileUtils.PHP_MIME_TYPE), ","))); // NOI18N
         params.add(String.format(ENCODING_PARAM, encoding.name()));
         if (noRecursion) {
