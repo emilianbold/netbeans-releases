@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.repository.util;
 
 import java.util.concurrent.CopyOnWriteArrayList;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
 import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 
@@ -79,7 +80,15 @@ public class RepositoryListenersManager {
         }        
         return toOpen;
     }
-    
+
+    public boolean fireRepositoryOpenedEvent(int repositoryId, CacheLocation cacheLocation){
+        boolean toOpen = true;
+        for (RepositoryListener theListener : listeners) {
+            toOpen &= theListener.repositoryOpened(repositoryId, cacheLocation);
+        }
+        return toOpen;
+    }
+
     public void fireUnitClosedEvent(final int unitId, final CharSequence unitName) {
         for (RepositoryListener theListener : listeners) {
             theListener.unitClosed(unitId, unitName);

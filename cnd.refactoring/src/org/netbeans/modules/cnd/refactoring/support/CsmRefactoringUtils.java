@@ -74,10 +74,7 @@ import org.netbeans.modules.cnd.modelutil.CsmDisplayUtilities;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.refactoring.spi.CsmRefactoringNameProvider;
 import org.netbeans.modules.cnd.utils.CndUtils;
-import org.netbeans.modules.cnd.utils.FSPath;
-import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
-import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -85,7 +82,6 @@ import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.PositionRef;
-import org.openide.util.CharSequences;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -554,7 +550,7 @@ public final class CsmRefactoringUtils {
     } 
     
     public static Collection<CsmReference> getComments(final CsmFile file, String text) {
-        Collection<CsmReference> comments = new ArrayList<CsmReference>();
+        Collection<CsmReference> comments = new ArrayList<>();
         Document doc = CsmUtilities.getDocument(file);
         if (doc != null) {
             TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
@@ -568,7 +564,8 @@ public final class CsmRefactoringUtils {
                             Token<?> commentToken = te.token();
                             if (commentToken.id() == DoxygenTokenId.IDENT) {
                                 if (text.contentEquals(commentToken.text())) {
-                                    comments.add(null);
+                                    int offset = commentToken.offset(hi);
+                                    comments.add(new CsmCommentReferenceImpl(text, offset, offset + commentToken.length(), file));
                                 }
                             }
                         }
@@ -621,5 +618,75 @@ public final class CsmRefactoringUtils {
             return out;
         }
         
+    }
+    
+    private static class CsmCommentReferenceImpl implements CsmReference {
+
+        private final CharSequence label;
+        private final CsmFile file;
+        private final int startOffset;
+        private final int endOffset;
+
+        public CsmCommentReferenceImpl(CharSequence label, int startOffset, int endOffset, CsmFile file) {
+            this.label = label;
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            this.file = file;
+        }
+
+        @Override
+        public CsmReferenceKind getKind() {
+            return CsmReferenceKind.COMMENT;
+        }
+
+        @Override
+        public CsmObject getReferencedObject() {
+            throw new UnsupportedOperationException("Not supported."); //NOI18N
+        }
+
+        @Override
+        public CsmObject getOwner() {
+            throw new UnsupportedOperationException("Not supported."); //NOI18N
+        }
+
+        @Override
+        public CsmObject getClosestTopLevelObject() {
+            throw new UnsupportedOperationException("Not supported."); //NOI18N
+        }
+
+        @Override
+        public CsmFile getContainingFile() {
+            return file;
+        }
+
+        @Override
+        public int getStartOffset() {
+            return startOffset;
+        }
+
+        @Override
+        public int getEndOffset() {
+            return endOffset;
+        }
+
+        @Override
+        public Position getStartPosition() {
+            throw new UnsupportedOperationException("Not supported."); //NOI18N
+        }
+
+        @Override
+        public Position getEndPosition() {
+            throw new UnsupportedOperationException("Not supported."); //NOI18N
+        }
+
+        @Override
+        public CharSequence getText() {
+            return label;
+        }
+
+        @Override
+        public String toString() {
+            return "" + label + "[" + getKind() + "] "; //NOI18N
+        }
     }
 }

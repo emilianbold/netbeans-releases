@@ -48,16 +48,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Collections;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.api.MakeCustomizerProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configuration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor.State;
-import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
-import static org.netbeans.spi.project.ProjectConfigurationProvider.PROP_CONFIGURATIONS;
-import org.openide.util.RequestProcessor;
 
 public class MakeProjectConfigurationProvider implements ProjectConfigurationProvider<Configuration>, PropertyChangeListener {
 
@@ -65,51 +59,32 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
      * Property name of the set of configurations.
      * Use it when firing a change in the set of configurations.
      */
-    String PROP_CONFIGURATIONS_BROKEN = "brokenConfigurations"; // NOI18N
+    static String PROP_CONFIGURATIONS_BROKEN = "brokenConfigurations"; // NOI18N
 
     private final Project project;
-    private ConfigurationDescriptorProvider projectDescriptorProvider;
-    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private final RequestProcessor RP = new RequestProcessor("Make configuration provider RP", 1); // NOI18N
+    private final ConfigurationDescriptorProviderImpl projectDescriptorProvider;
+    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
-    public MakeProjectConfigurationProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider, PropertyChangeListener info) {
+    public MakeProjectConfigurationProvider(Project project, ConfigurationDescriptorProviderImpl projectDescriptorProvider, PropertyChangeListener info) {
         this.project = project;
         this.projectDescriptorProvider = projectDescriptorProvider;
         this.pcs.addPropertyChangeListener(info);
+        projectDescriptorProvider.addConfigurationDescriptorListener(this);
     }
 
     @Override
     public Collection<Configuration> getConfigurations() {
-        if (!projectDescriptorProvider.gotDescriptor()) {
-            return Collections.<Configuration>emptySet();
-        }
-        MakeConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-        if (configurationDescriptor == null) {
-            return Collections.<Configuration>emptySet();
-        }
-        return configurationDescriptor.getConfs().getConfigurations();
+        return projectDescriptorProvider.getConfigurationDescriptorImpl().getConfs().getConfigurations();
     }
 
     @Override
     public Configuration getActiveConfiguration() {
-        if (!projectDescriptorProvider.gotDescriptor()) {
-            return null;
-        }
-        MakeConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-        if (configurationDescriptor == null) {
-            return null;
-        }
-        return configurationDescriptor.getConfs().getActive();
+        return projectDescriptorProvider.getConfigurationDescriptorImpl().getConfs().getActive();
     }
 
     @Override
     public void setActiveConfiguration(Configuration configuration) throws IllegalArgumentException, IOException {
-        if (configuration != null && projectDescriptorProvider != null && projectDescriptorProvider.gotDescriptor()) {
-            MakeConfigurationDescriptor configurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-            if (configurationDescriptor != null) {
-                configurationDescriptor.getConfs().setActive(configuration);
-            }
-        }
+        projectDescriptorProvider.getConfigurationDescriptorImpl().getConfs().setActive(configuration);
     }
 
     public void registerPropertyChangeListener(PropertyChangeListener lst) {
@@ -119,48 +94,18 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
     @Override
     public void addPropertyChangeListener(PropertyChangeListener lst) {
         pcs.addPropertyChangeListener(lst);
-        if (projectDescriptorProvider != null) {
-            RP.post(new Runnable() {
-
-                @Override
-                public void run() {
-                    if (projectDescriptorProvider != null) {
-                        MakeConfigurationDescriptor makeConfigurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-                        if (makeConfigurationDescriptor != null && makeConfigurationDescriptor.getState() != State.BROKEN) {  // IZ 122372 // IZ 182321
-                            makeConfigurationDescriptor.getConfs().addPropertyChangeListener(MakeProjectConfigurationProvider.this);
-                            pcs.firePropertyChange(PROP_CONFIGURATIONS, null, getConfigurations());
-                            pcs.firePropertyChange(PROP_CONFIGURATION_ACTIVE, null, getActiveConfiguration());
-                        } else {
-                            if (makeConfigurationDescriptor != null && makeConfigurationDescriptor.getState() == State.BROKEN) {
-                                // notify problem
-                                pcs.firePropertyChange(PROP_CONFIGURATIONS_BROKEN, null, State.BROKEN);
-                            }
-                        }
-                    }
-                }
-            });
-        }
     }
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener lst) {
         pcs.removePropertyChangeListener(lst);
-        if (projectDescriptorProvider != null && projectDescriptorProvider.gotDescriptor()) {
-            if (projectDescriptorProvider != null) {
-                MakeConfigurationDescriptor makeConfigurationDescriptor = projectDescriptorProvider.getConfigurationDescriptor();
-                if (makeConfigurationDescriptor != null && makeConfigurationDescriptor.getState() != State.BROKEN) {  // IZ 122372 // IZ 182321
-                    makeConfigurationDescriptor.getConfs().addPropertyChangeListener(MakeProjectConfigurationProvider.this);
-                }
-            }
-        }
     }
 
     @Override
     public boolean hasCustomizer() {
-        if (projectDescriptorProvider != null && projectDescriptorProvider.gotDescriptor() && projectDescriptorProvider.getConfigurationDescriptor() != null) {
+        if (projectDescriptorProvider.gotDescriptor() && projectDescriptorProvider.getConfigurationDescriptor() != null) {
             return true;
-        }
-        else {
+        } else {
             return false;
         }
     }
@@ -185,8 +130,6 @@ public class MakeProjectConfigurationProvider implements ProjectConfigurationPro
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
         assert pcs != null;
-
-        pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, null);
-        pcs.firePropertyChange(ProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null);
+        pcs.firePropertyChange(evt);
     }
 }

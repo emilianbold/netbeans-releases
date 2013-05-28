@@ -300,7 +300,21 @@ public class ToolbarWithOverflow extends JToolBar {
     }
     
     private void setupOverflowButton() {
-        overflowButton = new JButton(ImageUtilities.loadImageIcon(getOrientation() == HORIZONTAL ? toolbarArrowVertical : toolbarArrowHorizontal, false));
+        overflowButton = new JButton(ImageUtilities.loadImageIcon(getOrientation() == HORIZONTAL ? toolbarArrowVertical : toolbarArrowHorizontal, false)) {
+            @Override
+            public void updateUI() {
+                Mutex.EVENT.readAccess(new Runnable() {
+                    @Override
+                    public void run() {
+                        superUpdateUI();
+                    }
+                });
+            }
+
+            private void superUpdateUI() {
+                super.updateUI();
+            }
+        };
         overflowButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {

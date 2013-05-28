@@ -67,6 +67,7 @@ import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.builds.MakeExecSupport;
+import org.netbeans.modules.cnd.makeproject.ConfigurationDescriptorProviderImpl;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
@@ -215,7 +216,7 @@ public class RemoteBuildTestBase extends RemoteTestBase {
         File projectDir = File.createTempFile(projectDirShortName + "_", "", getWorkDir());
         projectDir.delete();
         FileObject projectDirFO = instantiateSample(sampleName, projectDir);
-        ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
+        ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProviderImpl(projectDirFO);
         MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor();
         descriptor.save(); // make sure all necessary configuration files in nbproject/ are written
         File makefile = new File(projectDir, "Makefile");
