@@ -40,77 +40,41 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cordova.project;
+package org.netbeans.modules.cordova.platforms;
 
-import java.io.IOException;
+import java.net.URL;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
-import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
-import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
-import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
-import org.openide.util.Exceptions;
+import org.openide.filesystems.FileObject;
 
-/**
- * PhoneGap pseudo browser
- * @author Jan Becicka
- */
-public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
+public class RefreshOnSaveListenerImpl implements RefreshOnSaveListener {
 
-    private Project project;
-    private WebBrowser browser;
-    private MobileConfigurationImpl config;
+    final private BrowserSupport support;
+    final private Project project;
+    private ClientProjectEnhancedBrowserImplementation cfg;
 
-    EnhancedBrowserImpl(Project project, WebBrowser browser) {
-        try {
-            this.project = project;
-            this.browser = browser;
-            MobileProjectExtender.createMobileConfigs(project.getProjectDirectory());
-            this.config = MobileConfigurationImpl.create(project, browser.getId());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+    public RefreshOnSaveListenerImpl(Project project, BrowserSupport support, ClientProjectEnhancedBrowserImplementation cfg) {
+        this.support = support;
+        this.project = project;
+        this.cfg = cfg;
+    }
+    
+    @Override
+    public void fileChanged(FileObject fo) {
+        if (!cfg.isAutoRefresh()) {
+            return;
         }
+        if (!support.canRefreshOnSaveThisFileType(fo)) {
+            return;
+        }
+        support.reload();
     }
 
     @Override
-    public void save() {
-        // this should save changes in UI for particular configuration
-    }
-
-    @Override
-    public RefreshOnSaveListener getRefreshOnSaveListener() {
-        return new RefreshListener(/*???*/);
-    }
-
-    @Override
-    public ActionProvider getActionProvider() {
-        return this.config.getDevice().getActionProvider(project);
-    }
-
-    @Override
-    public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
-        return null;
-    }
-
-    @Override
-    public void deactivate() {
-    }
-
-    @Override
-    public boolean isHighlightSelectionEnabled() {
-        return true;
-    }
-
-    @Override
-    public ProjectConfigurationProvider getProjectConfigurationProvider() {
-        return null;
-    }
-
-    @Override
-    public boolean isAutoRefresh() {
-        return false;
+    public void fileDeleted(FileObject fo) {
+        // TODO: close browser tab?
     }
 
 }
