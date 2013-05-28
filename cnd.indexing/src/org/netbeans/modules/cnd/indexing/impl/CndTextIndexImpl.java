@@ -216,6 +216,23 @@ public final class CndTextIndexImpl {
     }
 
     static boolean validate(CacheLocation cacheLocation) {
+        /*
+        Below is some comments concerning use of Parsing Lucene Support.
+        TODO: use Index.getStatus(boolean force) mantioned below to check consistency
+
+        Here is what Lucene developers claim:
+        http://blog.mikemccandless.com/2012/03/transactional-lucene.html
+
+        The Lucene is transactional with ACID so it should be always consistent, unfortunately this is different to behaviour
+        we are getting. We have and 3.5 version of the Lucene which is quite outdated I want to updated it to 4.x but as the major
+        Lucene versions are incompatible it's not trivial task and I don't know if I manage it to do it in NB 7.4.
+
+        There is a method Index.getStatus(boolean force) which checks some problems.
+        What it does:
+        It checks if the index exists using IndexReader.indexExists(this.fsDir).
+        When the force is true is even tries to open the index which sometimes throws Exception when index is broken.
+        However sometimes no exception is thrown and it's thrown when you close the index for writing.
+        */
         return !getLockFile(cacheLocation).exists();
     }
 
