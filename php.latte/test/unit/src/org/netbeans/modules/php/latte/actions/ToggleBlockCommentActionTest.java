@@ -119,6 +119,10 @@ public class ToggleBlockCommentActionTest extends LatteActionsTestBase {
         testInFile("testfiles/actions/toggleComment/testIssue230261_14.latte");
     }
 
+    public void testIssue230377() throws Exception {
+        testInFile("testfiles/actions/toggleComment/testIssue230377.latte");
+    }
+
     private void testInFile(String file) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
