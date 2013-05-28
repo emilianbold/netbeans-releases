@@ -221,6 +221,9 @@ public class VersioningManager implements PropertyChangeListener, ChangeListener
     
     private void init() {
         try {
+            // initialize VCSContext which in turn initializes SPIAccessor
+            // before any other thread touches SPIAccessor
+            VCSContext ctx = VCSContext.EMPTY;
             // do not fire events under lock but asynchronously
             refreshVersioningSystems(true);
             VersioningSupport.getPreferences().addPreferenceChangeListener(this);
