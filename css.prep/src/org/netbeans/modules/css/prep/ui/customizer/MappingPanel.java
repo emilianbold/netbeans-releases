@@ -51,6 +51,7 @@ import javax.swing.LayoutStyle;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
@@ -66,7 +67,7 @@ public class MappingPanel extends JPanel {
     private volatile String mapping;
 
 
-    public MappingPanel(Type type) {
+    public MappingPanel(CssPreprocessorType type) {
         assert EventQueue.isDispatchThread();
         assert type != null;
 
@@ -79,9 +80,9 @@ public class MappingPanel extends JPanel {
         "# {1} - file extension",
         "MappingPanel.info=<html>One or more {0} folder to css folder mappings for compiler output, eg. <i>/{1}:/css, /other/{1}:/css/smth<i>",
     })
-    private void init(Type type) {
+    private void init(CssPreprocessorType type) {
         // info
-        mappingInfoLabel.setText(Bundle.MappingPanel_info(type.getName(), type.getFileExtension()));
+        mappingInfoLabel.setText(Bundle.MappingPanel_info(type.getDisplayName(), type.getFileExtension()));
         // listeners
         mappingTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -173,38 +174,5 @@ public class MappingPanel extends JPanel {
     private JLabel mappingLabel;
     private JTextField mappingTextField;
     // End of variables declaration//GEN-END:variables
-
-    // Inner classes
-
-    @NbBundle.Messages({
-        "MappingPanel.type.sass.displayName=Sass",
-        "MappingPanel.type.less.displayName=LESS",
-    })
-    public static enum Type {
-        SASS() {
-            @Override
-            String getName() {
-                return Bundle.MappingPanel_type_sass_displayName();
-            }
-            @Override
-            String getFileExtension() {
-                return "scss"; //NOI18N
-            }
-        },
-        LESS() {
-            @Override
-            String getName() {
-                return Bundle.MappingPanel_type_less_displayName();
-            }
-
-            @Override
-            String getFileExtension() {
-                return "less"; //NOI18N
-            }
-        };
-
-        abstract String getName();
-        abstract String getFileExtension();
-    }
 
 }

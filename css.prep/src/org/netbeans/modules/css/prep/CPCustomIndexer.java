@@ -70,10 +70,10 @@ public class CPCustomIndexer extends CustomIndexer {
     static final int INDEXER_VERSION = 1;
     static final String CP_TYPE_KEY = "cpType"; //NOI18N
     
-    private static final Map<String, CPFileType> mime2type;
+    private static final Map<String, CssPreprocessorType> mime2type;
     static {
-        mime2type = new HashMap<String, CPFileType>();
-        for(CPFileType type : CPFileType.values()) {
+        mime2type = new HashMap<String, CssPreprocessorType>();
+        for(CssPreprocessorType type : CssPreprocessorType.values()) {
             for(String mime : type.getMimeTypes()) {
                 mime2type.put(mime, type);
             }
@@ -93,7 +93,7 @@ public class CPCustomIndexer extends CustomIndexer {
             }
 
             String fileMimeType = file.getMIMEType();
-            CPFileType type = mime2type.get(fileMimeType);
+            CssPreprocessorType type = mime2type.get(fileMimeType);
             if (type != null) {
                 try {
                     IndexingSupport sup = IndexingSupport.getInstance(context);

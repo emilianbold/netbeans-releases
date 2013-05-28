@@ -102,7 +102,18 @@ public class JsCompletionItem implements CompletionProposal {
 
     @Override
     public String getSortText() {
-        return getName();
+        StringBuilder sb = new StringBuilder();
+        if (element != null) {
+            FileObject sourceFo = request.result.getSnapshot().getSource().getFileObject();
+            FileObject elementFo = element.getFileObject();
+            if (elementFo != null && sourceFo != null && sourceFo.equals(elementFo)) {
+                sb.append("1");     //NOI18N
+            } else {
+                sb.append("9");     //NOI18N
+            }
+        }
+        sb.append(getName());    
+        return sb.toString();
     }
 
     @Override
