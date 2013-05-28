@@ -69,7 +69,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
     private static final String CUSTOM_STYLE_NAME_SUFFIX = "_Style_Name"; // NOI18N
     private static final String PREDEFINED_STYLE_NAME_SUFFIX = "_Name"; // NOI18N
     private static final String PREFERENCES_PROVIDER_CLASS = "org.netbeans.modules.cnd.editor.options.CodeStylePreferencesProvider"; // NOI18N
-    private static final String SEPARATOR = ",";
+    private static final String SEPARATOR = ","; // NOI18N
     private final Project project;
     private MakeConfigurationDescriptor makeConfigurationDescriptor;
     
