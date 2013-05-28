@@ -28,7 +28,7 @@
  * THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <QtGui/QApplication>
+#include <QApplication>
 #include "HelloForm.h"
 
 int main(int argc, char *argv[]) {

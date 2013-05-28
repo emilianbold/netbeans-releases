@@ -1358,15 +1358,15 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         element.appendChild(n);
         if (isProject) {
             n = doc.createElement(MakeProjectTypeImpl.C_FORMATTING_STYLE_ELEMENT);
-            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.C_MIME_TYPE)));
+            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.C_MIME_TYPE).toExternal()));
             element.appendChild(n);
 
             n = doc.createElement(MakeProjectTypeImpl.CPP_FORMATTING_STYLE_ELEMENT);
-            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.CPLUSPLUS_MIME_TYPE)));
+            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.CPLUSPLUS_MIME_TYPE).toExternal()));
             element.appendChild(n);
 
             n = doc.createElement(MakeProjectTypeImpl.HEADER_FORMATTING_STYLE_ELEMENT);
-            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.HEADER_MIME_TYPE)));
+            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.HEADER_MIME_TYPE).toExternal()));
             element.appendChild(n);
         }
         data.appendChild(element);

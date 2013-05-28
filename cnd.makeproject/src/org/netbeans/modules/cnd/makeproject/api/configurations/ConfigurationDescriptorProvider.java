@@ -391,6 +391,8 @@ public abstract class ConfigurationDescriptorProvider {
 
     public void opened(Interrupter interrupter) {
         isOpened.set(true);
+        needReload = true;
+        hasTried = false;
         MakeConfigurationDescriptor descr = getConfigurationDescriptor(interrupter, false);
         if (descr != null) {
             descr.opened(interrupter);
