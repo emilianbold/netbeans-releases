@@ -1712,7 +1712,15 @@ public class TokenFormatter {
 
                         delta = replaceString(doc, changeOffset, index, oldText, newText, delta, templateEdit);
                         if (newText == null) {
-                            column += (formatToken.getOldText() == null) ? 0 : formatToken.getOldText().length();
+                            String formatTokenOldText = formatToken.getOldText() == null ? "" : formatToken.getOldText();
+                            int formatTokenOldTextLength = formatTokenOldText.length();
+                            int lines = countOfNewLines(formatTokenOldText);
+                            if (lines > 0) {
+                                int lastNewLine = formatTokenOldText.lastIndexOf('\n'); //NOI18N
+                                column = formatTokenOldText.substring(lastNewLine).length();
+                            } else {
+                                column += formatTokenOldTextLength;
+                            }
                         } else {
                             int lines = countOfNewLines(newText);
                             if (lines > 0) {

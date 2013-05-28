@@ -55,6 +55,7 @@ import java.util.Set;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openide.util.Enumerations;
 import org.openide.util.Exceptions;
 
 /** Special module for representing OSGi bundles 
@@ -237,22 +238,40 @@ final class NetigsoModule extends Module {
 
         @Override
         public URL findResource(String name) {
-            return delegate().findResource(name);
+            try {
+                return delegate().findResource(name);
+            } catch (IllegalStateException ex) {
+                LOG.log(Level.SEVERE, "Can't load " + name, ex);
+                return null;
+            }
         }
 
         @Override
         public Enumeration<URL> findResources(String name) throws IOException {
-            return delegate().findResources(name);
+            try {
+                return delegate().findResources(name);
+            } catch (IllegalStateException ex) {
+                throw new IOException("Can't load " + name, ex);
+            }
         }
 
         @Override
         protected Class<?> doLoadClass(String pkg, String name) {
-            return delegate().doLoadClass(pkg, name);
+            try {
+                return delegate().doLoadClass(pkg, name);
+            } catch (IllegalStateException ex) {
+                LOG.log(Level.SEVERE, "Can't load " + name + " in package " + pkg, ex);
+                return null;
+            }
         }
 
         @Override
         protected Class loadClass(String name, boolean resolve) throws ClassNotFoundException {
-            return delegate().loadClass(name, resolve);
+            try {
+                return delegate().loadClass(name, resolve);
+            } catch (IllegalStateException ex) {
+                throw new ClassNotFoundException("Can't load " + name, ex);
+            }
         }
 
 

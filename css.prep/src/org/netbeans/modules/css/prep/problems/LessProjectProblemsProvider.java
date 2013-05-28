@@ -43,7 +43,7 @@ package org.netbeans.modules.css.prep.problems;
 
 import java.util.Collection;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.CPFileType;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.preferences.LessPreferences;
 import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
@@ -70,8 +70,8 @@ public final class LessProjectProblemsProvider extends BaseProjectProblemsProvid
     }
 
     @Override
-    CPFileType getFileType() {
-        return CPFileType.LESS;
+    CssPreprocessorType getFileType() {
+        return CssPreprocessorType.LESS;
     }
 
     @NbBundle.Messages({

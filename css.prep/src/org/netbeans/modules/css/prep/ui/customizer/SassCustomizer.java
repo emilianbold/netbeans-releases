@@ -45,7 +45,7 @@ import java.io.IOException;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.CPFileType;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.preferences.SassPreferencesValidator;
 import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
@@ -143,7 +143,7 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
     }
 
     private ValidationResult getValidationResult() {
-        if (!CssPreprocessorUtils.hasAnyFilesForCompiling(project, CPFileType.SASS)) {
+        if (!CssPreprocessorUtils.hasAnyFilesForCompiling(project, CssPreprocessorType.SASS)) {
             // no sass files -> no validation needed
             return new ValidationResult();
         }
