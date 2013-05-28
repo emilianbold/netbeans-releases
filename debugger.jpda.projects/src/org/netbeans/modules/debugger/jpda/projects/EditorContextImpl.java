@@ -328,8 +328,8 @@ public class EditorContextImpl extends EditorContext {
             return null;
         }
         Annotation annotation;
-        if (timeStamp instanceof JPDABreakpoint) {
-            annotation = new DebuggerBreakpointAnnotation(annotationType, l, (JPDABreakpoint) timeStamp);
+        if (timeStamp instanceof Breakpoint) {
+            annotation = new DebuggerBreakpointAnnotation(annotationType, l, (Breakpoint) timeStamp);
         } else {
             annotation = new DebuggerAnnotation (annotationType, l, thread);
         }
