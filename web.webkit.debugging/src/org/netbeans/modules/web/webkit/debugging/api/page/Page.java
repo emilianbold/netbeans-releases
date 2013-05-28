@@ -83,6 +83,15 @@ public class Page {
         }
     }
     
+    public void reload(boolean ignoreCache, String scriptToEvaluateOnLoad) {
+        JSONObject pars = new JSONObject();
+        pars.put("ignoreCache", ignoreCache);
+        if (scriptToEvaluateOnLoad !=null) {
+            pars.put("scriptToEvaluateOnLoad", scriptToEvaluateOnLoad);
+        }
+        transport.sendBlockingCommand(new Command("Page.reload", pars));
+    }
+    
     public void navigate(String url) {
         JSONObject urlPar = new JSONObject();
         urlPar.put("url", url);

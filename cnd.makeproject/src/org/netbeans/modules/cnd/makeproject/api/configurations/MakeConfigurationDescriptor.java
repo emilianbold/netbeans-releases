@@ -174,13 +174,25 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     private static ConcurrentHashMap<String, Object> projectWriteLocks = new ConcurrentHashMap<String, Object>();
 
     public MakeConfigurationDescriptor(FileObject projectDirFO) {
-        this(projectDirFO, projectDirFO);
+        this(null, projectDirFO, projectDirFO);
     }
 
     public MakeConfigurationDescriptor(FileObject projectDirFO, FileObject baseDirFO) {
+        this(null, projectDirFO, baseDirFO);
+    }
+    
+    public MakeConfigurationDescriptor(Project project, FileObject projectDirFO, FileObject baseDirFO) {
         Parameters.notNull("projectDirFO", projectDirFO);
         Parameters.notNull("baseDirFO", baseDirFO);
-        this.baseDirFO = baseDirFO;
+        this.project = project;
+        if (project != null) {
+            this.baseDirFO = project.getProjectDirectory();
+        } else {
+            this.baseDirFO = baseDirFO;
+        }
+        if (this.baseDirFO == null) {
+            throw new IllegalStateException("Exception when getting project folder object"); //NOI18N
+        }
         try {
             baseDirFS = baseDirFO.getFileSystem();
         } catch (FileStateInvalidException ex) {
@@ -1346,15 +1358,15 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         element.appendChild(n);
         if (isProject) {
             n = doc.createElement(MakeProjectTypeImpl.C_FORMATTING_STYLE_ELEMENT);
-            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.C_MIME_TYPE)));
+            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.C_MIME_TYPE).toExternal()));
             element.appendChild(n);
 
             n = doc.createElement(MakeProjectTypeImpl.CPP_FORMATTING_STYLE_ELEMENT);
-            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.CPLUSPLUS_MIME_TYPE)));
+            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.CPLUSPLUS_MIME_TYPE).toExternal()));
             element.appendChild(n);
 
             n = doc.createElement(MakeProjectTypeImpl.HEADER_FORMATTING_STYLE_ELEMENT);
-            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.HEADER_MIME_TYPE)));
+            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.HEADER_MIME_TYPE).toExternal()));
             element.appendChild(n);
         }
         data.appendChild(element);
@@ -1643,6 +1655,11 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public void checkForChangedSourceRoots(List<String> oldList, List<String> newList) {
         synchronized (sourceRoots) {
+            if (oldList.size() == newList.size()) {
+                if (oldList.containsAll(newList)) {
+                    return;
+                }
+            }
             sourceRoots.clear();
             for (String l : newList) {
                 addSourceRoot(l);

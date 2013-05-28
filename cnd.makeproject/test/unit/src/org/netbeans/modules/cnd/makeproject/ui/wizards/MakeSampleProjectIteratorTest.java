@@ -59,6 +59,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
+import org.netbeans.modules.cnd.makeproject.ConfigurationDescriptorProviderImpl;
 import org.netbeans.modules.cnd.makeproject.MakeActionProvider;
 import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
@@ -290,7 +291,7 @@ public class MakeSampleProjectIteratorTest extends CndBaseTestCase {
                 mainProjectDirFO = projectDirFO;
                 mainProjectDir = CndFileUtils.toFile(projectDirFO);
             }
-            ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
+            ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProviderImpl(projectDirFO);
             MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor();
             descriptor.getConfs().setActive(conf);
             descriptor.save(); // make sure all necessary configuration files in nbproject/ are written

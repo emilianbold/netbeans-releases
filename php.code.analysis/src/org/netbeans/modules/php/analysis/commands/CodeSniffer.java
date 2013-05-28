@@ -78,12 +78,11 @@ public final class CodeSniffer {
     public static final String NAME = "phpcs"; // NOI18N
     public static final String LONG_NAME = NAME + FileUtils.getScriptExtension(true);
 
-    private static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-php-phpcs-log.xml"); // NOI18N
+    static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-php-phpcs-log.xml"); // NOI18N
 
     private static final String STANDARD_PARAM = "--standard=%s"; // NOI18N
     private static final String LIST_STANDARDS_PARAM = "-i"; // NOI18N
     private static final String REPORT_PARAM = "--report=xml"; // NOI18N
-    private static final String REPORT_FILE_PARAM = "--report-file=" + XML_LOG.getAbsolutePath();
     private static final String EXTENSIONS_PARAM = "--extensions=%s"; // NOI18N
     private static final String ENCODING_PARAM = "--encoding=%s"; // NOI18N
     private static final String NO_RECURSION_PARAM = "-l"; // NOI18N
@@ -142,7 +141,7 @@ public final class CodeSniffer {
         try {
             Integer result = getExecutable(Bundle.CodeSniffer_analyze())
                     .additionalParameters(getParameters(ensureStandard(standard), file, noRecursion))
-                    .runAndWait(getDescriptor(false), "Running code sniffer..."); // NOI18N
+                    .runAndWait(getDescriptor(), "Running code sniffer..."); // NOI18N
             if (result == null) {
                 return null;
             }
@@ -167,7 +166,7 @@ public final class CodeSniffer {
         try {
             getExecutable(Bundle.CodeSniffer_listStandards())
                     .additionalParameters(Collections.singletonList(LIST_STANDARDS_PARAM))
-                    .runAndWait(getDescriptor(true), standardsProcessorFactory, "Fetching standards..."); // NOI18N
+                    .runAndWait(getDescriptor(), standardsProcessorFactory, "Fetching standards..."); // NOI18N
             if (!standardsProcessorFactory.hasStandards()
                     && standardsProcessorFactory.hasOutput) {
                 // some error
@@ -188,16 +187,24 @@ public final class CodeSniffer {
 
     private PhpExecutable getExecutable(String title) {
         return new PhpExecutable(codeSnifferPath)
+                .fileOutput(XML_LOG, "UTF-8", false) // NOI18N
                 .optionsSubcategory(AnalysisOptionsPanelController.OPTIONS_SUB_PATH)
                 .displayName(title);
     }
 
-    private ExecutionDescriptor getDescriptor(boolean reset) {
-        // XXX no reset but custom IO is needed
-        ExecutionDescriptor descriptor = PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+    private ExecutionDescriptor getDescriptor() {
+        return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .optionsPath(AnalysisOptionsPanelController.OPTIONS_PATH)
-                .inputVisible(false);
-        return descriptor;
+                .frontWindowOnError(false)
+                .inputVisible(false)
+                .preExecution(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (XML_LOG.isFile()) {
+                            XML_LOG.delete();
+                        }
+                    }
+                });
     }
 
     private List<String> getParameters(String standard, FileObject file, boolean noRecursion) {
@@ -205,7 +212,6 @@ public final class CodeSniffer {
         List<String> params = new ArrayList<>();
         params.add(String.format(STANDARD_PARAM, standard));
         params.add(REPORT_PARAM);
-        params.add(REPORT_FILE_PARAM);
         params.add(String.format(EXTENSIONS_PARAM, StringUtils.implode(FileUtil.getMIMETypeExtensions(FileUtils.PHP_MIME_TYPE), ","))); // NOI18N
         params.add(String.format(ENCODING_PARAM, encoding.name()));
         if (noRecursion) {

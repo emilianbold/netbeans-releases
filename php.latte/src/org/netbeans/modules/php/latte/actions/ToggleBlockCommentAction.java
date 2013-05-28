@@ -100,16 +100,16 @@ public class ToggleBlockCommentAction extends BaseAction {
         TokenSequence<? extends LatteTopTokenId> topTs = LatteLexerUtils.getLatteTopTokenSequence(baseDocument, caretOffset);
         if (topTs != null) {
             topTs.move(caretOffset);
-            topTs.moveNext();
-            topTs.movePrevious();
-            Token<? extends LatteTopTokenId> token = topTs.token();
-            if (token != null) {
-                LatteTopTokenId tokenId = token.id();
-                if (tokenId == LatteTopTokenId.T_LATTE_COMMENT || tokenId == LatteTopTokenId.T_LATTE_COMMENT_DELIMITER) {
-                    uncomment(baseDocument, topTs);
-                    processedByLatte.set(true);
-                } else if (tokenId == LatteTopTokenId.T_LATTE || tokenId == LatteTopTokenId.T_LATTE_DELIMITER || tokenId == LatteTopTokenId.T_LATTE_ERROR) {
-                    comment(baseDocument, topTs, processedByLatte);
+            if (topTs.moveNext() || topTs.movePrevious()) {
+                Token<? extends LatteTopTokenId> token = topTs.token();
+                if (token != null) {
+                    LatteTopTokenId tokenId = token.id();
+                    if (tokenId == LatteTopTokenId.T_LATTE_COMMENT || tokenId == LatteTopTokenId.T_LATTE_COMMENT_DELIMITER) {
+                        uncomment(baseDocument, topTs);
+                        processedByLatte.set(true);
+                    } else if (tokenId == LatteTopTokenId.T_LATTE || tokenId == LatteTopTokenId.T_LATTE_DELIMITER || tokenId == LatteTopTokenId.T_LATTE_ERROR) {
+                        comment(baseDocument, topTs, processedByLatte);
+                    }
                 }
             }
         } else {

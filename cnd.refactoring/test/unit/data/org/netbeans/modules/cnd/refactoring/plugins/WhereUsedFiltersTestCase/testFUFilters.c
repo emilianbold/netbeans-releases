@@ -24,3 +24,7 @@ int a;
 int boo(int f) {
   a = f;
 }
+
+// xyz method
+void xyz() {
+}

@@ -181,15 +181,15 @@ public final class MakeProject implements Project, MakeProjectListener {
     //private final ReferenceHelper refHelper;
     private final NativeProject nativeProject;
     private final Lookup lookup;
-    private final ConfigurationDescriptorProvider projectDescriptorProvider;
+    private final ConfigurationDescriptorProviderImpl projectDescriptorProvider;
     private final Set<String> headerExtensions = MakeProject.createExtensionSet();
     private final Set<String> cExtensions = MakeProject.createExtensionSet();
     private final Set<String> cppExtensions = MakeProject.createExtensionSet();
     private String sourceEncoding = null;
     private AtomicBoolean projectFormattingStyle;
-    private String cFormattingSytle;
-    private String cppFormattingSytle;
-    private String headerFormattingSytle;
+    private CodeStyleWrapper cFormattingSytle;
+    private CodeStyleWrapper cppFormattingSytle;
+    private CodeStyleWrapper headerFormattingSytle;
     // lock and open/close state of make project
     private final AtomicBoolean openStateAndLock = new AtomicBoolean(false);
     private final AtomicBoolean isDeleted = new AtomicBoolean(false);
@@ -211,7 +211,7 @@ public final class MakeProject implements Project, MakeProjectListener {
         //eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         //refHelper = new ReferenceHelper(helper, aux, eval);
-        projectDescriptorProvider = new ConfigurationDescriptorProvider(this, helper.getProjectDirectory());
+        projectDescriptorProvider = new ConfigurationDescriptorProviderImpl(this, helper.getProjectDirectory());
         LOGGER.log(Level.FINE, "Create ConfigurationDescriptorProvider@{0} for MakeProject@{1} {2}", new Object[]{System.identityHashCode(projectDescriptorProvider), System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
         sources = new MakeSources(this, helper);
         sourcepath = new MutableCP(sources);
@@ -815,7 +815,7 @@ public final class MakeProject implements Project, MakeProjectListener {
         }
     }
 
-    public String getProjectFormattingStyle(String mime) {
+    public CodeStyleWrapper getProjectFormattingStyle(String mime) {
         NodeList nodeList = null;
         if (MIMENames.C_MIME_TYPE.equals(mime)) {
             if (cFormattingSytle != null) {
@@ -843,18 +843,20 @@ public final class MakeProject implements Project, MakeProjectListener {
         }
         if (res != null) {
             if (MIMENames.C_MIME_TYPE.equals(mime)) {
-                cFormattingSytle = res;
+                cFormattingSytle = new CodeStyleWrapper(res);
+                return cFormattingSytle;
             } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
-                cppFormattingSytle = res;
+                cppFormattingSytle = new CodeStyleWrapper(res);
+                return cppFormattingSytle;
             } else if (MIMENames.HEADER_MIME_TYPE.equals(mime)) {
-                headerFormattingSytle = res;
+                headerFormattingSytle = new CodeStyleWrapper(res);
+                return headerFormattingSytle;
             }
-            return res;
         }
         return null;
     }
     
-    public void setProjectFormattingStyle(String mime, String style) {
+    public void setProjectFormattingStyle(String mime, CodeStyleWrapper style) {
         if (MIMENames.C_MIME_TYPE.equals(mime)) {
             cFormattingSytle = style;
         } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mime)) {
@@ -1981,10 +1983,50 @@ public final class MakeProject implements Project, MakeProjectListener {
         @Override
         public String getCurrentCodeStyle(String mimeType, Document doc) {
             if (MakeProject.this.isProjectFormattingStyle()) {
-                return MakeProject.this.getProjectFormattingStyle(mimeType);
-            } else {
-                return null;
+                CodeStyleWrapper style = MakeProject.this.getProjectFormattingStyle(mimeType);
+                if (style != null) {
+                    return style.styleId;
+                }
             }
+            return null;
+        }
+    }
+    
+    public static final class CodeStyleWrapper {
+        private final String styleId;
+        private final String displayName;
+        
+        public CodeStyleWrapper(String styleId, String displayName) {
+            this.styleId = styleId;
+            this.displayName = displayName;
+        }
+
+        private CodeStyleWrapper(String styleIdAndDisplayName) {
+            int i = styleIdAndDisplayName.indexOf('|');
+            if (i > 0) {
+                this.styleId = styleIdAndDisplayName.substring(0, i);
+                this.displayName = styleIdAndDisplayName.substring(i+1);
+            } else {
+                this.styleId = styleIdAndDisplayName;
+                this.displayName = styleIdAndDisplayName;
+            }
+        }
+
+        public String getStyleId() {
+            return styleId;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public String toExternal(){
+            return styleId+'|'+displayName;
+        }
+        
+        @Override
+        public String toString() {
+            return displayName;
         }
     }
 }

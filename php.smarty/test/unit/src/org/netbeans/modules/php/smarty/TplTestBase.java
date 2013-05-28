@@ -44,6 +44,7 @@ package org.netbeans.modules.php.smarty;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.junit.MockServices;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
+import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
@@ -101,6 +102,10 @@ public abstract class TplTestBase extends CslTestBase {
         return TplDataLoader.MIME_TYPE;
     }
 
+    @Override
+    public Formatter getFormatter(IndentPrefs preferences) {
+        return null;
+    }
 
     protected void setupSmartyOptions(String openDelimiter, String closeDelimiter, SmartyFramework.Version version) {
         SmartyOptions.getInstance().setDefaultOpenDelimiter(openDelimiter);

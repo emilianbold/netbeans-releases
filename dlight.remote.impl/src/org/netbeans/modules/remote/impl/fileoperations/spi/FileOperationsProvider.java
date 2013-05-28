@@ -167,6 +167,49 @@ abstract public class FileOperationsProvider {
             return false;
         }
 
+        protected long lastModified(FileProxyO file) {
+            if (USE_CACHE) {
+                Long res = fileSystem.vcsSafeLastModified(file.getPath());
+                if (res != null) {
+                    return res.longValue();
+                }
+            }
+            return lastModified(file, LINK_DEPTH);
+        }
+
+        private long lastModified(FileProxyO file, int deep) {
+            if (!ConnectionManager.getInstance().isConnectedTo(getExecutionEnvironment())) {
+                return -1;
+            }
+            if (deep > 0) {
+                deep--;
+                Future<FileInfoProvider.StatInfo> stat = FileInfoProvider.stat(getExecutionEnvironment(), file.getPath());
+                try {
+                    FileInfoProvider.StatInfo statInfo = stat.get();
+                    switch (statInfo.getFileType()) {
+                        case SymbolicLink:
+                            String linkTarget = statInfo.getLinkTarget();
+                            if (linkTarget.startsWith("/")) { // NOI18N
+                                return lastModified(toFileProxy(linkTarget), deep);
+                            } else {
+                                String path = PathUtilities.getDirName(file.getPath())+"/"+linkTarget; // NOI18N
+                                path = PathUtilities.normalizeUnixPath(path);
+                                return lastModified(toFileProxy(path), deep);
+                            }
+                        default:
+                            return statInfo.getLastModified().getTime();
+                    }
+                } catch (InterruptedException ex) {
+                } catch (ExecutionException ex) {
+                    if (notExist(ex)) {
+                        return -1;
+                    }
+                    ex.printStackTrace(System.err);
+                }
+            }
+            return -1;
+        }
+
         protected boolean isFile(FileProxyO file) {
             if (USE_CACHE) {
                 Boolean res = fileSystem.vcsSafeIsFile(file.getPath());

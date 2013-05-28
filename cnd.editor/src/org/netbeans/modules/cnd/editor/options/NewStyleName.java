@@ -54,6 +54,8 @@ public class NewStyleName extends javax.swing.JPanel {
         initComponents();
         nameField.setText(previous);
         idField.setText(id);
+        idField.setVisible(false);
+        idLabel.setVisible(false);
     }
     
     String[] getResult() {

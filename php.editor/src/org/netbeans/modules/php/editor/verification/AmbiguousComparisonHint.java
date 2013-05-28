@@ -63,6 +63,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression.OperatorType;
 import org.netbeans.modules.php.editor.parser.astnodes.ReturnStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.SwitchCase;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.openide.filesystems.FileObject;
@@ -159,7 +160,8 @@ public class AmbiguousComparisonHint extends HintRule {
                     || node instanceof DoStatement
                     || node instanceof ForStatement
                     || node instanceof ForEachStatement
-                    || node instanceof ConditionalExpression;
+                    || node instanceof ConditionalExpression
+                    || node instanceof SwitchCase;
         }
 
     }

@@ -255,7 +255,19 @@ public final class FileContent implements MutableDeclarationsContainer {
                     if (fakeIncludePair.includeUid.equals(includeUid)) {
                         // inner object always has higher priority
                         if (!fakeIncludePair.containerUid.equals(containerUID)) {
-                            assert false : "trying to replace? " + include + " for container " + container + " was: " + fakeIncludePair;
+                            // but sometimes it has a collision when included twice, i.e. 
+                            // namespace QtConcurrent {
+                            // ...
+                            // #include <QtCore/qtconcurrentmedian.h>
+                            // #ifndef QQQ
+                            // }
+                            // #else
+                            // void extra();
+                            // }
+                            // #endif
+                            // namespace QtConcurrent had [2075-2729] postitions when QQQ was not defined
+                            // then it has [2075-9963] offsets when QQQ is defined
+                            CndUtils.assertTrueInConsole(false, "trying to replace? " + include + " for container " + container + " was: " + fakeIncludePair);
                         }
                         return false;
                     }

@@ -47,6 +47,7 @@ import java.util.TreeMap;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProject.CodeStyleWrapper;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
@@ -60,6 +61,15 @@ import org.openide.util.NbBundle;
  * @author alsimon
  */
 public class FormattingPropPanel extends javax.swing.JPanel implements MakeContext.Savable {
+    private static final String C_CODE_STYLES = "C_CodeStyles"; // NOI18N
+    private static final String CPP_CODE_STYLES = "CPP_CodeStyles"; // NOI18N
+    private static final String H_CODE_STYLES = "H_CodeStyles"; // NOI18N
+    private static final String LIST_OF_STYLES = "List_Of_Styles"; // NOI18N
+    private static final String CODE_STYLE = "CodeStyle"; // NOI18N
+    private static final String CUSTOM_STYLE_NAME_SUFFIX = "_Style_Name"; // NOI18N
+    private static final String PREDEFINED_STYLE_NAME_SUFFIX = "_Name"; // NOI18N
+    private static final String PREFERENCES_PROVIDER_CLASS = "org.netbeans.modules.cnd.editor.options.CodeStylePreferencesProvider"; // NOI18N
+    private static final String SEPARATOR = ","; // NOI18N
     private final Project project;
     private MakeConfigurationDescriptor makeConfigurationDescriptor;
     
@@ -84,10 +94,10 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         this.project = project;
         makeConfigurationDescriptor = (MakeConfigurationDescriptor) configurationDescriptor;
         initComponents();
-        String style;
+        MakeProject.CodeStyleWrapper style;
         style = ((MakeProject)project).getProjectFormattingStyle(MIMENames.C_MIME_TYPE);
         StylePresentation def = null;
-        for (Map.Entry<String,String> s : getAllStyles(MIMENames.C_MIME_TYPE).entrySet()) {
+        for (Map.Entry<String,CodeStyleWrapper> s : getAllStyles(MIMENames.C_MIME_TYPE).entrySet()) {
             StylePresentation stylePresentation = new StylePresentation(s);
             if (stylePresentation.key.equals(style)) {
                 def = stylePresentation;
@@ -100,7 +110,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         
         style = ((MakeProject)project).getProjectFormattingStyle(MIMENames.CPLUSPLUS_MIME_TYPE);
         def = null;
-        for (Map.Entry<String,String> s : getAllStyles(MIMENames.CPLUSPLUS_MIME_TYPE).entrySet()) {
+        for (Map.Entry<String,CodeStyleWrapper> s : getAllStyles(MIMENames.CPLUSPLUS_MIME_TYPE).entrySet()) {
             StylePresentation stylePresentation = new StylePresentation(s);
             if (stylePresentation.key.equals(style)) {
                 def = stylePresentation;
@@ -113,7 +123,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         
         style = ((MakeProject)project).getProjectFormattingStyle(MIMENames.HEADER_MIME_TYPE);
         def = null;
-        for (Map.Entry<String,String> s : getAllStyles(MIMENames.HEADER_MIME_TYPE).entrySet()) {
+        for (Map.Entry<String,CodeStyleWrapper> s : getAllStyles(MIMENames.HEADER_MIME_TYPE).entrySet()) {
             StylePresentation stylePresentation = new StylePresentation(s);
             if (stylePresentation.key.equals(style)) {
                 def = stylePresentation;
@@ -132,11 +142,11 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         }
     }
     
-    public static Map<String,String> getAllStyles(String mimeType) {
+    public static Map<String,CodeStyleWrapper> getAllStyles(String mimeType) {
         Preferences pref = null;
         CodeStylePreferences.Provider myProvider = null;
         for(CodeStylePreferences.Provider p : Lookup.getDefault().lookupAll(CodeStylePreferences.Provider.class)) {
-            if (p.getClass().getName().equals("org.netbeans.modules.cnd.editor.options.CodeStylePreferencesProvider")) { //NOI18N
+            if (p.getClass().getName().equals(PREFERENCES_PROVIDER_CLASS)) {
                 myProvider = p;
                 pref = p.forDocument(null, mimeType);
             }
@@ -145,26 +155,27 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         StringBuilder def = new StringBuilder();
         for(String s: PREDEFINED_STYLES){
             if (def.length() > 0){
-                def.append(','); //NOI18N
+                def.append(SEPARATOR);
             }
             def.append(s);
         }
         if (pref != null) {
             if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
-                styles = pref.node("C_CodeStyles").get("List_Of_Styles", def.toString()); // NOI18N
+                styles = pref.node(C_CODE_STYLES).get(LIST_OF_STYLES, def.toString()); 
             } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
-                styles = pref.node("CPP_CodeStyles").get("List_Of_Styles", def.toString()); // NOI18N
+                styles = pref.node(CPP_CODE_STYLES).get(LIST_OF_STYLES, def.toString());
             } else  if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
-                styles = pref.node("H_CodeStyles").get("List_Of_Styles", def.toString()); // NOI18N
+                styles = pref.node(H_CODE_STYLES).get(LIST_OF_STYLES, def.toString());
             }
         } else {
             styles = def.toString();
         }
-        Map<String,String> res = new TreeMap<String,String>();
-        StringTokenizer st = new StringTokenizer(styles,","); // NOI18N
+        Map<String,CodeStyleWrapper> res = new TreeMap<String,CodeStyleWrapper>();
+        StringTokenizer st = new StringTokenizer(styles, SEPARATOR); 
         while(st.hasMoreTokens()) {
             String nextToken = st.nextToken();
-            res.put(getStyleDisplayName(pref, myProvider, nextToken), nextToken);
+            String styleDisplayName = getStyleDisplayName(pref, myProvider, nextToken);
+            res.put(styleDisplayName, new CodeStyleWrapper(nextToken, styleDisplayName));
         }
         return res;
     }
@@ -173,7 +184,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         Preferences pref = null;
         CodeStylePreferences.Provider myProvider = null;
         for(CodeStylePreferences.Provider p : Lookup.getDefault().lookupAll(CodeStylePreferences.Provider.class)) {
-            if (p.getClass().getName().equals("org.netbeans.modules.cnd.editor.options.CodeStylePreferencesProvider")) { //NOI18N
+            if (p.getClass().getName().equals(PREFERENCES_PROVIDER_CLASS)) {
                 myProvider = p;
                 pref = p.forDocument(null, mimeType);
             }
@@ -184,12 +195,47 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
     private static String getStyleDisplayName(Preferences pref, CodeStylePreferences.Provider myProvider, String styleId) {
         for (String name : PREDEFINED_STYLES) {
             if (styleId.equals(name)) {
-                return NbBundle.getMessage(myProvider.getClass(), styleId+"_Name");
+                return NbBundle.getMessage(myProvider.getClass(), styleId+PREDEFINED_STYLE_NAME_SUFFIX);
             }
         }
-        return pref.node("CodeStyle").get(styleId+"_Style_Name", styleId); // NOI18N
+        return pref.node(CODE_STYLE).get(styleId+CUSTOM_STYLE_NAME_SUFFIX, styleId);
     }
 
+    public static boolean createStyle(CodeStyleWrapper styleId, String mimeType) {
+        Preferences pref = null;
+        CodeStylePreferences.Provider myProvider = null;
+        for(CodeStylePreferences.Provider p : Lookup.getDefault().lookupAll(CodeStylePreferences.Provider.class)) {
+            if (p.getClass().getName().equals(PREFERENCES_PROVIDER_CLASS)) {
+                myProvider = p;
+                pref = p.forDocument(null, mimeType);
+            }
+        }
+        if (pref == null || myProvider == null) {
+            return false;
+        }
+        StringBuilder def = new StringBuilder();
+        for(String s: PREDEFINED_STYLES){
+            if (def.length() > 0){
+                def.append(SEPARATOR);
+            }
+            def.append(s);
+        }
+        if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
+            String styles = pref.node(C_CODE_STYLES).get(LIST_OF_STYLES, def.toString());
+            pref.node(C_CODE_STYLES).put(LIST_OF_STYLES, styles+SEPARATOR+styleId.getStyleId());
+            pref.node(CODE_STYLE).put(styleId+CUSTOM_STYLE_NAME_SUFFIX, styleId.getDisplayName());
+        } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
+            String styles = pref.node(CPP_CODE_STYLES).get(LIST_OF_STYLES, def.toString());
+            pref.node(CPP_CODE_STYLES).put(LIST_OF_STYLES, styles+SEPARATOR+styleId.getStyleId());
+            pref.node(CODE_STYLE).put(styleId+CUSTOM_STYLE_NAME_SUFFIX, styleId.getDisplayName());
+        } else  if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
+            String styles = pref.node(H_CODE_STYLES).get(LIST_OF_STYLES, def.toString());
+            pref.node(H_CODE_STYLES).put(LIST_OF_STYLES, styles+SEPARATOR+styleId.getStyleId());
+            pref.node(CODE_STYLE).put(styleId+CUSTOM_STYLE_NAME_SUFFIX, styleId.getDisplayName());
+        }
+        return true;
+    }
+    
     @Override
     public void save() {
         ((MakeProject)project).setProjectFormattingStyle(projectRadioButton.isSelected());
@@ -349,9 +395,9 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
     // End of variables declaration//GEN-END:variables
 
     private static final class StylePresentation {
-        private String key;
+        private CodeStyleWrapper key;
         private String name;
-        private StylePresentation(Map.Entry<String, String> entry) {
+        private StylePresentation(Map.Entry<String, CodeStyleWrapper> entry) {
             name = entry.getKey();
             key = entry.getValue();
         }

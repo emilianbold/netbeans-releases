@@ -736,6 +736,29 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
         }            
     }
 
+    public Long vcsSafeLastModified(String path) {
+        path = PathUtilities.normalizeUnixPath(path);
+        RemoteFileObjectBase fo = vcsSafeGetFileObject(path);
+        if (fo == null) {
+            String parentPath = PathUtilities.getDirName(path);
+            if (parentPath != null) {
+                RemoteFileObjectBase parentFO = vcsSafeGetFileObject(parentPath);
+                if (parentFO != null) {
+                    String childNameExt = PathUtilities.getBaseName(path);
+                    RemoteFileObject childFO = parentFO.getFileObject(childNameExt, new HashSet<String>());
+                    if (childFO != null) {
+                        fo = childFO.getImplementor();
+                    }
+                }
+            }
+        }
+        if (fo == null) {
+            return null;
+        } else {
+            return fo.lastModified().getTime();
+        }
+    }
+
     private final class StatusImpl implements FileSystem.HtmlStatus, LookupListener, FileStatusListener {
 
         /** result with providers */

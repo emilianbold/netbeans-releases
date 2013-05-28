@@ -203,6 +203,7 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
         boolean isSmartyBodyCommand = false;
         boolean isSmartyElseCommand = false;
         boolean afterDelimiter = false;
+        boolean nonControlCommand = false;
         int embeddingLevel = 0;
         String lastTplCommand = "";
         // iterate over tokens on the line and push to stack any changes
@@ -225,6 +226,12 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
                     } else {
                         isSmartyBodyCommand = false;
                         isSmartyElseCommand = false;
+                    }
+                } else {
+                    // non-smarty token
+                    // looks for entered block command for the indentation - issue #226926
+                    if (CharSequenceUtilities.indexOf(token.text(), "\n") == -1) { //NOI18N
+                        nonControlCommand = true;
                     }
                 }
                 continue;
@@ -254,7 +261,10 @@ public class TplIndenter extends AbstractIndenter<TplTopTokenId> {
                                 } else {
                                     blockStack.pop();
                                 }
-                                iis.add(new IndentCommand(IndentCommand.Type.RETURN, preservedLineIndentation));
+                                if (!nonControlCommand) {
+                                    iis.add(new IndentCommand(IndentCommand.Type.RETURN, preservedLineIndentation));
+                                }
+                                nonControlCommand = false;
                             } else {
                                 blockStack.push(new TplStackItem(StackItemState.IN_BODY, lastTplCommand));
                             }

@@ -48,9 +48,13 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
+import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
+import org.netbeans.modules.cnd.repository.api.RepositoryException;
 import org.netbeans.modules.cnd.repository.relocate.api.RelocationSupport;
 import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
+import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
+import org.openide.modules.OnStart;
 import org.openide.modules.OnStop;
 
 /**
@@ -61,32 +65,70 @@ public class CndTextIndexManager {
     public static final String FIELD_IDS = "ids"; //NOI18N
     public static final String FIELD_UNIT_ID = "unitId"; //NOI18N
     private static final Map<CacheLocation, CndTextIndexImpl> indexMap = new HashMap<CacheLocation, CndTextIndexImpl>();
-    private static final String INDEX_FOLDER_NAME = "text_index"; //NOI18N
-    
+    private static final Object lock = new Object();
+
+    @OnStart
+    public static class Startup implements Runnable, RepositoryListener {
+        @Override
+        public void run() {
+            RepositoryAccessor.getRepository().registerRepositoryListener(this);
+        }
+
+        @Override
+        public boolean unitOpened(int unitId, CharSequence unitName) {
+            return true;
+        }
+
+        @Override
+        public boolean repositoryOpened(int repositoryId, CacheLocation cacheLocation) {
+            return CndTextIndexImpl.validate(cacheLocation);
+        }
+
+        @Override
+        public void unitClosed(int unitId, CharSequence unitName) {
+        }
+
+        @Override
+        public void unitRemoved(int unitId, CharSequence unitName) {
+            if (unitId < 0) {
+                return;
+            }
+            CacheLocation loc = RepositoryAccessor.getTranslator().getCacheLocation(unitId);
+            synchronized (lock) {
+                CndTextIndexImpl index = CndTextIndexManager.get(loc);
+                if (index != null) {
+                    index.unitRemoved(unitId, unitName);
+                }
+            }
+        }
+
+        @Override
+        public void anExceptionHappened(int unitId, CharSequence unitName, RepositoryException exc) {
+        }
+    }
+
     @OnStop
     public static class Cleanup implements Runnable {
         @Override
         public void run() {
             for (CndTextIndexImpl idx : indexMap.values()) {
-                idx.store();
+                idx.cleanup();
             }
         }
     }
-    
-    public static synchronized CndTextIndexImpl get(final CacheLocation location) {
-        CndTextIndexImpl index = indexMap.get(location);
-        if (index == null) {
-            final File indexRoot = new File(location.getLocation(), INDEX_FOLDER_NAME);
-            indexRoot.mkdirs();
 
-            try {
-                UnitCodec unitCodec = RelocationSupport.get(location);
-                index = CndTextIndexImpl.create(IndexManager.createDocumentIndex(indexRoot), unitCodec);
-            } catch (IOException ex) {
-                Logger.getLogger(CndTextIndexManager.class.getName()).log(Level.SEVERE, null, ex);
+    public static CndTextIndexImpl get(final CacheLocation location) {
+        synchronized (lock) {
+            CndTextIndexImpl index = indexMap.get(location);
+            if (index == null) {
+                try {                    
+                    index = CndTextIndexImpl.create(location);
+                } catch (IOException ex) {
+                    Logger.getLogger(CndTextIndexManager.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                indexMap.put(location, index);
             }
-            indexMap.put(location, index);
+            return index;
         }
-        return index;
     }
 }

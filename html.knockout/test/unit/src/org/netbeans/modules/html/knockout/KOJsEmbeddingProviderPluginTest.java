@@ -79,17 +79,17 @@ public class KOJsEmbeddingProviderPluginTest extends CslTestBase {
                 + "__netbeans_import__('js/simple_model.js');\n"
                 + "\n"
                 + "(function(){\n"
-                + "var $root = ko.$bindings;\n"
+                + "var $root = {}\n"
                 + "var $data = $root;\n"
                 + "var $parent = undefined;\n"
-
+                + "var $parents = [];\n"
+                + "(addSeat);});\n"
                 + "(function(){\n"
-                + "addSeat;\n"
-                + "});\n"
-                + "(function(){\n"
-                + "seats().length < 5;\n"
-                + "});\n"
-                + "});\n");
+                + "var $root = {}\n"
+                + "var $data = $root;\n"
+                + "var $parent = undefined;\n"
+                + "var $parents = [];\n"
+                + "(seats().length < 5);});\n");
     }
     
      public void testDoNotCreateKOVirtualSourceForPlainFiles() {

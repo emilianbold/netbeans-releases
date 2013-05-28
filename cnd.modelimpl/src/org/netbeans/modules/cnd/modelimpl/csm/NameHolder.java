@@ -389,11 +389,19 @@ public class NameHolder {
                     }
                 }
                 if( last.getType() == CPPTokenTypes.IDENT ) {
-                    start = OffsetableBase.getStartOffset(tildeToken != null ? tildeToken : last);
-                    isMacroExpanded = isMacroExpandedToken(tildeToken != null ? tildeToken : last);
+                    String lastName = "";  // NOI18N
+                    
+                    if (tildeToken != null) {
+                        lastName += tildeToken.getText();
+                    }
+                    
+                    isMacroExpanded = isMacroExpandedToken(last);
+                    start = OffsetableBase.getStartOffset(last);
                     end = OffsetableBase.getEndOffset(last);
-                    CharSequence lastName = AstUtil.getText(last);
-                    return tildeToken != null ? "~" + lastName : lastName; // NOI18N
+                    
+                    lastName += AstUtil.getText(last);
+                    
+                    return lastName;
                 } else {
 //		    if( first.getType() == CPPTokenTypes.LITERAL_OPERATOR ) {
                     AST operator = AstUtil.findChildOfType(token, CPPTokenTypes.LITERAL_OPERATOR);
