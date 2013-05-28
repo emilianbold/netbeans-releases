@@ -124,9 +124,8 @@ public abstract class EJBProblemFinder {
             ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) {
                     String ejbVersion = metadata.getRoot().getVersion().toString();
-                    if (!org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_3_0.equals(ejbVersion) &&
-                        !org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_3_1.equals(ejbVersion)){
-                        return null; // Only EJB 3.0 and 3.1 are supported
+                    if (!HintsUtils.isEjb30Plus(ejbVersion)){
+                        return null; // Only EJB 3.0+ are supported
                     }
                     for (Tree tree : info.getCompilationUnit().getTypeDecls()){
                         if (isCancelled()){
