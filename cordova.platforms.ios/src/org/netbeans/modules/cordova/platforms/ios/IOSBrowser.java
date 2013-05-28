@@ -43,17 +43,20 @@ package org.netbeans.modules.cordova.platforms.ios;
 
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -67,7 +70,7 @@ import org.openide.util.lookup.Lookups;
 public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
     private final Kind kind;
     private Lookup projectContext;
-    private static final Logger LOGGER = Logger.getLogger(EnhancedBrowserImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(IOSBrowser.class.getName());
     
 
     @Override
@@ -111,6 +114,7 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
 
     @Override
     public void reloadDocument() {
+        Lookup.getDefault().lookup(BuildPerformer.class).reload();
     }
 
     @Override
@@ -120,13 +124,13 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
     @Override
     public void setURL(URL url) {
         this.url = url;
-        Project project = projectContext.lookup(Project.class);
-        openBrowser(ActionProvider.COMMAND_RUN, Lookups.fixed(url), kind, project);
+        final IOSDevice dev = kind == Kind.IOS_DEVICE_DEFAULT ? IOSDevice.CONNECTED : IOSDevice.IPHONE;
+        dev.openUrl(url.toExternalForm());
     }
 
     @NbBundle.Messages(
             "LBL_OpeningiOS=Opening url.\nMake sure, that device is attached and Mobile Safari is running.")
-    public static void openBrowser(String command, final Lookup context, final IOSBrowser.Kind kind, final Project project) throws IllegalArgumentException {
+    public static void openBrowser(String command, final Lookup context, final IOSBrowser.Kind kind, final Project project, final BrowserSupport browserSupport) throws IllegalArgumentException {
         if (!Utilities.isMac()) {
             NotifyDescriptor not = new NotifyDescriptor(
                     Bundle.LBL_NoMac(),
@@ -144,7 +148,13 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
             @Override
             public void run() {
                 final IOSDevice dev = kind == Kind.IOS_DEVICE_DEFAULT ? IOSDevice.CONNECTED : IOSDevice.IPHONE;
-                dev.openUrl(build.getUrl(project, context));
+                final String url1 = build.getUrl(project, context);
+                FileObject f = build.getFile(project, context);
+                try {
+                    browserSupport.load(new URL(url1), f);
+                } catch (MalformedURLException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
                 if (kind == Kind.IOS_DEVICE_DEFAULT) {
                     build.startDebugging(dev, project, context, true);
                 } else {

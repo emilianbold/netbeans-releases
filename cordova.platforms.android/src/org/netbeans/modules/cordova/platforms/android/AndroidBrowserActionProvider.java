@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,80 +37,43 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cordova.platforms.android;
 
-package org.netbeans.modules.cordova.project;
-
-import java.io.IOException;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.MobileProjectExtender;
-import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
-import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
-import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.spi.project.ActionProvider;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
-import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 
 /**
- * PhoneGap pseudo browser
+ *
  * @author Jan Becicka
  */
-public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
+class AndroidBrowserActionProvider implements ActionProvider {
+    private BrowserSupport browserSupport;
+    private final Project project;
+    private final String browserId;
 
-    private Project project;
-    private WebBrowser browser;
-    private MobileConfigurationImpl config;
-
-    EnhancedBrowserImpl(Project project, WebBrowser browser) {
-        try {
-            this.project = project;
-            this.browser = browser;
-            MobileProjectExtender.createMobileConfigs(project.getProjectDirectory());
-            this.config = MobileConfigurationImpl.create(project, browser.getId());
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+    public AndroidBrowserActionProvider(BrowserSupport support, String browserId, Project project) {
+        this.browserSupport = support;
+        this.project = project;
+        this.browserId = browserId;
     }
 
     @Override
-    public void save() {
-        // this should save changes in UI for particular configuration
+    public String[] getSupportedActions() {
+        return new String[]{COMMAND_RUN, COMMAND_RUN_SINGLE};
     }
 
     @Override
-    public RefreshOnSaveListener getRefreshOnSaveListener() {
-        return new RefreshListener(/*???*/);
+    public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
+        AndroidBrowser.openBrowser(command, context, AndroidBrowser.Kind.valueOf(browserId), project, browserSupport);
     }
 
     @Override
-    public ActionProvider getActionProvider() {
-        return this.config.getDevice().getActionProvider(project);
-    }
-
-    @Override
-    public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
-        return null;
-    }
-
-    @Override
-    public void deactivate() {
-    }
-
-    @Override
-    public boolean isHighlightSelectionEnabled() {
+    public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
         return true;
     }
-
-    @Override
-    public ProjectConfigurationProvider getProjectConfigurationProvider() {
-        return null;
-    }
-
-    @Override
-    public boolean isAutoRefresh() {
-        return false;
-    }
-
+    
 }
