@@ -931,7 +931,9 @@ public final class PhpExecutable {
 
         @Override
         public void close() throws IOException {
-            outputStream.close();
+            if (outputStream != null) {
+                outputStream.close();
+            }
         }
 
     }
