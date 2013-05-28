@@ -92,9 +92,7 @@ public final class CodeSnifferReportParser extends DefaultHandler {
             try (Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), "UTF-8"))) { // NOI18N
                 return create(reader).getResults();
             }
-        } catch (IOException ex) {
-            LOGGER.log(Level.WARNING, null, ex);
-        } catch (SAXException ex) {
+        } catch (IOException | SAXException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
         return null;
