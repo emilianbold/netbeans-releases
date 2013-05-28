@@ -183,4 +183,8 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     public void testIssue229717_03() throws Exception {
         checkCompletion("testfiles/model/issue229717.js", "self.^types.push(type);", false);
     }
+    
+    public void testIssue224071_01() throws Exception {
+        checkCompletion("testfiles/completion/issue224071.js", "a.^t", false);
+    }
 }
