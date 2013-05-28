@@ -235,12 +235,10 @@ public final class BrokenReferencesSupport {
                 }
                 int i = style.aStyle.indexOf('_'); //NOI18N
                 String base = "?"; //NOI18N
-                String id = "0"; //NOI18N
                 if (i > 0) {
                     base = FormattingPropPanel.getStyleDisplayName(style.aStyle.substring(0,i), style.mime);
-                    id = style.aStyle.substring(i+1);
                 }
-                String message = NbBundle.getMessage(ResolveReferencePanel.class, "style_resolve_description", style.aStyle, source, base, id); //NOI18N
+                String message = NbBundle.getMessage(ResolveReferencePanel.class, "style_resolve_description", style.aStyle, source, base); //NOI18N
                 final ProjectProblemsProvider.ProjectProblem error =
                         ProjectProblemsProvider.ProjectProblem.createError(
                         NbBundle.getMessage(ResolveReferencePanel.class, "style_resolve_name"), //NOI18N
@@ -699,11 +697,11 @@ public final class BrokenReferencesSupport {
         
         @Override
         public Future<ProjectProblemsProvider.Result> resolve() {
-            OptionsDisplayer.getDefault().open("Editor/Formatting", true); // NOI18N
+            FormattingPropPanel.createStyle(style.aStyle, style.mime);
             ProjectProblemsProvider pp = project.getLookup().lookup(ProjectProblemsProvider.class);
             if(pp instanceof ProjectProblemsProviderImpl) {
                 ((ProjectProblemsProviderImpl)pp).propertyChange(null);
-            }
+            }            
             return new Done(ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED));
         }
         
