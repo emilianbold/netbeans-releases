@@ -214,7 +214,7 @@ public class ToolTipAnnotation extends Annotation
         boolean isInFieldDeclaration = false;
         while (identStart > 0 && ((text.charAt(identStart - 1) == ' ') || isPHPIdentifier(text.charAt(identStart - 1)) || (text.charAt(identStart - 1) == '.') || (text.charAt(identStart - 1) == '>'))) {
             identStart--;
-            if (text.charAt(identStart) == '>') { // NOI18N
+            if (identStart > 0 && text.charAt(identStart) == '>') { // NOI18N
                 if (text.charAt(identStart - 1) == '-') { // NOI18N
                     identStart--; // matched object operator ->
                 } else {
