@@ -73,7 +73,7 @@ public final class MessDetector {
     public static final String NAME = "phpmd"; // NOI18N
     public static final String LONG_NAME = NAME + FileUtils.getScriptExtension(true);
 
-    private static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-php-phpmd-log.xml"); // NOI18N
+    static final File XML_LOG = new File(System.getProperty("java.io.tmpdir"), "nb-php-phpmd-log.xml"); // NOI18N
 
     private static final String REPORT_FORMAT_PARAM = "xml"; // NOI18N
     private static final String SUFFIXES_PARAM = "--suffixes"; // NOI18N
@@ -124,7 +124,7 @@ public final class MessDetector {
         try {
             Integer result = getExecutable(Bundle.MessDetector_analyze())
                     .additionalParameters(getParameters(ruleSets, files))
-                    .runAndWait(getDescriptor(false), "Running mess detector..."); // NOI18N
+                    .runAndWait(getDescriptor(), "Running mess detector..."); // NOI18N
             if (result == null) {
                 return null;
             }
@@ -146,12 +146,19 @@ public final class MessDetector {
                 .displayName(title);
     }
 
-    private ExecutionDescriptor getDescriptor(boolean reset) {
-        // XXX no reset but custom IO is needed
-        ExecutionDescriptor descriptor = PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
+    private ExecutionDescriptor getDescriptor() {
+        return PhpExecutable.DEFAULT_EXECUTION_DESCRIPTOR
                 .optionsPath(AnalysisOptionsPanelController.OPTIONS_PATH)
-                .inputVisible(false);
-        return descriptor;
+                .frontWindowOnError(false)
+                .inputVisible(false)
+                .preExecution(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (XML_LOG.isFile()) {
+                            XML_LOG.delete();
+                        }
+                    }
+                });
     }
 
     private List<String> getParameters(List<String> ruleSets, List<FileObject> files) {
