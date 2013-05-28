@@ -48,6 +48,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -921,7 +922,11 @@ public final class PhpExecutable {
             if (outputStream == null) {
                 outputStream = new BufferedOutputStream(new FileOutputStream(fileOuput));
             }
-            outputStream.write(outputCharset.encode(CharBuffer.wrap(chars)).array());
+            ByteBuffer byteBuffer = outputCharset.encode(CharBuffer.wrap(chars));
+            byte[] bytes = byteBuffer.array();
+            byte[] compactedBytes = new byte[byteBuffer.limit()];
+            System.arraycopy(bytes, 0, compactedBytes, 0, compactedBytes.length);
+            outputStream.write(compactedBytes);
         }
 
         @Override
