@@ -143,25 +143,27 @@ public class JDBCMetadata extends MetadataImplementation {
     protected void createCatalogs() {
         Map<String, Catalog> newCatalogs = new LinkedHashMap<String, Catalog>();
         try {
-            String defaultCatalogName = conn.getCatalog();
-            ResultSet rs = dmd.getCatalogs();
-            try {
-                while (rs.next()) {
-                    String catalogName = MetadataUtilities.trimmed(rs.getString("TABLE_CAT")); // NOI18N
-                    LOGGER.log(Level.FINE, "Read catalog ''{0}''", catalogName);
-                    if (MetadataUtilities.equals(catalogName, defaultCatalogName)) {
-                        defaultCatalog = createJDBCCatalog(catalogName, true, defaultSchemaName).getCatalog();
-                        newCatalogs.put(defaultCatalog.getName(), defaultCatalog);
-                        LOGGER.log(Level.FINE, "Created default catalog {0}", defaultCatalog);
-                    } else {
-                        Catalog catalog = createJDBCCatalog(catalogName, false, null).getCatalog();
-                        newCatalogs.put(catalogName, catalog);
-                        LOGGER.log(Level.FINE, "Created catalog {0}", catalog);
+            if (!driverReportsBogusCatalogNames()) {
+                String defaultCatalogName = conn.getCatalog();
+                ResultSet rs = dmd.getCatalogs();
+                try {
+                    while (rs.next()) {
+                        String catalogName = MetadataUtilities.trimmed(rs.getString("TABLE_CAT")); // NOI18N
+                        LOGGER.log(Level.FINE, "Read catalog ''{0}''", catalogName); //NOI18N
+                        if (MetadataUtilities.equals(catalogName, defaultCatalogName)) {
+                            defaultCatalog = createJDBCCatalog(catalogName, true, defaultSchemaName).getCatalog();
+                            newCatalogs.put(defaultCatalog.getName(), defaultCatalog);
+                            LOGGER.log(Level.FINE, "Created default catalog {0}", defaultCatalog); //NOI18N
+                        } else {
+                            Catalog catalog = createJDBCCatalog(catalogName, false, null).getCatalog();
+                            newCatalogs.put(catalogName, catalog);
+                            LOGGER.log(Level.FINE, "Created catalog {0}", catalog); //NOI18N
+                        }
                     }
-                }
-            } finally {
-                if (rs != null) {
-                    rs.close();
+                } finally {
+                    if (rs != null) {
+                        rs.close();
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -196,5 +198,18 @@ public class JDBCMetadata extends MetadataImplementation {
 
     public final DatabaseMetaData getDmd() {
         return dmd;
+    }
+
+    /**
+     * Ignore reported catalogs from driver.
+     *
+     * Seems some drivers (aka the Pointbase jdbc driver) don't support catalogs
+     * but against all assumptions report catalog names for getCatalogs(). These
+     * names are bogus and need to be ignored.
+     *
+     * @return
+     */
+    private boolean driverReportsBogusCatalogNames() throws SQLException {
+        return "PointBase JDBC Driver".equals(dmd.getDriverName());
     }
 }

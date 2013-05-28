@@ -246,6 +246,7 @@ public class OperatorPrecedence {
             case NEW_CLASS:
             case METHOD_INVOCATION:
             case STRING_LITERAL:
+            case PARENTHESIZED:
                 return false;
             default:
                 return true;

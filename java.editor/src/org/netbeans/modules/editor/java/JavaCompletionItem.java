@@ -257,8 +257,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         return new ChainedMembersItem(info, chainedElems, chainedTypes, substitutionOffset, isDeprecated, addSemicolon, whiteList);
     }
 
-    public static JavaCompletionItem createInitializeAllConstructorItem(CompilationInfo info, Iterable<? extends VariableElement> fields, ExecutableElement superConstructor, TypeElement parent, int substitutionOffset) {
-        return new InitializeAllConstructorItem(info, fields, superConstructor, parent, substitutionOffset);
+    public static JavaCompletionItem createInitializeAllConstructorItem(CompilationInfo info, boolean isDefault, Iterable<? extends VariableElement> fields, ExecutableElement superConstructor, TypeElement parent, int substitutionOffset) {
+        return new InitializeAllConstructorItem(info, isDefault, fields, superConstructor, parent, substitutionOffset);
     }
 
     public static final String COLOR_END = "</font>"; //NOI18N
@@ -3111,11 +3111,18 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         @Override
-        protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
+        protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, CharSequence toAdd) {
+            if (toAdd.length() > 0 && toAdd.charAt(toAdd.length() - 1) == '.') {
+                if (typeName.length() == length) {
+                    return super.substituteText(c, offset + length, 0, ".", null); //NOI18N
+                }
+                toAdd = toAdd.subSequence(0, toAdd.length() - 1);
+            }
             super.substituteText(c, offset, length, null, null);
             final BaseDocument doc = (BaseDocument)c.getDocument();
             final StringBuilder template = new StringBuilder();
             final AtomicBoolean cancel = new AtomicBoolean();
+            final CharSequence finalToAdd = toAdd;
             ProgressUtils.runOffEventDispatchThread(new Runnable() {
                 @Override
                 public void run() {
@@ -3212,8 +3219,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                     }
                                     template.append(")");//NOI18N
                                 }
-                                if (toAdd != null) {
-                                    template.append(toAdd);
+                                if (finalToAdd != null) {
+                                    template.append(finalToAdd);
                                 }
                             }
                         }).commit();
@@ -3472,7 +3479,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
 
         @Override
-        protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, final CharSequence toAdd) {
+        protected CharSequence substituteText(final JTextComponent c, final int offset, final int length, final CharSequence text, CharSequence toAdd) {
+            if (toAdd.length() > 0 && toAdd.charAt(toAdd.length() - 1) == '.') {
+                if (firstMemberName.length() == length) {
+                    return super.substituteText(c, offset + length, 0, ".", null); //NOI18N
+                }
+                toAdd = toAdd.subSequence(0, toAdd.length() - 1);
+            }
             StringBuilder sb = new StringBuilder();
             boolean asTemplate = false;
             for (Iterator<MemberDesc> membersIt = members.iterator(); membersIt.hasNext();) {
@@ -3557,6 +3570,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String PARAMETER_NAME_COLOR = "<font color=#b200b2>"; //NOI18N
         private static ImageIcon icon;
 
+        private boolean isDefault;
         private List<ElementHandle<VariableElement>> fieldHandles;
         private ElementHandle<TypeElement> parentHandle;
         private ElementHandle<ExecutableElement> superConstructorHandle;
@@ -3565,19 +3579,24 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private String sortText;
         private String leftText;
 
-        private InitializeAllConstructorItem(CompilationInfo info, Iterable<? extends VariableElement> fields, ExecutableElement superConstructor, TypeElement parent, int substitutionOffset) {
+        private InitializeAllConstructorItem(CompilationInfo info, boolean isDefault, Iterable<? extends VariableElement> fields, ExecutableElement superConstructor, TypeElement parent, int substitutionOffset) {
             super(substitutionOffset);
+            this.isDefault = isDefault;
             this.fieldHandles = new ArrayList<ElementHandle<VariableElement>>();
             this.parentHandle = ElementHandle.create(parent);
             this.params = new ArrayList<ParamDesc>();
             for (VariableElement ve : fields) {
                 this.fieldHandles.add(ElementHandle.create(ve));
-                this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), ve.getSimpleName().toString()));
+                if (!isDefault) {
+                    this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), ve.getSimpleName().toString()));
+                }
             }
             if (superConstructor != null) {
                 this.superConstructorHandle = ElementHandle.create(superConstructor);
-                for (VariableElement ve : superConstructor.getParameters()) {
-                    this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), ve.getSimpleName().toString()));
+                if (!isDefault) {
+                    for (VariableElement ve : superConstructor.getParameters()) {
+                        this.params.add(new ParamDesc(null, Utilities.getTypeName(info, ve.asType(), false).toString(), ve.getSimpleName().toString()));
+                    }
                 }
             } else {
                 this.superConstructorHandle = null;
@@ -3680,7 +3699,9 @@ public abstract class JavaCompletionItem implements CompletionItem {
                                 ExecutableElement superConstructor = superConstructorHandle != null ? superConstructorHandle.resolve(copy) : null;
                                 ClassTree clazz = (ClassTree) tp.getLeaf();
                                 GeneratorUtilities gu = GeneratorUtilities.get(copy);
-                                ClassTree decl = GeneratorUtils.insertClassMember(copy, clazz, gu.createConstructor(parent, fieldElements, superConstructor), embeddedOffset);
+                                MethodTree ctor = isDefault ? gu.createDefaultConstructor(parent, fieldElements, superConstructor)
+                                        : gu.createConstructor(parent, fieldElements, superConstructor);
+                                ClassTree decl = GeneratorUtils.insertClassMember(copy, clazz, ctor, embeddedOffset);
                                 copy.rewrite(clazz, decl);
                             }
                         }

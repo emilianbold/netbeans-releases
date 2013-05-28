@@ -116,7 +116,7 @@ public final class CppSettings extends SharedClassObject {
     public String getReplaceableStringsTable() {
         String table = getPreferences().get(PROP_REPLACEABLE_STRINGS_TABLE, null);
         if (table == null) {
-            return "USER=" + System.getProperty("user.name"); // NOI18N
+            return "";
         } else {
             return table;
         }

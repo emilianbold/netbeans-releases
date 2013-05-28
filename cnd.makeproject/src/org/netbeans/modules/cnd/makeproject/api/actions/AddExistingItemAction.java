@@ -59,7 +59,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.Folder;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.ProjectSupport;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -145,16 +145,19 @@ public class AddExistingItemAction extends NodeAction {
             return;
         }
 
-	File[] files = fileChooser.getSelectedFiles();
+        File[] files = fileChooser.getSelectedFiles();
+        if (files.length > 0) {
+            RemoteFileUtil.setCurrentChooserFile(files[0].getParent(), env);
+        }
         addFilesWorker(project, projectDescriptor, folder, files);
 //	boolean notifySources = false;
 //      ArrayList<Item> items = new ArrayList<Item>();
 //	for (int i = 0; i < files.length; i++) {
 //	    String itemPath;
 //	    if (PathPanel.getMode() == PathPanel.REL_OR_ABS)
-//		itemPath = CndPathUtilitities.toAbsoluteOrRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
+//		itemPath = CndPathUtilities.toAbsoluteOrRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
 //	    else if (PathPanel.getMode() == PathPanel.REL)
-//		itemPath = CndPathUtilitities.toRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
+//		itemPath = CndPathUtilities.toRelativePath(projectDescriptor.getBaseDir(), files[i].getPath());
 //	    else
 //		itemPath = files[i].getPath();
 //	    itemPath = FilePathAdaptor.normalize(itemPath);
@@ -167,7 +170,7 @@ public class AddExistingItemAction extends NodeAction {
 //                Item item = new Item(itemPath);
 //		folder.addItemAction(item);
 //                items.add(item);
-//		if (CndPathUtilitities.isPathAbsolute(itemPath))
+//		if (CndPathUtilities.isPathAbsolute(itemPath))
 //		    notifySources = true;
 //	    }
 //	}
@@ -186,7 +189,7 @@ public class AddExistingItemAction extends NodeAction {
                 ArrayList<Item> items = new ArrayList<Item>();
                 for (int i = 0; i < files.length; i++) {
                     String itemPath = ProjectSupport.toProperPath(projectDescriptor.getBaseDir(), files[i].getPath(), project);
-                    itemPath = CndPathUtilitities.normalizeSlashes(itemPath);
+                    itemPath = CndPathUtilities.normalizeSlashes(itemPath);
                     if (((MakeConfigurationDescriptor) projectDescriptor).findProjectItemByPath(itemPath) != null) {
                         String errormsg = getString("AlreadyInProjectError", itemPath); // NOI18N
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
@@ -195,7 +198,7 @@ public class AddExistingItemAction extends NodeAction {
                         Item item = Item.createInFileSystem(((MakeConfigurationDescriptor) projectDescriptor).getBaseDirFileSystem(), itemPath);
                         folder.addItemAction(item);
                         items.add(item);
-                        if (CndPathUtilitities.isPathAbsolute(itemPath)) {
+                        if (CndPathUtilities.isPathAbsolute(itemPath)) {
                             notifySources = true;
                         }
                     }

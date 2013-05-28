@@ -88,7 +88,7 @@ import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
 import org.netbeans.modules.cnd.makeproject.runprofiles.ui.RerunArguments;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.SelectExecutablePanel;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.dlight.api.terminal.TerminalSupport;
@@ -181,8 +181,7 @@ public class ProjectActionSupport {
             }
             // IZ#201761  -  Too long refreshing file system after build.
             // refresh can take a lot of time for slow file systems
-            // so we use worker and schedule it out of build process if auto refresh
-            // is turned off by user in Tools->Options->Misk->Files->Enable auto-scanning of sources
+            // so we use worker and schedule it out of build process
             final Runnable refresher = new Runnable() {
 
                 @Override
@@ -198,23 +197,16 @@ public class ProjectActionSupport {
                     }
                 }
             };
-            final Preferences nd = NbPreferences.root().node("org/openide/actions/FileSystemRefreshAction"); // NOI18N
-            boolean manual = (nd != null) && nd.getBoolean("manual", false);// NOI18N
-            if (manual) {
-                RP.post(new Runnable() {
+            // Always redirect into RP, otherwise status of build is not displayed for a long time
+            RP.post(new Runnable() {
 
-                    @Override
-                    public void run() {
-                        FileUtil.runAtomicAction(refresher);
-                        fon.onFinish(curPAE);
-                        MakeLogicalViewProvider.refreshBrokenItems(project);
-                    }
-                });
-            } else {
-                FileUtil.runAtomicAction(refresher);
-                fon.onFinish(curPAE);
-                MakeLogicalViewProvider.refreshBrokenItems(project);
-            }
+                @Override
+                public void run() {
+                    FileUtil.runAtomicAction(refresher);
+                    fon.onFinish(curPAE);
+                    MakeLogicalViewProvider.refreshBrokenItems(project);
+                }
+            });
         } catch (Exception e) {
             LOGGER.log(Level.INFO, "Cannot refresh project files", e);
         }
@@ -698,7 +690,7 @@ public class ProjectActionSupport {
                 return false;
             }
             // Check existence of executable
-            if (!CndPathUtilitities.isPathAbsolute(executable)) { // NOI18N
+            if (!CndPathUtilities.isPathAbsolute(executable)) { // NOI18N
                 //executable is relative to run directory - convert to absolute and check. Should be safe (?).
                 String runDir = pae.getProfile().getRunDir();
                 if (runDir != null) {
@@ -718,19 +710,19 @@ public class ProjectActionSupport {
                     }
                 }
                 if (runDir == null || runDir.length() == 0) {
-                    executable = CndPathUtilitities.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
+                    executable = CndPathUtilities.toAbsolutePath(pae.getConfiguration().getBaseDir(), executable);
                 } else {
-                    runDir = CndPathUtilitities.toAbsolutePath(pae.getConfiguration().getBaseDir(), runDir);
+                    runDir = CndPathUtilities.toAbsolutePath(pae.getConfiguration().getBaseDir(), runDir);
                     if (pae.getConfiguration().getBaseDir().equals(runDir)) {
                         // In case if runDir is .
-                        executable = CndPathUtilitities.toAbsolutePath(runDir, executable);
+                        executable = CndPathUtilities.toAbsolutePath(runDir, executable);
                     } else {
-                        executable = CndPathUtilitities.toAbsolutePath(runDir, CndPathUtilitities.getBaseName(executable));
+                        executable = CndPathUtilities.toAbsolutePath(runDir, CndPathUtilities.getBaseName(executable));
                     }
                 }
-                executable = CndPathUtilitities.normalizeSlashes(executable);
+                executable = CndPathUtilities.normalizeSlashes(executable);
             }
-            if (CndPathUtilitities.isPathAbsolute(executable)) {
+            if (CndPathUtilities.isPathAbsolute(executable)) {
                 MakeConfiguration conf = pae.getConfiguration();
                 boolean ok = true;
 

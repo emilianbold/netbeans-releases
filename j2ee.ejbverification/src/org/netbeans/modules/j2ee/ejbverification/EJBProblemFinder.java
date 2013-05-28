@@ -85,6 +85,10 @@ public abstract class EJBProblemFinder {
         assert file != null;
         this.file = file;
     }
+
+    protected EJBVerificationRule forRule() {
+        return null;
+    }
     
     public void run(final CompilationInfo info) throws Exception{
 
@@ -120,9 +124,8 @@ public abstract class EJBProblemFinder {
             ejbModule.getMetadataModel().runReadAction(new MetadataModelAction<EjbJarMetadata, Void>() {
                 public Void run(EjbJarMetadata metadata) {
                     String ejbVersion = metadata.getRoot().getVersion().toString();
-                    if (!org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_3_0.equals(ejbVersion) &&
-                        !org.netbeans.modules.j2ee.dd.api.ejb.EjbJar.VERSION_3_1.equals(ejbVersion)){
-                        return null; // Only EJB 3.0 and 3.1 are supported
+                    if (!HintsUtils.isEjb30Plus(ejbVersion)){
+                        return null; // Only EJB 3.0+ are supported
                     }
                     for (Tree tree : info.getCompilationUnit().getTypeDecls()){
                         if (isCancelled()){
@@ -137,8 +140,12 @@ public abstract class EJBProblemFinder {
                             Ejb ejb = metadata.findByEjbClass(javaClass.getQualifiedName().toString());
                             
                             EJBProblemContext ctx = new EJBProblemContext(info, prj, ejbModule, file, javaClass, ejb, metadata);
-                            
-                            problemsFound.addAll(EJBRulesRegistry.check(ctx));
+
+                            if (forRule() == null) {
+                                problemsFound.addAll(EJBRulesRegistry.check(ctx));
+                            } else {
+                                problemsFound.addAll(forRule().check(ctx));
+                            }
                             
                             if (LOG.isLoggable(Level.FINE)){
                                 long timeElapsed = Calendar.getInstance().getTimeInMillis() - startTime;

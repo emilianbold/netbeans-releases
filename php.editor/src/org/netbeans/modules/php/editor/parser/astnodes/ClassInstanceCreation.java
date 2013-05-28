@@ -56,7 +56,7 @@ import java.util.List;
 public class ClassInstanceCreation extends Expression {
 
     private ClassName className;
-    private ArrayList<Expression> ctorParams = new ArrayList<Expression>();
+    private ArrayList<Expression> ctorParams = new ArrayList<>();
 
     public ClassInstanceCreation(int start, int end, ClassName className, Expression[] ctorParams) {
         super(start, end);

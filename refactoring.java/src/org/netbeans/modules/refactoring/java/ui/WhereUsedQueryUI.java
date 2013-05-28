@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.refactoring.java.ui;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -303,6 +305,19 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
         Element el = handle.resolveElement(info);
         if (el == null) {
             return null;
+        }
+        if(el.getKind() == ElementKind.CLASS) {
+            TreePath path = handle.resolve(info);
+            if(path != null && path.getParentPath() != null) {
+                TreePath parentPath = path.getParentPath();
+                if(parentPath.getLeaf().getKind() == Tree.Kind.NEW_CLASS) {
+                    Element newClass = info.getTrees().getElement(parentPath);
+                    if(newClass != null) {
+                        handle = TreePathHandle.create(newClass, info);
+                        el = newClass;
+                    }
+                }
+            }
         }
         final List<Pair<Pair<String, Icon>, TreePathHandle>> classes;
         if(el.getKind() == ElementKind.CONSTRUCTOR || el.getKind() == ElementKind.METHOD) {

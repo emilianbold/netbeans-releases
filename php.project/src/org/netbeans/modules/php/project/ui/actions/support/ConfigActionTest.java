@@ -333,7 +333,7 @@ class ConfigActionTest extends ConfigAction {
         //~ Mappers
 
         private Collection<TestRunInfo.TestInfo> map(Set<Testcase> tests) {
-            Set<TestRunInfo.TestInfo> testCases = new HashSet<TestRunInfo.TestInfo>();
+            Set<TestRunInfo.TestInfo> testCases = new HashSet<>();
             for (Testcase test : tests) {
                 testCases.add(new TestRunInfo.TestInfo(test.getType(), test.getName(), test.getClassName(), test.getLocation()));
             }

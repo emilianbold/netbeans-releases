@@ -200,7 +200,7 @@ public abstract class TransferFile {
         initChildren();
         childrenLock.readLock().lock();
         try {
-            return new ArrayList<TransferFile>(children);
+            return new ArrayList<>(children);
         } finally {
             childrenLock.readLock().unlock();
         }
@@ -337,7 +337,7 @@ public abstract class TransferFile {
         if (getParent() != null) {
             return getParent().getRemotePath();
         }
-        List<String> fragments = new ArrayList<String>(StringUtils.explode(getRemotePath(), REMOTE_PATH_SEPARATOR));
+        List<String> fragments = new ArrayList<>(StringUtils.explode(getRemotePath(), REMOTE_PATH_SEPARATOR));
         fragments.remove(fragments.size() - 1);
         if (fragments.isEmpty()) {
             return REMOTE_PROJECT_ROOT;
@@ -501,7 +501,7 @@ public abstract class TransferFile {
                 childrenLock.writeLock().lock();
                 try {
                     if (children == null) {
-                        children = new LinkedHashSet<TransferFile>();
+                        children = new LinkedHashSet<>();
                         fetchChildren = true;
                     }
                 } finally {

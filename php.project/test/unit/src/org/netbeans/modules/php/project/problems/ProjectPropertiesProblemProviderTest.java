@@ -153,7 +153,7 @@ public class ProjectPropertiesProblemProviderTest extends PhpTestCase {
     }
 
     private Map<String, String> getBrokenProperties() {
-        Map<String, String> brokenProperties = new HashMap<String, String>();
+        Map<String, String> brokenProperties = new HashMap<>();
         brokenProperties.put(PhpProjectProperties.SRC_DIR, "nondir");
         brokenProperties.put(PhpProjectProperties.TEST_SRC_DIR, "nondir");
         brokenProperties.put(PhpProjectProperties.SELENIUM_SRC_DIR, "nondir");

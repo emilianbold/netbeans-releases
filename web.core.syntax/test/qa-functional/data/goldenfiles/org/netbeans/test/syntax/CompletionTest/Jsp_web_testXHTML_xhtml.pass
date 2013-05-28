@@ -5,9 +5,11 @@ Html Basic <h:column >
 Html Basic <h:commandButton >
 Html Basic <h:commandLink >
 Html Basic <h:dataTable >
+Html Basic <h:doctype >
 Html Basic <h:form >
 Html Basic <h:graphicImage >
 Html Basic <h:head >
+Html Basic <h:inputFile >
 Html Basic <h:inputHidden >
 Html Basic <h:inputSecret >
 Html Basic <h:inputText >

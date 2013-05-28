@@ -73,7 +73,7 @@ public class PHPCodeTemplateFilterTest extends PHPCodeCompletionTestBase {
         Document document = getDocument(modifiedSource, PHP_MIME_TYPE);
         assertNotNull(document);
         Collection<? extends CodeTemplate> codeTemplates = getCodeTemplates(document);
-        PHPCodeTemplateFilter filter = new PHPCodeTemplateFilter(document, sourcePos);
+        PHPCodeTemplateFilter filter = new PHPCodeTemplateFilter();
         assertNotNull(filter);
         for (CodeTemplate codeTemplate : codeTemplates) {
             assertEquals("Code template: " + codeTemplate.toString(), expected, filter.accept(codeTemplate));
@@ -88,7 +88,7 @@ public class PHPCodeTemplateFilterTest extends PHPCodeCompletionTestBase {
         Document document = getDocument(modifiedSource, PHP_MIME_TYPE);
         assertNotNull(document);
         Collection<? extends CodeTemplate> codeTemplates = getCodeTemplates(document);
-        PHPCodeTemplateFilter filter = new PHPCodeTemplateFilter(document, sourcePos);
+        PHPCodeTemplateFilter filter = new PHPCodeTemplateFilter();
         assertNotNull(filter);
         for (CodeTemplate codeTemplate : codeTemplates) {
             if (codeTemplate.getAbbreviation().equals(abbreviation)) {
@@ -107,7 +107,7 @@ public class PHPCodeTemplateFilterTest extends PHPCodeCompletionTestBase {
         CodeTemplateManager templateManager = CodeTemplateManager.get(document);
         assertNotNull(templateManager);
         CodeTemplate codeTemplate = templateManager.createTemporary("no conext template");
-        PHPCodeTemplateFilter filter = new PHPCodeTemplateFilter(document, sourcePos);
+        PHPCodeTemplateFilter filter = new PHPCodeTemplateFilter();
         assertEquals("Code template: " + codeTemplate.toString(), expected, filter.accept(codeTemplate));
     }
 
@@ -124,7 +124,7 @@ public class PHPCodeTemplateFilterTest extends PHPCodeCompletionTestBase {
 
     public void testClsInCls() throws Exception {
         String source = "<?php\nclass Foo {^} \n?>";
-        checkTemplate(source, false, "cls");
+        checkTemplate(source, true, "cls");
     }
 
     public void testNoContextTemplateInClass() throws Exception {
@@ -154,7 +154,7 @@ public class PHPCodeTemplateFilterTest extends PHPCodeCompletionTestBase {
 
     public void testIfncInCls() throws Exception {
         String source = "<?php\nclass MyCls { \n ^ \n} \n?>";
-        checkTemplate(source, false, "ifnc");
+        checkTemplate(source, true, "ifnc");
     }
 
     @Override

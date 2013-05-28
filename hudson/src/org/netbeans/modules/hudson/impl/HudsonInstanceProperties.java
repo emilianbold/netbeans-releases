@@ -55,12 +55,7 @@ import java.util.Map;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import static org.netbeans.modules.hudson.constants.HudsonInstanceConstants.*;
-import static org.netbeans.modules.hudson.impl.Bundle.*;
-import org.openide.nodes.Node;
-import org.openide.nodes.PropertySupport;
-import org.openide.nodes.Sheet;
 import org.openide.util.Exceptions;
-import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -70,7 +65,6 @@ import org.openide.util.RequestProcessor;
  */
 public class HudsonInstanceProperties extends HashMap<String,String> {
     
-    private Sheet.Set set;
     private static final RequestProcessor RP = new RequestProcessor(
             HudsonInstanceProperties.class);
     
@@ -110,54 +104,6 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
         return pers == null || TRUE.equals(pers);
     }
 
-    @Messages({
-        "TXT_Instance_Prop_Name=Name",
-        "DESC_Instance_Prop_Name=Hudson's instance name",
-        "TXT_Instance_Prop_Url=URL",
-        "DESC_Instance_Prop_Url=Hudson's instance URL",
-        "TXT_Instance_Prop_Sync=Autosynchronization time",
-        "DESC_Instance_Prop_Sync=Autosynchronization time in minutes (if it's 0 the autosynchronization is off)"
-    })
-    public Sheet.Set getSheetSet() {
-        if (null == set) {
-            set = Sheet.createPropertiesSet();
-            
-            // Set display name
-            set.setDisplayName(get(INSTANCE_NAME));
-            
-            // Put properties in
-            set.put(new Node.Property<?>[] {
-                new HudsonInstanceProperty(INSTANCE_NAME,
-                        TXT_Instance_Prop_Name(),
-                        DESC_Instance_Prop_Name(),
-                        true, false),
-                        new HudsonInstanceProperty(INSTANCE_URL,
-                        TXT_Instance_Prop_Url(),
-                        DESC_Instance_Prop_Url(),
-                        true, false),
-                        new PropertySupport<Integer>(INSTANCE_SYNC, Integer.class,
-                        TXT_Instance_Prop_Sync(),
-                        DESC_Instance_Prop_Sync(),
-                        true, true) {
-                            @Override public Integer getValue() {
-                                return Integer.valueOf(get(INSTANCE_SYNC));
-                            }
-                            @Override public void setValue(Integer val) {
-                                if (val == null || val < 0) {
-                                    throw new IllegalArgumentException();
-                                }
-                                put(INSTANCE_SYNC, val.toString());
-                            }
-                            public @Override boolean canWrite() {
-                                return isPersisted();
-                            }
-                        }
-            });
-        }
-        
-        return set;
-    }
-    
     public void addPropertyChangeListener(PropertyChangeListener l) {
         pcs.addPropertyChangeListener(l);
     }
@@ -168,27 +114,6 @@ public class HudsonInstanceProperties extends HashMap<String,String> {
     
     public List<PropertyChangeListener> getCurrentListeners() {
         return Arrays.asList(pcs.getPropertyChangeListeners());
-    }
-
-    private class HudsonInstanceProperty extends PropertySupport<String> {
-        
-        private String key;
-        
-        HudsonInstanceProperty(String key, String name, String desc, boolean read, boolean write) {
-            super(key, String.class, name, desc, read, write);
-            
-            this.key = key;
-        }
-        
-        @Override
-        public void setValue(String value) {
-            put(key, value);
-        }
-        
-        @Override
-        public String getValue() {
-            return get(key);
-        }
     }
 
     public static List<String> split(String prop) {

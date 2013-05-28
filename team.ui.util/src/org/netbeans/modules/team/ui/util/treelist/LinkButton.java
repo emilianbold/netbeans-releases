@@ -63,6 +63,7 @@ import javax.swing.plaf.UIResource;
  * @author S. Aubrecht
  */
 public class LinkButton extends JButton {
+    private final boolean handlePopupEvents;
 
     /**
      * C'tor
@@ -85,7 +86,7 @@ public class LinkButton extends JButton {
     public LinkButton(Icon icon, Action a) {
         setIcon(icon);
         setPressedIcon(icon);
-
+        this.handlePopupEvents = true;
         init(a);
     }
 
@@ -105,6 +106,7 @@ public class LinkButton extends JButton {
         if (null != tooltip) {
             setToolTipText(tooltip.toString());
         }
+        this.handlePopupEvents = true;
         init(a);
     }
 
@@ -116,8 +118,23 @@ public class LinkButton extends JButton {
      * the button is disabled then.
      */
     public LinkButton(String text, Action a) {
-        super(text);
+        this(text, true, a);
+    }
 
+    /**
+     * C'tor
+     *
+     * @param text
+     * @param handlePopupEvents popup trigger events are dispatched for handling to the button 
+     *                          The default button behavior is <code>true</code>, set <code>false</code> 
+     *                          in case popup events should be handled directly by TreeList instead.
+     * @param al Action to invoke when the button is pressed, can be null but
+     * the button is disabled then.
+     */    
+    public LinkButton(String text, boolean handlePopupEvents, Action a) {
+        super(text);
+        this.handlePopupEvents = handlePopupEvents;
+        
         if (null != a) {
             Icon icon = (Icon) a.getValue(Action.SMALL_ICON);
             if (null != icon) {
@@ -132,6 +149,10 @@ public class LinkButton extends JButton {
         init(a);
     }
 
+    boolean isHandlingPopupEvents() {
+        return handlePopupEvents;
+    }
+    
     /**
      * Adjust foreground color
      *

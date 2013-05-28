@@ -113,7 +113,11 @@ class SearchExecutor extends HgProgressSupport {
         branchName = criteria.getBranch();
         
         pathToRoot = new HashMap<String, File>(); 
-        root = Mercurial.getInstance().getRepositoryRoot(master.getRoots()[0]);
+        File rootFile = Mercurial.getInstance().getRepositoryRoot(master.getRoots()[0]);
+        if (rootFile == null) {
+            rootFile = master.getRoots()[0];
+        }
+        root = rootFile;
         files = new HashSet<File>(Arrays.asList(master.getRoots()));
 
     }    

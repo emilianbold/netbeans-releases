@@ -227,7 +227,6 @@ public final class CommonTasksSupport {
     }
 
     public static Future<UploadStatus> uploadFile(UploadParameters parameters) {
-        parameters = parameters.copy();
         return SftpSupport.getInstance(parameters.dstExecEnv).uploadFile(parameters);
     }
 
@@ -255,7 +254,7 @@ public final class CommonTasksSupport {
             final String dstFileName,
             final int mask) {
         return SftpSupport.getInstance(dstExecEnv).uploadFile(new UploadParameters(
-                new File(srcFileName), dstExecEnv, dstFileName, mask, false, null));
+                new File(srcFileName), dstExecEnv, dstFileName, null, mask, false, null));
     }
 
     /**
@@ -285,7 +284,7 @@ public final class CommonTasksSupport {
             final int mask, boolean checkMd5) {
 
         return SftpSupport.getInstance(dstExecEnv).uploadFile(new UploadParameters(
-                new File(srcFileName), dstExecEnv, dstFileName, mask, checkMd5, null));
+                new File(srcFileName), dstExecEnv, dstFileName, null, mask, checkMd5, null));
     }
 
     /**
@@ -312,7 +311,7 @@ public final class CommonTasksSupport {
             final String dstFileName,
             final int mask) {
 
-        return SftpSupport.getInstance(dstExecEnv).uploadFile(new UploadParameters(srcFile, dstExecEnv, dstFileName, mask, false, null));
+        return SftpSupport.getInstance(dstExecEnv).uploadFile(new UploadParameters(srcFile, dstExecEnv, dstFileName, null, mask, false, null));
     }
 
     /**
@@ -342,7 +341,7 @@ public final class CommonTasksSupport {
             final int mask, boolean checkMd5) {
 
         return SftpSupport.getInstance(dstExecEnv).uploadFile(new UploadParameters(
-                srcFile, dstExecEnv, dstFileName, mask, checkMd5, null));
+                srcFile, dstExecEnv, dstFileName, null, mask, checkMd5, null));
     }
 
     /**
@@ -548,7 +547,7 @@ public final class CommonTasksSupport {
     /**
      * A class (an analog of C struct) that contains upload parameters.
      */
-    public static class UploadParameters  {
+    public static final class UploadParameters  {
         
         /**
          * specifies full path to the source file on the local host
@@ -563,16 +562,18 @@ public final class CommonTasksSupport {
          */
         public final String dstFileName;
 
+        public final String dstFileToRename;
+
         /**
          * File mode creation mask (see uname(1), chmod(1)), in octal.
          * iIf it is less than zero (which is the default),
          * then the default mask is used (for existent files, it stays the same it was,
          * for new files as specified by umask command))
          */
-        public int mask;
+        public final int mask;
 
         /** */
-        public ChangeListener callback;
+        public final ChangeListener callback;
 
         /**
          * Of true, then the source file will be copied to destination only if
@@ -581,27 +582,27 @@ public final class CommonTasksSupport {
         public boolean checkMd5;
 
         public UploadParameters(File srcFile, ExecutionEnvironment dstExecEnv, String dstFileName) {
-            this.srcFile = srcFile;
-            this.dstExecEnv = dstExecEnv;
-            this.dstFileName = dstFileName;
-            mask = -1;
-            callback = null;
-            checkMd5 = false;
+            this(srcFile, dstExecEnv, dstFileName, null, -1, false, null);
         }
 
         public UploadParameters(File srcFile, ExecutionEnvironment dstExecEnv, String dstFileName, int mask) {
-            this(srcFile, dstExecEnv, dstFileName, mask, false, null);
+            this(srcFile, dstExecEnv, dstFileName, null, mask, false, null);
         }
 
-        public UploadParameters(File srcFile, ExecutionEnvironment dstExecEnv, String dstFileName, int mask, boolean checkMd5, ChangeListener callback) {
-            this(srcFile, dstExecEnv, dstFileName);
+        public UploadParameters(File srcFile, ExecutionEnvironment dstExecEnv, String dstFileName, String dstFileToRename, int mask, boolean checkMd5, ChangeListener callback) {
+            this.srcFile = srcFile;
+            this.dstExecEnv = dstExecEnv;
+            this.dstFileName = dstFileName;
+            this.dstFileToRename = dstFileToRename;
             this.mask = mask;
             this.checkMd5 = checkMd5;
             this.callback = callback;
         }
 
-        /*package*/ UploadParameters copy() {
-            return new UploadParameters(srcFile, dstExecEnv, dstFileName, mask, checkMd5, callback);
+        @Override
+        public String toString() {
+            return "UploadParameters " + "src=" + srcFile + " env=" + dstExecEnv + " dst=" + dstFileName + //NOI18N
+                    "rename=" + dstFileToRename + " mask=" + mask + " md5=" + checkMd5; //NOI18N
         }
     }
 

@@ -1126,7 +1126,13 @@ public /*abstract*/ class Instantiation<T extends CsmOffsetableDeclaration> exte
                 parameter = paramType.getParameter();
                 newType = Instantiation.resolveTemplateParameterType(type, instantiation);
                 if (newType != null) {
-                    newType = TypeFactory.createType(newType, origType.getPointerDepth(), TypeFactory.getReferenceValue(origType), origType.getArrayDepth(), origType.isConst());
+                    newType = TypeFactory.createType(
+                            newType, 
+                            newType.getPointerDepth() + origType.getPointerDepth(), 
+                            TypeFactory.getReferenceValue(origType), 
+                            newType.getArrayDepth()+ origType.getArrayDepth(),
+                            origType.isConst()
+                    );                    
                     CsmTemplateParameter p = paramType.getParameter();
                     if (CsmKindUtilities.isTemplate(p)) {
                         CsmType paramTemplateType = paramType.getTemplateType();

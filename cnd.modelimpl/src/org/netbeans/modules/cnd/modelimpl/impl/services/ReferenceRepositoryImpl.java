@@ -92,6 +92,7 @@ import org.netbeans.modules.cnd.modelimpl.repository.KeyUtilities;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDCsmConverter;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.support.Interrupter;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.openide.util.CharSequences;
 
 /**
@@ -490,13 +491,19 @@ public final class ReferenceRepositoryImpl extends CsmReferenceRepository {
                     if (prj instanceof ProjectBase) {
                         ProjectBase prjBase = (ProjectBase)prj;
                         if (key.getUnitId() == prjBase.getUnitId()) {
-                            CharSequence path = KeyUtilities.getFileNameById(key.getUnitId(), key.getFileNameIndex());
-                            FileImpl file = prjBase.getFile(path, false);
-                            if (file != null) {
-                                res.add(file);
-                                break;
+                            CharSequence path = KeyUtilities.getFileNameByIdSafe(key.getUnitId(), key.getFileNameIndex());
+                            if (path == null || "?".contentEquals(path)) { //NOI18N
+                                if (CndUtils.isDebugMode()) {
+                                    CndUtils.assertTrueInConsole(false, "Can not find file name #" + key.getFileNameIndex() + " in project " + prjBase);
+                                }
                             } else {
-                                APTUtils.LOG.log(Level.INFO, "File {0} was not fould in project {1}", new Object[] {path, prjBase}); //NOI18N
+                                FileImpl file = prjBase.getFile(path, false);
+                                if (file != null) {
+                                    res.add(file);
+                                    break;
+                                } else {
+                                    APTUtils.LOG.log(Level.INFO, "File {0} was not fould in project {1}", new Object[] {path, prjBase}); //NOI18N
+                                }
                             }
                         }
                     }

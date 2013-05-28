@@ -59,7 +59,7 @@ public class SymfonyCommand extends FrameworkCommand {
         super(command, description, displayName);
         assert phpModule != null;
 
-        this.phpModule = new WeakReference<PhpModule>(phpModule);
+        this.phpModule = new WeakReference<>(phpModule);
     }
 
     @Override

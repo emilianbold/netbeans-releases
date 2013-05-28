@@ -303,9 +303,7 @@ public class VCSKenaiSupportImplTest extends NbTestCase {
 
         @Override
         public Object getAttribute(File file, String attrName) {
-            if(attrName.equals("ProvidedExtensions.VCSManaged")) {
-                return true;
-            } else if (attrName.equals("ProvidedExtensions.RemoteLocation")) {
+            if (attrName.equals("ProvidedExtensions.RemoteLocation")) {
                 KenaiFeature feature;
                 try {
                     feature = getSourceFeature(kp);

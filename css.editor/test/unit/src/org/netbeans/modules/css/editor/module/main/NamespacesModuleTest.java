@@ -62,9 +62,14 @@ public class NamespacesModuleTest extends CssModuleTestBase {
     
     public void testNamespacePrefixesCompletion() throws ParseException  {
         String nsdecl = "@namespace foo \"http://foo.org\";\n ";
-//        checkCC(nsdecl + "| ", arr("foo"), Match.CONTAINS);
+        
+        checkCC(nsdecl + "| ", arr("foo"), Match.CONTAINS);
         checkCC(nsdecl + "f| ", arr("foo"), Match.CONTAINS);
         checkCC(nsdecl + "foo| ", arr("foo"), Match.CONTAINS);
+        
+        checkCC(nsdecl + "div {} | ", arr("foo"), Match.CONTAINS);
+        checkCC(nsdecl + "div {} f| ", arr("foo"), Match.CONTAINS);
+        checkCC(nsdecl + "div {} foo| ", arr("foo"), Match.CONTAINS);
 
         checkCC(nsdecl + "h1 | ", arr("foo"), Match.CONTAINS);
         checkCC(nsdecl + "h1 f| ", arr("foo"), Match.CONTAINS);

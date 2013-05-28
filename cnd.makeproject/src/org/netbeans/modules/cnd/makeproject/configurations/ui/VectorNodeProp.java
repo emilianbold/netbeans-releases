@@ -58,20 +58,23 @@ import org.openide.util.HelpCtx;
 
 abstract public class VectorNodeProp extends PropertySupport<List> {
 
-    private VectorConfiguration<String> vectorConfiguration;
-    private BooleanConfiguration inheritValues;
-    private FSPath baseDir;
-    private String[] texts;
-    boolean addPathPanel;
-    private HelpCtx helpCtx;
+    private final VectorConfiguration<String> vectorConfiguration;
+    private final BooleanConfiguration inheritValues;
+    private final FSPath baseDir;
+    private final String[] texts;
+    private final boolean addPathPanel;
+    private final boolean onlyFolder;
+    private final HelpCtx helpCtx;
 
-    public VectorNodeProp(VectorConfiguration<String> vectorConfiguration, BooleanConfiguration inheritValues, FSPath baseDir, String[] texts, boolean addPathPanel, HelpCtx helpCtx) {
+    public VectorNodeProp(VectorConfiguration<String> vectorConfiguration, BooleanConfiguration inheritValues, FSPath baseDir, 
+            String[] texts, boolean addPathPanel, boolean onlyFolder, HelpCtx helpCtx) {
         super(texts[0], List.class, texts[1], texts[2], true, true);
         this.vectorConfiguration = vectorConfiguration;
         this.inheritValues = inheritValues;
         this.baseDir = baseDir;
         this.texts = texts;
         this.addPathPanel = addPathPanel;
+        this.onlyFolder = onlyFolder;
         this.helpCtx = helpCtx;
     }
 
@@ -144,7 +147,7 @@ abstract public class VectorNodeProp extends PropertySupport<List> {
             if (inheritValues != null) {
                 text = texts[3];
             }
-            return new DirectoryChooserPanel(baseDir, value, addPathPanel, inheritValues, text, this, env, helpCtx);
+            return new DirectoryChooserPanel(baseDir, value, addPathPanel, inheritValues, text, this, env, VectorNodeProp.this.onlyFolder, helpCtx);
         }
 
         @Override

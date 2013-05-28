@@ -89,7 +89,7 @@ public abstract class RemoteCommand extends Command {
     private static final Color COLOR_IGNORE = Color.ORANGE.darker();
 
     private static final RequestProcessor RP = new RequestProcessor("Remote connection", 1); // NOI18N
-    private static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<Runnable>();
+    private static final Queue<Runnable> RUNNABLES = new ConcurrentLinkedQueue<>();
     private static final RequestProcessor.Task TASK = RP.create(new Runnable() {
         @Override
         public void run() {
@@ -188,7 +188,7 @@ public abstract class RemoteCommand extends Command {
         int files = 0;
         if (transferInfo.hasAnyTransfered()) {
             printSuccess(io, NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteSucceeded"));
-            ArrayList<TransferFile> sorted = new ArrayList<TransferFile>(transferInfo.getTransfered());
+            ArrayList<TransferFile> sorted = new ArrayList<>(transferInfo.getTransfered());
             Collections.sort(sorted, TransferFile.TRANSFER_FILE_COMPARATOR);
             for (TransferFile file : sorted) {
                 printSuccess(io, maxRelativePath, file);
@@ -201,7 +201,7 @@ public abstract class RemoteCommand extends Command {
 
         if (transferInfo.hasAnyFailed()) {
             err.println(NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteFailed"));
-            Map<TransferFile, String> sorted = new TreeMap<TransferFile, String>(TransferFile.TRANSFER_FILE_COMPARATOR);
+            Map<TransferFile, String> sorted = new TreeMap<>(TransferFile.TRANSFER_FILE_COMPARATOR);
             sorted.putAll(transferInfo.getFailed());
             for (Map.Entry<TransferFile, String> entry : sorted.entrySet()) {
                 printError(err, maxRelativePath, entry.getKey(), entry.getValue());
@@ -210,7 +210,7 @@ public abstract class RemoteCommand extends Command {
 
         if (transferInfo.hasAnyPartiallyFailed()) {
             err.println(NbBundle.getMessage(RemoteCommand.class, "LBL_RemotePartiallyFailed"));
-            Map<TransferFile, String> sorted = new TreeMap<TransferFile, String>(TransferFile.TRANSFER_FILE_COMPARATOR);
+            Map<TransferFile, String> sorted = new TreeMap<>(TransferFile.TRANSFER_FILE_COMPARATOR);
             sorted.putAll(transferInfo.getPartiallyFailed());
             for (Map.Entry<TransferFile, String> entry : sorted.entrySet()) {
                 printError(err, maxRelativePath, entry.getKey(), entry.getValue());
@@ -219,7 +219,7 @@ public abstract class RemoteCommand extends Command {
 
         if (transferInfo.hasAnyIgnored()) {
             printIgnore(io, NbBundle.getMessage(RemoteCommand.class, "LBL_RemoteIgnored"));
-            Map<TransferFile, String> sorted = new TreeMap<TransferFile, String>(TransferFile.TRANSFER_FILE_COMPARATOR);
+            Map<TransferFile, String> sorted = new TreeMap<>(TransferFile.TRANSFER_FILE_COMPARATOR);
             sorted.putAll(transferInfo.getIgnored());
             for (Map.Entry<TransferFile, String> entry : sorted.entrySet()) {
                 printIgnore(io, maxRelativePath, entry.getKey(), entry.getValue());
@@ -353,7 +353,7 @@ public abstract class RemoteCommand extends Command {
      */
     public static final class DefaultOperationMonitor implements RemoteClient.OperationMonitor {
 
-        private final Deque<Operation> operations = new ArrayDeque<Operation>();
+        private final Deque<Operation> operations = new ArrayDeque<>();
         private final ProgressHandle progressHandle;
 
         private int workUnits = 0;

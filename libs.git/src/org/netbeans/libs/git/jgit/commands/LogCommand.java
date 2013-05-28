@@ -52,17 +52,14 @@ import java.util.List;
 import java.util.Map;
 import org.eclipse.jgit.errors.MissingObjectException;
 import org.eclipse.jgit.lib.Constants;
+import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.FollowFilter;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.revwalk.RevSort;
 import org.eclipse.jgit.revwalk.RevWalk;
 import org.eclipse.jgit.revwalk.filter.AndRevFilter;
-import org.eclipse.jgit.revwalk.filter.AuthorRevFilter;
 import org.eclipse.jgit.revwalk.filter.CommitTimeRevFilter;
-import org.eclipse.jgit.revwalk.filter.CommitterRevFilter;
-import org.eclipse.jgit.revwalk.filter.MessageRevFilter;
-import org.eclipse.jgit.revwalk.filter.OrRevFilter;
 import org.eclipse.jgit.revwalk.filter.RevFilter;
 import org.eclipse.jgit.treewalk.filter.AndTreeFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
@@ -72,6 +69,7 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitObjectType;
 import org.netbeans.libs.git.GitRevisionInfo;
+import org.netbeans.libs.git.GitUser;
 import org.netbeans.libs.git.SearchCriteria;
 import org.netbeans.libs.git.jgit.DelegatingGitProgressMonitor;
 import org.netbeans.libs.git.jgit.GitClassFactory;
@@ -148,6 +146,9 @@ public class LogCommand extends GitCommand {
                 int remaining = criteria.getLimit();
                 for (Iterator<RevCommit> it = walk.iterator(); it.hasNext() && !monitor.isCanceled() && remaining != 0;) {
                     RevCommit commit = it.next();
+                    if (!applyCriteriaAfter(criteria, commit)) {
+                        continue;
+                    }
                     addRevision(getClassFactory().createRevisionInfo(fullWalk.parseCommit(commit), repository));
                     --remaining;
                 }
@@ -208,14 +209,14 @@ public class LogCommand extends GitCommand {
             filter = RevFilter.NO_MERGES;
         }
         
-        String username = criteria.getUsername();
-        if (username != null && !(username = username.trim()).isEmpty()) {
-            filter = AndRevFilter.create(filter, OrRevFilter.create(CommitterRevFilter.create(username), AuthorRevFilter.create(username)));
-        }
-        String message = criteria.getMessage();
-        if (message != null && !(message = message.trim()).isEmpty()) {
-            filter = AndRevFilter.create(filter, MessageRevFilter.create(message));
-        }
+//        String username = criteria.getUsername();
+//        if (username != null && !(username = username.trim()).isEmpty()) {
+//            filter = AndRevFilter.create(filter, OrRevFilter.create(CommitterRevFilter.create(username), AuthorRevFilter.create(username)));
+//        }
+//        String message = criteria.getMessage();
+//        if (message != null && !(message = message.trim()).isEmpty()) {
+//            filter = AndRevFilter.create(filter, MessageRevFilter.create(message));
+//        }
         Date from  = criteria.getFrom();
         Date to  = criteria.getTo();
         if (from != null && to != null) {
@@ -226,5 +227,22 @@ public class LogCommand extends GitCommand {
             filter = AndRevFilter.create(filter, CommitTimeRevFilter.before(to));
         }
         walk.setRevFilter(filter);
+    }
+
+    private boolean applyCriteriaAfter (SearchCriteria criteria, RevCommit commit) {
+        boolean apply = true;
+        String username = criteria.getUsername();
+        if (username != null && !(username = username.trim()).isEmpty()) {
+            apply = applyTo(commit.getAuthorIdent(), username) || applyTo(commit.getCommitterIdent(), username);
+        }
+        String message = criteria.getMessage();
+        if (message != null && !(message = message.trim()).isEmpty()) {
+            apply &= commit.getFullMessage().contains(message);
+        }
+        return apply;
+    }
+
+    private boolean applyTo (PersonIdent ident, String pattern) {
+        return ident != null && new GitUser(ident.getName(), ident.getEmailAddress()).toString().contains(pattern);
     }
 }

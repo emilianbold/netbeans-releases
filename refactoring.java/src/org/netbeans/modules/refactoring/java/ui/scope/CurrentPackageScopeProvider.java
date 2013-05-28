@@ -89,6 +89,9 @@ public final class CurrentPackageScopeProvider extends ScopeProvider {
 //            } else {
             packageFolder = file.isFolder()? file : file.getParent();
             String packageName1 = sourceCP.getResourceName(packageFolder, '.', false);
+            if(packageName1 == null) {
+                return false;
+            }
             packageName = packageName1.isEmpty()? "<default package>" : packageName1; //NOI18N
 //            }
         } else {

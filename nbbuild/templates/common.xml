@@ -709,6 +709,7 @@ made subject to such option by the copyright holder.
                         outputdir="${build.test.@{test.type}.results.dir}"
                         workingDir="${build.test.@{test.type}.results.dir}"
                         suitename="${code.name.base}"
+			listener="org.testng.reporters.VerboseReporter"
                 >
                     <classfileset dir="${build.test.@{test.type}.classes.dir}" excludes="${test.excludes}" includes="${test.includes}"/>
                     <propertyset refid="test.@{test.type}.properties"/>
@@ -805,6 +806,7 @@ made subject to such option by the copyright holder.
                          outputdir="${build.test.@{test.type}.results.dir}"
                          workingDir="${build.test.@{test.type}.results.dir}"
                          suitename="${code.name.base}"
+			 listener="org.testng.reporters.VerboseReporter"
                 >
                     <propertyset refid="test.@{test.type}.properties"/>
                     <classpath refid="test.@{test.type}.run.cp"/>
@@ -987,6 +989,7 @@ made subject to such option by the copyright holder.
                         outputdir="${build.test.@{test.type}.results.dir}"
                         workingDir="${build.test.@{test.type}.results.dir}"
                         suitename="${code.name.base}"
+			listener="org.testng.reporters.VerboseReporter"
                 >
                     <propertyset refid="test.@{test.type}.properties"/>
                     <classpath refid="test.@{test.type}.run.cp"/>

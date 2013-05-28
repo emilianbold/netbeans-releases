@@ -193,7 +193,7 @@ public final class SuspendableFileChangeListener implements FileChangeListener {
     public void fileRenamed(FileRenameEvent fe) {
         FSPath newPath = FSPath.toFSPath(fe.getFile());
         String strPrevExt = (fe.getExt() == null || fe.getExt().isEmpty()) ? "" : "." + fe.getExt(); // NOI18N
-        String strPrevPath = CndPathUtilitities.getDirName(newPath.getPath()) + '/' + fe.getName() + strPrevExt; // NOI18N
+        String strPrevPath = CndPathUtilities.getDirName(newPath.getPath()) + '/' + fe.getName() + strPrevExt; // NOI18N
         FSPath prevPath = new FSPath(newPath.getFileSystem(), strPrevPath);
         synchronized (eventsLock) {
             EventWrapper prevPathEvent = events.get(prevPath);

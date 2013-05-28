@@ -95,7 +95,7 @@ import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLWrite
 import org.netbeans.modules.cnd.makeproject.configurations.CppUtils;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.support.Interrupter;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.FileObjectFilter;
@@ -244,7 +244,9 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
         }
         projectItems.clear();
-        sourceRoots.clear();
+        synchronized (sourceRoots) {
+            sourceRoots.clear();
+        }
         testRoots.clear();
         rootFolder = new Folder(this, null, "root", "root", true, Folder.Kind.ROOT); // NOI18N;
         sourceFileItems = null;
@@ -612,17 +614,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
 
     public Item findProjectItemByPath(String path) {
         // Try first as-is
-        path = CndPathUtilitities.normalizeSlashes(path);
+        path = CndPathUtilities.normalizeSlashes(path);
         Item item = projectItems.get(path);
         if (item == null) {
             // Then try absolute if relative or relative if absolute
             String newPath;
-            if (CndPathUtilitities.isPathAbsolute(path)) {
-                newPath = CndPathUtilitities.toRelativePath(getBaseDir(), CndPathUtilitities.naturalizeSlashes(path));
+            if (CndPathUtilities.isPathAbsolute(path)) {
+                newPath = CndPathUtilities.toRelativePath(getBaseDir(), CndPathUtilities.naturalizeSlashes(path));
             } else {
-                newPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
+                newPath = CndPathUtilities.toAbsolutePath(getBaseDirFileObject(), path);
             }
-            newPath = CndPathUtilitities.normalizeSlashes(newPath);
+            newPath = CndPathUtilities.normalizeSlashes(newPath);
             item = projectItems.get(newPath);
         }
         return item;
@@ -633,17 +635,17 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (externalFileItems == null) {
             return null;
         }
-        path = CndPathUtilitities.normalizeSlashes(path);
+        path = CndPathUtilities.normalizeSlashes(path);
         Item item = externalFileItems.findItemByPath(path);
         if (item == null) {
             // Then try absolute if relative or relative if absolute
             String newPath;
-            if (CndPathUtilitities.isPathAbsolute(path)) {
-                newPath = CndPathUtilitities.toRelativePath(getBaseDir(), CndPathUtilitities.naturalizeSlashes(path));
+            if (CndPathUtilities.isPathAbsolute(path)) {
+                newPath = CndPathUtilities.toRelativePath(getBaseDir(), CndPathUtilities.naturalizeSlashes(path));
             } else {
-                newPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
+                newPath = CndPathUtilities.toAbsolutePath(getBaseDirFileObject(), path);
             }
-            newPath = CndPathUtilitities.normalizeSlashes(newPath);
+            newPath = CndPathUtilities.normalizeSlashes(newPath);
             item = externalFileItems.findItemByPath(newPath);
         }
         return item;
@@ -962,7 +964,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         setLogicalFolders(copyExtProjectDescriptor.getLogicalFolders());
         setProjectItemsMap(((MakeConfigurationDescriptor) copyProjectDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor) copyProjectDescriptor).getProjectItemsChangeListeners());
-        setSourceRoots(((MakeConfigurationDescriptor) copyProjectDescriptor).getSourceRootsRaw());
+        setSourceRoots(((MakeConfigurationDescriptor) copyProjectDescriptor).getSourceRoots());
     }
 
     @Override
@@ -985,7 +987,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         setLogicalFolders(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getLogicalFolders());
         setProjectItemsMap(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsMap());
         setProjectItemsChangeListeners(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getProjectItemsChangeListeners());
-        setSourceRoots(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getSourceRootsRaw());
+        setSourceRoots(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getSourceRoots());
         setTestRoots(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getTestRootsRaw());
         setFolderVisibilityQuery(((MakeConfigurationDescriptor) clonedConfigurationDescriptor).getFolderVisibilityQuery().getRegEx());
     }
@@ -1000,7 +1002,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         clone.setLogicalFolders(getLogicalFolders());
         clone.setProjectItemsMap(getProjectItemsMap());
         clone.setProjectItemsChangeListeners(getProjectItemsChangeListeners());
-        clone.setSourceRoots(getSourceRootsRaw());
+        clone.setSourceRoots(getSourceRoots());
         clone.setTestRoots(getTestRootsRaw());
         clone.setFolderVisibilityQuery(getFolderVisibilityQuery().getRegEx());
         return clone;
@@ -1180,7 +1182,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             }
         }
         if (!allOk) {
-            String projectName = CndPathUtilitities.getBaseName(getBaseDir());
+            String projectName = CndPathUtilities.getBaseName(getBaseDir());
             StringBuilder text = new StringBuilder();
             text.append(getString("CannotSaveTxt", projectName)); // NOI18N
             for (int i = 0; i < notOkFiles.size(); i++) {
@@ -1321,6 +1323,42 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             data.appendChild(nativeProjectType);
         }
 
+        // Remove old formatting node
+        nodeList = data.getElementsByTagName(MakeProjectTypeImpl.FORMATTING_STYLE_ELEMENT);
+        if (nodeList != null && nodeList.getLength() > 0) {
+            for (int i = 0; i < nodeList.getLength(); i++) {
+                Node node = nodeList.item(i);
+                data.removeChild(node);
+            }
+        }
+        
+        // Create new formatting node
+        element = doc.createElementNS(MakeProjectTypeImpl.PROJECT_CONFIGURATION_NAMESPACE, MakeProjectTypeImpl.FORMATTING_STYLE_ELEMENT);
+        Node n = doc.createElement(MakeProjectTypeImpl.FORMATTING_STYLE_PROJECT_ELEMENT);
+        boolean isProject;
+        if (((MakeProject) getProject()).isProjectFormattingStyle()) {
+            n.appendChild(doc.createTextNode("true")); //NOI18N
+            isProject = true;
+        } else {
+            n.appendChild(doc.createTextNode("false")); //NOI18N
+            isProject = false;
+        }
+        element.appendChild(n);
+        if (isProject) {
+            n = doc.createElement(MakeProjectTypeImpl.C_FORMATTING_STYLE_ELEMENT);
+            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.C_MIME_TYPE)));
+            element.appendChild(n);
+
+            n = doc.createElement(MakeProjectTypeImpl.CPP_FORMATTING_STYLE_ELEMENT);
+            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.CPLUSPLUS_MIME_TYPE)));
+            element.appendChild(n);
+
+            n = doc.createElement(MakeProjectTypeImpl.HEADER_FORMATTING_STYLE_ELEMENT);
+            n.appendChild(doc.createTextNode(((MakeProject) getProject()).getProjectFormattingStyle(MIMENames.HEADER_MIME_TYPE)));
+            element.appendChild(n);
+        }
+        data.appendChild(element);
+        
         helper.putPrimaryConfigurationData(data, true);
     }
 
@@ -1469,16 +1507,16 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
     }
 
     private void addTestRoot(String path) {
-        String absPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
-        String relPath = CndPathUtilitities.normalizeSlashes(CndPathUtilitities.toRelativePath(getBaseDir(), path));
+        String absPath = CndPathUtilities.toAbsolutePath(getBaseDirFileObject(), path);
+        String relPath = CndPathUtilities.normalizeSlashes(CndPathUtilities.toRelativePath(getBaseDir(), path));
         boolean addPath = true;
 
-        //if (CndPathUtilitities.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
+        //if (CndPathUtilities.isPathAbsolute(relPath) || relPath.startsWith("..") || relPath.startsWith(".")) { // NOI18N
         synchronized (testRoots) {
             if (addPath) {
                 String usePath;
                 if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL_OR_ABS) {
-                    usePath = CndPathUtilitities.normalizeSlashes(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
+                    usePath = CndPathUtilities.normalizeSlashes(CndPathUtilities.toAbsoluteOrRelativePath(getBaseDir(), path));
                 } else if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL) {
                     usePath = relPath;
                 } else {
@@ -1497,14 +1535,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
      * Don't add if root is subdir of existing root
      */
     public void addSourceRoot(String path) {
-        String absPath = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), path);
+        String absPath = CndPathUtilities.toAbsolutePath(getBaseDirFileObject(), path);
         String canonicalPath;
         try {
             canonicalPath = FileSystemProvider.getCanonicalPath(baseDirFS, absPath);
         } catch (IOException ioe) {
             canonicalPath = null;
         }
-        String relPath = CndPathUtilitities.normalizeSlashes(CndPathUtilitities.toRelativePath(getBaseDir(), path));
+        String relPath = CndPathUtilities.normalizeSlashes(CndPathUtilities.toRelativePath(getBaseDir(), path));
         boolean addPath = true;
         ArrayList<String> toBeRemoved = new ArrayList<String>();
 
@@ -1512,7 +1550,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (canonicalPath != null) {
                 int canonicalPathLength = canonicalPath.length();
                 for (String sourceRoot : sourceRoots) {
-                    String absSourceRoot = CndPathUtilitities.toAbsolutePath(getBaseDirFileObject(), sourceRoot);
+                    String absSourceRoot = CndPathUtilities.toAbsolutePath(getBaseDirFileObject(), sourceRoot);
                     String canonicalSourceRoot;
                     try {
                         canonicalSourceRoot = FileSystemProvider.getCanonicalPath(baseDirFS, absSourceRoot);
@@ -1547,7 +1585,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
             if (addPath) {
                 String usePath;
                 if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL_OR_ABS) {
-                    usePath = CndPathUtilitities.normalizeSlashes(CndPathUtilitities.toAbsoluteOrRelativePath(getBaseDir(), path));
+                    usePath = CndPathUtilities.normalizeSlashes(CndPathUtilities.toAbsoluteOrRelativePath(getBaseDir(), path));
                 } else if (ProjectSupport.getPathMode(project) == MakeProjectOptions.PathMode.REL) {
                     usePath = relPath;
                 } else {
@@ -1562,13 +1600,6 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         if (makeSources != null) {
             makeSources.sourceRootsChanged();
         }
-    }
-
-    /*
-     * Return real list
-     */
-    private List<String> getSourceRootsRaw() {
-        return sourceRoots;
     }
 
     private List<String> getTestRootsRaw() {
@@ -1736,7 +1767,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         List<String> copy = new ArrayList<String>();
         synchronized (sourceRoots) {
             for (String sr : sourceRoots) {
-                copy.add(CndPathUtilitities.toAbsolutePath(baseDirFO, sr));
+                copy.add(CndPathUtilities.toAbsolutePath(baseDirFO, sr));
             }
         }
         return copy;
@@ -1749,7 +1780,7 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         List<String> copy = new ArrayList<String>();
         synchronized (testRoots) {
             for (String s : testRoots) {
-                copy.add(CndPathUtilitities.toAbsolutePath(baseDirFO, s));
+                copy.add(CndPathUtilities.toAbsolutePath(baseDirFO, s));
             }
         }
         return copy;
@@ -1811,10 +1842,14 @@ public final class MakeConfigurationDescriptor extends ConfigurationDescriptor i
         String rootPath = null;
         if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
             rootPath = ProjectSupport.toProperPath(baseDirFO, dir, project);
-            rootPath = CndPathUtilitities.normalizeSlashes(rootPath);
+            rootPath = CndPathUtilities.normalizeSlashes(rootPath);
         }
         if (srcRoot == null) {
-            srcRoot = new Folder(folder.getConfigurationDescriptor(), folder, dir.getNameExt(), dir.getNameExt(), true, folderKind);
+            String name = dir.getNameExt();
+            if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
+                name = MakeProjectUtils.getDiskFolderId(project, folder);
+            }
+            srcRoot = new Folder(folder.getConfigurationDescriptor(), folder, name, dir.getNameExt(), true, folderKind);
             if (folderKind == Folder.Kind.SOURCE_DISK_FOLDER) {
                 srcRoot.setRoot(rootPath);
             }

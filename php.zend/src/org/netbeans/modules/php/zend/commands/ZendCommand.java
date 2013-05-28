@@ -60,7 +60,7 @@ public class ZendCommand extends FrameworkCommand {
         super(commands, description, displayName);
         assert phpModule != null;
 
-        this.phpModule = new WeakReference<PhpModule>(phpModule);
+        this.phpModule = new WeakReference<>(phpModule);
     }
 
     @Override

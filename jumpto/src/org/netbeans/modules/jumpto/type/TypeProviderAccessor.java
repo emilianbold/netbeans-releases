@@ -42,6 +42,7 @@
 package org.netbeans.modules.jumpto.type;
 
 import java.util.List;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
@@ -66,7 +67,11 @@ public abstract class TypeProviderAccessor {
 
     public abstract Context createContext(Project p, String text, SearchType t);
 
-    public abstract Result createResult(List<? super TypeDescriptor> result, String[] message);
+    @NonNull
+    public abstract Result createResult(@NonNull List<? super TypeDescriptor> result, @NonNull String[] message, @NonNull Context context);
 
     public abstract int getRetry(Result result);
+
+    @NonNull
+    public abstract String getHighlightText(@NonNull TypeDescriptor td);
 }

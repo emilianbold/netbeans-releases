@@ -105,8 +105,8 @@ void initMainWindow(LauncherProperties * props, HINSTANCE hInstance) {
         int systemWidth = GetSystemMetrics(SM_CXSCREEN);
         int systemHeight = GetSystemMetrics(SM_CYSCREEN);
         
-        int w = 436;
-        int h = 190;
+        int w = 460;
+        int h = 200;
         int x = (systemWidth - w)/2;
         int y = (systemHeight - h)/2;
 
@@ -212,7 +212,7 @@ void initExitButton(LauncherProperties * props, HINSTANCE hInstance) {
     if(!isSilent(props)) {
         RECT rcClient;
         //int cyVScroll    = GetSystemMetrics(SM_CYVSCROLL);
-        int buttonWidth  = 90;
+        int buttonWidth  = 180;
         int buttonHeight = 25;
         
         GetClientRect(hwndMain, &rcClient);

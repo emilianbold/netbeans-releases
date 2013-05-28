@@ -121,7 +121,7 @@ public class PhpProjectOperations implements DeleteOperationImplementation, Copy
 
     @Override
     public List<FileObject> getMetadataFiles() {
-        List<FileObject> files = new ArrayList<FileObject>(1);
+        List<FileObject> files = new ArrayList<>(1);
         // add nbproject dir
         FileObject nbProject = project.getHelper().getProjectDirectory().getFileObject("nbproject"); // NOI18N
         if (nbProject != null) {

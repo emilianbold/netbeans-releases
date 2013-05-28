@@ -108,8 +108,14 @@ public abstract class SQLCompletionItem implements CompletionItem {
     }
 
     // view - bit ugly but can be easily refactored
-    public static SQLCompletionItem column(boolean view, QualIdent tupleName, String columnName, String substText, int substOffset, SubstitutionHandler substHandler) {
-        return new Column(view, tupleName, columnName, substText, substOffset, substHandler);
+    public static SQLCompletionItem column(boolean view,
+            QualIdent tupleName,
+            String columnName,
+            String dataType,
+            String substText,
+            int substOffset,
+            SubstitutionHandler substHandler) {
+        return new Column(view, tupleName, columnName, dataType, substText, substOffset, substHandler);
     }
 
     public static SQLCompletionItem keyword(String keyword, int substOffset, SubstitutionHandler substHandler) {
@@ -132,7 +138,9 @@ public abstract class SQLCompletionItem implements CompletionItem {
     }
 
     public int getPreferredWidth(Graphics g, Font defaultFont) {
-        return CompletionUtilities.getPreferredWidth(getLeftHtmlText(), getRightHtmlText(), g, defaultFont);
+        int width = CompletionUtilities.getPreferredWidth(getLeftHtmlText(), getRightHtmlText(), g, defaultFont);
+        width += 20; // give some more room for visible seperation
+        return width;
     }
 
     public void render(Graphics g, Font defaultFont, Color defaultColor, Color backgroundColor, int width, int height, boolean selected) {
@@ -375,12 +383,20 @@ public abstract class SQLCompletionItem implements CompletionItem {
         private final String columnName;
         private String leftText;
         private String rightText;
+        private final String dataType;
 
-        public Column(boolean view, QualIdent tableName, String columnName, String substText, int substOffset, SubstitutionHandler substHandler) {
+        public Column(boolean view,
+                QualIdent tableName,
+                String columnName,
+                String dataType,
+                String substText,
+                int substOffset,
+                SubstitutionHandler substHandler) {
             super(substText, substOffset, substHandler);
             this.view = view;
             this.tableName = tableName;
             this.columnName = columnName;
+            this.dataType = dataType;
         }
 
         protected String getColumnName() {
@@ -412,7 +428,15 @@ public abstract class SQLCompletionItem implements CompletionItem {
                 sb.append(TABLE_COLOR);
                 sb.append(tableName.toString());
                 sb.append(COLOR_END);
-                rightText = MessageFormat.format(NbBundle.getMessage(SQLCompletionItem.class, view ? "MSG_View" : "MSG_Table"), sb.toString());
+                rightText = MessageFormat.format(
+                        NbBundle.getMessage(SQLCompletionItem.class, view ? "MSG_View" : "MSG_Table"), sb.toString());
+                sb.setLength(0);
+                if (dataType != null && (! dataType.trim().isEmpty())) {
+                    sb.append(" (");
+                    sb.append(dataType.trim());
+                    sb.append(")");
+                    rightText += sb.toString();
+            }
             }
             return rightText;
         }

@@ -45,6 +45,7 @@ package org.netbeans.modules.bugzilla.repository;
 import java.awt.EventQueue;
 import org.netbeans.modules.bugzilla.*;
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.UnsupportedEncodingException;
@@ -86,12 +87,14 @@ import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.MylynUtils;
 import org.netbeans.modules.mylyn.util.SimpleQueryCommand;
 import org.netbeans.modules.mylyn.util.SynchronizeTasksCommand;
+import org.netbeans.modules.mylyn.util.UnsubmittedTasksContainer;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -123,6 +126,8 @@ public class BugzillaRepository {
     
     private final Object RC_LOCK = new Object();
     private final Object CACHE_LOCK = new Object();
+    private UnsubmittedTasksContainer unsubmittedTasksContainer;
+    private PropertyChangeListener unsubmittedTasksListener;
 
     public BugzillaRepository() {
         icon = ImageUtilities.loadImage(ICON_PATH, true);
@@ -187,7 +192,7 @@ public class BugzillaRepository {
         String component = null;
         for (String productCandidate : conf.getProducts()) {
             // iterates because a product without a component throws NPE inside mylyn
-            List<String> components = conf.getComponents(product);
+            List<String> components = conf.getComponents(productCandidate);
             if (!components.isEmpty()) {
                 product = productCandidate;
                 component = components.get(0);
@@ -245,12 +250,26 @@ public class BugzillaRepository {
                 : "Only new local tasks can be deleted: " + task.getSynchronizationState();
         if (task.getSynchronizationState() == ITask.SynchronizationState.OUTGOING_NEW) {
             String id = BugzillaIssue.getID(task);
-            try {
-                MylynSupport.getInstance().deleteTask(task);
-            } catch (CoreException ex) {
-                Bugzilla.LOG.log(Level.INFO, null, ex);
-            }
+            MylynSupport.getInstance().deleteTask(task);
             getCache().removeIssue(id);
+        }
+    }
+
+    public Collection<BugzillaIssue> getUnsubmittedIssues () {
+        try {
+            UnsubmittedTasksContainer cont = getUnsubmittedTasksContainer();
+            List<ITask> unsubmittedTasks = cont.getTasks();
+            List<BugzillaIssue> unsubmittedIssues = new ArrayList<BugzillaIssue>(unsubmittedTasks.size());
+            for (ITask task : unsubmittedTasks) {
+                BugzillaIssue issue = getIssueForTask(task);
+                if (issue != null) {
+                    unsubmittedIssues.add(issue);
+                }
+            }
+            return unsubmittedIssues;
+        } catch (CoreException ex) {
+            Bugzilla.LOG.log(Level.INFO, null, ex);
+            return Collections.<BugzillaIssue>emptyList();
         }
     }
 
@@ -455,6 +474,11 @@ public class BugzillaRepository {
         support.firePropertyChange(RepositoryProvider.EVENT_QUERY_LIST_CHANGED, null, null);
     }
     
+    private void fireUnsubmittedIssuesChanged() {
+        Bugzilla.LOG.log(Level.FINER, "firing unsubmitted issues changed for repository {0}", new Object[] { getDisplayName() }); //NOI18N
+        support.firePropertyChange(RepositoryProvider.EVENT_UNSUBMITTED_ISSUES_CHANGED, null, null);
+    }
+    
     private Set<BugzillaQuery> getQueriesIntern() {
         if(queries == null) {
             queries = new HashSet<BugzillaQuery>(10);
@@ -466,11 +490,6 @@ public class BugzillaRepository {
                 } else {
                     Bugzilla.LOG.log(Level.WARNING, "Couldn''t find query with stored name {0}", queryName); // NOI18N
                 }
-            }
-            if (Boolean.getBoolean("bugzilla.displayUnsubmittedQuery")) {
-                // TODO: should not be a query: this way it's listed in the Team dashboard
-                // either should go to SPI or somewhere in Bugtracking.utils
-                queries.add(new BugzillaQuery.UnsubmittedTasksQuery(this));
             }
         }
         return queries;
@@ -802,7 +821,7 @@ public class BugzillaRepository {
 
     private BugzillaIssue findUnsubmitted (String id) {
         try {
-            for (ITask task : MylynSupport.getInstance().getUnsubmittedTasks(taskRepository)) {
+            for (ITask task : getUnsubmittedTasksContainer().getTasks()) {
                 if (id.equals("-" + task.getTaskId())) {
                     return getIssueForTask(task);
                 }
@@ -811,6 +830,23 @@ public class BugzillaRepository {
             Bugzilla.LOG.log(Level.INFO, null, ex);
         }
         return null;
+    }
+
+    private UnsubmittedTasksContainer getUnsubmittedTasksContainer () throws CoreException {
+        synchronized (this) {
+            if (unsubmittedTasksContainer == null) {
+                unsubmittedTasksContainer = MylynSupport.getInstance().getUnsubmittedTasksContainer(getTaskRepository());
+                unsubmittedTasksContainer.addPropertyChangeListener(WeakListeners.propertyChange(unsubmittedTasksListener = new PropertyChangeListener() {
+                    @Override
+                    public void propertyChange (PropertyChangeEvent evt) {
+                        if (UnsubmittedTasksContainer.EVENT_ISSUES_CHANGED.equals(evt.getPropertyName())) {
+                            fireUnsubmittedIssuesChanged();
+                        }
+                    }
+                }, unsubmittedTasksContainer));
+            }
+            return unsubmittedTasksContainer;
+        }
     }
 
     private static class TaskMapping extends org.eclipse.mylyn.tasks.core.TaskMapping {

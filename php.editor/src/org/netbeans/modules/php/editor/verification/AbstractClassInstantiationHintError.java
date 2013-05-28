@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Hint;
@@ -85,7 +85,7 @@ public class AbstractClassInstantiationHintError extends HintErrorRule {
     private final class CheckVisitor extends DefaultVisitor {
         private final FileObject fileObject;
         private final Index index;
-        private final List<Hint> hints = new LinkedList<Hint>();
+        private final List<Hint> hints = new ArrayList<>();
         private final Model model;
 
         private CheckVisitor(FileObject fileObject, Index index, Model model) {

@@ -76,11 +76,13 @@ final class ManagedBeanPanel implements WizardDescriptor.Panel, WizardDescriptor
         this.project = project;
         this.wizard = wizard;
     }
-    
+
+    @Override
     public boolean isFinishPanel() {
         return true;
     }
 
+    @Override
     public Component getComponent() {
         if (component == null) {
             ManagedBeanPanelVisual gui = new ManagedBeanPanelVisual(project);
@@ -120,10 +122,12 @@ final class ManagedBeanPanel implements WizardDescriptor.Panel, WizardDescriptor
         }
     }
 
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(ManagedBeanPanel.class);
+        return new HelpCtx("org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel");
     }
-    
+
+    @Override
     public boolean isValid() {
         getComponent();
         if (component.valid(wizard)) {
@@ -144,12 +148,15 @@ final class ManagedBeanPanel implements WizardDescriptor.Panel, WizardDescriptor
         return component.isAddBeanToConfig();
     }
     private final Set/*<ChangeListener>*/ listeners = new HashSet(1);
-    
+
+    @Override
     public final void addChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.add(l);
         }
     }
+
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         synchronized (listeners) {
             listeners.remove(l);
@@ -165,7 +172,8 @@ final class ManagedBeanPanel implements WizardDescriptor.Panel, WizardDescriptor
             ((ChangeListener)it.next()).stateChanged(ev);
         }
     }
-    
+
+    @Override
     public void readSettings(Object settings) {
         wizard = (TemplateWizard) settings;
         component.read(wizard);
@@ -176,7 +184,8 @@ final class ManagedBeanPanel implements WizardDescriptor.Panel, WizardDescriptor
         if (substitute != null)
             wizard.putProperty("NewProjectWizard_Title", substitute); // NOI18N
     }
-    
+
+    @Override
     public void storeSettings(Object settings) {
         WizardDescriptor d = (WizardDescriptor) settings;
         component.store(d);
@@ -184,6 +193,7 @@ final class ManagedBeanPanel implements WizardDescriptor.Panel, WizardDescriptor
         ((WizardDescriptor) d).putProperty("NewProjectWizard_Title", null); // NOI18N
     }
 
+    @Override
     public void stateChanged(ChangeEvent arg0) {
         isValid();
     }

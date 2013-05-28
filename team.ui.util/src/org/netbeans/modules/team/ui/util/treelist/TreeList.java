@@ -200,11 +200,7 @@ public class TreeList extends JList {
         if (getSelectionMode() != ListSelectionModel.SINGLE_SELECTION) {
             popupForSelected = isPopupForSelected(node);
         }
-        if (popupForSelected) {
-            if (!isPopupEnabled()) {
-                return;
-            }
-        } else {
+        if (!popupForSelected) {
             setSelectedIndex(rowIndex);
         }
         Action[] actions = node.getPopupActions();
@@ -228,20 +224,6 @@ public class TreeList extends JList {
             }
         }
         return false;
-    }
-
-    /**
-     * Determines if popup menu is available for the selected nodes
-     */
-    private boolean isPopupEnabled() {
-        Object[] selectedValues = getSelectedValues();
-        Class<? extends Object> aClass = selectedValues[0].getClass();
-        for (Object treeListNode : selectedValues) {
-            if (treeListNode.getClass() != aClass) {
-                return false;
-            }
-        }
-        return true;
     }
 
     @Override

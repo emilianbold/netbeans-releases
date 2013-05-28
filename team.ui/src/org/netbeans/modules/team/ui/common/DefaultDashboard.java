@@ -61,6 +61,7 @@ import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.ui.util.treelist.SelectionList;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeList;
 import org.netbeans.modules.team.ui.util.treelist.TreeListModel;
@@ -81,24 +82,8 @@ import org.openide.windows.TopComponent;
  *
  * @author S. Aubrecht, Tomas Stupka
  */
-@NbBundle.Messages("A11Y_TeamProjects=Team Projects")
-public final class DefaultDashboard<S extends TeamServer, P> {
+final class DefaultDashboard<P> implements DashboardSupport.DashboardImpl {
 
-    /**
-     * Name of the property that will be fired when some change in opened projects
-     * in Dashboard occurs. Firing this property doesn't neccessary mean that number
-     * of opened project has changed.
-     */
-    public static final String PROP_OPENED_PROJECTS = "openedProjects"; // NOI18N
-
-    /**
-     * fired when user clicks refresh
-     */
-    public static final String PROP_REFRESH_REQUEST = "refreshRequest";// NOI18N
-    
-    public static final String PREF_ALL_PROJECTS = "allProjects"; //NOI18N
-    public static final String PREF_COUNT = "count"; //NOI18N
-    public static final String PREF_ID = "id"; //NOI18N
     private LoginHandle login;
     private final TreeListModel model = new TreeListModel();
     private static final ListModel EMPTY_MODEL = new AbstractListModel() {
@@ -116,7 +101,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
     private final ArrayList<ProjectHandle> memberProjects = new ArrayList<ProjectHandle>(50);
     private final ArrayList<ProjectHandle> openProjects = new ArrayList<ProjectHandle>(50);
     //TODO: this should not be public
-    public final JScrollPane dashboardComponent;
+    private final JScrollPane dashboardComponent;
     private final PropertyChangeListener userListener;
     private boolean opened = false;
     private boolean memberProjectsLoaded = false;
@@ -140,10 +125,10 @@ public final class DefaultDashboard<S extends TeamServer, P> {
 
     private final PropertyChangeSupport changeSupport = new PropertyChangeSupport(this);
     private PropertyChangeListener serverListener;
-    private S server;
-    private final DashboardProvider<S, P> dashboardProvider;
+    private TeamServer server;
+    private final DashboardProvider<P> dashboardProvider;
 
-    public DefaultDashboard(S server, DashboardProvider<S, P> dashboardProvider) {
+    public DefaultDashboard(TeamServer server, DashboardProvider<P> dashboardProvider) {
         this.dashboardProvider = dashboardProvider;
         dashboardComponent = new JScrollPane() {
             @Override
@@ -226,7 +211,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
      * currently visible team instance
      * @return
      */
-    public S getServer() {
+    public TeamServer getServer() {
         return server;
     }
 
@@ -251,7 +236,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         return memberProjects.contains(m);
     }
 
-    private void setServer(S server) {
+    private void setServer(TeamServer server) {
         this.server = server;
         refreshNonMemberProjects();
         if (server==null) {
@@ -371,11 +356,8 @@ public final class DefaultDashboard<S extends TeamServer, P> {
      * @param project
      * @param isMemberProject
      */
-    public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {
-        
-        // XXX this is the only usecase of .getTeamServer!
-        // maybe if we could get rid of it the whole spi would get significantly simplier to deal with!
-        TeamUIUtils.setSelectedServer(dashboardProvider.forProject(project));
+    public void addProject(final ProjectHandle project, final boolean isMemberProject, final boolean select) {        
+        TeamUIUtils.setSelectedServer(server);
         requestProcessor.post(new Runnable() {
             @Override
             public void run() {
@@ -409,7 +391,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
                         }
                     }
                 }
-                changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
+                changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
             }
         });
     }
@@ -430,7 +412,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
             }
         }
         project.firePropertyChange(ProjectHandle.PROP_CLOSE, null, null);
-        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
+        changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
     }
 
     private Action createWhatIsTeamAction() {
@@ -455,7 +437,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
     void refreshProjects() {
         myProjectLoadingStarted();
         projectLoadingStarted();
-        changeSupport.firePropertyChange(PROP_REFRESH_REQUEST, null, null);
+        changeSupport.firePropertyChange(DashboardSupport.PROP_REFRESH_REQUEST, null, null);
         synchronized( LOCK ) {
             removeMemberProjectsFromModel(memberProjects);
             memberProjects.clear();
@@ -615,15 +597,15 @@ public final class DefaultDashboard<S extends TeamServer, P> {
             return;
         }
         String teamName = server.getUrl().getHost();
-        Preferences prefs = NbPreferences.forModule(DefaultDashboard.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(teamName)?"":"-"+teamName)); //NOI18N
-        int count = prefs.getInt(PREF_COUNT, 0); //NOI18N
+        Preferences prefs = NbPreferences.forModule(DefaultDashboard.class).node(DashboardSupport.PREF_ALL_PROJECTS + ("kenai.com".equals(teamName)?"":"-"+teamName)); //NOI18N
+        int count = prefs.getInt(DashboardSupport.PREF_COUNT, 0); //NOI18N
         if( 0 == count ) {
             projectLoadingFinished();
             return; //nothing to load
         }
         ArrayList<String> ids = new ArrayList<String>(count);
         for( int i=0; i<count; i++ ) {
-            String id = prefs.get(PREF_ID+i, null); //NOI18N
+            String id = prefs.get(DashboardSupport.PREF_ID+i, null); //NOI18N
             if( null != id && id.trim().length() > 0 ) {
                 ids.add( id.trim() );
             }
@@ -643,16 +625,16 @@ public final class DefaultDashboard<S extends TeamServer, P> {
 
     private void storeAllProjects() {
         String serverName = server.getUrl().getHost();
-        Preferences prefs = NbPreferences.forModule(DefaultDashboard.class).node(PREF_ALL_PROJECTS + ("kenai.com".equals(serverName)?"":"-"+serverName)); //NOI18N
+        Preferences prefs = NbPreferences.forModule(DefaultDashboard.class).node(DashboardSupport.PREF_ALL_PROJECTS + ("kenai.com".equals(serverName)?"":"-"+serverName)); //NOI18N
         int index = 0;
         for( ProjectHandle project : openProjects ) {
             //do not store private projects
 //            if (!project.isPrivate()) {
-                prefs.put(PREF_ID+index++, project.getId()); //NOI18N
+                prefs.put(DashboardSupport.PREF_ID+index++, project.getId()); //NOI18N
 //            }
         }
         //store size
-        prefs.putInt(PREF_COUNT, index); //NOI18N
+        prefs.putInt(DashboardSupport.PREF_COUNT, index); //NOI18N
     }
 
     private void setOtherProjects(ArrayList<ProjectHandle> projects) {
@@ -669,7 +651,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
             }
             Collections.sort(openProjects);
             otherProjectsLoaded = true;
-            addProjectsToModel( -1, openProjects );
+            addProjectsToModel( -1, openProjects ); 
             userNode.set(login, !openProjects.isEmpty());
             storeAllProjects();
 
@@ -677,9 +659,9 @@ public final class DefaultDashboard<S extends TeamServer, P> {
             
             if( isOpened() ) {
                 switchContent();
-            }
+            }        
         }
-        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
+        changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
     }
 
     private void switchMemberProjects() {
@@ -794,19 +776,29 @@ public final class DefaultDashboard<S extends TeamServer, P> {
                 switchContent();
             }
         }
-        changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
+        changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
     }
 
-    private void addProjectsToModel( int index, List<ProjectHandle> projects ) {
-        int counter = 2;
-        for( ProjectHandle p : projects ) {
-            model.addRoot(counter++, new ProjectNode(p, this));
+    private void addProjectsToModel( int index, final List<ProjectHandle> projects ) {
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                int counter = 2;
+                for( ProjectHandle p : projects ) {
+                    model.addRoot(counter++, new ProjectNode(p, DefaultDashboard.this));
+                }
+            }
+        };
+        if(SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
         }
     }
 
     private void addMemberProjectsToModel( int index, List<ProjectHandle> projects ) {
         for( ProjectHandle p : projects ) {
-            model.addRoot(index, dashboardProvider.createMyProjectNode(p) );
+            model.addRoot(index, dashboardProvider.createMyProjectNode(p, true, false, null) );
         }
     }
 
@@ -868,12 +860,17 @@ public final class DefaultDashboard<S extends TeamServer, P> {
         }
     }
 
-    public DashboardProvider<S, P> getDashboardProvider() {
+    public DashboardProvider<P> getDashboardProvider() {
         return dashboardProvider;
     }
 
     Collection<ProjectHandle<P>> getMyProjects() {
         return dashboardProvider.getMyProjects();
+    }
+
+    @Override
+    public SelectionList getProjectsList(boolean forceRefresh) {
+        throw new IllegalStateException("Projects list shouldn't be requested when having multiple projects dashboard mode"); // NOI18N
     }
 
     private class OtherProjectsLoader implements Runnable, Cancellable {
@@ -897,7 +894,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
                 @Override
                 public void run() {
                     ArrayList<ProjectHandle> projects = new ArrayList<ProjectHandle>(projectIds.size());
-                    ProjectAccessor<S, P> accessor = dashboardProvider.getProjectAccessor();
+                    ProjectAccessor<P> accessor = dashboardProvider.getProjectAccessor();
                     boolean err = false;
                     for( String id : projectIds ) {
                         ProjectHandle handle = accessor.getNonMemberProject(server, id, forceRefresh);
@@ -962,7 +959,7 @@ public final class DefaultDashboard<S extends TeamServer, P> {
             Runnable r = new Runnable() {
                 @Override
                 public void run() {
-                    ProjectAccessor<S, P> accessor = dashboardProvider.getProjectAccessor();
+                    ProjectAccessor<P> accessor = dashboardProvider.getProjectAccessor();
                     List<ProjectHandle<P>> l = accessor.getMemberProjects(server, user, forceRefresh);
                     res[0] = l == null ? null : new ArrayList<ProjectHandle<P>>( l );
                 }

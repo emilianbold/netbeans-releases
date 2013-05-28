@@ -41,10 +41,18 @@
  */
 package org.netbeans.modules.php.project.copysupport;
 
+import java.io.File;
+import java.util.Collections;
 import java.util.EmptyStackException;
+import java.util.HashMap;
+import java.util.Map;
 import org.netbeans.modules.php.project.PhpProject;
+import org.netbeans.modules.php.project.ProjectPropertiesSupport;
+import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.util.PhpTestCase;
 import org.netbeans.modules.php.project.util.TestUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 public class CopySupportTest extends PhpTestCase {
 
@@ -113,6 +121,74 @@ public class CopySupportTest extends PhpTestCase {
             assertEquals("Copy support should be opened once", 1, copySupport.opened.get());
             assertEquals("Copy support should be closed twice", 2, copySupport.closed.get());
         }
+    }
+
+    public void testDefaultCopyFilesOnOpen() throws Exception {
+        PhpProject project = TestUtils.createPhpProject(getWorkDir());
+        TestUtils.openPhpProject(project);
+        assertFalse(ProjectPropertiesSupport.isCopySourcesEnabled(project));
+        assertFalse(ProjectPropertiesSupport.isCopySourcesOnOpen(project));
+    }
+
+    public void testCopyFilesOnOpen() throws Exception {
+        PhpProject project = TestUtils.createPhpProject(getWorkDir());
+        // copy target
+        File copyTarget = new File(getWorkDir(), project.getName() + "-copy");
+        assertFalse(copyTarget.exists());
+        // props
+        Map<String, String> props = new HashMap<>();
+        props.put(PhpProjectProperties.COPY_SRC_FILES, Boolean.TRUE.toString());
+        props.put(PhpProjectProperties.COPY_SRC_TARGET, copyTarget.getAbsolutePath());
+        props.put(PhpProjectProperties.COPY_SRC_ON_OPEN, Boolean.TRUE.toString());
+        PhpProjectProperties.save(project, Collections.<String, String>emptyMap(), props);
+        // create file
+        FileObject testFile = project.getProjectDirectory().createData("test", "php");
+
+        TestUtils.openPhpProject(project);
+        TestUtils.waitCopySupportFinished();
+
+        assertTrue(ProjectPropertiesSupport.isCopySourcesEnabled(project));
+        assertTrue(ProjectPropertiesSupport.isCopySourcesOnOpen(project));
+        assertTrue(copyTarget.isDirectory());
+        FileObject copyTargetFo = FileUtil.toFileObject(copyTarget);
+        assertNotNull(copyTargetFo);
+        FileObject[] copyChildren = copyTargetFo.getChildren();
+        assertEquals(1, copyChildren.length);
+        FileObject copyTestFile = copyChildren[0];
+        assertEquals(testFile.getNameExt(), copyTestFile.getNameExt());
+    }
+
+    public void testCopyFilesOnSave() throws Exception {
+        PhpProject project = TestUtils.createPhpProject(getWorkDir());
+        // copy target
+        File copyTarget = new File(getWorkDir(), project.getName() + "-copy");
+        assertFalse(copyTarget.exists());
+        // props
+        Map<String, String> props = new HashMap<>();
+        props.put(PhpProjectProperties.COPY_SRC_FILES, Boolean.TRUE.toString());
+        props.put(PhpProjectProperties.COPY_SRC_TARGET, copyTarget.getAbsolutePath());
+        props.put(PhpProjectProperties.COPY_SRC_ON_OPEN, Boolean.TRUE.toString());
+        PhpProjectProperties.save(project, Collections.<String, String>emptyMap(), props);
+
+        TestUtils.openPhpProject(project);
+        TestUtils.waitCopySupportFinished();
+
+        assertTrue(ProjectPropertiesSupport.isCopySourcesEnabled(project));
+        assertTrue(ProjectPropertiesSupport.isCopySourcesOnOpen(project));
+        assertTrue(copyTarget.isDirectory());
+        assertEquals(0, copyTarget.list().length);
+
+        // create file
+        FileObject testFile = project.getProjectDirectory().createData("test", "php");
+
+        TestUtils.waitCopySupportFinished();
+
+        FileObject copyTargetFo = FileUtil.toFileObject(copyTarget);
+        assertNotNull(copyTargetFo);
+        FileObject[] copyChildren = copyTargetFo.getChildren();
+        assertEquals(1, copyChildren.length);
+        FileObject copyTestFile = copyChildren[0];
+        assertEquals(testFile.getNameExt(), copyTestFile.getNameExt());
     }
 
     private PhpProject createAndOpenAndCloseProject() throws Exception {

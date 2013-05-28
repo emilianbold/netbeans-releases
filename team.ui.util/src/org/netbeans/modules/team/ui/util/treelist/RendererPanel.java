@@ -62,6 +62,7 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.border.LineBorder;
 
 /**
  * Wrapper for node renderers. Defines appropriate foreground/background colors,
@@ -96,8 +97,8 @@ final class RendererPanel extends JPanel {
 
         this.node = node;
         isRoot = node.getParent() == null;
-        setOpaque(!isRoot || !colorManager.isAqua() || !node.isExpandable());
-        if (node.isExpandable()) {
+        setOpaque(!isRoot || !colorManager.isAqua() || !node.isExpandable() || node.getType().equals(TreeListNode.Type.TITLE) );
+        if (node.isExpandable() && node.showExpander()) {
             expander = new LinkButton(EMPTY_ICON, new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
                     node.setExpanded(!node.isExpanded());
@@ -110,7 +111,7 @@ final class RendererPanel extends JPanel {
         }
         depth = getDepth();
     }
-
+    
     private int getDepth() {
         int d = 1;
         TreeListNode parent = node;
@@ -123,7 +124,10 @@ final class RendererPanel extends JPanel {
     }
 
     public void configure(Color foreground, Color background, boolean isSelected, boolean hasFocus, int nestingDepth, int rowHeight, int rowWidth) {
-        if (isRoot && node.isExpandable() || node.getType().equals(TreeListNode.Type.CLOSED)) {
+        if (isRoot && node.isExpandable() && node.showExpander() && node.getType().equals(TreeListNode.Type.TITLE) ) {
+            foreground = isSelected ? expandableRootSelectedForeground : ColorManager.getDefault().getDefaultBackground();
+            background = isSelected ? expandableRootSelectedBackground : ColorManager.getDefault().getDisabledColor();
+        } else if (isRoot && node.isExpandable() || node.getType().equals(TreeListNode.Type.CLOSED)) {
             foreground = isSelected ? expandableRootSelectedForeground : expandableRootForeground;
             background = isSelected ? expandableRootSelectedBackground : expandableRootBackground;
         } else if (node.getType().equals(TreeListNode.Type.TITLE)) {
@@ -139,7 +143,7 @@ final class RendererPanel extends JPanel {
 
         setBackground(background);
         setForeground(foreground);
-
+        
         if (null != expander) {
             expander.setIcon(node.isExpanded() ? getExpandedIcon() : getCollapsedIcon());
             expander.setPressedIcon(expander.getIcon());
@@ -170,7 +174,7 @@ final class RendererPanel extends JPanel {
 
     @Override
     public void paintComponent(Graphics g) {
-        if (isRoot && colorManager.isAqua() && node.isExpandable()) {
+        if (isRoot && colorManager.isAqua() && node.isExpandable() && node.showExpander()) {
             Graphics2D g2d = (Graphics2D) g;
             Paint oldPaint = g2d.getPaint();
             g2d.setPaint(new GradientPaint(0, 0, Color.white, 0, getHeight() / 2, getBackground()));
@@ -180,7 +184,7 @@ final class RendererPanel extends JPanel {
             super.paintComponent(g);
         }
     }
-
+    
     @Override
     public String getToolTipText(MouseEvent event) {
         Component c = SwingUtilities.getDeepestComponentAt(this, event.getX(), event.getY());

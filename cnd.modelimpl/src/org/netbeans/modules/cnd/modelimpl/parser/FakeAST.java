@@ -64,19 +64,15 @@ public class FakeAST extends BaseAST implements Serializable {
     private final static CharSequence[] tokenText = new CharSequence[CPPTokenTypes.CSM_END + 1];
 
     static {
-        Field[] fields = CPPTokenTypes.class.getDeclaredFields();
-        for (int i = 0; i < fields.length; i++) {
-            int flags = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
-            Field field = fields[i];
+        int flags = Modifier.PUBLIC | Modifier.STATIC | Modifier.FINAL;
+        for (Field field : CPPTokenTypes.class.getDeclaredFields()) {
             if ((field.getModifiers() & flags) == flags &&
                     int.class.isAssignableFrom(field.getType())) {
                 try {
                     int value = field.getInt(null);
                     String name = field.getName();
                     tokenText[value]=CharSequences.create(name);
-                } catch (IllegalArgumentException ex) {
-                    DiagnosticExceptoins.register(ex);
-                } catch (IllegalAccessException ex) {
+                } catch (Exception ex) {
                     DiagnosticExceptoins.register(ex);
                 }
             }

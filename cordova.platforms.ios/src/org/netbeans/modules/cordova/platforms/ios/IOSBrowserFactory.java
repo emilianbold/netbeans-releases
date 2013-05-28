@@ -62,6 +62,12 @@ import org.openide.util.lookup.ServiceProvider;
     "LBL_SimulatorDefault=iOS Simulator"
 })
 public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory, BrowserURLMapperProvider {
+    
+    private BrowserURLMapperImplementation urlMapper;
+
+    public IOSBrowserFactory() {
+        urlMapper = new BrowserURLMapperImpl();
+    }
 
     @Override
     public BrowserFamilyId getBrowserFamilyId() {
@@ -80,7 +86,7 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
 
     @Override
     public BrowserURLMapperImplementation getBrowserURLMapper() {
-        return BrowserURLMapperImpl.DEFAULT;
+        return urlMapper;
     }
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
@@ -107,7 +113,7 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
         }
     }
 
-    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
+    //@ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
     public static class DeviceDefault extends IOSBrowserFactory {
 
         @Override

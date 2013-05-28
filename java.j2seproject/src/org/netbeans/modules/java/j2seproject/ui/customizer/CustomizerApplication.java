@@ -265,7 +265,19 @@ public class CustomizerApplication extends javax.swing.JPanel implements HelpCtx
     }// </editor-fold>//GEN-END:initComponents
 
     private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
-        // TODO add your handling code here:
+        final JFileChooser chooser = new JFileChooser();
+        chooser.setFileSelectionMode (JFileChooser.FILES_ONLY);
+        chooser.setMultiSelectionEnabled(false);
+        chooser.setFileFilter(new SplashFileFilter());
+        if (lastImageFolder != null) {
+            chooser.setCurrentDirectory(lastImageFolder);
+        }
+        chooser.setDialogTitle(NbBundle.getMessage(CustomizerApplication.class, "LBL_Select_Splash_Image"));
+        if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
+            File file = FileUtil.normalizeFile(chooser.getSelectedFile());
+            splashTextField.setText(file.getAbsolutePath());
+            lastImageFolder = file.getParentFile();
+        }
     }//GEN-LAST:event_browseButtonActionPerformed
     
     private static class SplashFileFilter extends FileFilter {

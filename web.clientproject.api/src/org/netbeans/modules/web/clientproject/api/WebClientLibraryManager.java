@@ -51,12 +51,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.net.URLConnection;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.progress.ProgressHandle;
@@ -64,7 +67,6 @@ import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.network.NetworkException;
 import org.netbeans.modules.web.clientproject.libraries.CDNJSLibrariesProvider;
-import org.netbeans.modules.web.clientproject.libraries.GoogleLibrariesProvider;
 import org.netbeans.spi.project.libraries.LibraryFactory;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.libraries.LibraryProvider;
@@ -195,10 +197,9 @@ public final class WebClientLibraryManager {
     public synchronized List<Library> getLibraries() {
         assert Thread.holdsLock(this);
         if (libraries == null) {
-            List<Library> libs2 = new ArrayList<Library>();
+            List<Library> libs2 = new ArrayList<>();
             addLibraries(libs2, CDNJSLibrariesProvider.getDefault());
-            addLibraries(libs2, new GoogleLibrariesProvider());
-            libraries = new CopyOnWriteArrayList<Library>(libs2);
+            libraries = new CopyOnWriteArrayList<>(libs2);
         }
         return libraries;
     }
@@ -258,6 +259,20 @@ public final class WebClientLibraryManager {
                 progressHandle.finish();
             }
         }
+    }
+
+    /**
+     * Get last time of JS libraries update.
+     * <p>
+     * This method returns exactly one time which represents <b>last (newest) successful update of any
+     * JavaScript library</b>. In other words, for more JS libraries, if JS library <i>A</i> is successfully
+     * updated but JS library <i>B</i> is not, the time of the JS library <i>A</i> is returned.
+     * @return last time of JS libraries update; can be {@code null} if not updated yet or the time cannot be retrieved
+     * @since 1.32
+     */
+    @CheckForNull
+    public FileTime getLibrariesLastUpdatedTime() {
+        return CDNJSLibrariesProvider.getDefault().getLibrariesLastUpdatedTime();
     }
 
     private void addLibraries(List<Library> libs, LibraryProvider<LibraryImplementation> provider) {
@@ -411,6 +426,10 @@ public final class WebClientLibraryManager {
                     result.add(fileObject);
                 }
             }
+            // possible cleanup
+            if (libRoot.getChildren().length == 0) {
+                libRoot.delete();
+            }
         }
         if (missingFiles) {
             throw new MissingLibResourceException(result);
@@ -421,10 +440,13 @@ public final class WebClientLibraryManager {
     private static FileObject copySingleFile(URL url, String name, FileObject
             libRoot) throws IOException
     {
-        FileObject fo = libRoot.createData(name);
         InputStream is;
         try {
-            is = url.openStream();
+            int timeout = 15000; // default timeout
+            URLConnection connection = url.openConnection();
+            connection.setConnectTimeout(timeout);
+            connection.setReadTimeout(timeout);
+            is = connection.getInputStream();
         }
         catch (FileNotFoundException ex) {
             LOGGER.log(Level.INFO, "could not open stream for " + url, ex); // NOI18N
@@ -434,6 +456,7 @@ public final class WebClientLibraryManager {
             LOGGER.log(Level.INFO, "could not open stream for " + url, ex); // NOI18N
             return null;
         }
+        FileObject fo = libRoot.createData(name);
         OutputStream os = null;
         try {
             os = fo.getOutputStream();

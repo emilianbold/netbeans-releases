@@ -75,7 +75,7 @@ import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.modules.cnd.makefile.utils.IpeFileSystemView;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makefile.utils.UnixRE;
 import org.netbeans.modules.cnd.utils.ui.CndUIUtilities;
 import org.openide.DialogDisplayer;
@@ -876,7 +876,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 	    String cwd = getMakefileData().getBaseDirectory(MakefileData.EXPAND);
 
 	    for (int i = 0; i < objects.length; i++) {
-		String path = CndPathUtilitities.getRelativePath(
+		String path = CndPathUtilities.getRelativePath(
 			cwd, ((ListItem) objects[i]).getName());
 		if (!model.contains(path)) {	// expensive! but necessary
 		    if (addBeginning) {
@@ -904,7 +904,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
                     LinkedList<ListItem> aList = processDirectory(files[i].getPath(), files[i]);
                     if (aList != null) {
                         for(ListItem item : aList){
-                            String path = CndPathUtilitities.getRelativePath(cwd, item.getName());
+                            String path = CndPathUtilities.getRelativePath(cwd, item.getName());
                             if (!model.contains(path)) {	    // expensive! but necessary
                                 if (addBeginning) {
                                     model.add(0, path);
@@ -915,7 +915,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
                         }
                     }
                 } else {
-                    String path = CndPathUtilitities.getRelativePath(cwd, files[i].getPath());
+                    String path = CndPathUtilities.getRelativePath(cwd, files[i].getPath());
                     if (!model.contains(path)) {	    // expensive! but necessary
                         if (addBeginning)
                             model.add(0, path);
@@ -967,7 +967,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
 
 		// See if the user has already typed a directory. If so use it.
 		File f = null;
-		String cur = CndPathUtilitities.expandPath(getText());
+		String cur = CndPathUtilities.expandPath(getText());
 		if (cur.length() > 0) {
 		    f = new File(cur);
 		}
@@ -997,7 +997,7 @@ public abstract class EnterItemsPanel extends MakefileWizardPanel {
     }
 
     private String getText() {
-	return CndPathUtilitities.expandPath(entryText.getText());
+	return CndPathUtilities.expandPath(entryText.getText());
     }
 
 

@@ -48,19 +48,19 @@
     <version>4.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>The EJB 3.2 Embeddable API Sample Application - Test Code</name>
-    
+
     <repositories>
         <repository>
             <id>maven.java.net</id>
             <url>https://maven.java.net/content/groups/promoted/</url>
         </repository>
     </repositories>
-    
+
     <dependencies>
         <dependency>
             <groupId>javax</groupId>
             <artifactId>javaee-api</artifactId>
-            <version>7.0-b84</version>
+            <version>7.0</version>
             <scope>provided</scope>
         </dependency>
         <!-- The ejb jar that will be deployed to ebedded server -->
@@ -72,7 +72,7 @@
         <dependency>
             <groupId>org.glassfish.main.extras</groupId>
             <artifactId>glassfish-embedded-all</artifactId>
-            <version>4.0-b72</version>
+            <version>4.0</version>
         </dependency>
     </dependencies>
     

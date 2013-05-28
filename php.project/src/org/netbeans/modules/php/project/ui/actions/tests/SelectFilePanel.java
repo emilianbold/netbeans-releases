@@ -82,7 +82,7 @@ public final class SelectFilePanel extends JPanel {
 
         initComponents();
 
-        model = new DefaultListModel<FileObject>();
+        model = new DefaultListModel<>();
         for (FileObject fo : files) {
             assert FileUtil.isParentOf(sourceRoot, fo);
             model.addElement(fo);

@@ -53,7 +53,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
  */
 public final class ProjectUpgrader {
 
-    private static final Map<String, String> UPGRADE_KEYS = new HashMap<String, String>();
+    private static final Map<String, String> UPGRADE_KEYS = new HashMap<>();
 
     private final PhpProject project;
 
@@ -111,7 +111,7 @@ public final class ProjectUpgrader {
     }
 
     private void upgradePhpUnit(EditableProperties properties) {
-        Map<String, String> newlyEnabledProperties = new HashMap<String, String>();
+        Map<String, String> newlyEnabledProperties = new HashMap<>();
         newlyEnabledProperties.put(PHP_UNIT_BOOTSTRAP, "auxiliary.org-netbeans-modules-php-phpunit.bootstrap_2e_enabled"); // NOI18N
         newlyEnabledProperties.put(PHP_UNIT_CONFIGURATION, "auxiliary.org-netbeans-modules-php-phpunit.configuration_2e_enabled"); // NOI18N
         newlyEnabledProperties.put(PHP_UNIT_SUITE, "auxiliary.org-netbeans-modules-php-phpunit.customSuite_2e_enabled"); // NOI18N

@@ -42,7 +42,7 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.Collections;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -92,8 +92,8 @@ public class WrongOrderOfArgsHint extends HintRule {
     private class CheckVisitor extends DefaultVisitor {
 
         private final FileObject fileObject;
-        private final List<FunctionDeclaration> wrongFunctions = new LinkedList<FunctionDeclaration>();
-        private final List<Hint> hints = new LinkedList<Hint>();
+        private final List<FunctionDeclaration> wrongFunctions = new ArrayList<>();
+        private final List<Hint> hints = new ArrayList<>();
         private final BaseDocument doc;
         private final TokenHierarchy<?> tokenHierarchy;
 
@@ -179,13 +179,18 @@ public class WrongOrderOfArgsHint extends HintRule {
                 while (ts.moveNext()) {
                     Token t = ts.token();
                     if (t.id() == PHPTokenId.PHP_TOKEN) {
-                        if (t.text().toString().equals("(")) { //NOI18N
-                            if (braceMatch == 0) {
-                                start = ts.offset() + 1;
-                            }
-                            braceMatch++;
-                        } else if (t.text().toString().equals(")")) { //NOI18N
-                            braceMatch--;
+                        switch (t.text().toString()) {
+                            case "(": //NOI18N
+                                if (braceMatch == 0) {
+                                    start = ts.offset() + 1;
+                                }
+                                braceMatch++;
+                                break;
+                            case ")": //NOI18N
+                                braceMatch--;
+                                break;
+                            default:
+                                // no-op
                         }
                         if (braceMatch == 0) {
                             end = ts.offset();
@@ -218,8 +223,8 @@ public class WrongOrderOfArgsHint extends HintRule {
 
         @Override
         public List<FormalParameter> getFormalParameters() {
-            List<FormalParameter> rearrangedList = new LinkedList<FormalParameter>();
-            List<FormalParameter> parametersWithDefault = new LinkedList<FormalParameter>();
+            List<FormalParameter> rearrangedList = new ArrayList<>();
+            List<FormalParameter> parametersWithDefault = new ArrayList<>();
             for (FormalParameter param : super.getFormalParameters()) {
                 if (param.getDefaultValue() == null) {
                     rearrangedList.add(param);

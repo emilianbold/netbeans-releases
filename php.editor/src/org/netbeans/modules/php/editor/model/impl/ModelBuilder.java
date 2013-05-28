@@ -88,8 +88,8 @@ class ModelBuilder {
 
     ModelBuilder(FileScopeImpl fileScope) {
         this.fileScope = fileScope;
-        this.currentScope = new Stack<ScopeImpl>();
-        this.vars = new HashMap<VariableNameFactory, Map<String, VariableNameImpl>>();
+        this.currentScope = new Stack<>();
+        this.vars = new HashMap<>();
         setCurrentScope(fileScope);
         defaultNamespaceScope = new NamespaceScopeImpl(fileScope);
         namespaceScope = defaultNamespaceScope;

@@ -102,7 +102,18 @@ public class JsCompletionItem implements CompletionProposal {
 
     @Override
     public String getSortText() {
-        return getName();
+        StringBuilder sb = new StringBuilder();
+        if (element != null) {
+            FileObject sourceFo = request.result.getSnapshot().getSource().getFileObject();
+            FileObject elementFo = element.getFileObject();
+            if (elementFo != null && sourceFo != null && sourceFo.equals(elementFo)) {
+                sb.append("1");     //NOI18N
+            } else {
+                sb.append("9");     //NOI18N
+            }
+        }
+        sb.append(getName());    
+        return sb.toString();
     }
 
     @Override
@@ -160,7 +171,7 @@ public class JsCompletionItem implements CompletionProposal {
 
     @Override
     public int getSortPrioOverride() {
-        return 0;
+        return (element != null && ((JsElement)element).isPlatform()) ? 0 : 100;
     }
 
     @Override
@@ -311,8 +322,11 @@ public class JsCompletionItem implements CompletionProposal {
             if (type == null) {
                 return getName();
             }
-
+            
             switch(type) {
+                case SIMPLE:
+                    builder.append(getName());
+                    break;
                 case ENDS_WITH_SPACE:
                     builder.append(getName());
                     builder.append(" ${cursor}"); //NOI18N
@@ -346,6 +360,11 @@ public class JsCompletionItem implements CompletionProposal {
                     break;
             }
             return builder.toString();
+        }
+
+        @Override
+        public int getSortPrioOverride() {
+            return 110;
         }
     }
 

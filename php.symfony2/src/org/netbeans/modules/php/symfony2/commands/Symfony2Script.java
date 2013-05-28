@@ -56,7 +56,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.extexecution.ExecutionDescriptor;
 import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
@@ -79,6 +78,8 @@ import org.openide.windows.InputOutput;
 public final class Symfony2Script {
 
     private static final Logger LOGGER = Logger.getLogger(Symfony2Script.class.getName());
+
+    private static final String XML_CHARSET_NAME = "UTF-8"; // NOI18N
 
     private static final List<String> CACHE_CLEAR_COMMAND = Collections.singletonList("cache:clear"); // NOI18N
     private static final List<String> CACHE_WARMUP_COMMAND = Collections.singletonList("cache:warmup"); // NOI18N
@@ -179,7 +180,7 @@ public final class Symfony2Script {
             return null;
         }
         Future<Integer> result = createExecutable(phpModule)
-                .fileOutput(tmpFile, true)
+                .fileOutput(tmpFile, XML_CHARSET_NAME, true)
                 .additionalParameters(LIST_COMMANDS_COMMAND)
                 .run(getSilentDescriptor());
         try {
@@ -198,9 +199,9 @@ public final class Symfony2Script {
             UiUtils.processExecutionException(ex, Symfony2OptionsPanelController.OPTIONS_SUBPATH);
             return null;
         }
-        List<Symfony2CommandVO> commandsVO = new ArrayList<Symfony2CommandVO>();
+        List<Symfony2CommandVO> commandsVO = new ArrayList<>();
         try {
-            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile), "UTF-8")); // NOI18N
+            Reader reader = new BufferedReader(new InputStreamReader(new FileInputStream(tmpFile), XML_CHARSET_NAME));
             Symfony2CommandsXmlParser.parse(reader, commandsVO);
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
@@ -232,7 +233,7 @@ public final class Symfony2Script {
     }
 
     private List<String> getAllParameters(List<String> params) {
-        List<String> allParams = new ArrayList<String>(DEFAULT_PARAMS.size() + params.size());
+        List<String> allParams = new ArrayList<>(DEFAULT_PARAMS.size() + params.size());
         allParams.addAll(DEFAULT_PARAMS);
         allParams.addAll(params);
         return allParams;

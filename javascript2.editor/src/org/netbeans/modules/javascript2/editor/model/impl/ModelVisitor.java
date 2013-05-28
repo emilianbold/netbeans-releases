@@ -77,7 +77,6 @@ import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
@@ -245,6 +244,10 @@ public class ModelVisitor extends PathNodeVisitor {
                 && (binaryNode.lhs() instanceof AccessNode || binaryNode.lhs() instanceof IdentNode)) {
             // TODO probably not only assign
             JsObjectImpl parent = modelBuilder.getCurrentDeclarationFunction();
+            if (parent == null) {
+                // should not happened
+                return super.enter(binaryNode);
+            }
             if (binaryNode.lhs() instanceof AccessNode) {
                 AccessNode aNode = (AccessNode)binaryNode.lhs();
                 JsObjectImpl property = null;
@@ -1102,8 +1105,10 @@ public class ModelVisitor extends PathNodeVisitor {
 
     private boolean fillName(AccessNode node, List<String> result) {
         List<Identifier> fqn = getName(node, parserResult);
-        for (int i = fqn.size() - 1; i >= 0; i--) {
-            result.add(0, fqn.get(i).getName());
+        if (fqn != null) {
+            for (int i = fqn.size() - 1; i >= 0; i--) {
+                result.add(0, fqn.get(i).getName());
+            }
         }
 
         JsObject current = modelBuilder.getCurrentObject();

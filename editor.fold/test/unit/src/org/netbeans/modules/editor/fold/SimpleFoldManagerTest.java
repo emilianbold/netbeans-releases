@@ -153,6 +153,8 @@ public class SimpleFoldManagerTest extends NbTestCase {
         MockMimeLookup.setInstances(MimePath.parse(""), new FHM());
 
         FoldHierarchyTestEnv env = new FoldHierarchyTestEnv(new SimpleFoldManagerFactory());
+        AbstractDocument doc = env.getDocument();
+        doc.insertString(0, "1234567890", null);
         
         env.getHierarchy();
         

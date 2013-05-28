@@ -110,14 +110,14 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
     }
 
     static Collection<? extends MethodScope> getMethods(TypeScope clsScope, String methodName, ModelElement elem, final int... modifiers) {
-        Set<MethodScope> retval = new HashSet<MethodScope>();
+        Set<MethodScope> retval = new HashSet<>();
         retval.addAll(ModelUtils.filter(clsScope.getDeclaredMethods(), methodName));
         retval.addAll(ModelUtils.filter(clsScope.getInheritedMethods(), methodName));
         return retval;
     }
 
     static Collection<? extends FieldElement> getFields(TypeScope typeScope, String fieldName, ModelElement elem, final int... modifiers) {
-        Set<FieldElement> retval = new HashSet<FieldElement>();
+        Set<FieldElement> retval = new HashSet<>();
         if (typeScope instanceof ClassScope) {
             ClassScope clsScope = (ClassScope) typeScope;
             retval.addAll(ModelUtils.filter(clsScope.getDeclaredFields(), fieldName));
@@ -180,7 +180,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends InterfaceScope> findInterfaces(final QualifiedName queryName) {
-        List<InterfaceScope> retval = new ArrayList<InterfaceScope>();
+        List<InterfaceScope> retval = new ArrayList<>();
         retval.addAll(ModelUtils.filter(ModelUtils.getDeclaredInterfaces(model.getFileScope()), queryName));
         if (retval.isEmpty()) {
             Set<InterfaceElement> interfaces = getIndex().getInterfaces(NameKind.exact(queryName));
@@ -193,7 +193,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends TraitScope> findTraits(final QualifiedName queryName) {
-        List<TraitScope> retval = new ArrayList<TraitScope>();
+        List<TraitScope> retval = new ArrayList<>();
         retval.addAll(ModelUtils.filter(ModelUtils.getDeclaredTraits(model.getFileScope()), queryName));
         if (retval.isEmpty()) {
             Set<TraitElement> traits = getIndex().getTraits(NameKind.exact(queryName));
@@ -206,7 +206,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends ClassScope> findClasses(final QualifiedName queryName) {
-        List<ClassScope> retval = new ArrayList<ClassScope>();
+        List<ClassScope> retval = new ArrayList<>();
         retval.addAll(ModelUtils.filter(ModelUtils.getDeclaredClasses(model.getFileScope()), queryName));
         if (retval.isEmpty()) {
             Set<ClassElement> classes = getIndex().getClasses(NameKind.exact(queryName));
@@ -219,7 +219,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends TypeScope> findTypes(final QualifiedName queryName) {
-        List<TypeScope> retval = new ArrayList<TypeScope>();
+        List<TypeScope> retval = new ArrayList<>();
         retval.addAll(ModelUtils.filter(ModelUtils.getDeclaredTypes(model.getFileScope()), queryName));
         if (retval.isEmpty()) {
             final Exact exact = NameKind.exact(queryName);
@@ -241,7 +241,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends FunctionScope> findFunctions(final QualifiedName queryName) {
-        List<FunctionScope> retval = new ArrayList<FunctionScope>();
+        List<FunctionScope> retval = new ArrayList<>();
         retval.addAll(ModelUtils.filter(ModelUtils.getDeclaredFunctions(model.getFileScope()), queryName));
         if (retval.isEmpty()) {
             Set<FunctionElement> functions = getIndex().getFunctions(NameKind.exact(queryName));
@@ -254,7 +254,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends ConstantElement> findConstants(final QualifiedName queryName) {
-        List<ConstantElement> retval = new ArrayList<ConstantElement>();
+        List<ConstantElement> retval = new ArrayList<>();
         retval.addAll(ModelUtils.filter(ModelUtils.getDeclaredConstants(model.getFileScope()), queryName));
         if (retval.isEmpty()) {
             Set<org.netbeans.modules.php.editor.api.elements.ConstantElement> constants =
@@ -268,7 +268,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends VariableName> findVariables(String queryName) {
-        List<VariableName> retval = new ArrayList<VariableName>();
+        List<VariableName> retval = new ArrayList<>();
         retval.addAll(ModelUtils.filter(ModelUtils.getDeclaredVariables(model.getFileScope()), queryName));
         if (retval.isEmpty()) {
             Set<VariableElement> vars = getIndex().getTopLevelVariables(NameKind.exact(queryName));
@@ -281,7 +281,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends MethodScope> findMethods(TypeScope type) {
-        List<MethodScope> retval = new ArrayList<MethodScope>();
+        List<MethodScope> retval = new ArrayList<>();
         //PhpModifiers attribs = new PhpModifiers(modifiers);
         Set<MethodElement> methods = getIndex().getDeclaredMethods(type);
         for (MethodElement idxFunc : forFiles(getFileObject()).prefer(methods)) {
@@ -292,7 +292,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends ClassConstantElement> findClassConstants(TypeScope type) {
-        List<ClassConstantElement> retval = new ArrayList<ClassConstantElement>();
+        List<ClassConstantElement> retval = new ArrayList<>();
         Set<TypeConstantElement> constants = getIndex().getDeclaredTypeConstants(type);
         for (TypeConstantElement con : forFiles(getFileObject()).prefer(constants)) {
             retval.add(new ClassConstantElementImpl(type, con));
@@ -302,7 +302,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends MethodScope> findMethods(TypeScope type, String queryName, int... modifiers) {
-        List<MethodScope> retval = new ArrayList<MethodScope>();
+        List<MethodScope> retval = new ArrayList<>();
         //PhpModifiers attribs = new PhpModifiers(modifiers);
         Set<MethodElement> methods = org.netbeans.modules.php.editor.api.elements.ElementFilter.
                     forName(NameKind.exact(queryName)).filter(getIndex().getDeclaredMethods(type));
@@ -314,7 +314,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends MethodScope> findInheritedMethods(TypeScope typeScope, String queryName) {
-        List<MethodScope> retval = new ArrayList<MethodScope>();
+        List<MethodScope> retval = new ArrayList<>();
         Set<MethodElement> methods = org.netbeans.modules.php.editor.api.elements.ElementFilter.
                     forName(NameKind.exact(queryName)).filter(getIndex().getInheritedMethods(typeScope));
         for (MethodElement idxFunc : forFiles(getFileObject()).prefer(methods)) {
@@ -325,7 +325,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends ClassConstantElement> findClassConstants(TypeScope type, String queryName) {
-        List<ClassConstantElement> retval = new ArrayList<ClassConstantElement>();
+        List<ClassConstantElement> retval = new ArrayList<>();
         Set<TypeConstantElement> constants = org.netbeans.modules.php.editor.api.elements.ElementFilter.
                     forName(NameKind.exact(queryName)).filter(getIndex().getDeclaredTypeConstants(type));
         for (TypeConstantElement con : forFiles(getFileObject()).prefer(constants)) {
@@ -336,7 +336,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends ClassConstantElement> findInheritedClassConstants(ClassScope type, String queryName) {
-        List<ClassConstantElement> retval = new ArrayList<ClassConstantElement>();
+        List<ClassConstantElement> retval = new ArrayList<>();
         Set<TypeConstantElement> constants = org.netbeans.modules.php.editor.api.elements.ElementFilter.
                     forName(NameKind.exact(queryName)).filter(getIndex().getInheritedTypeConstants(type));
         for (TypeConstantElement con : forFiles(getFileObject()).prefer(constants)) {
@@ -347,7 +347,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends FieldElement> findFields(ClassScope clsScope, final int... modifiers) {
-        List<FieldElement> retval = new ArrayList<FieldElement>();
+        List<FieldElement> retval = new ArrayList<>();
         Set<org.netbeans.modules.php.editor.api.elements.FieldElement> fields = getIndex().getDeclaredFields(clsScope);
         for (org.netbeans.modules.php.editor.api.elements.FieldElement fld : forFiles(getFileObject()).prefer(fields)) {
             retval.add(new FieldElementImpl(clsScope, fld));
@@ -357,7 +357,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends FieldElement> findFields(TraitScope traitScope, final int... modifiers) {
-        List<FieldElement> retval = new ArrayList<FieldElement>();
+        List<FieldElement> retval = new ArrayList<>();
         Set<org.netbeans.modules.php.editor.api.elements.FieldElement> fields = getIndex().getDeclaredFields(traitScope);
         for (org.netbeans.modules.php.editor.api.elements.FieldElement fld : forFiles(getFileObject()).prefer(fields)) {
             retval.add(new FieldElementImpl(traitScope, fld));
@@ -367,7 +367,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends FieldElement> findFields(ClassScope clsScope, final String queryName, final int... modifiers) {
-        List<FieldElement> retval = new ArrayList<FieldElement>();
+        List<FieldElement> retval = new ArrayList<>();
         Set<org.netbeans.modules.php.editor.api.elements.FieldElement> fields = org.netbeans.modules.php.editor.api.elements.ElementFilter.
                     forName(NameKind.exact(queryName)).filter(getIndex().getDeclaredFields(clsScope));
         for (org.netbeans.modules.php.editor.api.elements.FieldElement fld : forFiles(getFileObject()).prefer(fields)) {
@@ -378,7 +378,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends FieldElement> findFields(TraitScope traitScope, final String queryName, final int... modifiers) {
-        List<FieldElement> retval = new ArrayList<FieldElement>();
+        List<FieldElement> retval = new ArrayList<>();
         Set<org.netbeans.modules.php.editor.api.elements.FieldElement> fields = org.netbeans.modules.php.editor.api.elements.ElementFilter.
                     forName(NameKind.exact(queryName)).filter(getIndex().getDeclaredFields(traitScope));
         for (org.netbeans.modules.php.editor.api.elements.FieldElement fld : forFiles(getFileObject()).prefer(fields)) {
@@ -393,7 +393,7 @@ class IndexScopeImpl extends ScopeImpl implements IndexScope {
 
     @Override
     public List<? extends FieldElement> findInheritedFields(ClassScope clsScope, String queryName) {
-        List<FieldElement> retval = new ArrayList<FieldElement>();
+        List<FieldElement> retval = new ArrayList<>();
         Set<org.netbeans.modules.php.editor.api.elements.FieldElement> fields = org.netbeans.modules.php.editor.api.elements.ElementFilter.
                     forName(NameKind.exact(queryName)).filter(getIndex().getInheritedFields(clsScope));
         for (org.netbeans.modules.php.editor.api.elements.FieldElement fld : forFiles(getFileObject()).prefer(fields)) {

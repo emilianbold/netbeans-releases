@@ -131,6 +131,11 @@ public class QuickSearchPopup extends javax.swing.JPanel
         if (result != null) {
             RecentSearches.getDefault().add(result);
             result.getAction().run();
+            if (comboBar.getCommand().isFocusOwner()) {
+                // Needed in case the focus couldn't be returned to the caller,
+                // see #228668.
+                comboBar.getCommand().setText("");                      //NOI18N
+            }
             clearModel();
         }
     }

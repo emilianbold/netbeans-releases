@@ -55,6 +55,7 @@
 
 package org.netbeans.modules.cnd.lexer;
 
+import org.netbeans.api.lexer.PartType;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndLexerUtilities;
 import org.netbeans.cnd.api.lexer.CppTokenId;
@@ -98,10 +99,14 @@ public class CppLexer extends CndLexer {
         while (true) {
             switch (read(true)) {
                 case '\"':
-                    skipLiteral(true);
+                    if (!skipLiteral(true)) {
+                        return tokenPart(CppTokenId.PREPROCESSOR_DIRECTIVE, PartType.START);
+                    }
                     break;
                 case '\'':
-                    skipLiteral(false);
+                    if (!skipLiteral(false)) {
+                        return tokenPart(CppTokenId.PREPROCESSOR_DIRECTIVE, PartType.START);
+                    }
                     break;
                 case '/':
                     switch (read(true)) {
@@ -138,17 +143,17 @@ public class CppLexer extends CndLexer {
     }
 
     @SuppressWarnings("fallthrough")
-    private void skipLiteral(boolean endDblQuote) {
+    private boolean skipLiteral(boolean endDblQuote) {
         while (true) { // string literal
             switch (read(true)) {
                 case '"': // NOI18N
                     if (endDblQuote) {
-                        return;
+                        return true;
                     }
                     break;
                 case '\'': // NOI18N
                     if (!endDblQuote) {
-                        return;
+                        return true;
                     }
                     break;
                 case '\\': // escaped char
@@ -156,9 +161,13 @@ public class CppLexer extends CndLexer {
                     break;
                 case '\r': 
                 case '\n':
-                    backup(1);
+                    if (isTokenSplittedByEscapedLine()) {
+                        return false;
+                    } else {
+                        backup(1);
+                    }
                 case EOF:
-                    return;
+                    return true;
             }
         }           
     }

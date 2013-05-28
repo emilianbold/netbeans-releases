@@ -63,7 +63,7 @@ public final class SingleFieldDeclarationInfo extends ASTNodeInfo<SingleFieldDec
     }
 
     public static List<? extends SingleFieldDeclarationInfo> create(FieldsDeclaration fd) {
-        List<SingleFieldDeclarationInfo> retval = new ArrayList<SingleFieldDeclarationInfo>();
+        List<SingleFieldDeclarationInfo> retval = new ArrayList<>();
         List<SingleFieldDeclaration> fields = fd.getFields();
         for (SingleFieldDeclaration singleFieldDeclaration : fields) {
             retval.add(new SingleFieldDeclarationInfo(fd, singleFieldDeclaration));

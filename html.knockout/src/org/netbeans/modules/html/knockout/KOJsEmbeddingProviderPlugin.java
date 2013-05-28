@@ -41,8 +41,10 @@
  */
 package org.netbeans.modules.html.knockout;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Pattern;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import static org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE;
@@ -50,9 +52,14 @@ import static org.netbeans.api.html.lexer.HTMLTokenId.TAG_OPEN;
 import static org.netbeans.api.html.lexer.HTMLTokenId.VALUE;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.spi.embedding.JsEmbeddingProviderPlugin;
+import org.netbeans.modules.html.knockout.model.KOModel;
+import org.netbeans.modules.javascript2.editor.index.IndexedElement;
+import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.filesystems.FileObject;
 
 /**
  * Knockout javascript virtual source extension
@@ -62,12 +69,16 @@ import org.netbeans.modules.parsing.api.Snapshot;
 @MimeRegistration(mimeType = "text/html", service = JsEmbeddingProviderPlugin.class)
 public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
+    private static final Pattern FUNCTION_PATTERN = Pattern.compile("\\s*function.*"); // NOI18N
+
     private TokenSequence<HTMLTokenId> tokenSequence;
     private Snapshot snapshot;
     private List<Embedding> embeddings;
     private final Language JS_LANGUAGE;
     private final LinkedList<StackItem> stack;
     private String lastTagOpen = null;
+    private boolean hasKnockout = false;
+    private JsIndex index;
 
     public KOJsEmbeddingProviderPlugin() {
         JS_LANGUAGE = Language.find(KOUtils.JAVASCRIPT_MIMETYPE); //NOI18N
@@ -75,28 +86,33 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     }
 
     @Override
-//    public boolean startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence, List<Embedding> embeddings) {
-    public boolean startProcessing(Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence, List<Embedding> embeddings) {
+    public boolean startProcessing(HtmlParserResult parserResult, Snapshot snapshot, TokenSequence<HTMLTokenId> tokenSequence, List<Embedding> embeddings) {
         this.snapshot = snapshot;
         this.tokenSequence = tokenSequence;
         this.embeddings = embeddings;
 
-//        KOModel model = KOModel.getModel(parserResult);
-//        if(!model.containsKnockout()) {
-//            return false;
-//        }
+        if(!KOModel.getModel(parserResult).containsKnockout()) {
+            return false;
+        }
         
-        embeddings.add(snapshot.create("var $root = ko.$bindings;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
-        embeddings.add(snapshot.create("var $data = $root;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
-        embeddings.add(snapshot.create("var $parent = undefined;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+        FileObject file = snapshot.getSource().getFileObject();
+        if (file == null) {
+            return false;
+        }
 
+        this.index = JsIndex.get(file);
         return true;
     }
 
     @Override
     public void endProcessing() {
+//        if (hasKnockout) {
+//            addEmbedding("});\n"); // NOI18N
+//        }
+        hasKnockout = false;
         stack.clear();
         lastTagOpen = null;
+        index = null;
     }
 
     @Override
@@ -119,7 +135,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                     if (top.balance == 0) {
                         processed = true;
                         stack.pop();
-                        embeddings.add(snapshot.create("});\n", KOUtils.JAVASCRIPT_MIMETYPE));  //NOI18N
+                        addEmbedding("});\n"); // NOI18N
                     }
                 }
                 break;
@@ -132,24 +148,29 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                         if (embedded.token().id() == KODataBindTokenId.KEY) {
                             if ("with".equals(embedded.token().text().toString()) // NOI18N
                                     || "foreach".equals(embedded.token().text().toString())) { // NOI18N
-                                embeddings.add(snapshot.create("(function(){\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
-                                embeddings.add(snapshot.create("var $parent = $data;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                                addEmbedding("(function(){\n"); // NOI18N
+                                addEmbedding("var $parent = $data;\n"); // NOI18N
                                 stack.push(new StackItem(lastTagOpen));
                                 setData = true;
                             }
                         }
                         if (embedded.token().id() == KODataBindTokenId.VALUE) {
                             if (setData) {
-                                embeddings.add(snapshot.create("var $data = (", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                                addEmbedding("var $data = ("); // NOI18N
                                 embeddings.add(snapshot.create(embedded.offset(), embedded.token().length(), KOUtils.JAVASCRIPT_MIMETYPE));
-                                embeddings.add(snapshot.create(");\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                                addEmbedding(");\n"); // NOI18N
                                 setData = false;
                             }
                         }
                         if (embedded.embedded(JS_LANGUAGE) != null) {
                             processed = true;
                             //has javascript embedding
-                            embeddings.add(snapshot.create("(function(){\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                            addEmbedding("(");
+                            boolean addFunction = !FUNCTION_PATTERN.matcher(embedded.token().text()).matches();
+                                
+                            if (addFunction) {
+                                addEmbedding("function(){\n"); // NOI18N
+                            }
 
                             CharSequence seq = embedded.token().text();
                             int emptyLength = 0;
@@ -166,13 +187,33 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                                 embeddings.add(snapshot.create(embedded.offset(), embedded.token().length(), KOUtils.JAVASCRIPT_MIMETYPE));
                             }
 
-                            embeddings.add(snapshot.create(";\n});\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+                            if (addFunction) {
+                                addEmbedding(";\n}"); // NOI18N
+                            }
+                            addEmbedding(");\n"); // NOI18N
                         }
                     }
                     break;
                 }
         }
         return processed;
+    }
+
+    
+    private void addEmbedding(String value) {
+        if (!hasKnockout) {
+            //embeddings.add(snapshot.create("(function(){\n", KOUtils.JAVASCRIPT_MIMETYPE));
+            embeddings.add(snapshot.create("var $root = ko.$bindings;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+            embeddings.add(snapshot.create("var $data = $root;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+            embeddings.add(snapshot.create("var $parent = undefined;\n", KOUtils.JAVASCRIPT_MIMETYPE)); //NOI18N
+
+            Collection<IndexedElement> properties = index.getProperties("ko.$bindings"); // NOI18N
+            for (IndexedElement indexedElement : properties) {
+                embeddings.add(snapshot.create("var " + indexedElement.getName() + " = ko.$bindings." + indexedElement.getName() + ";\n", KOUtils.JAVASCRIPT_MIMETYPE));
+            }
+        }
+        hasKnockout = true;
+        embeddings.add(snapshot.create(value, KOUtils.JAVASCRIPT_MIMETYPE));
     }
 
     private static class StackItem {

@@ -57,16 +57,25 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public final class DummyParameterImpl extends VariableImpl<CsmParameter> implements CsmParameter {
 
-    private DummyParameterImpl(CsmFile file, int startOffset, int endOffset,String name, CsmScope scope) {
-        super(file, startOffset, endOffset, null, name, scope, false, false);
+    private DummyParameterImpl(CsmFile file, int startOffset, int endOffset, String name, CsmType type, CsmScope scope) {
+        super(file, startOffset, endOffset, type, name, scope, false, false);
     }
 
-    public static DummyParameterImpl create(CsmFile file, int startOffset, int endOffset,String name, CsmScope scope) {
-        DummyParameterImpl dummyParameterImpl = new DummyParameterImpl(file, startOffset, endOffset, name, scope);
+    public static DummyParameterImpl create(CsmFile file, int startOffset, int endOffset, String name, CsmScope scope) {
+        DummyParameterImpl dummyParameterImpl = new DummyParameterImpl(
+                file, 
+                startOffset, 
+                endOffset, 
+                name, 
+                TypeFactory.createBuiltinType("int", null, 0,  null/*getAst().getFirstChild()*/, file), // NOI18N
+                scope
+        );
+        
         postObjectCreateRegistration(false, dummyParameterImpl);
+        
         return dummyParameterImpl;
     }
-
+    
     @Override
     protected boolean registerInProject() {
         return false;

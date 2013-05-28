@@ -92,7 +92,10 @@ class RemoteObjectMessage extends ConsoleMessage {
             List<PropertyDescriptor> properties = ro.getProperties();
             List<ConsoleMessage> propMessages = new ArrayList<ConsoleMessage>(properties.size());
             for (PropertyDescriptor pd : properties) {
-                propMessages.add(new PropertyMessage(webKit, pd));
+                // #229457 - prevent NPE
+                if (pd.getValue() != null) {
+                    propMessages.add(new PropertyMessage(webKit, pd));
+                }
             }
             return propMessages;
         } else {

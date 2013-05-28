@@ -401,7 +401,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
         // prepare copy-to-folder targets
         int size = documentRoots.size();
-        List<LocalServer> localServers = new ArrayList<LocalServer>(size);
+        List<LocalServer> localServers = new ArrayList<>(size);
         for (DocumentRoot root : documentRoots) {
             String srcRoot = new File(root.getDocumentRoot(), projectName).getAbsolutePath();
             LocalServer ls = new LocalServer(null, root.getUrl(), root.getDocumentRoot(), srcRoot, true);

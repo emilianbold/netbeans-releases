@@ -795,4 +795,9 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
         options.put(FmtOptions.INITIAL_INDENT, 4);
         reformatFileContents("testfiles/formatting/blankLines/OpenClosePHPTag05.php", options);
     }
+
+    public void testIssue229703() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        reformatFileContents("testfiles/formatting/blankLines/issue229703.php", options);
+    }
 }

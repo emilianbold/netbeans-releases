@@ -124,14 +124,14 @@ public class ParameterImpl implements Parameter {
     }
 
     public static List<Parameter> toParameters(String args) {
-        List<Parameter> parameters = new ArrayList<Parameter>();
+        List<Parameter> parameters = new ArrayList<>();
         if (args != null && args.length() > 0) {
             String[] pams = args.split("\\,");
             for (String par : pams) {
                 String[] parts = par.split("\\:");
                 if (parts.length > 0) {
                     String paramName = parts[0];
-                    List<QualifiedName> qualifiedNames = new ArrayList<QualifiedName>();
+                    List<QualifiedName> qualifiedNames = new ArrayList<>();
                     if (parts.length > 1) {
                         String typenames = parts[1];
                         String[] splittedTypes = typenames.length() > 0 ? typenames.split("\\|") : new String[0];

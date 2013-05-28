@@ -307,17 +307,17 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
         }
 
         private Collection<Key> getKeys() {
-            List<Key> keys = null;
+            List<Key> keys;
             if (groups != null) {
                 // change because of incorrect labels
-                keys = new ArrayList<Key>(groups.length);
+                keys = new ArrayList<>(groups.length);
                 for (SourceGroup sg : groups) {
                     keys.add(new Key(sg.getRootFolder(), sg));
                 }
             } else {
                 FileObject[] children = fo.getChildren();
                 Arrays.sort(children, FILE_OBJECT_COMAPARTOR);
-                keys = new ArrayList<Key>(children.length);
+                keys = new ArrayList<>(children.length);
                 if (BrowseFolders.this.target == org.openide.loaders.DataFolder.class) {
                     for (FileObject file : children) {
                         if (file.isFolder()
@@ -327,8 +327,8 @@ public class BrowseFolders extends JPanel implements ExplorerManager.Provider {
                         }
                     }
                 } else {
-                    List<Key> dirs = new ArrayList<Key>(children.length);
-                    List<Key> files = new ArrayList<Key>(children.length);
+                    List<Key> dirs = new ArrayList<>(children.length);
+                    List<Key> files = new ArrayList<>(children.length);
                     for (FileObject file : children) {
                         if (!isVisible(file)
                                 || !group.contains(file)) {

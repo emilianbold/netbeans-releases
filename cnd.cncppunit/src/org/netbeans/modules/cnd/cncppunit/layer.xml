@@ -42,7 +42,7 @@
 
         <folder name="testFiles">
 
-            <file name="cunittest.c">
+            <file name="cunittest.c" url="templates/c/test-cunit-file-c.template">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.cncppunit.resources.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/cnd/cncppunit/resources/testCUnit.png"/>
                 <attr name="position" intvalue="300"/>
@@ -52,15 +52,17 @@
                 <attr name="templateCategory" stringvalue="cncpp-test-types"/>
                 <attr name="templateGenerator" boolvalue="true"/>
                 <attr name="supportedMimeTypes" stringvalue="text/x-c;text/x-h"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="addToLogicalFolder" boolvalue="false"/>
             </file>
 
-            <file name="cunittestfile.c" url="templates/c/test-cunit-file-c.template">
+<!--            <file name="cunittestfile.c" url="templates/c/test-cunit-file-c.template">
                 <attr name="position" intvalue="310"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="hidden"/>
                 <attr name="addToLogicalFolder" boolvalue="false"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
-            </file>
+            </file>-->
 
             <file name="cppunittest.cpp">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.cncppunit.resources.Bundle"/>

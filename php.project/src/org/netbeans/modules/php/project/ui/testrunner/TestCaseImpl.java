@@ -66,23 +66,27 @@ public class TestCaseImpl implements TestCase {
     @Override
     public void setClassName(String className) {
         Parameters.notWhitespace("className", className); // NOI18N
+        testSuite.checkFrozen();
         testCase.setClassName(className);
     }
 
     @Override
     public void setLocation(Locations.Line location) {
         Parameters.notNull("location", location); // NOI18N
+        testSuite.checkFrozen();
         testCase.setLocation(FileUtil.toFile(location.getFile()).getAbsolutePath());
     }
 
     @Override
     public void setTime(long time) {
+        testSuite.checkFrozen();
         testCase.setTimeMillis(time);
     }
 
     @Override
     public void setStatus(Status status) {
         Parameters.notNull("status", status); // NOI18N
+        testSuite.checkFrozen();
         testCase.setStatus(map(status));
     }
 
@@ -91,6 +95,7 @@ public class TestCaseImpl implements TestCase {
         Parameters.notNull("message", message); // NOI18N
         Parameters.notNull("stackTrace", stackTrace); // NOI18N
         Parameters.notNull("diff", diff); // NOI18N
+        testSuite.checkFrozen();
         Trouble trouble = new Trouble(error);
         trouble.setStackTrace(createStackTrace(message, stackTrace));
         if (diff.isValid()) {

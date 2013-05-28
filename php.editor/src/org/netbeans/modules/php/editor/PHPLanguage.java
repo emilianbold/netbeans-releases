@@ -235,7 +235,7 @@ public class PHPLanguage extends DefaultLanguageConfig {
 
     @Override
     public Set<String> getLibraryPathIds() {
-        return new HashSet<String>(Arrays.asList(PhpSourcePath.BOOT_CP, PhpSourcePath.PROJECT_BOOT_CP));
+        return new HashSet<>(Arrays.asList(PhpSourcePath.BOOT_CP, PhpSourcePath.PROJECT_BOOT_CP));
     }
 
     @Override

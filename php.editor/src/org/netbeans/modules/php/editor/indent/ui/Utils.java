@@ -60,15 +60,12 @@ public final class Utils {
     }
 
     public static String loadPreviewText(InputStream is) throws IOException {
-            BufferedReader r = new BufferedReader(new InputStreamReader(is, Charset.defaultCharset()));
-            try {
+            try (BufferedReader r = new BufferedReader(new InputStreamReader(is, Charset.defaultCharset()))) {
                 StringBuilder sb = new StringBuilder();
                 for (String line = r.readLine(); line != null; line = r.readLine()) {
                     sb.append(line).append('\n'); //NOI18N
                 }
                 return sb.toString();
-            } finally {
-                r.close();
             }
         }
 }

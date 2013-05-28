@@ -221,7 +221,7 @@ public final class InterfaceElementImpl extends TypeElementImpl implements Inter
                 int index = separatedIfaces.indexOf('|');
                 if (index > 0) {
                     String field = separatedIfaces.substring(0, index);
-                    ifaces = new HashSet<QualifiedName>(); //NOI18N
+                    ifaces = new HashSet<>(); //NOI18N
                     final String[] ifaceNames = field.split(Separator.COMMA.toString());
                     for (String ifName : ifaceNames) {
                         ifaces.add(QualifiedName.create(ifName));
@@ -238,7 +238,7 @@ public final class InterfaceElementImpl extends TypeElementImpl implements Inter
                 int index = separatedIfaces.indexOf('|');
                 if (index > 0) {
                     String field = separatedIfaces.substring(index + 1);
-                    retval = new ArrayList<QualifiedName>();
+                    retval = new ArrayList<>();
                     for (StringTokenizer st = new StringTokenizer(field, ","); st.hasMoreTokens();) { //NOI18N
                         String token = st.nextToken();
                         retval.add(QualifiedName.create(token));

@@ -64,6 +64,7 @@ public class JsParser extends SanitizingParser {
     @Override
     protected FunctionNode parseSource(Snapshot snapshot, String name, String text, JsErrorManager errorManager) throws Exception {
         String parsableText = text;
+        //System.out.println(text);
         // handle shebang
         if (parsableText.startsWith("#!")) { // NOI18N
             StringBuilder sb = new StringBuilder(parsableText);

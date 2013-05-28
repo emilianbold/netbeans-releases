@@ -141,6 +141,10 @@ abstract class CreateRefreshAction extends ContextAction {
                     List<File> deleteCandidates = new LinkedList<File>();
                     List<File> commitCandidates = new LinkedList<File>();
                     Collection<HgQueueHook> hooks = panel.getHooks();
+                    String user = panel.getParameters().getUser();
+                    if (user != null) {
+                        HgModuleConfig.getDefault().putRecentCommitAuthors(user);
+                    }
                     FileStatusCache cache = Mercurial.getInstance().getFileStatusCache();
                     for (QFileNode node : commitFiles) {
                         if (isCanceled()) {
@@ -190,7 +194,9 @@ abstract class CreateRefreshAction extends ContextAction {
                                 // XXX handle veto
                             }
                         }
-                        Cmd.CreateRefreshPatchCmd commitCmd = createHgCommand(root, commitCandidates, logger, message, patchName, bundleKeyPostfix, Arrays.asList(roots), excludedFiles, filesToRefresh);
+                        Cmd.CreateRefreshPatchCmd commitCmd = createHgCommand(root, commitCandidates, logger,
+                                message, patchName, user,
+                                bundleKeyPostfix, Arrays.asList(roots), excludedFiles, filesToRefresh);
                         commitCmd.setCommitHooks(context, hooks, hookFiles);
                         commitCmd.handle();
 
@@ -211,7 +217,9 @@ abstract class CreateRefreshAction extends ContextAction {
         }
     }
 
-    abstract CreateRefreshPatchCmd createHgCommand (File root, List<File> commitCandidates, OutputLogger logger, String message, String patchName, String bundleKeyPostfix, List<File> roots, Set<File> excludedFiles, Set<File> filesToRefresh);
+    abstract CreateRefreshPatchCmd createHgCommand (File root, List<File> commitCandidates, OutputLogger logger,
+            String message, String patchName, String user, String bundleKeyPostfix,
+            List<File> roots, Set<File> excludedFiles, Set<File> filesToRefresh);
 
     abstract void persistCanceledCommitMessage (QCreatePatchParameters parameters, String canceledCommitMessage);
 
@@ -263,11 +271,14 @@ abstract class CreateRefreshAction extends ContextAction {
             private final Set<File> excludedFiles;
             private final String patchId;
             private final String bundleKeyPostfix;
+            private final String user;
 
-            public CreateRefreshPatchCmd(File repository, List<File> m, OutputLogger logger, String commitMessage, String patchId, String bundleKeyPostfix,
+            public CreateRefreshPatchCmd(File repository, List<File> m, OutputLogger logger, String commitMessage,
+                    String patchId, String user, String bundleKeyPostfix,
                     List<File> rootFiles, Set<File> excludedFiles, Set<File> filesToRefresh) {
                 super(repository, m, logger, commitMessage, null);
                 this.patchId = patchId;
+                this.user = user;
                 this.bundleKeyPostfix = bundleKeyPostfix;
                 this.rootFiles = rootFiles;
                 this.excludedFiles = excludedFiles;
@@ -290,7 +301,7 @@ abstract class CreateRefreshAction extends ContextAction {
                 Set<File> files = new HashSet<File>(candidates);
                 files.addAll(excludedFiles); // should be also refreshed because previously included files will now change to modified
                 try {                    
-                    runHgCommand(repository, candidates, excludedFiles, patchId, msg, logger);
+                    runHgCommand(repository, candidates, excludedFiles, patchId, msg, user, logger);
                 } catch (HgException.HgTooLongArgListException e) {
                     Mercurial.LOG.log(Level.INFO, null, e);
                     List<File> reducedCommitCandidates;
@@ -316,7 +327,7 @@ abstract class CreateRefreshAction extends ContextAction {
                         return;
                     }
                     Mercurial.LOG.log(Level.INFO, "QRefresh: refreshing patch with a reduced set of files: {0}", reducedCommitCandidates.toString()); //NOI18N
-                    runHgCommand(repository, reducedCommitCandidates, Collections.<File>emptySet(), patchId, msg, logger);
+                    runHgCommand(repository, reducedCommitCandidates, Collections.<File>emptySet(), patchId, msg, user, logger);
                 } finally {
                     refreshFiles.addAll(files);
                 }
@@ -343,7 +354,8 @@ abstract class CreateRefreshAction extends ContextAction {
                 HgUtils.logHgLog(tip, logger);
             }
 
-            protected abstract void runHgCommand (File repository, List<File> candidates, Set<File> excludedFiles, String patchId, String msg, OutputLogger logger) throws HgException;
+            protected abstract void runHgCommand (File repository, List<File> candidates, Set<File> excludedFiles,
+                    String patchId, String msg, String user, OutputLogger logger) throws HgException;
         }
     }
 }

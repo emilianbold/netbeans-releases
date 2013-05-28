@@ -66,6 +66,7 @@ import org.netbeans.modules.mercurial.HgException;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.HgProgressSupport;
 import org.netbeans.modules.mercurial.Mercurial;
+import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.diff.MultiDiffPanel;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage.HgRevision;
@@ -85,6 +86,7 @@ import org.netbeans.modules.versioning.util.common.VCSCommitParameters.DefaultCo
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.SaveCookie;
 import org.openide.util.HelpCtx;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
@@ -111,34 +113,59 @@ public class QCommitPanel extends VCSCommitPanel<QFileNode> {
         this.helpCtx = helpCtx;
     }
 
-    public static QCommitPanel createNewPanel (final File[] roots, final File repository, String commitMessage, String helpCtxId) {
-        Preferences preferences = HgModuleConfig.getDefault().getPreferences();
+    public static QCommitPanel createNewPanel (final File[] roots, final File repository, String commitMessage,
+            final String helpCtxId) {
+        final Preferences preferences = HgModuleConfig.getDefault().getPreferences();
+        List<String> recentUsers = getRecentUsers(repository);
+        final DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, null, recentUsers);
+        final Collection<HgQueueHook> hooks = VCSHooks.getInstance().getHooks(HgQueueHook.class);
         
-        DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, null); //NOI18N
-        
-        Collection<HgQueueHook> hooks = VCSHooks.getInstance().getHooks(HgQueueHook.class);
-        HgQueueHookContext hooksCtx = new HgQueueHookContext(roots, null, null);
-        
-        DiffProvider diffProvider = new DiffProvider();
-        VCSCommitPanelModifier modifier = RefreshPanelModifier.getDefault("create"); //NOI18N
-        return new QCommitPanel(new QCommitTable(modifier), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, new ModifiedNodesProvider(),
-                new HelpCtx(helpCtxId));
+        return Mutex.EVENT.readAccess(new Mutex.Action<QCommitPanel>() {
+            @Override
+            public QCommitPanel run () {
+                DiffProvider diffProvider = new DiffProvider();
+                VCSCommitPanelModifier modifier = RefreshPanelModifier.getDefault("create"); //NOI18N
+                HgQueueHookContext hooksCtx = new HgQueueHookContext(roots, null, null);
+                return new QCommitPanel(new QCommitTable(modifier), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, new ModifiedNodesProvider(),
+                        new HelpCtx(helpCtxId));
+            }
+        });
     }
 
-    public static QCommitPanel createRefreshPanel (final File[] roots, final File repository, String commitMessage, QPatch patch, HgRevision parentRevision, String helpCtxId) {
-        Preferences preferences = HgModuleConfig.getDefault().getPreferences();
+    public static QCommitPanel createRefreshPanel (final File[] roots, final File repository,
+            String commitMessage, final QPatch patch, final HgRevision parentRevision, final String helpCtxId) {
+        final Preferences preferences = HgModuleConfig.getDefault().getPreferences();
+        List<String> recentUsers = getRecentUsers(repository);
+        final DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, patch, recentUsers);
+        final Collection<HgQueueHook> hooks = VCSHooks.getInstance().getHooks(HgQueueHook.class);
         
-        DefaultCommitParameters parameters = new QCreatePatchParameters(preferences, commitMessage, patch); //NOI18N
-        
-        Collection<HgQueueHook> hooks = VCSHooks.getInstance().getHooks(HgQueueHook.class);
-        HgQueueHookContext hooksCtx = new HgQueueHookContext(roots, null, patch.getId());
-        
-        // own diff provider, displays qdiff instead of regular diff
-        DiffProvider diffProvider = new QDiffProvider(parentRevision);
-        VCSCommitPanelModifier msgProvider = RefreshPanelModifier.getDefault("refresh"); //NOI18N
-        // own node computer, displays files not modified in cache but files returned by qdiff
-        return new QCommitPanel(new QCommitTable(msgProvider), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, new QRefreshNodesProvider(parentRevision),
-                new HelpCtx(helpCtxId));
+        return Mutex.EVENT.readAccess(new Mutex.Action<QCommitPanel>() {
+            @Override
+            public QCommitPanel run () {
+                // own diff provider, displays qdiff instead of regular diff
+                DiffProvider diffProvider = new QDiffProvider(parentRevision);
+                VCSCommitPanelModifier msgProvider = RefreshPanelModifier.getDefault("refresh"); //NOI18N
+                HgQueueHookContext hooksCtx = new HgQueueHookContext(roots, null, patch.getId());
+                // own node computer, displays files not modified in cache but files returned by qdiff
+                return new QCommitPanel(new QCommitTable(msgProvider), roots, repository, parameters, preferences, hooks, hooksCtx, diffProvider, new QRefreshNodesProvider(parentRevision),
+                        new HelpCtx(helpCtxId));
+                }
+        });
+    }
+    
+    private static List<String> getRecentUsers (File repository) {
+        HgConfigFiles config = new HgConfigFiles(repository);
+        String userName = config.getUserName(false);
+        if (userName.isEmpty()) {
+            config = HgConfigFiles.getSysInstance();
+            userName = config.getUserName(false);
+        }
+        List<String> recentUsers = HgModuleConfig.getDefault().getRecentCommitAuthors();
+        if (!userName.isEmpty()) {
+            recentUsers.remove(userName);
+            recentUsers.add(0, userName);
+        }
+        return recentUsers;
     }
     
     @Override

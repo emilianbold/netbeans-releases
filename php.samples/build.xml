@@ -16,5 +16,6 @@
         <zip basedir="samples_src/RentAFlat-Symfony" excludes="${excludes}" destfile="${examples}/RentAFlat-Symfony.zip"/>
         <zip basedir="samples_src/RentAFlat-Zend" excludes="${excludes}" destfile="${examples}/RentAFlat-Zend.zip"/>
         <zip basedir="samples_src/Calculator-PHPUnit" excludes="${excludes}" destfile="${examples}/Calculator-PHPUnit.zip"/>
+        <zip basedir="samples_src/Calculator-atoum" excludes="${excludes}" destfile="${examples}/Calculator-atoum.zip"/>
     </target>
 </project>

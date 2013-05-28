@@ -130,6 +130,10 @@ public class LatteTopLexerTest extends LatteLexerTestBase {
         performTest("single-curly-open-error");
     }
 
+    public void testIssue214777() throws Exception {
+        performTest("testIssue214777");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         String content = TestUtils.getFileContent(new File(getDataDir(), "testfiles/lexer/top/" + filename + ".latte"));

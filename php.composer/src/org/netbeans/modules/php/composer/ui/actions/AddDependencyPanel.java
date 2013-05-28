@@ -124,14 +124,14 @@ public final class AddDependencyPanel extends JPanel {
     private final List<SearchResult> searchResults = Collections.synchronizedList(new ArrayList<SearchResult>());
     // @GuardedBy("EDT")
     private final ResultsListModel resultsModel = new ResultsListModel(searchResults);
-    private final ConcurrentMap<String, String> resultDetails = new ConcurrentHashMap<String, String>();
+    private final ConcurrentMap<String, String> resultDetails = new ConcurrentHashMap<>();
     // @GuardedBy("EDT")
     private final VersionComboBoxModel versionsModel = new VersionComboBoxModel();
     // tasks
     private final RequestProcessor postSearchRequestProcessor = new RequestProcessor(AddDependencyPanel.class.getName() + " (POST SEARCH)"); // NOI18N
     private final RequestProcessor postShowRequestProcessor = new RequestProcessor(AddDependencyPanel.class.getName() + " (POST SHOW)"); // NOI18N
-    private final List<Future<Integer>> searchTasks = new CopyOnWriteArrayList<Future<Integer>>();
-    private final List<Future<Integer>> showTasks = new CopyOnWriteArrayList<Future<Integer>>();
+    private final List<Future<Integer>> searchTasks = new CopyOnWriteArrayList<>();
+    private final List<Future<Integer>> showTasks = new CopyOnWriteArrayList<>();
 
 
     private AddDependencyPanel(PhpModule phpModule) {
@@ -878,7 +878,7 @@ public final class AddDependencyPanel extends JPanel {
 
 
         // @GuardedBy("EDT")
-        private final List<String> versions = new ArrayList<String>();
+        private final List<String> versions = new ArrayList<>();
 
         private volatile String selectedVersion = null;
 
@@ -965,7 +965,7 @@ public final class AddDependencyPanel extends JPanel {
         }
 
         private static List<String> getVersions(String versionsLine) {
-            List<String> versions = new ArrayList<String>(StringUtils.explode(versionsLine, VERSIONS_DELIMITER));
+            List<String> versions = new ArrayList<>(StringUtils.explode(versionsLine, VERSIONS_DELIMITER));
             versions.add("*"); // NOI18N
             return versions;
         }

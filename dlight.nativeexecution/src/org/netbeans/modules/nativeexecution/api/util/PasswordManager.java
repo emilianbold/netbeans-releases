@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.nativeexecution.api.util;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -62,12 +63,17 @@ public final class PasswordManager {
     private static final boolean keepPasswordsInMemory;
     private static final String KEY_PREFIX = "remote.user.info.password."; // NOI18N
     private static final String STORE_PREFIX = "remote.user.info.store."; // NOI18N
-    private final Map<String, String> cache = Collections.synchronizedMap(new HashMap<String, String>());
+    private final Map<String, char[]> cache = Collections.synchronizedMap(new HashMap<String, char[]>());
     private boolean keyringIsActivated = false;
     private static PasswordManager instance = new PasswordManager();
-    
+
     static {
-        keepPasswordsInMemory = !Boolean.getBoolean("remote.user.password.do_not_keep_in_memory"); // NOI18N
+        // This flag, when set to true, means that user's password will be kept
+        // in memory while NB is running. It will be used for re-establishing a
+        // connection if it is *unexpectedly* broken. On explicit host
+        // disconnect (on user's request), the password will be removed from the
+        // memory disregarding this flag.
+        keepPasswordsInMemory = Boolean.getBoolean("remote.user.password.keep_in_memory"); // NOI18N
     }
 
     private PasswordManager() {
@@ -80,15 +86,16 @@ public final class PasswordManager {
     /**
      *
      * @param execEnv
-     * @return password from memory or from Keyring if user selected "remember password" in previous IDE invocation
+     * @return password from memory or from Keyring if user selected "remember
+     * password" in previous IDE invocation
      */
     public char[] getPassword(ExecutionEnvironment execEnv) {
         String key = ExecutionEnvironmentFactory.toUniqueID(execEnv);
         if (keepPasswordsInMemory) {
-            String cachedPassword = cache.get(key);
+            char[] cachedPassword = cache.get(key);
             if (cachedPassword != null) {
                 Logger.getInstance().log(Level.FINEST, "PasswordManager.get({0}) found password in memory", execEnv); // NOI18N
-                return cachedPassword.toCharArray();
+                return cachedPassword;
             }
         }
         boolean stored = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
@@ -96,7 +103,10 @@ public final class PasswordManager {
             keyringIsActivated = true;
             char[] keyringPassword = Keyring.read(KEY_PREFIX + key);
             if (keepPasswordsInMemory && keyringPassword != null) {
-                cache.put(key, String.valueOf(keyringPassword));
+                char[] old = cache.put(key, Arrays.copyOf(keyringPassword, keyringPassword.length));
+                if (old != null) {
+                    Arrays.fill(old, 'x');
+                }
             }
             Logger.getInstance().log(Level.FINEST, "PasswordManager.get({0}) found password in keyring", execEnv); // NOI18N
             return keyringPassword;
@@ -107,7 +117,8 @@ public final class PasswordManager {
     }
 
     /**
-     * Store password in memory. If user select "remember password" option password is stored in Keyring.
+     * Store password in memory. If user select "remember password" option
+     * password is stored in Keyring.
      *
      * @param execEnv
      * @param password
@@ -119,7 +130,8 @@ public final class PasswordManager {
     }
 
     /**
-     * Update password in memory. If user selected "remember password" option before password is updated in Keyring.
+     * Update password in memory. If user selected "remember password" option
+     * before password is updated in Keyring.
      *
      * @param execEnv
      * @param password
@@ -127,24 +139,34 @@ public final class PasswordManager {
     private void put(ExecutionEnvironment execEnv, char[] password) {
         String key = ExecutionEnvironmentFactory.toUniqueID(execEnv);
         if (keepPasswordsInMemory) {
+            char[] old;
             if (password != null) {
-                cache.put(key, String.valueOf(password));
+                old = cache.put(key, Arrays.copyOf(password, password.length));
                 Logger.getInstance().log(Level.FINEST, "PasswordManager.put({0}, non-null) stored password in memory", execEnv); // NOI18N
             } else {
                 Logger.getInstance().log(Level.FINEST, "PasswordManager.put({0}, null) cleared password from memory", execEnv); // NOI18N
-                cache.put(key, null);
+                old = cache.put(key, null);
+            }
+            if (old != null) {
+                Arrays.fill(old, 'x');
             }
         }
         boolean store = NbPreferences.forModule(PasswordManager.class).getBoolean(STORE_PREFIX + key, false);
         if (store) {
             keyringIsActivated = true;
-            Keyring.save(KEY_PREFIX + key, password,
-            NbBundle.getMessage(PasswordManager.class, "PasswordManagerPasswordFor", execEnv.getDisplayName())); // NOI18N
+            if (password == null) {
+                Keyring.delete(KEY_PREFIX + key);
+            } else {
+                Keyring.save(KEY_PREFIX + key, password,
+                        NbBundle.getMessage(PasswordManager.class, "PasswordManagerPasswordFor", execEnv.getDisplayName())); // NOI18N
+            }
             Logger.getInstance().log(Level.FINEST, "PasswordManager.put({0}, non-null) stored password in keyring", execEnv); // NOI18N
         }
     }
 
-    /** Should be called on disconnect. */
+    /**
+     * Should be called on disconnect.
+     */
     /*package*/ void onExplicitDisconnect(ExecutionEnvironment execEnv) {
         String key = ExecutionEnvironmentFactory.toUniqueID(execEnv);
         cache.remove(key);
@@ -217,6 +239,7 @@ public final class PasswordManager {
 
     /**
      * User intention of "remember password"
+     *
      * @param execEnv
      * @return true if user checked "remember password" option.
      */
@@ -228,6 +251,7 @@ public final class PasswordManager {
 
     /**
      * Store user intention of "remember password"
+     *
      * @param execEnv
      * @param rememberPassword
      */

@@ -54,13 +54,13 @@ import java.util.Set;
  */
 public final class TransferInfo {
 
-    private final Set<TransferFile> transfered = new HashSet<TransferFile>();
+    private final Set<TransferFile> transfered = new HashSet<>();
     // file, reason
-    private final Map<TransferFile, String> failed = new HashMap<TransferFile, String>();
+    private final Map<TransferFile, String> failed = new HashMap<>();
     // file, reason
-    private final Map<TransferFile, String> partiallyFailed = new HashMap<TransferFile, String>();
+    private final Map<TransferFile, String> partiallyFailed = new HashMap<>();
     // file, reason
-    private final Map<TransferFile, String> ignored = new HashMap<TransferFile, String>();
+    private final Map<TransferFile, String> ignored = new HashMap<>();
 
     private long runtime;
 

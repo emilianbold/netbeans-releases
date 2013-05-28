@@ -106,7 +106,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.actions.RegistersWindo
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.MemoryWindowAction;
 
 import org.netbeans.modules.cnd.debugger.common2.debugger.Address;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 
 /**
  * A Disassembler View.
@@ -1334,7 +1334,7 @@ public class DisView {
             functionText.setText(null);
         } else {
 	    if (stateModel.getFile() != null) {
-		fileText.setText(CndPathUtilitities.getBaseName(stateModel.getFile()));
+		fileText.setText(CndPathUtilities.getBaseName(stateModel.getFile()));
 		fileText.setToolTipText(stateModel.getFile());
 	    } else {
 		fileText.setText(null);

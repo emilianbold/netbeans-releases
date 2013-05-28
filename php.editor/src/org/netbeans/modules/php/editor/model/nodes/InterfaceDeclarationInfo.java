@@ -93,7 +93,7 @@ public class InterfaceDeclarationInfo extends ASTNodeInfo<InterfaceDeclaration> 
     }
 
     public Set<QualifiedName> getInterfaceNames() {
-        final Set<QualifiedName> retval = new HashSet<QualifiedName>();
+        final Set<QualifiedName> retval = new HashSet<>();
         final List<Expression> interfaes = getOriginalNode().getInterfaes();
         for (Expression iface : interfaes) {
             QualifiedName ifaceName = QualifiedName.create(iface);

@@ -212,10 +212,10 @@ public final class WhereUsedSupport {
     public static WhereUsedSupport getInstance(final PHPParseResult info, final int offset) {
         Model model = ModelFactory.getModel(info);
         final Occurence occurence = findOccurence(model, offset);
-        final Set<ModelElement> declarations = new HashSet<ModelElement>();
+        final Set<ModelElement> declarations = new HashSet<>();
         final Collection<? extends PhpElement> allDeclarations = occurence != null ? occurence.getAllDeclarations() : Collections.<PhpElement>emptyList();
         boolean canContinue = occurence != null && allDeclarations.size() > 0 && allDeclarations.size() < 5;
-        if (canContinue && EnumSet.of(Occurence.Accuracy.EXACT, Occurence.Accuracy.MORE, Occurence.Accuracy.UNIQUE).contains(occurence.degreeOfAccuracy())) {
+        if (canContinue && occurence != null && EnumSet.of(Occurence.Accuracy.EXACT, Occurence.Accuracy.MORE, Occurence.Accuracy.UNIQUE).contains(occurence.degreeOfAccuracy())) {
             FileObject parserFo = info.getSnapshot().getSource().getFileObject();
             for (final PhpElement declarationElement : allDeclarations) {
                 try {
@@ -257,7 +257,7 @@ public final class WhereUsedSupport {
     }
 
     public List<ModelElement> getModelElements() {
-        return new ArrayList<ModelElement>(declarations);
+        return new ArrayList<>(declarations);
     }
 
     Set<FileObject> getRelevantFiles() {
@@ -311,7 +311,7 @@ public final class WhereUsedSupport {
 
     public final class Results {
 
-        Collection<WhereUsedElement> elements = new TreeSet<WhereUsedElement>(new Comparator<WhereUsedElement>() {
+        Collection<WhereUsedElement> elements = new TreeSet<>(new Comparator<WhereUsedElement>() {
 
             @Override
             public int compare(WhereUsedElement o1, WhereUsedElement o2) {
@@ -327,7 +327,7 @@ public final class WhereUsedSupport {
             }
         });
 
-        Map<FileObject, WarningFileElement> warningElements = new HashMap<FileObject, WarningFileElement>();
+        Map<FileObject, WarningFileElement> warningElements = new HashMap<>();
 
         private Results() {
         }

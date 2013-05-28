@@ -231,32 +231,32 @@ public class InterceptorTest extends AbstractHgTestCase {
         f.setAccessible(true);
         HashMap<File, Set<File>> map = (HashMap) f.get(hgFolderEventsHandler);
 
-        getCache().getCachedStatus(folderA);
+        getCache().markAsSeenInUI(folderA);
         // some time for bg threads
         Thread.sleep(3000);
         Set<File> files = map.get(repo);
         assertTrue(files.contains(folderA));
 
-        getCache().getCachedStatus(fileB1);
+        getCache().markAsSeenInUI(fileB1);
         // some time for bg threads
         Thread.sleep(3000);
         assertTrue(files.contains(folderA));
         assertTrue(files.contains(fileB1));
 
-        getCache().getCachedStatus(fileB2);
+        getCache().markAsSeenInUI(fileB2);
         // some time for bg threads
         Thread.sleep(3000);
         assertTrue(files.contains(folderA));
         assertTrue(files.contains(folderB));
 
-        getCache().getCachedStatus(folderC);
+        getCache().markAsSeenInUI(folderC);
         // some time for bg threads
         Thread.sleep(3000);
         assertTrue(files.contains(folderA));
         assertTrue(files.contains(folderB));
         assertTrue(files.contains(folderC));
 
-        getCache().getCachedStatus(repo);
+        getCache().markAsSeenInUI(repo);
         // some time for bg threads
         Thread.sleep(3000);
         assertTrue(files.contains(repo));

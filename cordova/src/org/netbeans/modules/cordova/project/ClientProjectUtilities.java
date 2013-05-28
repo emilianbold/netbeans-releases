@@ -46,6 +46,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.templates.TemplateRegistration;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
@@ -79,12 +80,16 @@ public class ClientProjectUtilities {
     }
 
     public static boolean isUsingEmbeddedServer(Project p) {
-        return true;
+        ClientSideModule clientSide = p.getLookup().lookup(ClientSideModule.class);
+        return clientSide != null;
     }
     
     public static String getProperty(Project p, String key) {
         ProjectBrowserProvider provider = p.getLookup().lookup(ProjectBrowserProvider.class);
         WebBrowser activeConfiguration = provider.getActiveBrowser();
+        if (activeConfiguration.getBrowserFamily()!= BrowserFamilyId.PHONEGAP) {
+            return null;
+        }
         MobileConfigurationImpl mobileConfig = MobileConfigurationImpl.create(p, activeConfiguration.getId());
         return mobileConfig.getProperty(key);
     }

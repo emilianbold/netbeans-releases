@@ -57,6 +57,7 @@ import org.glassfish.tools.ide.server.config.JavaSEPlatform;
 import org.glassfish.tools.ide.server.config.ModuleType;
 import static org.glassfish.tools.ide.server.config.ModuleType.EJB;
 import static org.glassfish.tools.ide.server.config.ModuleType.RAR;
+import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.JavaClassPathConstants;
@@ -93,7 +94,7 @@ import org.xml.sax.helpers.DefaultHandler;
     
 /**
  *
- * @author Ludo
+ * @author Ludo, Tomas Kraus
  */
 public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     
@@ -120,8 +121,10 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     private final String lookupKey;
 
     private FileChangeListener fcl;
+
     /** Keep local Lookup instance to be returned by getLookup method. */
     private volatile Lookup lkp;
+
     /** Jersey Library support. */
     private Hk2LibraryProvider libraryProvider;
 
@@ -368,6 +371,12 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     private static final String TRUSTSTORE_LOCATION = "config/cacerts.jks";
 
     private static final String EMBEDDED_EJB_CONTAINER_PATH = "lib/embedded/glassfish-embedded-static-shell.jar";
+
+    /** Application client cContainer configuration file for GlassFish v3. */
+    private static final String GFv3_ACC_XML = "sun-acc.xml";
+
+    /** Application client container configuration file for GlassFish v4. */
+    private static final String GFv4_ACC_XML = "glassfish-acc.xml";
 
     /**
      * 
@@ -693,6 +702,54 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
     private String quotedString(String s){
         return "\""+s+"\"";
     }
+
+    /**
+     * Get GlassFish version.
+     * <p/>
+     * Returns {
+     *
+     * @see GlassFishVersion} for current GlassFish server instance.
+     * <p/>
+     * @return GlassFish version.
+     */
+    private GlassFishVersion getGFVersion() {
+        GlassFishVersion version = null;
+        try {
+            version = dm
+                    .getCommonServerSupport().getInstance().getVersion();
+        } catch (NullPointerException npe) {
+            Logger.getLogger("glassfish-javaee").log(Level.INFO,
+                    "Caught NullPointerException in Hk2JavaEEPlatformImpl "
+                    + "while checking GlassFish version", npe);
+        }
+        return version;
+    }
+
+    /**
+     * Get proper application client container configuration file name
+     * for GlassFish.
+     * <p/>
+     * @return Application client container configuration file name
+     *         for GlassFish.
+     */
+    private String getAccConfigFile() {
+        GlassFishVersion version = getGFVersion();
+        String accConfigFile;
+        if (version != null
+                && version.ordinal() >= GlassFishVersion.GF_4.ordinal()) {
+            accConfigFile = GFv4_ACC_XML;
+        } else {
+            accConfigFile = GFv3_ACC_XML;
+        }
+        StringBuilder sb = new StringBuilder(
+                ServerUtils.GF_DOMAIN_CONFIG_DIR_NAME.length()
+                + 1 + accConfigFile.length());
+        sb.append(ServerUtils.GF_DOMAIN_CONFIG_DIR_NAME);
+        sb.append(File.separatorChar);
+        sb.append(accConfigFile);
+        return sb.toString();
+    }
+    
     @Override
     public String getToolProperty(String toolName, String propertyName) {
         if (J2eePlatform.TOOL_APP_CLIENT_RUNTIME.equals(toolName)) {
@@ -720,7 +777,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                         sb.append(quotedString(new File(root,"modules/gf-client.jar").getAbsolutePath()));
                     }
                       sb.append("=mode=acscript,arg=-configxml,arg=");
-                      sb.append(quotedString(new File(domainPath, "config/sun-acc.xml").getAbsolutePath()));
+                      sb.append(quotedString(new File(domainPath, getAccConfigFile()).getAbsolutePath()));
                       sb.append(",client=jar=");
 //                  sb.append(""); // path to /tmp/test/ApplicationClient1Client.jar
 //                   sb.append(" -jar ");
@@ -995,7 +1052,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
             return version != null ? version.toString() : "";
         }
     }
-    
+
     private static class RegistrationHandler extends DefaultHandler {
         
         private static final String VERSION_TAG = "product_version";    // NOI18N

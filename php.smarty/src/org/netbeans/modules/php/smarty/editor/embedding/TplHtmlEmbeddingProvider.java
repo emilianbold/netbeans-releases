@@ -44,6 +44,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.lexer.InputAttributes;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
@@ -51,7 +52,9 @@ import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.EmbeddingProvider;
 import org.netbeans.modules.parsing.spi.TaskFactory;
+import org.netbeans.modules.php.smarty.editor.TplMetaData;
 import org.netbeans.modules.php.smarty.editor.lexer.TplTopTokenId;
+import org.netbeans.modules.php.smarty.editor.utlis.TplUtils;
 
 /**
  * Provides embedding of HTML sources within TPL files.
@@ -64,8 +67,10 @@ public class TplHtmlEmbeddingProvider extends EmbeddingProvider {
 
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
-
-        TokenHierarchy<CharSequence> th = TokenHierarchy.create(snapshot.getText(), TplTopTokenId.language());
+        TplMetaData tplMetaData = TplUtils.getProjectPropertiesForFileObject(snapshot.getSource().getFileObject());
+        InputAttributes inputAttributes = new InputAttributes();
+        inputAttributes.setValue(TplTopTokenId.language(), TplMetaData.class, tplMetaData, false);
+        TokenHierarchy<CharSequence> th = TokenHierarchy.create(snapshot.getText(), false, TplTopTokenId.language(), null, inputAttributes);
         TokenSequence<TplTopTokenId> sequence = th.tokenSequence(TplTopTokenId.language());
 
         if (sequence == null) {

@@ -58,7 +58,7 @@ public final class TestLogHandler extends Handler {
 
 
         private R(final String... toExpect) {
-            this.toExpect = new LinkedList<String>(Arrays.asList(toExpect));
+            this.toExpect = new LinkedList<>(Arrays.asList(toExpect));
         }
 
     }

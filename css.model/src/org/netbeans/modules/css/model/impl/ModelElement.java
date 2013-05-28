@@ -44,12 +44,14 @@ package org.netbeans.modules.css.model.impl;
 import java.util.*;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.css.model.api.Media;
 import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.Element;
+import org.netbeans.modules.css.model.api.ElementHandle;
 import org.netbeans.modules.css.model.api.ElementListener;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelVisitor;
@@ -79,7 +81,20 @@ public abstract class ModelElement implements Element {
         this(model);
         this.node = node;
     }
+    
+    /**
+     * Overriding classes may define their own way of identification of the element in a String form.
+     * @see ElementHandleImpl
+     */
+    protected String getCustomElementID() {
+        return null;
+    }
 
+    @Override
+    public ElementHandle getElementHandle() {
+        return new ElementHandleImpl(this);
+    }
+    
     @Override
     public Model getModel() {
         return this.model;

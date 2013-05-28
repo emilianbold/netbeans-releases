@@ -352,7 +352,7 @@ public class Reformatter implements ReformatTask {
             }
             start = controller.getSnapshot().getOriginalOffset(start);
             end = controller.getSnapshot().getOriginalOffset(end);
-            if (start == (-1) || end == (-1)) continue;
+            if (start == (-1) || end == (-1) || start < region.getStartOffset() || end > region.getEndOffset()) continue;
             if (end - start > 0)
                 doc.remove(start, end - start);
             if (text != null && text.length() > 0)
@@ -1070,7 +1070,7 @@ public class Reformatter implements ReformatTask {
                 accept(LPAREN);
                 List<? extends VariableTree> params = node.getParameters();
                 if (params != null && !params.isEmpty()) {
-                    spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0, true);
+                    spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0);
                     wrapList(cs.wrapMethodParams(), cs.alignMultilineMethodParams(), false, COMMA, params);
                     spaces(cs.spaceWithinMethodDeclParens() ? 1 : 0);
                 }
@@ -2003,8 +2003,18 @@ public class Reformatter implements ReformatTask {
                 CodeStyle.BracesGenerationStyle redundantDoWhileBraces = cs.redundantDoWhileBraces();
                 if (redundantDoWhileBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
                     redundantDoWhileBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
-                boolean prevblock = wrapStatement(cs.wrapDoWhileStatement(), redundantDoWhileBraces, cs.spaceBeforeDoLeftBrace() ? 1 : 0, node.getStatement());
-                if (cs.placeWhileOnNewLine() || !prevblock) {
+                boolean isBlock = node.getStatement().getKind() == Tree.Kind.BLOCK || redundantDoWhileBraces == CodeStyle.BracesGenerationStyle.GENERATE;
+                if (isBlock && redundantDoWhileBraces == CodeStyle.BracesGenerationStyle.ELIMINATE) {
+                    Iterator<? extends StatementTree> stats = ((BlockTree)node.getStatement()).getStatements().iterator();
+                    if (stats.hasNext()) {
+                        StatementTree stat = stats.next();
+                        if (!stats.hasNext() && stat.getKind() != Tree.Kind.VARIABLE) {
+                            isBlock = false;
+                        }
+                    }
+                }
+                isBlock = wrapStatement(cs.wrapDoWhileStatement(), redundantDoWhileBraces, !isBlock || cs.spaceBeforeDoLeftBrace() ? 1 : 0, node.getStatement());
+                if (cs.placeWhileOnNewLine() || !isBlock) {
                     newline();
                 } else {
                     spaces(cs.spaceBeforeWhile() ? 1 : 0);
@@ -3102,6 +3112,9 @@ public class Reformatter implements ReformatTask {
             if (checkWrap != null && col > rightMargin && checkWrap.pos >= lastNewLineOffset) {
                 throw checkWrap;
             }
+            if (bof) {
+                maxCount = minCount;
+            }
             int count = Math.min(minCount, maxCount);
             if (lastBlankLinesTokenIndex < 0) {
                 lastBlankLines = count;
@@ -3271,7 +3284,7 @@ public class Reformatter implements ReformatTask {
                             if (!indent.contentEquals(text.substring(lastIdx)))
                                 addDiff(new Diff(offset + lastIdx, tokens.offset(), indent));
                         } else {
-                            String text = after == 1 ? getIndent() : getNewlines(count) + getIndent();
+                            String text = getNewlines(count) + getIndent();
                             if (text.length() > 0)
                                 addDiff(new Diff(tokens.offset(), tokens.offset(), text));
                         }

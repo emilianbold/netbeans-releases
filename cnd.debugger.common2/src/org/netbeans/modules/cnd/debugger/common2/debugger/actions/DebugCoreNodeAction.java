@@ -65,6 +65,10 @@ public final class DebugCoreNodeAction extends NodeAction {
     /** generated Serialized Version UID */
     static final long serialVersionUID = -6814567172958445516L;    
 
+    public DebugCoreNodeAction() {
+        putValue("key", "CndDebugCorefileNodeAction"); //NOI18N
+    }   
+    
     protected boolean enable(final Node[] activatedNodes) {
 	if (activatedNodes == null || activatedNodes.length != 1)
 	    return false;

@@ -56,7 +56,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.remote.support.RemoteCommandSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteProjectSupport;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
@@ -386,7 +386,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
             RemoteUtil.LOGGER.warning("RemoteServerList.isValidExecutable from EDT"); // NOI18N
         }
         int exit_status = RemoteCommandSupport.run(env, "/usr/bin/test", "-x", path); // NOI18N
-        if (exit_status != 0 && !CndPathUtilitities.isPathAbsolute(path)) {
+        if (exit_status != 0 && !CndPathUtilities.isPathAbsolute(path)) {
             // Validate 'path' against user's PATH.
             exit_status = RemoteCommandSupport.run(env, "/usr/bin/test", "-x", "`/usr/bin/which " + path + "`"); // NOI18N
         }

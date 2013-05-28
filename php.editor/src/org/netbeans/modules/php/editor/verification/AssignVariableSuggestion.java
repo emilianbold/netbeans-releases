@@ -73,7 +73,7 @@ import org.openide.util.NbBundle.Messages;
  */
 public class AssignVariableSuggestion extends SuggestionRule {
 
-    private static final List<String> LANGUAGE_CUNSTRUCTS = new ArrayList<String>(Arrays.asList(new String[] {"die", "exit"})); //NOI18N
+    private static final List<String> LANGUAGE_CUNSTRUCTS = new ArrayList<>(Arrays.asList(new String[] {"die", "exit"})); //NOI18N
 
     @Override
     public String getId() {
@@ -126,7 +126,7 @@ public class AssignVariableSuggestion extends SuggestionRule {
         IntroduceFixVisitor(BaseDocument doc, OffsetRange lineBounds) {
             this.doc = doc;
             this.lineBounds = lineBounds;
-            this.variables = new ArrayList<Variable>();
+            this.variables = new ArrayList<>();
         }
 
         @Override

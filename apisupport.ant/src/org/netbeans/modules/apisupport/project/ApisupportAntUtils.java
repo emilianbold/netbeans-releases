@@ -52,6 +52,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -81,6 +82,10 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager.CyclicDependencyException;
 import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import org.netbeans.modules.apisupport.project.api.Util;
+import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.ClusterInfo;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
+import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.LocalizedBundleInfo;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
 import org.netbeans.modules.apisupport.project.universe.ModuleList;
@@ -95,6 +100,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.ChangeSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbCollections;
 import org.openide.util.Utilities;
@@ -370,7 +376,20 @@ public class ApisupportAntUtils {
      */
     public static boolean addDependency(final NbModuleProject target,
             final String codeNameBase, final @NullAllowed String releaseVersion,
-            final @NullAllowed SpecificationVersion version, final boolean useInCompiler) throws IOException {
+            final @NullAllowed SpecificationVersion version, final boolean useInCompiler, String clusterName) throws IOException {
+        if(target.getModuleType() == NbModuleType.SUITE_COMPONENT && clusterName != null) {
+            final Project suiteProject = getSuiteProject(target);
+            if(suiteProject!=null) {
+                final SuiteProperties suiteProps = getSuiteProperties((SuiteProject)suiteProject);
+                boolean isClusterIncludedInTargetPlatform;
+                if((isClusterIncludedInTargetPlatform = isClusterIncludedInTargetPlatform(suiteProps, clusterName))
+                        && !isModuleIncludedInTargetPlatform(suiteProps, codeNameBase)) {
+                        addModuleToTargetPlatform(suiteProject, suiteProps, codeNameBase);
+                } else if(!isClusterIncludedInTargetPlatform) {
+                    addClusterToTargetPlatform(suiteProject, suiteProps, clusterName, codeNameBase);
+                }
+            }
+        }
         ModuleEntry me = target.getModuleList().getEntry(codeNameBase);
         if (me == null) { // ignore semi-silently (#72611)
             Util.err.log(ErrorManager.INFORMATIONAL, "Trying to add " + codeNameBase + // NOI18N
@@ -408,7 +427,20 @@ public class ApisupportAntUtils {
         return true;
     }
     
-    static void addTestDependency(NbModuleProject prj, String codeNameBase) throws IOException {
+    static void addTestDependency(NbModuleProject prj, String codeNameBase, String clusterName) throws IOException {
+        if(prj.getModuleType() == NbModuleType.SUITE_COMPONENT && clusterName != null) {
+            final Project suiteProject = getSuiteProject(prj);
+            if(suiteProject!=null) {
+                final SuiteProperties suiteProps = getSuiteProperties((SuiteProject)suiteProject);
+                boolean isClusterIncludedInTargetPlatform;
+                if((isClusterIncludedInTargetPlatform = isClusterIncludedInTargetPlatform(suiteProps, clusterName))
+                        && !isModuleIncludedInTargetPlatform(suiteProps, codeNameBase)) {
+                    addModuleToTargetPlatform(suiteProject, suiteProps, codeNameBase);
+                } else if(!isClusterIncludedInTargetPlatform) {
+                    addClusterToTargetPlatform(suiteProject, suiteProps, clusterName, codeNameBase);
+                }
+            }
+        }
         ModuleEntry me = prj.getModuleList().getEntry(codeNameBase);
         if (me == null) { // ignore semi-silently (#72611)
             Util.err.log(ErrorManager.INFORMATIONAL, "Trying to add " + codeNameBase + // NOI18N
@@ -733,6 +765,134 @@ public class ApisupportAntUtils {
             ret[1] = CPEXT_BINARY_PATH + orig.getNameExt(); // NOI18N
         }
         return ret;
+    }
+
+    static SuiteProperties getSuiteProperties(NbModuleProject target) {
+        final Project suiteProject = getSuiteProject(target);
+        if(suiteProject!=null) {
+            return getSuiteProperties((SuiteProject) suiteProject);
+}
+        return null; 
+    }
+    
+    static SuiteProperties getSuiteProperties(SuiteProject suiteProject) {
+        if(suiteProject!=null) {
+            Set<NbModuleProject> subModules = SuiteUtils.getSubProjects(suiteProject);
+            return new SuiteProperties(suiteProject, suiteProject.getHelper(),
+                suiteProject.getEvaluator(), subModules);
+        }
+        return null; 
+    }
+    
+    static Project getSuiteProject(NbModuleProject target) {
+        File suiteDirectory = target.getLookup().lookup(SuiteProvider.class).getSuiteDirectory();
+        if(suiteDirectory!=null) {
+            FileObject suiteDirectoryFO = FileUtil.toFileObject(suiteDirectory);
+            if(suiteDirectoryFO != null) {
+                try {
+                    return ProjectManager.getDefault().findProject(suiteDirectoryFO);
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        return null; 
+    }
+    
+    static boolean isModuleIncludedInTargetPlatform(SuiteProperties suiteProps, String codeNameBase) {
+        if(suiteProps != null) {
+            for(String disabledModuleIter : suiteProps.getDisabledModules()) {
+                if(disabledModuleIter.equals(codeNameBase)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    static boolean isClusterIncludedInTargetPlatform(SuiteProperties suiteProps, String clusterName) {
+        if(suiteProps != null) {
+            Set<ClusterInfo> clusterInfoSet = suiteProps.getClusterPath();
+            if(clusterInfoSet!=null) {
+                for(ClusterInfo infoIter : clusterInfoSet) {
+                    if(infoIter.getClusterDir().getName().equals(clusterName)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+    
+    static void addModuleToTargetPlatform(final Project suiteProject, final SuiteProperties suiteProps, String codeNameBase) {
+        if(suiteProps != null) {
+            Set<String> disabledModules = new HashSet<String>(Arrays.asList(suiteProps.getDisabledModules()));
+            for(String disableModuleIter:disabledModules) {
+                if(codeNameBase.equals(disableModuleIter)) {
+                    disabledModules.remove(codeNameBase);
+                    break;
+                }
+            }
+            String [] updatedDiasabledModules = new String[disabledModules.size()];
+            disabledModules.toArray(updatedDiasabledModules);
+            suiteProps.setDisabledModules(updatedDiasabledModules);
+            ProjectManager.mutex().writeAccess(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        suiteProps.storeProperties();
+                        ProjectManager.getDefault().saveProject(suiteProject);
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
+        }
+    }
+    
+    static void addClusterToTargetPlatform(final Project suiteProject, final SuiteProperties suiteProps, String clusterName, String codeNameBase) {
+        if(suiteProps != null) {
+            List<ClusterInfo> clusterInfoSet = new ArrayList<ClusterInfo>(suiteProps.getClusterPath());
+            if(suiteProps.getActivePlatform() != null) {
+                File clusterDirectory = null;
+                Set<ModuleEntry> moduleList = suiteProps.getActivePlatform().getModules();
+                for(ModuleEntry entryIter:moduleList) {
+                    if(entryIter.getClusterDirectory().getName().equals(clusterName)) {
+                        clusterDirectory = entryIter.getClusterDirectory();
+                        break;
+                    }
+                }
+                if(clusterDirectory != null) {
+                    ClusterInfo newClusterInfo = ClusterInfo.create(clusterDirectory, 
+                        true, true);
+                    clusterInfoSet.add(newClusterInfo);
+                    Set<String> disabledModules = new HashSet<String>(Arrays.asList(suiteProps.getDisabledModules()));
+                    for(ModuleEntry entryIter:moduleList) {
+                        if(entryIter.getClusterDirectory().equals(clusterDirectory)) {
+                            disabledModules.add(entryIter.getCodeNameBase());
+                        }
+                    }
+                    suiteProps.setClusterPath(clusterInfoSet);
+                    disabledModules.remove(codeNameBase);
+                    String [] updatedDiasabledModules = new String[disabledModules.size()];
+                    disabledModules.toArray(updatedDiasabledModules);
+                    suiteProps.setDisabledModules(updatedDiasabledModules);
+                    ProjectManager.mutex().writeAccess(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                suiteProps.storeProperties();
+                                ProjectManager.getDefault().saveProject(suiteProject);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    });
+                }
+            }
+        }
     }
 
 }

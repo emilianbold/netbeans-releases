@@ -123,16 +123,18 @@ public class TypeChooserPanelImpl  extends javax.swing.JPanel implements Propert
         storeInitialValuesToWD(getSettings());
         attachPropertyChangeListener(getSettings());
     }
-
+    
     TypeChooserPanelImpl() {
-        validityId = ++validityCounter;
-        initComponents();
-        init();
+        init(null);
+    }
+
+    TypeChooserPanelImpl(Type wizardType) {
+        init(wizardType);
     }
     
     /** Creates new form TypeChooserPanel */
     TypeChooserPanelImpl(final WizardDescriptor settings, Type wizardType) {
-        this();
+        this(wizardType);
         this.settings = settings;
         this.wizardType = wizardType;
         storeInitialValuesToWD(getSettings());
@@ -314,11 +316,15 @@ public class TypeChooserPanelImpl  extends javax.swing.JPanel implements Propert
         }
     }
     
-    private void init(){
+    private void init(Type wizardType){
+        validityId = ++validityCounter;
+        initComponents();
         BasicInfoVisualPanel.initPlatformCombo(platformValue);
         if (moduleSuiteValue.getItemCount() > 0) {
             restoreSelectedSuite();
-            suiteComponent.setSelected(true);
+            if(wizardType != Type.APPLICATION && wizardType != Type.SUITE) {
+                suiteComponent.setSelected(true);
+            }
         }
     }
     

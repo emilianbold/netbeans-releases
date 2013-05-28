@@ -263,7 +263,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 currRepository = lookupRepository(selectedNode);
             }
             if ((currRevision != null || oldRevision != null) && !(currRevision != null && oldRevision != null 
-                    && currRevision.getName().equals(oldRevision.getName()) && currRevision.getRevision().equals(oldRevision.getRevision()))) {
+                    && currRevision.equals(oldRevision))) {
                 firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
             }
             if (options.contains(Option.DISPLAY_REVISIONS) && currRevision != null) {
@@ -325,7 +325,8 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
                 currRevision = null;
                 firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
             } else if (selectedRevision != null) {
-                Revision newRev = new Revision(selectedRevision.getRevision(), selectedRevision.getRevision());
+                Revision newRev = new Revision(selectedRevision.getRevision(), selectedRevision.getRevision(),
+                        selectedRevision.getShortMessage());
                 if (!newRev.equals(oldRevision)) {
                     currRevision = newRev;
                     firePropertyChange(PROP_REVISION_CHANGED, oldRevision, currRevision);
@@ -881,7 +882,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
         private final Boolean mergeStatus;
 
         public BranchNode (File repository, GitBranchInfo branchInfo) {
-            super(Children.LEAF, repository, Lookups.singleton(new Revision(branchInfo.branch.getId(), branchInfo.branch.getName())));
+            super(Children.LEAF, repository, Lookups.singleton(new Revision.BranchReference(branchInfo.branch)));
             GitBranch branch = branchInfo.branch;
             branchName = branch.getName();
             mergeStatus = branchInfo.mergedStatus;

@@ -42,6 +42,7 @@
 package org.netbeans.modules.php.editor.parser.astnodes;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -52,16 +53,14 @@ import java.util.List;
  */
 public class StaticStatement extends Statement {
 
-    private ArrayList<Expression> expressions = new ArrayList<Expression>();
+    private ArrayList<Expression> expressions = new ArrayList<>();
 
     private StaticStatement(int start, int end, Expression[] expressions) {
         super(start, end);
         if (expressions == null) {
             throw new IllegalArgumentException();
         }
-        for (Expression expression : expressions) {
-            this.expressions.add(expression);
-        }
+        this.expressions.addAll(Arrays.asList(expressions));
     }
 
     public StaticStatement(int start, int end, List<Exception> expressions) {
@@ -72,7 +71,7 @@ public class StaticStatement extends Statement {
      * @return the variables that participate in the static call
      */
     public Variable[] getVariables() {
-        List<Variable> vars = new LinkedList<Variable>();
+        List<Variable> vars = new LinkedList<>();
         for (Expression node : this.expressions) {
             if (node instanceof Variable) {
                 vars.add((Variable) node);

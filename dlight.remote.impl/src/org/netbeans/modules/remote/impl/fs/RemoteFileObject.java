@@ -52,9 +52,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Date;
 import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.dlight.libs.common.FileStatistics;
 import org.netbeans.modules.dlight.libs.common.InvalidFileObjectSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -210,30 +212,8 @@ public final class RemoteFileObject extends FileObject implements Serializable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        RemoteFileObject other = (RemoteFileObject) obj;
-        if (this.getFileSystem() != other.getFileSystem() && (this.getFileSystem() == null || !this.fileSystem.equals(other.fileSystem))) {
-            return false;
-        }
-        if (this.getExecutionEnvironment() != other.getExecutionEnvironment() && (this.getExecutionEnvironment() == null || !this.getExecutionEnvironment().equals(other.getExecutionEnvironment()))) {
-            return false;
-        }
-        String thisPath = this.getPath();
-        String otherPath = other.getPath();
-        if (thisPath != otherPath && (thisPath == null || !thisPath.equals(otherPath))) {
-            return false;
-        }
-        //RemoteLogger.log(Level.WARNING, "Multiple instances for file objects: {0} and {1}", this, other);
-        return true;
+    public final boolean equals(Object obj) {
+        return this == obj;
     }
 
     @Override
@@ -405,12 +385,20 @@ public final class RemoteFileObject extends FileObject implements Serializable {
 
     @Override
     public RemoteFileObject getFileObject(String relativePath) {
-        return getImplementor().getFileObject(relativePath);
+        return getFileObject(relativePath, new HashSet<String>());
+    }
+
+    public RemoteFileObject getFileObject(String relativePath, @NonNull Set<String> antiLoop) {
+        return getImplementor().getFileObject(relativePath, antiLoop);
     }
 
     @Override
     public RemoteFileObject getFileObject(String name, String ext) {
-        return getImplementor().getFileObject(name, ext);
+        return getFileObject(name, ext, new HashSet<String>());
+    }
+
+    public RemoteFileObject getFileObject(String name, String ext, @NonNull Set<String> antiLoop) {
+        return getImplementor().getFileObject(name, ext, antiLoop);
     }
 
     @Override

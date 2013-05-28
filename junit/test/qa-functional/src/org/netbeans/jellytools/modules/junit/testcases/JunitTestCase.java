@@ -107,7 +107,7 @@ public class JunitTestCase extends JellyTestCase {
     public void setUp() throws IOException {
         System.out.println("########  " + getName() + "  #######");
         openDataProjects("JunitTestProject");
-        new Action(null, "Set as Main Project").perform(new ProjectsTabOperator().getProjectRootNode("JunitTestProject"));
+        new Action("Run|Set Main Project|JunitTestProject", null).perform();
         ProjectSupport.waitScanFinished();
         err = getLog();
         log = getRef();

@@ -78,7 +78,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static int CURRENT_VERSION_OF_PERSISTENCY = 142;
+    private static int CURRENT_VERSION_OF_PERSISTENCY = 144;
 
 //    /** temporary flag, to be removed as soon as relocatable repository is achieved */
 //    public static final boolean RELOCATABLE = true;
@@ -397,6 +397,12 @@ public final class RepositoryUtils {
         public void unitClosed(int unitId, CharSequence unitName) {
             parent.unitClosed(unitId, unitName);
         }
+
+        @Override
+        public void unitRemoved(int unitId, CharSequence unitName) {
+            parent.unitRemoved(unitId, unitName);
+        }
+
         @Override
         public void anExceptionHappened(final int unitId, CharSequence unitName, RepositoryException exc) {
             primitiveErrorStrategy(unitId, exc);

@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.hudson.api.HudsonJob;
-import org.netbeans.modules.hudson.spi.ProjectHudsonProvider;
+import org.netbeans.modules.hudson.ui.spi.ProjectHudsonProvider;
 import static org.netbeans.modules.hudson.tasklist.Bundle.*;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.Task;

@@ -70,7 +70,7 @@ import org.openide.util.RequestProcessor;
  *
  * @author Tomas Stupka
  */
-public class DashboardProviderImpl extends DashboardProvider<ODCSUiServer, ODCSProject> {
+public class DashboardProviderImpl extends DashboardProvider<ODCSProject> {
 
     private final ODCSUiServer server;
     private ProjectAccessorImpl projectAccessor;
@@ -115,8 +115,8 @@ public class DashboardProviderImpl extends DashboardProvider<ODCSUiServer, ODCSP
     }
 
     @Override
-    public TreeListNode createMyProjectNode(ProjectHandle<ODCSProject> p) {
-        return new MyProjectNode(p, server.getDashboard());
+    public TreeListNode createMyProjectNode(ProjectHandle<ODCSProject> p, boolean canOpen, boolean canBookmark, Action closeAction) {
+        return new MyProjectNode(p, server.getDashboard(), canOpen);
     }
 
     @Override
@@ -159,7 +159,7 @@ public class DashboardProviderImpl extends DashboardProvider<ODCSUiServer, ODCSP
 
     @Override
     public TreeListNode createSourceListNode(ProjectNode pn, ProjectHandle<ODCSProject> project) {
-        return new SourceListNode(pn, this, (LeafNode[]) null);
+        return new SourceListNode(pn, project, this, (LeafNode[]) null);
     }
 
     @Override
@@ -172,10 +172,4 @@ public class DashboardProviderImpl extends DashboardProvider<ODCSUiServer, ODCSP
         return null;
     }
 
-    @Override
-    public ODCSUiServer forProject(ProjectHandle<ODCSProject> project) {
-//        return server; // should be save as long as there is one dashboardprovider for each dashboard
-        return ((ProjectHandleImpl) project).getTeamServer();
-    }
-    
 }

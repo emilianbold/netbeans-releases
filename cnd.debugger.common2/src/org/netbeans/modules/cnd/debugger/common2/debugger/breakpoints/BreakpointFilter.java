@@ -93,6 +93,7 @@ import org.netbeans.modules.cnd.debugger.common2.debugger.DialogManager;
 import org.netbeans.modules.cnd.debugger.common2.debugger.ModelListenerSupport;
 import org.netbeans.modules.cnd.debugger.common2.debugger.Constants;
 import org.netbeans.modules.cnd.debugger.common2.debugger.actions.NewBreakpointAction;
+import org.netbeans.modules.cnd.utils.CndUtils;
 
 /**
  * Registered,
@@ -280,64 +281,66 @@ public final class BreakpointFilter extends ModelListenerSupport
 	// interface TreeModelFilter
 	public Object[] getChildren(TreeModel original, Object parent,
 			int from, int to) throws UnknownTypeException {
+            CndUtils.assertNonUiThread();
+            
+            breakpointBag();	// cause restoration of bpts
 
-		breakpointBag();	// cause restoration of bpts
+            // Factoring of original.getChildren() somehow messes up
+            // isLeaf(), so don't.
 
-		// Factoring of original.getChildren() somehow messes up
-		// isLeaf(), so don't.
+            if (parent == TreeModel.ROOT) {
+                // OLD Object originalChildren[] = original.getChildren(parent, from, to);
+                Object[] oChildren = original.getChildren(parent,
+                        0,
+                        original.getChildrenCount(parent));
+                return simplifyHierarchy(null, oChildren);
 
-		if (parent == TreeModel.ROOT) {
-			// OLD Object originalChildren[] = original.getChildren(parent, from, to);
-			Object[] oChildren = original.getChildren(parent,
-					0,
-					original.getChildrenCount(parent));
-			return simplifyHierarchy(null, oChildren);
-
-		} else {
-			if (parent instanceof NativeBreakpoint) {
-				NativeBreakpoint nb = (NativeBreakpoint) parent;
-				return simplifyHierarchy(nb, nb.getChildren());
-			} else {
-				Object originalChildren[] = original.getChildren(parent, from, to);
-				return originalChildren;
-			}
-		}
+            } else {
+                if (parent instanceof NativeBreakpoint) {
+                    NativeBreakpoint nb = (NativeBreakpoint) parent;
+                    return simplifyHierarchy(nb, nb.getChildren());
+                } else {
+                    Object originalChildren[] = original.getChildren(parent, from, to);
+                    return originalChildren;
+                }
+            }
 	}
 
 	// interface TreeModelFilter
 	public int getChildrenCount(TreeModel original, Object parent)
 			throws UnknownTypeException {
+            CndUtils.assertNonUiThread();
 
-		breakpointBag();	// cause restoration of bpts
+            breakpointBag();	// cause restoration of bpts
 
-		// dispense from global bag
-		int count;
-		if (parent instanceof NativeBreakpoint) {
-			NativeBreakpoint nb = (NativeBreakpoint) parent;
-			count = nb.nChildren();
-			/* LATER
-			modelview seems to be absolutely insensitive to nChildren.
-			NativeBreakpoint onlyChild = nb.onlyChild();
-			if (onlyChild == null)
-			return nb.nChildren();
-			else
-			return 1;
-			 */
-		} else {
-			if (NativeDebuggerManager.isPerTargetBpts()) {
-				Object[] oChildren = original.getChildren(parent,
-						0,
-						original.getChildrenCount(parent));
-				Object[] inSession = sessionOnly(null, oChildren);
-				count = inSession.length;
-			} else {
-				count = original.getChildrenCount(parent);
-			}
-		}
-		if (Log.Bpt.model) {
-			System.out.printf("BreakpointFilter.getChildrenCount(%s) -> %d\n", parent, count); // NOI18N
-		}
-		return count;
+            // dispense from global bag
+            int count;
+            if (parent instanceof NativeBreakpoint) {
+                NativeBreakpoint nb = (NativeBreakpoint) parent;
+                count = nb.nChildren();
+                /* LATER
+                 modelview seems to be absolutely insensitive to nChildren.
+                 NativeBreakpoint onlyChild = nb.onlyChild();
+                 if (onlyChild == null)
+                 return nb.nChildren();
+                 else
+                 return 1;
+                 */
+            } else {
+                if (NativeDebuggerManager.isPerTargetBpts()) {
+                    Object[] oChildren = original.getChildren(parent,
+                            0,
+                            original.getChildrenCount(parent));
+                    Object[] inSession = sessionOnly(null, oChildren);
+                    count = inSession.length;
+                } else {
+                    count = original.getChildrenCount(parent);
+                }
+            }
+            if (Log.Bpt.model) {
+                System.out.printf("BreakpointFilter.getChildrenCount(%s) -> %d\n", parent, count); // NOI18N
+            }
+            return count;
 	}
 
 	/**
@@ -620,7 +623,17 @@ public final class BreakpointFilter extends ModelListenerSupport
 	// interface AsynchronousModelFilter
 	public Executor asynchronous(Executor arg0, CALL arg1, Object arg2) throws UnknownTypeException {
 		// IZ 172060 Make calls come in on the EDT.
-		return AsynchronousModelFilter.CURRENT_THREAD;
+            switch (arg1) {
+                case CHILDREN:
+                case VALUE:
+                    return AsynchronousModelFilter.DEFAULT;
+                case DISPLAY_NAME:
+                case SHORT_DESCRIPTION:
+                    return AsynchronousModelFilter.CURRENT_THREAD;
+                default:
+                    assert false;
+                    return null;
+            }
 	}
 
 	//

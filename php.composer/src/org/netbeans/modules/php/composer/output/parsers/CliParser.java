@@ -61,7 +61,7 @@ class CliParser implements Parser {
         if (lines.length == 0) {
             return Collections.emptyList();
         }
-        List<SearchResult> result = new ArrayList<SearchResult>(lines.length);
+        List<SearchResult> result = new ArrayList<>(lines.length);
         for (String line : lines) {
             if (!Composer.isValidOutput(line)) {
                 // ignore warnings

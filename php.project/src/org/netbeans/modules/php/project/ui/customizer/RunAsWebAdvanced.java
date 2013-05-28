@@ -206,8 +206,8 @@ public class RunAsWebAdvanced extends JPanel implements HelpCtx.Provider {
     public Pair<String, String> getPathMapping() {
         FileObject sources = ProjectPropertiesSupport.getSourcesDirectory(project);
         int rowCount = pathMappingTableModel.getRowCount();
-        List<String> remotes = new ArrayList<String>(rowCount);
-        List<String> locals = new ArrayList<String>(rowCount);
+        List<String> remotes = new ArrayList<>(rowCount);
+        List<String> locals = new ArrayList<>(rowCount);
         for (int i = 0; i < rowCount; ++i) {
             String remotePath = (String) pathMappingTableModel.getValueAt(i, COLUMN_REMOTE_PATH);
             if (StringUtils.hasText(remotePath)) {

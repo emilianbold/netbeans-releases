@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.toolchain.CompilerFlavor;
 import org.netbeans.modules.cnd.toolchain.execution.OutputListenerImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.windows.OutputListener;
 
@@ -82,8 +83,10 @@ public abstract class ErrorParserProvider {
 
     public final static class OutputListenerRegistry {
         private final Map<FileObject,List<OutputListener>> storage = new HashMap<FileObject,List<OutputListener>>();
-    
-        protected OutputListenerRegistry() {
+        private final Project project;
+        
+        protected OutputListenerRegistry(Project project) {
+            this.project = project;
         }
 
         public OutputListener register(FileObject file, int line, boolean isError, String description) {
@@ -99,12 +102,29 @@ public abstract class ErrorParserProvider {
             return res;
         }
 
+        Project getProject() {
+            return project;
+        }
+
         public List<OutputListener> getFileListeners(FileObject file){
-            List<OutputListener> res;
-            synchronized(storage) {
-                res = storage.get(file);
-                if (res != null) {
-                    res = new ArrayList<OutputListener>(res);
+            List<OutputListener> res = null;
+            if (file.isData()) {
+                synchronized(storage) {
+                    res = storage.get(file);
+                    if (res != null) {
+                        res = new ArrayList<OutputListener>(res);
+                    }
+                }
+            } else {
+                synchronized(storage) {
+                    for(Map.Entry<FileObject,List<OutputListener>> entry : storage.entrySet()) {
+                        if (FileUtil.isParentOf(file, entry.getKey())) {
+                            if (res == null) {
+                                res = new ArrayList<OutputListener>();
+                            }
+                            res.addAll(entry.getValue());
+                        }
+                    }
                 }
             }
             return res;

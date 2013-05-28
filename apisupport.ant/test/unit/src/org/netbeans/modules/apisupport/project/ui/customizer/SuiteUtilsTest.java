@@ -121,7 +121,7 @@ public class SuiteUtilsTest extends TestBase {
         SubprojectProvider spp = SuitePropertiesTest.getSubProjectProvider(suite1);
         assertEquals("two suite components", 2, spp.getSubprojects().size());
 
-        ApisupportAntUtils.addDependency(module2, module1.getCodeNameBase(), null, null, true);
+        ApisupportAntUtils.addDependency(module2, module1.getCodeNameBase(), null, null, true, null);
         ProjectManager.getDefault().saveProject(module2);
         ProjectXMLManager pxm2 = new ProjectXMLManager(module2);
         assertEquals("one dependency", 1, pxm2.getDirectDependencies().size());

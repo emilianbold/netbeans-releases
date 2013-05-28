@@ -252,7 +252,7 @@ public final class PhpSourcePath {
 
         @Override
         public List<FileObject> getIncludePath() {
-            return new ArrayList<FileObject>(getPlatformPath());
+            return new ArrayList<>(getPlatformPath());
         }
 
         @Override
@@ -274,7 +274,7 @@ public final class PhpSourcePath {
         private List<FileObject> getPlatformPath() {
             String[] paths = PhpOptions.getInstance().getPhpGlobalIncludePathAsArray();
             List<FileObject> internalPath = CommonPhpSourcePath.getInternalPath();
-            List<FileObject> dirs = new ArrayList<FileObject>(paths.length + internalPath.size());
+            List<FileObject> dirs = new ArrayList<>(paths.length + internalPath.size());
             dirs.addAll(internalPath);
             for (String path : paths) {
                 FileObject resolvedFile = FileUtil.toFileObject(FileUtil.normalizeFile(new File(path)));

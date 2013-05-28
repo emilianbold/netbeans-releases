@@ -184,21 +184,28 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                     try {
                         info.toPhase(org.netbeans.api.java.source.JavaSource.Phase.RESOLVED);
                         ExecutableElement e = (ExecutableElement) refactoredObj.resolveElement(info);
-                        methodNameText.setText(e.getSimpleName().toString());
-                        final String returnType = e.getReturnType().toString();
-                        
-                        MethodTree methodTree = (MethodTree) refactoredObj.resolve(info).getLeaf();
-                        final long methodStart = info.getTreeUtilities().findNameSpan(methodTree)[0];
-                        Tree tree = methodTree.getReturnType();
-                        final long start = tree == null ? methodStart -1 : info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), tree);
-                        final long end = tree == null ? methodStart -1 : info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), tree);
-                        
+                        isConstructor = e.getKind() == ElementKind.CONSTRUCTOR;
+                        TreePath enclosingClass = JavaRefactoringUtils.findEnclosingClass(info, refactoredObj.resolve(info), true, true, true, true, true);
+                        TreePathHandle tph = TreePathHandle.create(enclosingClass, info);
+                        Element enclosingElement = tph.resolveElement(info);
+                        methodNameText.setText(isConstructor ?
+                                enclosingElement.getSimpleName().toString() :
+                                e.getSimpleName().toString());
                         final FileObject fileObject = refactoredObj.getFileObject();
-                        DataObject dob = DataObject.find(fileObject);
-                        ((JEditorPane)singleLineEditor[1]).getDocument().putProperty(
-                                Document.StreamDescriptionProperty,
-                                dob);
-                       
+                        final String returnType = e.getReturnType().toString();
+                        final long[] returnSpan = {-1, -1};
+                        if(!isConstructor) {
+                            MethodTree methodTree = (MethodTree) refactoredObj.resolve(info).getLeaf();
+                            final long methodStart = info.getTreeUtilities().findNameSpan(methodTree)[0];
+                            Tree tree = methodTree.getReturnType();
+                            returnSpan[0] = tree == null ? methodStart -1 : info.getTrees().getSourcePositions().getStartPosition(info.getCompilationUnit(), tree);
+                            returnSpan[1] = tree == null ? methodStart -1 : info.getTrees().getSourcePositions().getEndPosition(info.getCompilationUnit(), tree);
+
+                            DataObject dob = DataObject.find(fileObject);
+                            ((JEditorPane)singleLineEditor[1]).getDocument().putProperty(
+                                    Document.StreamDescriptionProperty,
+                                    dob);
+                        }
                         Doc javadocDoc = info.getElementUtilities().javaDocFor(e);
                         if(javadocDoc.commentText() == null || javadocDoc.getRawCommentText().equals("")) {
                             chkGenJavadoc.setEnabled(true);
@@ -209,9 +216,6 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                             chkUpdateJavadoc.setVisible(true);
                             chkGenJavadoc.setVisible(false);
                         }
-                        TreePath enclosingClass = JavaRefactoringUtils.findEnclosingClass(info, refactoredObj.resolve(info), true, true, true, true, true);
-                        TreePathHandle tph = TreePathHandle.create(enclosingClass, info);
-                        Element enclosingElement = tph.resolveElement(info);
                         if (enclosingElement.getKind().isInterface() || inheritedFromInterface(e, info.getElementUtilities())) {
                             modifiersCombo.setEnabled(false);
                         }
@@ -222,8 +226,6 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                             typeParameters.add(typeParameterTree.toString());
                         }
                         
-                        isConstructor = e.getKind() == ElementKind.CONSTRUCTOR;
-                        
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
@@ -232,7 +234,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
                                     singleLineEditor[1].setEnabled(false);
                                     returnTypeAction.setEnabled(false);
                                 } else {
-                                    DialogBinding.bindComponentToFile(fileObject, (int) start, (int) (end - start), ((JEditorPane)singleLineEditor[1]));
+                                    DialogBinding.bindComponentToFile(fileObject, (int) returnSpan[0], (int) (returnSpan[1] - returnSpan[0]), ((JEditorPane)singleLineEditor[1]));
                                 }
                                 ((JEditorPane)singleLineEditor[1]).setText(returnType);
                                 ((JEditorPane)singleLineEditor[1]).getDocument().addDocumentListener(returnTypeDocListener);
@@ -1014,8 +1016,7 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            FileObject file = RefactoringUtils.getFileObject(refactoredObj);
-            ElementHandle<TypeElement> type = TypeElementFinder.find(ClasspathInfo.create(file), table.getValueAt(row, col).toString(), null);
+            ElementHandle<TypeElement> type = TypeElementFinder.find(null, table.getValueAt(row, col).toString(), null);
             if (type != null) {
                 String fqn = type.getQualifiedName().toString();
                 acceptEditedValue();
@@ -1192,7 +1193,15 @@ public class ChangeParametersPanel extends JPanel implements CustomRefactoringPa
         @Override
         public Object getCellEditorValue() {
             if(editorPane != null) {
-                return editorPane.getText().substring(startOffset).replace(System.getProperty("line.separator"), "").trim(); //NOI18N
+                String text = editorPane.getText();
+                String substring;
+                if(text.length() < startOffset) {
+                    // try to recover from not fully implemented document-view-start-position #204788
+                    substring = text;
+                } else {
+                    substring = text.substring(startOffset);
+                }
+                return substring.replace(System.getProperty("line.separator"), "").trim(); //NOI18N
             }
             return original.getCellEditorValue();
         }

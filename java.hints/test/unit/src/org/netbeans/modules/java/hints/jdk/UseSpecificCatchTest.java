@@ -162,4 +162,23 @@ public class UseSpecificCatchTest extends NbTestCase {
                 .run(UseSpecificCatch.class)
                 .assertWarnings();
     }
+
+    public void testSuppressWarningsOnCatchVariable229740() throws Exception {
+        HintTest
+                .create()
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    {\n" +
+                       "        try {\n" +
+                       "            if (true) throw new java.io.FileNotFoundException();\n" +
+                       "            else      throw new java.net.MalformedURLException();\n" +
+                       "        } catch (@SuppressWarnings(\"" + UseSpecificCatch.SW_KEY + "\") Throwable e) {\n" +
+                       "            e.printStackTrace();\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.7")
+                .run(UseSpecificCatch.class)
+                .assertWarnings();
+    }
 }

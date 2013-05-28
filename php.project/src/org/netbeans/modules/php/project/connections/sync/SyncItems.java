@@ -46,7 +46,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.php.project.connections.TmpLocalFile;
 import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 
 /**
@@ -55,7 +54,7 @@ import org.netbeans.modules.php.project.connections.transfer.TransferFile;
 public final class SyncItems {
 
     // @GuardedBy(itemsByPath)
-    private final Map<String, SyncItem> itemsByPath = new LinkedHashMap<String, SyncItem>();
+    private final Map<String, SyncItem> itemsByPath = new LinkedHashMap<>();
 
 
     public SyncItems() {
@@ -70,7 +69,7 @@ public final class SyncItems {
 
     public List<SyncItem> getItems() {
         synchronized (itemsByPath) {
-            return Collections.synchronizedList(new ArrayList<SyncItem>(itemsByPath.values()));
+            return Collections.synchronizedList(new ArrayList<>(itemsByPath.values()));
         }
     }
 

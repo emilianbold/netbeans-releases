@@ -75,7 +75,7 @@ public final class RunAsPanel extends JPanel {
 
     public RunAsPanel(InsidePanel[] cards) {
         assert cards != null;
-        allInsidePanels = new LinkedHashMap<String, InsidePanel>();
+        allInsidePanels = new LinkedHashMap<>();
         for (InsidePanel basicCard : cards) {
             this.allInsidePanels.put(basicCard.getDisplayName(), basicCard);
         }

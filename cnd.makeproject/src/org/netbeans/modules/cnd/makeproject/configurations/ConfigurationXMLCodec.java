@@ -49,6 +49,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.api.project.NativeFileItem.LanguageFlavor;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.remote.RemoteProject;
@@ -58,6 +59,7 @@ import org.netbeans.modules.cnd.api.xml.VersionException;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
 import org.netbeans.modules.cnd.makeproject.api.PackagerInfoElement;
@@ -86,7 +88,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguratio
 import org.netbeans.modules.cnd.makeproject.api.configurations.RequiredProjectsConfiguration;
 import org.netbeans.modules.cnd.makeproject.platform.StdLibraries;
 import org.netbeans.modules.cnd.spi.remote.RemoteSyncFactory;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.dlight.libs.common.PerformanceLogger;
@@ -107,6 +109,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private int descriptorVersion = -1;
     private final MakeConfigurationDescriptor projectDescriptor;
     private final RemoteProject remoteProject;
+    private final Project project;
     private List<Configuration> confs = new ArrayList<Configuration>();
     private Configuration currentConf = null;
     private ItemConfiguration currentItemConfiguration = null;
@@ -131,6 +134,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
     private Folder currentFolder = null;
     private String relativeOffset;
     private Map<String, String> cache = new HashMap<String, String>();
+    private Map<String, String> rootDecoder = new HashMap<String, String>();
     private List<XMLDecoder> decoders = new ArrayList<XMLDecoder>();
 
     public ConfigurationXMLCodec(String tag, FileObject projectDirectory, MakeConfigurationDescriptor projectDescriptor, String relativeOffset) {
@@ -138,7 +142,8 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         this.tag = tag;
         this.projectDirectory = projectDirectory;
         this.projectDescriptor = projectDescriptor;
-        this.remoteProject = projectDescriptor.getProject().getLookup().lookup(RemoteProject.class);
+        this.project = projectDescriptor.getProject();
+        this.remoteProject = project.getLookup().lookup(RemoteProject.class);
         if (this.remoteProject == null) {
             throw new IllegalStateException("RemoteProject not found in lookup for" + projectDescriptor.getProject().getProjectDirectory().getPath()); //NOI18N
         }
@@ -266,16 +271,15 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
                 String displayName = name;
                 if (root != null) { 
                     // except source root which has name as ID and we'd like to display physical
-                    String absRootPath = CndPathUtilitities.toAbsolutePath(projectDescriptor.getBaseDirFileObject(), root);
+                    String absRootPath = CndPathUtilities.toAbsolutePath(projectDescriptor.getBaseDirFileObject(), root);
                     absRootPath = RemoteFileUtil.normalizeAbsolutePath(absRootPath, projectDescriptor.getProject());
-                    displayName = CndPathUtilitities.getBaseName(absRootPath);
+                    displayName = CndPathUtilities.getBaseName(absRootPath);
                     if (name == null) {
-                        // due to fix of bug #216604 name can be null => if we lucky we can try to deserialize with folder physical name
                         name = displayName;
-                    }                    
-                    if (descriptorVersion < VERSION_WITH_INVERTED_SERIALIZATION) {
-                        // TODO: at the end of decoding source root physical folders will be assigned with unique IDs
                     }
+                    String id = MakeProjectUtils.getDiskFolderId(project, currentFolderStack.peek());
+                    rootDecoder.put(name, id);
+                    name = id;
                 }
                 currentFolder = currentFolder.addNewFolder(name, displayName, true, Folder.Kind.SOURCE_DISK_FOLDER);
                 if (root != null) {
@@ -318,6 +322,17 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
         } else if (element.equals(FolderXMLCodec.FOLDER_ELEMENT)) {
             String path = getString(atts.getValue(FolderXMLCodec.PATH_ATTR));
             Folder folder = projectDescriptor.findFolderByPath(path);
+            if (folder == null) {
+                int i = path.indexOf('/');
+                if (i > 0) {
+                    String root = path.substring(0,i);
+                    String id = rootDecoder.get(root);
+                    if (id != null) {
+                        path = getString(id+path.substring(i));
+                        folder = projectDescriptor.findFolderByPath(path);
+                    }
+                }
+            }
             if (folder != null) {
                 FolderConfiguration folderConfiguration = folder.getFolderConfiguration(currentConf);
                 currentFolderConfiguration = folderConfiguration;
@@ -1001,7 +1016,7 @@ class ConfigurationXMLCodec extends CommonConfigurationXMLCodec {
 
     private String adjustOffset(String path) {
         if (relativeOffset != null && path.startsWith("..")) { // NOI18N
-            path = CndPathUtilitities.trimDotDot(relativeOffset + path);
+            path = CndPathUtilities.trimDotDot(relativeOffset + path);
         }
         return path;
     }

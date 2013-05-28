@@ -51,7 +51,9 @@ import org.openide.util.HelpCtx;
  */
 public class TemplatePanelVisual extends javax.swing.JPanel implements HelpCtx.Provider{
 
+    private static final long serialVersionUID = 1L;
     private static final String RESOURCES_FOLDER="org/netbeans/modules/web/jsf/facelets/resources/templates/";  //NOI18N
+
     /** Creates new form TemplatePanelVisual */
     public TemplatePanelVisual() {
         initComponents();
@@ -204,8 +206,9 @@ public class TemplatePanelVisual extends javax.swing.JPanel implements HelpCtx.P
     private javax.swing.JPanel jpTemplateChooser;
     // End of variables declaration//GEN-END:variables
 
+    @Override
     public HelpCtx getHelpCtx() {
-        return new HelpCtx(TemplatePanelVisual.class);
+        return new HelpCtx("org.netbeans.modules.web.jsf.wizards.TemplatePanelVisual");
     }
     
     InputStream getTemplate(){

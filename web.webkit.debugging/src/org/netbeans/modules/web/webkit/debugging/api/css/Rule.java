@@ -167,7 +167,13 @@ public class Rule {
      * @return line number of the first character of the selector.
      */
     public int getSourceLine() {
-        return sourceLine;
+        int line;
+        if ((sourceLine == -1) && (selectorRange != null)) {
+            line = selectorRange.getStartLine();
+        } else {
+            line = sourceLine;
+        }
+        return line;
     }
 
     /**

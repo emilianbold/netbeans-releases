@@ -64,7 +64,7 @@ import org.openide.util.Utilities;
 public final class PredefinedSymbols {
 
     // see http://www.php.net/manual/en/reserved.variables.php
-    public static final Collection<String> SUPERGLOBALS = new TreeSet<String>(Arrays.asList(
+    public static final Collection<String> SUPERGLOBALS = new TreeSet<>(Arrays.asList(
             "GLOBALS", "_SERVER", "_GET", "_POST", "_FILES", //NOI18N
             "_COOKIE", "_SESSION", "_REQUEST", "_ENV", "php_errormsg", //NOI18N
             "HTTP_RAW_POST_DATA", "http_response_header", "argc", "argv")); //NOI18N
@@ -107,7 +107,7 @@ public final class PredefinedSymbols {
             });
 
 
-    public static final Set<String> MAGIC_METHODS = new HashSet<String>(Arrays.asList(new String[]{
+    public static final Set<String> MAGIC_METHODS = new HashSet<>(Arrays.asList(new String[]{
                 "__callStatic",
                 "__set_state",
                 "__call",
@@ -161,18 +161,18 @@ public final class PredefinedSymbols {
 
         try {
             URL url = new URL(resPath);
-            InputStream is = url.openStream();
-            byte[] buffer = new byte[1000];
-            ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            int count;
-            do {
-                count = is.read(buffer);
-                if (count > 0) {
-                    baos.write(buffer, 0, count);
-                }
-            } while (count > 0);
-
-            is.close();
+            ByteArrayOutputStream baos;
+            try (InputStream is = url.openStream()) {
+                byte[] buffer = new byte[1000];
+                baos = new ByteArrayOutputStream();
+                int count;
+                do {
+                    count = is.read(buffer);
+                    if (count > 0) {
+                        baos.write(buffer, 0, count);
+                    }
+                } while (count > 0);
+            }
             String text = baos.toString(Charset.defaultCharset().name());
             baos.close();
             return text;

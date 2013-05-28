@@ -259,6 +259,11 @@ public class MercurialInterceptor extends VCSInterceptor {
         Mercurial.LOG.log(Level.FINE, "afterMove {0}->{1}", new Object[]{from, to});
         if (from == null || to == null || !to.exists()) return;
 
+        if (from.equals(Mercurial.getInstance().getRepositoryRoot(from))
+                || to.equals(Mercurial.getInstance().getRepositoryRoot(to))) {
+            // whole repository was renamed/moved, need to refresh versioning roots
+            refreshOwnersTask.schedule(0);
+        }
         File parent = from.getParentFile();
         // There is no point in refreshing the cache for ignored files.
         if (parent != null && !HgUtils.isIgnored(parent, false)) {

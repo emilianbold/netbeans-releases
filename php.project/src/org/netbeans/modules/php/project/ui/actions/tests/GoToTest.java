@@ -43,8 +43,10 @@
 package org.netbeans.modules.php.project.ui.actions.tests;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -55,6 +57,7 @@ import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.actions.support.CommandUtils;
 import org.netbeans.modules.php.project.ui.Utils;
+import org.netbeans.modules.php.project.ui.customizer.CompositePanelProviderImpl;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
@@ -129,8 +132,13 @@ public class GoToTest implements TestLocator {
         }
 
         if (CommandUtils.isUnderTests(project, fo, false)) {
+            List<PhpTestingProvider> testingProviders = project.getTestingProviders();
+            if (testingProviders.isEmpty()) {
+                // return test file type => customizer will be opened on action
+                return FileType.TEST;
+            }
             PhpModule phpModule = project.getPhpModule();
-            for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
+            for (PhpTestingProvider testingProvider : testingProviders) {
                 if (testingProvider.isTestFile(phpModule, fo)) {
                     return FileType.TEST;
                 }
@@ -154,31 +162,43 @@ public class GoToTest implements TestLocator {
         if (sourceRoot == null) {
             return null;
         }
-        Set<Locations.Offset> phpFiles = Collections.emptySet();
+        List<PhpTestingProvider> testingProviders = project.getTestingProviders();
+        if (testingProviders.isEmpty()) {
+            PhpProjectUtils.openCustomizer(project, CompositePanelProviderImpl.TESTING);
+            return null;
+        }
+        Map<FileObject, Locations.Offset> phpFiles = new HashMap<>();
         PhpModule phpModule = project.getPhpModule();
-        for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
+        for (PhpTestingProvider testingProvider : testingProviders) {
             org.netbeans.modules.php.spi.testing.locate.TestLocator testLocator = testingProvider.getTestLocator(phpModule);
+            Set<Locations.Offset> result;
             if (searchTest) {
-                phpFiles = testLocator.findTests(file);
+                result = testLocator.findTests(file);
             } else {
-                phpFiles = testLocator.findSources(file);
+                result = testLocator.findSources(file);
+            }
+            for (Locations.Offset offset : result) {
+                FileObject fo = offset.getFile();
+                if (phpFiles.get(fo) == null) {
+                    phpFiles.put(fo, offset);
+                }
             }
         }
         if (phpFiles.isEmpty()) {
             return new LocationResult(NbBundle.getMessage(GoToTest.class, searchTest ? "MSG_TestNotFound" : "MSG_SrcNotFound", file.getNameExt()));
         }
         if (phpFiles.size() == 1) {
-            Locations.Offset source = phpFiles.iterator().next();
+            Locations.Offset source = phpFiles.values().iterator().next();
             return new LocationResult(source.getFile(), source.getOffset());
         }
-        List<FileObject> files = new ArrayList<FileObject>(phpFiles.size());
-        for (Locations.Offset location : phpFiles) {
+        List<FileObject> files = new ArrayList<>(phpFiles.size());
+        for (Locations.Offset location : phpFiles.values()) {
             files.add(location.getFile());
         }
         FileObject selected = SelectFilePanel.open(sourceRoot, files);
         if (selected != null) {
             int offset = -1;
-            for (Locations.Offset location : phpFiles) {
+            for (Locations.Offset location : phpFiles.values()) {
                 if (selected.equals(location.getFile())) {
                     offset = location.getOffset();
                     break;

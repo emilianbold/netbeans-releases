@@ -51,11 +51,15 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.attribute.FileTime;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -97,8 +101,10 @@ import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.web.clientproject.api.WebClientLibraryManager;
 import org.netbeans.modules.web.clientproject.api.util.StringUtilities;
 import org.netbeans.modules.web.common.api.Version;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -117,7 +123,8 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
     static final Logger LOGGER = Logger.getLogger(JavaScriptLibrarySelectionPanel.class.getName());
 
-    private static final Pattern LIBRARIES_FOLDER_PATTERN = Pattern.compile("^[\\w-]+$", Pattern.CASE_INSENSITIVE); // NOI18N
+    private static final Pattern LIBRARIES_FOLDER_PATTERN = Pattern.compile("^[\\w-.]+$", Pattern.CASE_INSENSITIVE); // NOI18N
+    private static final String DEFAULT_LIBRARIES_FOLDER = "js/libs"; // NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor(JavaScriptLibrarySelectionPanel.class);
 
@@ -135,6 +142,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     // @GuardedBy("EDT")
     final LibrariesListModel selectedLibrariesListModel = new LibrariesListModel(selectedLibraries);
 
+    private volatile File defaultWorkDir = null;
     // folder path is accessed outside of EDT thread
     private volatile String librariesFolder = null;
     private volatile boolean panelEnabled = true;
@@ -172,6 +180,12 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         ((GroupLayout) getLayout()).setHonorsVisibility(additionalInfoLabel, additionalInfo != null);
     }
 
+    void setBrowseButtonVisible(@NullAllowed File defaultWorkDir) {
+        checkUiThread();
+        this.defaultWorkDir = defaultWorkDir;
+        librariesFolderBrowseButton.setVisible(defaultWorkDir != null);
+    }
+
     /**
      * Get the list of selected JS libraries.
      * @return list of selected JS libraries
@@ -186,6 +200,11 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
      */
     public String getLibrariesFolder() {
         return librariesFolder;
+    }
+
+    void setLibrariesFolder(String folder) {
+        checkUiThread();
+        librariesFolderTextField.setText(folder);
     }
 
     /**
@@ -272,6 +291,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
             selectedLibraries.add(new SelectedLibrary(lib));
         }
         fireSelectedLibrariesChangeInEDT();
+        adjustLibrariesFolder();
     }
 
     /**
@@ -292,14 +312,88 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         }
     }
 
+    private void adjustLibrariesFolder() {
+        if (!DEFAULT_LIBRARIES_FOLDER.equals(librariesFolder)) {
+            return;
+        }
+        Map<String, Integer> paths = new HashMap<>();
+        for (SelectedLibrary selectedLibrary : selectedLibraries) {
+            for (String filePath : selectedLibrary.getFilePaths()) {
+                List<String> parts = new ArrayList<>(StringUtilities.explode(filePath, "/")); // NOI18N
+                if (parts.size() < 2) {
+                    continue;
+                }
+                // remove file name
+                parts.remove(parts.size() - 1);
+                String folderPath = StringUtilities.implode(parts, "/"); // NOI18N
+                Integer count = paths.get(folderPath);
+                if (count == null) {
+                    count = 0;
+                }
+                paths.put(folderPath, ++count);
+            }
+        }
+        Map.Entry<String, Integer> bestPath = null;
+        for (Map.Entry<String, Integer> entry : paths.entrySet()) {
+            if (bestPath == null) {
+                bestPath = entry;
+            } else if (bestPath.getValue() < entry.getValue()) {
+                bestPath = entry;
+            }
+        }
+        if (bestPath != null) {
+            final String path = bestPath.getKey();
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    librariesFolderTextField.setText(path);
+                }
+            });
+        }
+    }
+
     private void initInfos() {
         setAdditionalInfo(null);
     }
 
     private void initLibraries() {
+        setLibrariesUpdateLabel();
         initLibrariesTable();
         initLibrariesList();
         initLibrariesButtons();
+    }
+
+    @NbBundle.Messages({
+        "# {0} - date or n/a",
+        "JavaScriptLibrarySelectionPanel.update.default=<html><a href=\"#\">Updated: {0}</a>",
+        "# {0} - date with time",
+        "JavaScriptLibrarySelectionPanel.update.default.tooltip=Updated: {0}",
+        "JavaScriptLibrarySelectionPanel.update.never=never",
+        "JavaScriptLibrarySelectionPanel.update.running=Updating...",
+    })
+    private void setLibrariesUpdateLabel() {
+        String text;
+        String tooltip = null;
+        if (isUpdateRunning()) {
+            text = Bundle.JavaScriptLibrarySelectionPanel_update_running();
+        } else {
+            FileTime lastUpdateTime = WebClientLibraryManager.getDefault().getLibrariesLastUpdatedTime();
+            String when;
+            if (lastUpdateTime == null) {
+                when = Bundle.JavaScriptLibrarySelectionPanel_update_never();
+            } else {
+                Date updateDate = new Date(lastUpdateTime.toMillis());
+                when = DateFormat.getDateInstance()
+                        .format(updateDate);
+                tooltip = Bundle.JavaScriptLibrarySelectionPanel_update_default_tooltip(DateFormat.getDateTimeInstance()
+                        .format(updateDate));
+            }
+            text = Bundle.JavaScriptLibrarySelectionPanel_update_default(when);
+        }
+        updateLibrariesLabel.setText(text);
+        updateLibrariesLabel.setToolTipText(tooltip);
+        // fix ui
+        updateLibrariesLabel.setMaximumSize(updateLibrariesLabel.getPreferredSize());
     }
 
     private void initLibrariesTable() {
@@ -422,6 +516,8 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     }
 
     private void initLibrariesFolder() {
+        librariesFolderBrowseButton.setVisible(false);
+        librariesFolderTextField.setText(DEFAULT_LIBRARIES_FOLDER);
         librariesFolder = librariesFolderTextField.getText();
         librariesFolderTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -449,6 +545,20 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
     void fireChangeEvent() {
         changeSupport.fireChange();
+    }
+
+    private boolean isUpdateRunning() {
+        return !panelEnabled;
+    }
+
+    private void startUpdate() {
+        lockPanel();
+        setLibrariesUpdateLabel();
+    }
+
+    void finishUpdate() {
+        unlockPanel();
+        setLibrariesUpdateLabel();
     }
 
     private void enablePanel(boolean enabled) {
@@ -541,9 +651,12 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     }
 
     @NbBundle.Messages({
-        "JavaScriptLibrarySelectionPanel.error.librariesFolder.invalid=Libraries folder can contain only alphanumeric characters, \"_\", \"-\" and \"/\"."
+        "JavaScriptLibrarySelectionPanel.error.librariesFolder.invalid=Libraries folder can contain only alphanumeric characters, \"_\", \"-\", \".\" and \"/\"."
     })
     private String validateLibrariesFolder() {
+        if (librariesFolder.isEmpty()) {
+            return null;
+        }
         for (String segment : librariesFolder.split("/")) { // NOI18N
             if (!LIBRARIES_FOLDER_PATTERN.matcher(segment).matches()) {
                 return Bundle.JavaScriptLibrarySelectionPanel_error_librariesFolder_invalid();
@@ -607,6 +720,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         selectedLibrariesList = new javax.swing.JList();
         librariesFolderLabel = new javax.swing.JLabel();
         librariesFolderTextField = new javax.swing.JTextField();
+        librariesFolderBrowseButton = new javax.swing.JButton();
 
         org.openide.awt.Mnemonics.setLocalizedText(generalInfoLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelectionPanel.class, "JavaScriptLibrarySelectionPanel.generalInfoLabel.text")); // NOI18N
 
@@ -617,7 +731,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
 
         librariesScrollPane.setViewportView(librariesTable);
 
-        org.openide.awt.Mnemonics.setLocalizedText(updateLibrariesLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelectionPanel.class, "JavaScriptLibrarySelectionPanel.updateLibrariesLabel.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(updateLibrariesLabel, "UPDATE"); // NOI18N
         updateLibrariesLabel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 updateLibrariesLabelMouseEntered(evt);
@@ -638,7 +752,12 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         librariesFolderLabel.setLabelFor(librariesFolderTextField);
         org.openide.awt.Mnemonics.setLocalizedText(librariesFolderLabel, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelectionPanel.class, "JavaScriptLibrarySelectionPanel.librariesFolderLabel.text")); // NOI18N
 
-        librariesFolderTextField.setText("js/libs"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(librariesFolderBrowseButton, org.openide.util.NbBundle.getMessage(JavaScriptLibrarySelectionPanel.class, "JavaScriptLibrarySelectionPanel.librariesFolderBrowseButton.text")); // NOI18N
+        librariesFolderBrowseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                librariesFolderBrowseButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -647,7 +766,9 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(librariesFolderLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(librariesFolderTextField))
+                .addComponent(librariesFolderTextField)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(librariesFolderBrowseButton))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(generalInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                 .addContainerGap())
@@ -658,7 +779,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(updateLibrariesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(updateLibrariesLabel))
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
                         .addComponent(librariesLabel)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -671,7 +792,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(selectedLabel)
-                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 215, Short.MAX_VALUE)))
+                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 216, Short.MAX_VALUE)))
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {deselectSelectedButton, selectSelectedButton});
@@ -697,25 +818,26 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                         .addComponent(deselectSelectedButton)
                         .addGap(0, 0, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(updateLibrariesLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(updateLibrariesLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(librariesFolderLabel)
-                    .addComponent(librariesFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(librariesFolderTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(librariesFolderBrowseButton)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     private void updateLibrariesLabelMouseEntered(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_updateLibrariesLabelMouseEntered
-        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        int cursor = isUpdateRunning() ? Cursor.DEFAULT_CURSOR : Cursor.HAND_CURSOR;
+        evt.getComponent().setCursor(Cursor.getPredefinedCursor(cursor));
     }//GEN-LAST:event_updateLibrariesLabelMouseEntered
 
     @NbBundle.Messages("JavaScriptLibrarySelectionPanel.error.jsLibs.update=Available libraries not updated, see IDE log for more details.")
     private void updateLibrariesLabelMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_updateLibrariesLabelMousePressed
-        if (!panelEnabled) {
-            // panel not enabled
+        if (isUpdateRunning()) {
             return;
         }
-        lockPanel();
+        startUpdate();
         RP.post(new Runnable() {
             @Override
             public void run() {
@@ -730,7 +852,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            unlockPanel();
+                            finishUpdate();
                         }
                     });
                 }
@@ -738,11 +860,35 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
         });
     }//GEN-LAST:event_updateLibrariesLabelMousePressed
 
+    @NbBundle.Messages("JavaScriptLibrarySelectionPanel.jsLibsFolder.browse=Select directory for JS libraries")
+    private void librariesFolderBrowseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_librariesFolderBrowseButtonActionPerformed
+        assert defaultWorkDir != null;
+        File dir = new FileChooserBuilder(JavaScriptLibrarySelectionPanel.class)
+                .setDirectoriesOnly(true)
+                .setTitle(Bundle.JavaScriptLibrarySelectionPanel_jsLibsFolder_browse())
+                .setDefaultWorkingDirectory(defaultWorkDir)
+                .forceUseOfDefaultWorkingDirectory(true)
+                .showOpenDialog();
+        if (dir != null) {
+            String relativePath = PropertyUtils.relativizeFile(defaultWorkDir, dir);
+            String path;
+            if (relativePath == null) {
+                path = dir.getAbsolutePath();
+            } else if (".".equals(relativePath)) { // NOI18N
+                path = "";
+            } else {
+                path = relativePath;
+            }
+            librariesFolderTextField.setText(path);
+        }
+    }//GEN-LAST:event_librariesFolderBrowseButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel additionalInfoLabel;
     private javax.swing.JButton deselectSelectedButton;
     private javax.swing.JLabel generalInfoLabel;
     private javax.swing.JTextField librariesFilterTextField;
+    private javax.swing.JButton librariesFolderBrowseButton;
     private javax.swing.JLabel librariesFolderLabel;
     private javax.swing.JTextField librariesFolderTextField;
     private javax.swing.JLabel librariesLabel;

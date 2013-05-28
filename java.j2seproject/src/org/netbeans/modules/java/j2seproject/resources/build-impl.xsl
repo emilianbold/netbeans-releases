@@ -1889,7 +1889,7 @@ is divided into following sections:
                     <attribute name="SplashScreen-Image" value="META-INF/${{splashscreen.basename}}"/>
                 </manifest>
             </target>
-
+            
             <target name="-do-jar-copylibs">
                 <xsl:attribute name="depends">init,-init-macrodef-copylibs,compile,-pre-pre-jar,-pre-jar,-do-jar-create-manifest,-do-jar-copy-manifest,-do-jar-set-mainclass,-do-jar-set-profile,-do-jar-set-splashscreen</xsl:attribute>
                 <xsl:attribute name="if">do.mkdist</xsl:attribute>

@@ -423,15 +423,17 @@ public abstract class TooManyLinesHint extends HintRule implements CustomisableR
             this.linesHint = linesHint;
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
-            this.hints = new ArrayList<Hint>();
+            this.hints = new ArrayList<>();
         }
 
         protected int countLines(Block block) {
             int result = 0;
             try {
+                int searchOffset = block.getStartOffset() + 1;
+                int firstNonWhiteFwd = Utilities.getFirstNonWhiteFwd(baseDocument, searchOffset);
                 int startLinePosition = Utilities.getLineOffset(
                         baseDocument,
-                        Utilities.getFirstNonWhiteFwd(baseDocument, block.getStartOffset() + 1));
+                        firstNonWhiteFwd == -1 ? searchOffset : firstNonWhiteFwd);
                 int endLinePosition = Utilities.getLineOffset(
                         baseDocument,
                         Utilities.getFirstNonWhiteBwd(baseDocument, block.getEndOffset()));

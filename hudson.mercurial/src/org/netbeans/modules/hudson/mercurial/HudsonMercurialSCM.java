@@ -64,7 +64,8 @@ import static org.netbeans.modules.hudson.mercurial.Bundle.*;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem;
 import org.netbeans.modules.hudson.spi.HudsonJobChangeItem.HudsonJobChangeFile.EditType;
 import org.netbeans.modules.hudson.spi.HudsonSCM;
-import org.netbeans.modules.hudson.spi.ProjectHudsonJobCreatorFactory.ConfigurationStatus;
+import org.netbeans.modules.hudson.spi.HudsonSCM.ConfigurationStatus;
+import org.netbeans.modules.hudson.ui.api.HudsonSCMHelper;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.OutputListener;
@@ -107,7 +108,7 @@ public class HudsonMercurialSCM implements HudsonSCM {
                 configXmlSCM.appendChild(doc.createElement("source")).appendChild(doc.createTextNode(repo)); // NOI18N
                 configXmlSCM.appendChild(doc.createElement("modules")).appendChild(doc.createTextNode("")); // NOI18N
                 configXmlSCM.appendChild(doc.createElement("clean")).appendChild(doc.createTextNode("true")); // NOI18N
-                Helper.addTrigger(doc);
+                HudsonSCMHelper.addTrigger(doc);
             }
             public ConfigurationStatus problems() {
                 if (result.isFoundInParenFolder()) {
@@ -292,12 +293,24 @@ public class HudsonMercurialSCM implements HudsonSCM {
         } else {
             String defaultPullNoPassword = defaultPull.replaceFirst("//[^/]+(:[^/]+)?@", "//");
             try {
-                return repository.resolve(new URI(defaultPullNoPassword));
+                return repository.resolve(stringToURI(defaultPullNoPassword));
             } catch (URISyntaxException x) {
                 LOG.log(Level.FINE, "{0} is not a valid URI", defaultPullNoPassword);
                 return null;
             }
         }
+    }
+
+    /**
+     * Convert string to URI. Ensure that drive letters in paths like
+     * C:/something are not used as protocol part of the URI.
+     */
+    private static URI stringToURI(String s) throws URISyntaxException {
+        String withProtocol = org.openide.util.Utilities.isWindows()
+                && s.matches("\\w:/[^/].*") //NOI18N
+                ? "file:/" + s //NOI18N
+                : s;
+        return new URI(withProtocol);
     }
 
     /**

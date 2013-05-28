@@ -78,7 +78,7 @@ import org.netbeans.modules.cnd.api.project.NativeFileItemSet;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.project.NativeProjectRegistry;
 import org.netbeans.modules.cnd.modelutil.spi.FileObjectRedirector;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.editor.NbEditorUtilities;
@@ -154,6 +154,7 @@ public class CsmUtilities {
     private static final RequestProcessor RP = new RequestProcessor(CsmUtilities.class.getName(), 1);
 
     public static int getModifiers(CsmObject obj) {
+        CndUtils.assertNonUiThread();
         int mod = 0;
         if (CsmKindUtilities.isClassMember(obj)) {
             mod |= CsmUtilities.getMemberModifiers((CsmMember) obj);
@@ -438,10 +439,26 @@ public class CsmUtilities {
     public static boolean isCsmSuitable(FileObject fo) {
         // workaround for #194431 - Path should be absolute: Templates/cFiles/CSimpleTest.c
         // fo.isVirtual returns false, FileUtil.toFile() return non-null for such files
-        return CndPathUtilitities.isPathAbsolute(fo.getPath());
+        return CndPathUtilities.isPathAbsolute(fo.getPath());
+    }
+    
+    public static Collection<NativeProject> getNativeProjects(DataObject dobj) {
+        Collection<NativeProject> out = new ArrayList<>();
+        if (dobj != null && dobj.isValid()) {
+            NativeFileItemSet set = dobj.getLookup().lookup(NativeFileItemSet.class);
+            if (set != null && !set.isEmpty()) {
+                for (NativeFileItem item : set.getItems()) {
+                    out.add(item.getNativeProject());
+                }
+            }
+        }
+        return out;
     }
 
     public static CsmFile[] getCsmFiles(DataObject dobj, boolean waitParsing, boolean snapShot) {
+        if (waitParsing) { 
+            CndUtils.assertNonUiThread();
+        }
         if (dobj != null && dobj.isValid()) {
             try {
                 List<CsmFile> files = new ArrayList<CsmFile>();

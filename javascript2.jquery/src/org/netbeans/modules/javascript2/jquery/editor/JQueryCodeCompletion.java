@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.jquery.editor;
 
+import org.netbeans.modules.javascript2.jquery.PropertyNameDataItem;
 import org.netbeans.modules.javascript2.jquery.SelectorItem;
 import java.io.File;
 import java.io.IOException;
@@ -48,6 +49,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -63,8 +65,10 @@ import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
+import org.netbeans.modules.javascript2.jquery.PropertyNameDataLoader;
 import org.netbeans.modules.javascript2.jquery.model.JQueryUtils;
 import org.netbeans.modules.javascript2.jquery.SelectorsLoader;
+import org.netbeans.modules.javascript2.jquery.editor.JQueryCompletionItem.DocSimpleElement;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
@@ -80,6 +84,9 @@ public class JQueryCodeCompletion implements CompletionProvider {
 
     public static final String HELP_LOCATION = "docs/jquery-api.xml"; //NOI18N
     private static File jQueryApiFile;
+    
+    private static final String PROPERTY_NAME_FILE_LOCATION = "docs/jquery-propertyNames.xml"; //NOI18N
+    private static File propertyNameFile;
 
     private static Collection<HtmlTagAttribute> allAttributes;
 
@@ -99,6 +106,9 @@ public class JQueryCodeCompletion implements CompletionProvider {
                 if (JQueryUtils.isInJQuerySelector(parserResult, lastTsOffset)) {
                     addSelectors(result, parserResult, prefix, lastTsOffset);
                 }
+                break;
+            case OBJECT_PROPERTY_NAME:
+                completeObjectPropertyName(ccContext, result, prefix);
                 break;
             default:
                 break;
@@ -163,8 +173,12 @@ public class JQueryCodeCompletion implements CompletionProvider {
     
     
 
+    @Override
     public String getHelpDocumentation(ParserResult info, ElementHandle element) {
-        if (element.getKind() == ElementKind.CALL) {
+        if (element != null && element instanceof DocSimpleElement) {
+            return ((DocSimpleElement)element).getDocumentation();
+        }
+        if (element != null && element.getKind() == ElementKind.CALL) {
             String name = element.getName();
             name = name.substring(1); // remove :
             int index = name.indexOf('(');
@@ -172,7 +186,7 @@ public class JQueryCodeCompletion implements CompletionProvider {
                 name = name.substring(0, index);
             }
             return SelectorsLoader.getDocumentation(getJQueryAPIFile(), name);
-        } else if (element.getKind() == ElementKind.METHOD) {
+        } else if (element != null &&  element.getKind() == ElementKind.METHOD) {
             if (JQueryUtils.isJQuery(info, lastTsOffset)) {
                 return SelectorsLoader.getMethodDocumentation(getJQueryAPIFile(), element.getName());
             }
@@ -180,6 +194,99 @@ public class JQueryCodeCompletion implements CompletionProvider {
         return null;
     }
 
+    private void completeObjectPropertyName(CodeCompletionContext ccContext, List<CompletionProposal> result, String prefix) {
+        
+        // find the object that can be configured
+        TokenHierarchy<?> th = ccContext.getParserResult().getSnapshot().getTokenHierarchy();
+        if (th == null) {
+            return;
+        }
+        int carretOffset  = ccContext.getCaretOffset();
+        int eOffset = ccContext.getParserResult().getSnapshot().getEmbeddedOffset(carretOffset);
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, eOffset);
+        if (ts == null) {
+            return;
+        }
+        
+        ts.move(eOffset);
+        
+        if (!ts.moveNext() && !ts.movePrevious()){
+            return;
+        }
+        
+        Token<? extends JsTokenId> token = null;
+        JsTokenId tokenId;
+        //find the begining of the object literal
+        int balance = 1;
+        while (ts.movePrevious() && balance > 0) {
+            token = ts.token();
+            tokenId = token.id();
+            if (tokenId == JsTokenId.BRACKET_RIGHT_CURLY) {
+                balance++;
+            } else if (tokenId == JsTokenId.BRACKET_LEFT_CURLY) {
+                balance--;
+            }
+        }
+        if (token == null || balance != 0) {
+            return;
+        }
+        
+        // now we should be at the beginning of the object literal. 
+        token = LexUtilities.findPreviousToken(ts, Arrays.asList(JsTokenId.IDENTIFIER));
+        tokenId = token.id();
+        StringBuilder sb = new StringBuilder(token.text());
+        while ((tokenId == JsTokenId.IDENTIFIER || tokenId == JsTokenId.OPERATOR_DOT) && ts.movePrevious()) {
+            token = ts.token(); tokenId = token.id();
+            if (tokenId == JsTokenId.OPERATOR_DOT) {
+                sb.insert(0, '.'); // NOI18N
+            } else if (tokenId == JsTokenId.IDENTIFIER) {
+                sb.insert(0, token.text());
+            }
+        }
+        
+        String fqn = sb.toString();
+        Map<String, Collection<PropertyNameDataItem>> data = getPropertyNameData();
+        if (fqn.startsWith("$")) { // NOI18N
+            fqn = fqn.replace("$", "jQuery"); //NOI18N
+        }
+        Collection<PropertyNameDataItem> items = data.get(fqn);
+        int anchorOffset = ccContext.getParserResult().getSnapshot().getOriginalOffset(eOffset) - ccContext.getPrefix().length();
+        if (items != null) {
+            boolean addComma = addComma(ts, eOffset);
+            for (PropertyNameDataItem item : items) {
+                if (item.getName().startsWith(prefix)) {
+                    result.add(JQueryCompletionItem.createPropertyNameItem(item, anchorOffset, addComma));
+                }
+            }
+        }
+    }
+
+    private synchronized static Map<String, Collection<PropertyNameDataItem>> getPropertyNameData() {
+        return PropertyNameDataLoader.getData(getPropertyNameDataFile());
+    }
+    
+    private static synchronized File getPropertyNameDataFile() {
+        if (propertyNameFile == null) {
+            propertyNameFile = InstalledFileLocator.getDefault().locate(PROPERTY_NAME_FILE_LOCATION, "org.netbeans.modules.javascript2.jquery", false); //NOI18N
+        }
+        return propertyNameFile;
+    }
+
+    private boolean addComma(TokenSequence<? extends JsTokenId> ts, int eOffset) {
+        // we know that we are at the position, where the name of property is entered
+        ts.move(eOffset);
+        if (ts.moveNext()) {
+            // we are looking for ',' -> don't add comma, is already there
+            // ':' or an identifier -> need to add comma, next expression is new property definition
+            // '}' -> end of object literal object definition -> no need comma there
+            Token<? extends JsTokenId>token = LexUtilities.findNext(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.EOL, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+            if (token.id() == JsTokenId.IDENTIFIER || token.id() == JsTokenId.STRING_BEGIN) {
+                return true;
+            } 
+        }
+        return false;
+    }
+    
     private enum SelectorKind {
         TAG, TAG_ATTRIBUTE, CLASS, ID, TAG_ATTRIBUTE_COMPARATION, AFTER_COLON
     }
@@ -403,8 +510,8 @@ public class JQueryCodeCompletion implements CompletionProvider {
                 }
             } else {
                 Collection<HtmlTagAttribute> attributes = htmlTag.getAttributes();
-                if (tagName.isEmpty()) {
-                    attributes = allAttributes;
+                if (tagName.isEmpty() || htmlTag.getTagClass() == HtmlTagType.UNKNOWN) {
+                    attributes = getAllAttributes(htmlModel);
                 }
                 result = new ArrayList<HtmlTagAttribute>();
                 for (HtmlTagAttribute htmlTagAttribute : attributes) {

@@ -56,7 +56,6 @@ import org.netbeans.jemmy.Waitable;
 import org.netbeans.jemmy.Waiter;
 import org.netbeans.jemmy.operators.*;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.clientproject.browser.ClientProjectEnhancedBrowserImpl;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.netbeans.modules.web.inspect.PageInspectorImpl;
 import org.netbeans.modules.web.inspect.PageModel;
@@ -253,7 +252,7 @@ public class GeneralHTMLProject extends JellyTestCase {
             browser = (WebBrowser) browsers.getModel().getElementAt(i);
 
             if (browser.getName().equals(browserName)) {
-                browsers.selectItem(i);
+                browsers.setSelectedIndex(i);
                 if (browser.hasNetBeansIntegration()) {
                     (new JCheckBoxOperator(propertiesDialogOper, "Auto-refresh")).setSelected(autoRefresh);
                     (new JCheckBoxOperator(propertiesDialogOper, "Synchronize")).setSelected(syncHover);

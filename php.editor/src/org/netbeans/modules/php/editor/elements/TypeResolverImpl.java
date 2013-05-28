@@ -63,7 +63,7 @@ public final class TypeResolverImpl implements TypeResolver {
     private final String typeName;
 
     public static Set<TypeResolver> parseTypes(final String typeSignature) {
-        Set<TypeResolver> retval = new HashSet<TypeResolver>();
+        Set<TypeResolver> retval = new HashSet<>();
         if (typeSignature != null && typeSignature.length() > 0) {
             final String regexp = String.format("\\%s", Separator.PIPE.toString()); //NOI18N
             for (String typeName : typeSignature.split(regexp)) {
@@ -86,7 +86,7 @@ public final class TypeResolverImpl implements TypeResolver {
     }
 
     public static Set<TypeResolver> forNames(final Collection<QualifiedName> names) {
-        Set<TypeResolver> retval = new HashSet<TypeResolver>();
+        Set<TypeResolver> retval = new HashSet<>();
         for (QualifiedName qualifiedName : names) {
             final String typeName = qualifiedName.toString();
                 if (typeName.equals(ParameterElementImpl.encode(typeName))) {

@@ -14,7 +14,7 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupp
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.Env;
 import org.netbeans.modules.cnd.makeproject.api.runprofiles.RunProfile;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.openide.util.RequestProcessor;
@@ -133,7 +133,7 @@ public final class LauncherExecutor {
                         out = conf.expandMacros(value);
                     } while (!out.equals(value));
                     
-                    value = CndPathUtilitities.expandAllMacroses(out, "${PROJECT_DIR}", conf.getProfile().getBaseDir()); //NOI18N
+                    value = CndPathUtilities.expandAllMacroses(out, "${PROJECT_DIR}", conf.getProfile().getBaseDir()); //NOI18N
                 }
                 return value;
             }

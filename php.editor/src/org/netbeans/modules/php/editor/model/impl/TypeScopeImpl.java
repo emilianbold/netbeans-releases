@@ -80,10 +80,10 @@ import org.netbeans.modules.php.editor.parser.astnodes.Expression;
  */
 abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
 
-    private Map<String, List<? extends InterfaceScope>> ifaces = new HashMap<String, List<? extends InterfaceScope>>();
-    private Collection<QualifiedName> fqIfaces = new HashSet<QualifiedName>();
-    private Set<? super TypeScope> superRecursionDetection = new HashSet<TypeScope>();
-    private Set<? super TypeScope> subRecursionDetection = new HashSet<TypeScope>();
+    private Map<String, List<? extends InterfaceScope>> ifaces = new HashMap<>();
+    private Collection<QualifiedName> fqIfaces = new HashSet<>();
+    private Set<? super TypeScope> superRecursionDetection = new HashSet<>();
+    private Set<? super TypeScope> subRecursionDetection = new HashSet<>();
 
     TypeScopeImpl(Scope inScope, ClassDeclarationInfo nodeInfo, boolean isDeprecated) {
         super(inScope, nodeInfo, nodeInfo.getAccessModifiers(), nodeInfo.getOriginalNode().getBody(), isDeprecated);
@@ -137,20 +137,20 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
     @Override
     public List<? extends String> getSuperInterfaceNames() {
         if (indexedElement instanceof TypeElement) {
-            List<String> retval = new ArrayList<String>();
+            List<String> retval = new ArrayList<>();
             final Set<QualifiedName> superInterfaces = ((TypeElement) indexedElement).getSuperInterfaces();
             for (QualifiedName qualifiedName : superInterfaces) {
                 retval.add(qualifiedName.toString());
             }
             return retval;
         }
-        return new ArrayList<String>(ifaces.keySet());
+        return new ArrayList<>(ifaces.keySet());
     }
 
     @Override
     public List<? extends InterfaceScope> getSuperInterfaceScopes() {
-        Set<InterfaceScope> retval = new LinkedHashSet<InterfaceScope>();
-        Set<String> keySet = (indexedElement instanceof TypeElement) ? new HashSet<String>(getSuperInterfaceNames()) : ifaces.keySet();
+        Set<InterfaceScope> retval = new LinkedHashSet<>();
+        Set<String> keySet = (indexedElement instanceof TypeElement) ? new HashSet<>(getSuperInterfaceNames()) : ifaces.keySet();
         if (!fqIfaces.isEmpty()) {
             for (QualifiedName qualifiedName : fqIfaces) {
                 retval.addAll(IndexScopeImpl.getInterfaces(qualifiedName, this));
@@ -194,7 +194,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
             //duplicatesChecker.addAll(iface);
             }
         }
-        return new ArrayList<InterfaceScope>(retval);
+        return new ArrayList<>(retval);
     }
 
     @Override
@@ -267,7 +267,7 @@ abstract class TypeScopeImpl extends ScopeImpl implements TypeScope {
 
     @Override
     public Set<QualifiedName> getSuperInterfaces() {
-        Set<QualifiedName> retval = new HashSet<QualifiedName>();
+        Set<QualifiedName> retval = new HashSet<>();
         List<? extends String> superInterfaceNames = getSuperInterfaceNames();
         for (String name : superInterfaceNames) {
             retval.add(QualifiedName.create(name));

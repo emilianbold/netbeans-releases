@@ -125,6 +125,8 @@ public class ProjectNodeFactory {
             descriptions.add(createCodeAssistantDescription(lookup));
         }
 
+        descriptions.add(createFormattingDescription(lookup));
+
         CustomizerNode rootDescription = new CustomizerNode(
                 "Configuration Properties", getString("CONFIGURATION_PROPERTIES"), descriptions.toArray(new CustomizerNode[descriptions.size()]), lookup);  // NOI18N
 
@@ -141,6 +143,11 @@ public class ProjectNodeFactory {
     private static CustomizerNode createGeneralDescription(Lookup lookup) {
         return new GeneralCustomizerNode(
                 "General", getString("LBL_Config_General"), null, lookup); // NOI18N
+    }
+
+    private static CustomizerNode createFormattingDescription(Lookup lookup) {
+        return new FormattingCustomizerNode(
+                "Formattinf", getString("LBL_Formatting"), null, lookup); // NOI18N
     }
 
     private static CustomizerNode createBuildDescription(Lookup lookup) {

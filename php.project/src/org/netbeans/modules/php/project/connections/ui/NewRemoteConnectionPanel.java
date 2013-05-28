@@ -104,7 +104,7 @@ public final class NewRemoteConnectionPanel extends JPanel {
         this.configManager = configManager;
         initComponents();
 
-        connectionTypeComboBox.setModel(new DefaultComboBoxModel<String>(new Vector<String>(RemoteConnections.get().getRemoteConnectionTypes())));
+        connectionTypeComboBox.setModel(new DefaultComboBoxModel<>(new Vector<>(RemoteConnections.get().getRemoteConnectionTypes())));
 
         registerListeners();
     }

@@ -93,6 +93,7 @@ import javax.swing.text.JTextComponent;
 import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 
+import com.sun.source.tree.CaseTree;
 import com.sun.source.tree.ImportTree;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
@@ -274,7 +275,8 @@ public class ClipboardHandler {
                         if (el.equals(elm)) continue;
                     } else {
                         if (!cc.getTrees().isAccessible(context, el, (DeclaredType)el.getEnclosingElement().asType())
-                                || (context.getEnclosingClass() != null && cc.getElementUtilities().outermostTypeElement(el) == cc.getElementUtilities().outermostTypeElement(context.getEnclosingClass()))) continue;
+                                || (context.getEnclosingClass() != null && (cc.getElementUtilities().outermostTypeElement(el) == cc.getElementUtilities().outermostTypeElement(context.getEnclosingClass())
+                                || cc.getElements().getAllMembers(context.getEnclosingClass()).contains(el)))) continue;
                         for (ImportTree importTree : cc.getCompilationUnit().getImports()) {
                             if (importTree.isStatic() && importTree.getQualifiedIdentifier().getKind() == Tree.Kind.MEMBER_SELECT) {
                                 MemberSelectTree mst = (MemberSelectTree) importTree.getQualifiedIdentifier();
@@ -454,7 +456,13 @@ public class ClipboardHandler {
                                                 simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el).getQualifiedName().toString());
                                                 spans.add(new int[] {s - start, e - start});
                                             }
-                                        } else if ((el.getKind().isField() || el.getKind() == ElementKind.METHOD)
+                                        } else if ((el.getKind() == ElementKind.ENUM_CONSTANT)) {
+                                            TreePath parentPath = getCurrentPath().getParentPath();
+                                            if (parentPath.getLeaf().getKind() != Tree.Kind.CASE || ((CaseTree)parentPath.getLeaf()).getExpression() != node) {
+                                                simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el.getEnclosingElement()).getQualifiedName().toString() + '.' + el.getSimpleName().toString());
+                                                spans.add(new int[] {s - start, e - start});
+                                            }
+                                        } else if ((el.getKind() == ElementKind.FIELD || el.getKind() == ElementKind.METHOD)
                                                 && el.getModifiers().contains(Modifier.STATIC)
                                                 && !el.getModifiers().contains(Modifier.PRIVATE)) {
                                             simple2ImportFQN.put(el.getSimpleName().toString(), ((TypeElement) el.getEnclosingElement()).getQualifiedName().toString() + '.' + el.getSimpleName().toString());

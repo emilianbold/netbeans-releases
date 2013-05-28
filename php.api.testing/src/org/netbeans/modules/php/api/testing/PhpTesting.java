@@ -62,6 +62,17 @@ public final class PhpTesting {
      * Path on SFS where {@link PhpTestingProvider PHP testing providers} need to be registered.
      */
     public static final String TESTING_PATH = "PHP/Testing"; //NOI18N
+    /**
+     * Path on SFS where Project Customizer panels (ProjectCustomizer.CompositeCategoryProvider)
+     * need to be registered (so they display as a proper subcategory of Testing panel in Project Properties).
+     * @since 0.6
+     */
+    public static final String CUSTOMIZERS_PATH = TESTING_PATH + "/Customizers"; // NOI18N
+    /**
+     * Identifier of Project Customizer for testing.
+     * @since 0.6
+     */
+    public static final String CUSTOMIZER_IDENT = "Testing"; // NOI18N
 
     private static final Lookup.Result<PhpTestingProvider> TESTING_PROVIDERS = Lookups.forPath(TESTING_PATH).lookupResult(PhpTestingProvider.class);
 
@@ -74,7 +85,7 @@ public final class PhpTesting {
      * @return a list of all registered {@link PhpTestingProvider}s; never {@code null}.
      */
     public static List<PhpTestingProvider> getTestingProviders() {
-        return new ArrayList<PhpTestingProvider>(TESTING_PROVIDERS.allInstances());
+        return new ArrayList<>(TESTING_PROVIDERS.allInstances());
     }
 
     /**

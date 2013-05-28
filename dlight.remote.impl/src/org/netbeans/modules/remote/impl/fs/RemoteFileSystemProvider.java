@@ -115,7 +115,7 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
         return null;
     }
 
-    /** Copy-pasted from CndPathUtilitities.isPathAbsolute */
+    /** Copy-pasted from CndPathUtilities.isPathAbsolute */
     private static boolean isPathAbsolute(String path) {
         if (path == null || path.length() == 0) {
             return false;

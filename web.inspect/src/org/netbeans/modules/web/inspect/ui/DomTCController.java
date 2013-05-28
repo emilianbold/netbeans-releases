@@ -44,11 +44,15 @@ package org.netbeans.modules.web.inspect.ui;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.concurrent.Callable;
 import org.netbeans.modules.web.browser.api.Page;
 import org.netbeans.modules.web.browser.api.PageInspector;
+import org.openide.modules.OnStop;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponentGroup;
 import org.openide.windows.WindowManager;
+import org.openide.windows.WindowSystemEvent;
+import org.openide.windows.WindowSystemListener;
 
 /**
  * Class responsible for opening and closing of DOM Tree view.
@@ -110,12 +114,21 @@ public class DomTCController implements PropertyChangeListener {
     }
 
     /**
+     * Returns the DOM Tree window group.
+     * 
+     * @return DOM Tree {@code TopComponentGroup}.
+     */
+    static TopComponentGroup getDOMTCGroup() {
+        return WindowManager.getDefault().findTopComponentGroup("DomTree"); // NOI18N
+    }
+
+    /**
      * Updates the state of DOM Tree view. This method can be called
      * from event-dispatch thread only.
      */
     private void updateDomTC0() {
         synchronized (this) {
-            TopComponentGroup group = WindowManager.getDefault().findTopComponentGroup("DomTree"); // NOI18N
+            TopComponentGroup group = getDOMTCGroup();
             Page inspectedPage = PageInspector.getDefault().getPage();
             if (inspectedPage == null) {
                 group.close();                
@@ -128,6 +141,43 @@ public class DomTCController implements PropertyChangeListener {
                 }
             }
         }
+    }
+
+    /**
+     * Ensures that DOM Tree window group is closed when the IDE shuts down.
+     */
+    @OnStop
+    public static class ShutdownHook implements Callable<Boolean>, WindowSystemListener {
+        /** Determines whether the window system listener has been installed already. */
+        private boolean listenerInstalled;
+
+        @Override
+        public Boolean call() throws Exception {
+            if (!listenerInstalled) {
+                listenerInstalled = true;
+                WindowManager.getDefault().addWindowSystemListener(this);
+            }
+            return Boolean.TRUE;
+        }
+
+        @Override
+        public void beforeLoad(WindowSystemEvent event) {
+        }
+
+        @Override
+        public void afterLoad(WindowSystemEvent event) {
+        }
+
+        @Override
+        public void beforeSave(WindowSystemEvent event) {
+            // Close the group before window system saves its state (during IDE shutdown)
+            getDOMTCGroup().close();
+        }
+
+        @Override
+        public void afterSave(WindowSystemEvent event) {
+        }
+
     }
 
 }

@@ -378,24 +378,30 @@ media
 //        | mediaQueryList
          mediaQueryList
     ) ws?
-    LBRACE ws?
+    LBRACE 
+        mediaBody
+    RBRACE
+    ;
+    
+mediaBody
+    :
+    ws?
+    (
         (
-            (
-            //allow just semicolon closed declaration
-            (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | sass_declaration_interpolation_expression COLON )=>propertyDeclaration ws? SEMI
-            | {isScssSource()}? sass_extend ws? SEMI
-            | {isScssSource()}? sass_debug ws? SEMI
-            | {isScssSource()}? sass_control ws? SEMI
-            | {isScssSource()}? sass_content ws? SEMI            
-            | rule
-            | page
-            | fontFace
-            | vendorAtRule
-            //Just a partial hotfix for nested MQ: complete grammar is defined in: http://www.w3.org/TR/css3-conditional/#processing
-            | media
-            ) ws?
-        )*
-     RBRACE
+        //allow just semicolon closed declaration
+        (~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | sass_declaration_interpolation_expression COLON )=>propertyDeclaration ws? SEMI
+        | {isScssSource()}? sass_extend ws? SEMI
+        | {isScssSource()}? sass_debug ws? SEMI
+        | {isScssSource()}? sass_control ws? SEMI
+        | {isScssSource()}? sass_content ws? SEMI            
+        | rule
+        | page
+        | fontFace
+        | vendorAtRule
+        //Just a partial hotfix for nested MQ: complete grammar is defined in: http://www.w3.org/TR/css3-conditional/#processing
+        | media
+        ) ws?
+    )*
     ;
 
 mediaQueryList
@@ -416,7 +422,13 @@ mediaType
  ;
  
 mediaExpression
-    : LPAREN ws? mediaFeature (ws? COLON ws? expression)? ws? RPAREN
+    : 
+    LPAREN ws? mediaFeature mediaFeatureValue? ws? RPAREN
+    ;
+    
+mediaFeatureValue
+    :
+    ws? COLON ws? expression
     ;
  
 mediaFeature
@@ -622,7 +634,7 @@ declaration
     | (sass_nested_properties)=>sass_nested_properties { declarationType = DeclarationType.BLOCK; }
     | (propertyDeclaration)=>propertyDeclaration { declarationType = DeclarationType.COMMAND; }
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
-    | (~(LBRACE|SEMI|RBRACE|COLON)* COLON)=>propertyDeclaration { declarationType = DeclarationType.COMMAND; }
+    | (property COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration { declarationType = DeclarationType.COMMAND; }
     | (rule)=>rule { declarationType = DeclarationType.BLOCK; }
     | {isCssPreprocessorSource()}? at_rule { declarationType = DeclarationType.BLOCK; }
     | {isScssSource()}? sass_control { declarationType = DeclarationType.COMMAND; }
@@ -643,7 +655,7 @@ selectorsGroup
         // looking for #{, lookeahead exited by { (rule beginning)
         ( ~( HASH_SYMBOL | LBRACE )* HASH_SYMBOL LBRACE)=> sass_selector_interpolation_expression
 	|
-        selector (COMMA ws? selector)*
+        selector (ws? COMMA ws? selector)*
     ;
         
 selector

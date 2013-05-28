@@ -12,7 +12,6 @@ import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -59,10 +58,10 @@ public class RemoteJavaExecution {
     }
     
     public List<SourceFile> getCompileLines(String executable) {
-        return getCompileLines(executable, true);
+        return getCompileLines(executable, false);
     }
 
-    public List<SourceFile> getCompileLines(String executable, boolean preferExistingProjectCreator) {
+    private List<SourceFile> getCompileLines(String executable, boolean preferExistingProjectCreator) {
         NativeProcess process = null;
         Task errorTask = null;
         try {
@@ -117,10 +116,10 @@ public class RemoteJavaExecution {
     }
     
     public SharedLibraries getDlls(String executable) {
-        return getDlls(executable, true);
+        return getDlls(executable, false);
     }
 
-    public SharedLibraries getDlls(String executable, boolean preferExistingProjectCreator) {
+    private SharedLibraries getDlls(String executable, boolean preferExistingProjectCreator) {
         NativeProcess process = null;
         Task errorTask = null;
         try {
@@ -176,14 +175,23 @@ public class RemoteJavaExecution {
 
     private FileObject findProjectCreator(boolean preferExisting) {
         if (preferExisting) {
-            for(CompilerSet set : CompilerSetManager.get(env).getCompilerSets()) {
+            FileObject res = null;
+            CompilerSetManager sets = CompilerSetManager.get(env);
+            for(CompilerSet set : sets.getCompilerSets()) {
                 if (set.getCompilerFlavor().isSunStudioCompiler()) {
                     String directory = set.getDirectory();
                     FileObject dwarfDump = fileSystem.findResource(directory+"/../lib/netbeans/cnd/modules/org-netbeans-modules-cnd-dwarfdump.jar");
                     if (dwarfDump != null && dwarfDump.isValid()) {
-                        return dwarfDump;
+                        if (sets.isDefaultCompilerSet(set)) {
+                            return dwarfDump;
+                        } else {
+                            res = dwarfDump;
+                        }
                     }
                 }
+            }
+            if (res != null) {
+                return res;
             }
         }
         return copyJar();

@@ -70,7 +70,7 @@ import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil.PrefixedLogger;
 import org.netbeans.modules.cnd.remote.sync.download.HostUpdates;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -566,7 +566,7 @@ class RfsLocalController extends NamedRunnable {
         try {
             clockSkew = getTimeSkew();
             if (logger .isLoggable(Level.FINE)) {
-                logger .log(Level.FINE, "HostInfo skew={0} calculated skew={1}", //NOI18N
+                logger .log(Level.FINE, "HostInfo skew=%d calculated skew=%d", //NOI18N
                         new Object[]{HostInfoUtils.getHostInfo(execEnv).getClockSkew(), clockSkew}); 
             }
         } catch (FormatException ex) {
@@ -797,7 +797,7 @@ class RfsLocalController extends NamedRunnable {
                     File linkParentFile = CndFileUtils.createLocalFile(linkPath).getParentFile();
                     //File localLinkTargetFile = CndFileUtils.createLocalFile(linkParentFile, localLinkTarget);
                     File localLinkTargetFile;
-                    if (CndPathUtilitities.isPathAbsolute(localLinkTarget)) {
+                    if (CndPathUtilities.isPathAbsolute(localLinkTarget)) {
                         String remoteLinkTarget = mapper.getRemotePath(localLinkTarget, false);
                         info.setLinkTarget(remoteLinkTarget);
                         localLinkTargetFile = CndFileUtils.createLocalFile(localLinkTarget);

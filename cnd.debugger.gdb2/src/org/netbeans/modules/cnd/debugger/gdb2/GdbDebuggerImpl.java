@@ -120,7 +120,7 @@ import org.netbeans.modules.cnd.debugger.common2.utils.IpeUtils;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MIConst;
 import org.netbeans.modules.cnd.debugger.gdb2.mi.MITListItem;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.utils.CndPathUtilitities;
+import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessChangeEvent;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
@@ -3606,7 +3606,7 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
         String tmp_cmd;
         if (isCore || pid != -1) {
             tmp_cmd = "-file-symbol-file "; // NOI18N
-        } else if (!CndPathUtilitities.sameString(program, outputFile)) {
+        } else if (!CndPathUtilities.sameString(program, outputFile)) {
             // load symbol file separately, IZ 194531
             send("-file-symbol-file " + toCString(outputFile), false); // NOI18N
             tmp_cmd = "-file-exec-file "; // NOI18N

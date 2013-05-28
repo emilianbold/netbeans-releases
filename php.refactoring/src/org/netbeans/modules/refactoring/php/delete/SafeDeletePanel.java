@@ -111,6 +111,7 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
 
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 if (regulardelete) {
                     safeDelete = new JCheckBox();
@@ -122,6 +123,7 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
                     searchInComments.setEnabled(false);
                     safeDelete.addItemListener(new ItemListener() {
 
+                        @Override
                         public void itemStateChanged(ItemEvent evt) {
                             searchInComments.setEnabled(safeDelete.isSelected());
                             parent.stateChanged(null);

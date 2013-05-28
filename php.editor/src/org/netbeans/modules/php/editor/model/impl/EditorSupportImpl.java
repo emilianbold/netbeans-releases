@@ -86,7 +86,7 @@ public class EditorSupportImpl implements EditorSupport {
 
     @Override
     public Collection<PhpClass> getClasses(FileObject fo) {
-        final List<PhpClass> retval = new ArrayList<PhpClass>();
+        final List<PhpClass> retval = new ArrayList<>();
         Source source = Source.create(fo);
         if (source != null) {
             try {
@@ -116,14 +116,15 @@ public class EditorSupportImpl implements EditorSupport {
         if (sourceRoot.isData()) {
             throw new IllegalArgumentException("sourceRoot must be a folder");
         }
-        final List<Pair<FileObject, Integer>> retval = new ArrayList<Pair<FileObject, Integer>>();
+        final List<Pair<FileObject, Integer>> retval = new ArrayList<>();
         Index indexQuery = ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(sourceRoot));
         String fullyQualifiedName = phpClass.getFullyQualifiedName();
-        NameKind kind = fullyQualifiedName == null ? NameKind.prefix(phpClass.getName()) : NameKind.exact(fullyQualifiedName);
+        String unqualifiedName = phpClass.getName();
+        NameKind kind = fullyQualifiedName == null ? NameKind.prefix(unqualifiedName) : NameKind.exact(fullyQualifiedName);
         Set<ClassElement> classes = indexQuery.getClasses(kind);
         for (ClassElement indexedClass : classes) {
             FileObject fo = indexedClass.getFileObject();
-            if (fo != null && fo.isValid()) {
+            if (unqualifiedName.equals(indexedClass.getName()) && fo != null && fo.isValid()) {
                 retval.add(Pair.of(fo, indexedClass.getOffset()));
             }
         }
@@ -133,7 +134,7 @@ public class EditorSupportImpl implements EditorSupport {
     @Override
     public PhpBaseElement getElement(FileObject fo, final int offset) {
         Source source = Source.create(fo);
-        final List<PhpBaseElement> retval = new ArrayList<PhpBaseElement>(1);
+        final List<PhpBaseElement> retval = new ArrayList<>(1);
         if (source != null) {
             try {
                 ParserManager.parse(Collections.singleton(source), new UserTask() {

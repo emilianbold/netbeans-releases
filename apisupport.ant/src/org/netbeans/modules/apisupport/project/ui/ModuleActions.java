@@ -244,6 +244,7 @@ public final class ModuleActions implements ActionProvider, ExecProject {
     
     private static final Pattern SRCDIRJAVA = Pattern.compile("\\.java$"); // NOI18N
     private static final String SUBST = "Test.java"; // NOI18N
+    private static final String SUBSTNG = "NGTest.java"; // NOI18N
     
     private FileObject[] findSources(Lookup context) {
         FileObject srcDir = project.getSourceDirectory();
@@ -342,7 +343,12 @@ public final class ModuleActions implements ActionProvider, ExecProject {
         if (matches != null) {
             return new TestSources(matches, testType, testSrcDir, null);
         } else {
-            return null;
+	    matches = ActionUtils.regexpMapFiles(sourceFiles, srcDir, SRCDIRJAVA, testSrcDir, SUBSTNG, true);
+	    if (matches != null) {
+		return new TestSources(matches, testType, testSrcDir, null);
+	    } else {
+		return null;
+	    }
         }
     }
     

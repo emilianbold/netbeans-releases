@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.clientproject.api.util;
 
 import java.awt.EventQueue;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +77,7 @@ public final class JsLibUtilities {
      * <p>
      * This method must be run in a background thread and stops if the current thread is interrupted.
      * @param selectedLibraries JS libraries to be added
-     * @param jsLibFolder JS libraries folder
+     * @param jsLibFolder JS libraries folder, can be empty string
      * @param siteRootDir site root
      * @param handle progress handle, can be {@code null}
      * @return list of libraries that cannot be downloaded
@@ -116,6 +117,18 @@ public final class JsLibUtilities {
             } catch (MissingLibResourceException e) {
                 LOGGER.log(Level.FINE, null, e);
                 failed.add(selectedLibrary);
+            }
+        }
+        // possible cleanup
+        if (!failed.isEmpty()) {
+            assert librariesRoot != null;
+            FileObject fo = librariesRoot;
+            while (!siteRootDir.equals(fo)) {
+                if (fo.getChildren().length == 0) {
+                    fo.delete();
+                }
+                fo = fo.getParent();
+                assert fo != null;
             }
         }
         return failed;

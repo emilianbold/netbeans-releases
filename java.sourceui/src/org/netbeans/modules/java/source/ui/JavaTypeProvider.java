@@ -47,6 +47,7 @@
 package org.netbeans.modules.java.source.ui;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -75,7 +76,6 @@ import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.BinaryElementOpen;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
@@ -93,7 +93,6 @@ import org.netbeans.spi.jumpto.support.NameMatcherFactory;
 import org.netbeans.spi.jumpto.type.SearchType;
 import org.netbeans.spi.jumpto.type.TypeProvider;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -344,10 +343,16 @@ public class JavaTypeProvider implements TypeProvider {
         }
         int lastIndexOfDot = originalText.lastIndexOf("."); //NOI18N
         boolean isFullyQualifiedName = -1 != lastIndexOfDot;
-        final Pattern packageName = isFullyQualifiedName ?
-                createPackageRegExp(originalText.substring(0, lastIndexOfDot)) :
-                null;
-        final String typeName = isFullyQualifiedName ? originalText.substring(lastIndexOfDot + 1) : originalText;
+        final Pattern packageName;
+        final String typeName;
+        if (isFullyQualifiedName) {
+            packageName = createPackageRegExp(originalText.substring(0, lastIndexOfDot));
+            typeName = originalText.substring(lastIndexOfDot + 1);
+            res.setHighlightText(typeName);
+        } else {
+            packageName = null;
+            typeName = originalText;
+        }
         final String textForQuery = getTextForQuery(typeName, nameKind, context.getSearchType());
 
         LOGGER.log(Level.FINE, "Text For Query ''{0}''.", originalText);
@@ -570,7 +575,6 @@ public class JavaTypeProvider implements TypeProvider {
     //@NotTreadSafe
     static final class CacheItem implements ClassIndexImplListener {
         
-        private final URL root;
         private final URI rootURI;
         private final boolean isBinary;
         private final DataCacheCallback callBack;
@@ -588,7 +592,6 @@ public class JavaTypeProvider implements TypeProvider {
                 @NullAllowed final DataCacheCallback callBack) throws URISyntaxException  {
             this.cpType = cpType;
             this.isBinary = ClassPath.BOOT.equals(cpType) || ClassPath.COMPILE.equals(cpType);
-            this.root = root;
             this.rootURI = root == null ? null : root.toURI();
             this.callBack = callBack;
         }
@@ -616,7 +619,10 @@ public class JavaTypeProvider implements TypeProvider {
                     return cachedRoot;
                 }
             }
-            FileObject _tmp = URLMapper.findFileObject(root);
+            final URL root = toURL(rootURI);
+            final FileObject _tmp = root == null ?
+                    null :
+                    URLMapper.findFileObject(root);
             synchronized (this) {
                 if (cachedRoot == null) {
                     cachedRoot = _tmp;
@@ -645,7 +651,7 @@ public class JavaTypeProvider implements TypeProvider {
         
         public ClasspathInfo getClasspathInfo() {
             if (cpInfo == null) {            
-                final ClassPath cp = ClassPathSupport.createClassPath(root);
+                final ClassPath cp = ClassPathSupport.createClassPath(toURL(rootURI));
                 cpInfo = isBinary ? 
                     ClassPath.BOOT.equals(cpType) ?
                         ClasspathInfo.create(cp,ClassPath.EMPTY,ClassPath.EMPTY):
@@ -660,8 +666,11 @@ public class JavaTypeProvider implements TypeProvider {
             @NonNull final String typeName,
             @NonNull NameKind kind,
             @NonNull Collection<? super JavaTypeDescription> collector) throws IOException, InterruptedException {
-            if (index == null) {                
-                index = ClassIndexManager.getDefault().getUsagesQuery(root, true);
+            if (index == null) {
+                final URL root = toURL(rootURI);
+                index = root == null ?
+                    null :
+                    ClassIndexManager.getDefault().getUsagesQuery(root, true);
                 if (index == null) {
                     return false;
                 }
@@ -714,13 +723,27 @@ public class JavaTypeProvider implements TypeProvider {
             }
         }
 
+        @CheckForNull
+        URI getRootURI() {
+            return rootURI;
+        }
+        
+        @CheckForNull
+        ClassIndexImpl getClassIndex() {
+            return index;
+        }
+        
         private void initProjectInfo() {
             Project p = FileOwnerQuery.getOwner(this.rootURI);
             if (p != null) {
-                ProjectInformation pi = ProjectUtils.getInformation( p );
-                projectName = pi.getDisplayName();
-                projectIcon = pi.getIcon();
-            }            
+                final ProjectInformation pi = p.getLookup().lookup(ProjectInformation.class);   //Intentionally does not use ProjectUtil.getInformation() as it does slow icon annotation
+                projectName = pi == null ?
+                    p.getProjectDirectory().getNameExt() :
+                    pi.getDisplayName();
+                projectIcon = pi == null ?
+                    null :
+                    pi.getIcon();
+            }
         }
 
         @NonNull
@@ -739,6 +762,21 @@ public class JavaTypeProvider implements TypeProvider {
         private void dispose() {
             if (index != null) {
                 index.removeClassIndexImplListener(this);
+            }
+        }
+
+        @CheckForNull
+        private static URL toURL(@NullAllowed final URI uri) {
+            try {
+                return uri == null ?
+                    null :
+                    uri.toURL();
+            } catch (MalformedURLException ex) {
+                LOGGER.log(
+                    Level.FINE,
+                    "Cannot convert URI to URL",    //NOI18N
+                    ex);
+                return null;
             }
         }
 

@@ -93,12 +93,13 @@ public class Util {
 
         if (pu != null) {
             ArrayList<String> availProps = new ArrayList<String>(propsList);
-
-            for (int i = 0; i < pu.getProperties().sizeProperty2(); i++) {
-                String propName = pu.getProperties().getProperty2(i).getName();
-                if (!availProps.remove(propName)
-                        && availProps.contains("javax.persistence." + propName)) {
-                    availProps.remove(propName);
+            if(pu.getProperties() != null) {
+                for (int i = 0; i < pu.getProperties().sizeProperty2(); i++) {
+                    String propName = pu.getProperties().getProperty2(i).getName();
+                    if (!availProps.remove(propName)
+                            && availProps.contains("javax.persistence." + propName)) {
+                        availProps.remove(propName);
+                    }
                 }
             }
 
