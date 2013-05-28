@@ -187,17 +187,14 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
             resURI = getPathExpression(pf); //NOI18N
         }
 
-        String SSLExpr = security.isSSL() ?
-            "// SSL configuration\n" + //NOI18N
-            "client.setProperty(" +
-            "org.glassfish.jersey.client.ClientProperties.SSL_CONFIG, " + //NOI18N
-            "new org.glassfish.jersey.client.SslConfig(getHostnameVerifier(), getSSLContext()));": //NOI18N
-            ""; //NOI18N
+        String clientCreation = "   client = javax.ws.rs.client.ClientBuilder.newClient();";
+        if (security.isSSL()) {
+            clientCreation = "client = javax.ws.rs.client.ClientBuilder.newBuilder().sslContext(getSSLContext()).build();"; // NOI18N
+        }
 
         String body =
                 "{"+                                                            //NOI18N
-                "   client = "+"javax.ws.rs.client.ClientBuilder.newClient();"+ //NOI18N
-                SSLExpr+        
+                clientCreation+
                 subresourceExpr +
                 ("\"\"".equals(resURI) ?
                 "   webTarget = client.target(BASE_URI);" : //NOI18N
@@ -275,7 +272,7 @@ class JaxRsGenerationStrategy extends ClientGenerationStrategy {
                 Collections.<Modifier>singleton(Modifier.PUBLIC));
         String body =
                 "{"+ //NOI18N
-                "   client.register(new org.glassfish.jersey.client.filter.HTTPBasicAuthFilter(username, password));"+ //NOI18N
+                "   client.register(new org.glassfish.jersey.client.filter.HttpBasicAuthFilter(username, password));"+ //NOI18N
                 "}"; //NOI18N
         return maker.Method(methodModifier,
                 "setUsernamePassword", // NOI18N
