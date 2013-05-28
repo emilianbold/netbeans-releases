@@ -443,19 +443,20 @@ public class MylynSupport {
 
     private synchronized void ensureTaskListLoaded () throws CoreException {
         if (!taskListInitialized) {
-            taskListInitialized = true;
-            if (taskListStorageFile.length() > 0) {
-                try {
+            try {
+                if (taskListStorageFile.length() > 0) {
                     taskListWriter.readTaskList(taskList, taskListStorageFile);
-                } catch (CoreException ex) {
-                    LOG.log(Level.INFO, null, ex);
-                    throw new CoreException(new Status(ex.getStatus().getSeverity(), ex.getStatus().getPlugin(), "Cannot deserialize tasklist"));
                 }
+            } catch (CoreException ex) {
+                LOG.log(Level.INFO, null, ex);
+                throw new CoreException(new Status(ex.getStatus().getSeverity(), ex.getStatus().getPlugin(), "Cannot deserialize tasklist"));
+            } finally {
+                taskListInitialized = true;
             }
         }
     }
 
-    synchronized void persist (final boolean removeUnseenOrphanedTasks) throws CoreException {
+    void persist (final boolean removeUnseenOrphanedTasks) throws CoreException {
         if (taskListInitialized) {
             taskList.run(new ITaskListRunnable() {
                 @Override
@@ -525,7 +526,7 @@ public class MylynSupport {
             @Override
             public void containersChanged (Set<TaskContainerDelta> deltas) {
                 for (TaskContainerDelta delta : deltas) {
-                    if (!delta.isTransient()) {
+                    if (taskListInitialized && !delta.isTransient()) {
                         synchronized (taskList) {
                             dirty = true;
                         }

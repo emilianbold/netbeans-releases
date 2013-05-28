@@ -216,19 +216,19 @@ public class LineBreakpointImpl extends ClassBasedBreakpoint {
             return ;
         }
         String className = breakpoint.getPreferredClassName();
-        if (className == null) {
+        if (className == null || className.isEmpty()) {
             className = reader.findCachedClassName(breakpoint);
-            if (className == null) {
+            if (className == null || className.isEmpty()) {
                 className = EditorContextBridge.getContext().getClassName (
                     breakpoint.getURL (), 
                     lineNumber
                 );
-                if (className != null && className.length() > 0) {
+                if (className != null && !className.isEmpty()) {
                     reader.storeCachedClassName(breakpoint, className);
                 }
             }
         }
-        if (className == null || className.length() == 0) {
+        if (className == null || className.isEmpty()) {
             logger.log(Level.WARNING, "Class name not defined for breakpoint {0}", breakpoint);
             setValidity(Breakpoint.VALIDITY.INVALID, NbBundle.getMessage(LineBreakpointImpl.class, "MSG_NoBPClass"));
             return ;

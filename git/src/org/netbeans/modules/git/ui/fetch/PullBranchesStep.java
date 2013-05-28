@@ -66,6 +66,7 @@ import org.openide.WizardDescriptor;
 import org.openide.util.HelpCtx;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import static org.netbeans.modules.git.ui.fetch.Bundle.*;
 
 /**
  *
@@ -93,13 +94,15 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
     }
     
     @Override
+    @NbBundle.Messages({
+        "# {0} - remote branch name", "# {1} - current branch name",
+        "MSG_PullBranchesStep.mergingBranch=Branch <b>{0}</b> will be merged into the current branch <b>{1}</b>."})
     protected final void validateBeforeNext () {
         setValid(true, null);
         if (mergingBranch == null) {
             setValid(false, new Message(NbBundle.getMessage(PullBranchesStep.class, "MSG_PullBranchesPanel.errorNoBranchSelected"), true)); //NOI18N
         } else {
-            StringBuilder sb = new StringBuilder(NbBundle.getMessage(PullBranchesStep.class,
-                    "MSG_PullBranchesStep.mergingBranch", mergingBranch)); //NOI18N
+            StringBuilder sb = new StringBuilder(MSG_PullBranchesStep_mergingBranch(mergingBranch, currentBranch));
             String msgDeletedBranches = FetchBranchesStep.getDeletedBranchesMessage(branches.getSelectedBranches());
             if (msgDeletedBranches != null) {
                 sb.append("<br>").append(msgDeletedBranches);
