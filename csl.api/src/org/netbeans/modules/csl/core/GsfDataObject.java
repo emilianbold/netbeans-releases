@@ -108,6 +108,10 @@ public class GsfDataObject extends MultiDataObject {
             }, new EditorSupportFactory());
     }
     
+    private void fileSaved() {
+        firePropertyChange("fileSaved", null, this); //NOI18N
+    }
+    
     public @Override Node createNodeDelegate() {
         return new GsfDataNode(this, language);
     }
@@ -221,6 +225,10 @@ public class GsfDataObject extends MultiDataObject {
                 @Override
                 public void save() throws java.io.IOException {
                     ((GenericEditorSupport)findCloneableOpenSupport()).saveDocument();
+                    //generated property change event "fileSaved" so one may listen on the 
+                    //editor document being saved to underlying file.
+                    ((GsfDataObject)getDataObject()).fileSaved();
+                    
 // DataObject.setModified() already called as part of saveDocument(). The save action is now asynchronous
 // in the IDE and super.saveDocument() checks for possible extra document modifications performed during save
 // and sets the DO.modified flag accordingly. Explicit call to DO.setModified() in this case may lead to data loss.

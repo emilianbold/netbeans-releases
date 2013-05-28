@@ -41,51 +41,22 @@
  */
 package org.netbeans.modules.css.prep;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import org.openide.filesystems.FileObject;
+import static org.junit.Assert.*;
+import org.netbeans.junit.NbTestCase;
 
 /**
- * Represents a type of CSS preprocessor file.
  *
  * @author marekfukala
  */
-public enum CPFileType {
-    
-    /**
-     * CP file type for LESS sources.
-     */
-    LESS("text/less"), 
-    
-    /**
-     * CP file type for SASS sources.
-     */
-    SASS("text/scss", "text/sass");
-    
-    private final Collection<String> mimeTypes;
-    private static Map<String, CPFileType> mime2filetypeMap;
+public class CPFileTypeTest extends NbTestCase {
 
-    public static synchronized CPFileType find(String mimeType) {
-        if(mime2filetypeMap == null) {
-            mime2filetypeMap = new HashMap<>();
-            for(CPFileType type : values()) {
-                for(String mt : type.getMimeTypes()) {
-                    mime2filetypeMap.put(mt, type);
-                }
-            }
-        }
-        return mime2filetypeMap.get(mimeType);
-    }
-    
-    private CPFileType(String... mimes) {
-        mimeTypes = Arrays.asList(mimes);
+    public CPFileTypeTest(String name) {
+        super(name);
     }
 
-    public Collection<String> getMimeTypes() {
-        return mimeTypes;
+    public void testFind() {
+        assertEquals(CPFileType.LESS, CPFileType.find("text/less"));
+        assertEquals(CPFileType.SASS, CPFileType.find("text/scss"));
+        assertEquals(CPFileType.SASS, CPFileType.find("text/sass"));
     }
-    
-    
 }
