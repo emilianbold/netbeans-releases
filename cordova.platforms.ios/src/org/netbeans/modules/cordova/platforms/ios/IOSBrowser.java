@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import org.netbeans.spi.project.ActionProvider;
@@ -62,6 +63,7 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  *
@@ -156,9 +158,9 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
                     Exceptions.printStackTrace(ex);
                 }
                 if (kind == Kind.IOS_DEVICE_DEFAULT) {
-                    build.startDebugging(dev, project, context, true);
+                    build.startDebugging(dev, project, new ProxyLookup(context, Lookups.singleton(BrowserFamilyId.IOS)), true);
                 } else {
-                    build.startDebugging(dev, project, context, false);
+                    build.startDebugging(dev, project, new ProxyLookup(context, Lookups.singleton(BrowserFamilyId.IOS)), false);
                 }
             }
         }, kind== Kind.IOS_DEVICE_DEFAULT?Bundle.LBL_OpeningiOS():Bundle.LBL_Opening(), new AtomicBoolean(), false);

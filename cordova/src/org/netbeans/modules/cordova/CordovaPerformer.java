@@ -157,7 +157,7 @@ public class CordovaPerformer implements BuildPerformer {
                                         return;
                                     }
                                 } else {
-                                    startDebugging(device, project, Lookups.singleton(mapper), false);
+                                    startDebugging(device, project, Lookups.fixed(mapper, BrowserFamilyId.PHONEGAP), false);
                                 }
                             }
                         }
@@ -374,7 +374,7 @@ public class CordovaPerformer implements BuildPerformer {
         debuggerSession = WebKitUIManager.getDefault().createDebuggingSession(webKitDebugging, projectContext);
         consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webKitDebugging, projectContext);
         networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webKitDebugging, projectContext);
-        PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p));
+        PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p, context.lookup(BrowserFamilyId.class)));
     }
 
     @Override
