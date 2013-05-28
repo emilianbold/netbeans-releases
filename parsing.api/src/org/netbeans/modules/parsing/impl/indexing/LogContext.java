@@ -216,8 +216,13 @@ import org.openide.util.Utilities;
 
             // schedule the log for later, after enough time elapses.
             RequestProcessor.getDefault().post(new Runnable() {
+                @Override
                 public void run() {
-                    log(true, true);
+                    synchronized (LogContext.this) {
+                        if (finished == 0) {
+                            log(true, true);
+                        }
+                    }
                 }
             }, (int)EXEC_TRESHOLD);
         }

@@ -3188,7 +3188,9 @@ public class BaseKit extends DefaultEditorKit {
             }
             
             for(JTextComponent c : arr) {
-                c.setKeymap(keymap);
+                if (c != null) {
+                    c.setKeymap(keymap);
+                }
             }
 
             searchableKit.fireActionsChange();
