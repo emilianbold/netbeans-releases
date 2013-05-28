@@ -121,7 +121,7 @@ public class StorageAllocator {
         RepositoryListenersManager.getInstance().fireUnitRemovedEvent(unitId, unitName);
     }
     
-    private void deleteDirectory(File path, boolean deleteDir) {
+    public static void deleteDirectory(File path, boolean deleteDir) {
         if( path.exists() ) {
             File[] files = path.listFiles();
             if (files != null) {

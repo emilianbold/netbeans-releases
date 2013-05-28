@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cnd.indexing.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -50,10 +51,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndexKey;
-import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
-import org.netbeans.modules.cnd.repository.api.RepositoryException;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
+import org.netbeans.modules.cnd.repository.relocate.api.RelocationSupport;
 import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
-import org.netbeans.modules.cnd.repository.spi.RepositoryListener;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
 import org.netbeans.modules.parsing.lucene.support.IndexDocument;
 import org.netbeans.modules.parsing.lucene.support.IndexManager;
@@ -66,8 +66,13 @@ import org.openide.util.RequestProcessor;
  * @author Egor Ushakov <gorrus@netbeans.org>
  * @author Vladimir Voskresensky
  */
-public final class CndTextIndexImpl implements RepositoryListener {
+public final class CndTextIndexImpl {
+
+    private static final String INDEX_FOLDER_NAME = "text_index"; //NOI18N
+    private static final String INDEX_LOCK_FILE_NAME = "text_index.lock"; //NOI18N
+
     private final static Logger LOG = Logger.getLogger("CndTextIndexImpl"); // NOI18N
+    private final File lockFile;
     private final DocumentIndex index;
     private final ConcurrentLinkedQueue<StoreQueueEntry> unsavedQueue = new ConcurrentLinkedQueue<StoreQueueEntry>();
 
@@ -81,14 +86,20 @@ public final class CndTextIndexImpl implements RepositoryListener {
     private static final int STORE_DELAY = 3000;
     private final UnitCodec unitCodec;
 
-    public static CndTextIndexImpl create(DocumentIndex index, UnitCodec unitCodec) {
-        CndTextIndexImpl impl = new CndTextIndexImpl(index, unitCodec);
-        RepositoryAccessor.getRepository().registerRepositoryListener(impl);
+    public static CndTextIndexImpl create(CacheLocation location) throws IOException {
+        File indexRoot = new File(location.getLocation(), INDEX_FOLDER_NAME);
+        indexRoot.mkdirs();
+        File lock = getLockFile(location);
+        lock.createNewFile();
+        DocumentIndex index = IndexManager.createDocumentIndex(indexRoot);
+        UnitCodec codec = RelocationSupport.get(location);
+        CndTextIndexImpl impl = new CndTextIndexImpl(index, lock, codec);
         return impl;
     }
 
-    private CndTextIndexImpl(DocumentIndex index, UnitCodec unitCodec) {
+    private CndTextIndexImpl(DocumentIndex index, File lockFile, UnitCodec unitCodec) {
         this.index = index;
+        this.lockFile = lockFile;
         assert unitCodec != null;
         this.unitCodec = unitCodec;
     }
@@ -105,20 +116,8 @@ public final class CndTextIndexImpl implements RepositoryListener {
         storeTask.schedule(STORE_DELAY);
     }
 
-    @Override
-    public boolean unitOpened(int unitId, CharSequence unitName) {
-        return true;
-    }
-
-    @Override
-    public void unitClosed(int unitId, CharSequence unitName) {
-    }
-
-    @Override
-    public void anExceptionHappened(int unitId, CharSequence unitName, RepositoryException exc) {
-    }
-
-    @Override
+    // the syntax is as in RepositoryListener, although it isn't a listener,
+    // it's CnTextIndexManager who listens repository and calls this method
     public void unitRemoved(int unitId, CharSequence unitName) {
         if (unitId < 0) {
             return;
@@ -148,6 +147,11 @@ public final class CndTextIndexImpl implements RepositoryListener {
             this.key = key;
             this.ids = ids;
         }
+    }
+
+    void cleanup() {
+        store();
+        lockFile.delete();
     }
 
     synchronized void store() {
@@ -209,5 +213,13 @@ public final class CndTextIndexImpl implements RepositoryListener {
         unitId = unitCodec.maskByRepositoryID(unitId);
         int fileNameIndex = (int) (value & 0xFFFFFFFF);
         return new CndTextIndexKey(unitId, fileNameIndex);
+    }
+
+    static boolean validate(CacheLocation cacheLocation) {
+        return !getLockFile(cacheLocation).exists();
+    }
+
+    private static File getLockFile(CacheLocation location) {
+        return new File(location.getLocation(), INDEX_LOCK_FILE_NAME);
     }
 }
