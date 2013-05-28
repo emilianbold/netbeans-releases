@@ -42,12 +42,12 @@
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.StringTokenizer;
 import java.util.TreeMap;
 import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
+import org.netbeans.modules.cnd.makeproject.MakeProject.CodeStyleWrapper;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeContext;
@@ -94,10 +94,10 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         this.project = project;
         makeConfigurationDescriptor = (MakeConfigurationDescriptor) configurationDescriptor;
         initComponents();
-        String style;
+        MakeProject.CodeStyleWrapper style;
         style = ((MakeProject)project).getProjectFormattingStyle(MIMENames.C_MIME_TYPE);
         StylePresentation def = null;
-        for (Map.Entry<String,String> s : getAllStyles(MIMENames.C_MIME_TYPE).entrySet()) {
+        for (Map.Entry<String,CodeStyleWrapper> s : getAllStyles(MIMENames.C_MIME_TYPE).entrySet()) {
             StylePresentation stylePresentation = new StylePresentation(s);
             if (stylePresentation.key.equals(style)) {
                 def = stylePresentation;
@@ -110,7 +110,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         
         style = ((MakeProject)project).getProjectFormattingStyle(MIMENames.CPLUSPLUS_MIME_TYPE);
         def = null;
-        for (Map.Entry<String,String> s : getAllStyles(MIMENames.CPLUSPLUS_MIME_TYPE).entrySet()) {
+        for (Map.Entry<String,CodeStyleWrapper> s : getAllStyles(MIMENames.CPLUSPLUS_MIME_TYPE).entrySet()) {
             StylePresentation stylePresentation = new StylePresentation(s);
             if (stylePresentation.key.equals(style)) {
                 def = stylePresentation;
@@ -123,7 +123,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         
         style = ((MakeProject)project).getProjectFormattingStyle(MIMENames.HEADER_MIME_TYPE);
         def = null;
-        for (Map.Entry<String,String> s : getAllStyles(MIMENames.HEADER_MIME_TYPE).entrySet()) {
+        for (Map.Entry<String,CodeStyleWrapper> s : getAllStyles(MIMENames.HEADER_MIME_TYPE).entrySet()) {
             StylePresentation stylePresentation = new StylePresentation(s);
             if (stylePresentation.key.equals(style)) {
                 def = stylePresentation;
@@ -142,7 +142,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         }
     }
     
-    public static Map<String,String> getAllStyles(String mimeType) {
+    public static Map<String,CodeStyleWrapper> getAllStyles(String mimeType) {
         Preferences pref = null;
         CodeStylePreferences.Provider myProvider = null;
         for(CodeStylePreferences.Provider p : Lookup.getDefault().lookupAll(CodeStylePreferences.Provider.class)) {
@@ -170,11 +170,12 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         } else {
             styles = def.toString();
         }
-        Map<String,String> res = new TreeMap<String,String>();
+        Map<String,CodeStyleWrapper> res = new TreeMap<String,CodeStyleWrapper>();
         StringTokenizer st = new StringTokenizer(styles, SEPARATOR); 
         while(st.hasMoreTokens()) {
             String nextToken = st.nextToken();
-            res.put(getStyleDisplayName(pref, myProvider, nextToken), nextToken);
+            String styleDisplayName = getStyleDisplayName(pref, myProvider, nextToken);
+            res.put(styleDisplayName, new CodeStyleWrapper(nextToken, styleDisplayName));
         }
         return res;
     }
@@ -200,7 +201,7 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         return pref.node(CODE_STYLE).get(styleId+CUSTOM_STYLE_NAME_SUFFIX, styleId);
     }
 
-    public static boolean createStyle(String styleId, String mimeType) {
+    public static boolean createStyle(CodeStyleWrapper styleId, String mimeType) {
         Preferences pref = null;
         CodeStylePreferences.Provider myProvider = null;
         for(CodeStylePreferences.Provider p : Lookup.getDefault().lookupAll(CodeStylePreferences.Provider.class)) {
@@ -212,36 +213,6 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         if (pref == null || myProvider == null) {
             return false;
         }
-        String base = null;
-        String id = null;
-        int i = styleId.indexOf('_'); //NOI18N
-        if (i > 0) {
-            base = styleId.substring(0, i);
-            id = styleId.substring(i+1);
-        }
-        String baseName = null;
-        if (base != null) {
-            try {
-                baseName = NbBundle.getMessage(myProvider.getClass(), base+PREDEFINED_STYLE_NAME_SUFFIX); //NOI18N
-            } catch (MissingResourceException e) {
-                e.printStackTrace(System.err);
-            }
-        }
-        if (baseName == null) {
-            try {
-                baseName = NbBundle.getMessage(myProvider.getClass(), DEFAULT_PROFILE+PREDEFINED_STYLE_NAME_SUFFIX); //NOI18N
-            } catch (MissingResourceException e) {
-                e.printStackTrace(System.err);
-            }
-        }
-        if (baseName == null) {
-            baseName = DEFAULT_PROFILE;
-        }
-        if (id != null) {
-            baseName += " "+id; //NOI18N
-        } else {
-            baseName += " ?"; //NOI18N
-        }
         StringBuilder def = new StringBuilder();
         for(String s: PREDEFINED_STYLES){
             if (def.length() > 0){
@@ -251,16 +222,16 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
         }
         if (MIMENames.C_MIME_TYPE.equals(mimeType)) {
             String styles = pref.node(C_CODE_STYLES).get(LIST_OF_STYLES, def.toString());
-            pref.node(C_CODE_STYLES).put(LIST_OF_STYLES, styles+SEPARATOR+styleId);
-            pref.node(CODE_STYLE).put(styleId+CUSTOM_STYLE_NAME_SUFFIX, baseName);
+            pref.node(C_CODE_STYLES).put(LIST_OF_STYLES, styles+SEPARATOR+styleId.getStyleId());
+            pref.node(CODE_STYLE).put(styleId+CUSTOM_STYLE_NAME_SUFFIX, styleId.getDisplayName());
         } else if (MIMENames.CPLUSPLUS_MIME_TYPE.equals(mimeType)) {
             String styles = pref.node(CPP_CODE_STYLES).get(LIST_OF_STYLES, def.toString());
-            pref.node(CPP_CODE_STYLES).put(LIST_OF_STYLES, styles+SEPARATOR+styleId);
-            pref.node(CODE_STYLE).put(styleId+CUSTOM_STYLE_NAME_SUFFIX, baseName);
+            pref.node(CPP_CODE_STYLES).put(LIST_OF_STYLES, styles+SEPARATOR+styleId.getStyleId());
+            pref.node(CODE_STYLE).put(styleId+CUSTOM_STYLE_NAME_SUFFIX, styleId.getDisplayName());
         } else  if (MIMENames.HEADER_MIME_TYPE.equals(mimeType)) {
             String styles = pref.node(H_CODE_STYLES).get(LIST_OF_STYLES, def.toString());
-            pref.node(H_CODE_STYLES).put(LIST_OF_STYLES, styles+SEPARATOR+styleId);
-            pref.node(CODE_STYLE).put(styleId+CUSTOM_STYLE_NAME_SUFFIX, baseName);
+            pref.node(H_CODE_STYLES).put(LIST_OF_STYLES, styles+SEPARATOR+styleId.getStyleId());
+            pref.node(CODE_STYLE).put(styleId+CUSTOM_STYLE_NAME_SUFFIX, styleId.getDisplayName());
         }
         return true;
     }
@@ -424,9 +395,9 @@ public class FormattingPropPanel extends javax.swing.JPanel implements MakeConte
     // End of variables declaration//GEN-END:variables
 
     private static final class StylePresentation {
-        private String key;
+        private CodeStyleWrapper key;
         private String name;
-        private StylePresentation(Map.Entry<String, String> entry) {
+        private StylePresentation(Map.Entry<String, CodeStyleWrapper> entry) {
             name = entry.getKey();
             key = entry.getValue();
         }
