@@ -39,96 +39,55 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cnd.makeproject.launchers;
+package org.netbeans.modules.cnd.makeproject;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
+import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
+import org.openide.filesystems.FileObject;
 
 /**
  *
- * @author Henk
+ * @author alsimon
  */
-public final class Launcher {
-    //displayed name, can be null
-    private String name;
-    //command is required field, cannot be null
-    //if you want to change command -> delete launcher and add new one
-    private final String command;
-    private String runDir;
-    private Map<String, String> env = new HashMap<String, String>();
-    private String symbolFiles;
-    //can not be set after the creation
-    private final Launcher common;
-
-    public Launcher(String command, Launcher common) {
-        this.command = command;
-        this.common = common;
+public class ConfigurationDescriptorProviderImpl extends ConfigurationDescriptorProvider{
+    private PropertyChangeSupport pcs = new PropertyChangeSupport(this);
+    
+    // for unit tests only
+    public ConfigurationDescriptorProviderImpl(FileObject projectDirectory) {
+        this(null, projectDirectory);
     }
 
-    public String getName() {
-        return name;
-    }
-
-    /*package*/ void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCommand() {
-        return command;
-    }
-
-    public String getRunDir() {
-        if (runDir != null) {
-            return runDir;
-        } else if (common != null){
-            return common.getRunDir();
-        } else {
-            return null;
-        }
-    }
-
-    /*package*/ void setRunDir(String runDir) {
-        this.runDir = runDir;
-    }
-
-    public Map<String, String> getEnv() {
-        Map<String, String> ret;
-        if (common != null) {
-            ret = common.getEnv();
-        } else {
-            ret = new HashMap<String, String>();
-        }
-        ret.putAll(env);
-        return ret;
-    }
-
-    /*package*/ void putEnv(String key, String value) {
-        env.put(key, value);
-    }
-
-    public String getSymbolFiles() {
-        if (symbolFiles != null) {
-            return symbolFiles;
-        } else if (common != null) {
-            return common.getSymbolFiles();
-        } else {
-            return null;
-        }
-    }
-
-    /*package*/ void setSymbolFiles(String symbolFiles) {
-        this.symbolFiles = symbolFiles;
-    }
-
-    public String getDisplayedName() {
-        return (name == null ? command : name);
+    public ConfigurationDescriptorProviderImpl(Project project, FileObject projectDirectory) {
+        super(project, projectDirectory);
     }
 
     @Override
-    public boolean equals(Object obj) {     // Maybe we should use another field
-        if (obj instanceof Launcher) {
-            return ((Launcher) obj).getDisplayedName().equals(getDisplayedName());
+    protected MakeConfigurationDescriptor getConfigurationDescriptorImpl() {
+        return super.getConfigurationDescriptorImpl();
+    }
+    
+    protected void addConfigurationDescriptorListener(PropertyChangeListener listener) {
+        pcs.addPropertyChangeListener(listener);
+    }
+    
+    protected void removeConfigurationDescriptorListener(PropertyChangeListener listener) {
+        pcs.removePropertyChangeListener(listener);
+    }
+    
+    @Override
+    protected void fireConfigurationDescriptorLoaded() {
+        MakeConfigurationDescriptor makeConfigurationDescriptor = getConfigurationDescriptorImpl();
+        
+        if (makeConfigurationDescriptor.getState() != ConfigurationDescriptor.State.BROKEN) {  // IZ 122372 // IZ 182321
+            pcs.firePropertyChange(MakeProjectConfigurationProvider.PROP_CONFIGURATIONS, null, makeConfigurationDescriptor.getConfs().getConfigurations());
+            pcs.firePropertyChange(MakeProjectConfigurationProvider.PROP_CONFIGURATION_ACTIVE, null, makeConfigurationDescriptor.getConfs().getActive());
+        } else {
+            // notify problem
+            pcs.firePropertyChange(MakeProjectConfigurationProvider.PROP_CONFIGURATIONS_BROKEN, null, ConfigurationDescriptor.State.BROKEN);
         }
-        return false;
-    }    
+    }
 }

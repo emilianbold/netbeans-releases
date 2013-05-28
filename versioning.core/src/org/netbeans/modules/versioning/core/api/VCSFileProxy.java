@@ -263,7 +263,7 @@ public final class VCSFileProxy {
         if (proxy == null) {
             return new File(path).lastModified();
         } else {
-            throw new UnsupportedOperationException("not yet suppoted");
+            return proxy.lastModified(this);
         }
     }
     

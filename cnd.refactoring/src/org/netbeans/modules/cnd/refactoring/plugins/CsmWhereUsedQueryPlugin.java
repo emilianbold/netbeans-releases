@@ -219,7 +219,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
 //        return null;
 //    }
     
-    public static Collection<RefactoringElementImplementation> getWhereUsed(CsmReference ref, Map<Object, Boolean> params) {
+    public static Collection<RefactoringElementImplementation> getWhereUsed(CsmReference ref, Map<Object, Boolean> params, FiltersDescription filtersDescription) {
         CsmObject targetObject = ref.getReferencedObject();
         Lookup lkp = Lookups.singleton(ref);
         WhereUsedQuery query = new WhereUsedQuery(lkp);
@@ -231,7 +231,13 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
             query.putValue(entry.getKey(), entry.getValue());
         }
         CsmWhereUsedQueryPlugin whereUsedPlugin = new CsmWhereUsedQueryPlugin(query);
+        if (filtersDescription != null) {
+            whereUsedPlugin.addFilters(filtersDescription);
+        }
         Collection<RefactoringElementImplementation> elements = whereUsedPlugin.doPrepareElements(targetObject, null);
+        if (filtersDescription != null) {
+            whereUsedPlugin.enableFilters(filtersDescription);
+        }
         return elements;
     }
     
@@ -349,7 +355,7 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                                                             final Collection<CsmFile> files,
                                                             final RefactoringElementsBag bagToAdd) {
         assert isFindUsages() : "must be find usages mode";
-        final boolean onlyUsages = !isFindOverridingMethods();
+        final boolean onlyUsages = false;
         final CsmReferenceRepository xRef = CsmReferenceRepository.getDefault();
         //Set<CsmReferenceKind> kinds = isFindOverridingMethods() ? CsmReferenceKind.ALL : CsmReferenceKind.ANY_USAGE;
         final Set<CsmReferenceKind> kinds = CsmReferenceKind.ALL;
@@ -432,6 +438,11 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
 
     @Override
     public void addFilters(FiltersDescription filtersDescription) {
+        // add filters in enableFilters, otherwise unable to change selected value
+    }
+
+    @Override
+    public void enableFilters(FiltersDescription filtersDescription) {
         filtersDescription.addFilter(CsmWhereUsedFilters.COMMENTS.getKey(), 
                 NbBundle.getMessage(this.getClass(), "TXT_Filter_Comments"), true,
                 ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/refactoring/resources/found_item_comment.png", false)); //NOI18N
@@ -439,18 +450,17 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                 NbBundle.getMessage(this.getClass(), "TXT_Filter_DeadCode"), true,
                 ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/refactoring/resources/found_item_dead.png", false)); //NOI18N
         filtersDescription.addFilter(CsmWhereUsedFilters.DECLARATIONS.getKey(),
-                NbBundle.getMessage(this.getClass(), "TXT_Filter_Declarations"), false,
+                NbBundle.getMessage(this.getClass(), "TXT_Filter_Declarations"), isFindOverridingMethods() || isFindDirectSubclassesOnly() || isFindSubclasses(),
                 ImageUtilities.loadImageIcon(CsmImageName.METHOD_PUBLIC, false));
         filtersDescription.addFilter(CsmWhereUsedFilters.MACROS.getKey(),
                 NbBundle.getMessage(this.getClass(), "TXT_Filter_Macros"), true,
                 ImageUtilities.loadImageIcon(CsmImageName.MACRO, false));
-    }
-
-    @Override
-    public void enableFilters(FiltersDescription filtersDescription) {
-        //filtersDescription.enable(CsmWhereUsedFilters.COMMENTS.getKey());
+        
+        if (isSearchInComments()) {
+            filtersDescription.enable(CsmWhereUsedFilters.COMMENTS.getKey());
+        }
         filtersDescription.enable(CsmWhereUsedFilters.DEAD_CODE.getKey());
-        if (isFindOverridingMethods()) {
+        if (!isFindDirectSubclassesOnly() && !isFindSubclasses()) {
             filtersDescription.enable(CsmWhereUsedFilters.DECLARATIONS.getKey());
         }
         filtersDescription.enable(CsmWhereUsedFilters.MACROS.getKey());
@@ -482,8 +492,16 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                     String oldName = Thread.currentThread().getName();
                     try {
                         Thread.currentThread().setName("FindUsagesQuery: Analyzing " + file.getAbsolutePath()); //NOI18N
+                        // get find usages
                         Collection<CsmReference> refs = xRef.getReferences(objs, file, kinds, interrupter);
-                        fileElems = new ArrayList<RefactoringElementImplementation>(refs.size());
+                        
+                        // get usages in comments if needed
+                        if (isSearchInComments() && objs.length > 0 && !refs.isEmpty()) {
+                            Collection<CsmReference> comments = CsmRefactoringUtils.getComments(file, CsmRefactoringUtils.getSimpleText(objs[0]));
+                            refs.addAll(comments);
+                        }
+                        
+                        fileElems = new ArrayList<>(refs.size());
                         for (CsmReference csmReference : refs) {
                             boolean accept = true;
                             if (onlyUsages) {
@@ -492,10 +510,6 @@ public class CsmWhereUsedQueryPlugin extends CsmRefactoringPlugin implements Fil
                             if (accept) {
                                 fileElems.add(CsmRefactoringElementImpl.create(csmReference, true));
                             }
-                        }
-                        if (false/*need comments*/ && !fileElems.isEmpty()) {
-                            Collection<CsmReference> comments = CsmRefactoringUtils.getComments(file, "");
-                            refs.addAll(comments);
                         }
                     } finally {
                         Thread.currentThread().setName(oldName);

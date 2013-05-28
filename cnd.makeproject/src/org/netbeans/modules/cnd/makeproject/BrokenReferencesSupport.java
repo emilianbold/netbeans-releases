@@ -395,7 +395,7 @@ public final class BrokenReferencesSupport {
         }
 
         void attachListeners() {
-            makeProjectConfigurationProvider.registerPropertyChangeListener(this);
+            makeProjectConfigurationProvider.addPropertyChangeListener(this);
         }
     }
 

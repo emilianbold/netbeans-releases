@@ -181,7 +181,7 @@ public final class MakeProject implements Project, MakeProjectListener {
     //private final ReferenceHelper refHelper;
     private final NativeProject nativeProject;
     private final Lookup lookup;
-    private final ConfigurationDescriptorProvider projectDescriptorProvider;
+    private final ConfigurationDescriptorProviderImpl projectDescriptorProvider;
     private final Set<String> headerExtensions = MakeProject.createExtensionSet();
     private final Set<String> cExtensions = MakeProject.createExtensionSet();
     private final Set<String> cppExtensions = MakeProject.createExtensionSet();
@@ -211,7 +211,7 @@ public final class MakeProject implements Project, MakeProjectListener {
         //eval = createEvaluator();
         AuxiliaryConfiguration aux = helper.createAuxiliaryConfiguration();
         //refHelper = new ReferenceHelper(helper, aux, eval);
-        projectDescriptorProvider = new ConfigurationDescriptorProvider(this, helper.getProjectDirectory());
+        projectDescriptorProvider = new ConfigurationDescriptorProviderImpl(this, helper.getProjectDirectory());
         LOGGER.log(Level.FINE, "Create ConfigurationDescriptorProvider@{0} for MakeProject@{1} {2}", new Object[]{System.identityHashCode(projectDescriptorProvider), System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
         sources = new MakeSources(this, helper);
         sourcepath = new MutableCP(sources);
