@@ -116,4 +116,16 @@ public class TplIndenterTest extends TplTestBase {
         reformatFileContents("testfiles/indenting/case002.tpl", new IndentPrefs(4, 4));
     }
 
+    public void testFormattingCase03() throws Exception {
+        reformatFileContents("testfiles/indenting/case003.tpl", new IndentPrefs(4, 4));
+    }
+
+    public void testFormattingCase04() throws Exception {
+        reformatFileContents("testfiles/indenting/case004.tpl", new IndentPrefs(4, 4));
+    }
+
+    public void testFormattingCase05() throws Exception {
+        reformatFileContents("testfiles/indenting/case005.tpl", new IndentPrefs(4, 4));
+    }
+
 }
