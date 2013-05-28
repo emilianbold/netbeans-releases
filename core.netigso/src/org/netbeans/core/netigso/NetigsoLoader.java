@@ -86,7 +86,9 @@ final class NetigsoLoader extends ProxyClassLoader {
         }
         Enumeration ret = null;
         try {
-            ret = b.getResources(name);
+            if (b.getState() != Bundle.UNINSTALLED) {
+                ret = b.getResources(name);
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
