@@ -182,4 +182,8 @@ public final class QueryImpl<Q, I>  {
         return data == obj;
     }
 
+    Q getData() {
+        return data;
+    }
+
 }
