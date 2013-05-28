@@ -44,6 +44,7 @@ package org.netbeans.modules.cordova.platforms.android;
 import java.awt.Component;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
@@ -56,15 +57,19 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.BuildPerformer;
 import org.netbeans.modules.cordova.platforms.Device;
 import org.netbeans.modules.cordova.platforms.PlatformManager;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN_SINGLE;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.WindowManager;
 
 /**
@@ -74,7 +79,7 @@ import org.openide.windows.WindowManager;
 public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
     private final Kind kind;
     
-    private static final Logger LOGGER = Logger.getLogger(EnhancedBrowserImpl.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AndroidBrowser.class.getName());
     
     private Lookup context;
 
@@ -97,7 +102,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
 
     @Override
     public boolean canReloadPage() {
-        return false;
+        return true;
     }
     
     public static enum Kind {
@@ -120,6 +125,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
 
     @Override
     public void reloadDocument() {
+        Lookup.getDefault().lookup(BuildPerformer.class).reload();
     }
 
     @Override
@@ -129,11 +135,25 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
     @Override
     public void setURL(URL url) {
         this.url = url;
-        Project project = context.lookup(Project.class);
-        openBrowser(COMMAND_RUN_SINGLE, Lookups.singleton(url), kind, project);
+
+        Browser b;
+        boolean emulator;
+        if (kind.equals(AndroidBrowser.Kind.ANDROID_DEVICE_DEFAULT)) {
+            b = Browser.DEFAULT;
+            emulator = false;
+        } else if (kind.equals(AndroidBrowser.Kind.ANDROID_DEVICE_CHROME)) {
+            b = Browser.CHROME;
+            emulator = false;
+        } else {
+            b = Browser.DEFAULT;
+            emulator = true;
+        }
+        Device device = new AndroidDevice("android", b, emulator);
+
+        device.openUrl(url.toExternalForm());
     }
     
-     public static void openBrowser(String command, final Lookup context, final AndroidBrowser.Kind kind, final Project project) throws IllegalArgumentException {
+     public static void openBrowser(String command, final Lookup context, final AndroidBrowser.Kind kind, final Project project, final BrowserSupport support) throws IllegalArgumentException {
         final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
         String checkAndroid = AndroidActionProvider.checkAndroid();
         if (checkAndroid != null) {
@@ -185,7 +205,14 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
                     }
                     Device device = new AndroidDevice("android", b, emulator);
 
-                    device.openUrl(build.getUrl(project, context));
+                    try {
+                        final URL urL = new URL(build.getUrl(project, context));
+                        //device.openUrl(build.getUrl(project, context));
+                        FileObject f = build.getFile(project, context);
+                        support.load(urL, f);
+                    } catch (MalformedURLException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
                     
                     if (Browser.CHROME.getName().equals(b.getName())) {
                         try {
@@ -194,7 +221,7 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
                             Exceptions.printStackTrace(ex);
                         }
                         try {
-                            build.startDebugging(device, project, context, false);
+                            build.startDebugging(device, project, new ProxyLookup(context, Lookups.singleton(BrowserFamilyId.ANDROID)), false);
                         } catch (IllegalStateException ex) {
                             LOGGER.log(Level.INFO, ex.getMessage(), ex);
                             SwingUtilities.invokeLater(new Runnable() {

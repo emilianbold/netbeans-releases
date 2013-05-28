@@ -43,10 +43,12 @@
 package org.netbeans.modules.cordova.platforms.ios;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cordova.platforms.EnhancedBrowserImpl;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
+import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 
@@ -66,12 +68,17 @@ public class EnhancedBrowserProviderImpl implements ClientProjectEnhancedBrowser
     }
     
     @Override
-    public ClientProjectEnhancedBrowserImplementation getEnhancedBrowser(WebBrowser webBrowser) {
+    public ClientProjectEnhancedBrowserImplementation getEnhancedBrowser(final WebBrowser webBrowser) {
         if (webBrowser == null) {
             return null;
         }
         if (BrowserFamilyId.IOS == webBrowser.getBrowserFamily()) {
-            return new EnhancedBrowserImpl(p, webBrowser);
+            return new EnhancedBrowserImpl(p, webBrowser) {
+                @Override
+                public ActionProvider getActionProvider() {
+                    return new IOSBrowserActionProvider(browserSupport, webBrowser.getId(), p);
+                }
+            };
         }
         return null;
     }

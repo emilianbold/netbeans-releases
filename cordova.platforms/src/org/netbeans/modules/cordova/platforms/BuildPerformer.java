@@ -43,6 +43,7 @@ package org.netbeans.modules.cordova.platforms;
 
 import org.netbeans.api.project.Project;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -60,11 +61,15 @@ public interface BuildPerformer {
     public ExecutorTask perform(String target, Project p);
     
     public String getUrl(Project p, Lookup context);
+
+    public FileObject getFile(Project p, Lookup context);
     
     public boolean isPhoneGapBuild(Project p);
     
     public void startDebugging(Device device, Project p, Lookup context, boolean navigateToUrl);
     
     public void stopDebugging();
+
+    public void reload();
     
 }

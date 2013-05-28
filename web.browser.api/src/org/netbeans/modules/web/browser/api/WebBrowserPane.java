@@ -229,7 +229,7 @@ public final class WebBrowserPane {
                 }
             }
         };
-        if (SwingUtilities.isEventDispatchThread()) {
+        if (SwingUtilities.isEventDispatchThread() || getTopComponent() == null) {
             r.run();
         } else {
             SwingUtilities.invokeLater(r);
