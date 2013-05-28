@@ -108,12 +108,12 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
 
     private static final boolean TRACE = false;
     private final Project project;
-    private final ConfigurationDescriptorProvider projectDescriptorProvider;
+    private final ConfigurationDescriptorProviderImpl projectDescriptorProvider;
     private final Set<NativeProjectItemsListener> listeners = new HashSet<NativeProjectItemsListener>();
     private static final RequestProcessor RP = new RequestProcessor("ReadErrorStream", 2); // NOI18N
     private static final RequestProcessor RPCC = new RequestProcessor("NativeProjectProvider.CheckConfiguration", 1); // NOI18N
 
-    public NativeProjectProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
+    public NativeProjectProvider(Project project, ConfigurationDescriptorProviderImpl projectDescriptorProvider) {
         this.project = project;
         this.projectDescriptorProvider = projectDescriptorProvider;
         ToolsPanelSupport.addCodeAssistanceChangeListener(this);
@@ -128,17 +128,11 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
     }
 
     private void addMyListeners() {
-        MakeConfigurationDescriptor descriptor = getMakeConfigurationDescriptor();
-        if (descriptor != null) {
-            descriptor.getConfs().addPropertyChangeListener(this);
-        }
+        projectDescriptorProvider.getConfigurationDescriptorImpl().getConfs().addPropertyChangeListener(this);
     }
 
     private void removeMyListeners() {
-        MakeConfigurationDescriptor descriptor = getMakeConfigurationDescriptor();
-        if (descriptor != null) {
-            descriptor.getConfs().removePropertyChangeListener(this);
-        }
+        projectDescriptorProvider.getConfigurationDescriptorImpl().getConfs().removePropertyChangeListener(this);
     }
 
     private MakeConfigurationDescriptor getMakeConfigurationDescriptor() {

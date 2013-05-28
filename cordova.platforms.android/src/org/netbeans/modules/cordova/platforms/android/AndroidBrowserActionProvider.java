@@ -39,57 +39,41 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.knockout.editor;
+package org.netbeans.modules.cordova.platforms.android;
 
-import java.util.Collections;
-import java.util.List;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.CodeCompletionContext;
-import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
-import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
+import org.netbeans.spi.project.ActionProvider;
+import org.openide.util.Lookup;
 
 /**
  *
- * @author Petr Hejl
+ * @author Jan Becicka
  */
-@CompletionProvider.Registration(priority=20)
-public class KnockoutBindingCompletionProvider implements CompletionProvider {
+class AndroidBrowserActionProvider implements ActionProvider {
+    private BrowserSupport browserSupport;
+    private final Project project;
+    private final String browserId;
 
-    @Override
-    public List<CompletionProposal> complete(CodeCompletionContext ccContext, CompletionContext jsCompletionContext, String prefix) {
-        int offset = ccContext.getParserResult().getSnapshot().getEmbeddedOffset(ccContext.getCaretOffset());
-        if (offset >= 0) {
-            TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
-                    ccContext.getParserResult().getSnapshot().getTokenHierarchy(), offset, JsTokenId.javascriptLanguage());
-            if (ts == null) {
-                return Collections.emptyList();
-            }
-            ts.move(offset);
-            if (!(ts.moveNext() && ts.movePrevious())) {
-                return Collections.emptyList();
-            }
-            if (ts.token().id() == JsTokenId.EOL || ts.token().id() == JsTokenId.WHITESPACE) {
-                ts.movePrevious();
-            }
-            Token<? extends JsTokenId> lastToken = ts.token();
-            if (lastToken.id() == JsTokenId.IDENTIFIER && "$bindings".equals(lastToken.text())) {
-                
-            }
-            //System.out.println("=====" + ccContext.getParserResult().getSnapshot().getText());
-        }
-        
-        return Collections.emptyList();
+    public AndroidBrowserActionProvider(BrowserSupport support, String browserId, Project project) {
+        this.browserSupport = support;
+        this.project = project;
+        this.browserId = browserId;
     }
 
     @Override
-    public String getHelpDocumentation(ParserResult info, ElementHandle element) {
-        return null;
+    public String[] getSupportedActions() {
+        return new String[]{COMMAND_RUN, COMMAND_RUN_SINGLE};
     }
 
+    @Override
+    public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
+        AndroidBrowser.openBrowser(command, context, AndroidBrowser.Kind.valueOf(browserId), project, browserSupport);
+    }
+
+    @Override
+    public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
+        return true;
+    }
+    
 }

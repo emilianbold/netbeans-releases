@@ -312,9 +312,12 @@ SYNTAX_PYTHON_END="%}"
         pushState(ST_IN_HTML_TAG);
         return LatteTopTokenId.T_HTML;
     }
-    {WHITESPACE}+ | . {
+    [^nN{<\/]+ | . {
         return LatteTopTokenId.T_HTML;
     }
+    /*[a-mA-Mo-zO-Z0-9\%\=\>\}\*\# \t\r\n]+ | . {
+        return LatteTopTokenId.T_HTML;
+    }*/
 }
 
 <ST_POSSIBLE_LATTE> {

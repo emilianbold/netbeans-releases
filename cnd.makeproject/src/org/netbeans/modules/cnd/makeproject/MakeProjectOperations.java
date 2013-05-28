@@ -43,6 +43,7 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
+import java.beans.PropertyChangeEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -132,7 +133,7 @@ public class MakeProjectOperations implements DeleteOperationImplementation, Cop
         // Notify configuration listeners (worka-round for http://www.netbeans.org/issues/show_bug.cgi?id=167259
         MakeProjectConfigurationProvider makeProjectConfigurationProvider = project.getLookup().lookup(MakeProjectConfigurationProvider.class);
         if (makeProjectConfigurationProvider != null) {
-            makeProjectConfigurationProvider.propertyChange(null);
+            makeProjectConfigurationProvider.propertyChange(new PropertyChangeEvent(this, MakeProjectConfigurationProvider.PROP_CONFIGURATIONS, null, null));
         }
     }
 

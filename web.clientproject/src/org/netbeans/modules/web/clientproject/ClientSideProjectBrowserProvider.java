@@ -103,7 +103,7 @@ public class ClientSideProjectBrowserProvider implements ProjectBrowserProvider 
 
     @Override
     public void customize() {
-        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(CompositePanelProviderImpl.RUN);
+        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer("phonegap");
     }
 
     @Override

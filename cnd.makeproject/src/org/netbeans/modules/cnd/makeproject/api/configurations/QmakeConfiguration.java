@@ -65,6 +65,7 @@ public class QmakeConfiguration implements Cloneable {
     private final String[] BUILD_MODE_OPTIONS = {"debug", "release"}; // NOI18N
     private static final String CORE = "core"; // NOI18N
     private static final String GUI = "gui"; // NOI18N
+    private static final String WIDGETS = "widgets"; // NOI18N
     private static final String NETWORK = "network"; // NOI18N
     private static final String OPENGL = "opengl"; // NOI18N
     private static final String PHONON = "phonon"; // NOI18N
@@ -84,6 +85,7 @@ public class QmakeConfiguration implements Cloneable {
     // modules
     private BooleanConfiguration coreEnabled;
     private BooleanConfiguration guiEnabled;
+    private BooleanConfiguration widgetsEnabled;
     private BooleanConfiguration networkEnabled;
     private BooleanConfiguration openglEnabled;
     private BooleanConfiguration phononEnabled;
@@ -110,6 +112,7 @@ public class QmakeConfiguration implements Cloneable {
         buildMode = new IntConfiguration(null, 0, BUILD_MODE_NAMES, BUILD_MODE_OPTIONS);
         coreEnabled = new BooleanConfiguration(true);
         guiEnabled = new BooleanConfiguration(true);
+        widgetsEnabled = new BooleanConfiguration(true);
         networkEnabled = new BooleanConfiguration(false);
         openglEnabled = new BooleanConfiguration(false);
         phononEnabled = new BooleanConfiguration(false);
@@ -144,6 +147,7 @@ public class QmakeConfiguration implements Cloneable {
         modules.setShortDescription(getString("QtModulesHint")); // NOI18N
         modules.put(new BooleanNodeProp(coreEnabled, true, "QtCore", getString("QtCoreTxt"), getString("QtCoreHint"))); // NOI18N
         modules.put(new BooleanNodeProp(guiEnabled, true, "QtGui", getString("QtGuiTxt"), getString("QtGuiHint"))); // NOI18N
+        modules.put(new BooleanNodeProp(widgetsEnabled, true, "QtWidgets", getString("QtWidgetsTxt"), getString("QtWidgetsHint"))); // NOI18N
         modules.put(new BooleanNodeProp(networkEnabled, true, "QtNetwork", getString("QtNetworkTxt"), getString("QtNetworkHint"))); // NOI18N
         modules.put(new BooleanNodeProp(openglEnabled, true, "QtOpengl", getString("QtOpenglTxt"), getString("QtOpenglHint"))); // NOI18N
         modules.put(new BooleanNodeProp(phononEnabled, true, "QtPhonon", getString("QtPhononTxt"), getString("QtPhononHint"))); // NOI18N
@@ -261,6 +265,9 @@ public class QmakeConfiguration implements Cloneable {
         if (isGuiEnabled().getValue()) {
             append(buf, GUI);
         }
+        if (isWidgetsEnabled().getValue()) {
+            append(buf, WIDGETS);
+        }
         if (isNetworkEnabled().getValue()) {
             append(buf, NETWORK);
         }
@@ -291,6 +298,7 @@ public class QmakeConfiguration implements Cloneable {
     public void setEnabledModules(String modules) {
         isCoreEnabled().setValue(false);
         isGuiEnabled().setValue(false);
+        isWidgetsEnabled().setValue(false);
         isNetworkEnabled().setValue(false);
         isOpenglEnabled().setValue(false);
         isPhononEnabled().setValue(false);
@@ -306,6 +314,8 @@ public class QmakeConfiguration implements Cloneable {
                 isCoreEnabled().setValue(true);
             } else if (t.equals(GUI)) {
                 isGuiEnabled().setValue(true);
+            } else if (t.equals(WIDGETS)) {
+                isWidgetsEnabled().setValue(true);
             } else if (t.equals(NETWORK)) {
                 isNetworkEnabled().setValue(true);
             } else if (t.equals(OPENGL)) {
@@ -342,6 +352,14 @@ public class QmakeConfiguration implements Cloneable {
 
     private void setGuiEnabled(BooleanConfiguration val) {
         guiEnabled = val;
+    }
+
+    public BooleanConfiguration isWidgetsEnabled() {
+        return widgetsEnabled;
+    }
+
+    private void setWidgetsEnabled(BooleanConfiguration val) {
+        widgetsEnabled = val;
     }
 
     public BooleanConfiguration isNetworkEnabled() {
@@ -455,6 +473,7 @@ public class QmakeConfiguration implements Cloneable {
         getBuildMode().assign(other.getBuildMode());
         isCoreEnabled().assign(other.isCoreEnabled());
         isGuiEnabled().assign(other.isGuiEnabled());
+        isWidgetsEnabled().assign(other.isWidgetsEnabled());
         isNetworkEnabled().assign(other.isNetworkEnabled());
         isOpenglEnabled().assign(other.isOpenglEnabled());
         isPhononEnabled().assign(other.isPhononEnabled());
@@ -480,6 +499,7 @@ public class QmakeConfiguration implements Cloneable {
             clone.setBuildMode(getBuildMode().clone());
             clone.setCoreEnabled(isCoreEnabled().clone());
             clone.setGuiEnabled(isGuiEnabled().clone());
+            clone.setWidgetsEnabled(isWidgetsEnabled().clone());
             clone.setNetworkEnabled(isNetworkEnabled().clone());
             clone.setOpenglEnabled(isOpenglEnabled().clone());
             clone.setPhononEnabled(isPhononEnabled().clone());

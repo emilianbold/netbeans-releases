@@ -5,6 +5,6 @@
     </head>
 <img src="{basdsada as $field}" />
 <div n:syntax="asp">
-    <!--<img src="^<%basdsada as $field%>" />-->
+    <img src="^<%*basdsada as $field*%>" />
 </div>
 </html>

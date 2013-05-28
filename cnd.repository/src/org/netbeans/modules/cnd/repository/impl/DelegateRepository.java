@@ -52,6 +52,7 @@ import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.DatabaseTable;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.disk.DiskRepositoryManager;
+import org.netbeans.modules.cnd.repository.disk.StorageAllocator;
 import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
 import org.netbeans.modules.cnd.repository.relocate.spi.RelocationSupportProvider;
 import org.netbeans.modules.cnd.repository.spi.Key;
@@ -185,6 +186,10 @@ public final class DelegateRepository implements Repository, RelocationSupportPr
     }
 
     private BaseRepository createRepository(int id, CacheLocation cacheLocation) {
+        boolean ok = RepositoryListenersManager.getInstance().fireRepositoryOpenedEvent(id, cacheLocation);
+        if (!ok) {
+            StorageAllocator.deleteDirectory(cacheLocation.getLocation(), false);
+        }
         BaseRepository delegate;
         if (CndUtils.getBoolean("cnd.repository.validate.keys", false)) {
             Stats.log("Testing keys using KeyValidatorRepository."); // NOI18N

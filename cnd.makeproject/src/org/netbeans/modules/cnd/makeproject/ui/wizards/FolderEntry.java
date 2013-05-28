@@ -44,17 +44,28 @@
 package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import org.netbeans.modules.cnd.makeproject.api.SourceFolderInfo;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.openide.filesystems.FileObject;
 
 public final class FolderEntry implements SourceFolderInfo {
 
     private final FileObject fileObject;
+    private final FSPath fsPath;
     private final String folderName;
     private final boolean addSubfolders;
     //private final FileFilter fileFilter;
 
     public FolderEntry(FileObject fileObject, String folderName) {
         this.fileObject = fileObject;
+        this.fsPath = null;
+        this.folderName = folderName;
+        addSubfolders = true;
+        //fileFilter = null;
+    }
+
+    public FolderEntry(FSPath fsPath, String folderName) {
+        this.fileObject = null;
+        this.fsPath = fsPath;
         this.folderName = folderName;
         addSubfolders = true;
         //fileFilter = null;
@@ -80,7 +91,11 @@ public final class FolderEntry implements SourceFolderInfo {
 
     @Override
     public FileObject getFileObject() {
-        return fileObject;
+        if (fileObject != null) {
+            return fileObject;
+        } else {
+            return fsPath.getFileObject();
+        }
     }
 
 //    public void setFile(File file) {

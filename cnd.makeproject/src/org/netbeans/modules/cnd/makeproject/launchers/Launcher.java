@@ -123,4 +123,12 @@ public final class Launcher {
     public String getDisplayedName() {
         return (name == null ? command : name);
     }
+
+    @Override
+    public boolean equals(Object obj) {     // Maybe we should use another field
+        if (obj instanceof Launcher) {
+            return ((Launcher) obj).getDisplayedName().equals(getDisplayedName());
+        }
+        return false;
+    }    
 }

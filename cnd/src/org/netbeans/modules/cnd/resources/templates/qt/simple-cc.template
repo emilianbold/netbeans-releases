@@ -5,7 +5,7 @@
  * Created on %<%DATE%>%, %<%TIME%>%
  */
 
-#include <QtGui/QApplication>
+#include <QApplication>
 
 int main(int argc, char *argv[]) {
     // initialize resources, if needed

@@ -40,58 +40,60 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cordova.platforms.ios;
+package org.netbeans.modules.cordova.platforms;
 
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
-import org.netbeans.api.progress.ProgressUtils;
+import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cordova.platforms.BuildPerformer;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
-import org.netbeans.spi.project.ActionProvider;
-import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
-import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN_SINGLE;
 import org.netbeans.spi.project.ProjectConfigurationProvider;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.Lookup;
-import org.openide.util.Utilities;
 
 /**
  * @author Jan Becicka
  */
-public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
+public abstract class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
 
     final private Project project;
     private final WebBrowser browser;
+    protected BrowserSupport browserSupport;
     private static final Logger LOGGER = Logger.getLogger(EnhancedBrowserImpl.class.getName());
+    private BrowserCustomizer browserCustomizer;
+    private static final String PROJECT_AUTO_REFRESH = "browser.autorefresh"; //NOI18N
+    private static final String PROJECT_HIGHLIGHT_SELECTION = "browser.highlightselection"; //NOI18N
+        
 
-    EnhancedBrowserImpl(Project project, WebBrowser browser) {
+    public EnhancedBrowserImpl(Project project, WebBrowser browser) {
         this.project = project;
         this.browser = browser;
+        this.browserSupport = BrowserSupport.create(browser);
     }
 
     @Override
     public void save() {
-        // this should save changes in UI for particular configuration
+        if (browserCustomizer != null && browser.hasNetBeansIntegration()) {
+            Preferences p = ProjectUtils.getPreferences(project, EnhancedBrowserImpl.class, false);
+            p.put(PROJECT_AUTO_REFRESH+"."+browser.getId(), Boolean.toString(browserCustomizer.isAutoRefresh())); //NOI18N
+            p.put(PROJECT_HIGHLIGHT_SELECTION+"."+browser.getId(), Boolean.toString(browserCustomizer.isHighlightSelection())); //NOI18N
+        }
     }
 
     @Override
     public RefreshOnSaveListener getRefreshOnSaveListener() {
-        return new RefreshListener();
+        return new RefreshOnSaveListenerImpl(project, browserSupport, this);
     }
 
-    @Override
-    public ActionProvider getActionProvider() {
-        return new ActionProviderImpl();
-    }
 
     @Override
     public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
-        return null;
+        if (browserCustomizer == null) {
+            browserCustomizer = new BrowserCustomizer(project, this, browser);
+        }
+        return browserCustomizer;
     }
 
     @Override
@@ -99,37 +101,19 @@ public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplemen
     }
 
     @Override
-    public boolean isHighlightSelectionEnabled() {
-        return true;
+    public boolean isAutoRefresh() {
+        Preferences p = ProjectUtils.getPreferences(project, EnhancedBrowserImpl.class, false);
+        return p.getBoolean(PROJECT_AUTO_REFRESH+"."+browser.getId(), true); //NOI18N
     }
 
+    @Override
+    public boolean isHighlightSelectionEnabled() {
+        Preferences p = ProjectUtils.getPreferences(project, EnhancedBrowserImpl.class, false);
+        return p.getBoolean(PROJECT_HIGHLIGHT_SELECTION+"."+browser.getId(), browser.hasNetBeansIntegration()); //NOI18N
+    }
+    
     @Override
     public ProjectConfigurationProvider getProjectConfigurationProvider() {
         return null;
     }
-
-    private class ActionProviderImpl implements ActionProvider {
-
-        public ActionProviderImpl() {
-        }
-
-        @Override
-        public String[] getSupportedActions() {
-            return new String[]{
-                COMMAND_RUN,
-                COMMAND_RUN_SINGLE
-            };
-        }
-
-        @Override
-        public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
-            IOSBrowser.openBrowser(command, context, IOSBrowser.Kind.valueOf(browser.getId()), project);
-        }
-
-        @Override
-        public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-            return true;
-        }
-    }
-
 }

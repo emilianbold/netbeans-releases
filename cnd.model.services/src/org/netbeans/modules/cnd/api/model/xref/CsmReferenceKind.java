@@ -55,6 +55,7 @@ public enum CsmReferenceKind {
     DIRECT_USAGE, // references like "var" in "var" or "var.foo" or "foo->var" are interested
     IN_PREPROCESSOR_DIRECTIVE, // references in #preprocessor directives are interested
     IN_DEAD_BLOCK, // references in dead code are interested
+    COMMENT, // references in comments
     UNKNOWN;
 
     /**

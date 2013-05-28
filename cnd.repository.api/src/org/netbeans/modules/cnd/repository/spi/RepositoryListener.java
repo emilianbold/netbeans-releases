@@ -45,6 +45,7 @@
 
 package org.netbeans.modules.cnd.repository.spi;
 
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
 /**
  *
@@ -56,6 +57,21 @@ public interface RepositoryListener {
      * @param unitName String the name of the unit
      */
     boolean unitOpened(int unitId, CharSequence unitName);
+
+    /**
+     * Invoked once a repository is created.
+     * 
+     * Use case is as follows. 
+     * Indexing resides in the same directory repository resides;
+     * and we need to check index consistency when we open a repository:
+     * if index is corrupted, then repository is invalid either 
+     * 
+     * @param cacheLocation cache location of a repository being opened
+     *
+     * @return true if it is OK to open repository,
+     * false if repository data should be considered corrupted
+     */
+    boolean repositoryOpened(int repositoryId, CacheLocation cacheLocation);
 
     /**
      * invoked once a unit is closed
