@@ -235,4 +235,8 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new UnnecessaryClosingDelimiterHint(), "testIssue227081.php");
     }
 
+    public void testIssue229529() throws Exception {
+        checkHints(new AmbiguousComparisonHint(), "testIssue229529.php");
+    }
+
 }

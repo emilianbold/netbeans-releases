@@ -98,10 +98,14 @@ import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
-import org.w3c.dom.Document;
+import org.openide.windows.IOProvider;
+import org.openide.windows.InputOutput;import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
-
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSOutput;
+import org.w3c.dom.ls.LSSerializer;
 /**
  * Browser component implementation.
  *
@@ -744,6 +748,13 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
                 reloadDocument();
             }
         });
+        contextMenu.addSeparator();
+        contextMenu.add( new AbstractAction( NbBundle.getMessage(WebBrowserImpl.class, "Menu_DUMP_DOM") ) {
+            @Override
+            public void actionPerformed( ActionEvent e ) {
+                dumpDocument();
+            }
+        });
     }
 
     /**
@@ -910,5 +921,51 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
     @Override
     public boolean canReloadPage() {
         return true;
+    }
+
+    private void dumpDocument() {
+        if( !isInitialized() )
+            return;
+        javafx.application.Platform.runLater( new Runnable() {
+            @Override
+            public void run() {
+                Document doc = getEngine().getDocument();
+                _dumpDocument( doc, getEngine().getTitle() );
+            }
+        });
+    }
+
+    private void _dumpDocument( Document doc, String title ) {
+        if( null == title || title.isEmpty() ) {
+            title = NbBundle.getMessage(WebBrowserImpl.class, "Lbl_GenericDomDumpTitle");
+        }
+        InputOutput io = IOProvider.getDefault().getIO( title, true );
+        try {
+            DOMImplementationRegistry registry = DOMImplementationRegistry.newInstance();
+            DOMImplementationLS impl = (DOMImplementationLS) registry.getDOMImplementation( "XML 3.0 LS 3.0" ); //NOI18N
+            if( null == impl ) {
+                io.getErr().println( NbBundle.getMessage(WebBrowserImpl.class, "Err_DOMImplNotFound") );
+                return;
+            }
+
+
+            LSSerializer serializer = impl.createLSSerializer();
+            if( serializer.getDomConfig().canSetParameter( "format-pretty-print", Boolean.TRUE ) ) { //NOI18N
+                serializer.getDomConfig().setParameter( "format-pretty-print", Boolean.TRUE ); //NOI18N
+            }
+            LSOutput output = impl.createLSOutput();
+            output.setEncoding("UTF-8"); //NOI18N
+            output.setCharacterStream( io.getOut() );
+            serializer.write(doc, output);
+            io.getOut().println();
+
+        } catch( Exception ex ) {
+            ex.printStackTrace( io.getErr() );
+        } finally {
+            if( null != io ) {
+                io.getOut().close();
+                io.getErr().close();
+            }
+        }
     }
 }

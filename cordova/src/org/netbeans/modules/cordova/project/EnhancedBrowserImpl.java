@@ -108,4 +108,9 @@ public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplemen
         return null;
     }
 
+    @Override
+    public boolean isAutoRefresh() {
+        return false;
+    }
+
 }

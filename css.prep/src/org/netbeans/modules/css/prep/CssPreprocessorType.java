@@ -43,6 +43,8 @@ package org.netbeans.modules.css.prep;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 import org.openide.util.NbBundle;
 
 @NbBundle.Messages({
@@ -90,4 +92,19 @@ public enum CssPreprocessorType {
     public abstract String getFileExtension();
     public abstract Collection<String> getMimeTypes();
 
+    private static Map<String, CssPreprocessorType> mime2filetypeMap;
+
+    public static synchronized CssPreprocessorType find(String mimeType) {
+        if(mime2filetypeMap == null) {
+            mime2filetypeMap = new HashMap<>();
+            for(CssPreprocessorType type : values()) {
+                for(String mt : type.getMimeTypes()) {
+                    mime2filetypeMap.put(mt, type);
+                }
+            }
+        }
+        return mime2filetypeMap.get(mimeType);
+    }
+    
+    
 }

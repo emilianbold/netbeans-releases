@@ -157,7 +157,7 @@ public class CordovaPerformer implements BuildPerformer {
                                         return;
                                     }
                                 } else {
-                                    startDebugging(device, project, Lookups.singleton(mapper), false);
+                                    startDebugging(device, project, Lookups.fixed(mapper, BrowserFamilyId.PHONEGAP), false);
                                 }
                             }
                         }
@@ -322,6 +322,14 @@ public class CordovaPerformer implements BuildPerformer {
         return ServerURLMapping.toServer(p, fileObject).toExternalForm().replace("localhost", WebUtils.getLocalhostInetAddress().getHostAddress());
     }
     
+    @Override
+    public FileObject getFile(Project p, Lookup context) {
+        DataObject dObject = context.lookup(DataObject.class);
+        FileObject fileObject = dObject==null?ClientProjectUtilities.getStartFile(p):dObject.getPrimaryFile();
+        return fileObject;
+    }
+    
+    
     private String getUrl(Project p) {
         return getUrl(p, Lookup.EMPTY);
     }
@@ -366,7 +374,7 @@ public class CordovaPerformer implements BuildPerformer {
         debuggerSession = WebKitUIManager.getDefault().createDebuggingSession(webKitDebugging, projectContext);
         consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webKitDebugging, projectContext);
         networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webKitDebugging, projectContext);
-        PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p));
+        PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p, context.lookup(BrowserFamilyId.class)));
     }
 
     @Override
@@ -394,6 +402,18 @@ public class CordovaPerformer implements BuildPerformer {
         transport = null;
         webKitDebugging = null;
         PageInspector.getDefault().inspectPage(Lookup.EMPTY);
+    }
+
+    @Override
+    public void reload() {
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
+            public void run() {
+                webKitDebugging.getPage().reload(true, null);
+            }
+            
+        });
     }
 
     private class CompoundTask extends Task {
