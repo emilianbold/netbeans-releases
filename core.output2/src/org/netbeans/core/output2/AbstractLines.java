@@ -1311,13 +1311,103 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
                 }
                 hiddenLines += expanded ? -changed : changed;
                 updateVisibleToRealLines(foldStartIndex);
-                if (knownCharsPerLine > 0) {
-                    calcLogicalLineCount(knownCharsPerLine);
-                }
-                markDirty();
-                delayedFire();
+                foldVisibilityUpdated();
             }
         }
+    }
+
+    @Override
+    public void hideAllFolds() {
+        synchronized (readLock()) {
+            int currentVisibleLine = 0;
+            int currentHiddenLineCount = 0;
+            for (int i = 0; i < foldOffsets.size(); i++) {
+                boolean isFoldStart = (i + 1 < foldOffsets.size()
+                        && foldOffsets.get(i + 1) == 1);
+                if (isFoldStart) {
+                    visibleList.set(i, 0);
+                }
+                if (foldOffsets.get(i) > 0) {
+                    realToVisibleLine.set(i, -1);
+                    currentHiddenLineCount++;
+                } else {
+                    realToVisibleLine.set(i, currentVisibleLine);
+                    currentVisibleLine++;
+                }
+            }
+            hiddenLines = currentHiddenLineCount;
+            updateVisibleToRealLines(0);
+            foldVisibilityUpdated();
+        }
+    }
+
+    @Override
+    public void showAllFolds() {
+        synchronized (readLock()) {
+            for (int i = 0; i < foldOffsets.size(); i++) {
+                boolean isFoldStart = (i + 1 < foldOffsets.size()
+                        && foldOffsets.get(i + 1) == 1);
+                if (isFoldStart) {
+                    visibleList.set(i, 1);
+                }
+                realToVisibleLine.set(i, i);
+            }
+            hiddenLines = 0;
+            updateVisibleToRealLines(0);
+            foldVisibilityUpdated();
+        }
+    }
+
+    @Override
+    public void showFoldTree(int foldStartIndex) {
+        setFoldTreeExpanded(foldStartIndex, true);
+    }
+
+    @Override
+    public void hideFoldTree(int foldStartIndex) {
+        setFoldTreeExpanded(foldStartIndex, false);
+    }
+
+    private void setFoldTreeExpanded(int foldStartIndex, boolean expanded) {
+        int visibleValue = expanded ? 1 : 0;
+        synchronized (readLock()) {
+            assert isVisible(foldStartIndex);
+            visibleList.set(foldStartIndex, visibleValue);
+            int visibleFoldStartIndex = realToVisibleLine.get(foldStartIndex);
+            int delta = 0; // difference in count of visible lines
+            int lastUpdatedIndex = Integer.MAX_VALUE - 1;
+            for (int i = foldStartIndex + 1; i < foldOffsets.size(); i++) {
+                int offset = i - foldStartIndex;
+                if (foldOffsets.get(i) == 0 || foldOffsets.get(i) > offset) {
+                    break;
+                }
+                if (i + 1 < foldOffsets.size() && foldOffsets.get(i + 1) == 1) {
+                    visibleList.set(i, visibleValue);
+                }
+                int visibleIndex = realToVisibleLine.get(i);
+                if ((expanded && visibleIndex < 0)
+                        || (!expanded && visibleIndex >= 0)) {
+                    delta += expanded ? 1 : -1;
+                }
+                realToVisibleLine.set(i,
+                        expanded ? visibleFoldStartIndex + offset : -1);
+                lastUpdatedIndex = i;
+            }
+            for (int i = lastUpdatedIndex + 1; i < realToVisibleLine.size(); i++) {
+                realToVisibleLine.set(i, realToVisibleLine.get(i) + delta);
+            }
+            hiddenLines -= delta;
+            updateVisibleToRealLines(foldStartIndex);
+            foldVisibilityUpdated();
+        }
+    }
+
+    private void foldVisibilityUpdated() {
+        if (knownCharsPerLine > 0) {
+            calcLogicalLineCount(knownCharsPerLine);
+        }
+        markDirty();
+        delayedFire();
     }
 
     /**
@@ -1400,7 +1490,8 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     /**
      * @param lineIndex Real line index.
      */
-    boolean isVisible(int lineIndex) {
+    @Override
+    public boolean isVisible(int lineIndex) {
         synchronized (readLock()) {
             if (lineIndex >= foldOffsets.size()) {
                 return true;
@@ -1443,6 +1534,35 @@ abstract class AbstractLines implements Lines, Runnable, ActionListener {
     public int getVisibleLineCount() {
         synchronized (readLock()) {
             return getLineCount() - hiddenLines;
+        }
+    }
+
+    @Override
+    public int getFoldStart(int realLineIndex) {
+        synchronized (readLock()) {
+            if (realLineIndex + 1 < foldOffsets.size()
+                    && foldOffsets.get(realLineIndex + 1) == 1) {
+                return realLineIndex;
+            } else {
+                return realLineIndex - foldOffsets.get(realLineIndex);
+            }
+        }
+    }
+
+    @Override
+    public int getParentFoldStart(int realLineIndex) {
+        synchronized (readLock()) {
+            if (realLineIndex < 0 || realLineIndex >= foldOffsets.size()) {
+                return -1;
+            } else {
+                int offset = foldOffsets.get(realLineIndex);
+                if (offset > 0) {
+                    int result = realLineIndex - offset;
+                    return result >= 0 ? result : -1;
+                } else {
+                    return -1;
+                }
+            }
         }
     }
 }

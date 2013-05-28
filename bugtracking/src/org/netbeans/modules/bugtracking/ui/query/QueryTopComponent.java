@@ -205,7 +205,7 @@ public final class QueryTopComponent extends TopComponent
                 }
             }
             QueryController c = getController(query);
-            addQueryComponent(c.getComponent());
+            addQueryComponent(c);
             this.query.addPropertyChangeListener(this);
         } else {
             newButton.addActionListener(new ActionListener() {
@@ -502,7 +502,7 @@ public final class QueryTopComponent extends TopComponent
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            addQueryComponent(addController.getComponent());
+                            addQueryComponent(addController);
                             focusFirstEnabledComponent();
                         }
                     });
@@ -515,9 +515,11 @@ public final class QueryTopComponent extends TopComponent
         });
     }
 
-    private void addQueryComponent(JComponent cmp) {
+    private void addQueryComponent(QueryController controller) {
+        JComponent cmp = controller.getComponent();
         queryPanel.removeAll();
         queryPanel.add(cmp);
+        controller.opened();
     }
 
     private RepositoryImpl getRepository() {
