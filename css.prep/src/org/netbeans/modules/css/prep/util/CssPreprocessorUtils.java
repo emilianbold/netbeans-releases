@@ -50,8 +50,8 @@ import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.CPFileType;
 import org.netbeans.modules.css.prep.CPIndex;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -68,7 +68,7 @@ public final class CssPreprocessorUtils {
     private CssPreprocessorUtils() {
     }
 
-    public static boolean hasAnyFilesForCompiling(Project project, CPFileType fileType) {
+    public static boolean hasAnyFilesForCompiling(Project project, CssPreprocessorType fileType) {
         try {
             Collection<FileObject> files = CPIndex.get(project).findFiles(fileType);
             LOGGER.log(Level.FINE, "Project {0} contains {1} {2} files", new Object[] {project.getProjectDirectory(), files.size(), fileType});
