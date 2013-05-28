@@ -50,6 +50,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 import org.junit.Test;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
+import org.netbeans.modules.cnd.makeproject.ConfigurationDescriptorProviderImpl;
 import org.netbeans.modules.cnd.makeproject.MakeProjectTypeImpl;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
@@ -105,7 +106,7 @@ public class QmakeProjectWriterTest extends CndBaseTestCase {
         instantiateSample("HelloQtWorld", projectDir);
 
         FileObject projectDirFO = CndFileUtils.toFileObject(projectDir);
-        ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProvider(projectDirFO);
+        ConfigurationDescriptorProvider descriptorProvider = new ConfigurationDescriptorProviderImpl(projectDirFO);
         MakeConfigurationDescriptor descriptor = descriptorProvider.getConfigurationDescriptor();
         descriptor.save(); // make sure all necessary configuration files in nbproject/ are written
 

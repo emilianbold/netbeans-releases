@@ -43,7 +43,6 @@
  */
 package org.netbeans.modules.cnd.makeproject.configurations;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -51,7 +50,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLDocReader;
 import org.netbeans.modules.cnd.makeproject.MakeProject;
@@ -99,7 +97,7 @@ public class ConfigurationXMLReader extends XMLDocReader {
     /*
      * was: readFromDisk
      */
-    public MakeConfigurationDescriptor read(final String relativeOffset, final Interrupter interrupter) throws IOException {
+    public void read(final MakeConfigurationDescriptor configurationDescriptor, final String relativeOffset, final Interrupter interrupter) throws IOException {
         final String tag;
         final FileObject xml;
         // Try first new style file
@@ -115,13 +113,10 @@ public class ConfigurationXMLReader extends XMLDocReader {
 
         if (xml == null) {
             displayErrorDialog();
-            return null;
+            configurationDescriptor.setState(State.BROKEN);
+            return;
         }
-        FileObject configurationBaseFO = (project == null) ? projectDirectory : RemoteFileUtil.getProjectSourceBaseFileObject(project);
-        if (configurationBaseFO == null) {
-            throw new FileNotFoundException("File does not exist"); //NOI18N
-        }
-        final MakeConfigurationDescriptor configurationDescriptor = new MakeConfigurationDescriptor(projectDirectory, configurationBaseFO);
+        configurationDescriptor.setState(State.READING);
         Task task = REQUEST_PROCESSOR.post(new NamedRunnable("Reading project configuraion") { //NOI18N
 
             protected 
@@ -151,7 +146,6 @@ public class ConfigurationXMLReader extends XMLDocReader {
             }
         });
         configurationDescriptor.setInitTask(task);
-        return configurationDescriptor;
     }
 
     private ConfigurationDescriptor _read(String relativeOffset, Interrupter interrupter,
