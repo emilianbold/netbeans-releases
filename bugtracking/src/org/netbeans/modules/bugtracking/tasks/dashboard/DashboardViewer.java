@@ -109,7 +109,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             return null;
         }
     };
-    private final RequestProcessor requestProcessor = new RequestProcessor("Dashboard"); // NOI18N
+    private final RequestProcessor REQUEST_PROCESSOR = new RequestProcessor("Dashboard"); // NOI18N
     private final TreeList treeList = new TreeList(model);
     public final JScrollPane dashboardComponent;
     private boolean opened = false;
@@ -219,7 +219,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     @Override
     public void propertyChange(final PropertyChangeEvent evt) {
         if (evt.getPropertyName().equals(RepositoryRegistry.EVENT_REPOSITORIES_CHANGED)) {
-            requestProcessor.post(new Runnable() {
+            REQUEST_PROCESSOR.post(new Runnable() {
                 @Override
                 public void run() {
                     titleRepositoryNode.setProgressVisible(true);
@@ -234,7 +234,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 }
             });
         } else if (evt.getPropertyName().equals(DashboardSettings.TASKS_LIMIT_SETTINGS_CHANGED)) {
-            requestProcessor.post(new Runnable() {
+            REQUEST_PROCESSOR.post(new Runnable() {
                 @Override
                 public void run() {
                     updateContent();
@@ -435,7 +435,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         final String oldName = category.getName();
         category.setName(newName);
         model.contentChanged(node);
-        requestProcessor.post(new Runnable() {
+        REQUEST_PROCESSOR.post(new Runnable() {
             @Override
             public void run() {
                 DashboardStorage.getInstance().renameCategory(oldName, newName);
@@ -470,7 +470,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                     categoryNodes.remove(categoryNode);
                 }
             }
-            requestProcessor.post(new Runnable() {
+            REQUEST_PROCESSOR.post(new Runnable() {
                 @Override
                 public void run() {
                     String[] names = new String[toDelete.length];
@@ -538,7 +538,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         for (IssueImpl issue : category.getTasks()) {
             taskEntries.add(new TaskEntry(issue.getID(), issue.getRepositoryImpl().getId()));
         }
-        requestProcessor.post(new Runnable() {
+        REQUEST_PROCESSOR.post(new Runnable() {
             @Override
             public void run() {
                 DashboardStorage.getInstance().storeCategory(category.getName(), taskEntries);
@@ -553,7 +553,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         for (CategoryNode categoryNode : closed) {
             names.add(categoryNode.getCategory().getName());
         }
-        requestProcessor.post(new Runnable() {
+        REQUEST_PROCESSOR.post(new Runnable() {
             @Override
             public void run() {
                 storage.storeClosedCategories(names);
@@ -624,7 +624,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 }
                 model.removeRoot(repositoryNode);
             }
-            requestProcessor.post(new Runnable() {
+            REQUEST_PROCESSOR.post(new Runnable() {
                 @Override
                 public void run() {
                     for (RepositoryNode repositoryNode : toRemove) {
@@ -708,7 +708,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             ids.add(repositoryNode.getRepository().getId());
         }
 
-        requestProcessor.post(new Runnable() {
+        REQUEST_PROCESSOR.post(new Runnable() {
             @Override
             public void run() {
                 storage.storeClosedRepositories(ids);
@@ -823,7 +823,7 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     public void loadData() {
         removeErrorNodes();
-        requestProcessor.post(new Runnable() {
+        REQUEST_PROCESSOR.post(new Runnable() {
             @Override
             public void run() {
                 // w8 with loading to preject ot be opened
@@ -1048,6 +1048,10 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
+    public RequestProcessor getRequestProcessor() {
+        return REQUEST_PROCESSOR;
+    }
+
     private void loadRepositories() {
         try {
             Collection<RepositoryImpl> allRepositories = DashboardUtils.getRepositories();
@@ -1100,21 +1104,39 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    private void addRootToModel(int index, TreeListNode node) {
+    private void addRootToModel(final int index, final TreeListNode node) {
         if (expandNodes() || expandedNodes.remove(node)) {
             node.setExpanded(true);
         }
-        model.addRoot(index, node);
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    model.addRoot(index, node);
+                }
+            });
+        } else {
+            model.addRoot(index, node);
+        }
     }
 
-    private void removeRootFromModel(TreeListNode node) {
+    private void removeRootFromModel(final TreeListNode node) {
         if (persistExpanded) {
             expandedNodes.remove(node);
             if (node.isExpanded() && !(node instanceof RepositoryNode)) {
                 expandedNodes.add(node);
             }
         }
-        model.removeRoot(node);
+        if (!SwingUtilities.isEventDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    model.removeRoot(node);
+                }
+            });
+        } else {
+            model.removeRoot(node);
+        }
     }
 
     private void updateContent() {
