@@ -187,4 +187,8 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     public void testIssue224071_01() throws Exception {
         checkCompletion("testfiles/completion/issue224071.js", "a.^t", false);
     }
+
+    public void testIssue225307() throws Exception {
+        checkCompletion("testfiles/completion/issue225307.js", "/*HERE*/ d^", false);
+    }
 }
