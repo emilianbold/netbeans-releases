@@ -71,6 +71,7 @@ public class RemovePropertyAction extends AbstractAction {
         super(Bundle.label_remove_property());
         this.panel = panel;
         this.propertyDescriptor = propertyDescriptor;
+        setEnabled(propertyDescriptor.getDeclaration().getModel().canApplyChanges());
     }
 
     @Override
