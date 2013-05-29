@@ -70,6 +70,9 @@ import org.openide.filesystems.FileObject;
 @MimeRegistration(mimeType = "text/html", service = JsEmbeddingProviderPlugin.class)
 public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
 
+    private static final String WITH_BIND = "with";
+    private static final String FOREACH_BIND = "foreach";
+
     private TokenSequence<HTMLTokenId> tokenSequence;
     private Snapshot snapshot;
     private List<Embedding> embeddings;
@@ -148,11 +151,11 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                     boolean foreach = false;
                     while (embedded.moveNext()) {
                         if (embedded.token().id() == KODataBindTokenId.KEY) {
-                            if ("with".equals(embedded.token().text().toString()) // NOI18N
-                                    || "foreach".equals(embedded.token().text().toString())) { // NOI18N
+                            if (WITH_BIND.equals(embedded.token().text().toString()) // NOI18N
+                                    || FOREACH_BIND.equals(embedded.token().text().toString())) { // NOI18N
                                 stack.push(new StackItem(lastTagOpen));
                                 setData = true;
-                                foreach = "foreach".equals(embedded.token().text().toString()); // NOI18N
+                                foreach = FOREACH_BIND.equals(embedded.token().text().toString()); // NOI18N
                             }
                         }
                         if (setData && embedded.token().id() == KODataBindTokenId.VALUE && dataValue == null) {
