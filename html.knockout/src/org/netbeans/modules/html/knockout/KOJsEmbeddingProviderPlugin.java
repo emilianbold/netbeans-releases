@@ -43,8 +43,10 @@ package org.netbeans.modules.html.knockout;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import static org.netbeans.api.html.lexer.HTMLTokenId.TAG_CLOSE;
@@ -198,7 +200,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                     }
                     if (setData) {
                         if (dataValue != null) {
-                            startKnockoutSnippet(dataValue.text().toString(), foreach);
+                            startKnockoutSnippet(dataValue.text().toString().trim(), foreach);
                         }
                         setData = false;
                     }
@@ -215,11 +217,13 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         sb.append("(function(){\n"); // NOI18N
         
         // define root as object
+        Set<String> rootProperties = new HashSet<>();
         sb.append("var $root = {"); // NOI18N
         Collection<IndexedElement> properties = index.getProperties("ko.$bindings"); // NOI18N
         for (IndexedElement indexedElement : properties) {
             sb.append(indexedElement.getName()).append(":").append("ko.$bindings.") // NOI18N
                     .append(indexedElement.getName()).append(",").append("\n"); // NOI18N
+            rootProperties.add(indexedElement.getName());
         }
         if (!properties.isEmpty()) {
             sb.setLength(sb.length() - 2);
@@ -232,11 +236,13 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         }
 
         if (newData != null) {
-            sb.append("var $data = ").append(newData); // NOI18N
-            if (foreach) {
-                sb.append("[0];\n"); // NOI18N
+            if ("$root".equals(data) && rootProperties.contains(newData)) {
+                newData = "$root." + newData; // NOI18N
             }
-            sb.append(";\n"); // NOI18N
+            if (foreach) {
+                newData = newData + "[0]"; // NOI18N
+            }
+            sb.append("var $data = ").append(newData).append(";\n"); // NOI18N
 
             parents.add(data);
             data = newData;
