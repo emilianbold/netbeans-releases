@@ -1,9 +1,3 @@
-Name: Rest
-Version: 1.13
-OSR: Oracle
-License: CDDL-1.1
-Files: jersey-1.13.zip, jersey-1.13-javadoc.jar, jersey-apache-client-1.13-.jar, jersey-atom-abdera-1.13-javadoc.jar, jersey-guice-1.13-javadoc.jar, jersey-multipart-1.13-javadoc.jar, jersey-simple-server-1.13-javadoc.jar, jersey-spring-1.13-javadoc.jar, jsr311-api-1.1.1-javadoc.jar, oauth-client-1.13-javadoc.jar, oauth-server-1.13-javadoc.jar, oauth-signature-1.13-javadoc.jar
-
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL)Version 1.1
 
 1. Definitions.

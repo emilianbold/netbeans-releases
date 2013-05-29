@@ -1,0 +1,19 @@
+jaxrs-ri-2.0.zip - ZIP downloaded from following URL:
+    http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.glassfish.jersey.bundles%22%20AND%20a%3A%22jax-rs-ri%22
+  Btw. following files are ignored from the ZIP: jersey-container-servlet.jar and jersey-container-servlet-core.jar
+
+jersey2-extensions.zip - custom ZIP file with handpicked files which implement Jackson and Jettison Jersey extensions.
+  One way how to collect these jars is to create a Maven Web project with following dependencies:
+
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jettison</artifactId>
+            <version>2.0</version>
+        </dependency>
+
+  and build the project and pick all the files minus core Jersey ones from target/<your-project-name>/WEB-INF/lib folder.

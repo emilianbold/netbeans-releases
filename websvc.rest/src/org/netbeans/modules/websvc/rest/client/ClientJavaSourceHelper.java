@@ -56,7 +56,6 @@ import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import javax.xml.bind.JAXBException;
 
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.java.source.CompilationController;
@@ -84,7 +83,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedExcept
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.model.api.HttpMethod;
 import org.netbeans.modules.websvc.rest.model.api.RestMethodDescription;
 import org.netbeans.modules.websvc.rest.model.api.RestServiceDescription;
@@ -117,6 +115,9 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import java.util.MissingResourceException;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.websvc.rest.RestUtils;
 
 /**
@@ -141,21 +142,41 @@ public class ClientJavaSourceHelper {
          *  - REST client uses some not JAX-RS 2.0 features (but Jersey2.X) web project 
          */
         Project project = FileOwnerQuery.getOwner(targetFo);
+        ClassPath cp = ClassPath.getClassPath(targetFo, ClassPath.COMPILE);
+        boolean jersey1Available = cp != null &&
+                cp.findResource("com/sun/jersey/api/client/WebResource.class") != null;
+        boolean jersey2Available = cp != null &&
+                cp.findResource("org/glassfish/jersey/spi/Contract.class") != null;
+        boolean jaxRs1Available = cp != null &&
+                cp.findResource("javax/ws/rs/core/Application.class") != null;
+        boolean jaxRs2Available = cp != null &&
+                cp.findResource("javax/ws/rs/client/Client.class") != null;
+        JaxRsStackSupport support = JaxRsStackSupport.getInstance(project);
+        boolean jersey1AvailableOnServer = support != null &&
+                support.isBundled("com.sun.jersey.api.client.WebResource");
+        boolean jersey2AvailableOnServer = support != null &&
+                support.isBundled("org.glassfish.jersey.spi.Contract");
         ClientGenerationStrategy strategy = null;
-        if (project != null) {
-            WebModule webModule = WebModule.getWebModule(project
-                    .getProjectDirectory());
-            if (webModule != null) {
-                Profile profile = webModule.getJ2eeProfile();
-                if (Profile.JAVA_EE_7_WEB == profile
-                        || Profile.JAVA_EE_7_FULL == profile)
-                {
-                    strategy = new JaxRsGenerationStrategy();
-                }
+        if (jersey2Available || jersey2AvailableOnServer) {
+            strategy = new JaxRsGenerationStrategy();
+        } else if (jersey1Available || jersey1AvailableOnServer) {
+            strategy = new JerseyGenerationStrategy();
+        }
+        if (project != null && strategy == null) {
+
+            if (jaxRs2Available) {
+                strategy = new JaxRsGenerationStrategy();
+            } else if (jaxRs1Available) {
+                // JAX-RS 1.0 is on classpath but no Jersey; in this case project
+                // classpath needs to be enhanced with Jersey library but IDE has
+                // only Jersey 2.0. That's why JaxRsGenerationStrategy strategy is
+                // going to be used here:
+                strategy = new JaxRsGenerationStrategy();
             }
         }
-        if ( strategy==null){
-            strategy = new JerseyGenerationStrategy();
+        // if all other tests were negative then generate the code using JAX-RS 2:
+        if (strategy == null) {
+            strategy = new JaxRsGenerationStrategy();
         }
         ProgressHandle handle = null;
         boolean requiresJersey = strategy.requiresJersey(resourceNode, security);
@@ -170,55 +191,24 @@ public class ClientJavaSourceHelper {
             handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(ClientJavaSourceHelper.class, "MSG_creatingRESTClient"));
             handle.start();
             // add REST and Jersey dependencies
-            ClassPath cp = ClassPath.getClassPath(targetFo, ClassPath.COMPILE);
-            List<Library> restLibs = new ArrayList<Library>();
-            if (cp ==null || 
-                    cp.findResource("javax/ws/rs/WebApplicationException.class") == null)//NOI18N 
-            { 
+            if (!jaxRs2Available && !jaxRs1Available) {
                 Library lib = LibraryManager.getDefault().getLibrary("restapi"); //NOI18N
                 if (lib != null) {
-                    restLibs.add(lib);
+                    if (!addToProjectClasspath(lib, targetFo, ClassPath.COMPILE)) {
+                        return;
+                    }
                 }
             }
-            if (requiresJersey && (cp == null ||
-                    cp.findResource("com/sun/jersey/api/client/WebResource.class") == null ||
-                (Security.Authentication.OAUTH == security.getAuthentication() && 
-                 cp.findResource("com/sun/jersey/oauth/client/OAuthClientFilter.class") == null)
-                    ))
+            if (requiresJersey && !jersey1Available && !jersey2Available)
             {
                 Library lib = LibraryManager.getDefault().getLibrary("restlib"); //NOI18N
                 if (lib != null) {
-                    restLibs.add(lib);
-                }
-            }
-            if (restLibs.size() > 0) {
-                try {
-                    ProjectClassPathModifier.addLibraries(
-                            restLibs.toArray(new Library[restLibs.size()]),
-                            targetFo,
-                            ClassPath.COMPILE);
-                } 
-                catch (IOException ex) {
-                    // the libraries are likely not available
-                    Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(
-                            Level.INFO, "Cannot add Jersey libraries" , ex);    // NOI18N
-                    DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(
-                                NbBundle.getMessage(ClientJavaSourceHelper.class, 
-                                        "MSG_CannotAddJerseyLib"),              // NOI18N
-                                NotifyDescriptor.WARNING_MESSAGE));
-                    return;
-                }
-                catch (UnsupportedOperationException ex) {
-                    Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(
-                            Level.INFO, "Project doesn't support classpath modification" , ex);    // NOI18N
-                    DialogDisplayer.getDefault().notify(
-                            new NotifyDescriptor.Message(
-                                NbBundle.getMessage(ClientJavaSourceHelper.class, 
-                                        "MSG_CannotModifyClasspath"),              // NOI18N
-                                NotifyDescriptor.WARNING_MESSAGE));
-                    return;
-                }
+                     if (!addToProjectClasspath(lib, targetFo,
+                             jersey1AvailableOnServer || jersey2AvailableOnServer ?
+                             JavaClassPathConstants.COMPILE_ONLY : ClassPath.COMPILE)) {
+                        return;
+                    }
+               }
             }
 
             // set target project type
@@ -646,6 +636,7 @@ public class ClientJavaSourceHelper {
         // adding getSSLContext() method
         body =
         "{"+ //NOI18N
+        "   // for alternative implementation checkout org.glassfish.jersey.SslConfigurator\n"+ //NOI18N
         "   javax.net.ssl.TrustManager x509 = new javax.net.ssl.X509TrustManager() {"+ //NOI18N
         "       @Override"+ //NOI18N
         "       public void checkClientTrusted(java.security.cert.X509Certificate[] arg0, String arg1) throws java.security.cert.CertificateException {"+ //NOI18N
@@ -790,6 +781,36 @@ public class ClientJavaSourceHelper {
         return "http://" + hostName + ":" + portNumber + "/" + //NOI18N
                 (contextRoot != null && !contextRoot.equals("") ? contextRoot : "") + //NOI18N
                 "/"+applicationPath; //NOI18N
+    }
+
+    private static boolean addToProjectClasspath(Library library, FileObject targetFo,
+            String classpathType) throws MissingResourceException {
+        try {
+            ProjectClassPathModifier.addLibraries(
+                    new Library[]{library},
+                    targetFo,
+                    classpathType);
+        } catch (IOException ex) {
+            // the libraries are likely not available
+            Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(
+                    Level.INFO, "Cannot add Jersey libraries" , ex);    // NOI18N
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                        NbBundle.getMessage(ClientJavaSourceHelper.class,
+                                "MSG_CannotAddJerseyLib"),              // NOI18N
+                        NotifyDescriptor.WARNING_MESSAGE));
+            return false;
+        } catch (UnsupportedOperationException ex) {
+            Logger.getLogger(ClientJavaSourceHelper.class.getName()).log(
+                    Level.INFO, "Project doesn't support classpath modification" , ex);    // NOI18N
+            DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                        NbBundle.getMessage(ClientJavaSourceHelper.class,
+                                "MSG_CannotModifyClasspath"),              // NOI18N
+                        NotifyDescriptor.WARNING_MESSAGE));
+            return false;
+        }
+        return true;
     }
 
     static class PathFormat {
