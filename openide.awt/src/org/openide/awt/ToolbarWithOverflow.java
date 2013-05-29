@@ -82,6 +82,8 @@ public class ToolbarWithOverflow extends JToolBar {
     private final String PROP_JDEV_DISABLE_OVERFLOW = "nb.toolbar.overflow.disable"; //NOI18N
     private AWTEventListener awtEventListener;
     private ComponentAdapter componentAdapter;
+    // keep track of the overflow popup that is showing, possibly from another overflow button, in order to hide it if necessary
+    private static JPopupMenu showingPopup = null;
 
     /**
      * Creates a new tool bar; orientation defaults to
@@ -159,6 +161,7 @@ public class ToolbarWithOverflow extends JToolBar {
                 public void eventDispatched(AWTEvent event) {
                     MouseEvent e = (MouseEvent) event;
                     if(isVisible() && !isShowing() && popup.isShowing()) {
+			showingPopup = null;
                         popup.setVisible(false);
                         return;
                     }
@@ -169,24 +172,20 @@ public class ToolbarWithOverflow extends JToolBar {
                             int minY = popup.getLocationOnScreen().y;
                             int maxY = popup.getLocationOnScreen().y + popup.getHeight();
                             if (e.getXOnScreen() < minX || e.getXOnScreen() >= maxX || e.getYOnScreen() < minY || e.getYOnScreen() >= maxY) {
+				showingPopup = null;
                                 popup.setVisible(false);
                             }
                         }
                     } else {
                         if (popup.isShowing() && overflowButton.isShowing() && (e.getID() == MouseEvent.MOUSE_MOVED || e.getID() == MouseEvent.MOUSE_EXITED)) {
                             int minX = overflowButton.getLocationOnScreen().x;
-                            int maxX_ob = minX + overflowButton.getWidth();
                             int maxX = getOrientation() == HORIZONTAL ? minX + popup.getWidth()
                                     : minX + overflowButton.getWidth() + popup.getWidth();
                             int minY = overflowButton.getLocationOnScreen().y;
-                            int maxY_ob = minY + overflowButton.getHeight();
                             int maxY = getOrientation() == HORIZONTAL ? minY + overflowButton.getHeight() + popup.getHeight()
                                     : minY + popup.getHeight();
-                            if (e.getXOnScreen() < minX || e.getYOnScreen() < minY || e.getXOnScreen() > maxX || e.getYOnScreen() > maxY
-                                    || (getOrientation() == HORIZONTAL && e.getXOnScreen() > maxX_ob
-                                            && e.getYOnScreen() >= minY && e.getYOnScreen() < maxY_ob)
-                                    || (getOrientation() == VERTICAL && e.getXOnScreen() >= minX && e.getXOnScreen() < maxX_ob
-                                            && e.getYOnScreen() > maxY_ob)) {
+                            if (e.getXOnScreen() < minX || e.getYOnScreen() < minY || e.getXOnScreen() > maxX || e.getYOnScreen() > maxY) {
+				showingPopup = null;
                                 popup.setVisible(false);
                             }
                         }
@@ -319,6 +318,7 @@ public class ToolbarWithOverflow extends JToolBar {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if(popup.isShowing()) {
+		    showingPopup = null;
                     popup.setVisible(false);
                 } else {
                     displayOverflow();
@@ -327,6 +327,10 @@ public class ToolbarWithOverflow extends JToolBar {
 
             @Override
             public void mouseEntered(MouseEvent e) {
+		if(showingPopup != null && showingPopup != popup) {
+                    showingPopup.setVisible(false);
+		    showingPopup = null;
+		}
                 if(displayOverflowOnHover) {
                     displayOverflow();
                 }
@@ -338,6 +342,7 @@ public class ToolbarWithOverflow extends JToolBar {
         int x = getOrientation() == HORIZONTAL ? overflowButton.getLocationOnScreen().x : overflowButton.getLocationOnScreen().x + overflowButton.getWidth();
         int y = getOrientation() == HORIZONTAL ? overflowButton.getLocationOnScreen().y + overflowButton.getHeight() : overflowButton.getLocationOnScreen().y;
         popup.setLocation(x, y);
+	showingPopup = popup;
         popup.setVisible(true);
     }
 

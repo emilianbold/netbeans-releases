@@ -583,7 +583,10 @@ public class BreakpointAnnotationProvider extends DebuggerManagerAdapter
      * @param b The breakpoint
      * @return The condition or empty {@link String} if no condition is supported.
      */
-    static String getCondition(JPDABreakpoint b) {
+    static String getCondition(Breakpoint b) {
+        if (!(b instanceof JPDABreakpoint)) {
+            return ""; // e.g. JSP breakpoints
+        }
         if (b instanceof LineBreakpoint) {
             return ((LineBreakpoint) b).getCondition();
         } else if (b instanceof FieldBreakpoint) {

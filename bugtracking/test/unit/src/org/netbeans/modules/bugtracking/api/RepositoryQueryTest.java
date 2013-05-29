@@ -83,9 +83,11 @@ public class RepositoryQueryTest extends NbTestCase {
         File file = new File(getWorkDir(), "testfile");
         file.createNewFile();
         
-        BugtrackingOwnerSupport.getInstance().setFirmAssociation(file, repo.getImpl());
         FileObject fo = FileUtil.toFileObject(file);
+        BugtrackingOwnerSupport.getInstance().setFirmAssociation(file, repo.getImpl());
+        
         assertNotNull(fo);
+        
         Repository r = RepositoryQuery.getInstance().getRepository(fo, false);
         assertNotNull(r);
         assertEquals(repo, r);

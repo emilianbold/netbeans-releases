@@ -66,10 +66,10 @@ public class DebuggerBreakpointAnnotation extends BreakpointAnnotation {
 
     private final Line           line;
     private final String         type;
-    private final JPDABreakpoint breakpoint;
+    private final Breakpoint breakpoint;
 
 
-    DebuggerBreakpointAnnotation (String type, Line line, JPDABreakpoint breakpoint) {
+    DebuggerBreakpointAnnotation (String type, Line line, Breakpoint breakpoint) {
         this.type = type;
         this.line = line;
         this.breakpoint = breakpoint;

@@ -153,8 +153,9 @@ abstract class AbstractListUI extends BasicListUI {
         Component dispatchComponent =
                 SwingUtilities.getDeepestComponentAt(renComponent,
                 p2.x, p2.y);
-        if (dispatchComponent instanceof LinkButton && 
-            !((LinkButton)dispatchComponent).isHandlingPopupEvents()) 
+        if ( e.isPopupTrigger() &&
+             dispatchComponent instanceof LinkButton && 
+             !((LinkButton)dispatchComponent).isHandlingPopupEvents() ) 
         {
             return false;
         } 
