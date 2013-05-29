@@ -192,6 +192,12 @@ class ServerPanel extends JPanel {
 
     private JPopupMenu createPopupMenu() {
         JPopupMenu res = new JPopupMenu();
+        res.add( NbBundle.getMessage(ServerPanel.class, "Ctl_EDIT") ).addActionListener( new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                throw new UnsupportedOperationException("Not supported yet.");
+            }
+        });        
         res.add( NbBundle.getMessage(ServerPanel.class, "Ctl_REMOVE") ).addActionListener( new ActionListener() {
 
             @Override
