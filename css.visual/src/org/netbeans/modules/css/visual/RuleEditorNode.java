@@ -117,6 +117,9 @@ public class RuleEditorNode extends AbstractNode {
     private RuleEditorPanel panel;
     private Map<PropertyDefinition, PropertyDeclaration> addedDeclarations = new HashMap<>();
     private Rule lastRule;
+    
+    //cache the model.canApplyChanges() as it is very costly operation
+    private boolean readOnlyMode;
 
     public RuleEditorNode(RuleEditorPanel panel) {
         super(new RuleChildren());
@@ -125,6 +128,10 @@ public class RuleEditorNode extends AbstractNode {
 
     public Model getModel() {
         return panel.getModel();
+    }
+    
+    public boolean isReadOnlyMode() {
+        return readOnlyMode;
     }
 
     public FileObject getFileObject() {
@@ -156,6 +163,13 @@ public class RuleEditorNode extends AbstractNode {
     //called by the RuleEditorPanel when any of the properties affecting 
     //the PropertySet-s generation changes.
     public void fireContextChanged(boolean forceRefresh) {
+        boolean oldReadOnlyModel = readOnlyMode;
+        readOnlyMode = !getModel().canApplyChanges();
+        if(oldReadOnlyModel != readOnlyMode) {
+            //refresh the PS as the read only mode changes
+            forceRefresh = true;
+        }
+        
         try {
             PropertySetsInfo oldInfo = getCachedPropertySetsInfo();
             PropertySetsInfo newInfo = createPropertySetsInfo();
@@ -443,7 +457,7 @@ public class RuleEditorNode extends AbstractNode {
                 
                 //do NOT show all properties
                 //Add the fake "Add Property" FeatureDescriptor at the end of the set
-                if(getModel().canApplyChanges() && panel.getCreatedDeclaration() == null) {
+                if(!readOnlyMode && panel.getCreatedDeclaration() == null) {
                     //do not add the "Add Property" item when we are editing value of the just added property
                     set.add_Add_Property_FeatureDescriptor();
                 }
@@ -633,7 +647,7 @@ public class RuleEditorNode extends AbstractNode {
                     def.getName(),
                     shortDescription,
                     true,
-                    getRule().isValid());
+                    getRule().isValid() && !readOnlyMode);
             this.def = def;
             this.editor = editor;
         }
@@ -753,7 +767,7 @@ public class RuleEditorNode extends AbstractNode {
             super(propertyName,
                     String.class,
                     propertyDisplayName,
-                    null, true, getModel().canApplyChanges() && getRule().isValid());
+                    null, true, !readOnlyMode && getRule().isValid());
             this.propertyName = propertyName;
             this.propertyDeclaration = declaration;
             this.markAsModified = markAsModified;

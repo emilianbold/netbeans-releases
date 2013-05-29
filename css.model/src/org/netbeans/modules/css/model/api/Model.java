@@ -347,6 +347,13 @@ public final class Model implements PropertyChangeListener {
      * @return true if the underlying document can be modified, false otherwise.
      */
     public boolean canApplyChanges() {
+        FileObject file = getLookup().lookup(FileObject.class);
+        if(file != null) {
+            //file based document
+            return file.canWrite();
+        }
+
+        //document based
         Document document = getLookup().lookup(Document.class);
         if (document == null) {
             return false;
