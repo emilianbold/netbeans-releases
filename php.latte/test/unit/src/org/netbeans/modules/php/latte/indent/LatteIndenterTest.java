@@ -39,23 +39,20 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.format;
-
-import org.netbeans.modules.php.latte.LatteTestBase;
+package org.netbeans.modules.php.latte.indent;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class LatteFormattingTestBase extends LatteTestBase {
+public class LatteIndenterTest extends LatteIndenterTestBase {
 
-    public LatteFormattingTestBase(String testName) {
+    public LatteIndenterTest(String testName) {
         super(testName);
     }
 
-    @Override
-    protected boolean runInEQ() {
-        return true;
+    public void testInlineLatte() throws Exception {
+        indent("testInlineLatte");
     }
 
 }

@@ -39,20 +39,49 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.format;
+package org.netbeans.modules.php.latte.indent;
+
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.editor.indent.spi.ExtraLock;
+import org.netbeans.modules.editor.indent.spi.IndentTask;
+import org.openide.util.Lookup;
+import org.openide.util.lookup.Lookups;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteIndenterTest extends LatteIndenterTestBase {
+public class LatteIndentTask implements IndentTask, Lookup.Provider {
+    private final LatteIndenter indenter;
+    private final Lookup lookup;
 
-    public LatteIndenterTest(String testName) {
-        super(testName);
+    public LatteIndentTask(Context context) {
+        indenter = new LatteIndenter(context);
+        lookup = Lookups.singleton(indenter.createFormattingContext());
     }
 
-    public void testInlineLatte() throws Exception {
-        indent("testInlineLatte");
+    @Override
+    public void reindent() throws BadLocationException {
+        indenter.reindent();
     }
 
+    @Override
+    public ExtraLock indentLock() {
+        return null;
+    }
+
+    @Override
+    public Lookup getLookup() {
+        return lookup;
+    }
+
+    public static final class Factory implements IndentTask.Factory {
+
+        @Override
+        public IndentTask createTask(Context context) {
+            return new LatteIndentTask(context);
+        }
+
+    }
 }

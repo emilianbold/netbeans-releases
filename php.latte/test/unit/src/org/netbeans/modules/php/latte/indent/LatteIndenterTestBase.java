@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.format;
+package org.netbeans.modules.php.latte.indent;
 
 import javax.swing.text.Document;
 import static junit.framework.Assert.assertNotNull;
@@ -50,8 +50,10 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
+import org.netbeans.modules.php.latte.LatteTestBase;
 import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
 import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
 import org.openide.cookies.EditorCookie;
@@ -62,7 +64,7 @@ import org.openide.loaders.DataObject;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public abstract class LatteIndenterTestBase extends LatteFormattingTestBase {
+public abstract class LatteIndenterTestBase extends LatteTestBase {
 
     public LatteIndenterTestBase(String testName) {
         super(testName);
@@ -105,13 +107,18 @@ public abstract class LatteIndenterTestBase extends LatteFormattingTestBase {
         return null;
     }
 
+    @Override
+    protected boolean runInEQ() {
+        return true;
+    }
+
     protected void indent(String fileName) throws Exception {
         indent(fileName, new IndentPrefs(4, 4));
     }
 
     protected void indent(String fileName, IndentPrefs indentPreferences) throws Exception {
         assert fileName != null;
-        reformatFileContents("testfiles/format/indent/" + fileName + ".latte", indentPreferences); //NOI18N
+        reformatFileContents("testfiles/indent/" + fileName + ".latte", indentPreferences); //NOI18N
     }
 
 }
