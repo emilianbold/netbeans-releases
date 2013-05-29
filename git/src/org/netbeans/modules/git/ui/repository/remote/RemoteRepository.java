@@ -562,7 +562,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 settingsPanel.leaveBlankLabel,
                 panel.tipLabel
             };
-            acceptableSchemes = EnumSet.of(Scheme.GIT, Scheme.HTTP, Scheme.HTTPS, Scheme.SFTP);
+            acceptableSchemes = EnumSet.of(Scheme.GIT, Scheme.HTTP, Scheme.HTTPS);
         }
         
         @Override
@@ -665,6 +665,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         private final SSHPanel settingsPanel;
         private final JComponent[] authKeyFields;
         private final JComponent[] authPasswordFields;
+        private final EnumSet<Scheme> acceptableSchemes;
         
         public SSHConnectionSettingsType () {
             settingsPanel = new SSHPanel();
@@ -702,6 +703,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                 settingsPanel.userPasswordField,
                 settingsPanel.savePasswordCheckBox
             };
+            acceptableSchemes = EnumSet.of(Scheme.SSH, Scheme.SFTP);
             attachListeners();
         }
         
@@ -795,9 +797,14 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                     accepts = true;
                     panel.tipLabel.setText("[user@]host.xz:path/to/repo.git/"); //NOI18N
                 }
-            } else if(uri.getScheme().equals(Scheme.SSH.toString())) {
-                accepts = true;
-                panel.tipLabel.setText(Scheme.SSH.getTip());
+            } else {
+                for (Scheme s : acceptableSchemes) {
+                    if(uri.getScheme().equals(s.toString())) {
+                        accepts = true;
+                        panel.tipLabel.setText(s.getTip());
+                        break;
+                    }
+                }
             }
             if (accepts) {
                 panel.directoryBrowseButton.setVisible(false);

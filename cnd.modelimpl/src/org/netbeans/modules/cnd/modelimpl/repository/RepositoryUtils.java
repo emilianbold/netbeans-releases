@@ -57,6 +57,7 @@ import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
 import org.netbeans.modules.cnd.modelimpl.uid.KeyBasedUID;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDManager;
 import org.netbeans.modules.cnd.modelimpl.uid.UIDProviderIml;
+import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.repository.api.Repository;
 import org.netbeans.modules.cnd.repository.api.RepositoryAccessor;
 import org.netbeans.modules.cnd.repository.api.RepositoryException;
@@ -393,6 +394,12 @@ public final class RepositoryUtils {
         public boolean unitOpened(int unitId, CharSequence unitName) {
             return parent.unitOpened(unitId, unitName);
         }
+
+        @Override
+        public boolean repositoryOpened(int repositoryId, CacheLocation cacheLocation) {
+            return parent.repositoryOpened(repositoryId, cacheLocation);
+        }
+
         @Override
         public void unitClosed(int unitId, CharSequence unitName) {
             parent.unitClosed(unitId, unitName);

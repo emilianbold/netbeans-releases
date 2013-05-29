@@ -31,6 +31,7 @@
 package org.netbeans.modules.cnd.refactoring.elements;
 
 import java.util.EnumSet;
+import javax.swing.Icon;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
@@ -44,6 +45,7 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
+import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
@@ -63,6 +65,7 @@ public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplement
     private final boolean isDecl;
     private final boolean isInMacros;
     private final boolean isInDeadCode;
+    private final boolean isInComments;
     
     public CsmRefactoringElementImpl(PositionBounds bounds, 
             CsmReference elem, FileObject fo, String displayText) {
@@ -79,6 +82,7 @@ public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplement
         this.isDecl = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.DECLARATION, CsmReferenceKind.DEFINITION));
         this.isInMacros = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE));
         this.isInDeadCode = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.IN_DEAD_BLOCK));
+        this.isInComments = CsmReferenceResolver.getDefault().isKindOf(elem, EnumSet.of(CsmReferenceKind.COMMENT));
     }
         
     @Override
@@ -100,6 +104,10 @@ public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplement
 
     @Override
     public Lookup getLookup() {
+        if (isInComments) {
+            Icon icon = ImageUtilities.loadImageIcon("org/netbeans/modules/cnd/refactoring/resources/found_item_comment.png", false); //NOI18N
+            return Lookups.fixed(elem, enclosing, icon);
+        }
         return Lookups.fixed(elem, enclosing);
     }
     
@@ -135,6 +143,9 @@ public class CsmRefactoringElementImpl extends SimpleRefactoringElementImplement
             return false;
         }
         if (isInDeadCode && !manager.isSelected(CsmWhereUsedFilters.DEAD_CODE.getKey())) {
+            return false;
+        }
+        if (isInComments && !manager.isSelected(CsmWhereUsedFilters.COMMENTS.getKey())) {
             return false;
         }
         return true;

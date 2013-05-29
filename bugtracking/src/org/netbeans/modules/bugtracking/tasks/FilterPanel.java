@@ -55,6 +55,7 @@ import org.netbeans.modules.team.ui.util.treelist.ColorManager;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -73,8 +74,10 @@ public class FilterPanel extends javax.swing.JPanel {
     private final OpenedCategoryFilter openedCategoryFilter;
     private final OpenedRepositoryFilter openedRepositoryFilter;
     private final DashboardToolbar toolBar;
+    private final RequestProcessor REQUEST_PROCESSOR;
 
     public FilterPanel() {
+        REQUEST_PROCESSOR = DashboardViewer.getInstance().getRequestProcessor();
         BACKGROUND_COLOR = ColorManager.getDefault().getExpandableRootBackground();
         FOREGROUND_COLOR = ColorManager.getDefault().getExpandableRootForeground();
         openedTaskFilter = new OpenedTaskFilter();
@@ -85,13 +88,11 @@ public class FilterPanel extends javax.swing.JPanel {
         final JLabel iconLabel = new JLabel(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/find.png", true)); //NOI18N
         add(iconLabel, new GridBagConstraints(1, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
 
-
         lblTitle = new TreeLabel(NbBundle.getMessage(FilterPanel.class, "LBL_Filter")); // NOI18N
         lblTitle.setBackground(BACKGROUND_COLOR);
 //        lblTitle.setFont(lblTitle.getFont().deriveFont(Font.BOLD));
         lblTitle.setForeground(FOREGROUND_COLOR);
         add(lblTitle, new GridBagConstraints(2, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 3), 0, 0));
-
 
         textFilter = new JTextField();
         textFilter.addKeyListener(new KeyAdapter() {
@@ -195,11 +196,11 @@ public class FilterPanel extends javax.swing.JPanel {
         lblCount.setVisible(false);
     }
 
-    void handleFilterShortcut(){
+    void handleFilterShortcut() {
         textFilter.requestFocusInWindow();
     }
 
-    private void focusChanged (boolean hasFocus) {
+    private void focusChanged(boolean hasFocus) {
         if (hasFocus) {
             textFilter.selectAll();
         }
@@ -214,30 +215,40 @@ public class FilterPanel extends javax.swing.JPanel {
         JRadioButtonMenuItem rbAllStatuses = new JRadioButtonMenuItem(new AbstractAction(NbBundle.getMessage(FilterPanel.class, "LBL_ShowAll")) { //NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                DashboardViewer.getInstance().removeCategoryFilter(openedCategoryFilter, false);
-                DashboardViewer.getInstance().removeRepositoryFilter(openedRepositoryFilter, false);
-                int hits = DashboardViewer.getInstance().removeTaskFilter(openedTaskFilter, true);
-                manageHitCount(hits);
-                DashboardSettings.getInstance().setFinishedTaskFilter(false);
+                REQUEST_PROCESSOR.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        DashboardViewer.getInstance().getRequestProcessor();
+                        DashboardViewer.getInstance().removeCategoryFilter(openedCategoryFilter, false);
+                        DashboardViewer.getInstance().removeRepositoryFilter(openedRepositoryFilter, false);
+                        int hits = DashboardViewer.getInstance().removeTaskFilter(openedTaskFilter, true);
+                        manageHitCount(hits);
+                        DashboardSettings.getInstance().setFinishedTaskFilter(false);
+                    }
+                });
                 if (e.getSource() instanceof JMenuItem) {
                     ((JMenuItem) e.getSource()).setSelected(enabled);
                 }
             }
         });
-        
+
         groupStatus.add(rbAllStatuses);
         popup.add(rbAllStatuses);
-
 
         // show opened only action
         JRadioButtonMenuItem rbOpenedStatus = new JRadioButtonMenuItem(new AbstractAction(NbBundle.getMessage(FilterPanel.class, "LBL_ShowOpened")) { //NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
-                DashboardViewer.getInstance().applyCategoryFilter(openedCategoryFilter, false);
-                DashboardViewer.getInstance().applyRepositoryFilter(openedRepositoryFilter, false);
-                int hits = DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, true);
-                manageHitCount(hits);
-                DashboardSettings.getInstance().setFinishedTaskFilter(true);
+                REQUEST_PROCESSOR.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        DashboardViewer.getInstance().applyCategoryFilter(openedCategoryFilter, false);
+                        DashboardViewer.getInstance().applyRepositoryFilter(openedRepositoryFilter, false);
+                        int hits = DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, true);
+                        manageHitCount(hits);
+                        DashboardSettings.getInstance().setFinishedTaskFilter(true);
+                    }
+                });
                 if (e.getSource() instanceof JMenuItem) {
                     ((JMenuItem) e.getSource()).setSelected(enabled);
                 }
@@ -250,15 +261,20 @@ public class FilterPanel extends javax.swing.JPanel {
         rbAllStatuses.setSelected(!finishedTaskFilter);
 
         if (rbOpenedStatus.isSelected()) {
-            DashboardViewer.getInstance().applyCategoryFilter(openedCategoryFilter, false);
-            DashboardViewer.getInstance().applyRepositoryFilter(openedRepositoryFilter, false);
-            DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, false);
+            REQUEST_PROCESSOR.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        DashboardViewer.getInstance().applyCategoryFilter(openedCategoryFilter, false);
+                        DashboardViewer.getInstance().applyRepositoryFilter(openedRepositoryFilter, false);
+                        DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, false);
+                    }
+                });
         }
         popup.add(rbOpenedStatus);
 
         popup.addSeparator();
         //</editor-fold>
-        
+
         //<editor-fold defaultstate="collapsed" desc="schedule filters section">
         final ButtonGroup groupDue = new ButtonGroup();
         JRadioButtonMenuItem rbAllDue = new JRadioButtonMenuItem(new AbstractAction(NbBundle.getMessage(FilterPanel.class, "LBL_DueAll")) { //NOI18N
@@ -318,9 +334,7 @@ public class FilterPanel extends javax.swing.JPanel {
     }
 
     /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
+     * This method is called from within the constructor to initialize the form. WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
      */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents

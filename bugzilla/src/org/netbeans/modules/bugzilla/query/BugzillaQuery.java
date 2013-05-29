@@ -159,10 +159,6 @@ public class BugzillaQuery {
         return columnDescriptors;
     }
 
-    public void refresh() { // XXX what if already running! - cancel task
-        refreshIntern(false);
-    }
-
     boolean refreshIntern(final boolean autoRefresh) { // XXX what if already running! - cancel task
 
         assert urlParameters != null;
@@ -403,20 +399,16 @@ public class BugzillaQuery {
                 for (String taskId : issues) {
                     ITask task = supp.getTask(repository.getUrl(), taskId);
                     if (task != null) {
-                        notifyTable(task);
+                        BugzillaIssue issue = repository.getIssueForTask(task);
+                        if (issue != null) {
+                            if (addedIds.add(task.getTaskId())) {
+                                fireNotifyDataAdded(issue); // XXX - !!! triggers getIssues()
+                            }
+                        }
                     }
                 }
             } catch (CoreException ex) {
                 Bugzilla.LOG.log(Level.INFO, null, ex);
-            }
-        }
-
-        private void notifyTable (ITask task) {
-            BugzillaIssue issue = repository.getIssueForTask(task);
-            if (issue != null) {
-                if (addedIds.add(task.getTaskId())) {
-                    fireNotifyDataAdded(issue); // XXX - !!! triggers getIssues()
-                }
             }
         }
     };

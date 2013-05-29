@@ -42,12 +42,19 @@
 
 package org.netbeans.modules.remote.impl.fs;
 
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Level;
+import org.netbeans.modules.remote.impl.RemoteLogger;
+
 /**
  *
  * @author Vladimir Kvashin
  */
 public class FormatException extends Exception {
+
     private final boolean expected;
+    private static final int REPORT_THRESHOLD = 10;
+    private static AtomicInteger count = new AtomicInteger();
 
     public FormatException(String text, boolean expected) {
         super(text);
@@ -63,4 +70,13 @@ public class FormatException extends Exception {
         return expected;
     }
 
+    public static void reportIfNeeded(FormatException e) {
+        Level level;
+        if (!e.isExpected() && count.incrementAndGet() == REPORT_THRESHOLD) {
+            level = Level.WARNING;
+        } else {
+            level = Level.FINE;
+        }
+        RemoteLogger.getInstance().log(level, "Error reading directory cache", e); // NOI18N
+    }
 }

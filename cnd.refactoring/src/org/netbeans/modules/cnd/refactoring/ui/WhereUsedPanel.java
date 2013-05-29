@@ -558,7 +558,6 @@ public class WhereUsedPanel extends JPanel implements CustomRefactoringPanel {
         searchInComments.setSelected(((Boolean) RefactoringModule.getOption("searchInComments.whereUsed", //NOI18N
             Boolean.FALSE)).booleanValue());
 org.openide.awt.Mnemonics.setLocalizedText(searchInComments, org.openide.util.NbBundle.getBundle(WhereUsedPanel.class).getString("LBL_SearchInComents")); // NOI18N
-searchInComments.setEnabled(false);
 searchInComments.setMargin(new java.awt.Insets(10, 14, 2, 2));
 searchInComments.addItemListener(new java.awt.event.ItemListener() {
     public void itemStateChanged(java.awt.event.ItemEvent evt) {
@@ -588,7 +587,7 @@ searchInComments.addItemListener(new java.awt.event.ItemListener() {
             .addContainerGap()
             .addComponent(scopeLabel)
             .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-            .addComponent(scope, 0, 283, Short.MAX_VALUE)
+            .addComponent(scope, 0, 296, Short.MAX_VALUE)
             .addContainerGap())
     );
     scopePanelLayout.setVerticalGroup(

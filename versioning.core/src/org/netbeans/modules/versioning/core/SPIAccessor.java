@@ -59,18 +59,7 @@ import org.openide.filesystems.FileObject;
 public abstract class SPIAccessor {
     
     public static SPIAccessor IMPL;
-    
-    static {
-        // invokes static initializer of VCSContext.class
-        // that will assign value to the DEFAULT field above
-        Class c = VCSContext.class;
-        try {
-            Class.forName(c.getName(), true, c.getClassLoader());
-        } catch (ClassNotFoundException e) {
-            throw new IllegalStateException(e);
-        }
-    }
-    
+        
     public abstract VCSContext createContextForFiles(Set<VCSFileProxy> files, Set<? extends FileObject> originalFiles);
     
     public abstract Object[] getLookupObjects(VCSHistoryProvider.HistoryEntry entry);

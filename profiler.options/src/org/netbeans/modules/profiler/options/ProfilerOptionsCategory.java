@@ -66,6 +66,7 @@ public class ProfilerOptionsCategory extends OptionsPanelController {
         //~ Methods --------------------------------------------------------------------------------------------------------------
 
         public boolean isChanged() {
+            if (settingsPanel == null) return false;
             return !settingsPanel.currentSettingsEquals(ProfilerIDESettings.getInstance());
         }
 
@@ -91,6 +92,7 @@ public class ProfilerOptionsCategory extends OptionsPanelController {
         }
 
         public void applyChanges() {
+            if (settingsPanel == null) return;
             settingsPanel.applySettings(ProfilerIDESettings.getInstance());
         }
 
@@ -101,6 +103,7 @@ public class ProfilerOptionsCategory extends OptionsPanelController {
         }
 
         public void update() {
+            if (settingsPanel == null) return;
             settingsPanel.init(ProfilerIDESettings.getInstance());
         }
 

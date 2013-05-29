@@ -13,9 +13,14 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.nativeexecution.api.ExecutionListener;
+import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
 import org.openide.awt.DynamicMenuContent;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -86,15 +91,94 @@ public class LauncherAction extends AbstractAction implements ContextAwareAction
     private class LauncherExecutableAction extends AbstractAction {
 
         private LauncherExecutor executor;
+        private Launcher launcher;
+        private final RunActionItem runActionItem = new RunActionItem();
 
         public LauncherExecutableAction(Launcher launcher) {
             super(launcher.getDisplayedName());
-            this.executor = LauncherExecutor.createExecutor(launcher, actionType);
+            this.executor = LauncherExecutor.createExecutor(launcher, actionType, new ExecutionListenerImpl());
+            this.launcher = launcher;
         }
 
         @Override
         public void actionPerformed(ActionEvent ae) {
             executor.execute(project);
+        }
+        
+        private class ExecutionListenerImpl implements ExecutionListener {
+
+            @Override
+            public void executionStarted(int pid) {
+                BuildExecutionSupport.registerRunningItem(runActionItem);
+            }
+
+            @Override
+            public void executionFinished(int rc) {
+                BuildExecutionSupport.registerFinishedItem(runActionItem);
+            }
+            
+        }
+        
+        private class RunActionItem implements BuildExecutionSupport.ActionItem {
+
+            @Override
+            public String getAction() {
+                switch (actionType) {
+                    case RUN:
+                        return ActionProvider.COMMAND_RUN;
+                    case DEBUG:
+                        return ActionProvider.COMMAND_DEBUG;
+                    case DEBUG_STEPINTO:
+                        return ActionProvider.COMMAND_DEBUG_STEP_INTO;
+                    default:
+                        assert false;
+                        return null;
+                }
+            }
+
+            @Override
+            public FileObject getProjectDirectory() {
+                return project.getProjectDirectory();
+            }
+
+            @Override
+            public String getDisplayName() {
+                return ProjectUtils.getInformation(project).getDisplayName() + ": " + launcher.getDisplayedName();//NOI18N
+            }
+
+            @Override
+            public void repeatExecution() {
+                for (Launcher l : LaunchersRegistryFactory.getInstance(project.getProjectDirectory()).getLaunchers()) {
+                    if (l.equals(launcher)) {
+                        executor = LauncherExecutor.createExecutor(l, actionType, new ExecutionListenerImpl());
+                        break;
+                    }
+                }
+                executor.execute(project);
+            }
+
+            @Override
+            public boolean isRunning() {
+                return executor.isRunning();
+            }
+
+            @Override
+            public void stopRunning() {
+                // TODO
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj instanceof RunActionItem) {
+                    return ((RunActionItem) obj).getDisplayName().equals(getDisplayName());
+                }
+                return false;
+            }
+
+            @Override
+            public int hashCode() {
+                return getDisplayName().hashCode();
+            }            
         }
     }    
     

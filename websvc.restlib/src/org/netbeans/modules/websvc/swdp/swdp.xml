@@ -51,62 +51,39 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/websvc/swdp/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/asm-3.1.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jackson-core-asl-1.9.2.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jackson-jaxrs-1.9.2.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jackson-mapper-asl-1.9.2.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jackson-xc-1.9.2.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-apache-client-1.13.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-atom-abdera-1.13.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-client-1.13.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-core-1.13.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-guice-1.13.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-json-1.13.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-multipart-1.13.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-server-1.13.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-servlet-1.13.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-simple-server-1.13.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jersey-spring-1.13.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jettison-1.1.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/oauth-client-1.13.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/oauth-server-1.13.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/oauth-signature-1.13.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/activation.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/api/jaxb-api.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.xml.jaxb.api/modules/ext/jaxb/api/jsr173_1.0_api.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/ext/asm-all-repackaged-2.1.88.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/ext/cglib-2.1.88.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/ext/guava-14.0.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/ext/hk2-api-2.1.88.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/ext/hk2-locator-2.1.88.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/ext/hk2-utils-2.1.88.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/ext/javax.annotation-api-1.2.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/ext/javax.inject-2.1.88.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/ext/javax.servlet-api-3.1.0.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/ext/jaxb-api-2.2.7.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/ext/org.osgi.core-4.2.0.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/ext/osgi-resource-locator-1.0.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/ext/persistence-api-1.0.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/ext/validation-api-1.1.0.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/jersey-client.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/jersey-common.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/jersey-server.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/extensions/jackson-core-asl-1.9.11.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/extensions/jackson-jaxrs-1.9.11.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/extensions/jackson-mapper-asl-1.9.11.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/extensions/jackson-xc-1.9.11.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/extensions/jersey-media-json-jackson-2.0.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/extensions/jersey-media-json-jettison-2.0.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jersey2/extensions/jettison-1.3.3.jar!/</resource>
     </volume>  
-     <volume>
-        <type>javadoc</type>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-1.13-javadoc.zip!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-apache-client-1.13-javadoc.zip!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-atom-abdera-1.13-javadoc.zip!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-guice-1.13-javadoc.zip!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-multipart-1.13-javadoc.zip!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-simple-server-1.13-javadoc.zip!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jersey-spring-1.13-javadoc.zip!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/oauth-client-1.13-javadoc.zip!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/oauth-server-1.13-javadoc.zip!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/oauth-signature-1.13-javadoc.zip!/</resource>
-    </volume>
     <properties>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
             <value>
-                com.sun.jersey:jersey-atom:1.13:jar
-                com.sun.jersey:jersey-json:1.13:jar
-                com.sun.jersey:jersey-core:1.13:jar
-                com.sun.jersey:jersey-server:1.13:jar
-                com.sun.jersey:jersey-client:1.13:jar
-                com.sun.jersey.contribs:jersey-atom-abdera:1.13:jar
-                com.sun.jersey.contribs:jersey-apache-client:1.13:jar
-                com.sun.jersey.contribs:jersey-spring:1.13:jar
-                com.sun.jersey.contribs:jersey-multipart:1.13:jar
-                com.sun.jersey.contribs:jersey-guice:1.13:jar
-                com.sun.jersey.contribs:jersey-simple-server:1.13:jar
-                com.sun.jersey.contribs.jersey-oauth:oauth-client:1.13:jar
-                com.sun.jersey.contribs.jersey-oauth:oauth-server:1.13:jar
-                com.sun.jersey.contribs.jersey-oauth:oauth-signature:1.13:jar
+                org.glassfish.jersey.core:jersey-server:2.0:jar
+                org.glassfish.jersey.media:jersey-media-json-jackson:2.0:jar
+                org.glassfish.jersey.media:jersey-media-json-jettison:2.0:jar
             </value>
         </property>
     </properties>    

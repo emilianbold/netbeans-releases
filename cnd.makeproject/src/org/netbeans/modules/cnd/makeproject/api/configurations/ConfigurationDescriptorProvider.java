@@ -72,7 +72,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
-public class ConfigurationDescriptorProvider{
+public abstract class ConfigurationDescriptorProvider {
     public static final boolean VCS_WRITE = true; // Boolean.getBoolean("cnd.make.vcs.write");//org.netbeans.modules.cnd.makeproject.configurations.CommonConfigurationXMLCodec.VCS_WRITE;
     
     public static final String USG_PROJECT_CONFIG_CND = "USG_PROJECT_CONFIG_CND"; // NOI18N
@@ -88,20 +88,16 @@ public class ConfigurationDescriptorProvider{
     private final FileChangeListener configFilesListener = new ConfigurationXMLChangeListener();
     private final List<FileObject> trackedConfigFiles = new ArrayList(2);
     
-    private volatile MakeConfigurationDescriptor projectDescriptor;
+    private final MakeConfigurationDescriptor projectDescriptor;
     private volatile boolean hasTried;
     private String relativeOffset;
-    private volatile boolean needReload;   
+    private volatile boolean needReload = true;
 
-    // for unit tests only
-    public ConfigurationDescriptorProvider(FileObject projectDirectory) {
-        this(null, projectDirectory);
-    }
-
-    public ConfigurationDescriptorProvider(Project project, FileObject projectDirectory) {
+    protected ConfigurationDescriptorProvider(Project project, FileObject projectDirectory) {
         this.project = project;
         this.projectDirectory = projectDirectory;
         isOpened.set(true);
+        projectDescriptor = new MakeConfigurationDescriptor(project, projectDirectory, projectDirectory);
     }
     
     public void setRelativeOffset(String relativeOffset) {
@@ -109,15 +105,20 @@ public class ConfigurationDescriptorProvider{
     }
     
     public MakeConfigurationDescriptor getConfigurationDescriptor() {
-        return getConfigurationDescriptor(true, null);
+        return getConfigurationDescriptor(null, false);
     }
 
+    protected MakeConfigurationDescriptor getConfigurationDescriptorImpl() {
+        return projectDescriptor;
+    }
+    
+    abstract protected void fireConfigurationDescriptorLoaded();
+    
     private boolean shouldBeLoaded() {
-        return ((projectDescriptor == null || needReload) && !hasTried);
-
+        return ((needReload) && !hasTried);
     }
 
-    private MakeConfigurationDescriptor getConfigurationDescriptor(boolean waitReading, Interrupter interrupter) {
+    private MakeConfigurationDescriptor getConfigurationDescriptor(Interrupter interrupter, boolean reload) {
         if (!isOpened.get()) {
             return null;
         }
@@ -134,42 +135,17 @@ public class ConfigurationDescriptorProvider{
                     needReload = false;
 
                     ConfigurationXMLReader reader = new ConfigurationXMLReader(project, projectDirectory);
-
-                    //                        if (waitReading && SwingUtilities.isEventDispatchThread()) {
-                    //                            new Exception("Not allowed to use EDT for reading XML descriptor of project!" + projectDirectory).printStackTrace(System.err); // NOI18N
-                    //                            // PLEASE DO NOT ADD HACKS like Task.waitFinished()
-                    //                            // CHANGE YOUR LOGIC INSTEAD
-                    //
-                    //                            // FIXUP for IZ#146696: cannot open projects: Not allowed to use EDT...
-                    //                            // return null;
-                    //                        }
                     try {
                         SnapShot delta = startModifications();
-                        MakeConfigurationDescriptor newDescriptor = reader.read(relativeOffset, interrupter);
+                        if (reload) {
+                            projectDescriptor.clean();
+                        }
+                        reader.read(projectDescriptor, relativeOffset, interrupter);
+                        projectDescriptor.waitInitTask();
+                        endModifications(delta, true, LOGGER);
+                        fireConfigurationDescriptorLoaded();
                         LOGGER.log(Level.FINE, "End of reading project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", // NOI18N
                                 new Object[]{projectDirectory.getNameExt(), System.identityHashCode(this)});
-                        if (projectDescriptor == null) {
-                            if (newDescriptor != null) {
-                                projectDescriptor = newDescriptor;
-                                LOGGER.log(Level.FINE, "Created project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", // NOI18N
-                                        new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)});
-                            } else {
-                                LOGGER.log(Level.FINE, "Cannot create project descriptor for project {0} in ConfigurationDescriptorProvider@{1}", // NOI18N
-                                        new Object[]{projectDirectory.getNameExt(), System.identityHashCode(this)});
-                            }
-                        } else {
-                            if (newDescriptor != null) {
-                                newDescriptor.setProject(project);
-                                newDescriptor.waitInitTask();
-                                projectDescriptor.assign(newDescriptor);
-                                endModifications(delta, true, LOGGER);
-                                LOGGER.log(Level.FINE, "Reassigned project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", // NOI18N
-                                        new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)});
-                            } else {
-                                LOGGER.log(Level.FINE, "cannot reassign project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", // NOI18N
-                                        new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)});
-                            }
-                        }
                     } catch (java.io.IOException x) {
                         x.printStackTrace(System.err);
                         // most likely open failed
@@ -179,23 +155,18 @@ public class ConfigurationDescriptorProvider{
                 }
             }
         }
-        if (waitReading && projectDescriptor != null) {
-            projectDescriptor.waitInitTask();
-        }
+        projectDescriptor.waitInitTask();
         return projectDescriptor;
     }
 
     public SnapShot startModifications() {
-        if (projectDescriptor != null) {
-            return new Delta(projectDescriptor);
-        }
-        return null;
+        return new Delta(projectDescriptor);
     }
 
     public void endModifications(SnapShot snapShot, boolean sendChangeEvent, Logger logger) {
         if (snapShot instanceof Delta) {
             Delta delta = (Delta) snapShot;
-            if (sendChangeEvent && projectDescriptor != null) {
+            if (sendChangeEvent) {
                 delta.computeDelta(projectDescriptor);
                 if (logger != null) {
                     delta.printStatistic(logger);
@@ -206,7 +177,7 @@ public class ConfigurationDescriptorProvider{
     }
     
     public boolean gotDescriptor() {
-        return isOpened.get() && projectDescriptor != null && projectDescriptor.getState() != State.READING;
+        return isOpened.get() && projectDescriptor.getState() != State.READING;
     }
 
     public static ConfigurationAuxObjectProvider[] getAuxObjectProviders() {
@@ -412,10 +383,7 @@ public class ConfigurationDescriptorProvider{
         
         // clean up
         isOpened.set(false);
-        if (projectDescriptor != null) {
-            projectDescriptor.clean();
-        }
-        projectDescriptor = null;
+        projectDescriptor.clean();
         hasTried = false;
         relativeOffset = null;
         needReload = false;
@@ -423,7 +391,9 @@ public class ConfigurationDescriptorProvider{
 
     public void opened(Interrupter interrupter) {
         isOpened.set(true);
-        MakeConfigurationDescriptor descr = getConfigurationDescriptor(true, interrupter);
+        needReload = true;
+        hasTried = false;
+        MakeConfigurationDescriptor descr = getConfigurationDescriptor(interrupter, false);
         if (descr != null) {
             descr.opened(interrupter);
         }
@@ -491,9 +461,9 @@ public class ConfigurationDescriptorProvider{
     private class ConfigurationXMLChangeListener implements FileChangeListener {
 
         private void resetConfiguration() {
-            if (projectDescriptor == null || !projectDescriptor.isModified()) {
+            if (!projectDescriptor.isModified()) {
                 synchronized (readLock) {
-                    if (projectDescriptor == null || !projectDescriptor.isModified()) {
+                    if (!projectDescriptor.isModified()) {
                         // Don't reload if descriptor is modified in memory.
                         // This also prevents reloading when descriptor is being saved.
                         LOGGER.log(Level.FINE, "Mark to reload project descriptor MakeConfigurationDescriptor@{0} for project {1} in ConfigurationDescriptorProvider@{2}", new Object[]{System.identityHashCode(projectDescriptor), projectDirectory.getNameExt(), System.identityHashCode(this)}); // NOI18N
@@ -503,7 +473,7 @@ public class ConfigurationDescriptorProvider{
 
                             @Override
                             public void run() {
-                                getConfigurationDescriptor();
+                                getConfigurationDescriptor(null, true);
                             }
                         });
                     }

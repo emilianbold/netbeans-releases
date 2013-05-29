@@ -43,7 +43,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -51,20 +50,18 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
-import org.netbeans.junit.MockServices;
+import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.localhistory.store.LocalHistoryStore;
 import org.netbeans.modules.localhistory.store.StoreEntry;
 import org.netbeans.modules.versioning.core.VersioningManager;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.spi.VCSInterceptor;
-import org.netbeans.modules.versioning.core.spi.VersioningSystem;
-import org.netbeans.modules.versioning.masterfs.VersioningAnnotationProvider;
 import org.netbeans.modules.versioning.util.VersioningListener;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -89,6 +86,18 @@ public class InterceptorTest extends NbTestCase {
         System.setProperty("netbeans.localhistory.historypath", getWorkDir().getParentFile().getAbsolutePath());
         VersioningManager.getInstance().versionedRootsChanged(); // flush file owner caches
         super.setUp();
+    }
+    
+    public static TestSuite suite () {
+        TestSuite suite = new NbTestSuite();
+        suite.addTest(new InterceptorTest("testBeforeEdit"));
+        suite.addTest(new InterceptorTest("testEdit"));
+        suite.addTest(new InterceptorTest("testDelete"));
+        suite.addTest(new InterceptorTest("testTestInterceptorComplete"));
+        suite.addTest(new InterceptorTest("testBeforeEditBlocksFileChange"));
+        suite.addTest(new InterceptorTest("testBeforeEditBlocksFileDelete"));
+        suite.addTest(new InterceptorTest("testLockTimeout"));
+        return suite;
     }
     
     public void testBeforeEdit() throws IOException, InterruptedException, TimeoutException {
@@ -177,7 +186,7 @@ public class InterceptorTest extends NbTestCase {
         write(fo, "2");
         assertTrue(lh.isDone()); // was blocked while storing 
         if(System.currentTimeMillis() - t < BLOCK_TIME) {
-            fail("should have been blocked for at least " + (BLOCK_TIME / 10000) + " seconds");
+            fail("should have been blocked for at least " + (BLOCK_TIME / 1000) + " seconds");
         }
         assertTrue(lhBocked.isDone()); // was blocked in beforeEdit as well 
         
@@ -205,7 +214,7 @@ public class InterceptorTest extends NbTestCase {
         fo.delete();
         assertTrue(lh.isDone()); // was blocked while storing 
         if(System.currentTimeMillis() - t < BLOCK_TIME) {
-            fail("should have been blocked for at least " + (BLOCK_TIME / 10000) + " seconds");
+            fail("should have been blocked for at least " + (BLOCK_TIME / 1000) + " seconds");
         }
         assertTrue(lhBocked.isDone()); // was blocked in beforeEdit as well 
         

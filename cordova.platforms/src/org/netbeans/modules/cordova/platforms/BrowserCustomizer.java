@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,93 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cordova.platforms;
 
-package org.netbeans.modules.cordova.platforms.android;
-
-import java.util.logging.Logger;
+import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ProjectConfigurationCustomizer;
-import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
-import org.netbeans.spi.project.ActionProvider;
-import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN;
-import static org.netbeans.spi.project.ActionProvider.COMMAND_RUN_SINGLE;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
-import org.openide.util.Lookup;
 
 /**
+ *
  * @author Jan Becicka
  */
-public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {
+public class BrowserCustomizer implements ProjectConfigurationCustomizer {
 
-    final private Project project;
+    private BrowserConfigurationPanel panel;
+    private final Project project;
     private final WebBrowser browser;
-    private static final Logger LOGGER = Logger.getLogger(EnhancedBrowserImpl.class.getName());
+    private final ClientProjectEnhancedBrowserImplementation impl;
 
-    EnhancedBrowserImpl(Project project, WebBrowser browser) {
+    public BrowserCustomizer(Project project, ClientProjectEnhancedBrowserImplementation impl, WebBrowser browser) {
         this.project = project;
         this.browser = browser;
+        this.impl = impl;
     }
 
     @Override
-    public void save() {
-        // this should save changes in UI for particular configuration
+    public JPanel createPanel() {
+        panel = new BrowserConfigurationPanel(project, impl, browser);
+        return panel;
     }
 
-    @Override
-    public RefreshOnSaveListener getRefreshOnSaveListener() {
-        return new RefreshListener();
+    public boolean isAutoRefresh() {
+        return panel.isAutoRefresh();
     }
 
-    @Override
-    public ActionProvider getActionProvider() {
-        return new ActionProviderImpl();
+    public boolean isHighlightSelection() {
+        return panel.isHighlightSelection();
     }
-
-    @Override
-    public ProjectConfigurationCustomizer getProjectConfigurationCustomizer() {
-        return null;
-    }
-
-    @Override
-    public void deactivate() {
-    }
-
-    @Override
-    public boolean isHighlightSelectionEnabled() {
-        return true;
-    }
-
-    @Override
-    public ProjectConfigurationProvider getProjectConfigurationProvider() {
-        return null;
-    }
-
-    private class ActionProviderImpl implements ActionProvider {
-
-        public ActionProviderImpl() {
-        }
-
-        @Override
-        public String[] getSupportedActions() {
-            return new String[]{
-                COMMAND_RUN,
-                COMMAND_RUN_SINGLE
-            };
-        }
-
-        @Override
-        public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
-            AndroidBrowser.openBrowser(command, context, AndroidBrowser.Kind.valueOf(browser.getId()), project);
-         }
-
-        @Override
-        public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-            return true;
-        }
-    }
-
 }
