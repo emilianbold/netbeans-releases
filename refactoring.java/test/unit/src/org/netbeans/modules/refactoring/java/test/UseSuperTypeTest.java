@@ -39,10 +39,15 @@ package org.netbeans.modules.refactoring.java.test;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.StatementTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
+import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
@@ -60,6 +65,14 @@ public class UseSuperTypeTest extends RefactoringTestBase {
 
     public UseSuperTypeTest(String name) {
         super(name);
+    }
+    
+    public void test230345() throws Exception { // #230345 - [Use Supertype Where Possible] removes the generic type information
+        writeFilesAndWaitForScan(src,
+                new File("u/Main.java", "package u; import java.util.*; public class Main { public void method() { LinkedHashSet<String> verz = new LinkedHashSet<String>(); } }"));
+        performFromMethodUseSuperType(src.getFileObject("u/Main.java"), 8);
+        verifyContent(src,
+                new File("u/Main.java", "package u; import java.util.*; public class Main { public void method() { Set<String> verz = new LinkedHashSet<String>(); } }"));
     }
     
     public void unfinished228636a() throws Exception { // #228636 - UseSupertypeWherePossible ignores use of generic type
@@ -291,6 +304,35 @@ public class UseSuperTypeTest extends RefactoringTestBase {
                 ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
                 TreePath tp = TreePath.getPath(cut, classTree);
                 r[0] = new UseSuperTypeRefactoring(TreePathHandle.create(tp, parameter));
+                r[0].setTargetSuperType(r[0].getCandidateSuperTypes()[position]);
+            }
+        }, true);
+
+        RefactoringSession rs = RefactoringSession.create("Session");
+        List<Problem> problems = new LinkedList<Problem>();
+
+        addAllProblems(problems, r[0].preCheck());
+        addAllProblems(problems, r[0].prepare(rs));
+        addAllProblems(problems, rs.doRefactoring(true));
+
+        assertProblems(Arrays.asList(expectedProblems), problems);
+    }
+    
+    private void performFromMethodUseSuperType(FileObject source, final int position, Problem... expectedProblems) throws Exception {
+        final UseSuperTypeRefactoring[] r = new UseSuperTypeRefactoring[1];
+
+        JavaSource.forFileObject(source).runUserActionTask(new Task<CompilationController>() {
+
+            @Override
+            public void run(CompilationController javac) throws Exception {
+                javac.toPhase(JavaSource.Phase.RESOLVED);
+                CompilationUnitTree cut = javac.getCompilationUnit();
+                ClassTree classTree = (ClassTree) cut.getTypeDecls().get(0);
+                MethodTree method = (MethodTree) classTree.getMembers().get(1);
+                VariableTree stmt = (VariableTree) method.getBody().getStatements().get(0);
+                Tree type = stmt.getType();
+                TreePath tp = TreePath.getPath(cut, type);
+                r[0] = new UseSuperTypeRefactoring(TreePathHandle.create(tp, javac));
                 r[0].setTargetSuperType(r[0].getCandidateSuperTypes()[position]);
             }
         }, true);
