@@ -1195,11 +1195,11 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
             if(eval.getProperty(platformProp) == null) {
                 LOG.log(Level.WARNING, NbBundle.getMessage(JWSProjectProperties.class, "ERR_MissingPlatformLocation", platform)); //NOI18N
             } else {
-                path = findLib(eval, platformProp, name);
+                path = findLib(eval, platformProp, name, false);
             }
         }
         if(path == null) {
-            path = findLib(eval, "jdk.home", name); //NOI18N
+            path = findLib(eval, "java.home", name, true); //NOI18N
         }
         if(path == null) {
             LOG.log(Level.WARNING, NbBundle.getMessage(JWSProjectProperties.class, "ERR_MissingPlatformLib", platform, name)); //NOI18N
@@ -1425,23 +1425,28 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
      * @return path to library if it exists or null, if possible the path will be referenced by platform property
      * @throws IOException
      */
-    private static String[] findLib(final PropertyEvaluator eval, final String folderProp, final String name) throws IOException {
-        if (Utilities.isMac()) {
-            String[] res = new String[2];
-            res[0] = findLibMac(name);
-            res[1] = res[0];
-            return res;
-        } else {
-            final String folder = eval.getProperty(folderProp);
-            if(folder != null) {
-                final File deployFramework = new File(folder);
-                final File lib = FileUtil.normalizeFile(new File(deployFramework,"/jre/lib/"+ name)); //NOI18N
-                if(lib.exists()) {
-                    String[] res = new String[2];
-                    res[0] = "${" + folderProp + "}/jre/lib/" + name; //NOI18N
-                    res[1] = lib.getCanonicalPath();
-                    return res;
-                }
+    private static String[] findLib(
+            final PropertyEvaluator eval,
+            final String folderProp,
+            final String name,
+            final boolean defaultPlatform) throws IOException {
+        final String folder = eval.getProperty(folderProp);
+        if(folder != null) {
+            final File deployFramework = new File(folder);
+            final String jreLibPath = defaultPlatform ?
+                    "/lib/" :        //NOI18N
+                    "/jre/lib/";    //NOI18N
+            final File lib = FileUtil.normalizeFile(new File(deployFramework,jreLibPath+ name)); //NOI18N
+            if(lib.exists()) {
+                String[] res = new String[2];
+                res[0] = String.format(
+                    "${%s}%s%s",    //NOI18N
+                    folderProp,
+                    jreLibPath,
+                    name
+                );
+                res[1] = lib.getCanonicalPath();
+                return res;
             }
         }
         return null;
