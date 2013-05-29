@@ -273,6 +273,7 @@ public class SmartyOptionsPanel extends JPanel {
         depthOfScanningNoteLabel = new JLabel();
 
         Mnemonics.setLocalizedText(errorLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.errorLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.learnMoreLabel.text")); // NOI18N
         learnMoreLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
@@ -282,7 +283,9 @@ public class SmartyOptionsPanel extends JPanel {
                 learnMoreLabelMousePressed(evt);
             }
         });
+
         Mnemonics.setLocalizedText(installationInfoLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.installationInfoLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(editorSettingsLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "LBL_OptionsEditorPanel")); // NOI18N
 
         smartyVersionLabel.setDisplayedMnemonic('v');
@@ -291,18 +294,12 @@ public class SmartyOptionsPanel extends JPanel {
 
         openDelimiterLabel.setDisplayedMnemonic('O');
         openDelimiterLabel.setLabelFor(openDelimiterTextField);
-
         Mnemonics.setLocalizedText(openDelimiterLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.openDelimiterLabel.text")); // NOI18N
-
-        openDelimiterTextField.setPreferredSize(new Dimension(4, 24));
 
         closeDelimiterLabel.setDisplayedMnemonic('C');
         closeDelimiterLabel.setLabelFor(closeDelimiterTextField);
-
         Mnemonics.setLocalizedText(closeDelimiterLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.closeDelimiterLabel.text")); // NOI18N
 
-        closeDelimiterTextField.setMinimumSize(new Dimension(4, 24));
-        closeDelimiterTextField.setPreferredSize(new Dimension(4, 24));
         Mnemonics.setLocalizedText(toggleCommentLable, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.toggleCommentLable.text")); // NOI18N
 
         toggleCommentButtonGroup.add(asSmartyRadioButton);
@@ -312,13 +309,14 @@ public class SmartyOptionsPanel extends JPanel {
 
         toggleCommentButtonGroup.add(perContextRadioButton);
         perContextRadioButton.setMnemonic('l');
-
         Mnemonics.setLocalizedText(perContextRadioButton, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.perContextRadioButton.text")); // NOI18N
+
         Mnemonics.setLocalizedText(projectSettingsLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "LBL_OptionsProjectPanel")); // NOI18N
 
         depthOfScanningLabel.setDisplayedMnemonic('S');
         depthOfScanningLabel.setLabelFor(depthOfScanningComboBox);
         Mnemonics.setLocalizedText(depthOfScanningLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.depthOfScanningLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(depthOfScanningNoteLabel, NbBundle.getMessage(SmartyOptionsPanel.class, "SmartyOptionsPanel.depthOfScanningNoteLabel.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
@@ -348,20 +346,20 @@ public class SmartyOptionsPanel extends JPanel {
                                     .addComponent(toggleCommentLable))
                                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                                     .addGroup(layout.createSequentialGroup()
+                                        .addPreferredGap(ComponentPlacement.RELATED)
+                                        .addComponent(asSmartyRadioButton)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(perContextRadioButton, GroupLayout.PREFERRED_SIZE, 178, GroupLayout.PREFERRED_SIZE))
+                                    .addGroup(layout.createSequentialGroup()
                                         .addGap(12, 12, 12)
                                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                                            .addComponent(smartyVersionComboBox, GroupLayout.PREFERRED_SIZE, 393, GroupLayout.PREFERRED_SIZE)
+                                            .addComponent(smartyVersionComboBox, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                             .addGroup(layout.createSequentialGroup()
                                                 .addComponent(openDelimiterTextField, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE)
                                                 .addPreferredGap(ComponentPlacement.RELATED)
                                                 .addComponent(closeDelimiterLabel)
                                                 .addPreferredGap(ComponentPlacement.RELATED)
-                                                .addComponent(closeDelimiterTextField, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE))))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addPreferredGap(ComponentPlacement.RELATED)
-                                        .addComponent(asSmartyRadioButton)
-                                        .addGap(18, 18, 18)
-                                        .addComponent(perContextRadioButton, GroupLayout.PREFERRED_SIZE, 178, GroupLayout.PREFERRED_SIZE))))
+                                                .addComponent(closeDelimiterTextField, GroupLayout.PREFERRED_SIZE, 50, GroupLayout.PREFERRED_SIZE))))))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(depthOfScanningLabel)
                                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -383,7 +381,7 @@ public class SmartyOptionsPanel extends JPanel {
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
                     .addComponent(openDelimiterLabel)
-                    .addComponent(openDelimiterTextField, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(openDelimiterTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(closeDelimiterLabel)
                     .addComponent(closeDelimiterTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -400,7 +398,7 @@ public class SmartyOptionsPanel extends JPanel {
                     .addComponent(depthOfScanningLabel, GroupLayout.PREFERRED_SIZE, 24, GroupLayout.PREFERRED_SIZE)
                     .addComponent(depthOfScanningComboBox, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(depthOfScanningNoteLabel))
-                .addPreferredGap(ComponentPlacement.RELATED, 180, Short.MAX_VALUE)
+                .addPreferredGap(ComponentPlacement.RELATED, 185, Short.MAX_VALUE)
                 .addComponent(installationInfoLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
