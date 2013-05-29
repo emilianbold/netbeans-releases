@@ -306,8 +306,14 @@ public class WhereUsedQueryUI implements RefactoringUI, Openable, JavaRefactorin
         if (el == null) {
             return null;
         }
+        TreePath path = handle.resolve(info);
+        // Re-create the handle, the old handle can be without a fileobject
+        if(path != null) {
+            handle = TreePathHandle.create(path, info);
+        } else {
+            handle = TreePathHandle.create(el, info);
+        }
         if(el.getKind() == ElementKind.CLASS) {
-            TreePath path = handle.resolve(info);
             if(path != null && path.getParentPath() != null) {
                 TreePath parentPath = path.getParentPath();
                 if(parentPath.getLeaf().getKind() == Tree.Kind.NEW_CLASS) {
