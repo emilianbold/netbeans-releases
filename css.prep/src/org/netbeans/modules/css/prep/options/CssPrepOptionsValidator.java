@@ -55,8 +55,9 @@ public final class CssPrepOptionsValidator {
         return result;
     }
 
-    public CssPrepOptionsValidator validateSassPath(String sassPath) {
-        if (!StringUtils.hasText(sassPath)) {
+    public CssPrepOptionsValidator validateSassPath(String sassPath, boolean allowEmpty) {
+        if (allowEmpty
+                && !StringUtils.hasText(sassPath)) {
             // no warning in dialog, project problems will catch it
             return this;
         }
@@ -67,8 +68,9 @@ public final class CssPrepOptionsValidator {
         return this;
     }
 
-    public CssPrepOptionsValidator validateLessPath(String lessPath) {
-        if (!StringUtils.hasText(lessPath)) {
+    public CssPrepOptionsValidator validateLessPath(String lessPath, boolean allowEmpty) {
+        if (allowEmpty
+                && !StringUtils.hasText(lessPath)) {
             // no warning in dialog, project problems will catch it
             return this;
         }

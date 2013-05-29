@@ -90,7 +90,7 @@ public class JsIndex {
     private static final int MAX_ENTRIES_CACHE_INDEX_RESULT = 300;
     // cache to keep latest index results. The cache is cleaned if a file is saved
     // or a file has to be reindexed due to an external change
-    private static final Map <String, Collection<? extends IndexResult>> CACHE_INDEX_RESULT = new LinkedHashMap<String, Collection<? extends IndexResult>>(MAX_ENTRIES_CACHE_INDEX_RESULT + 1, 0.75F, true) {
+    private static final Map <CacheKey, Collection<? extends IndexResult>> CACHE_INDEX_RESULT = new LinkedHashMap<CacheKey, Collection<? extends IndexResult>>(MAX_ENTRIES_CACHE_INDEX_RESULT + 1, 0.75F, true) {
         @Override
         public boolean removeEldestEntry(Map.Entry eldest) {
             return size() > MAX_ENTRIES_CACHE_INDEX_RESULT;
@@ -106,6 +106,7 @@ public class JsIndex {
     }
 
     public static JsIndex get(Collection<FileObject> roots) {
+        // XXX no cache - is it needed?
         LOG.log(Level.FINE, "JsIndex for roots: {0}", roots); //NOI18N
         return new JsIndex(QuerySupportFactory.get(roots));
     }
@@ -133,7 +134,7 @@ public class JsIndex {
                     CACHE_INDEX_RESULT.clear();
                     IS_INDEX_CHANGED.set(false);
                 }
-                String key = fieldName + fieldValue + kind;
+                CacheKey key = new CacheKey(this, fieldName, fieldValue, kind);
                 Collection<? extends IndexResult> result = CACHE_INDEX_RESULT.get(key);
                 if (result == null) {
                     result = querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
@@ -228,5 +229,57 @@ public class JsIndex {
     
     private String escapeRegExp(String text) {
         return Pattern.quote(text);
+    }
+
+    private static class CacheKey {
+
+        final JsIndex index;
+        
+        final String fieldName;
+
+        final String fieldValue;
+
+        final QuerySupport.Kind kind;
+
+        public CacheKey(JsIndex index, String fieldName, String fieldValue, QuerySupport.Kind kind) {
+            this.index = index;
+            this.fieldName = fieldName;
+            this.fieldValue = fieldValue;
+            this.kind = kind;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 3;
+            hash = 41 * hash + (this.index != null ? this.index.hashCode() : 0);
+            hash = 41 * hash + (this.fieldName != null ? this.fieldName.hashCode() : 0);
+            hash = 41 * hash + (this.fieldValue != null ? this.fieldValue.hashCode() : 0);
+            hash = 41 * hash + (this.kind != null ? this.kind.hashCode() : 0);
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final CacheKey other = (CacheKey) obj;
+            if (this.index != other.index && (this.index == null || !this.index.equals(other.index))) {
+                return false;
+            }
+            if ((this.fieldName == null) ? (other.fieldName != null) : !this.fieldName.equals(other.fieldName)) {
+                return false;
+            }
+            if ((this.fieldValue == null) ? (other.fieldValue != null) : !this.fieldValue.equals(other.fieldValue)) {
+                return false;
+            }
+            if (this.kind != other.kind) {
+                return false;
+            }
+            return true;
+        }
     }
 }
