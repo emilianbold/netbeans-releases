@@ -42,11 +42,8 @@
 package org.netbeans.modules.web.common.cssprep;
 
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,8 +54,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.GroupLayout;
+import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.LayoutStyle;
@@ -195,16 +192,13 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        configureButton = new JButton();
         mainTabbedPane = new JTabbedPane();
-        optionsLabel = new JLabel();
 
-        Mnemonics.setLocalizedText(optionsLabel, NbBundle.getMessage(CssPreprocessorsCustomizerPanel.class, "CssPreprocessorsCustomizerPanel.optionsLabel.text")); // NOI18N
-        optionsLabel.addMouseListener(new MouseAdapter() {
-            public void mouseEntered(MouseEvent evt) {
-                optionsLabelMouseEntered(evt);
-            }
-            public void mousePressed(MouseEvent evt) {
-                optionsLabelMousePressed(evt);
+        Mnemonics.setLocalizedText(configureButton, NbBundle.getMessage(CssPreprocessorsCustomizerPanel.class, "CssPreprocessorsCustomizerPanel.configureButton.text")); // NOI18N
+        configureButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
+                configureButtonActionPerformed(evt);
             }
         });
 
@@ -215,28 +209,24 @@ public final class CssPreprocessorsCustomizerPanel extends JPanel implements Cha
             .addComponent(mainTabbedPane, GroupLayout.DEFAULT_SIZE, 400, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addComponent(configureButton))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addComponent(optionsLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addComponent(configureButton)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(mainTabbedPane, GroupLayout.DEFAULT_SIZE, 279, Short.MAX_VALUE))
+                .addComponent(mainTabbedPane, GroupLayout.DEFAULT_SIZE, 269, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void optionsLabelMouseEntered(MouseEvent evt) {//GEN-FIRST:event_optionsLabelMouseEntered
-        evt.getComponent().setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-    }//GEN-LAST:event_optionsLabelMouseEntered
-
-    private void optionsLabelMousePressed(MouseEvent evt) {//GEN-FIRST:event_optionsLabelMousePressed
+    private void configureButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_configureButtonActionPerformed
         OptionsDisplayer.getDefault().open(CssPreprocessors.OPTIONS_PATH);
-    }//GEN-LAST:event_optionsLabelMousePressed
+    }//GEN-LAST:event_configureButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private JButton configureButton;
     private JTabbedPane mainTabbedPane;
-    private JLabel optionsLabel;
     // End of variables declaration//GEN-END:variables
 
     @Override

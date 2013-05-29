@@ -60,6 +60,7 @@ import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Pair;
 
 public final class SassProcessor extends BaseProcessor {
 
@@ -81,7 +82,7 @@ public final class SassProcessor extends BaseProcessor {
     }
 
     @Override
-    protected List<String> getMappings(Project project) {
+    protected List<Pair<String, String>> getMappings(Project project) {
         return SassPreferences.getMappings(project);
     }
 

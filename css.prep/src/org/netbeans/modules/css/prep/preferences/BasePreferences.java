@@ -47,6 +47,7 @@ import java.util.prefs.Preferences;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
+import org.openide.util.Pair;
 
 abstract class BasePreferences {
 
@@ -61,7 +62,7 @@ abstract class BasePreferences {
         getPreferences(project).putBoolean(propertyName, enabled);
     }
 
-    public static List<String> getMappings(Project project, String propertyName) {
+    public static List<Pair<String, String>> getMappings(Project project, String propertyName) {
         String mappings = getPreferences(project).get(propertyName, null);
         if (mappings == null) {
             return Collections.emptyList();
@@ -69,7 +70,7 @@ abstract class BasePreferences {
         return CssPreprocessorUtils.decodeMappings(mappings);
     }
 
-    public static void setMappings(Project project, String propertyName, List<String> mappings) {
+    public static void setMappings(Project project, String propertyName, List<Pair<String, String>> mappings) {
         getPreferences(project).put(propertyName, CssPreprocessorUtils.encodeMappings(mappings));
     }
 
