@@ -106,7 +106,7 @@ public final class LessExecutable {
         assert source.isFile() : "Not file given: " + source;
         final File targetDir = target.getParentFile();
         if (!targetDir.isDirectory()) {
-            if (!targetDir.mkdirs() ) {
+            if (!targetDir.mkdirs()) {
                 LOGGER.log(Level.WARNING, "Cannot create directory {0}", targetDir);
                 return;
             }
