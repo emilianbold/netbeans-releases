@@ -190,9 +190,6 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
                             embeddings.add(snapshot.create("\n", JS_MIMETYPE)); //NOI18N
                         }
                         break;
-                    case EL_OPEN_DELIMITER:
-                        handleELOpenDelimiter(snapshot, ts, embeddings);
-                        break;
                     default:
                         state.in_javascript = false;
                         break;
@@ -212,27 +209,6 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
             int diff = Utils.isAttributeValueQuoted(ts.token().text()) ? 1 : 0;
             embeddings.add(snapshot.create(ts.offset() + diff, ts.token().length() - diff * 2, JS_MIMETYPE));
             embeddings.add(snapshot.create(";\n});\n", JS_MIMETYPE)); //NOI18N
-        }
-    }
-
-    private void handleELOpenDelimiter(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
-        //1.check if the next token represents javascript content
-        String mimetype = (String) ts.token().getProperty("contentMimeType"); //NOT IN AN API, TBD
-        if (mimetype != null && "text/javascript".equals(mimetype)) {
-            embeddings.add(snapshot.create("(function(){\n", JS_MIMETYPE)); //NOI18N
-
-            //2. check content
-            if (ts.moveNext()) {
-                if (ts.token().id() == HTMLTokenId.EL_CONTENT) {
-                    //not empty expression: {{sg}}
-                    embeddings.add(snapshot.create(ts.offset(), ts.token().length(), JS_MIMETYPE));
-                    embeddings.add(snapshot.create(";\n});\n", JS_MIMETYPE)); //NOI18N
-                } else if (ts.token().id() == HTMLTokenId.EL_CLOSE_DELIMITER) {
-                    //empty expression: {{}}
-                    embeddings.add(snapshot.create(ts.offset(), 0, JS_MIMETYPE));
-                    embeddings.add(snapshot.create(";\n});\n", JS_MIMETYPE)); //NOI18N
-                }
-            }
         }
     }
 

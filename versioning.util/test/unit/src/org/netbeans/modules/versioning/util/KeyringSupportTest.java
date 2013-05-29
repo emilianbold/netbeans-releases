@@ -39,19 +39,58 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.spi.completion;
+package org.netbeans.modules.versioning.util;
 
-import java.util.Set;
-import org.netbeans.api.annotations.common.NonNull;
-import org.openide.filesystems.FileObject;
+import org.junit.Assert;
+import org.netbeans.api.keyring.Keyring;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author Ondrej Brejla <obrejla@netbeans.org>
+ * @author Ondrej Vrabec
  */
-public interface VariableCompletionProvider {
+public class KeyringSupportTest extends NbTestCase {
+    private String prefix;
+    private String key;
+    
+    public KeyringSupportTest (String name) {
+        super(name);
+    }
 
-    @NonNull
-    Set<String> getVariables(@NonNull FileObject templateFile);
-
+    @Override
+    protected void setUp () throws Exception {
+        super.setUp();
+        prefix = "myvcs_uri_password";
+        key = "https://ovrabec@myserver.mydomain.com/path/to/repository.repo";
+        Keyring.delete(KeyringSupport.getKeyringKeyHashed(prefix, key));
+        Keyring.delete(KeyringSupport.getKeyringKey(prefix, key));
+    }
+        
+    public void testReplaceHashedKeyOldRecord () throws Exception {
+        String fullKey = KeyringSupport.getKeyringKeyHashed(prefix, key);
+        char[] password = "password".toCharArray();
+        Keyring.save(fullKey, password.clone(), "test record");
+        
+        // old key exists
+        Assert.assertArrayEquals(password, Keyring.read(fullKey));
+        // old key can be obtained back
+        Assert.assertArrayEquals(password, KeyringSupport.read(prefix, key));
+        // old key should be no longer present
+        assertNull(Keyring.read(fullKey));
+        // new key should be present
+        Assert.assertArrayEquals(password, Keyring.read(KeyringSupport.getKeyringKey(prefix, key)));
+    }
+    
+    public void testSaveNoHash () throws Exception {
+        String fullKey = KeyringSupport.getKeyringKey(prefix, key);
+        char[] password = "password".toCharArray();
+        
+        assertNull(Keyring.read(fullKey));
+        
+        KeyringSupport.save(prefix, key, password.clone(), "test record");
+        
+        Assert.assertArrayEquals(password, Keyring.read(fullKey));
+        Assert.assertArrayEquals(password, KeyringSupport.read(prefix, key));
+    }
+    
 }

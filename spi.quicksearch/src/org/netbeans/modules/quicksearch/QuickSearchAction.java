@@ -72,7 +72,7 @@ public final class QuickSearchAction extends CallableSystemAction {
         comboBar.displayer.explicitlyInvoked();
         if (comboBar.getCommand().isFocusOwner()) {
             // repetitive action invocation, reset search to all categories
-            comboBar.evaluateCategory(null, false);
+            comboBar.evaluate(null);
         } else {
             comboBar.requestFocus();
         }

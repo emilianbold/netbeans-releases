@@ -43,7 +43,7 @@ package org.netbeans.modules.php.latte.completion;
 
 import java.util.List;
 import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.php.latte.spi.completion.VariableCompletionProvider;
+import org.netbeans.modules.php.spi.templates.completion.VariableCompletionProvider;
 
 /**
  *

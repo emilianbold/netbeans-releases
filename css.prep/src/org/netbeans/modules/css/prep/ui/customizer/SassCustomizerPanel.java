@@ -51,17 +51,17 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 public class SassCustomizerPanel extends JPanel {
 
     private static final long serialVersionUID = 1358867654654L;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
-    private final MappingPanel mappingPanel;
+    private final MappingsPanel mappingPanel;
 
     // we must be thread safe
     private volatile boolean enabled;
@@ -69,7 +69,7 @@ public class SassCustomizerPanel extends JPanel {
 
     public SassCustomizerPanel() {
         assert EventQueue.isDispatchThread();
-        this.mappingPanel = new MappingPanel(CssPreprocessorType.SASS);
+        this.mappingPanel = new MappingsPanel();
         initComponents();
         init();
     }
@@ -96,11 +96,11 @@ public class SassCustomizerPanel extends JPanel {
         enabledCheckBox.setSelected(enabled);
     }
 
-    public List<String> getMappings() {
+    public List<Pair<String, String>> getMappings() {
         return mappingPanel.getMappings();
     }
 
-    public void setMappings(List<String> mappings) {
+    public void setMappings(List<Pair<String, String>> mappings) {
         mappingPanel.setMappings(mappings);
     }
 
@@ -145,7 +145,7 @@ public class SassCustomizerPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(enabledCheckBox)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addGap(0, 13, Short.MAX_VALUE))
                     .addComponent(mappingContainerPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -155,8 +155,8 @@ public class SassCustomizerPanel extends JPanel {
                 .addContainerGap()
                 .addComponent(enabledCheckBox)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(mappingContainerPanel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(mappingContainerPanel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 

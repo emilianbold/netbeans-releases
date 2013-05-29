@@ -94,7 +94,7 @@ public final class LessExecutable {
         return new LessExecutable(path);
     }
 
-    @NbBundle.Messages("Less.executable.label=LESS")
+    @NbBundle.Messages("Less.executable.label=LESS executable")
     public static String validate(String path) {
         return ExternalExecutableValidator.validateCommand(path, Bundle.Less_executable_label());
     }
@@ -106,7 +106,7 @@ public final class LessExecutable {
         assert source.isFile() : "Not file given: " + source;
         final File targetDir = target.getParentFile();
         if (!targetDir.isDirectory()) {
-            if (!targetDir.mkdirs() ) {
+            if (!targetDir.mkdirs()) {
                 LOGGER.log(Level.WARNING, "Cannot create directory {0}", targetDir);
                 return;
             }

@@ -220,7 +220,7 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel {
             Runnable action = ir.getAction();
             if (action instanceof CategoryResult) {
                 CategoryResult cr = (CategoryResult)action;
-                evaluateCategory(cr.getCategory(), true);
+                evaluate(cr.getCategory());
                 return;
             }
         }
@@ -262,10 +262,7 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel {
     private void commandFocusGained(java.awt.event.FocusEvent evt) {
         caller = new WeakReference<TopComponent>(TopComponent.getRegistry().getActivated());
         setShowHint(false);
-        if (CommandEvaluator.isCatTemporary()) {
-            CommandEvaluator.setCatTemporary(false);
-            CommandEvaluator.setEvalCats(null);
-        }
+        CommandEvaluator.dropTemporaryCat();
     }
 
     protected void maybeShowPopup (MouseEvent evt) {
@@ -276,9 +273,7 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel {
         JPopupMenu pm = new JPopupMenu();
         final Set<ProviderModel.Category> evalCats =
                 new HashSet<ProviderModel.Category>();
-        if (!CommandEvaluator.isCatTemporary()) {
-            evalCats.addAll(CommandEvaluator.getEvalCats());
-        }
+        evalCats.addAll(CommandEvaluator.getEvalCats());
         JMenuItem allCats = new AllMenuItem(evalCats);
         pm.add(allCats);
 
@@ -295,7 +290,7 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel {
 
     private void updateCats(Set<Category> evalCats) {
         CommandEvaluator.setEvalCats(evalCats);
-        CommandEvaluator.setCatTemporary(false);
+        CommandEvaluator.dropTemporaryCat();
         // refresh hint
         setShowHint(!command.isFocusOwner());
     }
@@ -311,13 +306,19 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel {
         }
     }
 
-    /** Runs evaluation narrowed to specified category
+    /**
+     * Runs evaluation. Possibly temporarily narrow to a specified category.
      *
+     * @param tempCategory Temporary category. If set, only the specified
+     * category will be evaluated. If null, all enabled categories will be
+     * evaluated.
      */
-    public void evaluateCategory (Category cat, boolean temporary) {
-        CommandEvaluator.setEvalCats(
-                cat == null ? null : Collections.singleton(cat));
-        CommandEvaluator.setCatTemporary(temporary);
+    public void evaluate(Category tempCategory) {
+        if (tempCategory != null) {
+            CommandEvaluator.setTemporaryCat(tempCategory);
+        } else {
+            CommandEvaluator.dropTemporaryCat();
+        }
         displayer.maybeEvaluate(command.getText());
     }
 
@@ -341,7 +342,8 @@ public abstract class AbstractQuickSearchComboBar extends javax.swing.JPanel {
         if (showHint) {
             command.setForeground(command.getDisabledTextColor());
             Set<Category> evalCats = CommandEvaluator.getEvalCats();
-            if (evalCats.size() < 3 && !CommandEvaluator.isCatTemporary()) {
+            if (evalCats.size() < 3
+                    && !CommandEvaluator.isTemporaryCatSpecified()) {
                 Category bestFound = null;
                 for (Category c : evalCats) {
                     if (bestFound == null || CommandEvaluator.RECENT.equals(

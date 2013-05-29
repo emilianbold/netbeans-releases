@@ -66,7 +66,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.VariableBase;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
-import org.netbeans.modules.php.latte.spi.completion.VariableCompletionProvider;
+import org.netbeans.modules.php.spi.templates.completion.VariableCompletionProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -75,8 +75,8 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 @ServiceProvider(service = VariableCompletionProvider.class, path = "Latte/Completion/Variables") //NOI18N
-public class PhpVariableCompletionProvider implements VariableCompletionProvider {
-    private static final Logger LOGGER = Logger.getLogger(PhpVariableCompletionProvider.class.getName());
+public class LatteVariableCompletionProvider implements VariableCompletionProvider {
+    private static final Logger LOGGER = Logger.getLogger(LatteVariableCompletionProvider.class.getName());
     private static final String DOTTED_RELATIVE_PRESENTER_PATH = "../../presenters/"; //NOI18N
     private static final String COMMON_RELATIVE_PRESENTER_PATH = "../" + DOTTED_RELATIVE_PRESENTER_PATH; //NOI18N
     private static final String PRESENTER_CLASS_SUFFIX = "Presenter"; //NOI18N
