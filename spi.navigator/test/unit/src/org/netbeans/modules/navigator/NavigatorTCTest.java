@@ -47,11 +47,15 @@ package org.netbeans.modules.navigator;
 import java.beans.PropertyChangeEvent;
 import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.JComboBox;
@@ -90,6 +94,34 @@ public class NavigatorTCTest extends NbTestCase {
     public NavigatorTCTest(String testName) {
         super(testName);
     }
+
+// Uncomment to log all levels to output
+//    @Override
+//    protected void setUp() throws Exception {
+//        NavigatorController.LOG.addHandler(new Handler() {
+//
+//            @Override
+//            public void publish(LogRecord record) {
+//                System.out.println(MessageFormat.format(record.getMessage(), record.getParameters()));
+//            }
+//
+//            @Override
+//            public void flush() {
+//
+//            }
+//
+//            @Override
+//            public void close() throws SecurityException {
+//
+//            }
+//
+//        });
+//    }
+//
+//    @Override
+//    protected Level logLevel() {
+//        return Level.ALL;
+//    }
 
     @RandomlyFails // NB-Core-Build #8071: instanceof PrazskyPepikProvider
     public void testCorrectCallsOfNavigatorPanelMethods () throws Exception {
@@ -501,7 +533,6 @@ public class NavigatorTCTest extends NbTestCase {
         }
     }
 
-    @RandomlyFails // NB-Core-Build #8126: Expected LastSelMime2Panel2 panel to be selected, but selected is LastSelMime1Panel3
     public void test_112954_LastSelected () throws Exception {
         System.out.println("Testing feature #112954, remembering last selected panel for context type...");
 
@@ -548,6 +579,7 @@ public class NavigatorTCTest extends NbTestCase {
             // wait for selected node change to be applied, because changes are
             // reflected with little delay
             waitForChange();
+            waitForProviders(navTC);
             
             panels = navTC.getPanels();
             assertNotNull("Selected panel should not be null", navTC.getSelectedPanel());
@@ -572,6 +604,7 @@ public class NavigatorTCTest extends NbTestCase {
             // wait for selected node change to be applied, because changes are
             // reflected with little delay
             waitForChange();
+            waitForProviders(navTC);
             
             // third panel should be selected
             panels = navTC.getPanels();
@@ -586,6 +619,8 @@ public class NavigatorTCTest extends NbTestCase {
             // wait for selected node change to be applied, because changes are
             // reflected with little delay
             waitForChange();
+            waitForProviders(navTC);
+
             
             // third panel should be selected
             panels = navTC.getPanels();
