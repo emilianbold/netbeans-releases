@@ -484,6 +484,7 @@ public class JsCompletionItem implements CompletionProposal {
                                 signatures.put(signature, item);
                             }
                             break;
+                        case PARAMETER:
                         case PROPERTY:
                         case PROPERTY_GETTER:
                         case PROPERTY_SETTER:
