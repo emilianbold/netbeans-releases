@@ -16,7 +16,7 @@
     <properties>
         <property>
             <name>version</name>
-            <value>1.0</value>
+            <value>2.0</value>
         </property>
     </properties>
 </library>
