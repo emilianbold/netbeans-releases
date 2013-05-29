@@ -116,9 +116,10 @@ made subject to such option by the copyright holder.
             <class-path-extension>
                 <runtime-relative-path>ext/jersey2/ext/jaxb-api-2.2.7.jar</runtime-relative-path>
             </class-path-extension>
+<!--  see issue 230417:
             <class-path-extension>
                 <runtime-relative-path>ext/jersey2/ext/org.osgi.core-4.2.0.jar</runtime-relative-path>
-            </class-path-extension>
+            </class-path-extension>-->
             <class-path-extension>
                 <runtime-relative-path>ext/jersey2/ext/osgi-resource-locator-1.0.1.jar</runtime-relative-path>
             </class-path-extension>
