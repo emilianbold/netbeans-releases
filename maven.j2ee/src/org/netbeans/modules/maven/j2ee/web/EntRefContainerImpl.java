@@ -349,7 +349,7 @@ public class EntRefContainerImpl implements EnterpriseReferenceContainer {
     }
     
     private static boolean isDescriptorMandatory(Profile j2eeVersion) {
-        if (Profile.J2EE_13.equals(j2eeVersion) || Profile.J2EE_14.equals(j2eeVersion)) { //NOI18N
+        if (Profile.J2EE_14.equals(j2eeVersion)) { //NOI18N
             return true;
         }
         return false;

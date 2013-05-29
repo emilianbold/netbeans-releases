@@ -79,7 +79,6 @@ abstract class BaseJ2eeArchetypeProvider {
 
     protected void addSameMojoArchetypeForAllProfiles(String version, String artifactId) {
         Archetype archetype = createMojoArchetype(version, artifactId);
-        map.put(Profile.J2EE_13, archetype);
         map.put(Profile.J2EE_14, archetype);
         map.put(Profile.JAVA_EE_5, archetype);
         map.put(Profile.JAVA_EE_6_FULL, archetype);
