@@ -93,6 +93,7 @@ public class MySQLProcedure extends JDBCProcedure {
         int precision = 0;
 
         SQLType type = JDBCUtils.getSQLType(rs.getInt("DATA_TYPE"));
+        String typeName = rs.getString("TYPE_NAME");
         if (JDBCUtils.isNumericType(type)) {
             precision = rs.getInt("PRECISION");
         } else {
@@ -102,7 +103,7 @@ public class MySQLProcedure extends JDBCProcedure {
         short radix = rs.getShort("RADIX");
         Nullable nullable = JDBCUtils.getProcedureNullable(rs.getShort("NULLABLE"));
 
-        return new JDBCValue(parent, name, type, length, precision, radix, scale, nullable);
+        return new JDBCValue(parent, name, type, typeName, length, precision, radix, scale, nullable);
     }
 
 
