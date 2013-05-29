@@ -1025,35 +1025,49 @@ public class WebKitPageModel extends PageModel {
             // Activate/deactivate (observation of mouse events over) canvas
             invokeInAllDocuments("NetBeans.setSelectionMode("+selectionMode+")"); // NOI18N
 
-            performHoverRelatedStyleSheetUpdate();
+            performHoverRelatedStyleSheetUpdate(selectionMode);
         }
+
+        /** {@code RequestProcessor} for hover-related style-sheet update. */
+        private final RequestProcessor HOVERRP = new RequestProcessor("HoverRelatedStyleSheetUpdate"); // NOI18N
 
         /**
          * Performs the replacement of {@code :hover} pseudo-class
          * by the class used to simulate hovering (and vice versa).
+         * 
+         * @param selectionMode current value of selection mode.
          */
-        private void performHoverRelatedStyleSheetUpdate() {
-            CSS css = webKit.getCSS();
-            for (StyleSheetHeader header : css.getAllStyleSheets()) {
-                String styleSheetId = header.getStyleSheetId();
-                StyleSheetBody body = css.getStyleSheet(styleSheetId);
-                String styleSheetText;
-                if (body == null) {
-                    // 229164: getStyleSheet() failed for some reason,
-                    // try getStyleSheetText() instead
-                    styleSheetText = css.getStyleSheetText(styleSheetId);
-                } else {
-                    styleSheetText = body.getText();
-                }
-                if (styleSheetText != null) { // Issue 229137
-                    if (selectionMode) {
-                        // Replacement of :hover is done in setStyleSheetText()
-                        css.setStyleSheetText(styleSheetId, styleSheetText);
+        private void performHoverRelatedStyleSheetUpdate(final boolean selectionMode) {
+            if (HOVERRP.isRequestProcessorThread()) {
+                CSS css = webKit.getCSS();
+                for (StyleSheetHeader header : css.getAllStyleSheets()) {
+                    String styleSheetId = header.getStyleSheetId();
+                    StyleSheetBody body = css.getStyleSheet(styleSheetId);
+                    String styleSheetText;
+                    if (body == null) {
+                        // 229164: getStyleSheet() failed for some reason,
+                        // try getStyleSheetText() instead
+                        styleSheetText = css.getStyleSheetText(styleSheetId);
                     } else {
-                        styleSheetText = Pattern.compile(Pattern.quote("." + CSSUtils.HOVER_CLASS)).matcher(styleSheetText).replaceAll(":hover"); // NOI18N
-                        css.setStyleSheetText(styleSheetId, styleSheetText);
+                        styleSheetText = body.getText();
+                    }
+                    if (styleSheetText != null) { // Issue 229137
+                        if (selectionMode) {
+                            // Replacement of :hover is done in setStyleSheetText()
+                            css.setStyleSheetText(styleSheetId, styleSheetText);
+                        } else {
+                            styleSheetText = Pattern.compile(Pattern.quote("." + CSSUtils.HOVER_CLASS)).matcher(styleSheetText).replaceAll(":hover"); // NOI18N
+                            css.setStyleSheetText(styleSheetId, styleSheetText);
+                        }
                     }
                 }
+            } else {
+                HOVERRP.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        performHoverRelatedStyleSheetUpdate(selectionMode);
+                    }
+                });
             }
         }
 
