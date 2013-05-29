@@ -202,6 +202,10 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             embeddings.add(snapshot.create(tokenSequence.offset(), value.length(), Constants.JAVASCRIPT_MIMETYPE));
                             embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                             processed = true;
+                        } else if (name.contains("|")){
+                            embeddings.add(snapshot.create(tokenSequence.offset(), value.indexOf("|"), Constants.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                            processed = true;
                         } else {
                             tokenSequence.movePrevious();
                         }
