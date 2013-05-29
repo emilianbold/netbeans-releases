@@ -43,20 +43,17 @@
  */
 package demo.rest.client;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.GenericType;
-import com.sun.jersey.api.client.UniformInterfaceException;
-import com.sun.jersey.api.client.WebResource;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.List;
 import demo.rest.Message;
+import javax.ws.rs.ClientErrorException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.GenericType;
+import org.glassfish.jersey.client.ClientResponse;
 
-/**
- *
- * @author lukas
- */
 public class MessageBoardClient {
 
     public MessageBoardClient() {
@@ -90,49 +87,52 @@ public class MessageBoardClient {
 
     private static class MessageBoardResourceBean_JerseyClient {
 
-        private WebResource webResource;
-        private Client client;
+        private final WebTarget webTarget;
+        private final Client client;
         private static final String BASE_URI = "http://localhost:8080/message-board/app"; //NOI18N
 
         MessageBoardResourceBean_JerseyClient() {
-            client = new Client();
-            webResource = client.resource(BASE_URI).path("messages"); //NOI18N
+            client = ClientBuilder.newClient();
+            webTarget = client.target(BASE_URI).path("messages"); //NOI18N
         }
 
-        public void deleteMessage(String msgNum) throws UniformInterfaceException {
-            webResource.path(java.text.MessageFormat.format("{0}", new Object[]{msgNum})).delete();
+        public void deleteMessage(String msgNum) throws ClientErrorException {
+            webTarget.path(java.text.MessageFormat.format("{0}", new Object[]{msgNum})).request().delete();
         }
 
-        public <T> T getMessage_XML(Class<T> responseType, String msgNum) throws UniformInterfaceException {
-            return webResource.path(java.text.MessageFormat.format("{0}", new Object[]{msgNum})).accept(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
+        public <T> T getMessage_XML(Class<T> responseType, String msgNum) throws ClientErrorException {
+            return webTarget.path(java.text.MessageFormat.format("{0}", new Object[]{msgNum})).
+                    request(javax.ws.rs.core.MediaType.APPLICATION_XML).get(responseType);
         }
 
-        public <T> T getMessage_HTML(Class<T> responseType, String msgNum) throws UniformInterfaceException {
-            return webResource.path(java.text.MessageFormat.format("{0}", new Object[]{msgNum})).accept(javax.ws.rs.core.MediaType.TEXT_HTML).get(responseType);
+        public <T> T getMessage_HTML(Class<T> responseType, String msgNum) throws ClientErrorException {
+            return webTarget.path(java.text.MessageFormat.format("{0}", new Object[]{msgNum})).
+                    request(javax.ws.rs.core.MediaType.TEXT_HTML).get(responseType);
         }
 
-        public ClientResponse addMessage(Object requestEntity) throws UniformInterfaceException {
-            return webResource.type(javax.ws.rs.core.MediaType.APPLICATION_XML).post(ClientResponse.class, requestEntity);
+        public ClientResponse addMessage(Object requestEntity) throws ClientErrorException {
+            return webTarget.request(javax.ws.rs.core.MediaType.APPLICATION_XML).
+                    post(javax.ws.rs.client.Entity.entity(requestEntity, javax.ws.rs.core.MediaType.TEXT_PLAIN), ClientResponse.class);
         }
 
-        public <T> List<T> getMessages_XML(final Class<T> responseType) throws UniformInterfaceException {
+        public <T> List<T> getMessages_XML(final Class<T> responseType) throws ClientErrorException {
             GenericType<List<T>> type = new GenericType<List<T>>(new PType(responseType)) {};
-            return webResource.accept(javax.ws.rs.core.MediaType.APPLICATION_XML).get(type);
+            return webTarget.request(javax.ws.rs.core.MediaType.APPLICATION_XML).get(type);
         }
 
-        public <T> List<T> getMessages_HTML(Class<T> responseType) throws UniformInterfaceException {
+        public <T> List<T> getMessages_HTML(Class<T> responseType) throws ClientErrorException {
             GenericType<List<T>> type = new GenericType<List<T>>(new PType(responseType)) {};
-            return webResource.accept(javax.ws.rs.core.MediaType.TEXT_HTML).get(type);
+            return webTarget.request(javax.ws.rs.core.MediaType.TEXT_HTML).get(type);
         }
 
         public void close() {
-            client.destroy();
+            client.close();
         }
     }
 
     private static class PType implements ParameterizedType {
 
-        private Class<?> responseType;
+        private final Class<?> responseType;
 
         PType(Class<?> responseType) {
             this.responseType = responseType;
