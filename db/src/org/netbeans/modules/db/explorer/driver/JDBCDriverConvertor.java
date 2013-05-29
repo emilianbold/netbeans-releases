@@ -102,11 +102,6 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
     public static final String DRIVERS_PATH = "Databases/JDBCDrivers"; // NOI18N
     
     /**
-     * The path where the drivers were registered in 4.1 and previous versions.
-     */
-    static final String OLD_DRIVERS_PATH = "Services/JDBCDrivers"; // NOI18N
-
-    /**
      * The delay by which the write of the changes is postponed.
      */
     private static final int DELAY = 2000;
@@ -260,36 +255,6 @@ public class JDBCDriverConvertor implements Environment.Provider, InstanceCookie
         df.getPrimaryFile().getFileSystem().runAtomicAction(writer);
 
         return writer.holder;
-    }
-    
-    /**
-     * Moves the existing drivers from the old location (Services/JDBCDrivers) 
-     * used in 4.1 and previous to the new one.
-     */
-    public static void importOldDrivers() {
-        FileObject oldRoot = FileUtil.getConfigFile(JDBCDriverConvertor.OLD_DRIVERS_PATH);
-        if (oldRoot == null) {
-            return;
-        }
-        FileObject newRoot = FileUtil.getConfigFile(JDBCDriverConvertor.DRIVERS_PATH);
-        FileObject[] children = oldRoot.getChildren();
-        for (int i = 0; i < children.length; i++) {
-            try {
-                JDBCDriver drv = readDriverFromFile(children[i]);
-                URL[] urls = drv.getURLs();
-                for (int j = 0; j < urls.length; j++) {
-                    urls[j] = encodeURL(urls[j]);
-                }
-                create(drv);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-            }
-            try {
-                children[i].delete();
-            } catch (IOException e) {
-                // what can we do?
-            }
-        }
     }
     
     /**

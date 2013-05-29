@@ -39,57 +39,58 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.quicksearch;
+package org.netbeans.modules.versioning.util;
 
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import static org.junit.Assert.*;
-import org.junit.Test;
-import org.netbeans.modules.quicksearch.ProviderModel.Category;
-import org.openide.filesystems.FileUtil;
+import org.junit.Assert;
+import org.netbeans.api.keyring.Keyring;
+import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author jhavlin
+ * @author Ondrej Vrabec
  */
-public class CommandEvaluatorTest {
-
-    @Test
-    public void testGetSetEvalCats() {
-        Set<ProviderModel.Category> evalCats = CommandEvaluator.getEvalCats();
-        Category recent = null;
-        for (Category c : evalCats) {
-            if (CommandEvaluator.RECENT.equals(c.getName())) {
-                recent = c;
-            }
-        }
-        assertNotNull("Recent category should be enabled", recent);
-        CommandEvaluator.setEvalCats(new HashSet<Category>());
-        assertEquals(0, CommandEvaluator.getEvalCats().size());
-        CommandEvaluator.setEvalCats(null);
-        assertNotNull(ProviderModel.getInstance().getCategories());
-        assertNotNull(CommandEvaluator.getEvalCats());
-        assertEquals(ProviderModel.getInstance().getCategories().size(),
-                CommandEvaluator.getEvalCats().size());
-        CommandEvaluator.setEvalCats(evalCats);
+public class KeyringSupportTest extends NbTestCase {
+    private String prefix;
+    private String key;
+    
+    public KeyringSupportTest (String name) {
+        super(name);
     }
 
-    /**
-     * Test for bug 229926.
-     */
-    @Test
-    public void testGetProviderCategories() {
-        Category aCategory = new Category(
-                FileUtil.createMemoryFileSystem().getRoot(), "a", "x");
-        CommandEvaluator.setTemporaryCat(aCategory);
-        List<Category> cats = new LinkedList<Category>();
-        boolean res = CommandEvaluator.getProviderCategories(
-                new String[]{"ab", "cd"}, cats);
-        assertEquals("List should contain categories 'Recent' and <aCategory>",
-                2, cats.size());
-        assertTrue(res);
-        CommandEvaluator.dropTemporaryCat();
+    @Override
+    protected void setUp () throws Exception {
+        super.setUp();
+        prefix = "myvcs_uri_password";
+        key = "https://ovrabec@myserver.mydomain.com/path/to/repository.repo";
+        Keyring.delete(KeyringSupport.getKeyringKeyHashed(prefix, key));
+        Keyring.delete(KeyringSupport.getKeyringKey(prefix, key));
     }
+        
+    public void testReplaceHashedKeyOldRecord () throws Exception {
+        String fullKey = KeyringSupport.getKeyringKeyHashed(prefix, key);
+        char[] password = "password".toCharArray();
+        Keyring.save(fullKey, password.clone(), "test record");
+        
+        // old key exists
+        Assert.assertArrayEquals(password, Keyring.read(fullKey));
+        // old key can be obtained back
+        Assert.assertArrayEquals(password, KeyringSupport.read(prefix, key));
+        // old key should be no longer present
+        assertNull(Keyring.read(fullKey));
+        // new key should be present
+        Assert.assertArrayEquals(password, Keyring.read(KeyringSupport.getKeyringKey(prefix, key)));
+    }
+    
+    public void testSaveNoHash () throws Exception {
+        String fullKey = KeyringSupport.getKeyringKey(prefix, key);
+        char[] password = "password".toCharArray();
+        
+        assertNull(Keyring.read(fullKey));
+        
+        KeyringSupport.save(prefix, key, password.clone(), "test record");
+        
+        Assert.assertArrayEquals(password, Keyring.read(fullKey));
+        Assert.assertArrayEquals(password, KeyringSupport.read(prefix, key));
+    }
+    
 }
