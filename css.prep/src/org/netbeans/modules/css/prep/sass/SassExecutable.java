@@ -94,7 +94,7 @@ public final class SassExecutable {
         return new SassExecutable(path);
     }
 
-    @NbBundle.Messages("Sass.executable.label=Sass")
+    @NbBundle.Messages("Sass.executable.label=Sass executable")
     public static String validate(String path) {
         return ExternalExecutableValidator.validateCommand(path, Bundle.Sass_executable_label());
     }

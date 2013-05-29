@@ -94,7 +94,7 @@ public final class LessExecutable {
         return new LessExecutable(path);
     }
 
-    @NbBundle.Messages("Less.executable.label=LESS")
+    @NbBundle.Messages("Less.executable.label=LESS executable")
     public static String validate(String path) {
         return ExternalExecutableValidator.validateCommand(path, Bundle.Less_executable_label());
     }
