@@ -57,6 +57,7 @@ import java.util.zip.Checksum;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
@@ -97,6 +98,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -1326,6 +1328,29 @@ public final class JFXProjectUtils {
             updated.add(JavaFXPlatformUtils.getClassPathExtensionProperty());
         }
         return Collections.unmodifiableSet(updated);
+    }
+
+    /**
+     * Removes the path entry from path.
+     * @param path to remove the netry from
+     * @param toRemove the entry to be rmeoved from the path
+     * @return new path with removed entry
+     */
+    @NonNull
+    public static String removeFromPath(@NonNull final String path, @NonNull final String toRemove) {
+        Parameters.notNull("path", path);   //NOI18N
+        Parameters.notNull("toRemove", toRemove); //NOI18N
+        final StringBuilder sb = new StringBuilder();
+        for (String entry : PropertyUtils.tokenizePath(path)) {
+            if (toRemove.equals(entry)) {
+                continue;
+            }
+            sb.append(entry);
+            sb.append(':'); //NOI18N
+        }
+        return sb.length() == 0 ?
+            sb.toString() :
+            sb.substring(0, sb.length()-1);
     }
 
     /**

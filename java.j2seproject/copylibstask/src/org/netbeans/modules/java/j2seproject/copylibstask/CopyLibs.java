@@ -57,8 +57,10 @@ import java.nio.charset.Charset;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.Set;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.taskdefs.Jar;
@@ -85,6 +87,7 @@ public class CopyLibs extends Jar {
     private static final String UTF8 = "UTF8";      //NOI18N
 
     Path runtimePath;
+    Path excludeFromCopy;
 
     private boolean rebase;
 
@@ -100,6 +103,15 @@ public class CopyLibs extends Jar {
     
     public Path getRuntimeClassPath () {
         return this.runtimePath;
+    }
+
+    public void setExcludeFromCopy(final Path path) {
+        assert path != null;
+        this.excludeFromCopy = path;
+    }
+
+    public Path getExcludeFromCopy() {
+        return this.excludeFromCopy;
     }
 
     public boolean isRebase() {
@@ -166,10 +178,26 @@ public class CopyLibs extends Jar {
                 libFolder.mkdir ();
                 this.log("Create lib folder " + libFolder.toString() + ".", Project.MSG_VERBOSE);
             }
-            assert libFolder.canWrite();            
+            assert libFolder.canWrite();
+
+            final Set<File> ignoreList = new HashSet<File>();
+            if (this.excludeFromCopy != null) {
+                for (String excludeElement : this.excludeFromCopy.list()) {
+                    ignoreList.add(new File (excludeElement));
+                }
+            }
+
             FileUtils utils = FileUtils.getFileUtils();
             this.log("Copy libraries to " + libFolder.toString() + ".");
             for (final File fileToCopy : filesToCopy) {
+                if (ignoreList.contains(fileToCopy)) {
+                    this.log(
+                        String.format(
+                            "Not copying library %s, due to exclude.",  //NOI18N
+                            fileToCopy),
+                        Project.MSG_INFO);
+                    continue;
+                }
                 this.log("Copy " + fileToCopy.getName() + " to " + libFolder + ".", Project.MSG_VERBOSE);
                 try {
                     File libFile = new File (libFolder,fileToCopy.getName());                    

@@ -202,6 +202,9 @@ public final class JFXProjectProperties {
     public static final String NATIVE_BUNDLING_TYPE = "native.bundling.type"; //NOI18N
     //public static final String JAVASE_NATIVE_BUNDLING_ENABLED = "native.bundling.enabled"; //NOI18N
 
+    //Deloyment - copylibs
+    public static final String COPYLIBS_EXCLUDES = "copylibs.excludes"; //NOI18N
+
     // Deployment - common and SE specific
     public static final String RUN_CP = "run.classpath";    //NOI18N
     public static final String BUILD_CLASSES = "build.classes.dir"; //NOI18N
@@ -228,6 +231,8 @@ public final class JFXProjectProperties {
     public static final String DEFAULT_CONFIG_STANDALONE = NbBundle.getBundle("org.netbeans.modules.javafx2.project.ui.Bundle").getString("JFXConfigurationProvider.standalone.label"); // NOI18N
     public static final String DEFAULT_CONFIG_WEBSTART = NbBundle.getBundle("org.netbeans.modules.javafx2.project.ui.Bundle").getString("JFXConfigurationProvider.webstart.label"); // NOI18N
     public static final String DEFAULT_CONFIG_BROWSER = NbBundle.getBundle("org.netbeans.modules.javafx2.project.ui.Bundle").getString("JFXConfigurationProvider.browser.label"); // NOI18N
+
+    private static final String JFX_EXTENSION_CPREF = "${javafx.classpath.extension}";  //NOI18N
 
     private StoreGroup fxPropGroup = new StoreGroup();
     
@@ -1349,6 +1354,24 @@ public final class JFXProjectProperties {
             throw (IOException) mux.getException();
         }
         setOrRemove(ep, JAVASE_KEEP_JFXRT_ON_CLASSPATH, keepJFXRTonCP ? "true" : null); //NOI18N
+        //Copylibs excludes for J2SE Project with JFX extension
+        String copyLibsExcludes = ep.getProperty(COPYLIBS_EXCLUDES);
+        if (keepJFXRTonCP) {
+            if (copyLibsExcludes == null || copyLibsExcludes.isEmpty()) {
+                copyLibsExcludes = JFX_EXTENSION_CPREF;
+            } else if (copyLibsExcludes.indexOf(JFX_EXTENSION_CPREF)<0){
+                copyLibsExcludes = copyLibsExcludes + ':' + JFX_EXTENSION_CPREF;
+            }
+            setOrRemove(ep, COPYLIBS_EXCLUDES, copyLibsExcludes);
+        } else {
+            if (copyLibsExcludes != null) {
+                copyLibsExcludes = JFXProjectUtils.removeFromPath(copyLibsExcludes,JFX_EXTENSION_CPREF);
+                if (copyLibsExcludes.isEmpty()) {
+                    copyLibsExcludes = null;
+                }
+            }
+            setOrRemove(ep, COPYLIBS_EXCLUDES, copyLibsExcludes);
+        }
         //JFXProjectUtils.updateClassPathExtensionProperties(ep);
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
