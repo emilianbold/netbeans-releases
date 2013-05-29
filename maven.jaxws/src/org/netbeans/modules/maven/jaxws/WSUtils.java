@@ -974,8 +974,9 @@ public class WSUtils {
                         }
                     }
                 } else {
+                    if (ddFolder == null || ddFolder.getFileObject("sun-jaxws.xml") == null) { // NOI18N
                     // generate non JSR109 artifacts
-                    if (WSUtils.needNonJsr109Artifacts(prj)) {
+                    if (generateNonJsr109Artifacts(prj)) {
                         if (ddFolder != null) {
                             try {
                                 addJaxWsEntries(ddFolder, jaxWsSupport);
@@ -1006,6 +1007,7 @@ public class WSUtils {
                 }
             }
         }
+    }
     }
 
     public static String getUniqueId(String id, List<JaxWsService> services) {
