@@ -39,39 +39,47 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.format;
+package org.netbeans.modules.php.latte.indent;
 
-import org.netbeans.modules.csl.api.Formatter;
-import org.netbeans.modules.csl.spi.ParserResult;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
+import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
+import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
+import org.netbeans.modules.web.indent.api.support.IndentCommand;
+import org.netbeans.modules.web.indent.api.support.IndenterContextData;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteFormatter implements Formatter {
+public class LatteIndenter extends AbstractIndenter<LatteTopTokenId> {
 
-    @Override
-    public void reformat(Context context, ParserResult compilationInfo) {
+    public LatteIndenter(Context context) {
+        super(LatteTopTokenId.language(), context);
     }
 
     @Override
-    public void reindent(Context context) {
+    protected int getFormatStableStart(JoinedTokenSequence<LatteTopTokenId> ts, int startOffset, int endOffset, AbstractIndenter.OffsetRanges rangesToIgnore) throws BadLocationException {
+        return 0;
     }
 
     @Override
-    public boolean needsParserResult() {
+    protected List<IndentCommand> getLineIndent(IndenterContextData<LatteTopTokenId> context, List<IndentCommand> preliminaryNextLineIndent) throws BadLocationException {
+        preliminaryNextLineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getNextLineStartOffset()));
+        return Collections.singletonList(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getLineStartOffset()));
+    }
+
+    @Override
+    protected boolean isWhiteSpaceToken(Token<LatteTopTokenId> token) {
         return false;
     }
 
     @Override
-    public int indentSize() {
-        return 0;
-    }
-
-    @Override
-    public int hangingIndentSize() {
-        return 0;
+    protected void reset() {
     }
 
 }
