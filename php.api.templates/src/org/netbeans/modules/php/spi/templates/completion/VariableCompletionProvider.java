@@ -39,18 +39,29 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.spi.completion;
+package org.netbeans.modules.php.spi.templates.completion;
 
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 
 /**
+ * SPI for extending PHP templates code completion.
+ * <p>
+ * <i>All the methods are called only for the {@link FileObject}
+ * that is currently opened in the editor and where the code completion is
+ * invoked.</i>
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public interface VariableCompletionProvider {
 
+    /**
+     * Gets the set of {@link String variable names} which should be displayed in the code completion.
+     *
+     * @param templateFile {@link FileObject template file} in which the code completion was invoked
+     * @return Set of {@link String variable names} which should be displayed in the code completion.
+     */
     @NonNull
     Set<String> getVariables(@NonNull FileObject templateFile);
 

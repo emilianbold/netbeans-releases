@@ -144,8 +144,13 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     top.balance--;
                     if (top.balance == 0) {
                         processed = true;
-                        stack.pop();
                         embeddings.add(snapshot.create(top.finishText, Constants.JAVASCRIPT_MIMETYPE));  //NOI18N
+                        stack.pop();
+                        top = stack.peek();
+                        if (top != null && LexerUtils.equals(top.tag, tokenText, false, false)) {
+                            top.balance--;
+                        }
+                        
                     }
                 }
                 break;
@@ -209,7 +214,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     private boolean processController(String controllerName) {
         StringBuilder sb = new StringBuilder();
         sb.append("(function () { // generated function for scope ");   //NOI18N
-        sb.append(controllerName).append("\n");  //NOI18N
+        if (!controllerName.trim().isEmpty()) {
+            sb.append(controllerName).append("\n");  //NOI18N
+        }
         embeddings.add(snapshot.create(sb.toString(), Constants.JAVASCRIPT_MIMETYPE));
         embeddings.add(snapshot.create(tokenSequence.offset() + 1, controllerName.length(), Constants.JAVASCRIPT_MIMETYPE));
         sb = new StringBuilder();
