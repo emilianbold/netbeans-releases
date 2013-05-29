@@ -109,9 +109,7 @@ public class CreateJob implements ActionListener {
         "CreateJob.create=Create"
     })
     @Override public void actionPerformed(ActionEvent e) {
-        Action custom = instance.getPersistence().getNewJobAction();
-        if (custom != null) {
-            custom.actionPerformed(e);
+        if (runCustomActionIfAvailable(e)) {
             return;
         }
         final CreateJobPanel panel = new CreateJobPanel();
@@ -147,6 +145,17 @@ public class CreateJob implements ActionListener {
         dd.setClosingOptions(new Object[] {NotifyDescriptor.CANCEL_OPTION});
         dialog.set(DialogDisplayer.getDefault().createDialog(dd));
         dialog.get().setVisible(true);
+    }
+
+    boolean runCustomActionIfAvailable(ActionEvent e) {
+        if (instance != null) {
+            Action custom = instance.getPersistence().getNewJobAction();
+            if (custom != null) {
+                custom.actionPerformed(e);
+                return true;
+            }
+        }
+        return false;
     }
 
     @Messages({
