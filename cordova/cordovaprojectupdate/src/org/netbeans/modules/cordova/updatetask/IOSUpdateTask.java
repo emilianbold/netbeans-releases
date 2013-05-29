@@ -101,6 +101,7 @@ public class IOSUpdateTask extends CordovaTask {
     private void updateIOSConfig(SourceConfig config, DeviceConfig iosConfig) {
         iosConfig.setAccess(config.getAccess());
         remap(config, iosConfig, "webviewbounce", "UIWebViewBounce");
+        remap(config, iosConfig, "DisallowOverscroll", "DisallowOverscroll");
         remap(config, iosConfig, "auto-hide-splash-screen", "AutoHideSplashScreen");
     }
     
