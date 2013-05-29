@@ -107,7 +107,8 @@ public class ToggleBlockCommentAction extends BaseAction {
                     if (tokenId == LatteTopTokenId.T_LATTE_COMMENT || tokenId == LatteTopTokenId.T_LATTE_COMMENT_DELIMITER) {
                         uncomment(baseDocument, topTs);
                         processedByLatte.set(true);
-                    } else if (tokenId == LatteTopTokenId.T_LATTE || tokenId == LatteTopTokenId.T_LATTE_DELIMITER || tokenId == LatteTopTokenId.T_LATTE_ERROR) {
+                    } else if (tokenId == LatteTopTokenId.T_LATTE || tokenId == LatteTopTokenId.T_LATTE_OPEN_DELIMITER
+                            || tokenId == LatteTopTokenId.T_LATTE_CLOSE_DELIMITER || tokenId == LatteTopTokenId.T_LATTE_ERROR) {
                         comment(baseDocument, topTs, processedByLatte);
                     }
                 }
@@ -140,7 +141,7 @@ public class ToggleBlockCommentAction extends BaseAction {
             if (token == null || token.id() == LatteTopTokenId.T_HTML) {
                 topTs.moveNext();
                 token = topTs.token();
-                if (token != null && token.id() == LatteTopTokenId.T_LATTE_DELIMITER) {
+                if (token != null && token.id() == LatteTopTokenId.T_LATTE_OPEN_DELIMITER) {
                     result = true;
                 } else {
                     result = false;
@@ -160,7 +161,7 @@ public class ToggleBlockCommentAction extends BaseAction {
             if (token == null || token.id() == LatteTopTokenId.T_HTML) {
                 topTs.movePrevious();
                 token = topTs.token();
-                if (token != null && token.id() == LatteTopTokenId.T_LATTE_DELIMITER) {
+                if (token != null && token.id() == LatteTopTokenId.T_LATTE_CLOSE_DELIMITER) {
                     result = true;
                 } else {
                     result = false;
