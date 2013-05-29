@@ -325,9 +325,11 @@ public class JsStructureScanner implements StructureScanner {
                     || (this.modelElement != null && other.modelElement == null)) {
                 return false;
             }
-            if ((this.modelElement.getJSKind() == null) ? (other.modelElement.getJSKind() != null) :
-                    !this.modelElement.getJSKind().equals(other.modelElement.getJSKind())) {
-                return false;
+            if (modelElement != other.modelElement) {
+                if ((this.modelElement.getJSKind() == null) ? (other.modelElement.getJSKind() != null) :
+                        !this.modelElement.getJSKind().equals(other.modelElement.getJSKind())) {
+                    return false;
+                }
             }
 
             return true;
