@@ -70,6 +70,7 @@ import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
 
@@ -370,7 +371,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         @SuppressWarnings("unchecked")
         public void save() throws IOException {
             LessPreferences.setEnabled(project, (boolean) settings.getProperty(ENABLED));
-            LessPreferences.setMappings(project, (List<String>) settings.getProperty(MAPPINGS));
+            LessPreferences.setMappings(project, (List<Pair<String, String>>) settings.getProperty(MAPPINGS));
         }
 
     }
@@ -433,7 +434,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         @SuppressWarnings("unchecked")
         public void save() throws IOException {
             SassPreferences.setEnabled(project, (boolean) settings.getProperty(ENABLED));
-            SassPreferences.setMappings(project, (List<String>) settings.getProperty(MAPPINGS));
+            SassPreferences.setMappings(project, (List<Pair<String, String>>) settings.getProperty(MAPPINGS));
         }
 
     }
