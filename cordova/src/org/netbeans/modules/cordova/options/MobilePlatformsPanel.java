@@ -320,10 +320,12 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
         identityTextField.setText(iosPlatform.getCodeSignIdentity());
         provisioningCombo.setModel(new DefaultComboBoxModel(iosPlatform.getProvisioningProfiles().toArray()));
         
-        if (provisioningCombo.getItemCount()>0) {
-            provisioningCombo.setSelectedIndex(0);
+        for (ProvisioningProfile prof:iosPlatform.getProvisioningProfiles()) {
+            if (prof.getPath().equals(iosPlatform.getProvisioningProfilePath())) {
+                provisioningCombo.setSelectedItem(prof);
+            }
         }
-        
+
         androidSdkField.getDocument().addDocumentListener(documentL);
         cordovaSdkField.getDocument().addDocumentListener(documentL);
    }
