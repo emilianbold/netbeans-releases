@@ -50,6 +50,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.CRC32;
+import org.netbeans.api.actions.Closable;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -61,6 +62,8 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
@@ -80,6 +83,7 @@ public final class J2SEDeployProperties {
     // copied from JFXProjectProperties
     public static final String JAVAFX_ENABLED = "javafx.enabled"; // NOI18N
     private static final String J2SEDEPLOY_EXTENSION = "j2sedeploy";    //NOI18N
+    private static final String[] OLD_J2SEDEPLOY_EXTENSION = new String[0];
     private static final String BUILD_SCRIPT_PROTOTYPE = String.format(
         "%s/resources/build-native-prototype.xml",  //NOI18N
         J2SEDeployProperties.class.getPackage().getName().replace('.','/'));   //NOI18N
@@ -149,6 +153,19 @@ public final class J2SEDeployProperties {
         return J2SEDEPLOY_EXTENSION;
     }
 
+    static String[] getOldExtensionNames() {
+        return OLD_J2SEDEPLOY_EXTENSION;
+    }
+
+    static void updateJ2SEDeployExtension(@NonNull final Project project) throws IOException {
+        Parameters.notNull("project", project); //NOI18N
+        final FileObject buildNativeXml = copyBuildNativeTemplate(project);
+        assert buildNativeXml != null;
+        final AntBuildExtender extender = project.getLookup().lookup(AntBuildExtender.class);
+        assert extender != null;
+        modifyBuildXml(extender, buildNativeXml);
+    }
+
     static boolean isBuildNativeUpToDate(@NonNull final Project project) {
         Parameters.notNull("project", project); //NOI18N
         final FileObject buildNativeXml = project.getProjectDirectory().getFileObject(EXTENSION_BUILD_SCRIPT_PATH);
@@ -176,11 +193,13 @@ public final class J2SEDeployProperties {
             "%s~",  //NOI18N
             EXTENSION_BUILD_SCRIPT_PATH));
         if (buildExFoBack != null) {
+            closeInEditor(buildExFoBack);
             buildExFoBack.delete();
         }
         FileObject buildExFo = project.getProjectDirectory().getFileObject(EXTENSION_BUILD_SCRIPT_PATH);
         FileLock lock;
         if (buildExFo != null) {
+            closeInEditor(buildExFo);
             lock = buildExFo.lock();
             try {
                 buildExFo.rename(
@@ -202,6 +221,30 @@ public final class J2SEDeployProperties {
             lock.releaseLock();
         }
         return buildExFo;
+    }
+
+    private static AntBuildExtender.Extension modifyBuildXml(
+        @NonNull final AntBuildExtender extender,
+        @NonNull final FileObject buildNativeXml) {
+        Parameters.notNull("extender", extender);   //NOI18N
+        Parameters.notNull("buildNativeXml", buildNativeXml);   //NOI18N
+        return extender.addExtension(getCurrentExtensionName(), buildNativeXml);
+    }
+
+    private static void closeInEditor(@NonNull final FileObject file) {
+        Parameters.notNull("file", file);   //NOI18N
+        try {
+            final DataObject dobj = DataObject.find(file);
+            final Closable closeCookie = dobj.getLookup().lookup(Closable.class);
+            if (closeCookie != null) {
+                closeCookie.close();
+            }
+        } catch (DataObjectNotFoundException donfe) {
+            LOG.log(
+                Level.INFO,
+                "Cannot close {0}.", //NOI18N
+                FileUtil.getFileDisplayName(file));
+        }
     }
 
     private static long computeCRC(@NonNull final InputStream in) throws IOException {
@@ -264,7 +307,7 @@ public final class J2SEDeployProperties {
                         if (nativeBundlingEnabled) {
                             if (extension == null) {
                                 final FileObject buildExFo = copyBuildNativeTemplate(project);
-                                extension = extender.addExtension(getCurrentExtensionName(), buildExFo);
+                                extension = modifyBuildXml(extender, buildExFo);
                             }
                         } else {
                             if (extension != null) {
@@ -272,6 +315,7 @@ public final class J2SEDeployProperties {
                             }
                             final FileObject buildExFo = project.getProjectDirectory().getFileObject(EXTENSION_BUILD_SCRIPT_PATH);
                             if (buildExFo != null) {
+                                closeInEditor(buildExFo);
                                 buildExFo.delete();
                             }
                         }

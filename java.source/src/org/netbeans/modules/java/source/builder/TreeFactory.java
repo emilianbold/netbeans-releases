@@ -559,8 +559,9 @@ public class TreeFactory {
                 case SYNCHRONIZED: flags |= Flags.SYNCHRONIZED; break;
                 case NATIVE: flags |= Flags.NATIVE; break;
                 case STRICTFP: flags |= Flags.STRICTFP; break;
+                case DEFAULT: flags |= Flags.DEFAULT; break;
                 default:
-                    throw new AssertionError("unknown Modifier enum");
+                    throw new AssertionError("Unknown Modifier: " + mod); //NOI18N
             }
         return flags;
     }

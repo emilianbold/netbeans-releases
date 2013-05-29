@@ -45,21 +45,19 @@
 package org.netbeans.modules.javafx2.samples;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Properties;
 import java.util.Stack;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import org.netbeans.modules.javafx2.platform.api.JavaFXPlatformUtils;
-import org.netbeans.modules.javafx2.project.api.JavaFXProjectUtils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Utilities;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -72,12 +70,13 @@ import org.xml.sax.InputSource;
  * Create a sample java project by unzipping a template into some directory.
  * Modify active platform and JavaFX related properties.
  *
- * @author Martin Grebac, Tomas Zezula, Anton Chechel
+ * @author Martin Grebac, Tomas Zezula, Anton Chechel, Petr Somol
  */
 public class JavaFXSampleProjectGenerator {
 
     private static final String PROJECT_CONFIGURATION_NAMESPACE = "http://www.netbeans.org/ns/j2se-project/3"; // NOI18N
-    private static final String SOURCE_ENCODING = "source.encoding";   //NOI18N
+    // copy of AntBasedProjectFactorySingleton.PROJECT_NS;
+    private static final String ANT_BASED_PROJECT_NAMESPACE = "http://www.netbeans.org/ns/project/1"; // NOI18N
 
     private JavaFXSampleProjectGenerator() {}
 
@@ -89,9 +88,8 @@ public class JavaFXSampleProjectGenerator {
             unzip(template.getInputStream(), prjLoc);
             try {
                 // update project.xml                
-                // TODO non-default platform fix
                 File projXml = FileUtil.toFile(prjLoc.getFileObject(AntProjectHelper.PROJECT_XML_PATH));
-                Document doc = XMLUtil.parse(new InputSource(projXml.toURI().toString()), false, true, null, null);
+                Document doc = XMLUtil.parse(new InputSource(Utilities.toURI(projXml).toString()), false, true, null, null);
                 NodeList nlist = doc.getElementsByTagNameNS(PROJECT_CONFIGURATION_NAMESPACE, "name"); // NOI18N
                 if (nlist != null) {
                     for (int i = 0; i < nlist.getLength(); i++) {
@@ -103,10 +101,27 @@ public class JavaFXSampleProjectGenerator {
                         replaceText(e, name);
                     }
 
-                    // we don't use default platform
-//                    final Element explicitPlatformEl = doc.createElementNS(JavaFXProjectUtils.PROJECT_CONFIGURATION_NAMESPACE, "explicit-platform"); //NOI18N
-//                    explicitPlatformEl.setAttribute("explicit-source-supported", "true");   //NOI18N
-//                    doc.appendChild(explicitPlatformEl);
+                    if(!platformName.equals(JavaFXPlatformUtils.DEFAULT_PLATFORM)) {
+                        // we don't use default platform
+                        Element root = doc.getDocumentElement();
+                        Element config = XMLUtil.findElement(root, "configuration", ANT_BASED_PROJECT_NAMESPACE); // NOI18N
+                        Element data = XMLUtil.findElement(config, "data", PROJECT_CONFIGURATION_NAMESPACE); // NOI18N
+                        // logic taken from J2SEProjectPlatformImpl
+                        Element insertBefore = null;
+                        for (Element e : XMLUtil.findSubElements(data)) {
+                            final String n = e.getNodeName();
+                            if (! "name".equals(n) &&                  //NOI18N
+                                ! "minimum-ant-version".equals(n)) {   //NOI18N
+                                insertBefore = e;
+                                break;
+                            }
+                        }
+                        final Element explicitPlatformEl = insertBefore.getOwnerDocument().createElementNS(
+                                PROJECT_CONFIGURATION_NAMESPACE,
+                                "explicit-platform"); //NOI18N
+                        explicitPlatformEl.setAttribute("explicit-source-supported", "true");   //NOI18N
+                        data.insertBefore(explicitPlatformEl, insertBefore);
+                    }
                     
                     saveXml(doc, prjLoc, AntProjectHelper.PROJECT_XML_PATH);
 
@@ -121,8 +136,6 @@ public class JavaFXSampleProjectGenerator {
                             } finally {
                                 in.close();
                             }
-                            props.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_SDK, JavaFXPlatformUtils.getJavaFXSDKPathReference(platformName));
-                            props.setProperty(JavaFXPlatformUtils.PROPERTY_JAVAFX_RUNTIME, JavaFXPlatformUtils.getJavaFXRuntimePathReference(platformName));
                             props.setProperty("platform.active", platformName); // NOI18N
                             
                             OutputStream out = projectProps.getOutputStream(lock);

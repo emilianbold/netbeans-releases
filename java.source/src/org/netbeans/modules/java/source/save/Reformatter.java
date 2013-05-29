@@ -1489,7 +1489,7 @@ public class Reformatter implements ReformatTask {
                     if (node instanceof FakeBlock) {
                         appendToDiff(getNewlines(1) + getIndent());
                         col = indent();
-                    } else if (stat.getKind() == Tree.Kind.EMPTY_STATEMENT) {
+                    } else if (stat.getKind() == Tree.Kind.EMPTY_STATEMENT || stat.getKind() == Tree.Kind.EXPRESSION_STATEMENT && ((ExpressionStatementTree)stat).getExpression().getKind() == Tree.Kind.ERRONEOUS) {
                         spaces(0, true);
                     } else if (!fieldGroup || stat.getKind() != Tree.Kind.VARIABLE) {
                         blankLines(0, cs.getMaximumBlankLinesInCode());
