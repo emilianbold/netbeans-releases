@@ -43,6 +43,8 @@ package org.netbeans.modules.css.prep.util;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
@@ -56,13 +58,14 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 public final class CssPreprocessorUtils {
 
     private static final Logger LOGGER = Logger.getLogger(CssPreprocessorUtils.class.getName());
 
-    private static final String MAPPINGS_DELIMITER = ","; // NOI18N
-    private static final String MAPPING_DELIMITER = ":"; // NOI18N
+    static final String MAPPINGS_DELIMITER = ","; // NOI18N
+    static final String MAPPING_DELIMITER = ":"; // NOI18N
 
 
     private CssPreprocessorUtils() {
@@ -80,31 +83,45 @@ public final class CssPreprocessorUtils {
         return true;
     }
 
-    public static String encodeMappings(List<String> mappings) {
-        return StringUtils.implode(mappings, MAPPINGS_DELIMITER);
+    public static String encodeMappings(List<Pair<String, String>> mappings) {
+        StringBuilder buffer = new StringBuilder(200);
+        for (Pair<String, String> mapping : mappings) {
+            if (buffer.length() > 0) {
+                buffer.append(MAPPINGS_DELIMITER);
+            }
+            buffer.append(mapping.first());
+            buffer.append(MAPPING_DELIMITER);
+            buffer.append(mapping.second());
+        }
+        return buffer.toString();
     }
 
-    public static List<String> decodeMappings(String mappings) {
-        return StringUtils.explode(mappings, MAPPINGS_DELIMITER);
+    public static List<Pair<String, String>> decodeMappings(String mappings) {
+        List<String> pairs = StringUtils.explode(mappings, MAPPINGS_DELIMITER);
+        List<Pair<String, String>> result = new ArrayList<>(pairs.size());
+        for (String pair : pairs) {
+            List<String> paths = StringUtils.explode(pair, MAPPING_DELIMITER);
+            result.add(Pair.of(paths.get(0), paths.get(1)));
+        }
+        return result;
     }
 
     @CheckForNull
-    public static File resolveTarget(FileObject webRoot, List<String> mappings, FileObject source) {
+    public static File resolveTarget(FileObject webRoot, List<Pair<String, String>> mappings, FileObject source) {
         File root = FileUtil.toFile(webRoot);
         File file = FileUtil.toFile(source);
         return resolveTarget(root, mappings, file, source.getName());
     }
 
     @CheckForNull
-    static File resolveTarget(File root, List<String> mappings, File file, String name) {
-        for (String mapping : mappings) {
-            List<String> exploded = StringUtils.explode(mapping, MAPPING_DELIMITER);
-            File from = resolveFile(root, exploded.get(0).trim());
+    static File resolveTarget(File root, List<Pair<String, String>> mappings, File file, String name) {
+        for (Pair<String, String> mapping : mappings) {
+            File from = resolveFile(root, mapping.first().trim());
             String relpath = PropertyUtils.relativizeFile(from, file.getParentFile());
             if (relpath != null
                     && !relpath.startsWith("../")) { // NOI18N
                 // path match
-                File to = resolveFile(root, exploded.get(1).trim());
+                File to = resolveFile(root, mapping.second().trim());
                 to = PropertyUtils.resolveFile(to, relpath);
                 return resolveFile(to, makeCssFilename(name));
             }
@@ -128,7 +145,7 @@ public final class CssPreprocessorUtils {
 
     public static final class MappingsValidator {
 
-        private static final Pattern MAPPING_PATTERN = Pattern.compile("^[^:]*[^: ][^:]*:[^:]*[^: ][^:]*$"); // NOI18N
+        private static final Pattern MAPPING_PATTERN = Pattern.compile("[^" + MAPPING_DELIMITER + "]+"); // NOI18N
 
         private final ValidationResult result = new ValidationResult();
 
@@ -137,29 +154,43 @@ public final class CssPreprocessorUtils {
             return result;
         }
 
-        public MappingsValidator validate(List<String> mappings) {
+        public MappingsValidator validate(List<Pair<String, String>> mappings) {
             validateMappings(mappings);
             return this;
         }
 
         @NbBundle.Messages({
-            "MappingsValidator.warning.empty=CSS output folders must be set.",
+            "MappingsValidator.warning.none=At least one input and output path must be set.",
+            "MappingsValidator.warning.input.empty=Input path cannot be empty.",
+            "MappingsValidator.warning.output.empty=Output path cannot be empty.",
             "# {0} - mapping",
-            "MappingsValidator.warning.format=CSS output folder \"{0}\" is incorrect.",
+            "MappingsValidator.warning.input.format=Input path \"{0}\" is incorrect.",
+            "# {0} - mapping",
+            "MappingsValidator.warning.output.format=Output path \"{0}\" is incorrect.",
         })
-        private MappingsValidator validateMappings(List<String> mappings) {
+        private MappingsValidator validateMappings(List<Pair<String, String>> mappings) {
             if (mappings.isEmpty()) {
-                result.addWarning(new ValidationResult.Message("mappings", Bundle.MappingsValidator_warning_empty())); // NOI18N
+                result.addWarning(new ValidationResult.Message("mappings", Bundle.MappingsValidator_warning_none())); // NOI18N
             }
-            for (String mapping : mappings) {
-                if (!MAPPING_PATTERN.matcher(mapping).matches()) {
-                    result.addWarning(new ValidationResult.Message("mapping." + mapping, Bundle.MappingsValidator_warning_format(mapping))); // NOI18N
+            for (Pair<String, String> mapping : mappings) {
+                // input
+                String input = mapping.first();
+                if (!StringUtils.hasText(input)) {
+                    result.addWarning(new ValidationResult.Message("mapping." + input, Bundle.MappingsValidator_warning_input_empty())); // NOI18N
+                } else if (!MAPPING_PATTERN.matcher(input).matches()) {
+                    result.addWarning(new ValidationResult.Message("mapping." + input, Bundle.MappingsValidator_warning_input_format(input))); // NOI18N
+                }
+                // output
+                String output = mapping.second();
+                if (!StringUtils.hasText(output)) {
+                    result.addWarning(new ValidationResult.Message("mapping." + output, Bundle.MappingsValidator_warning_output_empty())); // NOI18N
+                } else if (!MAPPING_PATTERN.matcher(output).matches()) {
+                    result.addWarning(new ValidationResult.Message("mapping." + output, Bundle.MappingsValidator_warning_output_format(output))); // NOI18N
                 }
             }
             return this;
         }
 
     }
-
 
 }

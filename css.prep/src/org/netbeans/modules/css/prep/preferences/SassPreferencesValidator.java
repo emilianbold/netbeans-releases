@@ -45,6 +45,7 @@ import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.netbeans.modules.css.prep.util.ValidationResult;
+import org.openide.util.Pair;
 
 public final class SassPreferencesValidator {
 
@@ -59,7 +60,7 @@ public final class SassPreferencesValidator {
         return validate(SassPreferences.isEnabled(project), SassPreferences.getMappings(project));
     }
 
-    public SassPreferencesValidator validate(boolean enabled, List<String> mappings) {
+    public SassPreferencesValidator validate(boolean enabled, List<Pair<String, String>> mappings) {
         if (enabled) {
             result.merge(new CssPreprocessorUtils.MappingsValidator()
                     .validate(mappings)

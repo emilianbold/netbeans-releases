@@ -55,6 +55,7 @@ import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 public final class SassCustomizer implements CssPreprocessorImplementation.Customizer {
 
@@ -130,8 +131,8 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
             fire = true;
         }
         // mappings
-        List<String> originalMappings = SassPreferences.getMappings(project);
-        List<String> mappings = getComponent().getMappings();
+        List<Pair<String, String>> originalMappings = SassPreferences.getMappings(project);
+        List<Pair<String, String>> mappings = getComponent().getMappings();
         SassPreferences.setMappings(project, mappings);
         if (!mappings.equals(originalMappings)) {
             fire = true;
