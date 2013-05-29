@@ -45,6 +45,7 @@
 package org.netbeans.api.db.explorer.support;
 
 import javax.swing.JComboBox;
+import static junit.framework.Assert.assertEquals;
 import org.netbeans.api.db.explorer.*;
 import org.netbeans.modules.db.test.TestBase;
 import org.netbeans.modules.db.test.Util;
@@ -102,7 +103,7 @@ public class DatabaseExplorerUIsTest extends TestBase {
         initConnections();
         JComboBox combo = connect();
 
-        assertTrue("Wrong number of items in the combobox", combo.getItemCount() == 3);
+        assertEquals("Wrong number of items in the combobox", 3, combo.getItemCount());
 
         assertSame(dbconn2, combo.getItemAt(0));
         assertSame(dbconn1, combo.getItemAt(1));
@@ -110,13 +111,13 @@ public class DatabaseExplorerUIsTest extends TestBase {
         DatabaseConnection dc = DatabaseConnection.create(Util.createDummyDriver(), "dc1", "user", "schema", "password", true);
         ConnectionManager.getDefault().addConnection(dc);
 
-        assertTrue("Wrong number of items in the combobox", combo.getItemCount() == 4);
+        assertEquals("Wrong number of items in the combobox", 4, combo.getItemCount());
 
         assertSame(dc, combo.getItemAt(2));
 
         ConnectionManager.getDefault().removeConnection(dc);
 
-        assertTrue("Wrong number of items in the combobox", combo.getItemCount() == 3);
+        assertEquals("Wrong number of items in the combobox", 3, combo.getItemCount());
 
         assertSame(dbconn2, combo.getItemAt(0));
         assertSame(dbconn1, combo.getItemAt(1));

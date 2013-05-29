@@ -72,9 +72,6 @@ import org.netbeans.modules.db.explorer.DbUtilities;
 import org.netbeans.modules.db.explorer.dlg.ConnectPanel;
 import org.netbeans.modules.db.explorer.dlg.ConnectProgressDialog;
 import org.openide.nodes.Node;
-
-//import org.netbeans.modules.db.explorer.PointbasePlus;
-
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialog;
 import org.netbeans.modules.db.explorer.dlg.ConnectionDialogMediator;
 import org.netbeans.modules.db.explorer.dlg.SchemaPanel;
