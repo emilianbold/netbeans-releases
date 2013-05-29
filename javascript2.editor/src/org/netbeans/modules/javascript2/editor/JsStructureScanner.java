@@ -216,6 +216,7 @@ public class JsStructureScanner implements StructureScanner {
             TokenId tokenId;
             JsTokenId lastContextId = null;
             int functionKeywordPosition = 0;
+            ts.moveStart();
             while (ts.moveNext()) {
                 tokenId = ts.token().id();
                 if (tokenId == JsTokenId.DOC_COMMENT) {
