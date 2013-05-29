@@ -256,7 +256,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
     }
 
     @Override
-    public final void sendCommand(Command command) {
+    public final void sendCommandImpl(Command command) {
         try {
             sendCommand(command.getCommand());
         } catch (Exception ex) {

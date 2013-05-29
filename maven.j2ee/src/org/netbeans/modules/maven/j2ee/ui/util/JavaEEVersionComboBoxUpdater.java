@@ -77,14 +77,12 @@ public final class JavaEEVersionComboBoxUpdater extends ComboBoxUpdater<Profile>
 
     static {
         WEB_PROFILES = new TreeSet<Profile>(Profile.UI_COMPARATOR);
-        WEB_PROFILES.add(Profile.J2EE_13);
         WEB_PROFILES.add(Profile.J2EE_14);
         WEB_PROFILES.add(Profile.JAVA_EE_5);
         WEB_PROFILES.add(Profile.JAVA_EE_6_WEB);
         WEB_PROFILES.add(Profile.JAVA_EE_7_WEB);
 
         FULL_PROFILES = new TreeSet<Profile>(Profile.UI_COMPARATOR);
-        FULL_PROFILES.add(Profile.J2EE_13);
         FULL_PROFILES.add(Profile.J2EE_14);
         FULL_PROFILES.add(Profile.JAVA_EE_5);
         FULL_PROFILES.add(Profile.JAVA_EE_6_FULL);

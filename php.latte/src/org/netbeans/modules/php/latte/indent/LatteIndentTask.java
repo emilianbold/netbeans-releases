@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.format;
+package org.netbeans.modules.php.latte.indent;
 
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.editor.indent.spi.Context;

@@ -39,47 +39,20 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.latte.format;
-
-import java.util.Collections;
-import java.util.List;
-import javax.swing.text.BadLocationException;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.modules.editor.indent.spi.Context;
-import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
-import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
-import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
-import org.netbeans.modules.web.indent.api.support.IndentCommand;
-import org.netbeans.modules.web.indent.api.support.IndenterContextData;
+package org.netbeans.modules.php.latte.indent;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class LatteIndenter extends AbstractIndenter<LatteTopTokenId> {
+public class LatteIndenterTest extends LatteIndenterTestBase {
 
-    public LatteIndenter(Context context) {
-        super(LatteTopTokenId.language(), context);
+    public LatteIndenterTest(String testName) {
+        super(testName);
     }
 
-    @Override
-    protected int getFormatStableStart(JoinedTokenSequence<LatteTopTokenId> ts, int startOffset, int endOffset, AbstractIndenter.OffsetRanges rangesToIgnore) throws BadLocationException {
-        return 0;
-    }
-
-    @Override
-    protected List<IndentCommand> getLineIndent(IndenterContextData<LatteTopTokenId> context, List<IndentCommand> preliminaryNextLineIndent) throws BadLocationException {
-        preliminaryNextLineIndent.add(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getNextLineStartOffset()));
-        return Collections.singletonList(new IndentCommand(IndentCommand.Type.NO_CHANGE, context.getLineStartOffset()));
-    }
-
-    @Override
-    protected boolean isWhiteSpaceToken(Token<LatteTopTokenId> token) {
-        return false;
-    }
-
-    @Override
-    protected void reset() {
+    public void testInlineLatte() throws Exception {
+        indent("testInlineLatte");
     }
 
 }

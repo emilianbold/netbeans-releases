@@ -542,7 +542,7 @@ public class MavenProjectSupport {
      * @param project for which we want to find {@link Preferences}
      * @return {@link Preferences} for the given project
      */
-    private static Preferences getPreferences(@NonNull Project project, boolean shared) {
+    public static Preferences getPreferences(@NonNull Project project, boolean shared) {
         return ProjectUtils.getPreferences(project, MavenProjectSupport.class, shared);
     }
     

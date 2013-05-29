@@ -48,9 +48,12 @@ import java.net.URL;
 import java.util.Enumeration;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.modules.web.webkit.debugging.api.TransportStateException;
+import org.netbeans.modules.web.webkit.debugging.spi.Command;
 import org.netbeans.modules.web.webkit.debugging.spi.ResponseCallback;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -62,12 +65,25 @@ public abstract class MobileDebugTransport implements TransportImplementation {
     private String indexHtmlLocation;
     private String bundleId;
     private BrowserURLMapperImplementation.BrowserURLMapper mapper;
+    private final RequestProcessor RP = new RequestProcessor(MobileDebugTransport.class);
     
     @Override
     public void registerResponseCallback(ResponseCallback callback) {
         this.callBack = callback;
     }
 
+    @Override
+    public final void sendCommand(final Command command) throws TransportStateException {
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                sendCommandImpl(command);
+            }
+        });
+    }
+    
+    protected abstract void sendCommandImpl(Command command);
+    
     @Override
     public URL getConnectionURL() {
         try {

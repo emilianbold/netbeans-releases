@@ -43,14 +43,12 @@ package org.netbeans.modules.php.latte.csl;
 
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.api.CodeCompletionHandler;
-import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.php.latte.completion.LatteCompletionHandler;
-import org.netbeans.modules.php.latte.format.LatteFormatter;
 import org.netbeans.modules.php.latte.lexer.LatteTopTokenId;
 import org.netbeans.modules.php.latte.navigation.LatteStructureScanner;
 import org.netbeans.modules.php.latte.parser.LatteParser;
@@ -97,16 +95,6 @@ public class LatteLanguage extends DefaultLanguageConfig {
     @Override
     public StructureScanner getStructureScanner() {
         return new LatteStructureScanner();
-    }
-
-    @Override
-    public boolean hasFormatter() {
-        return true;
-    }
-
-    @Override
-    public Formatter getFormatter() {
-        return new LatteFormatter();
     }
 
     @Override
