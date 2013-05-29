@@ -99,7 +99,7 @@ class SearchExecutor extends SvnProgressSupport {
         criteria = master.getCriteria();
         fromRevision = criteria.getFrom();
         toRevision = criteria.getTo();
-        limit = searchingUrl() || master.getRoots().length == 1 ? DEFAULT_LIMIT : -1;
+        limit = searchingUrl() || master.getRoots().length == 1 ? DEFAULT_LIMIT : 0;
     }
 
     private void populatePathToRoot() {
