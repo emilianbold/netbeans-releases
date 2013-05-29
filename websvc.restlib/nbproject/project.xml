@@ -61,102 +61,103 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <public-packages>
                 <package>javax.ws.rs</package>
+                <package>javax.ws.rs.client</package>
+                <package>javax.ws.rs.container</package>
                 <package>javax.ws.rs.core</package>
                 <package>javax.ws.rs.ext</package>
-                <package>com.sun.jersey.api</package>
-                <package>com.sun.jersey.api.client</package>
-                <package>com.sun.jersey.api.client.async</package>
-                <package>com.sun.jersey.api.client.config</package>
-                <package>com.sun.jersey.api.client.filter</package>
-                <package>com.sun.jersey.api.container</package>
-                <package>com.sun.jersey.api.container.grizzly</package>
-                <package>com.sun.jersey.api.container.httpserver</package>
-                <package>com.sun.jersey.api.core</package>
-                <package>com.sun.jersey.api.json</package>
-                <package>com.sun.jersey.api.model</package>
-                <package>com.sun.jersey.api.provider</package>
-                <package>com.sun.jersey.api.provider.jaxb</package>
-                <package>com.sun.jersey.api.representation</package>
-                <package>com.sun.jersey.api.uri</package>
-                <package>com.sun.jersey.api.view</package>
-                <package>com.sun.jersey.api.wadl</package>
-                <package>com.sun.jersey.client.urlconnection</package>
-                <package>com.sun.jersey.core.util</package>
-                <package>com.sun.jersey.multipart</package>
-                <package>com.sun.jersey.oauth.client</package>
-                <package>com.sun.jersey.oauth.signature</package>
-                <package>com.sun.jersey.spi</package>
-                <package>com.sun.jersey.spi.container</package>
-                <package>com.sun.jersey.spi.container.servlet</package>
-                <package>com.sun.jersey.spi.dispatch</package>
-                <package>com.sun.jersey.spi.inject</package>
-                <package>com.sun.jersey.spi.resource</package>
-                <package>com.sun.jersey.spi.service</package>
-                <package>com.sun.jersey.spi.template</package>
-                <package>com.sun.jersey.spi.uri.rules</package>
+                <package>org.glassfish.jersey</package>
+                <package>org.glassfish.jersey.filter</package>
+                <package>org.glassfish.jersey.message</package>
+                <package>org.glassfish.jersey.model</package>
+                <package>org.glassfish.jersey.process</package>
+                <package>org.glassfish.jersey.spi</package>
+                <package>org.glassfish.jersey.uri</package>
+                <package>org.glassfish.jersey.server</package>
+                <package>org.glassfish.jersey.server.filter</package>
+                <package>org.glassfish.jersey.server.model</package>
+                <package>org.glassfish.jersey.server.spi</package>
+                <package>org.glassfish.jersey.server.wadl</package>
+                <package>org.glassfish.jersey.server.wadl.config</package>
+                <package>org.glassfish.jersey.server.wadl.processor</package>
+                <package>org.glassfish.jersey.client</package>
+                <package>org.glassfish.jersey.client.filter</package>
+                <package>org.glassfish.jersey.client.spi</package>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jsr311-api-1.1.1.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jaxrs-2.0/javax.ws.rs-api-2.0.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/asm-3.1.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/asm-all-repackaged-2.1.88.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jackson-core-asl-1.9.2.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/cglib-2.1.88.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jackson-jaxrs-1.9.2.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/guava-14.0.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jackson-mapper-asl-1.9.2.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/hk2-api-2.1.88.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jackson-xc-1.9.2.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/hk2-locator-2.1.88.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-apache-client-1.13.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/hk2-utils-2.1.88.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-atom-abdera-1.13.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/javax.annotation-api-1.2.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-client-1.13.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/javax.inject-2.1.88.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-core-1.13.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/javax.servlet-api-3.1.0.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-guice-1.13.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/jaxb-api-2.2.7.jar</runtime-relative-path>
+            </class-path-extension>
+<!--  see issue 230417:
+            <class-path-extension>
+                <runtime-relative-path>ext/jersey2/ext/org.osgi.core-4.2.0.jar</runtime-relative-path>
+            </class-path-extension>-->
+            <class-path-extension>
+                <runtime-relative-path>ext/jersey2/ext/osgi-resource-locator-1.0.1.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-json-1.13.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/persistence-api-1.0.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-multipart-1.13.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/ext/validation-api-1.1.0.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-server-1.13.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/jersey-client.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-servlet-1.13.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/jersey-common.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-simple-server-1.13.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/jersey-server.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jersey-spring-1.13.jar</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/extensions/jackson-core-asl-1.9.11.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/jettison-1.1.jar/</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/extensions/jackson-jaxrs-1.9.11.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/oauth-client-1.13.jar/</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/extensions/jackson-mapper-asl-1.9.11.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/oauth-server-1.13.jar/</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/extensions/jackson-xc-1.9.11.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/rest/oauth-signature-1.13.jar/</runtime-relative-path>
+                <runtime-relative-path>ext/jersey2/extensions/jersey-media-json-jackson-2.0.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jersey2/extensions/jersey-media-json-jettison-2.0.jar</runtime-relative-path>
+            </class-path-extension>
+            <class-path-extension>
+                <runtime-relative-path>ext/jersey2/extensions/jettison-1.3.3.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>

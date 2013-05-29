@@ -51,17 +51,13 @@ made subject to such option by the copyright holder.
     <localizing-bundle>org/netbeans/modules/websvc/swdp/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/rest/jsr311-api-1.1.1.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/modules/ext/jaxrs-2.0/javax.ws.rs-api-2.0.jar!/</resource>
     </volume>  
-     <volume>
-        <type>javadoc</type>
-        <resource>jar:nbinst://org.netbeans.modules.websvc.restlib/docs/jsr311-api-1.1.1-javadoc.zip!/</resource>
-    </volume>
     <properties>
         <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
         <property>
             <name>maven-dependencies</name>
-            <value>javax.ws.rs:jsr311-api:1.1.1:jar</value>
+            <value>javax.ws.rs:javax.ws.rs-api:jar</value>
         </property>
     </properties>
 </library>
