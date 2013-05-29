@@ -65,24 +65,26 @@ import org.openide.util.RequestProcessor.Task;
  */
 public class CommandEvaluator {
     
-    final static String RECENT = "Recent";
-    private static final String PROP_ENABLED_CATEGORIES =
-            "enabledCategories";                                        //NOI18N
+    final static String RECENT = "Recent";                              //NOI18N
+    private static final String PROP_ENABLED_CATEGORIES
+            = "enabledCategories";                                      //NOI18N
     
     /**
      * command pattern is:
      * "command arguments"
      */
-    private static Pattern COMMAND_PATTERN = Pattern.compile("(\\w+)(\\s+)(.+)");
-
-    /** Temporary narrow evaluation to only specified category **/
-    private static boolean isCatTemporary;
+    private static final Pattern COMMAND_PATTERN = Pattern.compile("(\\w+)(\\s+)(.+)"); //NOI18N
 
     private static final RequestProcessor RP = new RequestProcessor("QuickSearch Command Evaluator", 10); // NOI18N
     /**
      * Narrow evaluation to specified set of categories.
      */
     private static Set<ProviderModel.Category> evalCats = loadEvalCats();
+
+    /**
+     * Temporarily narrow evaluation to specified category.
+     */
+    private static Category temporaryCat = null;
     
     /**
      * Runs evaluation.
@@ -170,17 +172,23 @@ public class CommandEvaluator {
                 ? new HashSet<Category>(ProviderModel.getInstance()
                 .getCategories())
                 : cat;
+        storeEvalCats();
     }
 
-    public static boolean isCatTemporary () {
-        return isCatTemporary;
+    public static void dropTemporaryCat() {
+        temporaryCat = null;
     }
 
-    public static void setCatTemporary (boolean isCatTemporary) {
-        CommandEvaluator.isCatTemporary = isCatTemporary;
-        if (!isCatTemporary) {
-            storeEvalCats();
-        }
+    public static void setTemporaryCat(Category temporaryCat) {
+        CommandEvaluator.temporaryCat = temporaryCat;
+    }
+
+    public static boolean isTemporaryCatSpecified() {
+        return temporaryCat != null;
+    }
+
+    public static Category getTemporaryCat() {
+        return temporaryCat;
     }
 
     private static String[] parseCommand (String command) {
@@ -208,7 +216,7 @@ public class CommandEvaluator {
      *
      * @return true if providers are expected to return all results, false otherwise
      */
-    private static boolean getProviderCategories (String[] commands, List<Category> result) {
+    static boolean getProviderCategories (String[] commands, List<Category> result) {
         List<Category> cats = ProviderModel.getInstance().getCategories();
 
         // always include recent searches
@@ -234,10 +242,19 @@ public class CommandEvaluator {
             }
         }
 
-        //no narrowing
-        result.addAll(evalCats);
+        //evaluation narrowed to category perhaps?
+        if (temporaryCat != null) {
+            result.add(temporaryCat);
+            return true;
+        }
 
-        return false;
+        //no narrowing
+        for (Category c : evalCats) {
+            if (!RECENT.equals(c.getName())) { //already present
+                result.add(c);
+            }
+        }
+        return result.size() < 3; // recent searches + one selected category
     }
 
     private static Task runEvaluation (final SearchProvider provider, final SearchRequest request,
@@ -257,7 +274,7 @@ public class CommandEvaluator {
 
         private static final long TIMEOUT = 60000;
 
-        private List<Task> tasks;
+        private final List<Task> tasks;
 
         private Wait4AllTask (List<Task> tasks) {
             super();

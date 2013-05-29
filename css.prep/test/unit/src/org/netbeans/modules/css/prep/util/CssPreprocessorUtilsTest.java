@@ -45,17 +45,48 @@ import java.io.File;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.Test;
+import org.openide.util.Pair;
 import static org.junit.Assert.*;
 
 public class CssPreprocessorUtilsTest {
 
     @Test
+    public void testEncodeMappings() {
+        List<Pair<String, String>> mappings = Arrays.asList(
+                Pair.of("/sass", "/css"),
+                Pair.of("/other/sass", "/css"),
+                Pair.of("sass", "css"),
+                Pair.of(".", "."));
+        String encoded =
+                "/sass" + CssPreprocessorUtils.MAPPING_DELIMITER + "/css"
+                + CssPreprocessorUtils.MAPPINGS_DELIMITER + "/other/sass" + CssPreprocessorUtils.MAPPING_DELIMITER + "/css"
+                + CssPreprocessorUtils.MAPPINGS_DELIMITER + "sass" + CssPreprocessorUtils.MAPPING_DELIMITER + "css"
+                + CssPreprocessorUtils.MAPPINGS_DELIMITER + "." + CssPreprocessorUtils.MAPPING_DELIMITER + ".";
+        assertEquals(encoded, CssPreprocessorUtils.encodeMappings(mappings));
+    }
+
+    @Test
+    public void testDecodeMappings() {
+        List<Pair<String, String>> mappings = Arrays.asList(
+                Pair.of("/sass", "/css"),
+                Pair.of("/other/sass", "/css"),
+                Pair.of("sass", "css"),
+                Pair.of(".", "."));
+        String encoded =
+                "/sass" + CssPreprocessorUtils.MAPPING_DELIMITER + "/css"
+                + CssPreprocessorUtils.MAPPINGS_DELIMITER + "/other/sass" + CssPreprocessorUtils.MAPPING_DELIMITER + "/css"
+                + CssPreprocessorUtils.MAPPINGS_DELIMITER + "sass" + CssPreprocessorUtils.MAPPING_DELIMITER + "css"
+                + CssPreprocessorUtils.MAPPINGS_DELIMITER + "." + CssPreprocessorUtils.MAPPING_DELIMITER + ".";
+        assertEquals(mappings, CssPreprocessorUtils.decodeMappings(encoded));
+    }
+
+    @Test
     public void testResolveTarget() {
         File root = new File("/root");
-        List<String> mappings = Arrays.asList(
-                "/scss:/css",
-                "/another/scss:/another/css",
-                " /space/at/beginning : /space/in/output ");
+        List<Pair<String, String>> mappings = Arrays.asList(
+                Pair.of("/scss", "/css"),
+                Pair.of("/another/scss", "/another/css"),
+                Pair.of(" /space/at/beginning ", " /space/in/output "));
         File file1 = new File(root, "scss/file1.scss");
         assertEquals(new File(root, "css/file1.css"), CssPreprocessorUtils.resolveTarget(root, mappings, file1, "file1"));
         File file2 = new File(root, "another/scss/file2.scss");
@@ -70,10 +101,10 @@ public class CssPreprocessorUtilsTest {
 
     @Test
     public void testValidMappingsFormat() {
-        List<String> mappings = Arrays.asList(
-                "/scss:/css",
-                "/another/scss:/another/css",
-                ".:.");
+        List<Pair<String, String>> mappings = Arrays.asList(
+                Pair.of("/scss", "/css"),
+                Pair.of("/another/scss", "/another/css"),
+                Pair.of(".", "."));
         ValidationResult validationResult = new CssPreprocessorUtils.MappingsValidator()
                 .validate(mappings)
                 .getResult();
@@ -82,19 +113,19 @@ public class CssPreprocessorUtilsTest {
 
     @Test
     public void testInvalidMappingsFormat() {
-        String mapping1 = "/sc:ss:/css";
-        String mapping2 = " :/css";
-        List<String> mappings = Arrays.asList(mapping1, mapping2);
+        Pair<String, String> mapping1 = Pair.of("/sc" + CssPreprocessorUtils.MAPPING_DELIMITER + "ss", "/css");
+        Pair<String, String> mapping2 = Pair.of("/scss", "   ");
+        List<Pair<String, String>> mappings = Arrays.asList(mapping1, mapping2);
         ValidationResult validationResult = new CssPreprocessorUtils.MappingsValidator()
                 .validate(mappings)
                 .getResult();
         assertEquals(2, validationResult.getWarnings().size());
         ValidationResult.Message warning1 = validationResult.getWarnings().get(0);
-        assertEquals("mapping." + mapping1, warning1.getSource());
-        assertTrue(warning1.getMessage(), warning1.getMessage().contains(mapping1));
+        assertEquals("mapping." + mapping1.first(), warning1.getSource());
+        assertTrue(warning1.getMessage(), warning1.getMessage().contains(mapping1.first()));
         ValidationResult.Message warning2 = validationResult.getWarnings().get(1);
-        assertEquals("mapping." + mapping2, warning2.getSource());
-        assertTrue(warning2.getMessage(), warning2.getMessage().contains(mapping2));
+        assertEquals("mapping." + mapping2.second(), warning2.getSource());
+        assertEquals(warning2.getMessage(), Bundle.MappingsValidator_warning_output_empty());
     }
 
 }

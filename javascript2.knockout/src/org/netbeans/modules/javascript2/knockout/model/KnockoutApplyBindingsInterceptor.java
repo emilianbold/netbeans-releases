@@ -85,10 +85,10 @@ public class KnockoutApplyBindingsInterceptor implements FunctionInterceptor {
 
         Iterator<FunctionArgument> iterator = args.iterator();
         FunctionArgument modelArgument = iterator.next();
-        FunctionArgument elementArgument = null;
-        if (args.size() == 2) {
-            elementArgument = iterator.next();
-        }
+//        FunctionArgument elementArgument = null;
+//        if (args.size() == 2) {
+//            elementArgument = iterator.next();
+//        }
 
         int offset = modelArgument.getOffset();
 

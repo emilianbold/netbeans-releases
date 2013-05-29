@@ -55,6 +55,7 @@ import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Pair;
 
 public final class LessProcessor extends BaseProcessor {
 
@@ -74,7 +75,7 @@ public final class LessProcessor extends BaseProcessor {
     }
 
     @Override
-    protected List<String> getMappings(Project project) {
+    protected List<Pair<String, String>> getMappings(Project project) {
         return LessPreferences.getMappings(project);
     }
 

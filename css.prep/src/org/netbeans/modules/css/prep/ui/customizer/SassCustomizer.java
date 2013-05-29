@@ -41,25 +41,33 @@
  */
 package org.netbeans.modules.css.prep.ui.customizer;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
+import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.preferences.SassPreferencesValidator;
 import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
+import org.netbeans.modules.css.prep.sass.SassExecutable;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
+import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
+import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
-public final class SassCustomizer implements CssPreprocessorImplementation.Customizer {
+public final class SassCustomizer implements CssPreprocessorImplementation.Customizer, PropertyChangeListener {
 
     private final SassCssPreprocessor sassCssPreprocessor;
     private final Project project;
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private volatile SassCustomizerPanel customizerPanel = null;
 
@@ -80,10 +88,14 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
     @Override
     public void addChangeListener(ChangeListener listener) {
         getComponent().addChangeListener(listener);
+        changeSupport.addChangeListener(listener);
+        CssPrepOptions.getInstance().addPropertyChangeListener(this);
     }
 
     @Override
     public void removeChangeListener(ChangeListener listener) {
+        CssPrepOptions.getInstance().removePropertyChangeListener(this);
+        changeSupport.removeChangeListener(listener);
         getComponent().removeChangeListener(listener);
     }
 
@@ -130,8 +142,8 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
             fire = true;
         }
         // mappings
-        List<String> originalMappings = SassPreferences.getMappings(project);
-        List<String> mappings = getComponent().getMappings();
+        List<Pair<String, String>> originalMappings = SassPreferences.getMappings(project);
+        List<Pair<String, String>> mappings = getComponent().getMappings();
         SassPreferences.setMappings(project, mappings);
         if (!mappings.equals(originalMappings)) {
             fire = true;
@@ -142,14 +154,36 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
         }
     }
 
+    @NbBundle.Messages({
+        "# {0} - error",
+        "SassCustomizer.error.executable={0} Use Configure Executables button to fix it.",
+    })
     private ValidationResult getValidationResult() {
         if (!CssPreprocessorUtils.hasAnyFilesForCompiling(project, CssPreprocessorType.SASS)) {
             // no sass files -> no validation needed
             return new ValidationResult();
         }
-        return new SassPreferencesValidator()
+        ValidationResult result = new SassPreferencesValidator()
                 .validate(getComponent().isSassEnabled(), getComponent().getMappings())
                 .getResult();
+        if (!result.isFaultless()) {
+            return result;
+        }
+        // compiler
+        result = new ValidationResult();
+        try {
+            SassExecutable.getDefault();
+        } catch (InvalidExternalExecutableException ex) {
+            result.addWarning(new ValidationResult.Message("sass.path", Bundle.LessCustomizer_error_executable(ex.getLocalizedMessage()))); // NOI18N
+        }
+        return result;
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+        if (CssPrepOptions.SASS_PATH_PROPERTY.equals(evt.getPropertyName())) {
+            changeSupport.fireChange();
+        }
     }
 
 }

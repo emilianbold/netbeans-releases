@@ -147,7 +147,7 @@ public class LessOptions implements CssPreprocessorImplementation.Options {
 
     private ValidationResult getValidationResult() {
         return new CssPrepOptionsValidator()
-                .validateLessPath(getComponent().getLessPath())
+                .validateLessPath(getComponent().getLessPath(), true)
                 .getResult();
     }
 

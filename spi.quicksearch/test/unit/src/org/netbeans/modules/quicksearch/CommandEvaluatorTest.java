@@ -42,10 +42,13 @@
 package org.netbeans.modules.quicksearch;
 
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import static org.junit.Assert.*;
 import org.junit.Test;
 import org.netbeans.modules.quicksearch.ProviderModel.Category;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -71,5 +74,22 @@ public class CommandEvaluatorTest {
         assertEquals(ProviderModel.getInstance().getCategories().size(),
                 CommandEvaluator.getEvalCats().size());
         CommandEvaluator.setEvalCats(evalCats);
+    }
+
+    /**
+     * Test for bug 229926.
+     */
+    @Test
+    public void testGetProviderCategories() {
+        Category aCategory = new Category(
+                FileUtil.createMemoryFileSystem().getRoot(), "a", "x");
+        CommandEvaluator.setTemporaryCat(aCategory);
+        List<Category> cats = new LinkedList<Category>();
+        boolean res = CommandEvaluator.getProviderCategories(
+                new String[]{"ab", "cd"}, cats);
+        assertEquals("List should contain categories 'Recent' and <aCategory>",
+                2, cats.size());
+        assertTrue(res);
+        CommandEvaluator.dropTemporaryCat();
     }
 }

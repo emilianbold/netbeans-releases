@@ -152,31 +152,6 @@ public class JDBCDriverConvertorTest extends TestBase {
         assertEquals(new URL("file:///test%20file"), JDBCDriverConvertor.encodeURL(new URL("file:///test file")));
     }
     
-    public void testImportOldDrivers() throws Exception {
-        final String UNENCODED_URL = "file:///foo 1.jar";
-        
-        FileObject oldRoot = FileUtil.getConfigFile(JDBCDriverConvertor.OLD_DRIVERS_PATH);
-        if (oldRoot == null) {
-            oldRoot = FileUtil.createFolder(FileUtil.getConfigRoot(), JDBCDriverConvertor.OLD_DRIVERS_PATH);
-        }
-        URL[] urls = new URL[] { new URL(UNENCODED_URL) };
-        createDriverFile10("testdriver.xml", oldRoot, urls);
-        
-        JDBCDriverConvertor.importOldDrivers();
-        
-        assertEquals(0, oldRoot.getChildren().length);
-        
-        FileObject newRoot = Util.getDriversFolder();
-        assertEquals(1, newRoot.getChildren().length);
-        
-        Lookup.Result result = Lookups.forPath(newRoot.getPath()).lookup(new Lookup.Template(JDBCDriver.class));
-        Collection instances = result.allInstances();
-        JDBCDriver drv = (JDBCDriver)instances.iterator().next();
-        assertEquals(JDBCDriverConvertor.encodeURL(new URL(UNENCODED_URL)), drv.getURLs()[0]);
-        // assert the imported driver has a display name set
-        assertEquals(drv.getName(), drv.getDisplayName());
-    }
-    
     private static FileObject createDriverFile10(String fileName, FileObject folder) throws Exception {
         URL[] urls = new URL[] {
             new URL("file:///foo1.jar"),
