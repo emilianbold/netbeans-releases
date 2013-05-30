@@ -43,6 +43,7 @@ package org.netbeans.modules.css.prep;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import org.openide.util.NbBundle;
@@ -83,7 +84,7 @@ public enum CssPreprocessorType {
 
         @Override
         public Collection<String> getMimeTypes() {
-            return Arrays.asList("text/less"); // NOI18N
+            return Collections.singleton("text/less"); // NOI18N
         }
 
     };
