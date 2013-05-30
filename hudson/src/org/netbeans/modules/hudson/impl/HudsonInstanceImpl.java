@@ -527,8 +527,11 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
             }
             job.putProperty(JOB_NAME, jd.getJobName());
             job.putProperty(JOB_URL, jd.getJobUrl());
-            job.putProperty(JOB_COLOR, jd.getColor());
-            job.putProperty(JOB_DISPLAY_NAME, jd.getDisplayName());
+            if (jd.getColor() != null) { // may be null, see #230406
+                job.putProperty(JOB_COLOR, jd.getColor());
+            }
+            job.putProperty(JOB_DISPLAY_NAME, jd.getDisplayName() == null
+                    ? jd.getJobName() : jd.getDisplayName());
             job.putProperty(JOB_BUILDABLE, jd.isBuildable());
             job.putProperty(JOB_IN_QUEUE, jd.isInQueue());
             job.putProperty(JOB_LAST_BUILD, jd.getLastBuild());

@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.kenai.ui.api;
 
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.PasswordAuthentication;
@@ -53,6 +54,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
@@ -60,6 +62,8 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
+import org.netbeans.modules.kenai.ui.NewKenaiProjectAction;
+import org.netbeans.modules.kenai.ui.OpenKenaiProjectAction;
 import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardProviderImpl;
 import org.netbeans.modules.kenai.ui.impl.LoginPanelSupportImpl;
@@ -255,14 +259,19 @@ public final class KenaiServer implements TeamServer {
     @Override
     public List<Action> getActions() {
         ArrayList<Action> res = new ArrayList<Action>( 3 );
-        final DashboardProviderImpl dashboardImpl = new DashboardProviderImpl( this );
-
-        Action newProjectAction = dashboardImpl.getProjectAccessor().getNewTeamProjectAction();
+        
+        AbstractAction newProjectAction = new AbstractAction() {
+            private NewKenaiProjectAction a = new NewKenaiProjectAction(kenai);
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                a.actionPerformed(e);
+            }
+        };
         newProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true));
         newProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_NewProject") );
         res.add( newProjectAction );
-
-        Action openProjectAction = dashboardImpl.getProjectAccessor().getOpenNonMemberProjectAction();
+        
+        OpenKenaiProjectAction openProjectAction = new OpenKenaiProjectAction(kenai);
         openProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/open_team_project.png", true));
         openProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_OpenProject") );
         res.add( openProjectAction );
