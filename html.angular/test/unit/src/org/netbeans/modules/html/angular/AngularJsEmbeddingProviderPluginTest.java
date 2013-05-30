@@ -42,22 +42,16 @@
 package org.netbeans.modules.html.angular;
 
 import java.util.Collections;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.html.editor.embedding.JsEmbeddingProviderTest;
 import org.netbeans.modules.html.editor.gsf.HtmlLanguage;
-import org.netbeans.modules.javascript2.editor.CompletionContextFinder;
-import org.netbeans.modules.javascript2.editor.spi.CompletionContext;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -82,6 +76,14 @@ public class AngularJsEmbeddingProviderPluginTest extends CslTestBase {
     
     public void testIssue229693() throws Exception {
         checkVirtualSource("virtualSource/issue229693.html");
+    }
+    
+    public void testIssue230223() throws Exception {
+        checkVirtualSource("virtualSource/issue230223.html");
+    }
+    
+    public void testIssue230480() throws Exception {
+        checkVirtualSource("virtualSource/issue230480.html");
     }
     
     private void checkVirtualSource(final String testFile) throws Exception {

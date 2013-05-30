@@ -185,10 +185,10 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 }
                 break;
             case EL_OPEN_DELIMITER:
-                if (tokenSequence.moveNext()) {
+                 if (tokenSequence.moveNext()) {
                     if (tokenSequence.token().id() == HTMLTokenId.EL_CONTENT) {
                         String value = tokenSequence.token().text().toString().trim();
-                        String name = value;
+                        String name = value.startsWith("(") ? value.substring(1) : value;
                         int parenIndex = name.indexOf('('); //NOI18N
                         if (parenIndex > -1) {
                             name = name.substring(0, parenIndex);
@@ -196,6 +196,14 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         if (propertyToFqn.containsKey(name)) {
                             embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                             embeddings.add(snapshot.create(tokenSequence.offset(), value.length(), Constants.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                            processed = true;
+                        } else if (!name.contains("|") && !name.contains(":")){ //NOI18N
+                            embeddings.add(snapshot.create(tokenSequence.offset(), value.length(), Constants.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                            processed = true;
+                        } else if (name.contains("|")){
+                            embeddings.add(snapshot.create(tokenSequence.offset(), value.indexOf("|"), Constants.JAVASCRIPT_MIMETYPE));
                             embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                             processed = true;
                         } else {
@@ -299,21 +307,57 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         String[] parts = expression.split("\\|");
         if (parts.length > 0) {
             // try to create the for cycle in virtual source
-            if (parts[0].contains(" in ")) {
+             if (parts[0].contains(" in ")) {
                 // we understand only "in"  now
-                String[] forParts = parts[0].trim().split(" ");   // this is the should contain [new variale, in, collection name]
-                embeddings.add(snapshot.create("for (var ", Constants.JAVASCRIPT_MIMETYPE));                
-                if (forParts.length == 3 && propertyToFqn.containsKey(forParts[2])) {
-                    // if we know the collection from a controller ....
-                    int lastPartPos = expression.indexOf(forParts[2]); // the start position of the collection name
-                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, lastPartPos, Constants.JAVASCRIPT_MIMETYPE));
-                    embeddings.add(snapshot.create(propertyToFqn.get(forParts[2]) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
-                    embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos, forParts[2].length(), Constants.JAVASCRIPT_MIMETYPE));
+                String[] forParts = parts[0].trim().split(" in ");   // NOI18N
+                embeddings.add(snapshot.create("for (var ", Constants.JAVASCRIPT_MIMETYPE));
+                // forParts keeps value, collection
+                // now need to check, whether the value is simple or (key, value) - issue #230223
+                if (!forParts[0].contains(",")) {
+                    // create virtual source for simple case:  value in collection
+                    if (forParts.length == 2 && propertyToFqn.containsKey(forParts[1])) {
+                        // if we know the collection from a controller ....
+                        int lastPartPos = expression.indexOf(forParts[1]); // the start position of the collection name
+                        embeddings.add(snapshot.create(tokenSequence.offset() + 1, lastPartPos, Constants.JAVASCRIPT_MIMETYPE));
+                        embeddings.add(snapshot.create(propertyToFqn.get(forParts[1]) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                        embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos, forParts[1].length(), Constants.JAVASCRIPT_MIMETYPE));
+                    } else {
+                        // if we don't know the collection from a controller, put it to the virtual source at it is
+                        embeddings.add(snapshot.create(tokenSequence.offset() + 1, parts[0].length(), Constants.JAVASCRIPT_MIMETYPE));
+                    }
+                    embeddings.add(snapshot.create(") {\n", Constants.JAVASCRIPT_MIMETYPE));  //NOI18N
                 } else {
-                    // if we don't know the collection from a controller, put it to the virtual source at it is
-                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, parts[0].length(), Constants.JAVASCRIPT_MIMETYPE));
+                    // expect that thre is expression like: (key, value) in collection
+                    // such expression should be translated to: for (var key in collectoin) { var value = collection[key];
+                    String valueExp = forParts[0].trim();
+                    if (valueExp.startsWith("(")) {     // NOI18N
+                        valueExp = valueExp.substring(1);
+                    }
+                    if (valueExp.endsWith(")")) {   // NOI18N
+                        valueExp = valueExp.substring(0, valueExp.length() - 1);
+                    }
+                    valueExp = valueExp.trim();
+                    String[] keyValue = valueExp.split(",");    // NOI18N
+                    int lastPartPos = expression.indexOf(forParts[1]); // the start position of the collection name
+                    int keyPos = expression.indexOf(keyValue[0]);
+                    // map the key name
+                    embeddings.add(snapshot.create(tokenSequence.offset() + 1 + keyPos, keyValue[0].length(), Constants.JAVASCRIPT_MIMETYPE));
+                    // map " in " 
+                    embeddings.add(snapshot.create(" in ", Constants.JAVASCRIPT_MIMETYPE));  //NOI18N
+                    if (forParts.length == 2 && propertyToFqn.containsKey(forParts[1])) {
+                        // if we know the collection from a controller ....
+                        // map the collection
+                        embeddings.add(snapshot.create(propertyToFqn.get(forParts[1]) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                        embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos, forParts[1].length(), Constants.JAVASCRIPT_MIMETYPE));
+                    } else {
+                        // map the collection
+                        embeddings.add(snapshot.create(tokenSequence.offset() + 1 + lastPartPos, forParts[1].length(), Constants.JAVASCRIPT_MIMETYPE));
+                    }
+                    embeddings.add(snapshot.create(") {\nvar ", Constants.JAVASCRIPT_MIMETYPE));    //NOI18N
+                    int valuePos = expression.indexOf(keyValue[1]);
+                    embeddings.add(snapshot.create(tokenSequence.offset() + 1 + valuePos, keyValue[1].length(), Constants.JAVASCRIPT_MIMETYPE));
+                    embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE));      //NOI18N
                 }
-                embeddings.add(snapshot.create(") {", Constants.JAVASCRIPT_MIMETYPE));
                 // the for cycle should be closed in appropriate CLOSE_TAG token
                 processed = true;
             }
