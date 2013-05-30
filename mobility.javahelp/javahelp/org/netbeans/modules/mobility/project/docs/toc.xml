@@ -112,17 +112,15 @@
 			</tocitem>
 			<tocitem text="Deploying Java ME Applications">
 				<tocitem text="About Java ME Application Deployment" target="me.about_deployment" />
-                        <tocitem text="Deploying Java ME Applications" target="me.deploy_deploying" />
-                        <tocitem text="Deploying Java ME Applications to the Device Anywhere Website" target="me.deploy_devanywhere" />
+                <tocitem text="Deploying Java ME Applications" target="me.deploy_deploying" />
+                <tocitem text="Deploying Java ME Applications to the Device Anywhere Website" target="me.deploy_devanywhere" />
 				<tocitem text="Deploying a MIDlet Suite Using File Copy" target="me.deploy_copy" />
 				<tocitem text="Deploying a MIDlet Suite Using FTP" target="me.deploy_ftp" />
 				<tocitem text="Deploying a MIDlet Suite Using WebDAV" target="me.deploy_webdav" />
-				<tocitem text="Deploying Java ME Applications to Nokia Mobile Devices" target="me.deploy_nokia" />
-				<tocitem text="Deploying CDC Applications to Ricoh Devices" target="me.deploy_ricoh" />
-				<tocitem text="Deploying a MIDlet Suite using SCP" target="me.deploy_scp" />
-				<tocitem text="Deploying a MIDlet Suite to a Sony Ericsson Phone" target="me.deploy_se" />
+				<tocitem text="Deploying Java ME Applications to Nokia Mobile Devices" target="me.deploy_nokia" />				
+				<tocitem text="Deploying a MIDlet Suite using SCP" target="me.deploy_scp" />				
 				<tocitem text="Deploying MIDlets to Windows Mobile Devices" target="me.deploy_winmobile" />
-                        <tocitem text="Automatically Incrementing Java ME Application Version Attributes" target="me.deploy_increment" />
+                <tocitem text="Automatically Incrementing Java ME Application Version Attributes" target="me.deploy_increment" />
 			</tocitem>
     			<tocitem text="Java ME Emulator Platforms">
 				<tocitem text="About MIDP Emulator Platforms" target="me.emulator_about" />
