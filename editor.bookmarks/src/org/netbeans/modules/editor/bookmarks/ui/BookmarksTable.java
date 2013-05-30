@@ -107,7 +107,7 @@ public class BookmarksTable extends ETable {
                 if (e.getClickCount() == 2 || SwingUtilities.isRightMouseButton(e)) {
                     if (getModel() instanceof BookmarksTableModel) {
                         BookmarksTableModel model = (BookmarksTableModel) getModel();
-                        int row = ((JTable) e.getSource()).getSelectedRow();
+                        int row = convertRowIndexToModel(((JTable) e.getSource()).getSelectedRow());
 
                         final BookmarkNode node = model.getEntry(row);
                         if (e.getClickCount() == 2) {
