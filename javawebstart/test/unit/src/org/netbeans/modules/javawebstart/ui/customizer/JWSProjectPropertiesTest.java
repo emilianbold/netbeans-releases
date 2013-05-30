@@ -65,6 +65,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.test.MockLookup;
 
+import static org.netbeans.modules.java.api.common.project.ProjectProperties.ENDORSED_CLASSPATH;
 /**
  * 
  * @author Petr Somol
@@ -127,13 +128,13 @@ public class JWSProjectPropertiesTest extends NbTestCase {
         System.out.println("Test updateWebStartJarsOnOpen():");
 
         setProperty("platform.active", "default_platform");
-        setProperty(JWSProjectProperties.ENDORSED_CLASSPATH, "");
+        setProperty(ENDORSED_CLASSPATH, "");
         updateWebStartJarsOnOpen(false);
-        assertEquals("", getProperty(JWSProjectProperties.ENDORSED_CLASSPATH));
+        assertEquals("", getProperty(ENDORSED_CLASSPATH));
 
         setProperty("platform.active", "default_platform");
         System.out.println("Test preserving of all items except the non-existing and disabled WS references on open:");
-        setProperty(JWSProjectProperties.ENDORSED_CLASSPATH, new String[]{
+        setProperty(ENDORSED_CLASSPATH, new String[]{
             "foo:", // WS unrelated
             "${java.home}/lib/javaws.jar:", // exists
             "${java.home}/lib/plugin.jar:", // exists
@@ -141,13 +142,13 @@ public class JWSProjectPropertiesTest extends NbTestCase {
             "foo.bar/javaws.jar:", // does not exist
             "${foo.bar}/javaws.jar"}); // does not exist
         updateWebStartJarsOnOpen(false);
-        assertEquals("foo:${foo.bar}", getRawProperty(JWSProjectProperties.ENDORSED_CLASSPATH));
+        assertEquals("foo:${foo.bar}", getRawProperty(ENDORSED_CLASSPATH));
         System.out.println("OK");
 
         setProperty("platform.active", "default_platform");
         setProperty("jnlp.descriptor", "application");        
         System.out.println("Test substitute of missing WS application items on open with WS enabled:");
-        setProperty(JWSProjectProperties.ENDORSED_CLASSPATH, new String[]{
+        setProperty(ENDORSED_CLASSPATH, new String[]{
             "foo:",// WS unrelated
             "${platforms.otherjdk.home}/jre/lib/javaws.jar:", // exists
             "${foo.bar}:", // WS unrelated
@@ -156,13 +157,13 @@ public class JWSProjectPropertiesTest extends NbTestCase {
         updateWebStartJarsOnOpen(true);
         assertEquals("${java.home}/lib/javaws.jar:" +
                 "${platforms.otherjdk.home}/jre/lib/javaws.jar:" +
-                "foo:${foo.bar}", getRawProperty(JWSProjectProperties.ENDORSED_CLASSPATH));
+                "foo:${foo.bar}", getRawProperty(ENDORSED_CLASSPATH));
         System.out.println("OK");
         
         setProperty("platform.active", "default_platform");
         setProperty("jnlp.descriptor", "applet");
         System.out.println("Test substitute of missing WS applet items on open with WS enabled while preserving existing form of references:");
-        setProperty(JWSProjectProperties.ENDORSED_CLASSPATH, new String[]{
+        setProperty(ENDORSED_CLASSPATH, new String[]{
             "foo:",// WS unrelated
             wsPrimary.getAbsolutePath()+":", // exists
             "${platforms.otherjdk.home}/jre/lib/javaws.jar:", // exists
@@ -173,13 +174,13 @@ public class JWSProjectPropertiesTest extends NbTestCase {
         assertEquals(wsPrimary.getAbsolutePath()+":" + 
                 "${platforms.otherjdk.home}/jre/lib/javaws.jar:" +
                 "${java.home}/lib/plugin.jar:" +
-                "foo:${foo.bar}", getRawProperty(JWSProjectProperties.ENDORSED_CLASSPATH));
+                "foo:${foo.bar}", getRawProperty(ENDORSED_CLASSPATH));
         System.out.println("OK");
 
         setProperty("platform.active", "otherjdk");
         setProperty("jnlp.descriptor", "applet");
         System.out.println("Test substitute of missing WS applet items on open with non-default active platform:");
-        setProperty(JWSProjectProperties.ENDORSED_CLASSPATH, new String[]{
+        setProperty(ENDORSED_CLASSPATH, new String[]{
             "foo:", // WS unrelated
             wsPrimary.getAbsolutePath()+":", // exists
             "${platforms.otherjdk.home}/jre/lib/javaws.jar:", // exists
@@ -190,7 +191,7 @@ public class JWSProjectPropertiesTest extends NbTestCase {
         assertEquals(wsPrimary.getAbsolutePath()+":" + 
                 "${platforms.otherjdk.home}/jre/lib/javaws.jar:" + 
                 "${platforms.otherjdk.home}/jre/lib/plugin.jar:" +
-                "foo:${foo.bar}", getRawProperty(JWSProjectProperties.ENDORSED_CLASSPATH));
+                "foo:${foo.bar}", getRawProperty(ENDORSED_CLASSPATH));
         System.out.println("OK");
     }
 
@@ -198,13 +199,13 @@ public class JWSProjectPropertiesTest extends NbTestCase {
         System.out.println("Test updateWebStartJarsOnChange():");
 
         setProperty("platform.active", "default_platform");
-        setProperty(JWSProjectProperties.ENDORSED_CLASSPATH, "");
+        setProperty(ENDORSED_CLASSPATH, "");
         updateWebStartJarsOnChange(false);
-        assertEquals("", getProperty(JWSProjectProperties.ENDORSED_CLASSPATH));
+        assertEquals("", getProperty(ENDORSED_CLASSPATH));
 
         setProperty("platform.active", "default_platform");
         System.out.println("Test preserving of all items except WS references on change (WS disabled):");
-        setProperty(JWSProjectProperties.ENDORSED_CLASSPATH, new String[]{
+        setProperty(ENDORSED_CLASSPATH, new String[]{
             "foo:", // WS unrelated
             "${java.home}/lib/javaws.jar:", // exists
             "${platforms.otherjdk.home}/jre/lib/plugin.jar:", // exists
@@ -212,13 +213,13 @@ public class JWSProjectPropertiesTest extends NbTestCase {
             "foo.bar/javaws.jar:", // does not exist
             "${foo.bar}/javaws.jar"}); // does not exist
         updateWebStartJarsOnChange(false);
-        assertEquals("foo:${foo.bar}", getRawProperty(JWSProjectProperties.ENDORSED_CLASSPATH));
+        assertEquals("foo:${foo.bar}", getRawProperty(ENDORSED_CLASSPATH));
         System.out.println("OK");
 
         setProperty("platform.active", "default_platform");
         setProperty("jnlp.descriptor", "application");        
         System.out.println("Test replace all WS items by only the necessary WS application items in reference form (WS enabled):");
-        setProperty(JWSProjectProperties.ENDORSED_CLASSPATH, new String[]{
+        setProperty(ENDORSED_CLASSPATH, new String[]{
             "foo:",// WS unrelated
             "${platforms.otherjdk.home}/jre/lib/javaws.jar:", // exists
             "${foo.bar}:", // WS unrelated
@@ -226,13 +227,13 @@ public class JWSProjectPropertiesTest extends NbTestCase {
             "${foo.bar}/javaws.jar"}); // does not exist
         updateWebStartJarsOnChange(true);
         assertEquals("${java.home}/lib/javaws.jar:" +
-                "foo:${foo.bar}", getRawProperty(JWSProjectProperties.ENDORSED_CLASSPATH));
+                "foo:${foo.bar}", getRawProperty(ENDORSED_CLASSPATH));
         System.out.println("OK");
         
         setProperty("platform.active", "default_platform");
         setProperty("jnlp.descriptor", "applet");
         System.out.println("Test replace all WS items by only the necessary WS applet items in reference form (WS enabled):");
-        setProperty(JWSProjectProperties.ENDORSED_CLASSPATH, new String[]{
+        setProperty(ENDORSED_CLASSPATH, new String[]{
             "foo:",// WS unrelated
             wsPrimary.getAbsolutePath()+":", // exists
             "${platforms.otherjdk.home}/jre/lib/javaws.jar:", // exists
@@ -242,13 +243,13 @@ public class JWSProjectPropertiesTest extends NbTestCase {
         updateWebStartJarsOnChange(true);
         assertEquals("${java.home}/lib/javaws.jar:" +
                 "${java.home}/lib/plugin.jar:" +
-                "foo:${foo.bar}", getRawProperty(JWSProjectProperties.ENDORSED_CLASSPATH));
+                "foo:${foo.bar}", getRawProperty(ENDORSED_CLASSPATH));
         System.out.println("OK");
 
         setProperty("platform.active", "otherjdk");
         setProperty("jnlp.descriptor", "applet");
         System.out.println("Test replace all WS items by only the necessary WS applet items in reference form (WS enabled) with non-default active platform:");
-        setProperty(JWSProjectProperties.ENDORSED_CLASSPATH, new String[]{
+        setProperty(ENDORSED_CLASSPATH, new String[]{
             "foo:", // WS unrelated
             wsPrimary.getAbsolutePath()+":", // exists
             "${platforms.otherjdk.home}/jre/lib/javaws.jar:", // exists
@@ -258,7 +259,7 @@ public class JWSProjectPropertiesTest extends NbTestCase {
         updateWebStartJarsOnChange(true);
         assertEquals("${platforms.otherjdk.home}/jre/lib/javaws.jar:" + 
                 "${platforms.otherjdk.home}/jre/lib/plugin.jar:" +
-                "foo:${foo.bar}", getRawProperty(JWSProjectProperties.ENDORSED_CLASSPATH));
+                "foo:${foo.bar}", getRawProperty(ENDORSED_CLASSPATH));
         System.out.println("OK");
     }
     

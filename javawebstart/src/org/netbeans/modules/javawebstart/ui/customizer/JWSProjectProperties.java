@@ -48,11 +48,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.swing.ButtonGroup;
@@ -70,8 +68,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClassIndex;
 import org.netbeans.api.java.source.ClassIndex.SearchKind;
@@ -80,7 +76,6 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
@@ -100,7 +95,9 @@ import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
+
+import static org.netbeans.modules.java.api.common.project.ProjectProperties.JAVAC_CLASSPATH;
+import static org.netbeans.modules.java.api.common.project.ProjectProperties.ENDORSED_CLASSPATH;
 
 /**
  *
@@ -112,7 +109,6 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     private static final Logger LOG = Logger.getLogger(JWSProjectProperties.class.getName());
 
     public static final String DEFAULT_PLATFORM   = JavaPlatformManager.getDefault().getDefaultPlatform().getProperties().get("platform.ant.name"); //NOI18N
-    public static final String ENDORSED_CLASSPATH = "endorsed.classpath"; //NOI18N
 
     public static final String JNLP_ENABLED      = "jnlp.enabled";
     public static final String JNLP_ICON         = "jnlp.icon";
@@ -1106,16 +1102,17 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
      * @return String array that can be passed to setProperty()
      */
     private static String[] createClassPathProperty(Collection<String> items) {
-        Collection<String> otems = new ArrayList<String>();
-        for (String item : items) {
-            otems.add(item + ":"); //NOI18N
-        }
-        String arr[] = otems.toArray(new String[otems.size()]);
-        // remove ":" from last item:
-        if (arr.length != 0) {
-            arr[arr.length-1] = arr[arr.length-1].substring(0, arr[arr.length-1].length()-1);
-        }
-        return arr;
+        final int size = items.size();
+        final String[] result = new String[size];
+        final Iterator<String> itemIt = items.iterator();
+        for (int i = 0; itemIt.hasNext(); i++) {
+            result[i] = String.format(
+                (i == size - 1) ?
+                    "%s" :  //NOI18N
+                    "%s:",  //NOI18N
+                itemIt.next());
+        }        
+        return result;
     }
 
     /**
