@@ -116,10 +116,6 @@
                 <binary-origin>external/io-xml-util.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/js.jar</runtime-relative-path>
-                <binary-origin>external/js.jar</binary-origin>
-            </class-path-extension>
-            <class-path-extension>
                 <runtime-relative-path>ext/log4j-1.2.15.jar</runtime-relative-path>
                 <binary-origin>external/log4j-1.2.15.jar</binary-origin>
             </class-path-extension>
@@ -148,8 +144,8 @@
                 <binary-origin>external/saxon9B.jar</binary-origin>
             </class-path-extension>
             <class-path-extension>
-                <runtime-relative-path>ext/isorelax20041111.jar</runtime-relative-path>
-                <binary-origin>external/isorelax20041111.jar</binary-origin>
+                <runtime-relative-path>ext/isorelax.jar</runtime-relative-path>
+                <binary-origin>external/isorelax.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

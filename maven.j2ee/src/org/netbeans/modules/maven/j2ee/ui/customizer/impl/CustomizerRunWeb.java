@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.j2ee.ui.customizer.impl;
 
 import java.io.IOException;
 import java.util.List;
+import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -63,6 +64,7 @@ import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.api.BrowserUISupport.BrowserComboBoxModel;
+import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -105,16 +107,8 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         initServerModel(serverCBox, serverLabel, J2eeModule.Type.WAR);
         initVersionModel(javaeeVersionCBox, javaeeVersionLabel, J2eeModule.Type.WAR);
         initDeployOnSave(jCheckBoxDeployOnSave, dosDescription);
-        initBrowser();
     }
     
-    private void initBrowser() {
-        String selectedBrowser = MavenProjectSupport.getBrowserID(project);
-        browserModel = BrowserUISupport.createBrowserModel(selectedBrowser, true);
-        browserCBox.setModel(browserModel);
-        browserCBox.setRenderer(BrowserUISupport.createBrowserRenderer());
-    }
-
     @Override
     public void applyChangesInAWT() {
         assert SwingUtilities.isEventDispatchThread();
@@ -250,6 +244,16 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         }
     }
 
+    private JComboBox<WebBrowser> createBrowserComboBox() {
+        String selectedBrowser = MavenProjectSupport.getBrowserID(project);
+        browserModel = BrowserUISupport.createBrowserModel(selectedBrowser, true);
+        browserCBox = BrowserUISupport.createBrowserPickerComboBox(browserModel.getSelectedBrowserId(), true, false, browserModel);
+        browserCBox.setModel(browserModel);
+        browserCBox.setRenderer(BrowserUISupport.createBrowserRenderer());
+
+        return browserCBox;
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -271,7 +275,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         dosDescription = new javax.swing.JLabel();
         javaeeVersionCBox = new javax.swing.JComboBox();
         browserLabel = new javax.swing.JLabel();
-        browserCBox = new javax.swing.JComboBox();
+        browserCBox = createBrowserComboBox();
 
         serverLabel.setLabelFor(serverCBox);
         org.openide.awt.Mnemonics.setLocalizedText(serverLabel, org.openide.util.NbBundle.getMessage(CustomizerRunWeb.class, "LBL_Server")); // NOI18N

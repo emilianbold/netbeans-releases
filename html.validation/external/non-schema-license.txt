@@ -1,10 +1,11 @@
 Name: validator.nu schemas
-Version: -
+Version: 20130529
 License: MIT
 OSR: -
 Files: non-schema.jar
 Description: Non relax-ng schema checks for the validator
 Origin: validator.nu
+Content: org.whattf.checker
 
 Copyright (c) 2006 Henri Sivonen
 

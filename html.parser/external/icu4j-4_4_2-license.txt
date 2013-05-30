@@ -1,8 +1,8 @@
 Name: ICU4J
-Version: 4.0
+Version: 4.4.2
 License: MIT extended
 OSR: -
-Files: icu4j-4_0.jar
+Files: icu4j-4_4_2.jar
 Description: Unicode and Globalization support
 Origin: http://site.icu-project.org/
 
