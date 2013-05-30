@@ -942,7 +942,7 @@ public final class JFXProjectUtils {
      * @return
      * @throws IOException 
      */
-    static FileObject updateJfxImpl(final @NonNull Project proj) throws IOException {
+    public static FileObject updateJfxImpl(final @NonNull Project proj) throws IOException {
         final FileObject projDir = proj.getProjectDirectory();
         final List<FileObject> updates = new ArrayList<FileObject>();
         try {
@@ -974,7 +974,7 @@ public final class JFXProjectUtils {
      * @return
      * @throws IOException 
      */
-    static boolean isJFXImplCurrent(final @NonNull Project proj) throws IOException {
+    public static boolean isJFXImplCurrent(final @NonNull Project proj) throws IOException {
         Boolean isJfxCurrent = true;
         final FileObject projDir = proj.getProjectDirectory();
         try {
@@ -1097,7 +1097,7 @@ public final class JFXProjectUtils {
      * @param is InputStream to read data from
      * @return CRC code
      */
-    static String computeCrc32(InputStream is) throws IOException {
+    public static String computeCrc32(InputStream is) throws IOException {
         Checksum crc = new CRC32();
         int last = -1;
         int curr;
@@ -1127,7 +1127,7 @@ public final class JFXProjectUtils {
      * @param crc code to be compared against
      * @return true if crc is the CRC code of current jfx-impl.xml template.
      */
-    static boolean isJfxImplCurrentVer(String crc) throws IOException {
+    public static boolean isJfxImplCurrentVer(String crc) throws IOException {
         String _currentJfxImplCRC = currentJfxImplCRCCache;
         if (_currentJfxImplCRC == null) {
             final FileObject template = FileUtil.getConfigFile(JFX_BUILD_TEMPLATE);
