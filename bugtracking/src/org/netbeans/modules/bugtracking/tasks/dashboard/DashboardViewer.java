@@ -264,18 +264,19 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    public void select(QueryImpl query) {
+    public void select(QueryImpl query, boolean expand) {
         RepositoryNode node = mapRepositoryToNode.get(query.getRepositoryImpl().getId());
         if (node != null) {
-            List<TreeListNode> l = new ArrayList<TreeListNode>(1);
             List<QueryNode> queryNodes = node.getQueryNodes();
             for (QueryNode queryNode : queryNodes) {
                 if (queryNode.getQuery().equals(query)) {
-                    l.add(queryNode);
-                    break;
+                    select(Arrays.asList(queryNode));
+                    if(expand) {
+                        queryNode.setExpanded(true);
+                    }
+                    return;
                 }
             }
-            select(l);
         }
     }
 
