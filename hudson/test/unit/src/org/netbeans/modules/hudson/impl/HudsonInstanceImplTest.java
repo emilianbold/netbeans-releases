@@ -44,6 +44,7 @@ package org.netbeans.modules.hudson.impl;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
@@ -71,9 +72,22 @@ public class HudsonInstanceImplTest {
      */
     @Test
     public void testHudsonInstanceImplPersistenceIsNotNull() {
+        String url = "http://test224857/";
         HudsonInstanceImpl impl = HudsonInstanceImpl.createHudsonInstance(
-                "Test", "http://test/", "1");
-        assertNotNull(impl.getPersistence());
+                "Test224857", url, "1");
+        if (impl == null) {
+            // Instance wasn't created, should be already present.
+            impl = HudsonManagerImpl.getDefault().getInstance(url);
+        }
+        try {
+            if (impl != null) {
+                assertNotNull(impl.getPersistence());
+            } else {
+                System.out.println("A problem occured when getting instance.");
+            }
+        } finally {
+            HudsonManagerImpl.getDefault().removeInstance(impl);
+        }
     }
 
     /**
@@ -165,20 +179,24 @@ public class HudsonInstanceImplTest {
         };
         HudsonInstance hi = HudsonManager.addInstance("x230406",
                 "http://x230406/", 1, bc);
-        final Semaphore s = new Semaphore(0);
-        hi.addHudsonChangeListener(new HudsonChangeAdapter() {
+        try {
+            final Semaphore s = new Semaphore(0);
+            hi.addHudsonChangeListener(new HudsonChangeAdapter() {
 
-            @Override
-            public void contentChanged() {
-                s.release();
-            }
-        });
-        hi.synchronize(false);
-        s.acquire();
-        HudsonJob hj = hi.getJobs().iterator().next();
-        assertEquals(HudsonJob.Color.grey, hj.getColor());
-        assertEquals("test", hj.getName());
-        assertEquals("test", hj.getDisplayName());
-        HudsonManager.removeInstance(hi);
+                @Override
+                public void contentChanged() {
+                    s.release();
+                }
+            });
+            hi.synchronize(false);
+            boolean acquired = s.tryAcquire(1, TimeUnit.MINUTES);
+            assertTrue(acquired);
+            HudsonJob hj = hi.getJobs().iterator().next();
+            assertEquals(HudsonJob.Color.grey, hj.getColor());
+            assertEquals("test", hj.getName());
+            assertEquals("test", hj.getDisplayName());
+        } finally {
+            HudsonManager.removeInstance(hi);
+        }
     }
 }
