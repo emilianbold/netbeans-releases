@@ -297,6 +297,7 @@
                 <friend>org.netbeans.modules.javafx.project</friend>
                 <friend>org.netbeans.modules.javafx2.project</friend>
                 <friend>org.netbeans.modules.javame.bdj.bdjo.project</friend>
+                <friend>org.netbeans.modules.javawebstart</friend>
                 <friend>org.netbeans.modules.maven</friend>
                 <friend>org.netbeans.modules.maven.apisupport</friend>
                 <friend>org.netbeans.modules.maven.groovy</friend>
