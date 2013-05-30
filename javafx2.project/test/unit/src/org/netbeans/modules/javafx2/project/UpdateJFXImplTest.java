@@ -42,14 +42,11 @@
 package org.netbeans.modules.javafx2.project;
 
 import java.io.*;
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.logging.Level;
-import org.junit.*;
+import junit.framework.Test;
 import static org.junit.Assert.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.ide.FXProjectSupport;
 import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
@@ -58,10 +55,8 @@ import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
-import org.openide.util.NbBundle;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -94,6 +89,20 @@ public class UpdateJFXImplTest extends NbTestCase {
         MockLookup.setLayersAndInstances();
         clearWorkDir();
         System.out.println("FXFXFXFX  "+getName()+"  FXFXFXFX");
+    }
+
+    public static Test suite() {
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+            .addTest(UpdateJFXImplTest.class,
+                "testCreateProject",
+                "testProjectInitialState",
+                "testProjectInitialJFXImplState",
+                "testProjectJFXImplNotUpdated",
+                "testProjectJFXImplUpdated",
+                "testProjectJFXImplUpdatedAgain",
+                "testProjectJFXImplReplacedMissing"
+            )
+        .enableModules(".*").clusters(".*"));
     }
 
     /** Test createProject method. */
