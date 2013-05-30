@@ -290,6 +290,8 @@ public class CategoryNode extends TaskContainerNode implements Comparable<Catego
     public int compareTo(CategoryNode toCompare) {
         if (this.isOpened() != toCompare.isOpened()) {
             return this.isOpened() ? -1 : 1;
+        } if (this.category.persist() != toCompare.category.persist()) {
+            return this.category.persist() ? -1 : 1;
         } else {
             return category.getName().compareToIgnoreCase(toCompare.getCategory().getName());
         }
