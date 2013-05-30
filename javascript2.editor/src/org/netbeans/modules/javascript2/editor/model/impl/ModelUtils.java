@@ -398,16 +398,29 @@ public class ModelUtils {
             }
         } else if (type.getType().startsWith("@this.")) {
             Identifier objectName = object.getDeclarationName();
-            if (objectName != null && object.getOffsetRange().getEnd() == objectName.getOffsetRange().getEnd()) {
-                // the assignment is during declaration
+            if (objectName != null) {
                 String pName = type.getType().substring(type.getType().indexOf('.') + 1);
-                JsObject property = object.getParent().getProperty(pName);
-                if (property != null && property.getJSKind().isFunction()) {
-                    JsFunction function = property instanceof JsFunction
-                            ? (JsFunctionImpl) property
-                            : ((JsFunctionReference)property).getOriginal();
-                    object.getParent().addProperty(object.getName(), new JsFunctionReference(
-                            object.getParent(), object.getDeclarationName(), function, true, null));
+                if (object.getOffsetRange().getEnd() == objectName.getOffsetRange().getEnd()) {
+                    // the assignment is during declaration
+                    JsObject property = object.getParent().getProperty(pName);
+                    if (property != null && property.getJSKind().isFunction()) {
+                        JsFunction function = property instanceof JsFunction
+                                ? (JsFunctionImpl) property
+                                : ((JsFunctionReference) property).getOriginal();
+                        object.getParent().addProperty(object.getName(), new JsFunctionReference(
+                                object.getParent(), object.getDeclarationName(), function, true, null));
+                    }
+                } else {
+                    JsObject parent = object.getParent();
+                    if (parent != null && parent.getName().equals(PROTOTYPE)) {
+                        parent = parent.getParent();
+                    }
+                    if (parent != null) {
+                        JsObject property = parent.getProperty(pName);
+                        if (property != null && !property.getAssignments().isEmpty()) {
+                            result.addAll(property.getAssignments());
+                        }
+                    }
                 }
             }
         } else if (type.getType().startsWith("@new;")) {

@@ -250,6 +250,14 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
     public void testIssue225986_01() throws Exception {
         checkCompletion("testfiles/completion/general/issue225986.js", "su^m(10, 20);", false);
     }
+    
+    public void testIssue226521_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue226521.js", "is.getType().s^ub();", false);
+    }
+    
+    public void testIssue226521_02() throws Exception {
+        checkCompletion("testfiles/completion/general/issue226521.js", "is.getId().to^String();", false);
+    }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
