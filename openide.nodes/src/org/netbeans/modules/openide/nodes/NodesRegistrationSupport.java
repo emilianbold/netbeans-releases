@@ -58,25 +58,25 @@ import org.openide.util.LookupListener;
 
 /**
  * Class for registering property editors.
- * 
+ *
  * @author Jan Horvath <jhorvath@netbeans.org>
  */
 public final class NodesRegistrationSupport {
-    
+
     static final String PE_LOOKUP_PATH = "Services/PropertyEditorManager"; //NOI18N
     static final String BEANINFO_LOOKUP_PATH = "Services/Introspector"; //NOI18N
     static final String PACKAGE = "packagePath"; //NOI18N
     static final String EDITOR_CLASS = "propertyEditorClass"; //NOI18N
-    
+
     private static AbstractRegistrator clsReg = null;
     private static AbstractRegistrator beanInfoReg = null;
     private static AbstractRegistrator pkgReg = null;
-    
+
     private static List<String> originalPath = null;
     private static List<String> originalBeanInfoSearchPath = null;
-    
+
     public static synchronized void registerPropertyEditors() {
-        
+
         if (clsReg == null) {
             clsReg = new AbstractRegistrator(PEClassRegistration.class) {
 
@@ -101,8 +101,10 @@ public final class NodesRegistrationSupport {
                 void init() {
                 }
             };
+        } else {
+            clsReg.register();
         }
-        
+
         if (pkgReg == null) {
             pkgReg = new AbstractRegistrator(PEPackageRegistration.class) {
 
@@ -124,8 +126,10 @@ public final class NodesRegistrationSupport {
                     }
                 }
             };
+        } else {
+            pkgReg.register();
         }
-        
+
         if (beanInfoReg == null) {
             beanInfoReg = new AbstractRegistrator(BeanInfoRegistration.class) {
 
@@ -147,13 +151,15 @@ public final class NodesRegistrationSupport {
                     }
                 }
             };
+        } else {
+            beanInfoReg.register();
         }
     }
-    
+
     /**
      * Creates instance of <code>PEPackageRegistration</code> based on layer.xml
      * attribute values
-     * 
+     *
      * @param attrs attributes loaded from layer.xml
      * @return
      */
@@ -161,11 +167,11 @@ public final class NodesRegistrationSupport {
         String pkg = (String) attrs.get(PACKAGE);
         return new PEPackageRegistration(pkg);
     }
-    
+
     /**
      * Creates instance of <code>PEClassRegistration</code> based on layer.xml
      * attribute values
-     * 
+     *
      * @param attrs attributes loaded from layer.xml
      * @return
      */
@@ -181,12 +187,12 @@ public final class NodesRegistrationSupport {
         }
         return new PEClassRegistration(editorClass, targetTypes);
     }
-    
+
     public static BeanInfoRegistration createBeanInfoRegistration(final Map attrs) {
         String pkg = (String) attrs.get(PACKAGE);
         return new BeanInfoRegistration(pkg);
     }
-    
+
     /**
      * returns Class from canonical class name like <code>java.lang.String[]</code>
      */
@@ -235,29 +241,29 @@ public final class NodesRegistrationSupport {
             this.pkg = pkg;
         }
     }
-    
+
     public static class PEClassRegistration {
         final Set<String> targetTypes;
         final String editorClass;
-        
+
         PEClassRegistration(String editorClass, Set<String> targetTypes) {
             this.editorClass = editorClass;
             this.targetTypes = targetTypes;
         }
     }
-    
+
     public static class BeanInfoRegistration {
         final String searchPath;
-        
+
         BeanInfoRegistration(String searchPath) {
             this.searchPath = searchPath;
         }
     }
-    
+
     private static abstract class AbstractRegistrator implements LookupListener {
         Result lookupResult;
         private final Class cls;
-        
+
         AbstractRegistrator(Class cls) {
             this.cls = cls;
             init();
@@ -265,16 +271,16 @@ public final class NodesRegistrationSupport {
             register();
             lookupResult.addLookupListener(this);
         }
-        
+
         abstract void register();
-        
+
         abstract void init();
-        
+
         @Override
         public void resultChanged(LookupEvent ev) {
             lookupResult = Lookup.getDefault().lookupResult(cls);
             register();
         }
     }
-    
+
 }
