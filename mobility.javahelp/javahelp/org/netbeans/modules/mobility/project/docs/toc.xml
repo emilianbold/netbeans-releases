@@ -76,21 +76,8 @@
 				<tocitem text="Visual Mobile Designer Tasks: Quick Reference" target="me.mvd_quickref" />
 				<tocitem text="Adding Custom Components to the Visual Mobile Designer" target="me.mvd_addcustomcomponent" />
 			</tocitem>
-			<tocitem text="Creating MIDP Games">
-				<tocitem text="About the Game Builder" target="cldc.games_about" />
-				<tocitem text="Game Builder Task Quick Reference" target="cldc.games_quickref" />
-			</tocitem>
-                        <tocitem text="Adding and Editing SVG Graphic Files">
-				<tocitem text="About Scalable Vector Graphic (SVG) Files" target="cldc.svg_about" />
-				<tocitem text="Working with SVG Files" target="cldc.svg_working" />
-				<tocitem text="Using SVG Graphics: Quick Reference" target="cldc.svg_quickref" />
-				<tocitem text="Working with SVG Animations" target="cldc.svg_animations" />
-				<tocitem text="Adding SVG Splash Screens" target="cldc.svg_splashscreen" />
-				<tocitem text="Adding SVG Wait Screens" target="cldc.svg_waitscreen" />
-				<tocitem text="Adding SVG Menus" target="cldc.svg_menus" />
-			</tocitem>
-                        
-                        <tocitem text="Working with Java ME Project Configurations">
+			      
+            <tocitem text="Working with Java ME Project Configurations">
 				<tocitem text="About Java ME Project Configurations" target="me.config_about" />
 				<tocitem text="Working with Java ME Project Configurations" target="me.config_working" />
 				<tocitem text="Java ME Project Configuration Tasks: Quick Reference" target="me.config_quickref" />
