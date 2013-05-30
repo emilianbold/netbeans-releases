@@ -48,41 +48,39 @@ import java.util.List;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
-import org.netbeans.modules.css.prep.less.LessCssPreprocessor;
-import org.netbeans.modules.css.prep.less.LessExecutable;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
-import org.netbeans.modules.css.prep.preferences.LessPreferences;
-import org.netbeans.modules.css.prep.preferences.LessPreferencesValidator;
-import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
-import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
+import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
+import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
-public final class LessCustomizer implements CssPreprocessorImplementation.Customizer, PropertyChangeListener {
+public final class CustomizerImpl implements CssPreprocessorImplementation.Customizer, PropertyChangeListener {
 
-    private final LessCssPreprocessor lessCssPreprocessor;
+    private final BaseCssPreprocessor cssPreprocessor;
     private final Project project;
+    private final CssPreprocessorType type;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
-    private volatile LessCustomizerPanel customizerPanel = null;
+    private volatile OptionsPanel customizerPanel = null;
 
 
-    public LessCustomizer(LessCssPreprocessor lessCssPreprocessor, Project project) {
-        assert lessCssPreprocessor != null;
+    public CustomizerImpl(BaseCssPreprocessor cssPreprocessor, Project project, CssPreprocessorType type) {
+        assert cssPreprocessor != null;
         assert project != null;
-        this.lessCssPreprocessor = lessCssPreprocessor;
+        assert type != null;
+
+        this.cssPreprocessor = cssPreprocessor;
         this.project = project;
+        this.type = type;
     }
 
-    @NbBundle.Messages("LessCustomizer.displayName=LESS")
     @Override
     public String getDisplayName() {
-        return Bundle.LessCustomizer_displayName();
+        return type.getDisplayName();
     }
 
     @Override
@@ -100,11 +98,10 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
     }
 
     @Override
-    public synchronized LessCustomizerPanel getComponent() {
+    public synchronized OptionsPanel getComponent() {
         if (customizerPanel == null) {
-           customizerPanel = new LessCustomizerPanel();
-           customizerPanel.setLessEnabled(LessPreferences.isEnabled(project));
-           customizerPanel.setMappings(LessPreferences.getMappings(project));
+            CssPreprocessorPreferences preferences = type.getPreferences();
+            customizerPanel = new OptionsPanel(type, preferences.isEnabled(project), preferences.getMappings(project));
         }
         assert customizerPanel != null;
         return customizerPanel;
@@ -112,7 +109,7 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx("org.netbeans.modules.css.prep.ui.customizer.LessCustomizer"); // NOI18N
+        return new HelpCtx("org.netbeans.modules.css.prep.ui.customizer.CustomizerImpl." + type.name()); // NOI18N
     }
 
     @Override
@@ -132,57 +129,45 @@ public final class LessCustomizer implements CssPreprocessorImplementation.Custo
 
     @Override
     public void save() throws IOException {
-        Warnings.resetLessWarning();
+        Warnings.resetWarning(type);
         boolean fire = false;
+        CssPreprocessorPreferences preferences = type.getPreferences();
+        // configured
+        if (getComponent().isConfigured()) {
+            // only if true, otherwise do not change!
+            preferences.setConfigured(project, true);
+        }
         // enabled
-        boolean originalEnabled = LessPreferences.isEnabled(project);
-        boolean enabled = getComponent().isLessEnabled();
-        LessPreferences.setEnabled(project, enabled);
+        boolean originalEnabled = preferences.isEnabled(project);
+        boolean enabled = getComponent().isCompilationEnabled();
+        preferences.setEnabled(project, enabled);
         if (enabled != originalEnabled) {
             fire = true;
         }
         // mappings
-        List<Pair<String, String>> originalMappings = LessPreferences.getMappings(project);
+        List<Pair<String, String>> originalMappings = preferences.getMappings(project);
         List<Pair<String, String>> mappings = getComponent().getMappings();
-        LessPreferences.setMappings(project, mappings);
+        preferences.setMappings(project, mappings);
         if (!mappings.equals(originalMappings)) {
             fire = true;
         }
         // change?
         if (fire) {
-            lessCssPreprocessor.fireCustomizerChanged(project);
+            cssPreprocessor.fireCustomizerChanged(project);
         }
     }
 
-    @NbBundle.Messages({
-        "# {0} - error",
-        "LessCustomizer.error.executable={0} Use Configure Executables button to fix it.",
-    })
     private ValidationResult getValidationResult() {
-        if (!CssPreprocessorUtils.hasAnyFilesForCompiling(project, CssPreprocessorType.LESS)) {
-            // no less files -> no validation needed
-            return new ValidationResult();
-        }
-        // mappings
-        ValidationResult result = new LessPreferencesValidator()
-                .validate(getComponent().isLessEnabled(), getComponent().getMappings())
+        boolean compilationEnabled = getComponent().isCompilationEnabled();
+        return type.getPreferencesValidator()
+                .validate(compilationEnabled, getComponent().getMappings())
+                .validateExecutable(compilationEnabled)
                 .getResult();
-        if (!result.isFaultless()) {
-            return result;
-        }
-        // compiler
-        result = new ValidationResult();
-        try {
-            LessExecutable.getDefault();
-        } catch (InvalidExternalExecutableException ex) {
-            result.addWarning(new ValidationResult.Message("less.path", Bundle.LessCustomizer_error_executable(ex.getLocalizedMessage()))); // NOI18N
-        }
-        return result;
     }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (CssPrepOptions.LESS_PATH_PROPERTY.equals(evt.getPropertyName())) {
+        if (type.getExecutablePathPropertyName().equals(evt.getPropertyName())) {
             changeSupport.fireChange();
         }
     }

@@ -58,7 +58,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.web.clientproject.ClientSideProject;
 import org.netbeans.modules.web.clientproject.util.ClientSideProjectUtilities;
-import org.netbeans.spi.project.ui.CustomizerProvider;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -70,7 +70,7 @@ import org.openide.windows.WindowManager;
 /**
  * @author Jan Becicka
  */
-public class CustomizerProviderImpl implements CustomizerProvider {
+public class CustomizerProviderImpl implements CustomizerProvider2 {
 
     static final Logger LOGGER = Logger.getLogger(CustomizerProviderImpl.class.getName());
 
@@ -99,6 +99,7 @@ public class CustomizerProviderImpl implements CustomizerProvider {
         "# {0} - project name",
         "CustomizerProviderImpl.title=Project Properties - {0}"
     })
+    @Override
     public void showCustomizer(final String preselectedCategory, final String preselectedSubCategory) {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override

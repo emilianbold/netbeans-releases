@@ -71,7 +71,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.PhpProjectValidator;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.Utils;
-import org.netbeans.modules.php.project.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.modules.php.spi.documentation.PhpDocumentationProvider;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
@@ -555,7 +555,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(category);
+            PhpProjectUtils.openCustomizer(project, category);
         }
     }
 

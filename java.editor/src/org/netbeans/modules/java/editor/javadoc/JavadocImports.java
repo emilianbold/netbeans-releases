@@ -169,14 +169,12 @@ public final class JavadocImports {
             @Override public Void visitReference(ReferenceTree node, Void p) {
                 new TreePathScanner<Void, Void>() {
                     @Override public Void visitIdentifier(IdentifierTree node, Void p) {
-                        foobar();
                         if (toFind.equals(trees.getElement(getCurrentPath()))) {
                             handleUsage((int) trees.getSourcePositions().getStartPosition(javac.getCompilationUnit(), node));
                         }
                         return null;
                     }
                     @Override public Void visitMemberSelect(MemberSelectTree node, Void p) {
-                        foobar();
                         if (toFind.equals(trees.getElement(getCurrentPath()))) {
                             int[] span = javac.getTreeUtilities().findNameSpan(node);
                             if (span != null) {
@@ -216,9 +214,6 @@ public final class JavadocImports {
                 if (javadoc.moveNext()) {
                     result.add(javadoc.token());
                 }
-            }
-            private void foobar() {
-                System.err.println("adf");
             }
             @Override
             public Void visitParam(ParamTree node, Void p) {

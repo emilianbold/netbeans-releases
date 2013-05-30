@@ -55,4 +55,28 @@ public class LatteIndenterTest extends LatteIndenterTestBase {
         indent("testInlineLatte");
     }
 
+    public void testSimpleIfBlock() throws Exception {
+        indent("testSimpleIfBlock");
+    }
+
+    public void testIfElseBlock() throws Exception {
+        indent("testIfElseBlock");
+    }
+
+    public void testRealFile_01() throws Exception {
+        indent("testRealFile_01");
+    }
+
+    public void testRealFile_02() throws Exception {
+        indent("testRealFile_02");
+    }
+
+    public void testRealFile_03() throws Exception {
+        indent("testRealFile_03");
+    }
+
+    public void testRealFile_04() throws Exception {
+        indent("testRealFile_04");
+    }
+
 }

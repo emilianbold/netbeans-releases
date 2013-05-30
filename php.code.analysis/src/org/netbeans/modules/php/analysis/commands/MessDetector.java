@@ -68,7 +68,7 @@ import org.openide.util.NbBundle;
 
 public final class MessDetector {
 
-    private static final Logger LOGGER = Logger.getLogger(MessDetector.class.getName());
+    static final Logger LOGGER = Logger.getLogger(MessDetector.class.getName());
 
     public static final String NAME = "phpmd"; // NOI18N
     public static final String LONG_NAME = NAME + FileUtils.getScriptExtension(true);
@@ -155,7 +155,9 @@ public final class MessDetector {
                     @Override
                     public void run() {
                         if (XML_LOG.isFile()) {
-                            XML_LOG.delete();
+                            if (!XML_LOG.delete()) {
+                                LOGGER.log(Level.INFO, "Cannot delete log file {0}", XML_LOG.getAbsolutePath());
+                            }
                         }
                     }
                 });

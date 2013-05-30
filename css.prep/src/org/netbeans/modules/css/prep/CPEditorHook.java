@@ -49,6 +49,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.modules.OnStart;
 import org.openide.util.RequestProcessor;
@@ -77,7 +81,13 @@ public class CPEditorHook implements PropertyChangeListener, Runnable {
             //TODO: the property name is not in any API, just harcoded in GsfDataObject
             if ("fileSaved".equals(evt.getPropertyName())) { //NOI18N
                 DataObject dobj = (DataObject)evt.getNewValue();
-                LOG.log(Level.INFO, "File {0} has been saved.", dobj.getPrimaryFile().getPath()); //NOI18N
+                FileObject fileObject = dobj.getPrimaryFile();
+                Project project = FileOwnerQuery.getOwner(fileObject);
+                if (project == null) {
+                    LOG.log(Level.INFO, "No project found for {0}", fileObject.getPath());
+                    return;
+                }
+                CssPreprocessorUtils.processSavedFile(project, CssPreprocessorType.find(fileObject.getMIMEType()));
             }
         }
     };
