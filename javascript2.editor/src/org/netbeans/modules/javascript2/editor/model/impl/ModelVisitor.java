@@ -1332,7 +1332,7 @@ public class ModelVisitor extends PathNodeVisitor {
             JsFunction function = (JsFunction)scope;
             property = function.getProperty(iNode.getName());
             parameter = function.getParameter(iNode.getName());
-            scope = scope.getInScope();
+            scope = scope.getParentScope();
         }
         if(parameter != null) {
             if (property == null) {

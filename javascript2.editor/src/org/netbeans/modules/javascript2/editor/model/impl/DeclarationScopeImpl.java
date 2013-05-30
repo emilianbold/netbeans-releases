@@ -66,12 +66,12 @@ public class DeclarationScopeImpl extends JsObjectImpl implements DeclarationSco
     }
     
     @Override
-    public DeclarationScope getInScope() {
+    public DeclarationScope getParentScope() {
         return inScope;
     }
 
     @Override
-    public Collection<? extends DeclarationScope> getDeclarationsScope() {
+    public Collection<? extends DeclarationScope> getChildrenScopes() {
         return declaredScopes;
     }
     

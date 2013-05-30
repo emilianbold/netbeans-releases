@@ -179,7 +179,7 @@ public final class Model {
             for (JsObject object : ((JsFunction)scope).getParameters()) {
                 result.add(object);
             }
-            scope = scope.getInScope();
+            scope = scope.getParentScope();
         }
         return result;
     }

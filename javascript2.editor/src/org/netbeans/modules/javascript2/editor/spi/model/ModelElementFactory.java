@@ -370,12 +370,12 @@ public final class ModelElementFactory {
 
         public GlobalFunction(JsFunction delegate) {
             this.delegate = delegate;
-            this.inScope = delegate.getInScope();
+            this.inScope = delegate.getParentScope();
             this.parent = delegate.getParent();
         }
 
         @Override
-        public DeclarationScope getInScope() {
+        public DeclarationScope getParentScope() {
             return this.inScope;
         }
 
@@ -400,8 +400,8 @@ public final class ModelElementFactory {
         }
         
         @Override
-        public Collection<? extends DeclarationScope> getDeclarationsScope() {
-            return delegate.getDeclarationsScope();
+        public Collection<? extends DeclarationScope> getChildrenScopes() {
+            return delegate.getChildrenScopes();
         }
 
         @Override

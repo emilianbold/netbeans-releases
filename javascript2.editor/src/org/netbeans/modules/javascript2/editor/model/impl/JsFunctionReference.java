@@ -90,12 +90,12 @@ public class JsFunctionReference extends JsObjectReference implements JsFunction
     }
 
     @Override
-    public Collection<? extends DeclarationScope> getDeclarationsScope() {
-        return original.getDeclarationsScope();
+    public Collection<? extends DeclarationScope> getChildrenScopes() {
+        return original.getChildrenScopes();
     }
 
     @Override
-    public DeclarationScope getInScope() {
-        return original.getInScope();
+    public DeclarationScope getParentScope() {
+        return original.getParentScope();
     }
 }

@@ -48,6 +48,9 @@ import java.util.Collection;
  * @author Petr Pisl
  */
 public interface DeclarationScope {
-    DeclarationScope getInScope();
-    Collection<? extends DeclarationScope> getDeclarationsScope();
+
+    DeclarationScope getParentScope();
+
+    Collection<? extends DeclarationScope> getChildrenScopes();
+
 }
