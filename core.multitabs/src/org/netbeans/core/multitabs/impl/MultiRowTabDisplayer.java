@@ -243,32 +243,32 @@ public class MultiRowTabDisplayer extends AbstractTabDisplayer implements ListSe
 
     @Override
     public void indicesAdded( ComplexListDataEvent e ) {
-        layoutManager.doLayout();
+        layoutManager.invalidate();
     }
 
     @Override
     public void indicesRemoved( ComplexListDataEvent e ) {
-        layoutManager.doLayout();
+        layoutManager.invalidate();
     }
 
     @Override
     public void indicesChanged( ComplexListDataEvent e ) {
-        layoutManager.doLayout();
+        layoutManager.invalidate();
     }
 
     @Override
     public void intervalAdded( ListDataEvent e ) {
-        layoutManager.doLayout();
+        layoutManager.invalidate();
     }
 
     @Override
     public void intervalRemoved( ListDataEvent e ) {
-        layoutManager.doLayout();
+        layoutManager.invalidate();
     }
 
     @Override
     public void contentsChanged( ListDataEvent e ) {
-        layoutManager.doLayout();
+        layoutManager.invalidate();
     }
 
     private class RowPanel extends JPanel implements Scrollable {
