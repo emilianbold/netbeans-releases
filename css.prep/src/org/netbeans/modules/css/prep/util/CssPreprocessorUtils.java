@@ -87,7 +87,7 @@ public final class CssPreprocessorUtils {
         assert project != null;
         assert type != null;
         // if not configured, ask user; if YES, prefill preferences and open customizer
-        CssPreprocessorPreferences projectPreferences = type.getProjectPreferences();
+        CssPreprocessorPreferences projectPreferences = type.getPreferences();
         assert projectPreferences != null;
         if (projectPreferences.isConfigured(project)) {
             return;

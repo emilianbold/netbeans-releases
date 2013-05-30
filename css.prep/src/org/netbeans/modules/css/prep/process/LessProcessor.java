@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.editor.CPUtils;
 import org.netbeans.modules.css.prep.less.LessCssPreprocessor;
 import org.netbeans.modules.css.prep.less.LessExecutable;
@@ -88,7 +89,7 @@ public final class LessProcessor extends BaseProcessor {
         try {
             less.compile(source, target);
         } catch (ExecutionException ex) {
-            if (Warnings.showLessWarning()) {
+            if (Warnings.showWarning(CssPreprocessorType.LESS)) {
                 UiUtils.processExecutionException(ex);
             }
         }

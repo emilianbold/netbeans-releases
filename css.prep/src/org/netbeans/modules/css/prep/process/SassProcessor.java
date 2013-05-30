@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.indexing.api.CssIndex;
+import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.editor.CPUtils;
 import org.netbeans.modules.css.prep.preferences.SassPreferences;
 import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
@@ -122,7 +123,7 @@ public final class SassProcessor extends BaseProcessor {
         try {
             sass.compile(source, target);
         } catch (ExecutionException ex) {
-            if (Warnings.showSassWarning()) {
+            if (Warnings.showWarning(CssPreprocessorType.SASS)) {
                 UiUtils.processExecutionException(ex);
             }
         }

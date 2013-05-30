@@ -41,40 +41,30 @@
  */
 package org.netbeans.modules.css.prep.util;
 
+import org.netbeans.modules.css.prep.CssPreprocessorType;
+
 /**
  * Utility class for UI warnings.
  */
 public final class Warnings {
 
-    private static volatile boolean sassWarningShown = false;
-    private static volatile boolean lessWarningShown = false;
+    // @GuardedBy("Warnings.class")
+    private static final boolean[] WARNING_SHOWN = new boolean[CssPreprocessorType.values().length];
 
 
     private Warnings() {
     }
 
-    public static boolean showSassWarning() {
-        if (sassWarningShown) {
+    public static synchronized boolean showWarning(CssPreprocessorType type) {
+        if (WARNING_SHOWN[type.ordinal()]) {
             return false;
         }
-        sassWarningShown = true;
+        WARNING_SHOWN[type.ordinal()] = true;
         return true;
     }
 
-    public static void resetSassWarning() {
-        sassWarningShown = false;
-    }
-
-    public static boolean showLessWarning() {
-        if (lessWarningShown) {
-            return false;
-        }
-        lessWarningShown = true;
-        return true;
-    }
-
-    public static void resetLessWarning() {
-        lessWarningShown = false;
+    public static synchronized void resetWarning(CssPreprocessorType type) {
+        WARNING_SHOWN[type.ordinal()] = false;
     }
 
 }

@@ -49,37 +49,38 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
-import org.netbeans.modules.css.prep.preferences.SassPreferences;
-import org.netbeans.modules.css.prep.preferences.SassPreferencesValidator;
-import org.netbeans.modules.css.prep.sass.SassCssPreprocessor;
+import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
+import org.netbeans.modules.css.prep.util.BaseCssPreprocessor;
 import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.netbeans.modules.css.prep.util.Warnings;
 import org.netbeans.modules.web.common.spi.CssPreprocessorImplementation;
 import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
-import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
-public final class SassCustomizer implements CssPreprocessorImplementation.Customizer, PropertyChangeListener {
+public final class CustomizerImpl implements CssPreprocessorImplementation.Customizer, PropertyChangeListener {
 
-    private final SassCssPreprocessor sassCssPreprocessor;
+    private final BaseCssPreprocessor cssPreprocessor;
     private final Project project;
+    private final CssPreprocessorType type;
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     private volatile OptionsPanel customizerPanel = null;
 
 
-    public SassCustomizer(SassCssPreprocessor sassCssPreprocessor, Project project) {
-        assert sassCssPreprocessor != null;
+    public CustomizerImpl(BaseCssPreprocessor cssPreprocessor, Project project, CssPreprocessorType type) {
+        assert cssPreprocessor != null;
         assert project != null;
-        this.sassCssPreprocessor = sassCssPreprocessor;
+        assert type != null;
+
+        this.cssPreprocessor = cssPreprocessor;
         this.project = project;
+        this.type = type;
     }
 
-    @NbBundle.Messages("SassCustomizer.displayName=Sass")
     @Override
     public String getDisplayName() {
-        return Bundle.SassCustomizer_displayName();
+        return type.getDisplayName();
     }
 
     @Override
@@ -99,8 +100,8 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
     @Override
     public synchronized OptionsPanel getComponent() {
         if (customizerPanel == null) {
-            customizerPanel = new OptionsPanel(CssPreprocessorType.SASS, SassPreferences.getInstance().isEnabled(project),
-                    SassPreferences.getInstance().getMappings(project));
+            CssPreprocessorPreferences preferences = type.getPreferences();
+            customizerPanel = new OptionsPanel(type, preferences.isEnabled(project), preferences.getMappings(project));
         }
         assert customizerPanel != null;
         return customizerPanel;
@@ -108,7 +109,7 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx("org.netbeans.modules.css.prep.ui.customizer.SassCustomizer"); // NOI18N
+        return new HelpCtx("org.netbeans.modules.css.prep.ui.customizer.CustomizerImpl." + type.name()); // NOI18N
     }
 
     @Override
@@ -128,35 +129,37 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
 
     @Override
     public void save() throws IOException {
-        Warnings.resetSassWarning();
+        Warnings.resetWarning(type);
         boolean fire = false;
+        CssPreprocessorPreferences preferences = type.getPreferences();
         // configured
         if (getComponent().isConfigured()) {
-            SassPreferences.getInstance().setConfigured(project, true);
+            // only if true, otherwise do not change!
+            preferences.setConfigured(project, true);
         }
         // enabled
-        boolean originalEnabled = SassPreferences.getInstance().isEnabled(project);
+        boolean originalEnabled = preferences.isEnabled(project);
         boolean enabled = getComponent().isCompilationEnabled();
-        SassPreferences.getInstance().setEnabled(project, enabled);
+        preferences.setEnabled(project, enabled);
         if (enabled != originalEnabled) {
             fire = true;
         }
         // mappings
-        List<Pair<String, String>> originalMappings = SassPreferences.getInstance().getMappings(project);
+        List<Pair<String, String>> originalMappings = preferences.getMappings(project);
         List<Pair<String, String>> mappings = getComponent().getMappings();
-        SassPreferences.getInstance().setMappings(project, mappings);
+        preferences.setMappings(project, mappings);
         if (!mappings.equals(originalMappings)) {
             fire = true;
         }
         // change?
         if (fire) {
-            sassCssPreprocessor.fireCustomizerChanged(project);
+            cssPreprocessor.fireCustomizerChanged(project);
         }
     }
 
     private ValidationResult getValidationResult() {
         boolean compilationEnabled = getComponent().isCompilationEnabled();
-        return new SassPreferencesValidator()
+        return type.getPreferencesValidator()
                 .validate(compilationEnabled, getComponent().getMappings())
                 .validateExecutable(compilationEnabled)
                 .getResult();
@@ -164,7 +167,7 @@ public final class SassCustomizer implements CssPreprocessorImplementation.Custo
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
-        if (CssPrepOptions.SASS_PATH_PROPERTY.equals(evt.getPropertyName())) {
+        if (type.getExecutablePathPropertyName().equals(evt.getPropertyName())) {
             changeSupport.fireChange();
         }
     }

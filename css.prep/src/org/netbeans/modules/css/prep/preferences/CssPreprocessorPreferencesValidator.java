@@ -43,53 +43,14 @@ package org.netbeans.modules.css.prep.preferences;
 
 import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.css.prep.less.LessExecutable;
-import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
-import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.ValidationResult;
-import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
-public class LessPreferencesValidator implements CssPreprocessorPreferencesValidator {
+public interface CssPreprocessorPreferencesValidator {
 
-    private final ValidationResult result = new ValidationResult();
-
-
-    @Override
-    public ValidationResult getResult() {
-        return result;
-    }
-
-    @Override
-    public LessPreferencesValidator validate(Project project) {
-        LessPreferences lessPreferences = LessPreferences.getInstance();
-        return validate(lessPreferences.isEnabled(project), lessPreferences.getMappings(project));
-    }
-
-    @Override
-    public LessPreferencesValidator validate(boolean enabled, List<Pair<String, String>> mappings) {
-        if (enabled) {
-            result.merge(new CssPreprocessorUtils.MappingsValidator()
-                    .validate(mappings)
-                    .getResult());
-        }
-        return this;
-    }
-
-    @NbBundle.Messages({
-        "# {0} - error",
-        "LessPreferencesValidator.error.executable={0} Use Configure Executables button to fix it.",
-    })
-    @Override
-    public LessPreferencesValidator validateExecutable(boolean enabled) {
-        if (enabled) {
-            try {
-                LessExecutable.getDefault();
-            } catch (InvalidExternalExecutableException ex) {
-                result.addError(new ValidationResult.Message("less.path", Bundle.LessPreferencesValidator_error_executable(ex.getLocalizedMessage()))); // NOI18N
-            }
-        }
-        return this;
-    }
+    ValidationResult getResult();
+    CssPreprocessorPreferencesValidator validate(Project project);
+    CssPreprocessorPreferencesValidator validate(boolean enabled, List<Pair<String, String>> mappings);
+    CssPreprocessorPreferencesValidator validateExecutable(boolean enabled);
 
 }

@@ -50,20 +50,23 @@ import org.netbeans.modules.css.prep.util.ValidationResult;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
-public final class SassPreferencesValidator {
+public final class SassPreferencesValidator implements CssPreprocessorPreferencesValidator {
 
     private final ValidationResult result = new ValidationResult();
 
 
+    @Override
     public ValidationResult getResult() {
         return result;
     }
 
+    @Override
     public SassPreferencesValidator validate(Project project) {
         SassPreferences sassPreferences = SassPreferences.getInstance();
         return validate(sassPreferences.isEnabled(project), sassPreferences.getMappings(project));
     }
 
+    @Override
     public SassPreferencesValidator validate(boolean enabled, List<Pair<String, String>> mappings) {
         if (enabled) {
             result.merge(new CssPreprocessorUtils.MappingsValidator()
@@ -77,6 +80,7 @@ public final class SassPreferencesValidator {
         "# {0} - error",
         "SassPreferencesValidator.error.executable={0} Use Configure Executables button to fix it.",
     })
+    @Override
     public SassPreferencesValidator validateExecutable(boolean enabled) {
         if (enabled) {
             try {
