@@ -339,7 +339,7 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 synchronized(monitor) {
                     if (!inited) {
                         try {
-                            monitor.wait();
+                            monitor.wait(2*60*1000);
                         } catch (InterruptedException ex) {
                             Exceptions.printStackTrace(ex);
                         }
