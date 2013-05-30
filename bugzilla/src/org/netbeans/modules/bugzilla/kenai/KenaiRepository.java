@@ -56,6 +56,8 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Set;
 import java.util.logging.Level;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.netbeans.modules.bugtracking.team.spi.TeamAccessor;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.team.spi.OwnerInfo;
@@ -73,6 +75,7 @@ import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
 import org.netbeans.modules.bugzilla.util.BugzillaConstants;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -120,6 +123,11 @@ public class KenaiRepository extends BugzillaRepository implements PropertyChang
     public BugzillaQuery createQuery() {
         KenaiQuery q = new KenaiQuery(null, this, null, product, false, false);
         return q;
+    }
+    
+    @Override
+    public BugzillaQuery createPersistentQuery (String queryName, String urlParams, boolean urlDef) {
+        return new KenaiQuery(queryName, this, urlParams, product, true, false);
     }
 
     @Override

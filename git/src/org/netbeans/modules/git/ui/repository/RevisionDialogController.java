@@ -235,16 +235,17 @@ public class RevisionDialogController implements ActionListener, DocumentListene
     private void setModel (Map<String, GitBranch> branches) {
         final List<Revision> branchList = new ArrayList<Revision>(branches.size());
         List<Revision> remoteBranchList = new ArrayList<Revision>(branches.size());
-        GitBranch activeBranch = null;
+        Revision activeBranch = null;
         for (Map.Entry<String, GitBranch> e : branches.entrySet()) {
             GitBranch branch = e.getValue();
-            if (branch.isActive()) {
-                activeBranch = branch;
-            }
             if (branch.isRemote()) {
                 remoteBranchList.add(new Revision.BranchReference(branch));
             } else if (branch.getName() != GitBranch.NO_BRANCH) {
-                branchList.add(new Revision.BranchReference(branch));
+                Revision rev = new Revision.BranchReference(branch);
+                branchList.add(rev);
+                if (branch.isActive()) {
+                    activeBranch = rev;
+                }
             }
         }
         Comparator<Revision> comp = new Comparator<Revision>() {
@@ -256,7 +257,7 @@ public class RevisionDialogController implements ActionListener, DocumentListene
         Collections.sort(branchList, comp);
         Collections.sort(remoteBranchList, comp);
         branchList.addAll(remoteBranchList);
-        final GitBranch toSelect = activeBranch;
+        final Revision toSelect = activeBranch;
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run () {

@@ -42,13 +42,9 @@
 
 package org.netbeans.modules.bugzilla;
 
-import java.io.File;
-import java.io.IOException;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
@@ -59,7 +55,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.tasks.core.IRepositoryQuery;
 import org.netbeans.modules.bugzilla.query.BugzillaQuery;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
-import org.netbeans.modules.bugzilla.util.FileUtils;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.openide.modules.Places;
 import org.openide.util.ImageUtilities;
@@ -130,7 +125,9 @@ public class BugzillaConfig {
     public void removeQuery(BugzillaRepository repository, BugzillaQuery query) {
         getPreferences().remove(getQueryKey(repository.getID(), query.getDisplayName()));
         try {
-            IRepositoryQuery iquery = MylynSupport.getInstance().getRepositoryQuery(repository.getTaskRepository(), query.getDisplayName());
+            String storedName = query.getStoredQueryName();
+            IRepositoryQuery iquery = storedName == null ? null 
+                    : MylynSupport.getInstance().getRepositoryQuery(repository.getTaskRepository(), storedName);
             if (iquery != null) {
                 MylynSupport.getInstance().deleteQuery(iquery);
             }
@@ -144,18 +141,12 @@ public class BugzillaConfig {
         if(value == null) {
             return null;
         }
-        IRepositoryQuery query = null;
-        try {
-            query = MylynSupport.getInstance().getRepositoryQuery(repository.getTaskRepository(), queryName);
-        } catch (CoreException ex) {
-            Bugzilla.LOG.log(Level.WARNING, null, ex);
-        }
         String[] values = value.split(DELIMITER);
         assert values.length >= 2;
         String urlParams = values[0];
 //      skip  long lastRefresh = Long.parseLong(values[1]); // skip
         boolean urlDef = values.length > 2 ? Boolean.parseBoolean(values[2]) : false;
-        return new BugzillaQuery(queryName, query, repository, urlParams, true, urlDef, true);
+        return repository.createPersistentQuery(queryName, urlParams, urlDef);
     }
 
     public String getUrlParams(BugzillaRepository repository, String queryName) {

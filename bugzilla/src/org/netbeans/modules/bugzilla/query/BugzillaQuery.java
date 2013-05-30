@@ -199,12 +199,15 @@ public class BugzillaQuery {
                     // IssuesIdCollector will populate the issues set
                     try {
                         if (runningQuery == null) {
-                            String qName = name;
-                            if (qName == null) {
+                            String qName = getStoredQueryName();
+                            if (qName == null || name == null) {
                                 qName = "bugzilla ad-hoc query nr. " + System.currentTimeMillis(); //NOI18N
                             }
-                            runningQuery = MylynSupport.getInstance().getMylynFactory().createNewQuery(repository.getTaskRepository(), qName);
-                            MylynSupport.getInstance().addQuery(repository.getTaskRepository(), runningQuery);
+                            runningQuery = MylynSupport.getInstance().getRepositoryQuery(repository.getTaskRepository(), qName);
+                            if (runningQuery == null) {
+                                runningQuery = MylynSupport.getInstance().getMylynFactory().createNewQuery(repository.getTaskRepository(), qName);
+                                MylynSupport.getInstance().addQuery(repository.getTaskRepository(), runningQuery);
+                            }
                             if (isSaved()) {
                                 iquery = runningQuery;
                             }
