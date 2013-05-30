@@ -158,7 +158,7 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         this.dashboardProvider = dashboardProvider;
         projectPicker = new ProjectSwitcher();
         projectPicker.setOpaque(false);
-        projectPicker.setProjectLabel(NbBundle.getMessage(DashboardSupport.class, "NO_PROJECTS_OPEN"), null);
+        projectPicker.setProjectLabel(NbBundle.getMessage(DashboardSupport.class, "CLICK_TO_SELECT"), null);
         
         dashboardPanel = new JPanel(new BorderLayout());
         
@@ -827,16 +827,21 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         changeSupport.firePropertyChange(PROP_OPENED_PROJECTS, null, null);
     }
 
+    // XXX remove children in case project was closed ...
+    Map<String, List<TreeListNode>> projectChildren = new HashMap<String, List<TreeListNode>>();
     private void switchProject(ProjectHandle project) {
         switchContent();
         for( TreeListNode node : model.getRootNodes() ) {
             model.removeRoot(node);
         }
-        projectPicker.setProjectLabel(project.getDisplayName(), server.getIcon());
+        List<TreeListNode> children = projectChildren.get(project.getId());
+        if(children == null) {
+            children = createProjectChildren(project);
+            projectChildren.put(project.getId(), children);
+        } 
         int idx = 1;
-        List<TreeListNode> children = createProjectChildren(project);
         for (TreeListNode n : children) {
-            model.addRoot(idx++, n);   
+            model.addRoot(idx++, n);
         }
     }
 
@@ -933,25 +938,41 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
         }
         final SelectionList res = new SelectionList();
         Map<String, ListNode> nodes = new HashMap<String, ListNode>();
+        ProjectHandle currentProject = projectPicker.getProject();
+        TreeListNode currentProjectNode = null;
         synchronized( LOCK ) {
             for (ProjectHandle<P> p : memberProjects) {
                 if(!nodes.containsKey(p.getId())) {
-                    nodes.put(p.getId(), dashboardProvider.createMyProjectNode(p, false, false, null));
+                    TreeListNode n = dashboardProvider.createMyProjectNode(p, false, false, null);
+                    nodes.put(p.getId(), n);
+                    if(currentProject != null && p.getId().equals(currentProject.getId())) {
+                        currentProjectNode = n;
+                    }       
                 }
             }
             for (ProjectHandle p : openProjects) {
                 if(!nodes.containsKey(p.getId())) {
-                    nodes.put(p.getId(),dashboardProvider.createMyProjectNode(p, false, true, new RemoveProjectAction(p)));
+                    TreeListNode n = dashboardProvider.createMyProjectNode(p, false, true, new RemoveProjectAction(p));
+                    nodes.put(p.getId(), n);
+                    if(currentProject != null && p.getId().equals(currentProject.getId())) {
+                        currentProjectNode = n;
+                    }
                 }
-            }        
+            }
         }
+        
+//        projectPicker.setSelectedProjectNode(currentProjectNode);
+        
         res.setItems(new ArrayList<ListNode>(nodes.values()));
         res.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
                 ListNode node = res.getSelectedValue();
                 ProjectHandle ph = ((ProjectProvider)node).getProject();
+                
+                projectPicker.setProject(ph, server.getIcon());
                 switchProject(ph);
+                
                 TeamView.getInstance().setSelectedServer(server);
             }
         });
@@ -1082,18 +1103,17 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
 
     @NbBundle.Messages({"LBL_Switch=Select project"})
     public class ProjectSwitcher extends JPanel {
-
-        private String categoryName;
-        private Icon icon;
-        private JLabel lbl = null;
-        private LinkButton btnPick;
+        private MegaMenu mm;
+        private final JLabel lbl;
+        private final LinkButton btnPick;
+        private ProjectHandle project;
         
         public ProjectSwitcher() {
+            
             setLayout( new GridBagLayout() );
             setOpaque(false);
             lbl = new JLabel();
             lbl.setFont( lbl.getFont().deriveFont( Font.BOLD, lbl.getFont().getSize2D() + 1 ) );
-            setProjectLabel(categoryName, icon);
             add( lbl, new GridBagConstraints(0,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
             final MouseAdapter mouseAdapter = new MouseAdapter() {
                 @Override
@@ -1125,32 +1145,34 @@ final class OneProjectDashboard<P> implements DashboardSupport.DashboardImpl {
             add(jSeparator, new GridBagConstraints(0,1,3,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(0,3,0,0), 0,0));            
         }
 
+        public ProjectHandle getProject() {
+            return project;
+        }
+
+        void setProject(ProjectHandle project,Icon icon) {
+            this.project = project;
+            setProjectLabel(project.getDisplayName(), icon);
+        }
+
         void setProjectLabel(String name, Icon icon) {
             lbl.setText(name);
             lbl.setIcon(icon);
+        }
+
+        void setSelectedProjectNode(ListNode node) {
+            mm.setSelectedItem(node);
         }
         
         void switchProject() {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    MegaMenu mm = MegaMenu.create();
-                    mm.show(projectPicker);
+                    mm = MegaMenu.create();
+                    mm.show(ProjectSwitcher.this);
                 }
             });
         }
     }
-    
-//    /**
-//     * Get the icon displayed by a expanded set. Typically this is just the
-//     * icon the look and feel supplies for trees
-//     */
-//    private static final org.netbeans.modules.team.ui.util.treelist.ColorManager colorManager = org.netbeans.modules.team.ui.util.treelist.ColorManager.getDefault();
-//    static Icon getExpandedIcon() {
-//        Icon expandedIcon = UIManager.getIcon(colorManager.isGtk() ? "Tree.gtk_expandedIcon" : "Tree.expandedIcon"); //NOI18N
-//        assert expandedIcon != null : "no Tree.expandedIcon found"; //NOI18N
-//        return expandedIcon;
-//    }
     
     private class RemoveProjectAction extends AbstractAction {
         private ProjectHandle prj;
