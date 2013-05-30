@@ -221,6 +221,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JComboBox" name="browserCBox">
+      <AuxValues>
+        <AuxValue name="JavaCodeGenerator_CreateCodeCustom" type="java.lang.String" value="createBrowserComboBox()"/>
+      </AuxValues>
     </Component>
   </SubComponents>
 </Form>
