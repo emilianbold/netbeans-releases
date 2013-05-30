@@ -1,3 +1,5 @@
+UNKNOWN:CLASS:[PUBLIC]:ESCAPED{UNKNOWN}:
+  UNKNOWN:CLASS:[PUBLIC]:ESCAPED{UNKNOWN}:
 cls:PARAMETER:[PUBLIC]:ESCAPED{cls}:
   $className:FIELD:[PUBLIC]:ESCAPED{$className}:
   displayName:FIELD:[PUBLIC]:ESCAPED{displayName}:
@@ -66,7 +68,7 @@ widgetPrefixLength:VARIABLE:[PRIVATE]:ESCAPED{widgetPrefixLength}:
 widgetPrefix:VARIABLE:[PRIVATE]:ESCAPED{widgetPrefix}<font color="#999999">ESCAPED{ : }String</font>:
 xtypesChain:VARIABLE:[PRIVATE]:ESCAPED{xtypesChain}:
 i:VARIABLE:[PRIVATE]:ESCAPED{i}:
-xtypesMap:CLASS:[PRIVATE]:ESCAPED{xtypesMap}:
+xtypesMap:VARIABLE:[PRIVATE]:ESCAPED{xtypesMap}:
 cls:PARAMETER:[PUBLIC]:ESCAPED{cls}:
   xtype:FIELD:[PUBLIC]:ESCAPED{xtype}<font color="#999999">ESCAPED{ : }data.xtype</font>:
 data:PARAMETER:[PUBLIC]:ESCAPED{data}:
